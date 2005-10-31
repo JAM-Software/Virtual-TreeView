@@ -1,0 +1,45 @@
+package ColorD7D;
+
+{$R *.res}
+{$R 'Color.dcr'}
+{$ALIGN 4}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Color selection'}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl,
+  dclstd,
+  ColorD7,
+  designide,
+  vclx;
+
+{%RC '..\Res\Extra.rc'}
+
+contains
+  ColorRegistration in '..\Design\ColorRegistration.pas',
+  WidgetEditor in '..\Design\WidgetEditor.pas' {WidgetEditorForm},
+  UsesClause in '..\..\Design\UsesClause.pas';
+
+end.
