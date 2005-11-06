@@ -1,0 +1,656 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: lcms110 - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPC.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /Ob2 /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Fo"LibRelease/" /Fd"LibRelease/" /FD /c 
+"D:\lcms-1.10\src\cmscam97.c"
+"D:\lcms-1.10\src\cmscnvrt.c"
+"D:\lcms-1.10\src\cmserr.c"
+"D:\lcms-1.10\src\cmsgamma.c"
+"D:\lcms-1.10\src\cmsgmt.c"
+"D:\lcms-1.10\src\cmsintrp.c"
+"D:\lcms-1.10\src\cmsio1.c"
+"D:\lcms-1.10\src\cmslut.c"
+"D:\lcms-1.10\src\cmsmatsh.c"
+"D:\lcms-1.10\src\cmsmtrx.c"
+"D:\lcms-1.10\src\cmsnamed.c"
+"D:\lcms-1.10\src\cmspack.c"
+"D:\lcms-1.10\src\cmspcs.c"
+"D:\lcms-1.10\src\cmsps2.c"
+"D:\lcms-1.10\src\cmssamp.c"
+"D:\lcms-1.10\src\cmswtpnt.c"
+"D:\lcms-1.10\src\cmsxform.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPC.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPD.tmp" with contents
+[
+/nologo /out:"..\..\lib\MS\lcms110.lib" 
+".\LibRelease\cmscam97.obj"
+".\LibRelease\cmscnvrt.obj"
+".\LibRelease\cmserr.obj"
+".\LibRelease\cmsgamma.obj"
+".\LibRelease\cmsgmt.obj"
+".\LibRelease\cmsintrp.obj"
+".\LibRelease\cmsio1.obj"
+".\LibRelease\cmslut.obj"
+".\LibRelease\cmsmatsh.obj"
+".\LibRelease\cmsmtrx.obj"
+".\LibRelease\cmsnamed.obj"
+".\LibRelease\cmspack.obj"
+".\LibRelease\cmspcs.obj"
+".\LibRelease\cmsps2.obj"
+".\LibRelease\cmssamp.obj"
+".\LibRelease\cmswtpnt.obj"
+".\LibRelease\cmsxform.obj"
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPD.tmp"
+<h3>Output Window</h3>
+Compiling...
+cmscam97.c
+cmscnvrt.c
+cmserr.c
+cmsgamma.c
+cmsgmt.c
+cmsintrp.c
+cmsio1.c
+cmslut.c
+cmsmatsh.c
+cmsmtrx.c
+cmsnamed.c
+cmspack.c
+cmspcs.c
+cmsps2.c
+cmssamp.c
+cmswtpnt.c
+cmsxform.c
+Generating Code...
+Creating library...
+<h3>
+--------------------Configuration: Testbed - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPE.tmp" with contents
+[
+/nologo /MT /W3 /O2 /Ob2 /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "CHECK_PERFORMANCE" /Fo"TestBedRelease/" /Fd"TestBedRelease/" /FD /c 
+"D:\lcms-1.10\testbed\testcms.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPE.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPF.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib mscms.lib /nologo /subsystem:console /incremental:no /pdb:"testcms.pdb" /machine:I386 /out:"..\..\testbed\testcms.exe" 
+".\TestBedRelease\testcms.obj"
+"\lcms-1.10\lib\MS\lcms110.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSPF.tmp"
+<h3>Output Window</h3>
+Compiling...
+testcms.c
+Linking...
+
+
+
+<h3>Results</h3>
+testcms.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: lcms110 - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP11.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Fo"LibDebug/" /Fd"LibDebug/" /FD /GZ /c 
+"D:\lcms-1.10\src\cmscam97.c"
+"D:\lcms-1.10\src\cmscnvrt.c"
+"D:\lcms-1.10\src\cmserr.c"
+"D:\lcms-1.10\src\cmsgamma.c"
+"D:\lcms-1.10\src\cmsgmt.c"
+"D:\lcms-1.10\src\cmsintrp.c"
+"D:\lcms-1.10\src\cmsio1.c"
+"D:\lcms-1.10\src\cmslut.c"
+"D:\lcms-1.10\src\cmsmatsh.c"
+"D:\lcms-1.10\src\cmsmtrx.c"
+"D:\lcms-1.10\src\cmsnamed.c"
+"D:\lcms-1.10\src\cmspack.c"
+"D:\lcms-1.10\src\cmspcs.c"
+"D:\lcms-1.10\src\cmsps2.c"
+"D:\lcms-1.10\src\cmssamp.c"
+"D:\lcms-1.10\src\cmswtpnt.c"
+"D:\lcms-1.10\src\cmsxform.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP11.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP12.tmp" with contents
+[
+/nologo /out:"..\..\lib\MS\lcms110d.lib" 
+".\LibDebug\cmscam97.obj"
+".\LibDebug\cmscnvrt.obj"
+".\LibDebug\cmserr.obj"
+".\LibDebug\cmsgamma.obj"
+".\LibDebug\cmsgmt.obj"
+".\LibDebug\cmsintrp.obj"
+".\LibDebug\cmsio1.obj"
+".\LibDebug\cmslut.obj"
+".\LibDebug\cmsmatsh.obj"
+".\LibDebug\cmsmtrx.obj"
+".\LibDebug\cmsnamed.obj"
+".\LibDebug\cmspack.obj"
+".\LibDebug\cmspcs.obj"
+".\LibDebug\cmsps2.obj"
+".\LibDebug\cmssamp.obj"
+".\LibDebug\cmswtpnt.obj"
+".\LibDebug\cmsxform.obj"
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP12.tmp"
+<h3>Output Window</h3>
+Compiling...
+cmscam97.c
+cmscnvrt.c
+cmserr.c
+cmsgamma.c
+cmsgmt.c
+cmsintrp.c
+cmsio1.c
+cmslut.c
+cmsmatsh.c
+cmsmtrx.c
+cmsnamed.c
+cmspack.c
+cmspcs.c
+cmsps2.c
+cmssamp.c
+cmswtpnt.c
+cmsxform.c
+Generating Code...
+Creating library...
+<h3>
+--------------------Configuration: Testbed - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP13.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"TestBedDebug/" /Fd"TestBedDebug/" /FD /GZ /c 
+"D:\lcms-1.10\testbed\testcms.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP13.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP14.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib mscms.lib /nologo /subsystem:console /incremental:yes /pdb:"testcms.pdb" /debug /machine:I386 /out:"..\..\testbed\testcms.exe" /pdbtype:sept 
+".\TestBedDebug\testcms.obj"
+"\lcms-1.10\lib\MS\lcms110d.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP14.tmp"
+<h3>Output Window</h3>
+Compiling...
+testcms.c
+Linking...
+
+
+
+<h3>Results</h3>
+testcms.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: icc2ps - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP16.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"icc2psRelease/icc2ps.pch" /YX /Fo"icc2psRelease/" /Fd"icc2psRelease/" /FD /c 
+"D:\lcms-1.10\samples\icc2ps.c"
+"D:\lcms-1.10\samples\xgetopt.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP16.tmp" 
+Creating command line "link.exe kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /incremental:no /pdb:"icc2ps.pdb" /machine:I386 /out:"..\..\bin\icc2ps.exe"  ".\icc2psRelease\icc2ps.obj" ".\icc2psRelease\xgetopt.obj" "\lcms-1.10\lib\MS\lcms110.lib" "
+<h3>Output Window</h3>
+Compiling...
+icc2ps.c
+xgetopt.c
+Linking...
+
+
+
+<h3>Results</h3>
+icc2ps.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: icc2ps - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP18.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"icc2psDebug/icc2ps.pch" /YX /Fo"icc2psDebug/" /Fd"icc2psDebug/" /FD /GZ /c 
+"D:\lcms-1.10\samples\icc2ps.c"
+"D:\lcms-1.10\samples\xgetopt.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP18.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP19.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /incremental:yes /pdb:"icc2ps.pdb" /debug /machine:I386 /out:"..\..\bin\icc2ps.exe" /pdbtype:sept 
+".\icc2psDebug\icc2ps.obj"
+".\icc2psDebug\xgetopt.obj"
+"\lcms-1.10\lib\MS\lcms110d.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP19.tmp"
+<h3>Output Window</h3>
+Compiling...
+icc2ps.c
+xgetopt.c
+Linking...
+
+
+
+<h3>Results</h3>
+icc2ps.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: icclink - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP1B.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"icclinkRelease/icclink.pch" /YX /Fo"icclinkRelease/" /Fd"icclinkRelease/" /FD /c 
+"D:\lcms-1.10\samples\icclink.c"
+"D:\lcms-1.10\samples\xgetopt.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP1B.tmp" 
+Creating command line "link.exe kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /incremental:no /pdb:"icclink.pdb" /machine:I386 /out:"..\..\bin\icclink.exe"  ".\icclinkRelease\icclink.obj" ".\icclinkRelease\xgetopt.obj" "\lcms-1.10\lib\MS\lcms110.lib" "
+<h3>Output Window</h3>
+Compiling...
+icclink.c
+xgetopt.c
+Linking...
+
+
+
+<h3>Results</h3>
+icclink.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: icclink - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP1D.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"icclinkDebug/icclink.pch" /YX /Fo"icclinkDebug/" /Fd"icclinkDebug/" /FD /GZ /c 
+"D:\lcms-1.10\samples\icclink.c"
+"D:\lcms-1.10\samples\xgetopt.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP1D.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP1E.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /incremental:yes /pdb:"icclink.pdb" /debug /machine:I386 /out:"..\..\bin\icclink.exe" /pdbtype:sept 
+".\icclinkDebug\icclink.obj"
+".\icclinkDebug\xgetopt.obj"
+"\lcms-1.10\lib\MS\lcms110d.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP1E.tmp"
+<h3>Output Window</h3>
+Compiling...
+icclink.c
+xgetopt.c
+Linking...
+
+
+
+<h3>Results</h3>
+icclink.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: icctrans - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP20.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"IccTransRelease/icctrans.pch" /YX /Fo"IccTransRelease/" /Fd"IccTransRelease/" /FD /c 
+"D:\lcms-1.10\samples\icctrans.c"
+"D:\lcms-1.10\samples\xgetopt.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP20.tmp" 
+Creating command line "link.exe kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /incremental:no /pdb:"icctrans.pdb" /machine:I386 /out:"..\..\bin\icctrans.exe"  ".\IccTransRelease\icctrans.obj" ".\IccTransRelease\xgetopt.obj" "\lcms-1.10\lib\MS\lcms110.lib" "
+<h3>Output Window</h3>
+Compiling...
+icctrans.c
+D:\lcms-1.10\samples\icctrans.c(398) : warning C4013: 'isatty' undefined; assuming extern returning int
+xgetopt.c
+Linking...
+
+
+
+<h3>Results</h3>
+icctrans.exe - 0 error(s), 1 warning(s)
+<h3>
+--------------------Configuration: icctrans - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP22.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"IccTransDebug/icctrans.pch" /YX /Fo"IccTransDebug/" /Fd"IccTransDebug/" /FD /GZ /c 
+"D:\lcms-1.10\samples\icctrans.c"
+"D:\lcms-1.10\samples\xgetopt.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP22.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP23.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /incremental:yes /pdb:"icctrans.pdb" /debug /machine:I386 /out:"..\..\bin\icctrans.exe" /pdbtype:sept 
+".\IccTransDebug\icctrans.obj"
+".\IccTransDebug\xgetopt.obj"
+"\lcms-1.10\lib\MS\lcms110d.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP23.tmp"
+<h3>Output Window</h3>
+Compiling...
+icctrans.c
+d:\lcms-1.10\samples\icctrans.c(398) : warning C4013: 'isatty' undefined; assuming extern returning int
+xgetopt.c
+Linking...
+
+
+
+<h3>Results</h3>
+icctrans.exe - 0 error(s), 1 warning(s)
+<h3>
+--------------------Configuration: jpegicc - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP25.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"JPEGIccRelease/jpegicc.pch" /YX /Fo"JPEGIccRelease/" /Fd"JPEGIccRelease/" /FD /c 
+"D:\lcms-1.10\jpegicc\getopt.c"
+"D:\lcms-1.10\jpegicc\iccjpeg.c"
+"D:\lcms-1.10\jpegicc\JCCOLOR.C"
+"D:\lcms-1.10\jpegicc\JDCOLOR.C"
+"D:\lcms-1.10\jpegicc\jpegicc.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP25.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP26.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib jpeglib.lib /nologo /subsystem:console /incremental:no /pdb:"jpegicc.pdb" /machine:I386 /out:"..\..\bin\jpegicc.exe" 
+".\JPEGIccRelease\getopt.obj"
+".\JPEGIccRelease\iccjpeg.obj"
+".\JPEGIccRelease\JCCOLOR.OBJ"
+".\JPEGIccRelease\JDCOLOR.OBJ"
+".\JPEGIccRelease\jpegicc.obj"
+"\lcms-1.10\lib\MS\lcms110.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP26.tmp"
+<h3>Output Window</h3>
+Compiling...
+getopt.c
+iccjpeg.c
+d:\include\jmorecfg.h(160) : warning C4142: benign redefinition of type
+JCCOLOR.C
+d:\include\jmorecfg.h(160) : warning C4142: benign redefinition of type
+JDCOLOR.C
+jpegicc.c
+d:\include\jmorecfg.h(160) : warning C4142: benign redefinition of type
+Linking...
+LINK : fatal error LNK1181: cannot open input file "jpeglib.lib"
+Error executing link.exe.
+
+
+
+<h3>Results</h3>
+jpegicc.exe - 1 error(s), 3 warning(s)
+<h3>
+--------------------Configuration: jpegicc - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP27.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"JPEGIccDebug/jpegicc.pch" /YX /Fo"JPEGIccDebug/" /Fd"JPEGIccDebug/" /FD /GZ /c 
+"D:\lcms-1.10\jpegicc\getopt.c"
+"D:\lcms-1.10\jpegicc\iccjpeg.c"
+"D:\lcms-1.10\jpegicc\JCCOLOR.C"
+"D:\lcms-1.10\jpegicc\JDCOLOR.C"
+"D:\lcms-1.10\jpegicc\jpegicc.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP27.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP28.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib jpeg6b.lib /nologo /subsystem:console /incremental:yes /pdb:"jpegicc.pdb" /debug /machine:I386 /out:"..\..\bin\jpegicc.exe" /pdbtype:sept 
+".\JPEGIccDebug\getopt.obj"
+".\JPEGIccDebug\iccjpeg.obj"
+".\JPEGIccDebug\JCCOLOR.OBJ"
+".\JPEGIccDebug\JDCOLOR.OBJ"
+".\JPEGIccDebug\jpegicc.obj"
+"\lcms-1.10\lib\MS\lcms110d.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP28.tmp"
+<h3>Output Window</h3>
+Compiling...
+getopt.c
+iccjpeg.c
+d:\include\jmorecfg.h(160) : warning C4142: benign redefinition of type
+JCCOLOR.C
+d:\include\jmorecfg.h(160) : warning C4142: benign redefinition of type
+JDCOLOR.C
+jpegicc.c
+d:\include\jmorecfg.h(160) : warning C4142: benign redefinition of type
+Linking...
+LINK : fatal error LNK1104: cannot open file "jpeg6b.lib"
+Error executing link.exe.
+
+
+
+<h3>Results</h3>
+jpegicc.exe - 1 error(s), 3 warning(s)
+<h3>
+--------------------Configuration: lcmsdll - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0xc0a /fo"DllRelease/lcms.res" /d "NDEBUG" "D:\lcms-1.10\Projects\VC6\lcms.rc"" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP29.tmp" with contents
+[
+/nologo /MT /W3 /O2 /I "..\include" /D "NDEBUG" /D "LCMS_DLL" /D "LCMS_DLL_BUILD" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMS108DLL_EXPORTS" /Fp"Release/lcms108dll.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"D:\lcms-1.10\src\cmscam97.c"
+"D:\lcms-1.10\src\cmscnvrt.c"
+"D:\lcms-1.10\src\cmserr.c"
+"D:\lcms-1.10\src\cmsgamma.c"
+"D:\lcms-1.10\src\cmsgmt.c"
+"D:\lcms-1.10\src\cmsintrp.c"
+"D:\lcms-1.10\src\cmsio1.c"
+"D:\lcms-1.10\src\cmslut.c"
+"D:\lcms-1.10\src\cmsmatsh.c"
+"D:\lcms-1.10\src\cmsmtrx.c"
+"D:\lcms-1.10\src\cmsnamed.c"
+"D:\lcms-1.10\src\cmspack.c"
+"D:\lcms-1.10\src\cmspcs.c"
+"D:\lcms-1.10\src\cmsps2.c"
+"D:\lcms-1.10\src\cmssamp.c"
+"D:\lcms-1.10\src\cmswtpnt.c"
+"D:\lcms-1.10\src\cmsxform.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP29.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP2A.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib uuid.lib /nologo /dll /pdb:none /machine:I386 /def:".\lcmsvc.def" /out:"..\..\bin\lcms.dll" /implib:"Release/lcms.lib" 
+".\Release\cmscam97.obj"
+".\Release\cmscnvrt.obj"
+".\Release\cmserr.obj"
+".\Release\cmsgamma.obj"
+".\Release\cmsgmt.obj"
+".\Release\cmsintrp.obj"
+".\Release\cmsio1.obj"
+".\Release\cmslut.obj"
+".\Release\cmsmatsh.obj"
+".\Release\cmsmtrx.obj"
+".\Release\cmsnamed.obj"
+".\Release\cmspack.obj"
+".\Release\cmspcs.obj"
+".\Release\cmsps2.obj"
+".\Release\cmssamp.obj"
+".\Release\cmswtpnt.obj"
+".\Release\cmsxform.obj"
+".\DllRelease\lcms.res"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP2A.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+cmscam97.c
+cmscnvrt.c
+cmserr.c
+cmsgamma.c
+cmsgmt.c
+cmsintrp.c
+cmsio1.c
+cmslut.c
+cmsmatsh.c
+cmsmtrx.c
+cmsnamed.c
+cmspack.c
+cmspcs.c
+cmsps2.c
+cmssamp.c
+cmswtpnt.c
+cmsxform.c
+Linking...
+   Creating library Release/lcms.lib and object Release/lcms.exp
+
+
+
+<h3>Results</h3>
+lcms.dll - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: lcmsdll - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0xc0a /fo"DllDebug/lcms.res" /d "_DEBUG" "D:\lcms-1.10\Projects\VC6\lcms.rc"" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP2E.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMSDLL_EXPORTS" /D "LCMS_DLL_BUILD" /Fp"DllDebug/lcmsdll.pch" /YX /Fo"DllDebug/" /Fd"DllDebug/" /FD /GZ /c 
+"D:\lcms-1.10\src\cmscam97.c"
+"D:\lcms-1.10\src\cmscnvrt.c"
+"D:\lcms-1.10\src\cmserr.c"
+"D:\lcms-1.10\src\cmsgamma.c"
+"D:\lcms-1.10\src\cmsgmt.c"
+"D:\lcms-1.10\src\cmsintrp.c"
+"D:\lcms-1.10\src\cmsio1.c"
+"D:\lcms-1.10\src\cmslut.c"
+"D:\lcms-1.10\src\cmsmatsh.c"
+"D:\lcms-1.10\src\cmsmtrx.c"
+"D:\lcms-1.10\src\cmsnamed.c"
+"D:\lcms-1.10\src\cmspack.c"
+"D:\lcms-1.10\src\cmspcs.c"
+"D:\lcms-1.10\src\cmsps2.c"
+"D:\lcms-1.10\src\cmssamp.c"
+"D:\lcms-1.10\src\cmswtpnt.c"
+"D:\lcms-1.10\src\cmsxform.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP2E.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP2F.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib libc.lib /nologo /dll /incremental:yes /pdb:"lcmsd.pdb" /debug /machine:I386 /def:".\lcmsvc.def" /out:"..\..\bin\lcmsd.dll" /implib:"lcmsd.lib" /pdbtype:sept 
+".\DllDebug\cmscam97.obj"
+".\DllDebug\cmscnvrt.obj"
+".\DllDebug\cmserr.obj"
+".\DllDebug\cmsgamma.obj"
+".\DllDebug\cmsgmt.obj"
+".\DllDebug\cmsintrp.obj"
+".\DllDebug\cmsio1.obj"
+".\DllDebug\cmslut.obj"
+".\DllDebug\cmsmatsh.obj"
+".\DllDebug\cmsmtrx.obj"
+".\DllDebug\cmsnamed.obj"
+".\DllDebug\cmspack.obj"
+".\DllDebug\cmspcs.obj"
+".\DllDebug\cmsps2.obj"
+".\DllDebug\cmssamp.obj"
+".\DllDebug\cmswtpnt.obj"
+".\DllDebug\cmsxform.obj"
+".\DllDebug\lcms.res"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP2F.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+cmscam97.c
+cmscnvrt.c
+cmserr.c
+cmsgamma.c
+cmsgmt.c
+cmsintrp.c
+cmsio1.c
+cmslut.c
+cmsmatsh.c
+cmsmtrx.c
+cmsnamed.c
+cmspack.c
+cmspcs.c
+cmsps2.c
+cmssamp.c
+cmswtpnt.c
+cmsxform.c
+Linking...
+   Creating library lcmsd.lib and object lcmsd.exp
+lcmsd.exp : warning LNK4070: /OUT:LCMS.DLL directive in .EXP differs from output filename "..\..\bin\lcmsd.dll"; ignoring directive
+LINK : warning LNK4098: defaultlib "LIBCMTD" conflicts with use of other libs; use /NODEFAULTLIB:library
+
+
+
+<h3>Results</h3>
+lcmsd.dll - 0 error(s), 2 warning(s)
+<h3>
+--------------------Configuration: tifficc - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP33.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"tifficcRelease/tifficc.pch" /YX /Fo"tifficcRelease/" /Fd"tifficcRelease/" /FD /c 
+"D:\lcms-1.10\tifficc\GETOPT.C"
+"D:\lcms-1.10\tifficc\tifficc.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP33.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP34.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib libtiff.lib zlib.lib jpeglib.lib /nologo /subsystem:console /incremental:no /pdb:"tifficc.pdb" /machine:I386 /out:"..\..\bin\tifficc.exe" 
+".\tifficcRelease\GETOPT.OBJ"
+".\tifficcRelease\tifficc.obj"
+"\lcms-1.10\lib\MS\lcms110.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP34.tmp"
+<h3>Output Window</h3>
+Compiling...
+GETOPT.C
+tifficc.c
+Linking...
+LINK : fatal error LNK1181: cannot open input file "libtiff.lib"
+Error executing link.exe.
+
+
+
+<h3>Results</h3>
+tifficc.exe - 1 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: tifficc - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP35.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"tifficcDebug/tifficc.pch" /YX /Fo"tifficcDebug/" /Fd"tifficcDebug/" /FD /GZ /c 
+"D:\lcms-1.10\tifficc\GETOPT.C"
+"D:\lcms-1.10\tifficc\tifficc.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP35.tmp" 
+Creating temporary file "C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP36.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib libtiff.lib zlib.lib jpeg6b.lib /nologo /subsystem:console /incremental:yes /pdb:"tifficc.pdb" /debug /machine:I386 /out:"..\..\bin\tifficc.exe" /pdbtype:sept 
+".\tifficcDebug\GETOPT.OBJ"
+".\tifficcDebug\tifficc.obj"
+"\lcms-1.10\lib\MS\lcms110d.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\MARTIM~1\CONFIG~1\Temp\RSP36.tmp"
+<h3>Output Window</h3>
+Compiling...
+GETOPT.C
+tifficc.c
+Linking...
+LINK : fatal error LNK1104: cannot open file "libtiff.lib"
+Error executing link.exe.
+
+
+
+<h3>Results</h3>
+tifficc.exe - 1 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

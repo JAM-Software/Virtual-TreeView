@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="..\..\lib\bc\lcms110.lib"/>
+    <OBJFILES value="lcms110.obj ..\..\src\cmsxform.obj ..\..\src\cmscnvrt.obj 
+      ..\..\src\cmserr.obj ..\..\src\cmsgamma.obj ..\..\src\cmsgmt.obj 
+      ..\..\src\cmsintrp.obj ..\..\src\cmsio1.obj ..\..\src\cmslut.obj 
+      ..\..\src\cmsmatsh.obj ..\..\src\cmsmtrx.obj ..\..\src\cmspack.obj 
+      ..\..\src\cmspcs.obj ..\..\src\cmssamp.obj ..\..\src\cmswtpnt.obj 
+      ..\..\src\cmscam97.obj ..\..\src\cmsps2.obj ..\..\src\cmsnamed.obj"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
+    <PATHCPP value=".;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src;..\..\src"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value=""/>
+    <RELEASELIBPATH value=""/>
+    <LINKER value="TLib"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="lcms110.cpp"/>
+    <INCLUDEPATH value="..\..\src;..\..\include;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\src"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNOPTSTR value=""/>
+    <LISTFILE value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\..\src -I..\..\include -I$(BCB)\include -I$(BCB)\include\vcl 
+      -src_suffix cpp -boa"/>
+    <CFLAG1 value="-O2 -H=c:\PROGRA~1\borland\CBUILD~1\lib\vcl60.csm -Vx -Ve -x- -RT- -u- -X- 
+      -a8 -5 -b- -d -k- -vi -c -tWM"/>
+    <PFLAGS value="-$Y- -$L- -$I- -$D- -$A4 -v -JPHN -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mu /w2 /zn"/>
+    <LFLAGS value="/E /C"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="$(OBJFILES)"/>
+    <ALLRES value=""/>
+    <ALLLIB value=""/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="lcms110.cpp" FORMNAME="" UNITNAME="lcms110" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsxform.c" FORMNAME="" UNITNAME="cmsxform" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmscnvrt.c" FORMNAME="" UNITNAME="cmscnvrt" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmserr.c" FORMNAME="" UNITNAME="cmserr" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsgamma.c" FORMNAME="" UNITNAME="cmsgamma" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsgmt.c" FORMNAME="" UNITNAME="cmsgmt" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsintrp.c" FORMNAME="" UNITNAME="cmsintrp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsio1.c" FORMNAME="" UNITNAME="cmsio1" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmslut.c" FORMNAME="" UNITNAME="cmslut" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsmatsh.c" FORMNAME="" UNITNAME="cmsmatsh" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsmtrx.c" FORMNAME="" UNITNAME="cmsmtrx" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmspack.c" FORMNAME="" UNITNAME="cmspack" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmspcs.c" FORMNAME="" UNITNAME="cmspcs" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmssamp.c" FORMNAME="" UNITNAME="cmssamp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmswtpnt.c" FORMNAME="" UNITNAME="cmswtpnt" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmscam97.c" FORMNAME="" UNITNAME="cmscam97" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsps2.c" FORMNAME="" UNITNAME="cmsps2" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\src\cmsnamed.c" FORMNAME="" UNITNAME="cmsnamed" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.1.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.1.0.0
+Comments=
+
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclact60.bpl=Borland ActionBar Components
+c:\programme\borland\cbuilder6\Bin\dclmlwiz60.bpl=Borland Markup Language Wizards
+c:\programme\borland\cbuilder6\Bin\dclado60.bpl=Borland ADO DB Components
+C:\Programme\Borland\CBuilder6\Bin\dcldb60.bpl=Borland Database Components
+c:\programme\borland\cbuilder6\Bin\dclbde60.bpl=Borland BDE DB Components
+C:\Programme\Borland\CBuilder6\Bin\dbx60.bpl=Borland SQL Explorer UI Package
+c:\programme\borland\cbuilder6\Bin\DCLIB60.bpl=InterBase Data Access Components
+c:\programme\borland\cbuilder6\Bin\dclcds60.bpl=Borland Base Cached ClientDataset Component
+C:\Programme\Borland\CBuilder6\Bin\dclmid60.bpl=Borland MyBase DataAccess Components
+c:\programme\borland\cbuilder6\Bin\dclbdecds60.bpl=Borland Local BDE ClientDataset Components
+c:\programme\borland\cbuilder6\Bin\dclqrt60.bpl=QuickReport Components
+c:\programme\borland\cbuilder6\Bin\dcltee60.bpl=TeeChart Components
+c:\programme\borland\cbuilder6\Bin\dcldss60.bpl=Borland Decision Cube Components
+c:\programme\borland\cbuilder6\Bin\dcltqr60.bpl=TeeChart for QuickReport Components
+c:\programme\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+C:\Programme\Borland\CBuilder6\Bin\dclclxstd60.bpl=Borland CLX Standard Components
+c:\programme\borland\cbuilder6\Bin\dclmcn60.bpl=Borland DataSnap Connection Components
+c:\programme\borland\cbuilder6\Bin\applet60.bpl=Borland Control Panel Applet Package
+c:\programme\borland\cbuilder6\Bin\dclemacsedit60.bpl=Borland Editor Emacs Enhancements
+c:\programme\borland\cbuilder6\Bin\dclbcbsmp60.bpl=Borland Sample Controls Design Time Package
+c:\programme\borland\cbuilder6\Bin\dclnet60.bpl=Borland Internet Components
+c:\programme\borland\cbuilder6\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+c:\programme\borland\cbuilder6\Bin\DCLNMF60.bpl=NetMasters Fastnet Tools
+c:\programme\borland\cbuilder6\Bin\dclwbm60.bpl=Borland InternetExpress Components
+c:\programme\borland\cbuilder6\Bin\bcbie60.bpl=Borland C++Builder Internet Explorer 5 Components Package
+c:\programme\borland\cbuilder6\Bin\dclwebsnap60.bpl=Borland WebSnap Components
+c:\programme\borland\cbuilder6\Bin\dclsoap60.bpl=Borland SOAP Components
+c:\programme\borland\cbuilder6\Bin\dclocx60.bpl=Borland Sample Imported ActiveX Controls
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dcldbx60.bpl=Borland dbExpress Components
+c:\programme\borland\cbuilder6\Bin\dcldbxcds60.bpl=Borland Local DBX ClientDataset Components
+c:\programme\borland\cbuilder6\Bin\dclindy60.bpl=Internet Direct (Indy) for D6 Property and Component Editors
+c:\programme\borland\cbuilder6\Bin\bcb2kaxserver60.bpl=Borland C++Builder COM Server Components Sample Package
+
+[HistoryLists\hlIncludePath]
+Count=2
+Item0=..\..\src;..\..\include;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\include;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=2
+Item0=..\..\src
+Item1=..\..\src;
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlFinalOutputDir]
+Count=5
+Item0=..\..\lib\bc\
+Item1=..\..\..\lib\bc\
+Item2=..\..\lib\bcItem1=..\..\lib\bcItem1=..\..\lib\bc
+Item3=
+Item4=
+
+[HistoryLists\hlTlibPageSize]
+Count=1
+Item0=0x0010
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=1
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+  </IDEOPTIONS>
+</PROJECT>

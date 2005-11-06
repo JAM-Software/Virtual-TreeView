@@ -1,0 +1,1636 @@
+
+
+                     little cms Engine 1.10
+
+                         API Definition
+
+                          by Marti Maria
+
+        ---------------------------------------------------
+
+                           Index
+                           -----
+
+        1 - Profile & Transform functions
+        2 - Information functions
+        3 - On-the-fly profile creation functions
+        4 - Build-In profiles
+        5 - White point
+        6 - Gamma handling
+        7 - Error handling
+        8 - Conversion functions
+        9 - CIECAM97s
+        10 - Profile creation functions
+        11 - LUT manipultation
+        12 - Named color functions
+
+
+1 - Profile & Transform functions
+_________________________________
+
+ These are the basic functions on making transformations. For
+ simpler operation, you must open two profiles using
+ cmsOpenProfileFromFile(), then create a transform with these
+ opened profiles with cmsCreateTransform(). Using this transform
+ you can color correct your bitmaps by cmsDoTransform(). When you
+ are done you must free the transform AND the profiles by
+ cmsDeleteTransform() and cmsCloseProfile().
+
+
+_________________________________________________________________________________
+
+ cmsHPROFILE cmsOpenProfileFromFile(const char *ICCProfile, const char *sAccess);
+_________________________________________________________________________________
+
+ Opens a profile returning a handle to it. The profile must be
+ contained in a file on disk.
+
+Parameters:
+
+        ICCProfile:   File name w/ full path.
+        sAccess:      "r" for normal operation, "w" for profile creation
+
+Returns:
+
+          NULL on error, a profile handle on success.
+
+Example:
+
+                void GetProductNameOf(const char *ICMProfileFile)
+                {
+                cmsHPROFILE hProfile
+
+                        hProfile = cmsOpenProfileFromFile(ICMProfileFile, "r");
+                        if (hProfile == NULL) printf("Error!");
+                        else {
+                        printf("%s\n", cmsGetProductName(hProfile));
+                        cmsCloseProfile(hProfile);
+                        }
+                }
+
+_________________________________________________________________________________
+
+cmsHPROFILE cmsOpenProfileFromMem(LPVOID MemPtr, DWORD dwSize);
+_________________________________________________________________________________
+
+  Same as anterior, but profile is contained in memory. Usefull
+  for embedded profiles. MemPtr must point to a buffer of at
+  least dwSize bytes. This buffer must hold a full profile image.
+  Memory must be contiguous.
+
+Parameters:
+
+       MemPtr: Points to a block of contiguous memory containing the profile
+       dwSize: Profile's size measured in bytes.
+
+Returns:
+
+       NULL on error, a profile handle on success.
+
+
+_________________________________________________________________________________
+
+BOOL  cmsCloseProfile(cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+  Closes a profile handle and frees associated memory. Note that
+  cmsDeleteTransform() does NOT close the involved profiles. You
+  must close any opened profile handle on cleanup.
+
+
+Parameters:
+                hProfile: Handle to an open profile
+
+Returns:
+                FALSE on error, TRUE on success
+
+Comments:
+
+  Can return error when creating profile if the profile is not
+  properly flushed to disk.
+  
+
+_________________________________________________________________________________
+
+  cmsHTRANSFORM cmsCreateTransform(cmsHPROFILE Input,
+                                       DWORD InputFormat,
+                                       cmsHPROFILE Output,
+                                       DWORD OutputFormat,
+                                       int Intent,
+                                       DWORD dwFlags);                             .
+_________________________________________________________________________________
+
+Creates a transform for translating bitmaps.
+
+Parameters:
+
+   Input, Output:    Input, Output profile handles
+
+ Input, Output format: This value describes how values are to be
+                       coded. It is formed by a combination of
+                       channels, bitdepths andextra samples. See
+                       below.
+
+        for example:
+
+                     TYPE_BGR_8  : 3 channels of 8 bits, using Windows convention
+                     TYPE_RGB_8  : 3 channels of 8 bits per component
+                     TYPE_RGB_16 : 3 channels of 16 bits per component
+                     TYPE_RGBA_8 : 4 channels, 3 containing RGB of 8 bpc, and one channel of 8 bits holding alpha
+                     ...
+
+  Note than even some Lab and XYZ are defined, these specifiers
+  has nothing to do with colorspaces, but only how data is
+  encoded. The CMM will only check for same colorspace as profile.
+
+
+  Intent: The ICC intent to apply. If an appropiate tag for this
+          intent is not found, no error is raised and the intent
+          is reverted to perceptual. See the tutorial for a 
+          explanation of intents.
+
+
+              INTENT_PERCEPTUAL                                 0
+              INTENT_RELATIVE_COLORIMETRIC                      1
+              INTENT_SATURATION                                 2
+              INTENT_ABSOLUTE_COLORIMETRIC                      3
+
+
+
+   dwFlags: This value commands on how to handle the whole
+            process. Some or none of this values can be joined
+            via the or | operator.
+
+
+        cmsFLAGS_MATRIXINPUT: CLUT ignored on input profile,
+                              matrix-shaper used instead (for
+                              speed, and debugging purposes)
+
+        cmsFLAGS_MATRIXOUTPUT: Same as anterior, but for output
+                               profile only.
+
+        cmsFLAGS_MATRIXONLY: Both input and output are forced to
+                             matrix-shaper.
+
+        cmsFLAGS_NOTPRECALC: By default, lcms smelt luts into a
+                             device-link CLUT. This speedup whole
+                             transform greatly. If you don't
+                             wanna this, and wish every value to
+                             be translated to PCS and back to
+                             output space, include this flag.
+       
+
+        cmsFLAGS_NULLTRANFORM: Don't transform anyway, only apply
+                             pack/unpack routines (usefull to
+                             deactivate color correction but keep
+                             formatting capabilities)
+
+        cmsFLAGS_HIGHRESPRECALC: Use 48 points instead of 33 for 
+                             device-link CLUT precalculation. Not needed
+                             but for the most extreme cases of mismatch 
+                             of "impedance" between profiles.
+
+
+        cmsFLAGS_LOWRESPRECALC: Use lower resolution table. Usefull when
+                            memory is a preciated resource.
+
+Returns:
+
+       NULL on error, a transform handle on success.
+
+Comments:
+
+ This function tries to build a device link profile using the
+ Input and Output profiles. This small time-consuming penalty (3
+ sec. on a Pentium-100) does accelerate the bitmap transform
+ process greately. You can override this behaviour if you wish,
+ or if you plan to transform only a couple of pixels by using
+ cmsFLAGS_NOTPRECALC on dwFlags parameter. But normally it will
+ be better leave this flag alone.
+
+ Also, in this function is where you must specify the format of
+ the input and output bitmaps. The InputFormat and OutputFormat
+ parameters are formed by combining several bits:
+
+// Format of pixel is defined by one integer, using bits as follows
+//
+//            TTTTT - Y F P X S EEE CCCC BBB
+//
+//            T: Pixeltype
+//            F: Flavor  0=MinIsBlack(Chocolate) 1=MinIsWhite(Vanilla)
+//            P: Planar? 0=Chunky, 1=Planar
+//            X: swap 16 bps endianess?
+//            S: Do swap? ie, BGR, KYMC
+//            E: Extra samples
+//            C: Channels (Samples per pixel)
+//            B: Bytes per sample
+//            Y: Swap first - changes ABGR to BGRA and KCMY to CMYK
+//            -: Unused (reserved)
+
+
+
+lcms.h does include several predefined specifiers, as examples:
+
+ TYPE_RGB_8     8 bits per sample RGB
+ TYPE_BGR_8     8 bits per sample BGR (Windows Bitmaps are often
+                  coded in this way)
+ TYPE_RGB_16    16 bits per sample RGB
+ TYPE_RGBA_8    8 bits per sample RGB plus alpha channel. Alpha is
+                  ignored by lcms.
+ TYPE_RGBA_16   16 bits per sample RGB plus alpha.
+ TYPE_XYZ_16    16 bits fixed 15.16 XYZ (used in PCS)
+ TYPE_Lab_8     8 bits per sample Lab
+ TYPE_Lab_16    16 bits per sample Lab
+ TYPE_CMY_8     8 bits per sample CMY
+ TYPE_CMY_16    16 bits per sample CMY
+ TYPE_CMYK_8    8 bits per sample CMYK
+ TYPE_CMYK_16   16 bits per sample CMY
+
+You can build your own specifiers if you wish by combining the following macros with the bitwise OR operator |
+
+
+ DOSWAP_SH(e)           1 or 0 depending on swap even channels
+ EXTRA_SH(e)            up to 7 extra channels
+ CHANNELS_SH(c)         up to 4 handled channels
+ BYTES_SH(b)            1 if 16 bits per sample, 0 if 8 bits per sample
+ ENDIAN16_SH(e)         1 if 16 bits samples comes swapped.
+ SWAPFIRST_SH(s)        1 changes ABGR to BGRA and KCMY to CMYK
+ FLAVOR_SH(s)           0 = BlackIsZero (Chocolate) 1=WhiteIsZero (Vanilla, Negative)
+ PLANAR_SH(p)           0 = Chunky, 1=Planar
+ COLORSPACE_SH(s)
+
+    Available Colorspaces
+    =====================
+
+    PT_ANY       Don't check colorspace
+                 1 & 2 are reserved
+    PT_GRAY      
+    PT_RGB       
+    PT_CMY       
+    PT_CMYK      
+    PT_YCbCr     
+    PT_YUV       
+    PT_XYZ       
+    PT_Lab       
+    PT_YUVK      
+    PT_HSV       
+    PT_HLS       
+    PT_Yxy       
+
+
+See the lcms.h for more information on how to build format specifiers.
+
+
+_________________________________________________________________________________
+
+cmsHTRANSFORM cdecl cmsCreateProofingTransform(cmsHPROFILE Input,
+                        DWORD InputFormat,
+                        cmsHPROFILE Output,
+                        DWORD OutputFormat,
+                        cmsHPROFILE Proofing,
+                        int Intent,
+                        int ProofingIntent,
+                        DWORD dwFlags);
+_________________________________________________________________________________
+
+
+  Same as cmsCreateTransform(), but including soft-proofing. The
+  obtained transform emulates the device described by the
+  "Proofing" profile. Useful to preview final result whithout
+  rendering to physical medium.
+
+  Parameters and returns same as anterior, but with the addition of
+
+        Proofing: a handle to proofing profile.
+
+        ProofingIntent: Is the intent for translating emulated
+                        colors. Default is
+
+                            INTENT_ABSOLUTE_COLORIMETRIC.
+
+       dwFlags: 
+
+
+        cmsFLAGS_GAMUTCHECK: Color out of gamut are flagged to a
+                             fixed color defined by the function
+                             cmsSetAlarmCodes(int r, int g, int b);
+        
+        cmsFLAGS_SOFTPROOFING: (Does need preview tag to work) does
+                             emulate the Proofing device.
+
+
+  You need to add a combination of these flags to enable any proof!
+
+  
+
+_________________________________________________________________________________
+
+cmsHTRANSFORM cmsCreateMultiprofileTransform(cmsHPROFILE hProfiles[],
+                                                     int nProfiles,
+                                                   DWORD InputFormat,
+                                                   DWORD OutputFormat,
+                                                     int Intent,
+                                                   DWORD dwFlags);
+_________________________________________________________________________________
+
+
+  User passes in an array of handles to open profiles. The returned handle 
+  does "smelt" all profiles in only one devicelink. Following rules should
+  be followed:
+
+    - Colorspaces must be paired with the exception of
+      Lab/XYZ, that can be interchanged.  
+
+    - Profile must be Matrix-shaper, or hold the 
+      apropiate tag, device-to-pcs or pcs-to-device on depending
+      on profile location.
+
+    - All colorspaces up to 4 (significant) channels can be used 
+      anywhere on the chain, Hexachrome separation or more can only 
+      appair at last step. This limitation is intended to be solved in 
+      future releases.
+    
+
+ Let's take as example, how to apply a abstract profile into a SRGB image.
+ The chain would be sRGB -> Abstract -> sRGB. So, we would open sRGB and the 
+ abstract profile, and fill the array
+
+        Profiles[0] = hsRGB;
+        Profiles[1] = hAbstract;
+        Profiles[2] = hsRGB;
+
+    cmsCreateMultiprofileTransform(Profiles, 3, TYPE_RGB_8, TYPE_RGB_8, INTENT_PERCEPTUAL, 0);
+
+
+
+ WARNING: he dE rises with the number of profiles.
+
+ This can be used, for example, with abstract profiles. For example, abstract
+ profiles can be applied into a typical profile-to-profile color flow to model
+ viewing conditions.
+
+ Once created, the transform will behave just like any other. 
+
+
+_________________________________________________________________________________
+
+void cmsDeleteTransform(cmsHTRANSFORM hTransform);
+_________________________________________________________________________________
+
+Closes a transform handle and frees associated memory.
+
+Parameters:
+                hTransform: The transform handle to be deleted.
+
+
+  Comments: This function does NOT free any profiles associated
+  with the transform. Is programmer's responsability to free
+  them.
+
+
+
+_________________________________________________________________________________
+
+void cmsDoTransform(cmsHTRANSFORM hTransform,
+                                  LPVOID InputBuffer,
+                                  LPVOID OutputBuffer, unsigned int Size);
+_________________________________________________________________________________
+
+  This function translates bitmaps according of transform. Format
+  of buffers is described by InputFormat and OutputFormat
+  parameters in function cmsCreateTransform() or
+  cmsCreateProofingTransform()
+
+Parameters:
+                hTransform: A handle to a transform describing the translation.
+                InputBuffer: A pointer to a input bitmap
+                OutputBuffer: A pointer to a output bitmap.
+                Size: the number of PIXELS to be transformed.
+
+Comments:
+
+  Windows, stores the bitmaps in a particular way... for speed
+  purposes, does align the scanlines to doubleword boundaries, so
+  a bitmap has in windows always a size multiple of 4. This is
+  ok, since no matter if you waste a couple of bytes, but if you
+  call cmsDoTransform() and passes it WHOLE image, lcms doesn't
+  know nothing about this extra padding bytes. So, it assumes
+  that you are passing a block of BGR triplets with no alignment
+  at all. This result in a strange looking "lines" in obtained
+  bitmap.
+
+  The solution most evident is to convert scanline by scanline
+  instead of whole image. This is as easy as to add a for() loop,
+  and the time penalty is so low that is impossible to detect.
+
+
+
+_________________________________________________________________________________
+
+void cmsChangeBuffersFormat(cmsHTRANSFORM hTransform, 
+                                        DWORD dwInputFormat, 
+                                        DWORD dwOutputFormat)
+_________________________________________________________________________________
+
+
+ This function does change the encoding of buffers in a yet-existing transform.
+
+ 
+ Parameters:
+
+  hTransform: A handle to the transform.
+
+  Input, Output format: This value describes how values are to be
+                       coded. It is formed by a combination of
+                       channels, bitdepths andextra samples. 
+                       See cmsCreateTransform for more info.
+
+  Notes:
+
+    Colorspace is *not* checked
+
+
+_________________________________________________________________________________
+
+cmsHPROFILE cmsTransform2DeviceLink(cmsHTRANSFORM hTransform, DWORD dwFlags);
+_________________________________________________________________________________
+
+
+  Coonverts a yet-existing transform into a device-link profile. This profile
+  can be used in any other transform or saved to disk/memory.
+
+Parameters:
+
+    hTransform: A handle to the transform.
+
+    Flags: Usually 0. The devicelink LUT will have so many points as the 
+           transform that generates it. However, some transforms like those
+           from matrix-shaper to matrix shaper, has no LUT, and only in such 
+           special cases this parameter can be used to define the render 
+           resolution. 
+           
+           It can be:
+
+                    cmsFLAGS_HIGHRESPRECALC           
+                    cmsFLAGS_LOWRESPRECALC            
+
+            But this applies only to matrix-shaper to matrix-shaper.  
+    
+
+
+2 - Information functions
+_________________________________________________________________________________
+
+  These functions are intended for identify profiles. Its main use 
+  if bor building user interfaces.
+
+
+_________________________________________________________________________________
+
+const char* cmsTakeProductName(cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+  Returns a pointer to a string containing the product name. The
+  string is holded in a static buffer that is overwritten in
+  every call to this function.
+
+Parameters:
+            hProfile: Handle to an open profile
+
+
+
+_________________________________________________________________________________
+
+const char* cmsTakeProductInfo(cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+  Returns a pointer to a string containing additional info about
+  hProfile. The string is holded in a static buffer overwritten
+  in each call to this function.
+
+Parameters:
+            hProfile: Handle to an open profile
+
+
+
+_________________________________________________________________________________
+
+icColorSpaceSignature cmsGetPCS(cmsHPROFILE hProfile)
+_________________________________________________________________________________
+
+  This function returns the PCS used by the hProfile, using the
+  ICC convention.
+
+Parameters:
+                hProfile: Handle to an open profile
+
+Returns:
+                The PCS  of the profile
+
+
+_________________________________________________________________________________
+
+icColorSpaceSignature cmsGetColorSpace(cmsHPROFILE hProfile)
+_________________________________________________________________________________
+
+  This function returns the Color space used by the hProfile,
+  using the ICC convention.
+
+Parameters:
+                hProfile: Handle to an open profile
+
+Returns:
+                The color space of the profile
+
+
+_________________________________________________________________________________
+
+icProfileClassSignature cmsGetDeviceClass(cmsHPROFILE hProfile)
+_________________________________________________________________________________
+
+  This function returns the Device class of hProfile, using the
+  ICC convention.
+
+
+Parameters:
+                hProfile: Handle to an open profile
+
+Returns:
+                The device class of the profile
+
+
+_________________________________________________________________________________
+
+BOOL cmsTakeMediaWhitePoint(LPcmsCIEXYZ Dest, cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+  This function takes the white point of hProfile.
+
+Parameters:
+
+
+        Dest:     a pointer to an cmsCIEXYZ struct that will hold the
+                  media white point
+        hProfile: Handle to an open profile
+
+
+Returns:
+                FALSE on error, TRUE on success
+
+_________________________________________________________________________________
+
+BOOL cmsTakeMediaBlackPoint(LPcmsCIEXYZ Dest, cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+This function takes the black point of hProfile if present.
+
+Parameters:
+                Dest: a pointer to an cmsCIEXYZ struct that will
+                        hold the media black point.
+
+                hProfile: Handle to an open profile
+
+Returns:
+                FALSE on error, TRUE on success
+
+_________________________________________________________________________________
+
+BOOL cmsTakeIluminant(LPcmsCIEXYZ Dest, cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+This function takes the value of PCS illuminant of hProfile.
+
+Parameters:
+                hProfile: Handle to an open profile
+                Dest: a pointer to an cmsCIEXYZ struct that will
+                      hold the illuminant white point
+
+Returns:
+                FALSE on error, TRUE on success
+
+ Notes: ICC states that profile illuminants MUST be D50. However,
+ in real world, each manufacturer uses an illuminant value that
+ differs slightly of D50. lcms takes this variation in account
+ and does the necessary scaling.
+
+
+_________________________________________________________________________________
+
+BOOL cmsTakeColorants(LPcmsCIEXYZTRIPLE Dest, cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+ This function takes the value of colorant matrix of hProfile if
+ present.
+
+ Notes: A lot of manufacturers includes colorants even if a CLUT
+ is present. Often this colorants are private values, true
+ primaries or negative values. Interpretation of these
+ undocumented values is out of scope of lcms.
+
+
+_________________________________________________________________________________
+
+BOOL  cmsIsTag(cmsHPROFILE hProfile, icTagSignature sig);
+_________________________________________________________________________________
+
+ Tests if a particular tag is present in hProfile.
+
+Parameters:
+                hProfile: Handle to an open profile
+                sig: a tag signature
+
+Returns:
+                FALSE if not present, TRUE if tag is found
+
+_________________________________________________________________________________
+
+int  cmsTakeRenderingIntent(cmsHPROFILE hProfile);
+_________________________________________________________________________________
+
+Returns the rendering intent (absolute/relative) of a profile.
+
+Parameters:
+                hProfile: Handle to an open profile
+
+Returns:        one of the following values:
+
+              INTENT_PERCEPTUAL                                 0
+              INTENT_RELATIVE_COLORIMETRIC                      1
+              INTENT_SATURATION                                 2
+              INTENT_ABSOLUTE_COLORIMETRIC                      3
+
+_________________________________________________________________________________
+
+BOOL cmsIsIntentSupported(cmsHPROFILE hProfile, int Intent, int UsedDirection);
+_________________________________________________________________________________
+
+
+  This one helps on inquiring if a determinate intent is
+  supported by an opened profile. You must give a handle to
+  profile, the intent and a third parameter specifying how the
+  profile would be used. The function does return TRUE if intent
+  is supported or FALSE if not. If the intent is not supported,
+  lcms will use default intent (usually perceptual).
+
+Parameters:
+
+        hProfile: Handle to an open profile
+
+        Intent: one of the following values:
+
+              INTENT_PERCEPTUAL                                 0
+              INTENT_RELATIVE_COLORIMETRIC                      1
+              INTENT_SATURATION                                 2
+              INTENT_ABSOLUTE_COLORIMETRIC                      3
+
+        Direction:
+
+              LCMS_USED_AS_INPUT      0
+              LCMS_USED_AS_OUTPUT     1
+              LCMS_USED_AS_PROOF      2
+
+Returns:
+
+        TRUE if intent is supported or FALSE if not. 
+        If the intent is not supported, lcms will use default 
+        intent (usually perceptual).
+
+
+_________________________________________________________________________________
+
+BOOL cmsTakeCharTargetData(cmsHPROFILE hProfile, char** Data, size_t* len);
+_________________________________________________________________________________
+
+  Retrieves the target data the profiler has used to build the profile. Usage
+  of this tag is optional. The lprof profiles does store such information when
+  "verbose" mode is selected.
+
+  Parameters:
+
+        hProfile: Handle to an open profile
+
+        Data: Pointer to a pointer to a bite block. This function allocates
+            this block by calling malloc(). User is responsible of free it after
+            use. 
+
+        size: Pointer to a size_t variable holding the size of datablock.
+   Returns:
+
+        TRUE on success, FALSE on error or if the profile has not such tag.
+
+
+
+  Example:
+
+        char* TargetData;
+        size_t len;
+
+        cmsTakeCharTargetData(hProfile, &Data, &len);
+
+        ... do whatsever with Data...
+
+        free(Data);
+
+_________________________________________________________________________________
+
+void  cmsSetAlarmCodes(int r, int g, int b)
+_________________________________________________________________________________
+
+  Used to establish the out-of-gamut alarm color. This color will
+  replace all out-of-gamut colors if sFLAGS_GAMUTCHEK is used in
+  dwFlags parameter. See cmsCreateTransform()
+
+
+_________________________________________________________________________________
+
+3 - On-the-fly profile creation functions
+_________________________________________________________________________________
+
+  These function gives the ability of create virtual profiles.
+  These profiles are often used in modelling monitors, but can
+  also be used as any input or output device. Once created, you
+  can use the profile handle like another file-based profile.
+
+_________________________________________________________________________________
+
+cmsHPROFILE  cmsCreateGrayProfile(LPcmsCIExyY WhitePoint,
+                                  LPGAMMATABLE TransferFunction)
+
+_________________________________________________________________________________
+
+Creates a grayscale virtual profile based on white point and transfer tables.
+
+Parameters:
+
+        White point: You can specify chromacity of white point,
+                     or use cmsWhitePointFromTemp() to generate
+                     the white point from temperature.
+        
+       Gamma tables: You can directly specify tables or use the
+                     gamma handling functions for obtaining these
+                     tables
+
+
+
+_________________________________________________________________________________
+
+cmsHPROFILE  cmsCreateRGBProfile(LPcmsCIExyY WhitePoint,
+                                        LPcmsCIExyYTRIPLE Primaries,
+                                        LPGAMMATABLE TransferFunction[3])
+_________________________________________________________________________________
+
+  Creates a virtual profile based in primaries, white point and
+  transfer tables.
+
+Parameters:
+
+        White point: You can specify chromacity of white point,
+                     or use cmsWhitePointFromTemp() to generate
+                     the white point from temperature.
+
+        Primaries:   The primaries (the TRUE primaries, not the
+                     colorants) of the device.
+
+     Gamma tables: You can directly specify tables or use the
+                   gamma handling functions for obtaining these
+                   tables
+
+_________________________________________________________________________________
+
+cmmHPROFILE cmsTransform2DeviceLink(cmsHTRANSFORM hTransform, DWORD dwFlags);
+_________________________________________________________________________________
+
+
+ Generates a device-link profile from a transform. This profile can then be used
+ by any other function accepting profile handle, or be saved on disk 
+ by _cmsSaveProfile(). See icclink.c for a sample.
+
+ Parameters:
+
+  hTransform: A handle to the transform.
+
+  dwFlags:
+
+        If the transform is using cmsFLAGS_NOTPRECALC, the LUT table is 
+        computed using this parameters as flags:
+
+
+        cmsFLAGS_HIGHRESPRECALC: Use 48 points instead of 33 for 
+                             device-link CLUT precalculation. Not needed
+                             but for the most extreme cases of mismatch 
+                             of "impedance" between profiles.
+
+
+        cmsFLAGS_LOWRESPRECALC: Use lower resolution table. Usefull when
+                            memory is a preciated resource.
+
+
+
+_________________________________________________________________________________
+
+cmsHPROFILE cmsCreateLinearizationDeviceLink(icColorSpaceSignature ColorSpace,
+                                            LPGAMMATABLE TransferFunctions[]);
+_________________________________________________________________________________
+
+ Creates a specialized devicelink, operating in space "ColorSpace". This devicelink
+ has only linearization tables. Usefull for embedding gamma/brightness/contrast controls
+ in a multiprofile transform.
+
+
+  TransferFunctions[] must contain as many curves as components has the target
+  color space. For example, RGB must be 3 curves. CMYK needs 4 curves.
+
+
+_________________________________________________________________________________
+
+cmsHPROFILE LCMSEXPORT cmsCreateInkLimitingDeviceLink(icColorSpaceSignature ColorSpace,
+                                                        double Limit)
+_________________________________________________________________________________
+
+ Creates a specialized devicelink, operating in space "ColorSpace". This devicelink
+ handles ink-limiting feature. Useful for RIP construction and other goodies
+
+Parameters:
+
+  hTransform: A handle to the transform.
+  Limit: The amount of ink-limit, in pertentage. Allowable values are from 0% to 400%
+  
+Notes:
+    Currently only works on CMYK, but Hexachrome support is expected in 
+    future revisions.
+
+_________________________________________________________________________________
+
+4 - Built-In profiles
+_________________________________________________________________________________
+
+ These are standard profiles optimized for speed. 
+
+
+_________________________________________________________________________________
+
+cmsHPROFILE  cmsCreateLabProfile(LPcmsCIExyY WhitePoint);
+_________________________________________________________________________________
+
+  Creates a virtual profile of CIE Lab. If WhitePoint is NULL, 
+  then D50 is assumed.
+  
+
+_________________________________________________________________________________
+
+cmsHPROFILE  cmsCreateXYZProfile(void);
+_________________________________________________________________________________
+
+  Creates a virtual XYZ profile (Assumes D50)
+  
+
+_________________________________________________________________________________
+
+cmsHPROFILE  cmsCreate_sRGBProfile(void);
+_________________________________________________________________________________
+
+  Creates a virtual profile of sRGB standard colorspace.
+
+
+
+
+_________________________________________________________________________________
+
+5 - White point
+_________________________________________________________________________________
+
+
+_________________________________________________________________________________
+
+BOOL cmsWhitePointFromTemp(int TempK, LPcmsCIExyY WhitePoint);
+_________________________________________________________________________________
+
+  Obtains the chromacity of white point based on temperature 쬗
+
+Parameters:
+
+                TempK: Temperature in 쬗
+
+Returns:
+                FALSE on error, TRUE on success
+
+
+
+
+_________________________________________________________________________________
+
+LCMSAPI BOOL          LCMSEXPORT cmsAdaptToIlluminant(LPcmsCIEXYZ Result,
+                                                        LPcmsCIEXYZ SourceWhitePt,
+                                                        LPcmsCIEXYZ Illuminant,
+                                                        LPcmsCIEXYZ Value);
+_________________________________________________________________________________
+
+
+   Provides a model-dependent chromatic adaptation between two illuminants,
+   actually it uses a Von-Kries approximation of Bradford, using the Lam-Rigg
+   cone responses. It Is under consideration to be replaced for a more
+   proper model like CIECAM97s in futures versions.
+
+
+   Parameters:
+              Result:              Points to resulting XYZ color
+              SourceWhitePoint:    original white point
+              Illuminant:          adapting illuminant
+              Value:               the original color
+
+   Returns:
+
+                FALSE on error, TRUE on success
+
+
+
+_________________________________________________________________________________
+
+6 - Gamma handling functions
+_________________________________________________________________________________
+
+
+  This is the struct of a gamma table (or transfer function)
+
+  typedef struct {
+              int  nEntries;
+              WORD GammaTable[1];
+
+              } GAMMATABLE, FAR* LPGAMMATABLE;
+
+  That is, first it comes a 32 integer for entry count, followed of
+  a variable number of words describing the table. The easiest way to
+  generate a gamma table is to use the following function
+
+
+_________________________________________________________________________________
+
+LPGAMMATABLE cmsBuildGamma(int nEntries, double Gamma);
+_________________________________________________________________________________
+
+  Allocates an fill a table describing generic gamma.
+
+  You must specify the number of entries your table will consist of,
+  and the float value for gamma.
+
+_________________________________________________________________________________
+
+LPGAMMATABLE  cmsBuildParametricGamma(int nEntries, int Type, double Params[]);
+_________________________________________________________________________________
+
+
+    Does build a parametric curve based on parametrers:
+
+
+_________________________________________________________________________________
+
+LPGAMMATABLE cmsAllocGamma(int nEntries);
+_________________________________________________________________________________
+
+  Allocates space for a gamma table, memory is unitialized.
+
+
+_________________________________________________________________________________
+
+void cmsFreeGamma(LPGAMMATABLE Gamma);
+_________________________________________________________________________________
+
+  Frees a gamma table
+
+
+_________________________________________________________________________________
+
+LPGAMMATABLE cmsReverseGamma(int nResultSamples, LPGAMMATABLE InGamma);
+_________________________________________________________________________________
+
+  Reverses a gamma table resampling it in a new table.
+
+  This function reverses the gamma table if it can be done. lcms does not
+  detect whatever a non-monotonic function is given, so wrong input can
+  result in ugly results: not to be a problem since "normal" gamma curves
+  are not collapsing inputs at same output value. The new curve will be
+  resampled to nResultSamples entries.
+
+
+_________________________________________________________________________________
+
+LPGAMMATABLE cmsJoinGamma(LPGAMMATABLE InGamma, LPGAMMATABLE OutGamma);
+_________________________________________________________________________________
+
+ Obtains a table joining two tables, one as input and other as
+ output. Output table is reversed and then composited with input gamma.
+
+ This will let you to "refine" the generic gamma for monitors (2.1 or 2.2
+ are usual values) to match viewing conditions of more or less background
+ light. Note that this function uses TABULATED functions, so very exotic
+ curves can be obtained by combining transfer functions with reversed
+ gamma curves. Normally there is no need of worry about such gamma
+ manipulations, but the functionality is here if you wish to use.
+
+
+_________________________________________________________________________________
+
+BOOL cmsSmoothGamma(LPGAMMATABLE Tab, double lambda);
+_________________________________________________________________________________
+
+ Does smooth the curve contained into Tab. Smooth  curves does work better
+ and more pleasant to eye.
+
+Parameters:
+    
+    Tab: Table to be smoothed
+    lambda: The smoothing factor. 0..500 is the working range.
+
+Returns:
+
+    TRUE on success. FALSE on error
+
+
+
+_________________________________________________________________________________
+
+7 - Error handling
+_________________________________________________________________________________
+
+
+_________________________________________________________________________________
+
+void cmsErrorAction(int nAction)
+_________________________________________________________________________________
+
+  Tells lcms how to react if an error is raised.
+
+Parameters:
+
+        nAction: can be one of these:
+
+                LCMS_ERROR_ABORT        Aborts whole application
+                LCMS_ERROR_SHOW         Displays a message, but does not abort application
+                LCMS_ERROR_IGNORE       Does not show any message, however, operation is aborted.
+
+
+_________________________________________________________________________________
+
+void cmsSignalError(int ErrorCode, const char *ErrorText, ...)
+_________________________________________________________________________________
+
+  This is the default error handler. If you are using lcms as a
+  static library, you can replace it by one of your own.
+
+Parameters:
+
+        ErrorCode: a number for coding error (with not meaning by now)
+        ErrorText: a format specifier describing the error
+        ...       : additional parameters needed by ErrorText, in a printf like fashion.
+
+
+_________________________________________________________________________________
+
+8 - Conversion functions
+_________________________________________________________________________________
+
+These functions can be used to convert from several colorimetric spaces
+and  to/from fixed encoding in spaces XYZ and Lab used by profiles.
+
+
+_________________________________________________________________________________
+
+LCMSAPI void          LCMSEXPORT cmsXYZ2xyY(LPcmsCIExyY Dest,
+                                                 CONST LPcmsCIEXYZ Source);
+LCMSAPI void          LCMSEXPORT cmsxyY2XYZ(LPcmsCIEXYZ Dest,
+                                                 CONST LPcmsCIExyY Source);
+_________________________________________________________________________________
+
+
+Does convert form/to XYZ Color Space to xyY color space
+
+  Parameters:
+
+              Dest, Source: points to vectors to convert
+
+
+_________________________________________________________________________________
+
+void cmsXYZ2Lab(LPcmsCIEXYZ WhitePoint, LPcmsCIELab Lab, const LPcmsCIEXYZ xyz);
+void cmsLab2XYZ(LPcmsCIEXYZ WhitePoint, LPcmsCIEXYZ xyz, const LPcmsCIELab Lab);
+_________________________________________________________________________________
+  
+  Does convert from/to XYZ Color Space to CIE L a* b* Color Space
+
+
+ Parameters:
+        xyz, Lab : Pointers to values
+        WhitePoint: Pointer to media white. If NULL, the D50 is assumed.
+
+
+_________________________________________________________________________________
+
+void cmsLabEncoded2Float(LPcmsCIELab Lab, const WORD wLab[3]);
+void cmsFloat2LabEncoded(WORD wLab[3], const LPcmsCIELab Lab);
+_________________________________________________________________________________
+
+  Does convert form/to the encoded notation of Lab pcs to floating point.
+  
+ Parameters:
+         wLab, Lab : Pointers to values
+
+_________________________________________________________________________________
+
+void cmsXYZEncoded2Float(LPcmsCIEXYZ fxyz, const WORD XYZ[3]);
+void cmsFloat2XYZEncoded(WORD XYZ[3], const LPcmsCIEXYZ fXYZ);
+_________________________________________________________________________________
+    
+  Does convert form/to the encoded notation of XYZ pcs to floating point.
+
+ Parameters:
+         fxyz, XYZ : Pointers to values
+
+_________________________________________________________________________________
+
+void cmsLab2LCh(LPcmsCIELCh LCh, const LPcmsCIELab Lab);
+void cmsLCh2Lab(LPcmsCIELab Lab, const LPcmsCIELCh LCh);
+_________________________________________________________________________________
+
+    Does convert between polar/rectangulat form of CIE L*a*b*
+
+    L = L
+    C = sqrt(a*a+b*b)
+    h = atan(b/a)
+
+    Where C=colorfulness and h=hue.
+
+
+ Parameters:
+         Lab, LCh : Pointers to values
+
+
+_________________________________________________________________________________
+
+double cmsDeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
+_________________________________________________________________________________
+
+    Computes the dE between two Lab values. The formula is
+
+            dE = sqrt (dL^2 + da^2 + db^2)
+    
+    Parameters:
+        Lab1, Lab2: Points to the Lab values.
+
+    Returns:
+
+        The dE. If any Lab is negative, or with L>100 it returns 65535.
+
+_________________________________________________________________________________
+
+double  cmsCIE94DeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
+double  cmsBFDdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
+double  cmsCMCdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
+_________________________________________________________________________________
+
+    Several additional error measurement systems.
+
+
+     
+_________________________________________________________________________________
+
+void cmsClampLab(LPcmsCIELab Lab, double amax, double amin, double bmax, double bmin);
+_________________________________________________________________________________
+
+    Clamps carefully a Lab value, keeping hue constant.
+
+    L is unchanged and not used. The gamut boundaries are given
+    by the rectangle (amin, bmin) - (amax, bmax)
+
+    if Lab value is inside gamut, this function don't touch anything, if outside,
+    converts to LCh, and keeping h constant, reduce C until inside gamut. 
+    
+
+
+_________________________________________________________________________________
+
+9 - CIECAM97s
+_________________________________________________________________________________
+
+
+  The model input data are the adapting field luminance in cd/m2
+  (normally taken to be 20% of the luminance of white in the adapting field),
+  La , the relative tristimulus values of the stimulus, XYZ, the relative
+  tristimulus values of white in the same viewing conditions, "whitePoint",
+  and the relative luminance of the background, Yb . Relative tristimulus
+  values should be expressed on a scale from Y = 0 for a perfect black
+  to Y = 100 for a perfect reflecting diffuser. 
+
+  All CIE tristimulus values are obtained using the CIE 1931 Standard 
+  Colorimetric Observer (2�).
+
+
+    typedef struct {
+
+              cmsCIEXYZ whitePoint; // The media white in XYZ
+
+              double    Yb;         
+              double    La;
+              int       surround;
+              double    D_value;
+
+              } cmsViewingConditions, FAR* LPcmsViewingConditions;
+
+    
+    surround can be one of these
+
+        #define AVG_SURROUND_4     0
+        #define AVG_SURROUND       1
+        #define DIM_SURROUND       2
+        #define DARK_SURROUND      3
+        #define CUTSHEET_SURROUND  4
+
+
+    D_value (adaptation degree) is any value between 0 and 1, and additionally:
+
+            #define D_CALCULATE             (-1)    // Calculate D
+            #define D_CALCULATE_DISCOUNT    (-2)    // Calculate w/ partial discounting
+
+
+        
+
+_________________________________________________________________________________
+
+HANDLE cmsCIECAM97sInit(LPcmsViewingConditions pVC)
+_________________________________________________________________________________
+
+    Does init the CIECAM97s model. It returns a handle for further reference
+
+
+ Parameters:
+
+    pVC: points to a cmsViewingConditions struct holding viewing condition
+         parameters
+
+
+  Returns:
+
+    A handle to a model instance, or NULL if error.
+
+
+
+_________________________________________________________________________________
+
+void cmsCIECAM97sDone(HANDLE hModel)
+_________________________________________________________________________________
+
+   Terminates a CIECAM97s model
+
+
+ Parameters:
+
+   hModel:  A handle to the model instance to terminate.
+
+
+_________________________________________________________________________________
+
+void cmsCIECAM97sForward(HANDLE hModel, LPcmsCIEXYZ pIn, LPcmsJCh pOut)
+_________________________________________________________________________________
+
+   Model forward. Transforms from XYZ to JCh.
+
+ Parameters:
+
+   hModel:     A handle to the model instance
+   pIn, POut:  Pointers to values
+
+
+
+_________________________________________________________________________________
+
+void cmsCIECAM97sReverse(HANDLE hModel, LPcmsJCh pIn, LPcmsCIEXYZ pOut);
+_________________________________________________________________________________
+
+   Model reverse. Transforms from JCh to XYZ. 
+
+Parameters:
+
+   hModel:     A handle to the model instance
+   pIn, POut:  Pointers to values
+
+
+_________________________________________________________________________________
+
+10 - Profile creation functions
+_________________________________________________________________________________
+
+
+_________________________________________________________________________________
+
+void cmsSetDeviceClass(cmsHPROFILE hProfile, icProfileClassSignature sig);
+_________________________________________________________________________________
+
+    Does set device class signature in profile header
+
+_________________________________________________________________________________
+
+void cmsSetColorSpace(cmsHPROFILE hProfile, icColorSpaceSignature sig);
+_________________________________________________________________________________
+
+    Does set colorspace signaure in profile header
+
+_________________________________________________________________________________
+
+void cmsSetPCS(cmsHPROFILE hProfile, icColorSpaceSignature pcs);
+_________________________________________________________________________________
+
+    Does set PCS signature in profile header
+
+
+_________________________________________________________________________________
+
+BOOL cmsAddTag(cmsHPROFILE hProfile, icTagSignature sig, void* data);
+_________________________________________________________________________________
+
+
+
+
+_________________________________________________________________________________
+
+11 - LUT manipulation
+_________________________________________________________________________________
+
+
+
+_________________________________________________________________________________
+
+LPLUT  cmsAllocLUT(void);
+_________________________________________________________________________________
+
+    Does allocate an empty LUT. Input is passed transparently to output by default
+
+  Returns:
+
+    A handle to a new LUT, or NULL if error.
+
+
+
+_________________________________________________________________________________
+
+LPLUT  cmsAllocLinearTable(LPLUT NewLUT, LPGAMMATABLE Tables[], int nTable);
+_________________________________________________________________________________
+
+    Does include a prelinearization tables set into a LUT
+
+
+  Parameters:
+
+        NewLUT: The target LUT
+        Tables[]: A set of tables to be set
+        nTable: Identificates the position of tables in pipeline
+
+                1 - Prelinearization
+                2 - Postlinearization
+
+        Values 3 and 4 are reserved for futures ampliations
+
+
+_________________________________________________________________________________
+
+LPLUT  cmsAlloc3DGrid(LPLUT Lut, int clutPoints, int inputChan, int outputChan);
+_________________________________________________________________________________
+
+    Allocates an empty 3D CLUT table.
+
+    
+  Parameters:
+
+        Lut: The target LUT
+        clutPoints: The points number of a side of the (hyper)cube
+        inputChan, outputChan: The channels count
+
+  Returns:
+
+    A handle to the LUT, or NULL if error.
+
+
+
+_________________________________________________________________________________
+    
+void   cmsFreeLUT(LPLUT Lut);
+_________________________________________________________________________________
+
+  Free any used memory. After this call the LUT is not longer valid
+
+   Parameters:
+
+        Lut: The target LUT
+
+    
+_________________________________________________________________________________
+
+void   cmsEvalLUT(LPLUT Lut, WORD In[], WORD Out[]);
+_________________________________________________________________________________
+
+  Evaluates a LUT, giving In[] values. Returns Out[] values.
+
+
+    Parameters:
+
+        Lut: The target LUT
+        In: Input Values
+        Out: Output Values
+
+   
+_________________________________________________________________________________
+
+LPLUT  cmsReadICCLut(cmsHPROFILE hProfile, icTagSignature sig);
+_________________________________________________________________________________
+
+    Does retrive a LUT from a profile handle.
+
+
+    Parameters:
+
+        hProfile: a handle to a open profile
+        sig: The tag signature
+
+    Returns:
+        A pointer to newly created LUT on success
+        NULL on error
+
+    
+
+_________________________________________________________________________________
+
+int cmsSample3DGrid(LPLUT Lut, 
+                    _cmsSAMPLER Sampler, 
+                    LPVOID Cargo, DWORD dwFlags);
+_________________________________________________________________________________
+
+  Builds the CLUT table by calling repeatly a supplied callback function
+
+
+typedef int (* _cmsSAMPLER)(register WORD In[],
+                            register WORD Out[],
+                            register LPVOID Cargo);
+
+
+   The programmer has to write a callback function. This function
+   should calculate Out values given a In[] set. For example, if we 
+   want a LUT to invert channels, a sampler could be:
+
+   int InvertSampler(register WORD In[],
+                            register WORD Out[],
+                            register LPVOID Cargo)
+    {
+        for (i=0; i < 3; i++)
+                Out[i] = ~ In[i];
+
+    return 0;
+    }
+
+
+    cmsSample3DGrid does call this function to build the CLUT. 
+    Pre/post linearization tables may be taken into account across
+    flags parameter
+
+        Flags                   Meaning
+    ================        =======================================
+    LUT_HASTL1              Do reverse linear interpolation on 
+                            prelinearization table before calling 
+                            the callback.
+
+    LUT_HASTL2              Do reverse linear interpolation on
+                            postlinearization table after calling 
+                            the callback.
+
+    Flags are intended as an aid for building non-uniformly spaced 
+    CLUTs. Using flags results in "undoing" any linearization tables
+    could apply. In such way, the programmer is expected to have in
+    In[] always the original colorspace, and must return Out[] values
+    always in original (non-postlinearized) space as well.
+     
+
+    The callback must return 0 if all is ok, or any other value
+    to indicate error. If error condition is raised, whole CLUT
+    construction is aborted.
+
+    Parameters:
+
+    Lut: a pointer to LUT structure
+    Sampler: The callback function
+    Cargo: A 32-bit value. Could be used as pointer to pass 
+          parameters to callback. 
+
+    dwFlags: any combination of LUT_HASTL1 or LUT_HASTL2 
+             joined by bitwise-or operator '|'
+
+
+
+
+_________________________________________________________________________________
+
+12 - Named color functions
+_________________________________________________________________________________
+
+
+ Named color profiles are a special kind of profiles handling lists of spot 
+ colors. The typical example is PANTONE. CMM deals with named color profiles like 
+ all other types, except they must be in input stage and the encoding supported 
+ is limited to  a one single channel of 16-bit indexes.
+
+ Let's assume we have a Named color profile holding only 4 colors:
+
+    � CYAN     
+    � MAGENTA  
+    � YELLOW   
+    � BLACK
+
+ We create a transform using:
+
+
+ hTransform = cmmCreateColorTransform(hNamedColorProfile,
+                                           TYPE_NAMED_COLOR_INDEX,
+                                           hOutputProfile,
+                                           TYPE_BGR_8,
+                                           INTENT_PERCEPTUAL, 0);
+
+ "TYPE_NAMED_COLOR_INDEX" is a special encoding for these profiles, it 
+ represents a single channel holding the spot color index. In our case 
+ value 0 will be "CYAN", value 1 "MAGENTA" and so one.
+
+ For converting between string and index there is an auxiliary function:
+
+    int cmsNamedColorIndex(cmsHTRANSFORM hTransform, const char* ColorName);
+
+ That will perform a look up on the spot colors database and return the color 
+ number or -1 if the color was not found.  Other additional functions for named 
+ color transforms are:
+
+
+    int cmsNamedColorCount(cmsHTRANSFORM hTransform);
+
+  That returns the number of colors present on transform database.
+
+
+    int cmsNamedColorInfo(cmsHTRANSFORM hTransform, 
+                          int nColor, LPNAMEDCOLORINFO Info);
+
+  That returns extended information about a given color. Named color profiles 
+  can also be grouped by using multiprofile transforms. In such case, the database 
+  will be formed by the union  of all colors in all named color profiles present in 
+  transform.
+
+
+  Named color profiles does hold two coordinates for each color, let's
+  take our PANTONE example. This profile would contain for each color 
+  the CMYK colorants plus its PCS coordinates, usually in Lab space.
+ 
+  lcms can work with named color using both coordinates. Creating a
+  transform with two profiles, if the input one is a named color, then you 
+  obtain the translated color using PCS. 
+  
+  Example, named color -> sRGB will give the color patches in sRGB
+ 
+  In the other hand, setting second profile to NULL, returns the device 
+  coordinates, that is, CMYK colorants in our PANTONE sample. 
+  
+  Example: Named color -> NULL will give the CMYK amount for each spot color.
+ 
+
+  The transform must use TYPE_NAMED_COLOR_INDEX on input. That is, a single
+  channel containing the 0-based color index. 
+  
+  Then you have: 
+ 
+        cmsNamedColorIndex(cmsHTRANSFORM xform, const char* Name)
+ 
+  for obtaining index from color name, and 
+    
+        cmsNamedColorInfo(), cmsNamedColorCount() to retrieve the list.
+ 
+  The profile is supposed to be for a unique device. Then the CMYK 
+  values does represent the amount of inks THIS PRINTER needs to render 
+  the spot color. The profile also has the Lab values  corresponding to 
+  the color. This really would have no sense if gamut of printer were 
+  infinite, but since printers does have a limited gamut a PANTONE-certified 
+  printer renders colors near gamut boundaries with some limitations. 
+  The named color profile is somehow explaining which are these limitation 
+  for that printer.
+ 
+  So, you can use a named color profile in two different ways, as output, 
+  giving the index and getting the CMYK values or as input and getting the 
+  Lab for that color. 
+ 
+  A transform named color -> NULL will give the CMYK values for the spot 
+  color on the printer the profile is describing. This would be the normal usage.
+ 
+  A transform Named color -> another printer will give on the output printer 
+  the spot colors as if they were printed in the printer named color profile 
+  is describing. This is useful for soft proofing.
+ 
+  As an additional feature, lcms can "group" several named color profiles
+  into a single database by means of cmsCreateMultiprofileTransform().
+  Such case works as described above, but joining all named colors as they 
+  were in a single profile.
+
+
+
+
+
+
