@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<namespace name="UniCodeEditorReg">
+  <procedure name="Register" visibility="private">
+  </procedure>
+</namespace>

@@ -1,0 +1,6 @@
+LexicalDescription=SQL.l
+LexerCodeTemplate=SQLHighlighter.cod
+LexerTargetFile=UCESQLHighlighter.pas
+GenerateLexer=T
+GenerateParser=F
+CompileDelphiProject=F
