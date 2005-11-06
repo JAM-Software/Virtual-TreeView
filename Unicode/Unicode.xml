@@ -1,0 +1,3036 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<namespace name="Unicode">
+  <const name="WideNull" type="WideChar">
+    <value>
+      $0
+    </value>
+  </const>
+  <const name="WideTabulator" type="WideChar">
+    <value>
+      $9
+    </value>
+  </const>
+  <const name="WideSpace" type="WideChar">
+    <value>
+      $20
+    </value>
+  </const>
+  <const name="WideLF" type="WideChar">
+    <value>
+      $A
+    </value>
+  </const>
+  <const name="WideLineFeed" type="WideChar">
+    <value>
+      $A
+    </value>
+  </const>
+  <const name="WideVerticalTab" type="WideChar">
+    <value>
+      $B
+    </value>
+  </const>
+  <const name="WideFormFeed" type="WideChar">
+    <value>
+      $C
+    </value>
+  </const>
+  <const name="WideCR" type="WideChar">
+    <value>
+      $D
+    </value>
+  </const>
+  <const name="WideCarriageReturn" type="WideChar">
+    <value>
+      $D
+    </value>
+  </const>
+  <const name="WideLineSeparator" type="WideChar">
+    <value>
+      $2028
+    </value>
+  </const>
+  <const name="WideParagraphSeparator" type="WideChar">
+    <value>
+      $2029
+    </value>
+  </const>
+  <const name="BOM_LSB_FIRST" type="WideChar">
+    <value>
+      $FEFF
+    </value>
+  </const>
+  <const name="BOM_MSB_FIRST" type="WideChar">
+    <value>
+      $FFFE
+    </value>
+  </const>
+  <pointer name="PUTF8" type="Char" indircnt="1" />
+  <type name="UTF8" type="Char" />
+  <pointer name="PUTF16" type="WideChar" indircnt="1" />
+  <type name="UTF16" type="WideChar" />
+  <pointer name="PUTF32" type="Cardinal" indircnt="1" />
+  <array name="UCS2String">
+    <element type="WideChar" />
+  </array>
+  <const name="ccLetterUppercase" type="TCharacterCategory">
+    <value>
+      ccLetterUppercase
+    </value>
+  </const>
+  <const name="ccLetterLowercase" type="TCharacterCategory">
+    <value>
+      ccLetterLowercase
+    </value>
+  </const>
+  <const name="ccLetterTitlecase" type="TCharacterCategory">
+    <value>
+      ccLetterTitlecase
+    </value>
+  </const>
+  <const name="ccMarkNonSpacing" type="TCharacterCategory">
+    <value>
+      ccMarkNonSpacing
+    </value>
+  </const>
+  <const name="ccMarkSpacingCombining" type="TCharacterCategory">
+    <value>
+      ccMarkSpacingCombining
+    </value>
+  </const>
+  <const name="ccMarkEnclosing" type="TCharacterCategory">
+    <value>
+      ccMarkEnclosing
+    </value>
+  </const>
+  <const name="ccNumberDecimalDigit" type="TCharacterCategory">
+    <value>
+      ccNumberDecimalDigit
+    </value>
+  </const>
+  <const name="ccNumberLetter" type="TCharacterCategory">
+    <value>
+      ccNumberLetter
+    </value>
+  </const>
+  <const name="ccNumberOther" type="TCharacterCategory">
+    <value>
+      ccNumberOther
+    </value>
+  </const>
+  <const name="ccSeparatorSpace" type="TCharacterCategory">
+    <value>
+      ccSeparatorSpace
+    </value>
+  </const>
+  <const name="ccSeparatorLine" type="TCharacterCategory">
+    <value>
+      ccSeparatorLine
+    </value>
+  </const>
+  <const name="ccSeparatorParagraph" type="TCharacterCategory">
+    <value>
+      ccSeparatorParagraph
+    </value>
+  </const>
+  <const name="ccOtherControl" type="TCharacterCategory">
+    <value>
+      ccOtherControl
+    </value>
+  </const>
+  <const name="ccOtherFormat" type="TCharacterCategory">
+    <value>
+      ccOtherFormat
+    </value>
+  </const>
+  <const name="ccOtherSurrogate" type="TCharacterCategory">
+    <value>
+      ccOtherSurrogate
+    </value>
+  </const>
+  <const name="ccOtherPrivate" type="TCharacterCategory">
+    <value>
+      ccOtherPrivate
+    </value>
+  </const>
+  <const name="ccOtherUnassigned" type="TCharacterCategory">
+    <value>
+      ccOtherUnassigned
+    </value>
+  </const>
+  <const name="ccLetterModifier" type="TCharacterCategory">
+    <value>
+      ccLetterModifier
+    </value>
+  </const>
+  <const name="ccLetterOther" type="TCharacterCategory">
+    <value>
+      ccLetterOther
+    </value>
+  </const>
+  <const name="ccPunctuationConnector" type="TCharacterCategory">
+    <value>
+      ccPunctuationConnector
+    </value>
+  </const>
+  <const name="ccPunctuationDash" type="TCharacterCategory">
+    <value>
+      ccPunctuationDash
+    </value>
+  </const>
+  <const name="ccPunctuationOpen" type="TCharacterCategory">
+    <value>
+      ccPunctuationOpen
+    </value>
+  </const>
+  <const name="ccPunctuationClose" type="TCharacterCategory">
+    <value>
+      ccPunctuationClose
+    </value>
+  </const>
+  <const name="ccPunctuationInitialQuote" type="TCharacterCategory">
+    <value>
+      ccPunctuationInitialQuote
+    </value>
+  </const>
+  <const name="ccPunctuationFinalQuote" type="TCharacterCategory">
+    <value>
+      ccPunctuationFinalQuote
+    </value>
+  </const>
+  <const name="ccPunctuationOther" type="TCharacterCategory">
+    <value>
+      ccPunctuationOther
+    </value>
+  </const>
+  <const name="ccSymbolMath" type="TCharacterCategory">
+    <value>
+      ccSymbolMath
+    </value>
+  </const>
+  <const name="ccSymbolCurrency" type="TCharacterCategory">
+    <value>
+      ccSymbolCurrency
+    </value>
+  </const>
+  <const name="ccSymbolModifier" type="TCharacterCategory">
+    <value>
+      ccSymbolModifier
+    </value>
+  </const>
+  <const name="ccSymbolOther" type="TCharacterCategory">
+    <value>
+      ccSymbolOther
+    </value>
+  </const>
+  <const name="ccLeftToRight" type="TCharacterCategory">
+    <value>
+      ccLeftToRight
+    </value>
+  </const>
+  <const name="ccLeftToRightEmbedding" type="TCharacterCategory">
+    <value>
+      ccLeftToRightEmbedding
+    </value>
+  </const>
+  <const name="ccLeftToRightOverride" type="TCharacterCategory">
+    <value>
+      ccLeftToRightOverride
+    </value>
+  </const>
+  <const name="ccRightToLeft" type="TCharacterCategory">
+    <value>
+      ccRightToLeft
+    </value>
+  </const>
+  <const name="ccRightToLeftArabic" type="TCharacterCategory">
+    <value>
+      ccRightToLeftArabic
+    </value>
+  </const>
+  <const name="ccRightToLeftEmbedding" type="TCharacterCategory">
+    <value>
+      ccRightToLeftEmbedding
+    </value>
+  </const>
+  <const name="ccRightToLeftoverride" type="TCharacterCategory">
+    <value>
+      ccRightToLeftoverride
+    </value>
+  </const>
+  <const name="ccPopDirectionalFormat" type="TCharacterCategory">
+    <value>
+      ccPopDirectionalFormat
+    </value>
+  </const>
+  <const name="ccEuropeanNumber" type="TCharacterCategory">
+    <value>
+      ccEuropeanNumber
+    </value>
+  </const>
+  <const name="ccEuropeanNumberSeparator" type="TCharacterCategory">
+    <value>
+      ccEuropeanNumberSeparator
+    </value>
+  </const>
+  <const name="ccEuropeanNumberTerminator" type="TCharacterCategory">
+    <value>
+      ccEuropeanNumberTerminator
+    </value>
+  </const>
+  <const name="ccArabicNumber" type="TCharacterCategory">
+    <value>
+      ccArabicNumber
+    </value>
+  </const>
+  <const name="ccCommonNumberSeparator" type="TCharacterCategory">
+    <value>
+      ccCommonNumberSeparator
+    </value>
+  </const>
+  <const name="ccBoundaryNeutral" type="TCharacterCategory">
+    <value>
+      ccBoundaryNeutral
+    </value>
+  </const>
+  <const name="ccSegmentSeparator" type="TCharacterCategory">
+    <value>
+      ccSegmentSeparator
+    </value>
+  </const>
+  <const name="ccWhiteSpace" type="TCharacterCategory">
+    <value>
+      ccWhiteSpace
+    </value>
+  </const>
+  <const name="ccOtherNeutrals" type="TCharacterCategory">
+    <value>
+      ccOtherNeutrals
+    </value>
+  </const>
+  <const name="ccComposed" type="TCharacterCategory">
+    <value>
+      ccComposed
+    </value>
+  </const>
+  <const name="ccNonBreaking" type="TCharacterCategory">
+    <value>
+      ccNonBreaking
+    </value>
+  </const>
+  <const name="ccSymmetric" type="TCharacterCategory">
+    <value>
+      ccSymmetric
+    </value>
+  </const>
+  <const name="ccHexDigit" type="TCharacterCategory">
+    <value>
+      ccHexDigit
+    </value>
+  </const>
+  <const name="ccQuotationMark" type="TCharacterCategory">
+    <value>
+      ccQuotationMark
+    </value>
+  </const>
+  <const name="ccMirroring" type="TCharacterCategory">
+    <value>
+      ccMirroring
+    </value>
+  </const>
+  <const name="ccSpaceOther" type="TCharacterCategory">
+    <value>
+      ccSpaceOther
+    </value>
+  </const>
+  <const name="ccAssigned" type="TCharacterCategory">
+    <value>
+      ccAssigned
+    </value>
+  </const>
+  <enum name="TCharacterCategory">
+    <element name="ccLetterUppercase" />
+    <element name="ccLetterLowercase" />
+    <element name="ccLetterTitlecase" />
+    <element name="ccMarkNonSpacing" />
+    <element name="ccMarkSpacingCombining" />
+    <element name="ccMarkEnclosing" />
+    <element name="ccNumberDecimalDigit" />
+    <element name="ccNumberLetter" />
+    <element name="ccNumberOther" />
+    <element name="ccSeparatorSpace" />
+    <element name="ccSeparatorLine" />
+    <element name="ccSeparatorParagraph" />
+    <element name="ccOtherControl" />
+    <element name="ccOtherFormat" />
+    <element name="ccOtherSurrogate" />
+    <element name="ccOtherPrivate" />
+    <element name="ccOtherUnassigned" />
+    <element name="ccLetterModifier" />
+    <element name="ccLetterOther" />
+    <element name="ccPunctuationConnector" />
+    <element name="ccPunctuationDash" />
+    <element name="ccPunctuationOpen" />
+    <element name="ccPunctuationClose" />
+    <element name="ccPunctuationInitialQuote" />
+    <element name="ccPunctuationFinalQuote" />
+    <element name="ccPunctuationOther" />
+    <element name="ccSymbolMath" />
+    <element name="ccSymbolCurrency" />
+    <element name="ccSymbolModifier" />
+    <element name="ccSymbolOther" />
+    <element name="ccLeftToRight" />
+    <element name="ccLeftToRightEmbedding" />
+    <element name="ccLeftToRightOverride" />
+    <element name="ccRightToLeft" />
+    <element name="ccRightToLeftArabic" />
+    <element name="ccRightToLeftEmbedding" />
+    <element name="ccRightToLeftoverride" />
+    <element name="ccPopDirectionalFormat" />
+    <element name="ccEuropeanNumber" />
+    <element name="ccEuropeanNumberSeparator" />
+    <element name="ccEuropeanNumberTerminator" />
+    <element name="ccArabicNumber" />
+    <element name="ccCommonNumberSeparator" />
+    <element name="ccBoundaryNeutral" />
+    <element name="ccSegmentSeparator" />
+    <element name="ccWhiteSpace" />
+    <element name="ccOtherNeutrals" />
+    <element name="ccComposed" />
+    <element name="ccNonBreaking" />
+    <element name="ccSymmetric" />
+    <element name="ccHexDigit" />
+    <element name="ccQuotationMark" />
+    <element name="ccMirroring" />
+    <element name="ccSpaceOther" />
+    <element name="ccAssigned" />
+  </enum>
+  <set name="TCharacterCategories" type="TCharacterCategory">
+    <element name="ccLetterUppercase" />
+    <element name="ccLetterLowercase" />
+    <element name="ccLetterTitlecase" />
+    <element name="ccMarkNonSpacing" />
+    <element name="ccMarkSpacingCombining" />
+    <element name="ccMarkEnclosing" />
+    <element name="ccNumberDecimalDigit" />
+    <element name="ccNumberLetter" />
+    <element name="ccNumberOther" />
+    <element name="ccSeparatorSpace" />
+    <element name="ccSeparatorLine" />
+    <element name="ccSeparatorParagraph" />
+    <element name="ccOtherControl" />
+    <element name="ccOtherFormat" />
+    <element name="ccOtherSurrogate" />
+    <element name="ccOtherPrivate" />
+    <element name="ccOtherUnassigned" />
+    <element name="ccLetterModifier" />
+    <element name="ccLetterOther" />
+    <element name="ccPunctuationConnector" />
+    <element name="ccPunctuationDash" />
+    <element name="ccPunctuationOpen" />
+    <element name="ccPunctuationClose" />
+    <element name="ccPunctuationInitialQuote" />
+    <element name="ccPunctuationFinalQuote" />
+    <element name="ccPunctuationOther" />
+    <element name="ccSymbolMath" />
+    <element name="ccSymbolCurrency" />
+    <element name="ccSymbolModifier" />
+    <element name="ccSymbolOther" />
+    <element name="ccLeftToRight" />
+    <element name="ccLeftToRightEmbedding" />
+    <element name="ccLeftToRightOverride" />
+    <element name="ccRightToLeft" />
+    <element name="ccRightToLeftArabic" />
+    <element name="ccRightToLeftEmbedding" />
+    <element name="ccRightToLeftoverride" />
+    <element name="ccPopDirectionalFormat" />
+    <element name="ccEuropeanNumber" />
+    <element name="ccEuropeanNumberSeparator" />
+    <element name="ccEuropeanNumberTerminator" />
+    <element name="ccArabicNumber" />
+    <element name="ccCommonNumberSeparator" />
+    <element name="ccBoundaryNeutral" />
+    <element name="ccSegmentSeparator" />
+    <element name="ccWhiteSpace" />
+    <element name="ccOtherNeutrals" />
+    <element name="ccComposed" />
+    <element name="ccNonBreaking" />
+    <element name="ccSymmetric" />
+    <element name="ccHexDigit" />
+    <element name="ccQuotationMark" />
+    <element name="ccMirroring" />
+    <element name="ccSpaceOther" />
+    <element name="ccAssigned" />
+  </set>
+  <const name="nfNone" type="TNormalizationForm">
+    <value>
+      nfNone
+    </value>
+  </const>
+  <const name="nfC" type="TNormalizationForm">
+    <value>
+      nfC
+    </value>
+  </const>
+  <const name="nfD" type="TNormalizationForm">
+    <value>
+      nfD
+    </value>
+  </const>
+  <const name="nfKC" type="TNormalizationForm">
+    <value>
+      nfKC
+    </value>
+  </const>
+  <const name="nfKD" type="TNormalizationForm">
+    <value>
+      nfKD
+    </value>
+  </const>
+  <enum name="TNormalizationForm">
+    <element name="nfNone" />
+    <element name="nfC" />
+    <element name="nfD" />
+    <element name="nfKC" />
+    <element name="nfKD" />
+  </enum>
+  <const name="ubUndefined" type="TUnicodeBlock">
+    <value>
+      ubUndefined
+    </value>
+  </const>
+  <const name="ubBasicLatin" type="TUnicodeBlock">
+    <value>
+      ubBasicLatin
+    </value>
+  </const>
+  <const name="ubLatin1Supplement" type="TUnicodeBlock">
+    <value>
+      ubLatin1Supplement
+    </value>
+  </const>
+  <const name="ubLatinExtendedA" type="TUnicodeBlock">
+    <value>
+      ubLatinExtendedA
+    </value>
+  </const>
+  <const name="ubLatinExtendedB" type="TUnicodeBlock">
+    <value>
+      ubLatinExtendedB
+    </value>
+  </const>
+  <const name="ubIPAExtensions" type="TUnicodeBlock">
+    <value>
+      ubIPAExtensions
+    </value>
+  </const>
+  <const name="ubSpacingModifierLetters" type="TUnicodeBlock">
+    <value>
+      ubSpacingModifierLetters
+    </value>
+  </const>
+  <const name="ubCombiningDiacriticalMarks" type="TUnicodeBlock">
+    <value>
+      ubCombiningDiacriticalMarks
+    </value>
+  </const>
+  <const name="ubGreek" type="TUnicodeBlock">
+    <value>
+      ubGreek
+    </value>
+  </const>
+  <const name="ubCyrillic" type="TUnicodeBlock">
+    <value>
+      ubCyrillic
+    </value>
+  </const>
+  <const name="ubArmenian" type="TUnicodeBlock">
+    <value>
+      ubArmenian
+    </value>
+  </const>
+  <const name="ubHebrew" type="TUnicodeBlock">
+    <value>
+      ubHebrew
+    </value>
+  </const>
+  <const name="ubArabic" type="TUnicodeBlock">
+    <value>
+      ubArabic
+    </value>
+  </const>
+  <const name="ubSyriac" type="TUnicodeBlock">
+    <value>
+      ubSyriac
+    </value>
+  </const>
+  <const name="ubThaana" type="TUnicodeBlock">
+    <value>
+      ubThaana
+    </value>
+  </const>
+  <const name="ubDevanagari" type="TUnicodeBlock">
+    <value>
+      ubDevanagari
+    </value>
+  </const>
+  <const name="ubBengali" type="TUnicodeBlock">
+    <value>
+      ubBengali
+    </value>
+  </const>
+  <const name="ubGurmukhi" type="TUnicodeBlock">
+    <value>
+      ubGurmukhi
+    </value>
+  </const>
+  <const name="ubGujarati" type="TUnicodeBlock">
+    <value>
+      ubGujarati
+    </value>
+  </const>
+  <const name="ubOriya" type="TUnicodeBlock">
+    <value>
+      ubOriya
+    </value>
+  </const>
+  <const name="ubTamil" type="TUnicodeBlock">
+    <value>
+      ubTamil
+    </value>
+  </const>
+  <const name="ubTelugu" type="TUnicodeBlock">
+    <value>
+      ubTelugu
+    </value>
+  </const>
+  <const name="ubKannada" type="TUnicodeBlock">
+    <value>
+      ubKannada
+    </value>
+  </const>
+  <const name="ubMalayalam" type="TUnicodeBlock">
+    <value>
+      ubMalayalam
+    </value>
+  </const>
+  <const name="ubSinhala" type="TUnicodeBlock">
+    <value>
+      ubSinhala
+    </value>
+  </const>
+  <const name="ubThai" type="TUnicodeBlock">
+    <value>
+      ubThai
+    </value>
+  </const>
+  <const name="ubLao" type="TUnicodeBlock">
+    <value>
+      ubLao
+    </value>
+  </const>
+  <const name="ubTibetan" type="TUnicodeBlock">
+    <value>
+      ubTibetan
+    </value>
+  </const>
+  <const name="ubMyanmar" type="TUnicodeBlock">
+    <value>
+      ubMyanmar
+    </value>
+  </const>
+  <const name="ubGeorgian" type="TUnicodeBlock">
+    <value>
+      ubGeorgian
+    </value>
+  </const>
+  <const name="ubHangulJamo" type="TUnicodeBlock">
+    <value>
+      ubHangulJamo
+    </value>
+  </const>
+  <const name="ubEthiopic" type="TUnicodeBlock">
+    <value>
+      ubEthiopic
+    </value>
+  </const>
+  <const name="ubCherokee" type="TUnicodeBlock">
+    <value>
+      ubCherokee
+    </value>
+  </const>
+  <const name="ubUnifiedCanadianAboriginalSyllabics" type="TUnicodeBlock">
+    <value>
+      ubUnifiedCanadianAboriginalSyllabics
+    </value>
+  </const>
+  <const name="ubOgham" type="TUnicodeBlock">
+    <value>
+      ubOgham
+    </value>
+  </const>
+  <const name="ubRunic" type="TUnicodeBlock">
+    <value>
+      ubRunic
+    </value>
+  </const>
+  <const name="ubKhmer" type="TUnicodeBlock">
+    <value>
+      ubKhmer
+    </value>
+  </const>
+  <const name="ubMongolian" type="TUnicodeBlock">
+    <value>
+      ubMongolian
+    </value>
+  </const>
+  <const name="ubLatinExtendedAdditional" type="TUnicodeBlock">
+    <value>
+      ubLatinExtendedAdditional
+    </value>
+  </const>
+  <const name="ubGreekExtended" type="TUnicodeBlock">
+    <value>
+      ubGreekExtended
+    </value>
+  </const>
+  <const name="ubGeneralPunctuation" type="TUnicodeBlock">
+    <value>
+      ubGeneralPunctuation
+    </value>
+  </const>
+  <const name="ubSuperscriptsAndSubscripts" type="TUnicodeBlock">
+    <value>
+      ubSuperscriptsAndSubscripts
+    </value>
+  </const>
+  <const name="ubCurrencySymbols" type="TUnicodeBlock">
+    <value>
+      ubCurrencySymbols
+    </value>
+  </const>
+  <const name="ubCombiningMarksForSymbols" type="TUnicodeBlock">
+    <value>
+      ubCombiningMarksForSymbols
+    </value>
+  </const>
+  <const name="ubLetterlikeSymbols" type="TUnicodeBlock">
+    <value>
+      ubLetterlikeSymbols
+    </value>
+  </const>
+  <const name="ubNumberForms" type="TUnicodeBlock">
+    <value>
+      ubNumberForms
+    </value>
+  </const>
+  <const name="ubArrows" type="TUnicodeBlock">
+    <value>
+      ubArrows
+    </value>
+  </const>
+  <const name="ubMathematicalOperators" type="TUnicodeBlock">
+    <value>
+      ubMathematicalOperators
+    </value>
+  </const>
+  <const name="ubMiscellaneousTechnical" type="TUnicodeBlock">
+    <value>
+      ubMiscellaneousTechnical
+    </value>
+  </const>
+  <const name="ubControlPictures" type="TUnicodeBlock">
+    <value>
+      ubControlPictures
+    </value>
+  </const>
+  <const name="ubOpticalCharacterRecognition" type="TUnicodeBlock">
+    <value>
+      ubOpticalCharacterRecognition
+    </value>
+  </const>
+  <const name="ubEnclosedAlphanumerics" type="TUnicodeBlock">
+    <value>
+      ubEnclosedAlphanumerics
+    </value>
+  </const>
+  <const name="ubBoxDrawing" type="TUnicodeBlock">
+    <value>
+      ubBoxDrawing
+    </value>
+  </const>
+  <const name="ubBlockElements" type="TUnicodeBlock">
+    <value>
+      ubBlockElements
+    </value>
+  </const>
+  <const name="ubGeometricShapes" type="TUnicodeBlock">
+    <value>
+      ubGeometricShapes
+    </value>
+  </const>
+  <const name="ubMiscellaneousSymbols" type="TUnicodeBlock">
+    <value>
+      ubMiscellaneousSymbols
+    </value>
+  </const>
+  <const name="ubDingbats" type="TUnicodeBlock">
+    <value>
+      ubDingbats
+    </value>
+  </const>
+  <const name="ubBraillePatterns" type="TUnicodeBlock">
+    <value>
+      ubBraillePatterns
+    </value>
+  </const>
+  <const name="ubCJKRadicalsSupplement" type="TUnicodeBlock">
+    <value>
+      ubCJKRadicalsSupplement
+    </value>
+  </const>
+  <const name="ubKangxiRadicals" type="TUnicodeBlock">
+    <value>
+      ubKangxiRadicals
+    </value>
+  </const>
+  <const name="ubIdeographicDescriptionCharacters" type="TUnicodeBlock">
+    <value>
+      ubIdeographicDescriptionCharacters
+    </value>
+  </const>
+  <const name="ubCJKSymbolsAndPunctuation" type="TUnicodeBlock">
+    <value>
+      ubCJKSymbolsAndPunctuation
+    </value>
+  </const>
+  <const name="ubHiragana" type="TUnicodeBlock">
+    <value>
+      ubHiragana
+    </value>
+  </const>
+  <const name="ubKatakana" type="TUnicodeBlock">
+    <value>
+      ubKatakana
+    </value>
+  </const>
+  <const name="ubBopomofo" type="TUnicodeBlock">
+    <value>
+      ubBopomofo
+    </value>
+  </const>
+  <const name="ubHangulCompatibilityJamo" type="TUnicodeBlock">
+    <value>
+      ubHangulCompatibilityJamo
+    </value>
+  </const>
+  <const name="ubKanbun" type="TUnicodeBlock">
+    <value>
+      ubKanbun
+    </value>
+  </const>
+  <const name="ubBopomofoExtended" type="TUnicodeBlock">
+    <value>
+      ubBopomofoExtended
+    </value>
+  </const>
+  <const name="ubEnclosedCJKLettersAndMonths" type="TUnicodeBlock">
+    <value>
+      ubEnclosedCJKLettersAndMonths
+    </value>
+  </const>
+  <const name="ubCJKCompatibility" type="TUnicodeBlock">
+    <value>
+      ubCJKCompatibility
+    </value>
+  </const>
+  <const name="ubCJKUnifiedIdeographsExtensionA" type="TUnicodeBlock">
+    <value>
+      ubCJKUnifiedIdeographsExtensionA
+    </value>
+  </const>
+  <const name="ubCJKUnifiedIdeographs" type="TUnicodeBlock">
+    <value>
+      ubCJKUnifiedIdeographs
+    </value>
+  </const>
+  <const name="ubYiSyllables" type="TUnicodeBlock">
+    <value>
+      ubYiSyllables
+    </value>
+  </const>
+  <const name="ubYiRadicals" type="TUnicodeBlock">
+    <value>
+      ubYiRadicals
+    </value>
+  </const>
+  <const name="ubHangulSyllables" type="TUnicodeBlock">
+    <value>
+      ubHangulSyllables
+    </value>
+  </const>
+  <const name="ubHighSurrogates" type="TUnicodeBlock">
+    <value>
+      ubHighSurrogates
+    </value>
+  </const>
+  <const name="ubHighPrivateUseSurrogates" type="TUnicodeBlock">
+    <value>
+      ubHighPrivateUseSurrogates
+    </value>
+  </const>
+  <const name="ubLowSurrogates" type="TUnicodeBlock">
+    <value>
+      ubLowSurrogates
+    </value>
+  </const>
+  <const name="ubPrivateUse" type="TUnicodeBlock">
+    <value>
+      ubPrivateUse
+    </value>
+  </const>
+  <const name="ubCJKCompatibilityIdeographs" type="TUnicodeBlock">
+    <value>
+      ubCJKCompatibilityIdeographs
+    </value>
+  </const>
+  <const name="ubAlphabeticPresentationForms" type="TUnicodeBlock">
+    <value>
+      ubAlphabeticPresentationForms
+    </value>
+  </const>
+  <const name="ubArabicPresentationFormsA" type="TUnicodeBlock">
+    <value>
+      ubArabicPresentationFormsA
+    </value>
+  </const>
+  <const name="ubCombiningHalfMarks" type="TUnicodeBlock">
+    <value>
+      ubCombiningHalfMarks
+    </value>
+  </const>
+  <const name="ubCJKCompatibilityForms" type="TUnicodeBlock">
+    <value>
+      ubCJKCompatibilityForms
+    </value>
+  </const>
+  <const name="ubSmallFormVariants" type="TUnicodeBlock">
+    <value>
+      ubSmallFormVariants
+    </value>
+  </const>
+  <const name="ubArabicPresentationFormsB" type="TUnicodeBlock">
+    <value>
+      ubArabicPresentationFormsB
+    </value>
+  </const>
+  <const name="ubSpecials" type="TUnicodeBlock">
+    <value>
+      ubSpecials
+    </value>
+  </const>
+  <const name="ubHalfwidthAndFullwidthForms" type="TUnicodeBlock">
+    <value>
+      ubHalfwidthAndFullwidthForms
+    </value>
+  </const>
+  <const name="ubOldItalic" type="TUnicodeBlock">
+    <value>
+      ubOldItalic
+    </value>
+  </const>
+  <const name="ubGothic" type="TUnicodeBlock">
+    <value>
+      ubGothic
+    </value>
+  </const>
+  <const name="ubDeseret" type="TUnicodeBlock">
+    <value>
+      ubDeseret
+    </value>
+  </const>
+  <const name="ubByzantineMusicalSymbols" type="TUnicodeBlock">
+    <value>
+      ubByzantineMusicalSymbols
+    </value>
+  </const>
+  <const name="ubMusicalSymbols" type="TUnicodeBlock">
+    <value>
+      ubMusicalSymbols
+    </value>
+  </const>
+  <const name="ubMathematicalAlphanumericSymbols" type="TUnicodeBlock">
+    <value>
+      ubMathematicalAlphanumericSymbols
+    </value>
+  </const>
+  <const name="ubCJKUnifiedIdeographsExtensionB" type="TUnicodeBlock">
+    <value>
+      ubCJKUnifiedIdeographsExtensionB
+    </value>
+  </const>
+  <const name="ubCJKCompatibilityIdeographsSupplement" type="TUnicodeBlock">
+    <value>
+      ubCJKCompatibilityIdeographsSupplement
+    </value>
+  </const>
+  <const name="ubTags" type="TUnicodeBlock">
+    <value>
+      ubTags
+    </value>
+  </const>
+  <enum name="TUnicodeBlock">
+    <element name="ubUndefined" />
+    <element name="ubBasicLatin" />
+    <element name="ubLatin1Supplement" />
+    <element name="ubLatinExtendedA" />
+    <element name="ubLatinExtendedB" />
+    <element name="ubIPAExtensions" />
+    <element name="ubSpacingModifierLetters" />
+    <element name="ubCombiningDiacriticalMarks" />
+    <element name="ubGreek" />
+    <element name="ubCyrillic" />
+    <element name="ubArmenian" />
+    <element name="ubHebrew" />
+    <element name="ubArabic" />
+    <element name="ubSyriac" />
+    <element name="ubThaana" />
+    <element name="ubDevanagari" />
+    <element name="ubBengali" />
+    <element name="ubGurmukhi" />
+    <element name="ubGujarati" />
+    <element name="ubOriya" />
+    <element name="ubTamil" />
+    <element name="ubTelugu" />
+    <element name="ubKannada" />
+    <element name="ubMalayalam" />
+    <element name="ubSinhala" />
+    <element name="ubThai" />
+    <element name="ubLao" />
+    <element name="ubTibetan" />
+    <element name="ubMyanmar" />
+    <element name="ubGeorgian" />
+    <element name="ubHangulJamo" />
+    <element name="ubEthiopic" />
+    <element name="ubCherokee" />
+    <element name="ubUnifiedCanadianAboriginalSyllabics" />
+    <element name="ubOgham" />
+    <element name="ubRunic" />
+    <element name="ubKhmer" />
+    <element name="ubMongolian" />
+    <element name="ubLatinExtendedAdditional" />
+    <element name="ubGreekExtended" />
+    <element name="ubGeneralPunctuation" />
+    <element name="ubSuperscriptsAndSubscripts" />
+    <element name="ubCurrencySymbols" />
+    <element name="ubCombiningMarksForSymbols" />
+    <element name="ubLetterlikeSymbols" />
+    <element name="ubNumberForms" />
+    <element name="ubArrows" />
+    <element name="ubMathematicalOperators" />
+    <element name="ubMiscellaneousTechnical" />
+    <element name="ubControlPictures" />
+    <element name="ubOpticalCharacterRecognition" />
+    <element name="ubEnclosedAlphanumerics" />
+    <element name="ubBoxDrawing" />
+    <element name="ubBlockElements" />
+    <element name="ubGeometricShapes" />
+    <element name="ubMiscellaneousSymbols" />
+    <element name="ubDingbats" />
+    <element name="ubBraillePatterns" />
+    <element name="ubCJKRadicalsSupplement" />
+    <element name="ubKangxiRadicals" />
+    <element name="ubIdeographicDescriptionCharacters" />
+    <element name="ubCJKSymbolsAndPunctuation" />
+    <element name="ubHiragana" />
+    <element name="ubKatakana" />
+    <element name="ubBopomofo" />
+    <element name="ubHangulCompatibilityJamo" />
+    <element name="ubKanbun" />
+    <element name="ubBopomofoExtended" />
+    <element name="ubEnclosedCJKLettersAndMonths" />
+    <element name="ubCJKCompatibility" />
+    <element name="ubCJKUnifiedIdeographsExtensionA" />
+    <element name="ubCJKUnifiedIdeographs" />
+    <element name="ubYiSyllables" />
+    <element name="ubYiRadicals" />
+    <element name="ubHangulSyllables" />
+    <element name="ubHighSurrogates" />
+    <element name="ubHighPrivateUseSurrogates" />
+    <element name="ubLowSurrogates" />
+    <element name="ubPrivateUse" />
+    <element name="ubCJKCompatibilityIdeographs" />
+    <element name="ubAlphabeticPresentationForms" />
+    <element name="ubArabicPresentationFormsA" />
+    <element name="ubCombiningHalfMarks" />
+    <element name="ubCJKCompatibilityForms" />
+    <element name="ubSmallFormVariants" />
+    <element name="ubArabicPresentationFormsB" />
+    <element name="ubSpecials" />
+    <element name="ubHalfwidthAndFullwidthForms" />
+    <element name="ubOldItalic" />
+    <element name="ubGothic" />
+    <element name="ubDeseret" />
+    <element name="ubByzantineMusicalSymbols" />
+    <element name="ubMusicalSymbols" />
+    <element name="ubMathematicalAlphanumericSymbols" />
+    <element name="ubCJKUnifiedIdeographsExtensionB" />
+    <element name="ubCJKCompatibilityIdeographsSupplement" />
+    <element name="ubTags" />
+  </enum>
+  <const name="sfCaseSensitive" type="TSearchFlag">
+    <value>
+      sfCaseSensitive
+    </value>
+  </const>
+  <const name="sfIgnoreNonSpacing" type="TSearchFlag">
+    <value>
+      sfIgnoreNonSpacing
+    </value>
+  </const>
+  <const name="sfSpaceCompress" type="TSearchFlag">
+    <value>
+      sfSpaceCompress
+    </value>
+  </const>
+  <const name="sfWholeWordOnly" type="TSearchFlag">
+    <value>
+      sfWholeWordOnly
+    </value>
+  </const>
+  <enum name="TSearchFlag">
+    <element name="sfCaseSensitive" />
+    <element name="sfIgnoreNonSpacing" />
+    <element name="sfSpaceCompress" />
+    <element name="sfWholeWordOnly" />
+  </enum>
+  <set name="TSearchFlags" type="TSearchFlag">
+    <element name="sfCaseSensitive" />
+    <element name="sfIgnoreNonSpacing" />
+    <element name="sfSpaceCompress" />
+    <element name="sfWholeWordOnly" />
+  </set>
+  <class name="TSearchEngine">
+    <ancestor name="TObject" namespace="System">
+      <methodref name="Create" visibility="public" />
+      <methodref name="Free" visibility="public" />
+      <methodref name="InitInstance" visibility="public" />
+      <methodref name="CleanupInstance" visibility="public" />
+      <methodref name="ClassType" visibility="public" />
+      <methodref name="ClassName" visibility="public" />
+      <methodref name="ClassNameIs" visibility="public" />
+      <methodref name="ClassParent" visibility="public" />
+      <methodref name="ClassInfo" visibility="public" />
+      <methodref name="InstanceSize" visibility="public" />
+      <methodref name="InheritsFrom" visibility="public" />
+      <methodref name="MethodAddress" visibility="public" />
+      <methodref name="MethodName" visibility="public" />
+      <methodref name="FieldAddress" visibility="public" />
+      <methodref name="GetInterface" visibility="public" />
+      <methodref name="GetInterfaceEntry" visibility="public" />
+      <methodref name="GetInterfaceTable" visibility="public" />
+      <methodref name="SafeCallException" visibility="public" />
+      <methodref name="AfterConstruction" visibility="public" />
+      <methodref name="BeforeDestruction" visibility="public" />
+      <methodref name="Dispatch" visibility="public" />
+      <methodref name="DefaultHandler" visibility="public" />
+      <methodref name="NewInstance" visibility="public" />
+      <methodref name="FreeInstance" visibility="public" />
+      <methodref name="Destroy" visibility="public" />
+    </ancestor>
+    <members>
+      <field name="FResults" type="TList" visibility="private" />
+      <field name="FOwner" type="TWideStrings" visibility="private" />
+      <function name="GetCount" visibility="protected" procflags="virtual">
+        <parameters>
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <constructor name="Create" visibility="public">
+        <parameters>
+          <parameter name="AOwner" type="TWideStrings" />
+        </parameters>
+      </constructor>
+      <destructor name="Destroy" visibility="public">
+        <parameters>
+        </parameters>
+      </destructor>
+      <procedure name="AddResult" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Start" type="Cardinal" />
+          <parameter name="Stop" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <procedure name="Clear" visibility="public" procflags="virtual">
+      </procedure>
+      <procedure name="ClearResults" visibility="public" procflags="virtual">
+      </procedure>
+      <procedure name="DeleteResult" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Index" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <procedure name="FindPrepare" visibility="public" procflags="abstract overload virtual">
+        <parameters>
+          <parameter name="Pattern" type="WideString" paramflags="const" />
+          <parameter name="Options" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <procedure name="FindPrepare" visibility="public" procflags="abstract overload virtual">
+        <parameters>
+          <parameter name="Pattern" type="PWideChar" paramflags="const" />
+          <parameter name="PatternLength" type="Cardinal" />
+          <parameter name="Options" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <function name="FindFirst" visibility="public" procflags="abstract overload virtual">
+        <parameters>
+          <parameter name="Text" type="WideString" paramflags="const" />
+          <parameter name="Start" type="Cardinal" paramflags="var" />
+          <parameter name="Stop" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindFirst" visibility="public" procflags="abstract overload virtual">
+        <parameters>
+          <parameter name="Text" type="PWideChar" paramflags="const" />
+          <parameter name="TextLen" type="Cardinal" />
+          <parameter name="Start" type="Cardinal" paramflags="var" />
+          <parameter name="Stop" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindAll" visibility="public" procflags="abstract overload virtual">
+        <parameters>
+          <parameter name="Text" type="WideString" paramflags="const" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindAll" visibility="public" procflags="abstract overload virtual">
+        <parameters>
+          <parameter name="Text" type="PWideChar" paramflags="const" />
+          <parameter name="TextLen" type="Cardinal" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <procedure name="GetResult" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Index" type="Cardinal" />
+          <parameter name="Start" type="Integer" paramflags="var" />
+          <parameter name="Stop" type="Integer" paramflags="var" />
+        </parameters>
+      </procedure>
+      <property name="Count" visibility="public" read="GetCount" type="Integer" />
+    </members>
+  </class>
+  <pointer name="PUTBMChar" type="TUTBMChar" indircnt="1" />
+  <struct name="TUTBMChar">
+    <field name="LoCase" type="UCS4Char" visibility="public" />
+    <field name="UpCase" type="UCS4Char" visibility="public" />
+    <field name="TitleCase" type="UCS4Char" visibility="public" />
+  </struct>
+  <pointer name="PUTBMSkip" type="TUTBMSkip" indircnt="1" />
+  <struct name="TUTBMSkip">
+    <field name="BMChar" type="PUTBMChar" visibility="public" />
+    <field name="SkipValues" type="Integer" visibility="public" />
+  </struct>
+  <class name="TUTBMSearch">
+    <ancestor name="TSearchEngine" namespace="Unicode">
+      <methodref name="GetCount" visibility="protected" />
+      <methodref name="Create" visibility="public" />
+      <methodref name="Destroy" visibility="public" />
+      <methodref name="AddResult" visibility="public" />
+      <methodref name="Clear" visibility="public" />
+      <methodref name="ClearResults" visibility="public" />
+      <methodref name="DeleteResult" visibility="public" />
+      <methodref name="FindPrepare" visibility="public" />
+      <methodref name="FindPrepare" visibility="public" />
+      <methodref name="FindFirst" visibility="public" />
+      <methodref name="FindFirst" visibility="public" />
+      <methodref name="FindAll" visibility="public" />
+      <methodref name="FindAll" visibility="public" />
+      <methodref name="GetResult" visibility="public" />
+      <propertyref name="Count" visibility="public" />
+      <ancestor name="TObject" namespace="System">
+        <methodref name="Create" visibility="public" />
+        <methodref name="Free" visibility="public" />
+        <methodref name="InitInstance" visibility="public" />
+        <methodref name="CleanupInstance" visibility="public" />
+        <methodref name="ClassType" visibility="public" />
+        <methodref name="ClassName" visibility="public" />
+        <methodref name="ClassNameIs" visibility="public" />
+        <methodref name="ClassParent" visibility="public" />
+        <methodref name="ClassInfo" visibility="public" />
+        <methodref name="InstanceSize" visibility="public" />
+        <methodref name="InheritsFrom" visibility="public" />
+        <methodref name="MethodAddress" visibility="public" />
+        <methodref name="MethodName" visibility="public" />
+        <methodref name="FieldAddress" visibility="public" />
+        <methodref name="GetInterface" visibility="public" />
+        <methodref name="GetInterfaceEntry" visibility="public" />
+        <methodref name="GetInterfaceTable" visibility="public" />
+        <methodref name="SafeCallException" visibility="public" />
+        <methodref name="AfterConstruction" visibility="public" />
+        <methodref name="BeforeDestruction" visibility="public" />
+        <methodref name="Dispatch" visibility="public" />
+        <methodref name="DefaultHandler" visibility="public" />
+        <methodref name="NewInstance" visibility="public" />
+        <methodref name="FreeInstance" visibility="public" />
+        <methodref name="Destroy" visibility="public" />
+      </ancestor>
+    </ancestor>
+    <members>
+      <field name="FFlags" type="TSearchFlags" visibility="private" />
+      <field name="FPattern" type="PUTBMChar" visibility="private" />
+      <field name="FPatternUsed" type="Cardinal" visibility="private" />
+      <field name="FPatternSize" type="Cardinal" visibility="private" />
+      <field name="FPatternLength" type="Cardinal" visibility="private" />
+      <field name="FSkipValues" type="PUTBMSkip" visibility="private" />
+      <field name="FSkipsUsed" type="Integer" visibility="private" />
+      <field name="FMD4" type="Cardinal" visibility="private" />
+      <procedure name="ClearPattern" visibility="protected">
+      </procedure>
+      <procedure name="Compile" visibility="protected">
+        <parameters>
+          <parameter name="Pattern" type="PWideChar" />
+          <parameter name="PatternLength" type="Integer" />
+          <parameter name="Flags" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <function name="Find" visibility="protected">
+        <parameters>
+          <parameter name="Text" type="PWideChar" />
+          <parameter name="TextLen" type="Cardinal" />
+          <parameter name="MatchStart" type="Cardinal" paramflags="var" />
+          <parameter name="MatchEnd" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="GetSkipValue" visibility="protected">
+        <parameters>
+          <parameter name="TextStart" type="PWideChar" />
+          <parameter name="TextEnd" type="PWideChar" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="Match" visibility="protected">
+        <parameters>
+          <parameter name="Text" type="PWideChar" />
+          <parameter name="Start" type="PWideChar" />
+          <parameter name="Stop" type="PWideChar" />
+          <parameter name="MatchStart" type="Cardinal" paramflags="var" />
+          <parameter name="MatchEnd" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <procedure name="Clear" visibility="public" procflags="override">
+      </procedure>
+      <procedure name="FindPrepare" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Pattern" type="WideString" paramflags="const" />
+          <parameter name="Options" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <procedure name="FindPrepare" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Pattern" type="PWideChar" paramflags="const" />
+          <parameter name="PatternLength" type="Cardinal" />
+          <parameter name="Options" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <function name="FindFirst" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="WideString" paramflags="const" />
+          <parameter name="Start" type="Cardinal" paramflags="var" />
+          <parameter name="Stop" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindFirst" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="PWideChar" paramflags="const" />
+          <parameter name="TextLen" type="Cardinal" />
+          <parameter name="Start" type="Cardinal" paramflags="var" />
+          <parameter name="Stop" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindAll" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="WideString" paramflags="const" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindAll" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="PWideChar" paramflags="const" />
+          <parameter name="TextLen" type="Cardinal" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+    </members>
+  </class>
+  <pointer name="PUcRange" type="TUcRange" indircnt="1" />
+  <struct name="TUcRange">
+    <field name="MinCode" type="UCS4Char" visibility="public" />
+    <field name="MaxCode" type="UCS4Char" visibility="public" />
+  </struct>
+  <struct name="TUcCClass">
+    <field name="Ranges" type=".3" visibility="public" />
+    <field name="RangesUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TUcSymbol">
+    <field name="Chr" type="UCS4Char" visibility="public" />
+    <field name="CCL" type="TUcCClass" visibility="public" />
+  </struct>
+  <struct name="TUcElement">
+    <field name="OnStack" type="Boolean" visibility="public" />
+    <field name="AType" type="Cardinal" visibility="public" />
+    <field name="LHS" type="Cardinal" visibility="public" />
+    <field name="RHS" type="Cardinal" visibility="public" />
+  </struct>
+  <pointer name="PUcStateList" type="TUcStateList" indircnt="1" />
+  <struct name="TUcStateList">
+    <field name="List" type=".4" visibility="public" />
+    <field name="ListUsed" type="Integer" visibility="public" />
+  </struct>
+  <pointer name="PUcSymbolTableEntry" type="TUcSymbolTableEntry" indircnt="1" />
+  <struct name="TUcSymbolTableEntry">
+    <field name="ID" type="Cardinal" visibility="public" />
+    <field name="AType" type="Cardinal" visibility="public" />
+    <field name="Mods" type="TCharacterCategories" visibility="public" />
+    <field name="Categories" type="TCharacterCategories" visibility="public" />
+    <field name="Symbol" type="TUcSymbol" visibility="public" />
+    <field name="States" type="TUcStateList" visibility="public" />
+  </struct>
+  <pointer name="PUcState" type="TUcState" indircnt="1" />
+  <struct name="TUcState">
+    <field name="ID" type="Cardinal" visibility="public" />
+    <field name="Accepting" type="Boolean" visibility="public" />
+    <field name="StateList" type="TUcStateList" visibility="public" />
+    <field name="Transitions" type=".5" visibility="public" />
+    <field name="TransitionsUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TUcStateTable">
+    <field name="States" type=".6" visibility="public" />
+    <field name="StatesUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TUcEquivalent">
+    <field name="Left" type="Cardinal" visibility="public" />
+    <field name="Right" type="Cardinal" visibility="public" />
+  </struct>
+  <struct name="TUcExpressionList">
+    <field name="Expressions" type=".7" visibility="public" />
+    <field name="ExpressionsUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TUcSymbolTable">
+    <field name="Symbols" type=".8" visibility="public" />
+    <field name="SymbolsUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TUcEquivalentList">
+    <field name="Equivalents" type=".9" visibility="public" />
+    <field name="EquivalentsUsed" type="Integer" visibility="public" />
+  </struct>
+  <pointer name="PUREBuffer" type="TUREBuffer" indircnt="1" />
+  <struct name="TUREBuffer">
+    <field name="Reducing" type="Boolean" visibility="public" />
+    <field name="Error" type="Integer" visibility="public" />
+    <field name="Flags" type="Cardinal" visibility="public" />
+    <field name="Stack" type="TUcStateList" visibility="public" />
+    <field name="SymbolTable" type="TUcSymbolTable" visibility="public" />
+    <field name="ExpressionList" type="TUcExpressionList" visibility="public" />
+    <field name="States" type="TUcStateTable" visibility="public" />
+    <field name="EquivalentList" type="TUcEquivalentList" visibility="public" />
+  </struct>
+  <struct name="TUcTransition">
+    <field name="Symbol" type="Cardinal" visibility="public" />
+    <field name="NextState" type="Cardinal" visibility="public" />
+  </struct>
+  <pointer name="PDFAState" type="TDFAState" indircnt="1" />
+  <struct name="TDFAState">
+    <field name="Accepting" type="Boolean" visibility="public" />
+    <field name="NumberTransitions" type="Integer" visibility="public" />
+    <field name="StartTransition" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TDFAStates">
+    <field name="States" type=".01" visibility="public" />
+    <field name="StatesUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TUcTransitions">
+    <field name="Transitions" type=".11" visibility="public" />
+    <field name="TransitionsUsed" type="Integer" visibility="public" />
+  </struct>
+  <struct name="TDFA">
+    <field name="Flags" type="Cardinal" visibility="public" />
+    <field name="SymbolTable" type="TUcSymbolTable" visibility="public" />
+    <field name="StateList" type="TDFAStates" visibility="public" />
+    <field name="TransitionList" type="TUcTransitions" visibility="public" />
+  </struct>
+  <class name="TURESearch">
+    <ancestor name="TSearchEngine" namespace="Unicode">
+      <methodref name="GetCount" visibility="protected" />
+      <methodref name="Create" visibility="public" />
+      <methodref name="Destroy" visibility="public" />
+      <methodref name="AddResult" visibility="public" />
+      <methodref name="Clear" visibility="public" />
+      <methodref name="ClearResults" visibility="public" />
+      <methodref name="DeleteResult" visibility="public" />
+      <methodref name="FindPrepare" visibility="public" />
+      <methodref name="FindPrepare" visibility="public" />
+      <methodref name="FindFirst" visibility="public" />
+      <methodref name="FindFirst" visibility="public" />
+      <methodref name="FindAll" visibility="public" />
+      <methodref name="FindAll" visibility="public" />
+      <methodref name="GetResult" visibility="public" />
+      <propertyref name="Count" visibility="public" />
+      <ancestor name="TObject" namespace="System">
+        <methodref name="Create" visibility="public" />
+        <methodref name="Free" visibility="public" />
+        <methodref name="InitInstance" visibility="public" />
+        <methodref name="CleanupInstance" visibility="public" />
+        <methodref name="ClassType" visibility="public" />
+        <methodref name="ClassName" visibility="public" />
+        <methodref name="ClassNameIs" visibility="public" />
+        <methodref name="ClassParent" visibility="public" />
+        <methodref name="ClassInfo" visibility="public" />
+        <methodref name="InstanceSize" visibility="public" />
+        <methodref name="InheritsFrom" visibility="public" />
+        <methodref name="MethodAddress" visibility="public" />
+        <methodref name="MethodName" visibility="public" />
+        <methodref name="FieldAddress" visibility="public" />
+        <methodref name="GetInterface" visibility="public" />
+        <methodref name="GetInterfaceEntry" visibility="public" />
+        <methodref name="GetInterfaceTable" visibility="public" />
+        <methodref name="SafeCallException" visibility="public" />
+        <methodref name="AfterConstruction" visibility="public" />
+        <methodref name="BeforeDestruction" visibility="public" />
+        <methodref name="Dispatch" visibility="public" />
+        <methodref name="DefaultHandler" visibility="public" />
+        <methodref name="NewInstance" visibility="public" />
+        <methodref name="FreeInstance" visibility="public" />
+        <methodref name="Destroy" visibility="public" />
+      </ancestor>
+    </ancestor>
+    <members>
+      <field name="FUREBuffer" type="TUREBuffer" visibility="private" />
+      <field name="FDFA" type="TDFA" visibility="private" />
+      <procedure name="AddEquivalentPair" visibility="protected">
+        <parameters>
+          <parameter name="L" type="Cardinal" />
+          <parameter name="R" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <procedure name="AddRange" visibility="protected">
+        <parameters>
+          <parameter name="CCL" type="TUcCClass" paramflags="var" />
+          <parameter name="Range" type="TUcRange" />
+        </parameters>
+      </procedure>
+      <function name="AddState" visibility="protected">
+        <parameters>
+          <parameter name="NewStates">
+            <array name="NewStates">
+              <element type="Cardinal" />
+            </array>
+          </parameter>
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <procedure name="AddSymbolState" visibility="protected">
+        <parameters>
+          <parameter name="Symbol" type="Cardinal" />
+          <parameter name="State" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <function name="BuildCharacterClass" visibility="protected">
+        <parameters>
+          <parameter name="CP" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Symbol" type="PUcSymbolTableEntry" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <procedure name="ClearUREBuffer" visibility="protected">
+      </procedure>
+      <function name="CompileSymbol" visibility="protected">
+        <parameters>
+          <parameter name="S" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Symbol" type="PUcSymbolTableEntry" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <procedure name="CompileURE" visibility="protected">
+        <parameters>
+          <parameter name="RE" type="PWideChar" />
+          <parameter name="RELength" type="Cardinal" />
+          <parameter name="Casefold" type="Boolean" />
+        </parameters>
+      </procedure>
+      <procedure name="CollectPendingOperations" visibility="protected">
+        <parameters>
+          <parameter name="State" type="Cardinal" paramflags="var" />
+        </parameters>
+      </procedure>
+      <function name="ConvertRegExpToNFA" visibility="protected">
+        <parameters>
+          <parameter name="RE" type="PWideChar" />
+          <parameter name="RELength" type="Cardinal" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="ExecuteURE" visibility="protected">
+        <parameters>
+          <parameter name="Flags" type="Cardinal" />
+          <parameter name="Text" type="PWideChar" />
+          <parameter name="TextLen" type="Cardinal" />
+          <parameter name="MatchStart" type="Cardinal" paramflags="var" />
+          <parameter name="MatchEnd" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <procedure name="ClearDFA" visibility="protected">
+      </procedure>
+      <procedure name="HexDigitSetup" visibility="protected">
+        <parameters>
+          <parameter name="Symbol" type="PUcSymbolTableEntry" />
+        </parameters>
+      </procedure>
+      <function name="MakeExpression" visibility="protected">
+        <parameters>
+          <parameter name="AType" type="Cardinal" />
+          <parameter name="LHS" type="Cardinal" />
+          <parameter name="RHS" type="Cardinal" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="MakeHexNumber" visibility="protected">
+        <parameters>
+          <parameter name="NP" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Number" type="UCS4Char" paramflags="var" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="MakeSymbol" visibility="protected">
+        <parameters>
+          <parameter name="S" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Consumed" type="Cardinal" paramflags="var" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <procedure name="MergeEquivalents" visibility="protected">
+      </procedure>
+      <function name="ParsePropertyList" visibility="protected">
+        <parameters>
+          <parameter name="Properties" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Categories" type="TCharacterCategories" paramflags="var" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="Peek" visibility="protected">
+        <parameters>
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="Pop" visibility="protected">
+        <parameters>
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="PosixCCL" visibility="protected">
+        <parameters>
+          <parameter name="CP" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Symbol" type="PUcSymbolTableEntry" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <function name="ProbeLowSurrogate" visibility="protected">
+        <parameters>
+          <parameter name="LeftState" type="PWideChar" />
+          <parameter name="Limit" type="Cardinal" />
+          <parameter name="Code" type="UCS4Char" paramflags="var" />
+          <retval type="Cardinal" />
+        </parameters>
+      </function>
+      <procedure name="Push" visibility="protected">
+        <parameters>
+          <parameter name="V" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <procedure name="Reduce" visibility="protected">
+        <parameters>
+          <parameter name="Start" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <procedure name="SpaceSetup" visibility="protected">
+        <parameters>
+          <parameter name="Symbol" type="PUcSymbolTableEntry" />
+          <parameter name="Categories" type="TCharacterCategories" />
+        </parameters>
+      </procedure>
+      <function name="SymbolsAreDifferent" visibility="protected">
+        <parameters>
+          <parameter name="A" type="PUcSymbolTableEntry" />
+          <parameter name="B" type="PUcSymbolTableEntry" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <procedure name="Clear" visibility="public" procflags="override">
+      </procedure>
+      <procedure name="FindPrepare" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Pattern" type="WideString" paramflags="const" />
+          <parameter name="Options" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <procedure name="FindPrepare" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Pattern" type="PWideChar" paramflags="const" />
+          <parameter name="PatternLength" type="Cardinal" />
+          <parameter name="Options" type="TSearchFlags" />
+        </parameters>
+      </procedure>
+      <function name="FindFirst" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="WideString" paramflags="const" />
+          <parameter name="Start" type="Cardinal" paramflags="var" />
+          <parameter name="Stop" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindFirst" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="PWideChar" paramflags="const" />
+          <parameter name="TextLen" type="Cardinal" />
+          <parameter name="Start" type="Cardinal" paramflags="var" />
+          <parameter name="Stop" type="Cardinal" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindAll" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="WideString" paramflags="const" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="FindAll" visibility="public" procflags="overload override">
+        <parameters>
+          <parameter name="Text" type="PWideChar" paramflags="const" />
+          <parameter name="TextLen" type="Cardinal" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+    </members>
+  </class>
+  <class name="TWideStrings">
+    <ancestor name="TPersistent" namespace="Classes">
+      <methodref name="AssignError" visibility="private" />
+      <methodref name="AssignTo" visibility="protected" />
+      <methodref name="DefineProperties" visibility="protected" />
+      <methodref name="GetOwner" visibility="protected" />
+      <methodref name="Destroy" visibility="public" />
+      <methodref name="Assign" visibility="public" />
+      <methodref name="GetNamePath" visibility="public" />
+      <ancestor name="TObject" namespace="System">
+        <methodref name="Create" visibility="public" />
+        <methodref name="Free" visibility="public" />
+        <methodref name="InitInstance" visibility="public" />
+        <methodref name="CleanupInstance" visibility="public" />
+        <methodref name="ClassType" visibility="public" />
+        <methodref name="ClassName" visibility="public" />
+        <methodref name="ClassNameIs" visibility="public" />
+        <methodref name="ClassParent" visibility="public" />
+        <methodref name="ClassInfo" visibility="public" />
+        <methodref name="InstanceSize" visibility="public" />
+        <methodref name="InheritsFrom" visibility="public" />
+        <methodref name="MethodAddress" visibility="public" />
+        <methodref name="MethodName" visibility="public" />
+        <methodref name="FieldAddress" visibility="public" />
+        <methodref name="GetInterface" visibility="public" />
+        <methodref name="GetInterfaceEntry" visibility="public" />
+        <methodref name="GetInterfaceTable" visibility="public" />
+        <methodref name="SafeCallException" visibility="public" />
+        <methodref name="AfterConstruction" visibility="public" />
+        <methodref name="BeforeDestruction" visibility="public" />
+        <methodref name="Dispatch" visibility="public" />
+        <methodref name="DefaultHandler" visibility="public" />
+        <methodref name="NewInstance" visibility="public" />
+        <methodref name="FreeInstance" visibility="public" />
+        <methodref name="Destroy" visibility="public" />
+      </ancestor>
+    </ancestor>
+    <members>
+      <field name="FUpdateCount" type="Integer" visibility="private" />
+      <field name="FLanguage" type="Cardinal" visibility="private" />
+      <field name="FSaved" type="Boolean" visibility="private" />
+      <field name="FSaveUnicode" type="Boolean" visibility="private" />
+      <field name="FNormalizationForm" type="TNormalizationForm" visibility="private" />
+      <field name="FOnConfirmConversion" type="TConfirmConversionEvent" visibility="private" />
+      <function name="GetCommaText" visibility="private">
+        <parameters>
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <function name="GetName" visibility="private">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <function name="GetValue" visibility="private">
+        <parameters>
+          <parameter name="Name" type="WideString" paramflags="const" />
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <procedure name="ReadData" visibility="private">
+        <parameters>
+          <parameter name="Reader" type="TReader" />
+        </parameters>
+      </procedure>
+      <procedure name="SetCommaText" visibility="private">
+        <parameters>
+          <parameter name="Value" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="SetNormalizationForm" visibility="private">
+        <parameters>
+          <parameter name="Value" type="TNormalizationForm" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="SetValue" visibility="private">
+        <parameters>
+          <parameter name="Name" type="WideString" paramflags="const" />
+          <parameter name="Value" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="WriteData" visibility="private">
+        <parameters>
+          <parameter name="Writer" type="TWriter" />
+        </parameters>
+      </procedure>
+      <procedure name="DefineProperties" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Filer" type="TFiler" />
+        </parameters>
+      </procedure>
+      <procedure name="DoConfirmConversion" visibility="protected" procflags="virtual">
+        <parameters>
+          <parameter name="Allowed" type="Boolean" paramflags="var" />
+        </parameters>
+      </procedure>
+      <procedure name="Error" visibility="protected">
+        <parameters>
+          <parameter name="Msg" type="string" paramflags="const" />
+          <parameter name="Data" type="Integer" />
+        </parameters>
+      </procedure>
+      <function name="Get" visibility="protected" procflags="abstract virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <function name="GetCapacity" visibility="protected" procflags="virtual">
+        <parameters>
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="GetCount" visibility="protected" procflags="abstract virtual">
+        <parameters>
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="GetObject" visibility="protected" procflags="virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <retval type="TObject" />
+        </parameters>
+      </function>
+      <function name="GetText" visibility="protected" procflags="virtual">
+        <parameters>
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <procedure name="Put" visibility="protected" procflags="abstract virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="S" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="PutObject" visibility="protected" procflags="abstract virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="AObject" type="TObject" />
+        </parameters>
+      </procedure>
+      <procedure name="SetCapacity" visibility="protected" procflags="virtual">
+        <parameters>
+          <parameter name="NewCapacity" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="SetUpdateState" visibility="protected" procflags="virtual">
+        <parameters>
+          <parameter name="Updating" type="Boolean" />
+        </parameters>
+      </procedure>
+      <procedure name="SetLanguage" visibility="protected" procflags="virtual">
+        <parameters>
+          <parameter name="Value" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <constructor name="Create" visibility="public">
+        <parameters>
+        </parameters>
+      </constructor>
+      <destructor name="Destroy" visibility="public">
+        <parameters>
+        </parameters>
+      </destructor>
+      <function name="Add" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="AddObject" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+          <parameter name="AObject" type="TObject" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <procedure name="Append" visibility="public">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="AddStrings" visibility="public" procflags="overload virtual">
+        <parameters>
+          <parameter name="Strings" type="TStrings" />
+        </parameters>
+      </procedure>
+      <procedure name="AddStrings" visibility="public" procflags="overload virtual">
+        <parameters>
+          <parameter name="Strings" type="TWideStrings" />
+        </parameters>
+      </procedure>
+      <procedure name="Assign" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="Source" type="TPersistent" />
+        </parameters>
+      </procedure>
+      <procedure name="AssignTo" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="Dest" type="TPersistent" />
+        </parameters>
+      </procedure>
+      <procedure name="BeginUpdate" visibility="public">
+      </procedure>
+      <procedure name="Clear" visibility="public" procflags="abstract virtual">
+      </procedure>
+      <procedure name="Delete" visibility="public" procflags="abstract virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="EndUpdate" visibility="public">
+      </procedure>
+      <function name="Equals" visibility="public">
+        <parameters>
+          <parameter name="Strings" type="TWideStrings" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <procedure name="Exchange" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Index1" type="Integer" />
+          <parameter name="Index2" type="Integer" />
+        </parameters>
+      </procedure>
+      <function name="GetSeparatedText" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Separators" type="WideString" />
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <function name="IndexOf" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="IndexOfName" visibility="public">
+        <parameters>
+          <parameter name="Name" type="WideString" paramflags="const" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="IndexOfObject" visibility="public">
+        <parameters>
+          <parameter name="AObject" type="TObject" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <procedure name="Insert" visibility="public" procflags="abstract virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="S" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="InsertObject" visibility="public">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="S" type="WideString" paramflags="const" />
+          <parameter name="AObject" type="TObject" />
+        </parameters>
+      </procedure>
+      <procedure name="LoadFromFile" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="FileName" type="string" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="LoadFromStream" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Stream" type="TStream" />
+        </parameters>
+      </procedure>
+      <procedure name="Move" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="CurIndex" type="Integer" />
+          <parameter name="NewIndex" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="SaveToFile" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="FileName" type="string" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="SaveToStream" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Stream" type="TStream" />
+          <parameter name="WithBOM" type="Boolean">
+            <value>
+              True
+            </value>
+          </parameter>
+        </parameters>
+      </procedure>
+      <procedure name="SetText" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="Value" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <property name="Capacity" visibility="public" read="GetCapacity" write="SetCapacity" type="Integer" />
+      <property name="CommaText" visibility="public" read="GetCommaText" write="SetCommaText" type="WideString" />
+      <property name="Count" visibility="public" read="GetCount" type="Integer" />
+      <property name="Language" visibility="public" read="FLanguage" write="SetLanguage" type="Cardinal" />
+      <property name="Names" visibility="public" read="GetName" type="WideString" />
+      <property name="NormalizationForm" visibility="public" read="FNormalizationForm" write="SetNormalizationForm" type="TNormalizationForm" default="0" />
+      <property name="Objects" visibility="public" read="GetObject" write="PutObject" type="TObject" />
+      <property name="Values" visibility="public" read="GetValue" write="SetValue" type="WideString" />
+      <property name="Saved" visibility="public" read="FSaved" type="Boolean" />
+      <property name="SaveUnicode" visibility="public" read="FSaveUnicode" write="FSaveUnicode" type="Boolean" default="1" />
+      <property name="Strings" visibility="public" read="Get" write="Put" type="WideString" />
+      <property name="Text" visibility="public" read="GetText" write="SetText" type="WideString" />
+      <event name="OnConfirmConversion" visibility="public" read="FOnConfirmConversion" write="FOnConfirmConversion" type="TConfirmConversionEvent" />
+    </members>
+  </class>
+  <struct name="TWideStringItem">
+    <field name="FString" type="WideString" visibility="public" />
+    <field name="FObject" type="TObject" visibility="public" />
+  </struct>
+  <array name="TWideStringItemList">
+    <element type="TWideStringItem" />
+  </array>
+  <class name="TWideStringList">
+    <ancestor name="TWideStrings" namespace="Unicode">
+      <methodref name="GetCommaText" visibility="private" />
+      <methodref name="GetName" visibility="private" />
+      <methodref name="GetValue" visibility="private" />
+      <methodref name="ReadData" visibility="private" />
+      <methodref name="SetCommaText" visibility="private" />
+      <methodref name="SetNormalizationForm" visibility="private" />
+      <methodref name="SetValue" visibility="private" />
+      <methodref name="WriteData" visibility="private" />
+      <methodref name="DefineProperties" visibility="protected" />
+      <methodref name="DoConfirmConversion" visibility="protected" />
+      <methodref name="Error" visibility="protected" />
+      <methodref name="Get" visibility="protected" />
+      <methodref name="GetCapacity" visibility="protected" />
+      <methodref name="GetCount" visibility="protected" />
+      <methodref name="GetObject" visibility="protected" />
+      <methodref name="GetText" visibility="protected" />
+      <methodref name="Put" visibility="protected" />
+      <methodref name="PutObject" visibility="protected" />
+      <methodref name="SetCapacity" visibility="protected" />
+      <methodref name="SetUpdateState" visibility="protected" />
+      <methodref name="SetLanguage" visibility="protected" />
+      <methodref name="Create" visibility="public" />
+      <methodref name="Destroy" visibility="public" />
+      <methodref name="Add" visibility="public" />
+      <methodref name="AddObject" visibility="public" />
+      <methodref name="Append" visibility="public" />
+      <methodref name="AddStrings" visibility="public" />
+      <methodref name="AddStrings" visibility="public" />
+      <methodref name="Assign" visibility="public" />
+      <methodref name="AssignTo" visibility="public" />
+      <methodref name="BeginUpdate" visibility="public" />
+      <methodref name="Clear" visibility="public" />
+      <methodref name="Delete" visibility="public" />
+      <methodref name="EndUpdate" visibility="public" />
+      <methodref name="Equals" visibility="public" />
+      <methodref name="Exchange" visibility="public" />
+      <methodref name="GetSeparatedText" visibility="public" />
+      <methodref name="IndexOf" visibility="public" />
+      <methodref name="IndexOfName" visibility="public" />
+      <methodref name="IndexOfObject" visibility="public" />
+      <methodref name="Insert" visibility="public" />
+      <methodref name="InsertObject" visibility="public" />
+      <methodref name="LoadFromFile" visibility="public" />
+      <methodref name="LoadFromStream" visibility="public" />
+      <methodref name="Move" visibility="public" />
+      <methodref name="SaveToFile" visibility="public" />
+      <methodref name="SaveToStream" visibility="public" />
+      <methodref name="SetText" visibility="public" />
+      <propertyref name="Capacity" visibility="public" />
+      <propertyref name="CommaText" visibility="public" />
+      <propertyref name="Count" visibility="public" />
+      <propertyref name="Language" visibility="public" />
+      <propertyref name="Names" visibility="public" />
+      <propertyref name="NormalizationForm" visibility="public" />
+      <propertyref name="Objects" visibility="public" />
+      <propertyref name="Values" visibility="public" />
+      <propertyref name="Saved" visibility="public" />
+      <propertyref name="SaveUnicode" visibility="public" />
+      <propertyref name="Strings" visibility="public" />
+      <propertyref name="Text" visibility="public" />
+      <eventref name="OnConfirmConversion" visibility="public" />
+      <ancestor name="TPersistent" namespace="Classes">
+        <methodref name="AssignError" visibility="private" />
+        <methodref name="AssignTo" visibility="protected" />
+        <methodref name="DefineProperties" visibility="protected" />
+        <methodref name="GetOwner" visibility="protected" />
+        <methodref name="Destroy" visibility="public" />
+        <methodref name="Assign" visibility="public" />
+        <methodref name="GetNamePath" visibility="public" />
+        <ancestor name="TObject" namespace="System">
+          <methodref name="Create" visibility="public" />
+          <methodref name="Free" visibility="public" />
+          <methodref name="InitInstance" visibility="public" />
+          <methodref name="CleanupInstance" visibility="public" />
+          <methodref name="ClassType" visibility="public" />
+          <methodref name="ClassName" visibility="public" />
+          <methodref name="ClassNameIs" visibility="public" />
+          <methodref name="ClassParent" visibility="public" />
+          <methodref name="ClassInfo" visibility="public" />
+          <methodref name="InstanceSize" visibility="public" />
+          <methodref name="InheritsFrom" visibility="public" />
+          <methodref name="MethodAddress" visibility="public" />
+          <methodref name="MethodName" visibility="public" />
+          <methodref name="FieldAddress" visibility="public" />
+          <methodref name="GetInterface" visibility="public" />
+          <methodref name="GetInterfaceEntry" visibility="public" />
+          <methodref name="GetInterfaceTable" visibility="public" />
+          <methodref name="SafeCallException" visibility="public" />
+          <methodref name="AfterConstruction" visibility="public" />
+          <methodref name="BeforeDestruction" visibility="public" />
+          <methodref name="Dispatch" visibility="public" />
+          <methodref name="DefaultHandler" visibility="public" />
+          <methodref name="NewInstance" visibility="public" />
+          <methodref name="FreeInstance" visibility="public" />
+          <methodref name="Destroy" visibility="public" />
+        </ancestor>
+      </ancestor>
+    </ancestor>
+    <members>
+      <field name="FList" type="TWideStringItemList" visibility="private" />
+      <field name="FCount" type="Integer" visibility="private" />
+      <field name="FSorted" type="Boolean" visibility="private" />
+      <field name="FDuplicates" type="TDuplicates" visibility="private" />
+      <field name="FOnChange" type="TNotifyEvent" visibility="private" />
+      <field name="FOnChanging" type="TNotifyEvent" visibility="private" />
+      <procedure name="ExchangeItems" visibility="private">
+        <parameters>
+          <parameter name="Index1" type="Integer" />
+          <parameter name="Index2" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="Grow" visibility="private">
+      </procedure>
+      <procedure name="QuickSort" visibility="private">
+        <parameters>
+          <parameter name="L" type="Integer" />
+          <parameter name="R" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="SetSorted" visibility="private">
+        <parameters>
+          <parameter name="Value" type="Boolean" />
+        </parameters>
+      </procedure>
+      <procedure name="Changed" visibility="protected" procflags="virtual">
+      </procedure>
+      <procedure name="Changing" visibility="protected" procflags="virtual">
+      </procedure>
+      <function name="Get" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <retval type="WideString" />
+        </parameters>
+      </function>
+      <function name="GetCapacity" visibility="protected" procflags="override">
+        <parameters>
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="GetCount" visibility="protected" procflags="override">
+        <parameters>
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <function name="GetObject" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <retval type="TObject" />
+        </parameters>
+      </function>
+      <procedure name="InsertItem" visibility="protected" procflags="virtual">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="S" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="Put" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="S" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="PutObject" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="AObject" type="TObject" />
+        </parameters>
+      </procedure>
+      <procedure name="SetCapacity" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="NewCapacity" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="SetUpdateState" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Updating" type="Boolean" />
+        </parameters>
+      </procedure>
+      <procedure name="SetLanguage" visibility="protected" procflags="override">
+        <parameters>
+          <parameter name="Value" type="Cardinal" />
+        </parameters>
+      </procedure>
+      <destructor name="Destroy" visibility="public">
+        <parameters>
+        </parameters>
+      </destructor>
+      <function name="Add" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <procedure name="Clear" visibility="public" procflags="override">
+      </procedure>
+      <procedure name="Delete" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+        </parameters>
+      </procedure>
+      <procedure name="Exchange" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="Index1" type="Integer" />
+          <parameter name="Index2" type="Integer" />
+        </parameters>
+      </procedure>
+      <function name="Find" visibility="public" procflags="virtual">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+          <parameter name="Index" type="Integer" paramflags="var" />
+          <retval type="Boolean" />
+        </parameters>
+      </function>
+      <function name="IndexOf" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="S" type="WideString" paramflags="const" />
+          <retval type="Integer" />
+        </parameters>
+      </function>
+      <procedure name="Insert" visibility="public" procflags="override">
+        <parameters>
+          <parameter name="Index" type="Integer" />
+          <parameter name="S" type="WideString" paramflags="const" />
+        </parameters>
+      </procedure>
+      <procedure name="Sort" visibility="public" procflags="virtual">
+      </procedure>
+      <property name="Duplicates" visibility="public" read="FDuplicates" write="FDuplicates" type="TDuplicates" />
+      <property name="Sorted" visibility="public" read="FSorted" write="SetSorted" type="Boolean" />
+      <event name="OnChange" visibility="public" read="FOnChange" write="FOnChange" type="TNotifyEvent" />
+      <event name="OnChanging" visibility="public" read="FOnChanging" write="FOnChanging" type="TNotifyEvent" />
+    </members>
+  </class>
+  <struct name="TUcNumber">
+    <field name="Numerator" type="Integer" visibility="public" />
+    <field name="Denominator" type="Integer" visibility="public" />
+  </struct>
+  <variable name="WideCompareText" type="TCompareFunc" />
+  <function name="UnicodeCaseFold" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Code" type="UCS4Char" />
+      <retval type="UCS4String" />
+    </parameters>
+  </function>
+  <function name="UnicodeToUpper" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Code" type="UCS4Char" />
+      <retval type="UCS4String" />
+    </parameters>
+  </function>
+  <function name="UnicodeToLower" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Code" type="UCS4Char" />
+      <retval type="UCS4String" />
+    </parameters>
+  </function>
+  <function name="UnicodeToTitle" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Code" type="UCS4Char" />
+      <retval type="UCS4String" />
+    </parameters>
+  </function>
+  <function name="UnicodeNumberLookup" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Code" type="UCS4Char" />
+      <parameter name="Number" type="TUcNumber" paramflags="var" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeComposePair" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="First" type="UCS4Char" />
+      <parameter name="Second" type="UCS4Char" />
+      <parameter name="Composite" type="UCS4Char" paramflags="var" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="StrLenW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <retval type="Cardinal" />
+    </parameters>
+  </function>
+  <function name="StrEndW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrMoveW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="PWideChar" />
+      <parameter name="Count" type="Cardinal" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrCopyW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="PWideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrECopyW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="PWideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrLCopyW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="PWideChar" />
+      <parameter name="MaxLen" type="Cardinal" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrPCopyW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="string" paramflags="const" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrPLCopyW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="string" paramflags="const" />
+      <parameter name="MaxLen" type="Cardinal" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrCatW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="PWideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrLCatW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Dest" type="PWideChar" />
+      <parameter name="Source" type="PWideChar" />
+      <parameter name="MaxLen" type="Cardinal" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrCompW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str1" type="PWideChar" />
+      <parameter name="Str2" type="PWideChar" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="StrICompW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str1" type="PWideChar" />
+      <parameter name="Str2" type="PWideChar" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="StrLICompW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str1" type="PWideChar" />
+      <parameter name="Str2" type="PWideChar" />
+      <parameter name="MaxLen" type="Cardinal" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="StrLCompW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str1" type="PWideChar" />
+      <parameter name="Str2" type="PWideChar" />
+      <parameter name="MaxLen" type="Cardinal" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="StrNScanW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S1" type="PWideChar" />
+      <parameter name="S2" type="PWideChar" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="StrRNScanW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S1" type="PWideChar" />
+      <parameter name="S2" type="PWideChar" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="StrScanW" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <parameter name="Chr" type="WideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrScanW" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <parameter name="Chr" type="WideChar" />
+      <parameter name="StrLen" type="Cardinal" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrRScanW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <parameter name="Chr" type="WideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrPosW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <parameter name="SubStr" type="PWideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrAllocW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Size" type="Cardinal" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <function name="StrBufSizeW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <retval type="Cardinal" />
+    </parameters>
+  </function>
+  <function name="StrNewW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+      <retval type="PWideChar" />
+    </parameters>
+  </function>
+  <procedure name="StrDisposeW" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+    </parameters>
+  </procedure>
+  <procedure name="StrSwapByteOrder" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str" type="PWideChar" />
+    </parameters>
+  </procedure>
+  <function name="WideAdjustLineBreaks" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideQuotedStr" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <parameter name="Quote" type="WideChar" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideExtractQuotedStr" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Src" type="PWideChar" paramflags="var" />
+      <parameter name="Quote" type="WideChar" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideStringOfChar" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="WideChar" />
+      <parameter name="Count" type="Cardinal" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideTrim" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideTrimLeft" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideTrimRight" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideCharPos" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <parameter name="Ch" type="WideChar" paramflags="const" />
+      <parameter name="Index" type="Integer" paramflags="const" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="WideCompose" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideDecompose" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <parameter name="Compatible" type="Boolean" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideCaseFolding" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="C" type="WideChar" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideCaseFolding" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideLowerCase" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="C" type="WideChar" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideLowerCase" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideNormalize" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <parameter name="Form" type="TNormalizationForm" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideSameText" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Str1" type="WideString" paramflags="const" />
+      <parameter name="Str2" type="WideString" paramflags="const" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="WideTitleCase" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="C" type="WideChar" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideTitleCase" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideUpperCase" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="C" type="WideChar" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideUpperCase" visibility="private" procflags="overload virtual">
+    <parameters>
+      <parameter name="S" type="WideString" paramflags="const" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsAlpha" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsDigit" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsAlphaNum" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsCased" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsControl" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsSpace" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsWhiteSpace" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsBlank" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsPunctuation" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsGraph" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsPrintable" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsUpper" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsLower" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsTitle" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsHexDigit" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsIsoControl" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsFormatControl" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsSymbol" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsNumber" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsNonSpacing" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsOpenPunctuation" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsClosePunctuation" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsInitialPunctuation" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsFinalPunctuation" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsComposed" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsQuotationMark" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsSymmetric" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsMirroring" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsNonBreaking" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsRightToLeft" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsLeftToRight" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsStrong" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsWeak" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsNeutral" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsSeparator" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsMark" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsModifier" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsLetterNumber" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsConnectionPunctuation" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsDash" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsMath" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsCurrency" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsModifierSymbol" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsNonSpacingMark" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsSpacingMark" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsEnclosing" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsPrivate" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsSurrogate" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsLineSeparator" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsParagraphSeparator" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsIdentifierStart" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsIdentifierPart" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsDefined" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsUndefined" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsHan" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="UnicodeIsHangul" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" />
+      <retval type="Boolean" />
+    </parameters>
+  </function>
+  <function name="CharSetFromLocale" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Language" type="Cardinal" />
+      <retval type="TFontCharSet" />
+    </parameters>
+  </function>
+  <function name="CodePageFromLocale" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Language" type="Cardinal" />
+      <retval type="Integer" />
+    </parameters>
+  </function>
+  <function name="KeyboardCodePage" visibility="private" procflags="virtual">
+    <parameters>
+      <retval type="Word" />
+    </parameters>
+  </function>
+  <function name="KeyUnicode" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="Char" />
+      <retval type="WideChar" />
+    </parameters>
+  </function>
+  <function name="CodeBlockFromChar" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="C" type="UCS4Char" paramflags="const" />
+      <retval type="TUnicodeBlock" />
+    </parameters>
+  </function>
+  <function name="StringToWideStringEx" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="string" paramflags="const" />
+      <parameter name="CodePage" type="Word" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+  <function name="WideStringToStringEx" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="WS" type="WideString" paramflags="const" />
+      <parameter name="CodePage" type="Word" />
+      <retval type="string" />
+    </parameters>
+  </function>
+  <function name="TranslateString" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="string" paramflags="const" />
+      <parameter name="CP1" type="Word" />
+      <parameter name="CP2" type="Word" />
+      <retval type="string" />
+    </parameters>
+  </function>
+  <procedure name="ExpandANSIString" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="Source" type="PAnsiChar" paramflags="const" />
+      <parameter name="Target" type="PWideChar" />
+      <parameter name="Count" type="Cardinal" />
+    </parameters>
+  </procedure>
+  <function name="WideStringToUTF8" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="WideString" />
+      <retval type="string" />
+    </parameters>
+  </function>
+  <function name="UTF8ToWideString" visibility="private" procflags="virtual">
+    <parameters>
+      <parameter name="S" type="string" />
+      <retval type="WideString" />
+    </parameters>
+  </function>
+</namespace>
