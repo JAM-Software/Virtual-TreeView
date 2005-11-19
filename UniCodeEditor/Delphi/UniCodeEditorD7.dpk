@@ -33,7 +33,6 @@ requires
 
 contains
   UniCodeEditorReg in '..\Design\UniCodeEditorReg.pas',
-
   UCECPPHighlighter in '..\Source\UCECPPHighlighter.pas',
   UCEDCGHighlighter in '..\Source\UCEDCGHighlighter.pas',
   UCEDelphiHighlighter in '..\Source\UCEDelphiHighlighter.pas',

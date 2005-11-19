@@ -1,4 +1,4 @@
-package VirtualTreesD7;
+package VirtualTreesD10;
 
 {$R *.res}
 {$ALIGN 8}
@@ -27,7 +27,6 @@ package VirtualTreesD7;
 {$IMPLICITBUILD ON}
 
 requires
-  TntUnicodeVcl_R70,
   vcl,
   vclx;
 

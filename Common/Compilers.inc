@@ -1,9 +1,11 @@
 //----------------------------------------------------------------------------------------------------------------------
 // Include file to determine which compiler is currently being used to build the project/component.
-// This file uses ideas from Brad Stowers DFS.inc file (www.delphifreestuff.com).
+// This file uses ideas from Brad Stowers DFS.inc file.
 //
 // Portions created by Mike Lischke are
-// Copyright (c) 1999-2005 Mike Lischke (public@soft-gems.net). All Rights Reserved.
+// Copyright (C) 1999-2005 Mike Lischke. All Rights Reserved.
+// Portions created by Jim Kueneman are
+// Copyright (C) 2005 Jim Kueneman. All Rights Reserved.
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
@@ -48,6 +50,8 @@
 // - COMPILER_8_UP : Kylix/Delphi/BCB 8.x or higher is the compiler.
 // - COMPILER_9    : Kylix/Delphi/BCB 9.x is the compiler.
 // - COMPILER_9_UP : Kylix/Delphi/BCB 9.x or higher is the compiler.
+// - COMPILER_10    : Kylix/Delphi/BCB 9.x is the compiler.
+// - COMPILER_10_UP : Kylix/Delphi/BCB 10.x or higher is the compiler.
 //
 // Only defined if Windows is the target:
 // - CPPB        : Any version of BCB is being used.
@@ -80,6 +84,7 @@
 // - DELPHI_8_UP : Delphi v8.x or higher is being used.
 // - DELPHI_9    : Delphi v9.x is being used.
 // - DELPHI_9_UP : Delphi v9.x or higher is being used.
+// - DELPHI_XXX is not used any more, use the COMPILER_XXX defines
 //
 // Only defined if Linux is the target:
 // - KYLIX       : Any version of Kylix is being used.
@@ -112,12 +117,20 @@
 {$endif CLR}
 
 {$ifdef Win32}
+
+// Compiler defines not specific to a particlular platform.
+
+  // DELPHI and BCB are no longer defined, only COMPILER
+  {$ifdef VER180}
+    {$define COMPILER_10}
+  {$endif VER180}
+
   {$ifdef VER170}
     {$define COMPILER_9}
     {$define DELPHI}
     {$define DELPHI_9}
   {$endif VER170}
-
+  
   {$ifdef VER160}
     {$define COMPILER_8}
     {$define DELPHI}
@@ -140,7 +153,7 @@
       {$define DELPHI_6}
     {$endif}
   {$endif}
-      
+
   {$ifdef VER130}
     {$define COMPILER_5}
     {$ifdef BCB}
@@ -177,7 +190,7 @@
   {$endif}
 
   {$ifdef VER93}
-    {$define COMPILER_2} // C++ Builder v1 compiler is really v2 
+    {$define COMPILER_2} // C++ Builder v1 compiler is really v2
     {$define CPPB}
     {$define CPPB_1}
   {$endif}
@@ -329,7 +342,7 @@
 
 {$endif Win32}
 
-// Compiler defines not specific to a particlular platform.
+
 {$ifdef COMPILER_1}
   {$define COMPILER_1_UP}
 {$endif}
@@ -402,4 +415,31 @@
   {$define COMPILER_9_UP}
 {$endif}
 
+{$ifdef COMPILER_10}
+  {$define COMPILER_1_UP}
+  {$define COMPILER_2_UP}
+  {$define COMPILER_3_UP}
+  {$define COMPILER_4_UP}
+  {$define COMPILER_5_UP}
+  {$define COMPILER_6_UP}
+  {$define COMPILER_7_UP}
+  {$define COMPILER_8_UP}
+  {$define COMPILER_9_UP}
+  {$define COMPILER_10_UP}
+  // Backwards compatibility
+  {$define DELPHI_2_UP}
+  {$define DELPHI_3_UP}
+  {$define DELPHI_4_UP}
+  {$define DELPHI_5_UP}
+  {$define DELPHI_6_UP}
+  {$define DELPHI_7_UP}
+  {$define DELPHI_8_UP}
+  {$define DELPHI_9_UP}
+  {$define CPPB_3_UP}
+  {$define CPPB_4_UP}
+  {$define CPPB_5_UP}
+  {$define CPPB_6_UP}
+{$endif}
+
 //----------------------------------------------------------------------------------------------------------------------
+

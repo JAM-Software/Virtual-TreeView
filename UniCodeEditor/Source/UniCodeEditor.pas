@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.1.15
+// Version 2.2.1
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -107,7 +107,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.1.8';
+  UCEVersion = '2.2.1';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -169,7 +169,7 @@ type
   end;
 
   TPaintEvent = procedure(Sender: TCustomUnicodeEdit; ACanvas: TCanvas) of object;
-  TCaretEvent = procedure(Sender: TCustomUnicodeEdit; X, Y: Cardinal) of object;
+  TCaretEvent = procedure(Sender: TCustomUnicodeEdit; X, Y: Integer) of object;
   TReplaceTextEvent = procedure(Sender: TCustomUnicodeEdit; const Search, Replace: WideString; Line, Start, Stop: Integer;
     var Action: TReplaceAction) of object;
   TProcessCommandEvent = procedure(Sender: TCustomUnicodeEdit; var Command: TEditorCommand; var AChar: WideChar;
@@ -489,7 +489,7 @@ type
     FContent: TUniCodeEditorContent;
     FData: TObject;                    // This is a placeholder for application defined data.
                                        // the selection block end or just the cursor position.
-    FDoubleClickTime: UINT;
+    FDoubleClickTime: Cardinal;
     FExtraLineSpacing: Integer;
     FFontDummy,
     FLineNumberFont: TFont;
@@ -514,6 +514,7 @@ type
     FOffsetY: Integer;
     FKeypressHandled: Boolean;         // Used to prevent double keyboard input processing (e.g. Ctrl+shift+I
                                        // which automatically gets converted to tabulator).
+    FDefaultStyle: IUCELineStyle;      // Used to dynamically switch the style (colors, font styles) of all lines.
 
     FOnBookmarkChange: TBookmarkChangeEvent;
     FOnCaretChange: TCaretEvent;
@@ -560,6 +561,7 @@ type
     procedure SetCaretXY(const Value: TPoint);
     procedure SetCaretY(Value: Integer);
     procedure SetCharWidth(const Value: Integer);
+    procedure SetDefaultStyle(const Value: IUCELineStyle);
     procedure SetExtraLineSpacing(const Value: Integer);
     procedure SetFont(const Value: TFont);
     procedure SetGutterColor(Value: TColor);
@@ -629,9 +631,6 @@ type
     procedure InsertText(Value: WideString);
     procedure InternalBlockIndent(Start, Stop: TPoint);
     procedure InternalBlockUnindent(Start, Stop: TPoint);
-    procedure InvalidateLine(Index: Integer);
-    procedure InvalidateLines(Start, Stop: Integer);
-    procedure InvalidateToBottom(Index: Integer);
     procedure InsertCharacter(NewChar: WideChar);
     function IsIdentChar(const AChar: WideChar; IdChars: TIdentChars): Boolean;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
@@ -727,6 +726,9 @@ type
     procedure PasteFromClipboard;
     function PositionFromPoint(X, Y: Integer): TPoint;
     procedure Redo;
+    procedure RefreshLine(Index: Integer);
+    procedure RefreshLines(Start, Stop: Integer);
+    procedure RefreshToBottom(Index: Integer);
     procedure RemoveBookmark(BookMark: Integer);
     function RowColumnToCharPosition(P: TPoint): Cardinal;
     procedure SaveToFile(const FileName: WideString; TextFormat: TTextFormat);
@@ -749,6 +751,7 @@ type
     property CharsInWindow: Integer read FCharsInWindow;
     property Content: TUniCodeEditorContent read FContent;
     property Data: TObject read FData write FData;
+    property DefaultStyle: IUCELineStyle read FDefaultStyle write SetDefaultStyle;
     property LineHeight: integer read FTextHeight;
     property LinesInWindow: Integer read FLinesInWindow;
     property LineText: WideString read GetLineText write SetLineText;
@@ -1510,7 +1513,7 @@ end;
 procedure TUCELine.SetText(const Value: WideString);
 
 begin
-  FText := FOwner.ConvertTabs(Value);
+  FText := Value;
   Changed;
 end;
 
@@ -2153,6 +2156,7 @@ begin
   begin
     FOwner.FUndoList.FinishPendingChange;
     FOwner.ResetCaret;
+    FOwner.Invalidate;
     DoChangeLine(nil);
   end;
 end;
@@ -2301,7 +2305,7 @@ begin
 
   Inc(FCount);
   FLines[Index] := TUCELine.Create(Self);
-  FLines[Index].FText := ConvertTabs(Text);
+  FLines[Index].FText := Text;
   FLines[Index].FIndex := Index;
 
   Result := FLines[Index];
@@ -2423,8 +2427,6 @@ begin
   else
   begin
     Result.Y := FCount - 1;
-
-    // Use Self instead direct access to allow validation to work.
     Result.X := Self[FCount - 1].GetLineEnd(False);
   end;
 end;
@@ -2644,15 +2646,9 @@ begin
             Inc(Head);
         end;
       end;
-      if FCount = 0 then
-      begin
-        FOwner.ResetCaret;       
-        DoChangeLine(nil);
-      end
-      else
-      begin
-        FOwner.CaretXY := Point(Length(FLines[FCount - 1].Text), FCount - 1);
-      end;
+
+      FOwner.ResetCaret;
+      DoChangeLine(nil);
     finally
       FOwner.EndUpdate;
     end;
@@ -2954,7 +2950,7 @@ begin
     Value.Y := 0;
 
   if (FUpdateCount = 0) and SelectionAvailable then
-    InvalidateLines(FSortedBlockBegin.Y, FSortedBlockEnd.Y);
+    RefreshLines(FSortedBlockBegin.Y, FSortedBlockEnd.Y);
 
   FSelectionBlockBegin := Value;
   FSelectionBlockEnd := Value;
@@ -2962,7 +2958,7 @@ begin
   FSortedBlockEnd := Value;
 
   if (FUpdateCount = 0) and SelectionAvailable then
-    InvalidateLines(FSortedBlockBegin.Y, FSortedBlockEnd.Y);
+    RefreshLines(FSortedBlockBegin.Y, FSortedBlockEnd.Y);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2986,9 +2982,9 @@ begin
     if FUpdateCount = 0 then
     begin
       if Value.Y <> FSelectionBlockEnd.Y then
-        InvalidateLines(Value.Y, FSelectionBlockEnd.Y)
+        RefreshLines(Value.Y, FSelectionBlockEnd.Y)
       else
-        InvalidateLine(FSelectionBlockEnd.Y);
+        RefreshLine(FSelectionBlockEnd.Y);
     end;
 
     FSelectionBlockEnd := Value;
@@ -3139,6 +3135,18 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TCustomUniCodeEdit.SetDefaultStyle(const Value: IUCELineStyle);
+
+begin
+  if FDefaultStyle <> Value then
+  begin
+    FDefaultStyle := Value;
+    Invalidate;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCustomUniCodeEdit.SetExtraLineSpacing(const Value: Integer);
 
 begin
@@ -3274,7 +3282,7 @@ begin
   if FCaretY < FContent.Count then
   begin
     FContent[FCaretY].Text := Value;
-    InvalidateLine(FCaretY);
+    RefreshLine(FCaretY);
   end;
   if(GetMaxRightChar < (Length(FContent[FCaretY].Text) + 1)) then
   begin
@@ -3561,13 +3569,13 @@ procedure TCustomUniCodeEdit.SetSelText(const Value: WideString);
 begin
   if SelectionAvailable then
   begin
-    InvalidateLines(BlockBegin.Y, BlockEnd.Y);
+    RefreshLines(BlockBegin.Y, BlockEnd.Y);
     DeleteSelection(Value = '');
   end;
   if Value <> '' then
   begin
     InsertText(Value);
-    InvalidateLines(BlockBegin.Y, BlockEnd.Y);
+    RefreshLines(BlockBegin.Y, BlockEnd.Y);
   end;
 end;
 
@@ -4225,7 +4233,7 @@ begin
               CaretXY := TargetPoint;
               BlockBegin := TargetPoint;
               FUndoList.FinishPendingChange;
-              InvalidateToBottom(FCaretY);
+              RefreshToBottom(FCaretY);
             end;
         end;
       end
@@ -4574,12 +4582,12 @@ begin
       else
         CaretXY := Point(0, FCaretY + 1);
       FUndoList.FinishPendingChange(BlockEnd);
-      InvalidateToBottom(FCaretY - 1);
+      RefreshToBottom(FCaretY - 1);
     end
     else
     begin
       FUndoList.FinishPendingChange(Point(0, FCaretY + 1));
-      InvalidateToBottom(FCaretY);
+      RefreshToBottom(FCaretY);
     end;
   end;
 end;
@@ -4606,9 +4614,6 @@ begin
   begin
     Temp := TWideStringList.Create;
     try
-      if not (eoUseTabs in FOptions) then
-        Value := FContent.ConvertTabs(Value);
-        
       Temp.Text := Value + WideCRLF;
       if FContent.Count = 0 then
         CX := BlockBegin.X
@@ -4724,67 +4729,6 @@ begin
       Delete(Line, 1, J);
     FContent[I].Text := Line;
   end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomUniCodeEdit.InvalidateLine(Index: Integer);
-
-var
-  R: TRect;
-
-begin
-  R := Rect(0, (Index + FOffsetY) * FTextHeight, ClientWidth, (Index + FOffsetY + 1) * FTextHeight);
-  InvalidateRect(Handle, @R, False);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomUniCodeEdit.InvalidateLines(Start, Stop: Integer);
-
-var
-  R: TRect;
-
-begin
-  if Start <= Stop then
-  begin
-    Inc(Start, FOffsetY);
-    if Start < 0 then
-      Start := 0;
-    Inc(Stop, FOffsetY + 1);
-    if Stop > FLinesInWindow then
-      Stop := FLinesInWindow;
-    // Consider partially visible line.
-    if (Stop = FLinesInWindow) and ((ClientHeight mod FLinesInWindow) <> 0) then
-      Inc(Stop);
-    R := Rect(0, Start * FTextHeight, ClientWidth, Stop * FTextHeight);
-  end
-  else
-  begin
-    Stop := Stop + FOffsetY;
-    if Stop < 0 then
-      Stop := 0;
-    Start := Start + FOffsetY + 1;
-    if Start > FLinesInWindow then
-      Start := FLinesInWindow;
-    // consider partially visible line
-    if (ClientHeight mod FLinesInWindow) <> 0 then
-      Inc(Start);
-    R := Rect(0, Stop * FTextHeight, ClientWidth, Start * FTextHeight);
-  end;
-  InvalidateRect(Handle, @R, False);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomUniCodeEdit.InvalidateToBottom(Index: Integer);
-
-var
-  R: TRect;
-
-begin
-  R := Rect(0, (Index + FOffsetY) * FTextHeight, ClientWidth, ClientHeight);
-  InvalidateRect(Handle, @R, False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5561,33 +5505,45 @@ var
   // Selects the given colors into the target canvas. If CustomStyle is Assigned
   // then use this style instead of the given colors.
   // If Reversed is true then fore- and background colors of the custom style
-  // (if assinged) are reversed.
-  // If there is a custom style Assigned, which has its font style forcing flag set
+  // (if assinged) are reversed. This parameter is only valid if a custom style is given.
+  // If there is a custom style assigned, which has its font style forcing flag set
   // then also font styles from this custom style are applied.
 
+  var
+    Temp: TColor;
+    Style: IUCELineStyle;
+
   begin
+    Style := FDefaultStyle;
+    if Assigned(CustomStyle) then
+      Style := CustomStyle;
+    if Assigned(Style) then
+    begin
+      if Style.Foreground <> clDefault then
+        Foreground := Style.Foreground;
+      if Style.Background <> clDefault then
+        Background := Style.Background;
+      if Reversed then
+      begin
+        Temp := Foreground;
+        Foreground := Background;
+        Background := Temp;
+      end;
+    end;
+
     with TextCanvas do
     begin
-      if Assigned(CustomStyle) then
-      begin
-        if Reversed then
-        begin
-          Font.Color := CustomStyle.Background;
-          Brush.Color := CustomStyle.Foreground;
-        end
-        else
-        begin
-          Font.Color := CustomStyle.Foreground;
-          Brush.Color := CustomStyle.Background;
-        end;
-        if CustomStyle.ForceFontStyles then
-          Font.Style := CustomStyle.FontStyles;
-      end
+      if Foreground = clDefault then
+        Font.Color := Self.Font.Color
       else
-      begin
         Font.Color := Foreground;
+      if Background = clDefault then
+        Brush.Color := Self.Color
+      else
         Brush.Color := Background;
-      end;
+
+      if Assigned(Style) and Style.ForceFontStyles then
+        Font.Style := Style.FontStyles;
     end;
   end;
   
@@ -5707,6 +5663,9 @@ begin
           if ShowLineBreak then
             PaintLineBreak;
         end;
+
+        // Prepare end of line drawing.
+        PickColors(Self.Font.Color, Self.Color, False);
       end
       else
       begin
@@ -5716,7 +5675,7 @@ begin
           SelStart := 0
         else
           SelStart := FContent[LineIndex].ColumnToCharIndex(BlockBegin.X);
-        if BlockENd.Y > LineIndex then
+        if BlockEnd.Y > LineIndex then
           SelEnd := FMaxRightPos // any large number makes it here
         else
           SelEnd := FContent[LineIndex].ColumnToCharIndex(BlockEnd.X);
@@ -5760,7 +5719,7 @@ begin
           begin
             if CurrentStyle <> 2 then // other than selected style?
             begin
-              // set the selection highlight colors
+              // Set the selection highlight colors.
               with FSelectedColor do
                 PickColors(Foreground, Background, True);
               CurrentStyle := 2;
@@ -5785,9 +5744,7 @@ begin
             begin
               // set needed styles
               with TokenData do
-              begin
                 PickColors(Foreground, Background, False);
-              end;
               CurrentStyle := 1;
             end;
             with TokenData do
@@ -5803,7 +5760,7 @@ begin
         end;
 
         // Prepare drawing of the rest of the line.
-        if LineIndex < BlockENd.Y then
+        if LineIndex < BlockEnd.Y then
         begin
           if Assigned(CustomStyle) then
             Brush.Color := CustomStyle.Foreground
@@ -5811,6 +5768,8 @@ begin
             Brush.Color := FSelectedColor.Background;
         end
         else
+          with FSelectedColor do
+            PickColors(Foreground, Background, True);
           if Assigned(CustomStyle) then
             Brush.Color := CustomStyle.Background
           else
@@ -5829,7 +5788,7 @@ begin
             if Assigned(CustomStyle) then
               Font.Color := CustomStyle.Foreground
             else
-              Font.Color := Font.Color;
+              Font.Color := Self.Font.Color;
           end;
           PaintLineBreak;
         end;
@@ -6035,33 +5994,45 @@ var
   // Selects the given colors into the target canvas. If CustomStyle is Assigned
   // then use this style instead of the given colors.
   // If Reversed is true then fore- and background colors of the custom style
-  // (if assinged) are reversed.
-  // If there is a custom style Assigned, which has its font style forcing flag set
+  // (if assinged) are reversed. This parameter is only valid if a custom style is given.
+  // If there is a custom style assigned, which has its font style forcing flag set
   // then also font styles from this custom style are applied.
 
+  var
+    Temp: TColor;
+    Style: IUCELineStyle;
+
   begin
+    Style := FDefaultStyle;
+    if Assigned(CustomStyle) then
+      Style := CustomStyle;
+    if Assigned(Style) then
+    begin
+      if Style.Foreground <> clDefault then
+        Foreground := Style.Foreground;
+      if Style.Background <> clDefault then
+        Background := Style.Background;
+      if Reversed then
+      begin
+        Temp := Foreground;
+        Foreground := Background;
+        Background := Temp;
+      end;
+    end;
+
     with TextCanvas do
     begin
-      if Assigned(CustomStyle) then
-      begin
-        if Reversed then
-        begin
-          Font.Color := CustomStyle.Background;
-          Brush.Color := CustomStyle.Foreground;
-        end
-        else
-        begin
-          Font.Color := CustomStyle.Foreground;
-          Brush.Color := CustomStyle.Background;
-        end;
-        if CustomStyle.ForceFontStyles then
-          Font.Style := CustomStyle.FontStyles;
-      end
+      if Foreground = clDefault then
+        Font.Color := Self.Font.Color
       else
-      begin
         Font.Color := Foreground;
+      if Background = clDefault then
+        Brush.Color := Self.Color
+      else
         Brush.Color := Background;
-      end;
+
+      if Assigned(Style) and Style.ForceFontStyles then
+        Font.Style := Style.FontStyles;
     end;
   end;
   
@@ -6363,7 +6334,7 @@ begin
         // End states differ. Everything following must be rescanned.
         FContent[Index + 1].LexerState := NewEndState;
         FLastValidLine := Index;
-        InvalidateToBottom(Index);
+        RefreshToBottom(Index);
       end;
     end;
   end;
@@ -6962,7 +6933,10 @@ begin
     ecSelLeft:
       begin
         FUndoList.PrepareStateChange;
-        CX := FContent[FCaretY].PreviousCharPos(FCaretX);
+        if FCaretY < FContent.Count then
+          CX := FContent[FCaretY].PreviousCharPos(FCaretX)
+        else
+          CX := FCaretX - 1;
 
         if not (eoScrollPastEOL in FOptions) and (FCaretX = 0) then
         begin
@@ -6988,8 +6962,11 @@ begin
     ecSelRight:
       begin
         FUndoList.PrepareStateChange;
-        CX := FContent[FCaretY].NextCharPos(FCaretX);
-        if not (eoScrollPastEOL in FOptions) and (CX > FContent[FCaretY].GetLineEnd(False)) then
+        if FCaretY < FContent.Count then
+          CX := FContent[FCaretY].NextCharPos(FCaretX)
+        else
+          CX := FCaretX + 1;
+        if not (eoScrollPastEOL in FOptions) and (FCaretY < FContent.Count) and (CX > FContent[FCaretY].GetLineEnd(False)) then
         begin
           if FCaretY < FContent.Count - 1 then
             CaretXY := Point(0, FCaretY + 1);
@@ -7270,7 +7247,7 @@ begin
             FUndoList.PrepareReplaceChange(WP, Point(0, FCaretY + 1), WP, Helper);
             BlockBegin := WP;
             BlockEnd := Point(0, FCaretY + 1);
-            InvalidateToBottom(FCaretY);
+            RefreshToBottom(FCaretY);
           end
           else
           begin
@@ -7342,7 +7319,7 @@ begin
         FContent.DeleteLine(FCaretY);
         CaretXY := Point(0, FCaretY);
         BlockBegin := CaretXY;
-        InvalidateToBottom(FCaretY);
+        RefreshToBottom(FCaretY);
         FUndoList.FinishPendingChange;
       end;
 
@@ -7983,6 +7960,67 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TCustomUniCodeEdit.RefreshLine(Index: Integer);
+
+var
+  R: TRect;
+
+begin
+  R := Rect(0, (Index + FOffsetY) * FTextHeight, ClientWidth, (Index + FOffsetY + 1) * FTextHeight);
+  InvalidateRect(Handle, @R, False);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomUniCodeEdit.RefreshLines(Start, Stop: Integer);
+
+var
+  R: TRect;
+
+begin
+  if Start <= Stop then
+  begin
+    Inc(Start, FOffsetY);
+    if Start < 0 then
+      Start := 0;
+    Inc(Stop, FOffsetY + 1);
+    if Stop > FLinesInWindow then
+      Stop := FLinesInWindow;
+    // Consider partially visible line.
+    if (Stop = FLinesInWindow) and ((ClientHeight mod FLinesInWindow) <> 0) then
+      Inc(Stop);
+    R := Rect(0, Start * FTextHeight, ClientWidth, Stop * FTextHeight);
+  end
+  else
+  begin
+    Stop := Stop + FOffsetY;
+    if Stop < 0 then
+      Stop := 0;
+    Start := Start + FOffsetY + 1;
+    if Start > FLinesInWindow then
+      Start := FLinesInWindow;
+    // consider partially visible line
+    if (ClientHeight mod FLinesInWindow) <> 0 then
+      Inc(Start);
+    R := Rect(0, Stop * FTextHeight, ClientWidth, Start * FTextHeight);
+  end;
+  InvalidateRect(Handle, @R, False);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomUniCodeEdit.RefreshToBottom(Index: Integer);
+
+var
+  R: TRect;
+
+begin
+  R := Rect(0, (Index + FOffsetY) * FTextHeight, ClientWidth, ClientHeight);
+  InvalidateRect(Handle, @R, False);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCustomUniCodeEdit.RemoveBookmark(BookMark: Integer);
 
 var
@@ -7998,7 +8036,7 @@ begin
       Visible := not Allowed;
       if Allowed then
       begin
-        InvalidateLine(Y);
+        RefreshLine(Y);
         Y := -1;
       end;
     end;
@@ -8419,7 +8457,7 @@ begin
       FBookMarks[BookMark].X := X;
       FBookMarks[BookMark].Y := Y;
       FBookMarks[BookMark].Visible := True;
-      InvalidateLine(Y);
+      RefreshLine(Y);
     end;
   end;
 end;

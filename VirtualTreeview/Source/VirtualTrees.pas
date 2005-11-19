@@ -72,7 +72,7 @@ uses
   CommCtrl  // image lists, common controls tree structures
   {$ifdef ThemeSupport}
     {$ifndef COMPILER_7_UP}
-      , ThemeSrv, TMSchema, UxTheme  // Windows XP themes support. Get these units from www.delphi-gems.com.
+      , ThemeSrv, TMSchema, UxTheme  // Windows XP themes support. Get these units from www.soft-gems.net
     {$else}
       , Themes, UxTheme
     {$endif COMPILE_7_UP}
@@ -21808,7 +21808,7 @@ begin
         if (vsSelected in Node.States) and not Ghosted then
           Images.BlendColor := clDefault;
 
-        TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle);
+        TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle {$IFNDEF COMPILER_6_UP}, True{$ENDIF});
       
         // Now, draw the overlay. This circumnavigates limitations in the overlay mask index (it has to be 4 bits in size,
         // anything larger will be truncated by the ILD_OVERLAYMASK).
@@ -21817,7 +21817,7 @@ begin
         if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
           // Note: XPos and YPos are those of the normal images.
           TCustomImageListCast(ImageInfo[iiOverlay].Images).DoDraw(ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
-            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle);
+            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle {$IFNDEF COMPILER_6_UP}, True{$ENDIF});
       end;
   end;
 end;
@@ -31363,7 +31363,5 @@ finalization
   Watcher.Free;
   Watcher := nil;
 end.
-
-
 
 
