@@ -11218,7 +11218,7 @@ procedure TScrollBarOptions.SetScrollBarStyle(Value: TScrollBarStyle);
 
 begin
   {$ifndef UseFlatScrollbars}
-    Assert(Value = sbmRegular, 'Flat scrollbars styles are disabled. Enable UseFlatScrollbars in VirtualTrees.pas for' +
+    Assert(Value = sbmRegular, 'Flat scrollbars styles are disabled. Enable UseFlatScrollbars in VTConfig.inc for' +
       'flat scrollbar support.');
   {$endif UseFlatScrollbars}
 
@@ -21808,7 +21808,7 @@ begin
         if (vsSelected in Node.States) and not Ghosted then
           Images.BlendColor := clDefault;
 
-        TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle {$IFNDEF COMPILER_6_UP}, True{$ENDIF});
+        TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle {$ifndef COMPILER_6_UP}, True {$endif});
       
         // Now, draw the overlay. This circumnavigates limitations in the overlay mask index (it has to be 4 bits in size,
         // anything larger will be truncated by the ILD_OVERLAYMASK).
@@ -21817,7 +21817,7 @@ begin
         if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
           // Note: XPos and YPos are those of the normal images.
           TCustomImageListCast(ImageInfo[iiOverlay].Images).DoDraw(ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
-            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle {$IFNDEF COMPILER_6_UP}, True{$ENDIF});
+            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle {$ifndef COMPILER_6_UP}, True {$endif});
       end;
   end;
 end;
