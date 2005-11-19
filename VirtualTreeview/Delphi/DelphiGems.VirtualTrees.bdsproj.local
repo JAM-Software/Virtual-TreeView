@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>2005.07.03 14:38:33.634.resources,V:\Library\VirtualTreeview\Resources\DelphiGems.VirtualControls.VirtualTreeview.resources=</Transaction>
-    <Transaction>2005.07.03 14:51:28.558.bdsproj,V:\Library\VirtualTreeview\Delphi\DelphiGems.VirtualControls.VirtualTrees.bdsproj=V:\Library\VirtualTreeview\Delphi\DelphiGems.VirtualTrees.bdsproj</Transaction>
-    <Transaction>2005.07.03 14:53:56.110.resx,V:\Library\VirtualTreeview\Resources\DelphiGems.VirtualControls.VirtualTreeview.resx=</Transaction>
-  </Transactions>
-</BorlandProject>

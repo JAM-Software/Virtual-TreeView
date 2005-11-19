@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<namespace name=".VirtualTreesD9">
-  <contains name="VTHeaderPopup" />
-  <contains name="VirtualTrees" />
-</namespace>
