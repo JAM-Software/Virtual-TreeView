@@ -14,6 +14,10 @@ interface
   {$warn UNSAFE_CODE off}
 {$endif COMPILER_7_UP}
 
+{$ifdef COMPILER_4}
+  {$R '..\Design\VirtualTrees.dcr'}
+{$endif COMPILER_4}
+
 uses
   Windows, Classes,
   {$ifdef COMPILER_6_UP}

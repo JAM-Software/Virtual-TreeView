@@ -16,17 +16,19 @@ unit GraphicEx;
 // Copyright (C) 1999-2005 Mike Lischke. All Rights Reserved.
 //
 // Credits:
-//   Haukur K. Bragason, Ingo Neumann
+//   Haukur K. Bragason, Ingo Neumann, Craig Peterson
 //----------------------------------------------------------------------------------------------------------------------
 //
 // See help file for a description of supported image formats.
 //
-// Version II.1.12
+// Version II.1.13
 //
 // Note: This library can be compiled with Delphi 5 or newer versions.
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// November 2005
+//   - Bug fix: correct handling of 256 colors in PPM files.
 // October 2005
 //   - Bug fix: Passing dynamic arrays of zero size to functions using the @ operator fails.
 // February 2005
@@ -60,7 +62,7 @@ uses
   GraphicCompression, GraphicStrings, GraphicColor;
 
 const
-  GraphicExVersion = 'II.1.12';
+  GraphicExVersion = 'II.1.13';
 
 type
   TCardinalArray = array of Cardinal;
@@ -4656,11 +4658,11 @@ end;
 procedure TPPMGraphic.LoadFromMemory(const Memory: Pointer; Size: Int64; ImageIndex: Cardinal = 0); 
 
 var
-  Buffer: string;
   Line24: PBGR;
   Line8: PByte;
   X, Y: Integer;
   Pixel: Byte;
+  MaxVal: Word;
 
 begin
   inherited;
@@ -4674,8 +4676,9 @@ begin
       FProgressRect := Rect(0, 0, Width, 1);
       Progress(Self, psStarting, 0, False, FProgressRect, gesTransfering);
 
-      Buffer := ReadLine;
-      case StrToInt(Buffer[2]) of
+      if GetChar <> 'P' then
+        GraphicExError(gesInvalidImage, ['PBM, PGM or PPM']);
+      case StrToInt(GetChar) of
         1: // PBM ASCII format (black & white)
           begin
             PixelFormat := pf1Bit;
@@ -4810,8 +4813,7 @@ begin
             PixelFormat := pf24Bit;
             Self.Width := GetNumber;
             Self.Height := GetNumber;
-            // skip maximum color value
-            GetNumber;
+            MaxVal := GetNumber;
 
             // Pixel values are store linearly (but RGB instead BGR).
             // There's one allowed white space which will automatically be skipped by the first
@@ -4820,18 +4822,44 @@ begin
             for Y := 0 to Height - 1 do
             begin
               Line24 := ScanLine[Y];
-              for X := 0 to Width - 1 do
-              begin
-                Line24.R := Byte(GetChar);
-                Line24.G := Byte(GetChar);
-                Line24.B := Byte(GetChar);
-                Inc(Line24);
-              end;
+              if MaxVal = 255 then
+                for X := 0 to Width - 1 do
+                begin
+                  Line24.R := Byte(GetChar);
+                  Line24.G := Byte(GetChar);
+                  Line24.B := Byte(GetChar);
+                  Inc(Line24);
+                end
+              else if MaxVal < 255 then
+                for X := 0 to Width - 1 do
+                begin
+                  // These floating point calculations are the same as the GIMP's PPM scaling.
+                  // Precomputing 255/MaxVal or using MulDiv both give slightly different results
+                  // due to precision differences.
+                  // Paint Shop Pro's calculations for MaxVal < 255 are screwed up, and I couldn't
+                  // figure out the exact algorithm they're using.
+                  Line24.R := Trunc(Byte(GetChar) * 255 / MaxVal);
+                  Line24.G := Trunc(Byte(GetChar) * 255 / MaxVal);
+                  Line24.B := Trunc(Byte(GetChar) * 255 / MaxVal);
+                  Inc(Line24);
+                end
+              else
+                GraphicExError(gesInvalidImage, ['PBM, PGM or PPM']);
+                // TODO: PPM does support a MaxVal up to 65535, but I don't have any sample files to test
+//                for X := 0 to Width - 1 do
+//                begin
+//                  Line24.R := Trunc(Byte(GetChar) shl 8 + Byte(GetChar), 255, MaxVal);
+//                  Line24.G := Trunc(Byte(GetChar) shl 8 + Byte(GetChar), 255, MaxVal);
+//                  Line24.B := Trunc(Byte(GetChar) shl 8 + Byte(GetChar), 255, MaxVal);
+//                  Inc(Line24);
+//                end;
 
               Progress(Self, psRunning, MulDiv(Y, 100, Height), True, FProgressRect, '');
               OffsetRect(FProgressRect, 0, 1);
             end;
           end;
+        else
+          GraphicExError(gesInvalidImage, ['PBM, PGM or PPM']);
       end;
       Progress(Self, psEnding, 0, False, FProgressRect, '');
     end;
@@ -4844,9 +4872,6 @@ end;
 
 function TPPMGraphic.ReadImageProperties(const Memory: Pointer; Size: Int64; ImageIndex: Cardinal): Boolean;
 
-var
-  Buffer: string;
-
 begin
   Result := inherited ReadImageProperties(Memory, Size, ImageIndex);
 
@@ -4855,13 +4880,12 @@ begin
     begin
       FSource := Memory;
       FRemainingSize := Size;
-      Buffer := ReadLine;
 
       Compression := ctNone;
 
-      if Buffer[1] = 'P' then
+      if GetChar = 'P' then
       begin
-        case StrToInt(Buffer[2]) of
+        case StrToInt(GetChar) of
           1: // PBM ASCII format (black & white)
             begin
               Width := GetNumber;
@@ -9081,9 +9105,9 @@ begin
         ; 
     else
       // Indexed color scheme (3), with at most 256 alpha values (for each palette entry).
-      SetLength(FTransparency, 256);
+      SetLength(FTransparency, 255);
       // read the values (at most 256)...
-      Move(FRawBuffer^,  FTransparency[0], Min(FHeader.Length, 256));
+      Move(FRawBuffer^,  FTransparency[0], Max(FHeader.Length, 256));
       // ...and set default values (255, fully opaque) for non-supplied values
       if FHeader.Length < 256 then
         FillChar(FTransparency[FHeader.Length], 256 - FHeader.Length, $FF);

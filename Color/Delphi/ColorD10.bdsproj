@@ -5,18 +5,18 @@
 			<Option Name="Personality">Delphi.Personality</Option>
 			<Option Name="ProjectType">VCLApplication</Option>
 			<Option Name="Version">1.0</Option>
-			<Option Name="GUID">{47E2E1B3-C01C-42AD-973E-242F2D79BBC1}</Option>
+			<Option Name="GUID">{FF22DCE4-7402-4390-9F90-AD6692EEEC39}</Option>
 		</Option>
 	</PersonalityInfo>
 	<Delphi.Personality>
 		<Source>
-			<Source Name="MainSource">Misc7.dpk</Source>
+			<Source Name="MainSource">ColorD10.dpk</Source>
 		</Source>
 		<FileVersion>
 			<FileVersion Name="Version">7.0</FileVersion>
 		</FileVersion>
 		<Compiler>
-			<Compiler Name="A">8</Compiler>
+			<Compiler Name="A">4</Compiler>
 			<Compiler Name="B">0</Compiler>
 			<Compiler Name="C">1</Compiler>
 			<Compiler Name="D">1</Compiler>
@@ -50,10 +50,10 @@
 			<Compiler Name="DefaultNamespace"></Compiler>
 			<Compiler Name="SymbolDeprecated">True</Compiler>
 			<Compiler Name="SymbolLibrary">True</Compiler>
-			<Compiler Name="SymbolPlatform">True</Compiler>
+			<Compiler Name="SymbolPlatform">False</Compiler>
 			<Compiler Name="SymbolExperimental">True</Compiler>
 			<Compiler Name="UnitLibrary">True</Compiler>
-			<Compiler Name="UnitPlatform">True</Compiler>
+			<Compiler Name="UnitPlatform">False</Compiler>
 			<Compiler Name="UnitDeprecated">True</Compiler>
 			<Compiler Name="UnitExperimental">True</Compiler>
 			<Compiler Name="HResultCompat">True</Compiler>
@@ -113,17 +113,17 @@
 			<Linker Name="DebugInfo">False</Linker>
 			<Linker Name="RemoteSymbols">False</Linker>
 			<Linker Name="GenerateDRC">False</Linker>
-			<Linker Name="MinStackSize">16384</Linker>
+			<Linker Name="MinStackSize">4096</Linker>
 			<Linker Name="MaxStackSize">1048576</Linker>
 			<Linker Name="ImageBase">4194304</Linker>
-			<Linker Name="ExeDescription">Miscellanous controls</Linker>
+			<Linker Name="ExeDescription">Components related to color tasks</Linker>
 		</Linker>
 		<Directories>
-			<Directories Name="OutputDir"></Directories>
+			<Directories Name="OutputDir">..\..\bin\Windows</Directories>
 			<Directories Name="UnitOutputDir">V:\MySQL\Temp</Directories>
 			<Directories Name="PackageDLLOutputDir">V:\MySQL\Temp</Directories>
 			<Directories Name="PackageDCPOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="SearchPath">V:\Library\Common;V:\Library\Color\Source</Directories>
+			<Directories Name="SearchPath">..\..\Common;..\Source;..\Res;..\..\Design</Directories>
 			<Directories Name="Packages"></Directories>
 			<Directories Name="Conditionals"></Directories>
 			<Directories Name="DebugSourceDirs"></Directories>
@@ -146,7 +146,7 @@
 		</Language>
 		<VersionInfo>
 			<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
-			<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+			<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 			<VersionInfo Name="MajorVer">1</VersionInfo>
 			<VersionInfo Name="MinorVer">0</VersionInfo>
 			<VersionInfo Name="Release">0</VersionInfo>
@@ -169,6 +169,24 @@
 			<VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-		</VersionInfoKeys>
-	</Delphi.Personality>
+			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
+		</VersionInfoKeys>  
+    <Excluded_Packages>
+      <Excluded_Packages Name="V:\MySQL\Temp\TntUnicodeVcl_D90.bpl">Tnt Unicode Controls</Excluded_Packages>
+      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dcldb100.bpl">Borland Database Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclsmp100.bpl">Borland Sample Components</Excluded_Packages>
+      <Excluded_Packages Name="V:\MySQL\temp\EmbeddedWBPackageD9.bpl">Embedded Webbrowser</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcldbx100.bpl">Borland dbExpress Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclmid100.bpl">Borland MyBase DataAccess Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dclbde100.bpl">Borland BDE DB Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dbx100.bpl">Borland SQL Explorer UI Package</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\bin\dclado100.bpl">Borland ADO DB Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclib100.bpl">Borland InterBase Express Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcl31w100.bpl">Delphi 1.0 Compatibility Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\ibevnt100.bpl">Borland Interbase Event Alerter Component</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcltee100.bpl">TeeChart Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclmcn100.bpl">Borland DataSnap Connection Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcldbxcds100.bpl">Borland SimpleDataset Component (DBX)</Excluded_Packages>
+    </Excluded_Packages>
+  </Delphi.Personality>
 </BorlandProject>

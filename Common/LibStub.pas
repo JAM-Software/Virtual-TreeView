@@ -1031,7 +1031,7 @@ var
 begin
   wvsprintf(Buffer, Format, Arguments);
   OutputDebugString(Buffer);
-  OutputDebugString(#1310);
+  OutputDebugString(#13#10);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

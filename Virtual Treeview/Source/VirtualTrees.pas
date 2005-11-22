@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // November 2005
+//   - Bug fix: check for column index for autosetting main column if the current one is deleted.
 //   - Improvement: fixed column implementation completed (code donation by Igor Savkic)
 //
 // For full document history see help file.
@@ -18361,7 +18362,7 @@ begin
     if Assigned(FFocusedNode) then
     begin
       // Make sure a valid column is set if columns are used and no column has currently the focus.
-      if FHeader.UseColumns and (FFocusedColumn < 0) then
+      if FHeader.UseColumns and ((FFocusedColumn < 0) or (FFocusedColumn >= FHeader.FColumns.Count)) then
         FFocusedColumn := 0;
       // Do automatic expansion of the newly focused node if enabled.
       if (toAutoExpand in FOptions.FAutoOptions) and not (vsExpanded in FFocusedNode.States) then
