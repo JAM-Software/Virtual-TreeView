@@ -20,270 +20,603 @@ const Normal = 2;
  
  
 const kwFirstKeyword = 257;
-      kwADD = 257;
-      kwALGORITHM = 258;
-      kwALL = 259;
-      kwALTER = 260;
-      kwANALYZE = 261;
-      kwAND = 262;
-      kwAS = 263;
-      kwASC = 264;
-      kwASENSITIVE = 265;
-      kwAUTO_INCREMENT = 266;
-      kwBEFORE = 267;
-      kwBEGIN = 268;
-      kwBETWEEN = 269;
-      kwBIGINT = 270;
-      kwBINARY = 271;
-      kwBLOB = 272;
-      kwBOTH = 273;
-      kwBY = 274;
-      kwCALL = 275;
-      kwCASCADE = 276;
-      kwCASE = 277;
-      kwCHANGE = 278;
-      kwCHAR = 279;
-      kwCHARACTER = 280;
-      kwCHARSET = 281;
-      kwCHECK = 282;
-      kwCOLLATE = 283;
-      kwCOLUMN = 284;
-      kwCOLUMNS = 285;
-      kwCOMMIT = 286;
-      kwCONDITION = 287;
-      kwCONNECTION = 288;
-      kwCONSTRAINT = 289;
-      kwCONTINUE = 290;
-      kwCONVERT = 291;
-      kwCREATE = 292;
-      kwCROSS = 293;
-      kwCURRENT_DATE = 294;
-      kwCURRENT_TIME = 295;
-      kwCURRENT_TIMESTAMP = 296;
-      kwCURRENT_USER = 297;
-      kwCURSOR = 298;
-      kwDATABASE = 299;
-      kwDATABASES = 300;
-      kwDATE = 301;
-      kwDATETIME = 302;
-      kwDAY_HOUR = 303;
-      kwDAY_MICROSECOND = 304;
-      kwDAY_MINUTE = 305;
-      kwDAY_SECOND = 306;
-      kwDEC = 307;
-      kwDECIMAL = 308;
-      kwDECLARE = 309;
-      kwDEFAULT = 310;
-      kwDELAYED = 311;
-      kwDELETE = 312;
-      kwDELIMITER = 313;
-      kwDESC = 314;
-      kwDESCRIBE = 315;
-      kwDETERMINISTIC = 316;
-      kwDISTINCT = 317;
-      kwDISTINCTROW = 318;
-      kwDIV = 319;
-      kwDOUBLE = 320;
-      kwDROP = 321;
-      kwDUAL = 322;
-      kwEACH = 323;
-      kwELSE = 324;
-      kwELSEIF = 325;
-      kwENCLOSED = 326;
-      kwEND = 327;
-      kwENGINE = 328;
-      kwENUM = 329;
-      kwEQUAL = 330;
-      kwESCAPED = 331;
-      kwEXISTS = 332;
-      kwEXIT = 333;
-      kwEXPLAIN = 334;
-      kwFALSE = 335;
-      kwFETCH = 336;
-      kwFIELDS = 337;
-      kwFLOAT = 338;
-      kwFOR = 339;
-      kwFORCE = 340;
-      kwFOREIGN = 341;
-      kwFOUND = 342;
-      kwFROM = 343;
-      kwFULLTEXT = 344;
-      kwFUNCTION = 345;
-      kwGOTO = 346;
-      kwGRANT = 347;
-      kwGREATER = 348;
-      kwGROUP = 349;
-      kwHASH = 350;
-      kwHAVING = 351;
-      kwHIGH_PRIORITY = 352;
-      kwHOUR_MICROSECOND = 353;
-      kwHOUR_MINUTE = 354;
-      kwHOUR_SECOND = 355;
-      kwIF = 356;
-      kwIGNORE = 357;
-      kwIN = 358;
-      kwINDEX = 359;
-      kwINFILE = 360;
-      kwINNER = 361;
-      kwINOUT = 362;
-      kwINSENSITIVE = 363;
-      kwINSERT = 364;
-      kwINT = 365;
-      kwINTEGER = 366;
-      kwINTERVAL = 367;
-      kwINTO = 368;
-      kwIS = 369;
-      kwITERATE = 370;
-      kwJOIN = 371;
-      kwKEY = 372;
-      kwKEYS = 373;
-      kwKILL = 374;
-      kwLEADING = 375;
-      kwLEAVE = 376;
-      kwLEFT = 377;
-      kwLESS = 378;
-      kwLIKE = 379;
-      kwLIMIT = 380;
-      kwLINES = 381;
-      kwLIST = 382;
-      kwLOAD = 383;
-      kwLOCALTIME = 384;
-      kwLOCALTIMESTAMP = 385;
-      kwLOCK = 386;
-      kwLONG = 387;
-      kwLONGBLOB = 388;
-      kwLONGTEXT = 389;
-      kwLOOP = 390;
-      kwLOW_PRIORITY = 391;
-      kwMATCH = 392;
-      kwMEDIUMBLOB = 393;
-      kwMEDIUMINT = 394;
-      kwMEDIUMTEXT = 395;
-      kwMIDDLEINT = 396;
-      kwMINUTE_MICROSECOND = 397;
-      kwMINUTE_SECOND = 398;
-      kwMOD = 399;
-      kwMODIFY = 400;
-      kwNATURAL = 401;
-      kwNOT = 402;
-      kwNO_WRITE_TO_BINLOG = 403;
-      kwNULL = 404;
-      kwNUMERIC = 405;
-      kwON = 406;
-      kwOPTIMIZE = 407;
-      kwOPTION = 408;
-      kwOPTIONALLY = 409;
-      kwOR = 410;
-      kwORDER = 411;
-      kwOUT = 412;
-      kwOUTER = 413;
-      kwOUTFILE = 414;
-      kwPARTITION = 415;
-      kwPARTITIONS = 416;
-      kwPASSWORD = 417;
-      kwPRECISION = 418;
-      kwPRIMARY = 419;
-      kwPRIVILEGES = 420;
-      kwPROCEDURE = 421;
-      kwPURGE = 422;
-      kwRANGE = 423;
-      kwREAD = 424;
-      kwREAL = 425;
-      kwREFERENCES = 426;
-      kwREGEXP = 427;
-      kwRENAME = 428;
-      kwREPEAT = 429;
-      kwREPLACE = 430;
-      kwREQUIRE = 431;
-      kwRESTRICT = 432;
-      kwRETURN = 433;
-      kwRETURNS = 434;
-      kwREVOKE = 435;
-      kwRIGHT = 436;
-      kwRLIKE = 437;
-      kwROLLBACK = 438;
-      kwSCHEMA = 439;
-      kwSCHEMAS = 440;
-      kwSECOND_MICROSECOND = 441;
-      kwSELECT = 442;
-      kwSENSITIVE = 443;
-      kwSEPARATOR = 444;
-      kwSET = 445;
-      kwSHOW = 446;
-      kwSMALLINT = 447;
-      kwSONAME = 448;
-      kwSPATIAL = 449;
-      kwSPECIFIC = 450;
-      kwSQL = 451;
-      kwSQLEXCEPTION = 452;
-      kwSQLSTATE = 453;
-      kwSQLWARNING = 454;
-      kwSQL_BIG_RESULT = 455;
-      kwSQL_CALC_FOUND_ROWS = 456;
-      kwSQL_SMALL_RESULT = 457;
-      kwSSL = 458;
-      kwSTART = 459;
-      kwSTARTING = 460;
-      kwSTRAIGHT_JOIN = 461;
-      kwTABLE = 462;
-      kwTABLES = 463;
-      kwTEMPORARY = 464;
-      kwTERMINATED = 465;
-      kwTHAN = 466;
-      kwTHEN = 467;
-      kwTIMESTAMP = 468;
-      kwTINYBLOB = 469;
-      kwTINYINT = 470;
-      kwTINYTEXT = 471;
-      kwTO = 472;
-      kwTRAILING = 473;
-      kwTRANSACTION = 474;
-      kwTRIGGER = 475;
-      kwTRUE = 476;
-      kwUNDEFINED = 477;
-      kwUNDO = 478;
-      kwUNION = 479;
-      kwUNIQUE = 480;
-      kwUNLOCK = 481;
-      kwUNSIGNED = 482;
-      kwUPDATE = 483;
-      kwUSAGE = 484;
-      kwUSE = 485;
-      kwUSING = 486;
-      kwUTC_DATE = 487;
-      kwUTC_TIME = 488;
-      kwUTC_TIMESTAMP = 489;
-      kwVALUE = 490;
-      kwVALUES = 491;
-      kwVARBINARY = 492;
-      kwVARCHAR = 493;
-      kwVARCHARACTER = 494;
-      kwVARYING = 495;
-      kwVIEW = 496;
-      kwWHEN = 497;
-      kwWHERE = 498;
-      kwWHILE = 499;
-      kwWITH = 500;
-      kwWRITE = 501;
-      kwXOR = 502;
-      kwYEAR_MONTH = 503;
-      kwZEROFILL = 504;
-      kwLastKeyword = 504;
+      kwACTION = 257;
+      kwADD = 258;
+      kwADDDATE = 259;
+      kwAFTER = 260;
+      kwAGAINST = 261;
+      kwAGGREGATE = 262;
+      kwALGORITHM = 263;
+      kwALL = 264;
+      kwALTER = 265;
+      kwANALYZE = 266;
+      kwAND = 267;
+      kwANY = 268;
+      kwAS = 269;
+      kwASC = 270;
+      kwASCII = 271;
+      kwASENSITIVE = 272;
+      kwATAN = 273;
+      kwATAN2 = 274;
+      kwAUTO_INCREMENT = 275;
+      kwAVG = 276;
+      kwAVG_ROW_LENGTH = 277;
+      kwBACKUP = 278;
+      kwBDB = 279;
+      kwBEFORE = 280;
+      kwBEGIN = 281;
+      kwBENCHMARK = 282;
+      kwBERKELEYDB = 283;
+      kwBETWEEN = 284;
+      kwBIGINT = 285;
+      kwBINARY = 286;
+      kwBINLOG = 287;
+      kwBIT = 288;
+      kwBIT_AND = 289;
+      kwBIT_OR = 290;
+      kwBIT_XOR = 291;
+      kwBLOB = 292;
+      kwBOOL = 293;
+      kwBOOLEAN = 294;
+      kwBOTH = 295;
+      kwBTREE = 296;
+      kwBY = 297;
+      kwBYTE = 298;
+      kwCACHE = 299;
+      kwCALL = 300;
+      kwCASCADE = 301;
+      kwCASCADED = 302;
+      kwCAST = 303;
+      kwCHAIN = 304;
+      kwCHANGE = 305;
+      kwCHANGED = 306;
+      kwCHAR = 307;
+      kwCHARACTER = 308;
+      kwCHARSET = 309;
+      kwCHECK = 310;
+      kwCHECKSUM = 311;
+      kwCIPHER = 312;
+      kwCLIENT = 313;
+      kwCLOSE = 314;
+      kwCOALESCE = 315;
+      kwCOLLATE = 316;
+      kwCOLLATION = 317;
+      kwCOLUMN = 318;
+      kwCOLUMNS = 319;
+      kwCOMMENT = 320;
+      kwCOMMIT = 321;
+      kwCOMMITTED = 322;
+      kwCOMPACT = 323;
+      kwCOMPRESSED = 324;
+      kwCONCAT = 325;
+      kwCONCAT_WS = 326;
+      kwCONCURRENT = 327;
+      kwCONDITION = 328;
+      kwCONNECTION = 329;
+      kwCONSTRAINT = 330;
+      kwCONTAINS = 331;
+      kwCONTINUE = 332;
+      kwCONVERT = 333;
+      kwCONVERT_TZ = 334;
+      kwCOUNT = 335;
+      kwCREATE = 336;
+      kwCROSS = 337;
+      kwCUBE = 338;
+      kwCURDATE = 339;
+      kwCURRENT_DATE = 340;
+      kwCURRENT_TIME = 341;
+      kwCURRENT_TIMESTAMP = 342;
+      kwCURRENT_USER = 343;
+      kwCURSOR = 344;
+      kwCURTIME = 345;
+      kwDATA = 346;
+      kwDATABASE = 347;
+      kwDATABASES = 348;
+      kwDATE = 349;
+      kwDATETIME = 350;
+      kwDATE_ADD = 351;
+      kwDATE_SUB = 352;
+      kwDAY = 353;
+      kwDAY_HOUR = 354;
+      kwDAY_MICROSECOND = 355;
+      kwDAY_MINUTE = 356;
+      kwDAY_SECOND = 357;
+      kwDEALLOCATE = 358;
+      kwDEC = 359;
+      kwDECIMAL = 360;
+      kwDECLARE = 361;
+      kwDECODE = 362;
+      kwDEFAULT = 363;
+      kwDEFINER = 364;
+      kwDELAYED = 365;
+      kwDELAY_KEY_WRITE = 366;
+      kwDELETE = 367;
+      kwDELIMITER = 368;
+      kwDESC = 369;
+      kwDESCRIBE = 370;
+      kwDES_DECRYPT = 371;
+      kwDES_ENCRYPT = 372;
+      kwDES_KEY_FILE = 373;
+      kwDETERMINISTIC = 374;
+      kwDIRECTORY = 375;
+      kwDISABLE = 376;
+      kwDISCARD = 377;
+      kwDISTINCT = 378;
+      kwDISTINCTROW = 379;
+      kwDIV = 380;
+      kwDO = 381;
+      kwDOUBLE = 382;
+      kwDROP = 383;
+      kwDUAL = 384;
+      kwDUMPFILE = 385;
+      kwDUPLICATE = 386;
+      kwDYNAMIC = 387;
+      kwEACH = 388;
+      kwELSE = 389;
+      kwELSEIF = 390;
+      kwELT = 391;
+      kwENABLE = 392;
+      kwENCLOSED = 393;
+      kwENCODE = 394;
+      kwENCRYPT = 395;
+      kwEND = 396;
+      kwENGINE = 397;
+      kwENGINES = 398;
+      kwENUM = 399;
+      kwEQUAL = 400;
+      kwERRORS = 401;
+      kwESCAPE = 402;
+      kwESCAPED = 403;
+      kwEVENTS = 404;
+      kwEXECUTE = 405;
+      kwEXISTS = 406;
+      kwEXIT = 407;
+      kwEXPANSION = 408;
+      kwEXPLAIN = 409;
+      kwEXPORT_SET = 410;
+      kwEXTENDED = 411;
+      kwEXTRACT = 412;
+      kwFALSE = 413;
+      kwFAST = 414;
+      kwFETCH = 415;
+      kwFIELD = 416;
+      kwFIELDS = 417;
+      kwFILE = 418;
+      kwFIRST = 419;
+      kwFIXED = 420;
+      kwFLOAT = 421;
+      kwFLOAT4 = 422;
+      kwFLOAT8 = 423;
+      kwFLUSH = 424;
+      kwFOR = 425;
+      kwFORCE = 426;
+      kwFOREIGN = 427;
+      kwFORMAT = 428;
+      kwFOUND = 429;
+      kwFRAC_SECOND = 430;
+      kwFROM = 431;
+      kwFROM_UNIXTIME = 432;
+      kwFULL = 433;
+      kwFULLTEXT = 434;
+      kwFUNCTION = 435;
+      kwGEOMCOLLFROMTEXT = 436;
+      kwGEOMCOLLFROMWKB = 437;
+      kwGEOMETRY = 438;
+      kwGEOMETRYCOLLECTION = 439;
+      kwGEOMETRYCOLLECTIONFROMTEXT = 440;
+      kwGEOMETRYCOLLECTIONFROMWKB = 441;
+      kwGEOMETRYFROMTEXT = 442;
+      kwGEOMETRYFROMWKB = 443;
+      kwGEOMFROMTEXT = 444;
+      kwGEOMFROMWKB = 445;
+      kwGET_FORMAT = 446;
+      kwGLOBAL = 447;
+      kwGOTO = 448;
+      kwGRANT = 449;
+      kwGRANTS = 450;
+      kwGREATER = 451;
+      kwGREATEST = 452;
+      kwGROUP = 453;
+      kwGROUP_CONCAT = 454;
+      kwGROUP_UNIQUE_USERS = 455;
+      kwHANDLER = 456;
+      kwHASH = 457;
+      kwHAVING = 458;
+      kwHELP = 459;
+      kwHIGH_PRIORITY = 460;
+      kwHOSTS = 461;
+      kwHOUR = 462;
+      kwHOUR_MICROSECOND = 463;
+      kwHOUR_MINUTE = 464;
+      kwHOUR_SECOND = 465;
+      kwIDENTIFIED = 466;
+      kwIF = 467;
+      kwIGNORE = 468;
+      kwIMPORT = 469;
+      kwIN = 470;
+      kwINDEX = 471;
+      kwINDEXES = 472;
+      kwINFILE = 473;
+      kwINNER = 474;
+      kwINNOBASE = 475;
+      kwINNODB = 476;
+      kwINOUT = 477;
+      kwINSENSITIVE = 478;
+      kwINSERT = 479;
+      kwINSERT_METHOD = 480;
+      kwINT = 481;
+      kwINT1 = 482;
+      kwINT2 = 483;
+      kwINT3 = 484;
+      kwINT4 = 485;
+      kwINT8 = 486;
+      kwINTEGER = 487;
+      kwINTERVAL = 488;
+      kwINTO = 489;
+      kwINVOKER = 490;
+      kwIO_THREAD = 491;
+      kwIS = 492;
+      kwISOLATION = 493;
+      kwISSUER = 494;
+      kwITERATE = 495;
+      kwJOIN = 496;
+      kwKEY = 497;
+      kwKEYS = 498;
+      kwKILL = 499;
+      kwLABEL = 500;
+      kwLANGUAGE = 501;
+      kwLAST = 502;
+      kwLAST_INSERT_ID = 503;
+      kwLEADING = 504;
+      kwLEAST = 505;
+      kwLEAVE = 506;
+      kwLEAVES = 507;
+      kwLEFT = 508;
+      kwLESS = 509;
+      kwLEVEL = 510;
+      kwLIKE = 511;
+      kwLIMIT = 512;
+      kwLINEFROMTEXT = 513;
+      kwLINEFROMWKB = 514;
+      kwLINES = 515;
+      kwLINESTRING = 516;
+      kwLINESTRINGFROMTEXT = 517;
+      kwLINESTRINGFROMWKB = 518;
+      kwLIST = 519;
+      kwLOAD = 520;
+      kwLOCAL = 521;
+      kwLOCALTIME = 522;
+      kwLOCALTIMESTAMP = 523;
+      kwLOCATE = 524;
+      kwLOCK = 525;
+      kwLOCKS = 526;
+      kwLOG = 527;
+      kwLOGS = 528;
+      kwLONG = 529;
+      kwLONGBLOB = 530;
+      kwLONGTEXT = 531;
+      kwLOOP = 532;
+      kwLOW_PRIORITY = 533;
+      kwMAKE_SET = 534;
+      kwMASTER = 535;
+      kwMASTER_CONNECT_RETRY = 536;
+      kwMASTER_HOST = 537;
+      kwMASTER_LOG_FILE = 538;
+      kwMASTER_LOG_POS = 539;
+      kwMASTER_PASSWORD = 540;
+      kwMASTER_PORT = 541;
+      kwMASTER_POS_WAIT = 542;
+      kwMASTER_SERVER_ID = 543;
+      kwMASTER_SSL = 544;
+      kwMASTER_SSL_CA = 545;
+      kwMASTER_SSL_CAPATH = 546;
+      kwMASTER_SSL_CERT = 547;
+      kwMASTER_SSL_CIPHER = 548;
+      kwMASTER_SSL_KEY = 549;
+      kwMASTER_USER = 550;
+      kwMATCH = 551;
+      kwMAX = 552;
+      kwMAX_CONNECTIONS_PER_HOUR = 553;
+      kwMAX_QUERIES_PER_HOUR = 554;
+      kwMAX_ROWS = 555;
+      kwMAX_UPDATES_PER_HOUR = 556;
+      kwMAX_USER_CONNECTIONS = 557;
+      kwMEDIUM = 558;
+      kwMEDIUMBLOB = 559;
+      kwMEDIUMINT = 560;
+      kwMEDIUMTEXT = 561;
+      kwMERGE = 562;
+      kwMICROSECOND = 563;
+      kwMID = 564;
+      kwMIDDLEINT = 565;
+      kwMIGRATE = 566;
+      kwMIN = 567;
+      kwMINUTE = 568;
+      kwMINUTE_MICROSECOND = 569;
+      kwMINUTE_SECOND = 570;
+      kwMIN_ROWS = 571;
+      kwMLINEFROMTEXT = 572;
+      kwMLINEFROMWKB = 573;
+      kwMOD = 574;
+      kwMODE = 575;
+      kwMODIFIES = 576;
+      kwMODIFY = 577;
+      kwMONTH = 578;
+      kwMPOINTFROMTEXT = 579;
+      kwMPOINTFROMWKB = 580;
+      kwMPOLYFROMTEXT = 581;
+      kwMPOLYFROMWKB = 582;
+      kwMULTILINESTRING = 583;
+      kwMULTILINESTRINGFROMTEXT = 584;
+      kwMULTILINESTRINGFROMWKB = 585;
+      kwMULTIPOINT = 586;
+      kwMULTIPOINTFROMTEXT = 587;
+      kwMULTIPOINTFROMWKB = 588;
+      kwMULTIPOLYGON = 589;
+      kwMULTIPOLYGONFROMTEXT = 590;
+      kwMULTIPOLYGONFROMWKB = 591;
+      kwMUTEX = 592;
+      kwNAME = 593;
+      kwNAMES = 594;
+      kwNATIONAL = 595;
+      kwNATURAL = 596;
+      kwNCHAR = 597;
+      kwNDB = 598;
+      kwNDBCLUSTER = 599;
+      kwNEW = 600;
+      kwNEXT = 601;
+      kwNO = 602;
+      kwNONE = 603;
+      kwNOT = 604;
+      kwNOW = 605;
+      kwNO_WRITE_TO_BINLOG = 606;
+      kwNULL = 607;
+      kwNUMERIC = 608;
+      kwNVARCHAR = 609;
+      kwOFFSET = 610;
+      kwOLD_PASSWORD = 611;
+      kwON = 612;
+      kwONE = 613;
+      kwONE_SHOT = 614;
+      kwOPEN = 615;
+      kwOPTIMIZE = 616;
+      kwOPTION = 617;
+      kwOPTIONALLY = 618;
+      kwOR = 619;
+      kwORDER = 620;
+      kwOUT = 621;
+      kwOUTER = 622;
+      kwOUTFILE = 623;
+      kwPACK_KEYS = 624;
+      kwPARTIAL = 625;
+      kwPARTITION = 626;
+      kwPARTITIONS = 627;
+      kwPASSWORD = 628;
+      kwPHASE = 629;
+      kwPOINT = 630;
+      kwPOINTFROMTEXT = 631;
+      kwPOINTFROMWKB = 632;
+      kwPOLYFROMTEXT = 633;
+      kwPOLYFROMWKB = 634;
+      kwPOLYGON = 635;
+      kwPOLYGONFROMTEXT = 636;
+      kwPOLYGONFROMWKB = 637;
+      kwPOSITION = 638;
+      kwPRECISION = 639;
+      kwPREPARE = 640;
+      kwPREV = 641;
+      kwPRIMARY = 642;
+      kwPRIVILEGES = 643;
+      kwPROCEDURE = 644;
+      kwPROCESS = 645;
+      kwPROCESSLIST = 646;
+      kwPURGE = 647;
+      kwQUARTER = 648;
+      kwQUERY = 649;
+      kwQUICK = 650;
+      kwRAID0 = 651;
+      kwRAID_CHUNKS = 652;
+      kwRAID_CHUNKSIZE = 653;
+      kwRAID_TYPE = 654;
+      kwRAND = 655;
+      kwRANGE = 656;
+      kwREAD = 657;
+      kwREADS = 658;
+      kwREAL = 659;
+      kwRECOVER = 660;
+      kwREDUNDANT = 661;
+      kwREFERENCES = 662;
+      kwREGEXP = 663;
+      kwRELAY_LOG_FILE = 664;
+      kwRELAY_LOG_POS = 665;
+      kwRELAY_THREAD = 666;
+      kwRELEASE = 667;
+      kwRELOAD = 668;
+      kwRENAME = 669;
+      kwREPAIR = 670;
+      kwREPEAT = 671;
+      kwREPEATABLE = 672;
+      kwREPLACE = 673;
+      kwREPLICATION = 674;
+      kwREQUIRE = 675;
+      kwRESET = 676;
+      kwRESTORE = 677;
+      kwRESTRICT = 678;
+      kwRESUME = 679;
+      kwRETURN = 680;
+      kwRETURNS = 681;
+      kwREVOKE = 682;
+      kwRIGHT = 683;
+      kwRLIKE = 684;
+      kwROLLBACK = 685;
+      kwROLLUP = 686;
+      kwROUND = 687;
+      kwROUTINE = 688;
+      kwROW = 689;
+      kwROWS = 690;
+      kwROW_COUNT = 691;
+      kwROW_FORMAT = 692;
+      kwRTREE = 693;
+      kwSAVEPOINT = 694;
+      kwSCHEMA = 695;
+      kwSCHEMAS = 696;
+      kwSECOND = 697;
+      kwSECOND_MICROSECOND = 698;
+      kwSECURITY = 699;
+      kwSELECT = 700;
+      kwSENSITIVE = 701;
+      kwSEPARATOR = 702;
+      kwSERIAL = 703;
+      kwSERIALIZABLE = 704;
+      kwSESSION = 705;
+      kwSESSION_USER = 706;
+      kwSET = 707;
+      kwSHARE = 708;
+      kwSHOW = 709;
+      kwSHUTDOWN = 710;
+      kwSIGNED = 711;
+      kwSIMPLE = 712;
+      kwSLAVE = 713;
+      kwSMALLINT = 714;
+      kwSNAPSHOT = 715;
+      kwSOME = 716;
+      kwSONAME = 717;
+      kwSOUNDS = 718;
+      kwSPATIAL = 719;
+      kwSPECIFIC = 720;
+      kwSQL = 721;
+      kwSQLEXCEPTION = 722;
+      kwSQLSTATE = 723;
+      kwSQLWARNING = 724;
+      kwSQL_BIG_RESULT = 725;
+      kwSQL_BUFFER_RESULT = 726;
+      kwSQL_CACHE = 727;
+      kwSQL_CALC_FOUND_ROWS = 728;
+      kwSQL_NO_CACHE = 729;
+      kwSQL_SMALL_RESULT = 730;
+      kwSQL_THREAD = 731;
+      kwSQL_TSI_DAY = 732;
+      kwSQL_TSI_FRAC_SECOND = 733;
+      kwSQL_TSI_HOUR = 734;
+      kwSQL_TSI_MINUTE = 735;
+      kwSQL_TSI_MONTH = 736;
+      kwSQL_TSI_QUARTER = 737;
+      kwSQL_TSI_SECOND = 738;
+      kwSQL_TSI_WEEK = 739;
+      kwSQL_TSI_YEAR = 740;
+      kwSSL = 741;
+      kwSTART = 742;
+      kwSTARTING = 743;
+      kwSTATUS = 744;
+      kwSTD = 745;
+      kwSTDDEV = 746;
+      kwSTDDEV_POP = 747;
+      kwSTDDEV_SAMP = 748;
+      kwSTOP = 749;
+      kwSTORAGE = 750;
+      kwSTRAIGHT_JOIN = 751;
+      kwSTRING = 752;
+      kwSTRIPED = 753;
+      kwSUBDATE = 754;
+      kwSUBJECT = 755;
+      kwSUBSTR = 756;
+      kwSUBSTRING = 757;
+      kwSUBSTRING_INDEX = 758;
+      kwSUM = 759;
+      kwSUPER = 760;
+      kwSUSPEND = 761;
+      kwSYSDATE = 762;
+      kwSYSTEM_USER = 763;
+      kwTABLE = 764;
+      kwTABLES = 765;
+      kwTABLESPACE = 766;
+      kwTEMPORARY = 767;
+      kwTEMPTABLE = 768;
+      kwTERMINATED = 769;
+      kwTEXT = 770;
+      kwTHAN = 771;
+      kwTHEN = 772;
+      kwTIME = 773;
+      kwTIMESTAMP = 774;
+      kwTIMESTAMPADD = 775;
+      kwTIMESTAMPDIFF = 776;
+      kwTINYBLOB = 777;
+      kwTINYINT = 778;
+      kwTINYTEXT = 779;
+      kwTO = 780;
+      kwTRAILING = 781;
+      kwTRANSACTION = 782;
+      kwTRIGGER = 783;
+      kwTRIGGERS = 784;
+      kwTRIM = 785;
+      kwTRUE = 786;
+      kwTRUNCATE = 787;
+      kwTYPE = 788;
+      kwTYPES = 789;
+      kwUNCOMMITTED = 790;
+      kwUNDEFINED = 791;
+      kwUNDO = 792;
+      kwUNICODE = 793;
+      kwUNION = 794;
+      kwUNIQUE = 795;
+      kwUNIQUE_USERS = 796;
+      kwUNIX_TIMESTAMP = 797;
+      kwUNKNOWN = 798;
+      kwUNLOCK = 799;
+      kwUNSIGNED = 800;
+      kwUNTIL = 801;
+      kwUPDATE = 802;
+      kwUSAGE = 803;
+      kwUSE = 804;
+      kwUSER = 805;
+      kwUSER_RESOURCES = 806;
+      kwUSE_FRM = 807;
+      kwUSING = 808;
+      kwUTC_DATE = 809;
+      kwUTC_TIME = 810;
+      kwUTC_TIMESTAMP = 811;
+      kwVALUE = 812;
+      kwVALUES = 813;
+      kwVARBINARY = 814;
+      kwVARCHAR = 815;
+      kwVARCHARACTER = 816;
+      kwVARIABLES = 817;
+      kwVARIANCE = 818;
+      kwVARYING = 819;
+      kwVAR_POP = 820;
+      kwVAR_SAMP = 821;
+      kwVIEW = 822;
+      kwWARNINGS = 823;
+      kwWEEK = 824;
+      kwWHEN = 825;
+      kwWHERE = 826;
+      kwWHILE = 827;
+      kwWITH = 828;
+      kwWORK = 829;
+      kwWRITE = 830;
+      kwX509 = 831;
+      kwXA = 832;
+      kwXOR = 833;
+      kwYEAR = 834;
+      kwYEARWEEK = 835;
+      kwYEAR_MONTH = 836;
+      kwZEROFILL = 837;
+      kwLastKeyword = 837;
 
-const COMMENT_WITH_COMMAND = 505;
-      EMBEDDED_COMMAND = 506;
-      FLOATNUMBER = 507;
-      IDENTIFIER = 508;
-      INTEGERNUMBER = 509;
-      KEYWORD = 510;
-      MLCOMMENT = 511;
-      SLCOMMENT = 512;
-      STRINGCONSTANT = 513;
-      SYMBOL = 514;
-      SYSTEM_VARIABLE = 515;
-      UNKNOWN = 516;
-      USER_VARIABLE = 517;
-      WHITESPACE = 518;
+const COMMENT_WITH_COMMAND = 838;
+      EMBEDDED_COMMAND = 839;
+      FLOATNUMBER = 840;
+      IDENTIFIER = 841;
+      INTEGERNUMBER = 842;
+      KEYWORD = 843;
+      MLCOMMENT = 844;
+      SLCOMMENT = 845;
+      STRINGCONSTANT = 846;
+      SYMBOL = 847;
+      SYSTEM_VARIABLE = 848;
+      UNKNOWN = 849;
+      USER_VARIABLE = 850;
+      WHITESPACE = 851;
 
 
  
@@ -529,158 +862,367 @@ type // keyword table support
        Token: Integer;
      end;
 
-const KeywordCount = 248;
+const KeywordCount = 581;
       Keywords : array[0..KeywordCount - 1] of TKeyword = (
+        (Keyword: 'ACTION'; Token: kwACTION), 
         (Keyword: 'ADD'; Token: kwADD), 
+        (Keyword: 'ADDDATE'; Token: kwADDDATE), 
+        (Keyword: 'AFTER'; Token: kwAFTER), 
+        (Keyword: 'AGAINST'; Token: kwAGAINST), 
+        (Keyword: 'AGGREGATE'; Token: kwAGGREGATE), 
         (Keyword: 'ALGORITHM'; Token: kwALGORITHM), 
         (Keyword: 'ALL'; Token: kwALL), 
         (Keyword: 'ALTER'; Token: kwALTER), 
         (Keyword: 'ANALYZE'; Token: kwANALYZE), 
         (Keyword: 'AND'; Token: kwAND), 
+        (Keyword: 'ANY'; Token: kwANY), 
         (Keyword: 'AS'; Token: kwAS), 
         (Keyword: 'ASC'; Token: kwASC), 
+        (Keyword: 'ASCII'; Token: kwASCII), 
         (Keyword: 'ASENSITIVE'; Token: kwASENSITIVE), 
+        (Keyword: 'ATAN'; Token: kwATAN), 
+        (Keyword: 'ATAN2'; Token: kwATAN2), 
         (Keyword: 'AUTO_INCREMENT'; Token: kwAUTO_INCREMENT), 
+        (Keyword: 'AVG'; Token: kwAVG), 
+        (Keyword: 'AVG_ROW_LENGTH'; Token: kwAVG_ROW_LENGTH), 
+        (Keyword: 'BACKUP'; Token: kwBACKUP), 
+        (Keyword: 'BDB'; Token: kwBDB), 
         (Keyword: 'BEFORE'; Token: kwBEFORE), 
         (Keyword: 'BEGIN'; Token: kwBEGIN), 
+        (Keyword: 'BENCHMARK'; Token: kwBENCHMARK), 
+        (Keyword: 'BERKELEYDB'; Token: kwBERKELEYDB), 
         (Keyword: 'BETWEEN'; Token: kwBETWEEN), 
         (Keyword: 'BIGINT'; Token: kwBIGINT), 
         (Keyword: 'BINARY'; Token: kwBINARY), 
+        (Keyword: 'BINLOG'; Token: kwBINLOG), 
+        (Keyword: 'BIT'; Token: kwBIT), 
+        (Keyword: 'BIT_AND'; Token: kwBIT_AND), 
+        (Keyword: 'BIT_OR'; Token: kwBIT_OR), 
+        (Keyword: 'BIT_XOR'; Token: kwBIT_XOR), 
         (Keyword: 'BLOB'; Token: kwBLOB), 
+        (Keyword: 'BOOL'; Token: kwBOOL), 
+        (Keyword: 'BOOLEAN'; Token: kwBOOLEAN), 
         (Keyword: 'BOTH'; Token: kwBOTH), 
+        (Keyword: 'BTREE'; Token: kwBTREE), 
         (Keyword: 'BY'; Token: kwBY), 
+        (Keyword: 'BYTE'; Token: kwBYTE), 
+        (Keyword: 'CACHE'; Token: kwCACHE), 
         (Keyword: 'CALL'; Token: kwCALL), 
         (Keyword: 'CASCADE'; Token: kwCASCADE), 
-        (Keyword: 'CASE'; Token: kwCASE), 
+        (Keyword: 'CASCADED'; Token: kwCASCADED), 
+        (Keyword: 'CAST'; Token: kwCAST), 
+        (Keyword: 'CHAIN'; Token: kwCHAIN), 
         (Keyword: 'CHANGE'; Token: kwCHANGE), 
+        (Keyword: 'CHANGED'; Token: kwCHANGED), 
         (Keyword: 'CHAR'; Token: kwCHAR), 
         (Keyword: 'CHARACTER'; Token: kwCHARACTER), 
         (Keyword: 'CHARSET'; Token: kwCHARSET), 
         (Keyword: 'CHECK'; Token: kwCHECK), 
+        (Keyword: 'CHECKSUM'; Token: kwCHECKSUM), 
+        (Keyword: 'CIPHER'; Token: kwCIPHER), 
+        (Keyword: 'CLIENT'; Token: kwCLIENT), 
+        (Keyword: 'CLOSE'; Token: kwCLOSE), 
+        (Keyword: 'COALESCE'; Token: kwCOALESCE), 
         (Keyword: 'COLLATE'; Token: kwCOLLATE), 
+        (Keyword: 'COLLATION'; Token: kwCOLLATION), 
         (Keyword: 'COLUMN'; Token: kwCOLUMN), 
         (Keyword: 'COLUMNS'; Token: kwCOLUMNS), 
+        (Keyword: 'COMMENT'; Token: kwCOMMENT), 
         (Keyword: 'COMMIT'; Token: kwCOMMIT), 
+        (Keyword: 'COMMITTED'; Token: kwCOMMITTED), 
+        (Keyword: 'COMPACT'; Token: kwCOMPACT), 
+        (Keyword: 'COMPRESSED'; Token: kwCOMPRESSED), 
+        (Keyword: 'CONCAT'; Token: kwCONCAT), 
+        (Keyword: 'CONCAT_WS'; Token: kwCONCAT_WS), 
+        (Keyword: 'CONCURRENT'; Token: kwCONCURRENT), 
         (Keyword: 'CONDITION'; Token: kwCONDITION), 
         (Keyword: 'CONNECTION'; Token: kwCONNECTION), 
         (Keyword: 'CONSTRAINT'; Token: kwCONSTRAINT), 
+        (Keyword: 'CONTAINS'; Token: kwCONTAINS), 
         (Keyword: 'CONTINUE'; Token: kwCONTINUE), 
         (Keyword: 'CONVERT'; Token: kwCONVERT), 
+        (Keyword: 'CONVERT_TZ'; Token: kwCONVERT_TZ), 
+        (Keyword: 'COUNT'; Token: kwCOUNT), 
         (Keyword: 'CREATE'; Token: kwCREATE), 
         (Keyword: 'CROSS'; Token: kwCROSS), 
+        (Keyword: 'CUBE'; Token: kwCUBE), 
+        (Keyword: 'CURDATE'; Token: kwCURDATE), 
         (Keyword: 'CURRENT_DATE'; Token: kwCURRENT_DATE), 
         (Keyword: 'CURRENT_TIME'; Token: kwCURRENT_TIME), 
         (Keyword: 'CURRENT_TIMESTAMP'; Token: kwCURRENT_TIMESTAMP), 
         (Keyword: 'CURRENT_USER'; Token: kwCURRENT_USER), 
         (Keyword: 'CURSOR'; Token: kwCURSOR), 
+        (Keyword: 'CURTIME'; Token: kwCURTIME), 
+        (Keyword: 'DATA'; Token: kwDATA), 
         (Keyword: 'DATABASE'; Token: kwDATABASE), 
         (Keyword: 'DATABASES'; Token: kwDATABASES), 
         (Keyword: 'DATE'; Token: kwDATE), 
         (Keyword: 'DATETIME'; Token: kwDATETIME), 
+        (Keyword: 'DATE_ADD'; Token: kwDATE_ADD), 
+        (Keyword: 'DATE_SUB'; Token: kwDATE_SUB), 
+        (Keyword: 'DAY'; Token: kwDAY), 
         (Keyword: 'DAY_HOUR'; Token: kwDAY_HOUR), 
         (Keyword: 'DAY_MICROSECOND'; Token: kwDAY_MICROSECOND), 
         (Keyword: 'DAY_MINUTE'; Token: kwDAY_MINUTE), 
         (Keyword: 'DAY_SECOND'; Token: kwDAY_SECOND), 
+        (Keyword: 'DEALLOCATE'; Token: kwDEALLOCATE), 
         (Keyword: 'DEC'; Token: kwDEC), 
         (Keyword: 'DECIMAL'; Token: kwDECIMAL), 
         (Keyword: 'DECLARE'; Token: kwDECLARE), 
+        (Keyword: 'DECODE'; Token: kwDECODE), 
         (Keyword: 'DEFAULT'; Token: kwDEFAULT), 
+        (Keyword: 'DEFINER'; Token: kwDEFINER), 
         (Keyword: 'DELAYED'; Token: kwDELAYED), 
+        (Keyword: 'DELAY_KEY_WRITE'; Token: kwDELAY_KEY_WRITE), 
         (Keyword: 'DELETE'; Token: kwDELETE), 
         (Keyword: 'DELIMITER'; Token: kwDELIMITER), 
         (Keyword: 'DESC'; Token: kwDESC), 
         (Keyword: 'DESCRIBE'; Token: kwDESCRIBE), 
+        (Keyword: 'DES_DECRYPT'; Token: kwDES_DECRYPT), 
+        (Keyword: 'DES_ENCRYPT'; Token: kwDES_ENCRYPT), 
+        (Keyword: 'DES_KEY_FILE'; Token: kwDES_KEY_FILE), 
         (Keyword: 'DETERMINISTIC'; Token: kwDETERMINISTIC), 
+        (Keyword: 'DIRECTORY'; Token: kwDIRECTORY), 
+        (Keyword: 'DISABLE'; Token: kwDISABLE), 
+        (Keyword: 'DISCARD'; Token: kwDISCARD), 
         (Keyword: 'DISTINCT'; Token: kwDISTINCT), 
         (Keyword: 'DISTINCTROW'; Token: kwDISTINCTROW), 
         (Keyword: 'DIV'; Token: kwDIV), 
+        (Keyword: 'DO'; Token: kwDO), 
         (Keyword: 'DOUBLE'; Token: kwDOUBLE), 
         (Keyword: 'DROP'; Token: kwDROP), 
         (Keyword: 'DUAL'; Token: kwDUAL), 
+        (Keyword: 'DUMPFILE'; Token: kwDUMPFILE), 
+        (Keyword: 'DUPLICATE'; Token: kwDUPLICATE), 
+        (Keyword: 'DYNAMIC'; Token: kwDYNAMIC), 
         (Keyword: 'EACH'; Token: kwEACH), 
         (Keyword: 'ELSE'; Token: kwELSE), 
         (Keyword: 'ELSEIF'; Token: kwELSEIF), 
+        (Keyword: 'ELT'; Token: kwELT), 
+        (Keyword: 'ENABLE'; Token: kwENABLE), 
         (Keyword: 'ENCLOSED'; Token: kwENCLOSED), 
+        (Keyword: 'ENCODE'; Token: kwENCODE), 
+        (Keyword: 'ENCRYPT'; Token: kwENCRYPT), 
         (Keyword: 'END'; Token: kwEND), 
         (Keyword: 'ENGINE'; Token: kwENGINE), 
+        (Keyword: 'ENGINES'; Token: kwENGINES), 
         (Keyword: 'ENUM'; Token: kwENUM), 
         (Keyword: 'EQUAL'; Token: kwEQUAL), 
+        (Keyword: 'ERRORS'; Token: kwERRORS), 
+        (Keyword: 'ESCAPE'; Token: kwESCAPE), 
         (Keyword: 'ESCAPED'; Token: kwESCAPED), 
+        (Keyword: 'EVENTS'; Token: kwEVENTS), 
+        (Keyword: 'EXECUTE'; Token: kwEXECUTE), 
         (Keyword: 'EXISTS'; Token: kwEXISTS), 
         (Keyword: 'EXIT'; Token: kwEXIT), 
+        (Keyword: 'EXPANSION'; Token: kwEXPANSION), 
         (Keyword: 'EXPLAIN'; Token: kwEXPLAIN), 
+        (Keyword: 'EXPORT_SET'; Token: kwEXPORT_SET), 
+        (Keyword: 'EXTENDED'; Token: kwEXTENDED), 
+        (Keyword: 'EXTRACT'; Token: kwEXTRACT), 
         (Keyword: 'FALSE'; Token: kwFALSE), 
+        (Keyword: 'FAST'; Token: kwFAST), 
         (Keyword: 'FETCH'; Token: kwFETCH), 
+        (Keyword: 'FIELD'; Token: kwFIELD), 
         (Keyword: 'FIELDS'; Token: kwFIELDS), 
+        (Keyword: 'FILE'; Token: kwFILE), 
+        (Keyword: 'FIRST'; Token: kwFIRST), 
+        (Keyword: 'FIXED'; Token: kwFIXED), 
         (Keyword: 'FLOAT'; Token: kwFLOAT), 
+        (Keyword: 'FLOAT4'; Token: kwFLOAT4), 
+        (Keyword: 'FLOAT8'; Token: kwFLOAT8), 
+        (Keyword: 'FLUSH'; Token: kwFLUSH), 
         (Keyword: 'FOR'; Token: kwFOR), 
         (Keyword: 'FORCE'; Token: kwFORCE), 
         (Keyword: 'FOREIGN'; Token: kwFOREIGN), 
+        (Keyword: 'FORMAT'; Token: kwFORMAT), 
         (Keyword: 'FOUND'; Token: kwFOUND), 
+        (Keyword: 'FRAC_SECOND'; Token: kwFRAC_SECOND), 
         (Keyword: 'FROM'; Token: kwFROM), 
+        (Keyword: 'FROM_UNIXTIME'; Token: kwFROM_UNIXTIME), 
+        (Keyword: 'FULL'; Token: kwFULL), 
         (Keyword: 'FULLTEXT'; Token: kwFULLTEXT), 
         (Keyword: 'FUNCTION'; Token: kwFUNCTION), 
+        (Keyword: 'GEOMCOLLFROMTEXT'; Token: kwGEOMCOLLFROMTEXT), 
+        (Keyword: 'GEOMCOLLFROMWKB'; Token: kwGEOMCOLLFROMWKB), 
+        (Keyword: 'GEOMETRY'; Token: kwGEOMETRY), 
+        (Keyword: 'GEOMETRYCOLLECTION'; Token: kwGEOMETRYCOLLECTION), 
+        (Keyword: 'GEOMETRYCOLLECTIONFROMTEXT'; Token: kwGEOMETRYCOLLECTIONFROMTEXT), 
+        (Keyword: 'GEOMETRYCOLLECTIONFROMWKB'; Token: kwGEOMETRYCOLLECTIONFROMWKB), 
+        (Keyword: 'GEOMETRYFROMTEXT'; Token: kwGEOMETRYFROMTEXT), 
+        (Keyword: 'GEOMETRYFROMWKB'; Token: kwGEOMETRYFROMWKB), 
+        (Keyword: 'GEOMFROMTEXT'; Token: kwGEOMFROMTEXT), 
+        (Keyword: 'GEOMFROMWKB'; Token: kwGEOMFROMWKB), 
+        (Keyword: 'GET_FORMAT'; Token: kwGET_FORMAT), 
+        (Keyword: 'GLOBAL'; Token: kwGLOBAL), 
         (Keyword: 'GOTO'; Token: kwGOTO), 
         (Keyword: 'GRANT'; Token: kwGRANT), 
+        (Keyword: 'GRANTS'; Token: kwGRANTS), 
         (Keyword: 'GREATER'; Token: kwGREATER), 
+        (Keyword: 'GREATEST'; Token: kwGREATEST), 
         (Keyword: 'GROUP'; Token: kwGROUP), 
+        (Keyword: 'GROUP_CONCAT'; Token: kwGROUP_CONCAT), 
+        (Keyword: 'GROUP_UNIQUE_USERS'; Token: kwGROUP_UNIQUE_USERS), 
+        (Keyword: 'HANDLER'; Token: kwHANDLER), 
         (Keyword: 'HASH'; Token: kwHASH), 
         (Keyword: 'HAVING'; Token: kwHAVING), 
+        (Keyword: 'HELP'; Token: kwHELP), 
         (Keyword: 'HIGH_PRIORITY'; Token: kwHIGH_PRIORITY), 
+        (Keyword: 'HOSTS'; Token: kwHOSTS), 
+        (Keyword: 'HOUR'; Token: kwHOUR), 
         (Keyword: 'HOUR_MICROSECOND'; Token: kwHOUR_MICROSECOND), 
         (Keyword: 'HOUR_MINUTE'; Token: kwHOUR_MINUTE), 
         (Keyword: 'HOUR_SECOND'; Token: kwHOUR_SECOND), 
+        (Keyword: 'IDENTIFIED'; Token: kwIDENTIFIED), 
         (Keyword: 'IF'; Token: kwIF), 
         (Keyword: 'IGNORE'; Token: kwIGNORE), 
+        (Keyword: 'IMPORT'; Token: kwIMPORT), 
         (Keyword: 'IN'; Token: kwIN), 
         (Keyword: 'INDEX'; Token: kwINDEX), 
+        (Keyword: 'INDEXES'; Token: kwINDEXES), 
         (Keyword: 'INFILE'; Token: kwINFILE), 
         (Keyword: 'INNER'; Token: kwINNER), 
+        (Keyword: 'INNOBASE'; Token: kwINNOBASE), 
+        (Keyword: 'INNODB'; Token: kwINNODB), 
         (Keyword: 'INOUT'; Token: kwINOUT), 
         (Keyword: 'INSENSITIVE'; Token: kwINSENSITIVE), 
         (Keyword: 'INSERT'; Token: kwINSERT), 
+        (Keyword: 'INSERT_METHOD'; Token: kwINSERT_METHOD), 
         (Keyword: 'INT'; Token: kwINT), 
+        (Keyword: 'INT1'; Token: kwINT1), 
+        (Keyword: 'INT2'; Token: kwINT2), 
+        (Keyword: 'INT3'; Token: kwINT3), 
+        (Keyword: 'INT4'; Token: kwINT4), 
+        (Keyword: 'INT8'; Token: kwINT8), 
         (Keyword: 'INTEGER'; Token: kwINTEGER), 
         (Keyword: 'INTERVAL'; Token: kwINTERVAL), 
         (Keyword: 'INTO'; Token: kwINTO), 
+        (Keyword: 'INVOKER'; Token: kwINVOKER), 
+        (Keyword: 'IO_THREAD'; Token: kwIO_THREAD), 
         (Keyword: 'IS'; Token: kwIS), 
+        (Keyword: 'ISOLATION'; Token: kwISOLATION), 
+        (Keyword: 'ISSUER'; Token: kwISSUER), 
         (Keyword: 'ITERATE'; Token: kwITERATE), 
         (Keyword: 'JOIN'; Token: kwJOIN), 
         (Keyword: 'KEY'; Token: kwKEY), 
         (Keyword: 'KEYS'; Token: kwKEYS), 
         (Keyword: 'KILL'; Token: kwKILL), 
+        (Keyword: 'LABEL'; Token: kwLABEL), 
+        (Keyword: 'LANGUAGE'; Token: kwLANGUAGE), 
+        (Keyword: 'LAST'; Token: kwLAST), 
+        (Keyword: 'LAST_INSERT_ID'; Token: kwLAST_INSERT_ID), 
         (Keyword: 'LEADING'; Token: kwLEADING), 
+        (Keyword: 'LEAST'; Token: kwLEAST), 
         (Keyword: 'LEAVE'; Token: kwLEAVE), 
+        (Keyword: 'LEAVES'; Token: kwLEAVES), 
         (Keyword: 'LEFT'; Token: kwLEFT), 
         (Keyword: 'LESS'; Token: kwLESS), 
+        (Keyword: 'LEVEL'; Token: kwLEVEL), 
         (Keyword: 'LIKE'; Token: kwLIKE), 
         (Keyword: 'LIMIT'; Token: kwLIMIT), 
+        (Keyword: 'LINEFROMTEXT'; Token: kwLINEFROMTEXT), 
+        (Keyword: 'LINEFROMWKB'; Token: kwLINEFROMWKB), 
         (Keyword: 'LINES'; Token: kwLINES), 
+        (Keyword: 'LINESTRING'; Token: kwLINESTRING), 
+        (Keyword: 'LINESTRINGFROMTEXT'; Token: kwLINESTRINGFROMTEXT), 
+        (Keyword: 'LINESTRINGFROMWKB'; Token: kwLINESTRINGFROMWKB), 
         (Keyword: 'LIST'; Token: kwLIST), 
         (Keyword: 'LOAD'; Token: kwLOAD), 
+        (Keyword: 'LOCAL'; Token: kwLOCAL), 
         (Keyword: 'LOCALTIME'; Token: kwLOCALTIME), 
         (Keyword: 'LOCALTIMESTAMP'; Token: kwLOCALTIMESTAMP), 
+        (Keyword: 'LOCATE'; Token: kwLOCATE), 
         (Keyword: 'LOCK'; Token: kwLOCK), 
+        (Keyword: 'LOCKS'; Token: kwLOCKS), 
+        (Keyword: 'LOG'; Token: kwLOG), 
+        (Keyword: 'LOGS'; Token: kwLOGS), 
         (Keyword: 'LONG'; Token: kwLONG), 
         (Keyword: 'LONGBLOB'; Token: kwLONGBLOB), 
         (Keyword: 'LONGTEXT'; Token: kwLONGTEXT), 
         (Keyword: 'LOOP'; Token: kwLOOP), 
         (Keyword: 'LOW_PRIORITY'; Token: kwLOW_PRIORITY), 
+        (Keyword: 'MAKE_SET'; Token: kwMAKE_SET), 
+        (Keyword: 'MASTER'; Token: kwMASTER), 
+        (Keyword: 'MASTER_CONNECT_RETRY'; Token: kwMASTER_CONNECT_RETRY), 
+        (Keyword: 'MASTER_HOST'; Token: kwMASTER_HOST), 
+        (Keyword: 'MASTER_LOG_FILE'; Token: kwMASTER_LOG_FILE), 
+        (Keyword: 'MASTER_LOG_POS'; Token: kwMASTER_LOG_POS), 
+        (Keyword: 'MASTER_PASSWORD'; Token: kwMASTER_PASSWORD), 
+        (Keyword: 'MASTER_PORT'; Token: kwMASTER_PORT), 
+        (Keyword: 'MASTER_POS_WAIT'; Token: kwMASTER_POS_WAIT), 
+        (Keyword: 'MASTER_SERVER_ID'; Token: kwMASTER_SERVER_ID), 
+        (Keyword: 'MASTER_SSL'; Token: kwMASTER_SSL), 
+        (Keyword: 'MASTER_SSL_CA'; Token: kwMASTER_SSL_CA), 
+        (Keyword: 'MASTER_SSL_CAPATH'; Token: kwMASTER_SSL_CAPATH), 
+        (Keyword: 'MASTER_SSL_CERT'; Token: kwMASTER_SSL_CERT), 
+        (Keyword: 'MASTER_SSL_CIPHER'; Token: kwMASTER_SSL_CIPHER), 
+        (Keyword: 'MASTER_SSL_KEY'; Token: kwMASTER_SSL_KEY), 
+        (Keyword: 'MASTER_USER'; Token: kwMASTER_USER), 
         (Keyword: 'MATCH'; Token: kwMATCH), 
+        (Keyword: 'MAX'; Token: kwMAX), 
+        (Keyword: 'MAX_CONNECTIONS_PER_HOUR'; Token: kwMAX_CONNECTIONS_PER_HOUR), 
+        (Keyword: 'MAX_QUERIES_PER_HOUR'; Token: kwMAX_QUERIES_PER_HOUR), 
+        (Keyword: 'MAX_ROWS'; Token: kwMAX_ROWS), 
+        (Keyword: 'MAX_UPDATES_PER_HOUR'; Token: kwMAX_UPDATES_PER_HOUR), 
+        (Keyword: 'MAX_USER_CONNECTIONS'; Token: kwMAX_USER_CONNECTIONS), 
+        (Keyword: 'MEDIUM'; Token: kwMEDIUM), 
         (Keyword: 'MEDIUMBLOB'; Token: kwMEDIUMBLOB), 
         (Keyword: 'MEDIUMINT'; Token: kwMEDIUMINT), 
         (Keyword: 'MEDIUMTEXT'; Token: kwMEDIUMTEXT), 
+        (Keyword: 'MERGE'; Token: kwMERGE), 
+        (Keyword: 'MICROSECOND'; Token: kwMICROSECOND), 
+        (Keyword: 'MID'; Token: kwMID), 
         (Keyword: 'MIDDLEINT'; Token: kwMIDDLEINT), 
+        (Keyword: 'MIGRATE'; Token: kwMIGRATE), 
+        (Keyword: 'MIN'; Token: kwMIN), 
+        (Keyword: 'MINUTE'; Token: kwMINUTE), 
         (Keyword: 'MINUTE_MICROSECOND'; Token: kwMINUTE_MICROSECOND), 
         (Keyword: 'MINUTE_SECOND'; Token: kwMINUTE_SECOND), 
+        (Keyword: 'MIN_ROWS'; Token: kwMIN_ROWS), 
+        (Keyword: 'MLINEFROMTEXT'; Token: kwMLINEFROMTEXT), 
+        (Keyword: 'MLINEFROMWKB'; Token: kwMLINEFROMWKB), 
         (Keyword: 'MOD'; Token: kwMOD), 
+        (Keyword: 'MODE'; Token: kwMODE), 
+        (Keyword: 'MODIFIES'; Token: kwMODIFIES), 
         (Keyword: 'MODIFY'; Token: kwMODIFY), 
+        (Keyword: 'MONTH'; Token: kwMONTH), 
+        (Keyword: 'MPOINTFROMTEXT'; Token: kwMPOINTFROMTEXT), 
+        (Keyword: 'MPOINTFROMWKB'; Token: kwMPOINTFROMWKB), 
+        (Keyword: 'MPOLYFROMTEXT'; Token: kwMPOLYFROMTEXT), 
+        (Keyword: 'MPOLYFROMWKB'; Token: kwMPOLYFROMWKB), 
+        (Keyword: 'MULTILINESTRING'; Token: kwMULTILINESTRING), 
+        (Keyword: 'MULTILINESTRINGFROMTEXT'; Token: kwMULTILINESTRINGFROMTEXT), 
+        (Keyword: 'MULTILINESTRINGFROMWKB'; Token: kwMULTILINESTRINGFROMWKB), 
+        (Keyword: 'MULTIPOINT'; Token: kwMULTIPOINT), 
+        (Keyword: 'MULTIPOINTFROMTEXT'; Token: kwMULTIPOINTFROMTEXT), 
+        (Keyword: 'MULTIPOINTFROMWKB'; Token: kwMULTIPOINTFROMWKB), 
+        (Keyword: 'MULTIPOLYGON'; Token: kwMULTIPOLYGON), 
+        (Keyword: 'MULTIPOLYGONFROMTEXT'; Token: kwMULTIPOLYGONFROMTEXT), 
+        (Keyword: 'MULTIPOLYGONFROMWKB'; Token: kwMULTIPOLYGONFROMWKB), 
+        (Keyword: 'MUTEX'; Token: kwMUTEX), 
+        (Keyword: 'NAME'; Token: kwNAME), 
+        (Keyword: 'NAMES'; Token: kwNAMES), 
+        (Keyword: 'NATIONAL'; Token: kwNATIONAL), 
         (Keyword: 'NATURAL'; Token: kwNATURAL), 
+        (Keyword: 'NCHAR'; Token: kwNCHAR), 
+        (Keyword: 'NDB'; Token: kwNDB), 
+        (Keyword: 'NDBCLUSTER'; Token: kwNDBCLUSTER), 
+        (Keyword: 'NEW'; Token: kwNEW), 
+        (Keyword: 'NEXT'; Token: kwNEXT), 
+        (Keyword: 'NO'; Token: kwNO), 
+        (Keyword: 'NONE'; Token: kwNONE), 
         (Keyword: 'NOT'; Token: kwNOT), 
+        (Keyword: 'NOW'; Token: kwNOW), 
         (Keyword: 'NO_WRITE_TO_BINLOG'; Token: kwNO_WRITE_TO_BINLOG), 
         (Keyword: 'NULL'; Token: kwNULL), 
         (Keyword: 'NUMERIC'; Token: kwNUMERIC), 
+        (Keyword: 'NVARCHAR'; Token: kwNVARCHAR), 
+        (Keyword: 'OFFSET'; Token: kwOFFSET), 
+        (Keyword: 'OLD_PASSWORD'; Token: kwOLD_PASSWORD), 
         (Keyword: 'ON'; Token: kwON), 
+        (Keyword: 'ONE'; Token: kwONE), 
+        (Keyword: 'ONE_SHOT'; Token: kwONE_SHOT), 
+        (Keyword: 'OPEN'; Token: kwOPEN), 
         (Keyword: 'OPTIMIZE'; Token: kwOPTIMIZE), 
         (Keyword: 'OPTION'; Token: kwOPTION), 
         (Keyword: 'OPTIONALLY'; Token: kwOPTIONALLY), 
@@ -689,40 +1231,101 @@ const KeywordCount = 248;
         (Keyword: 'OUT'; Token: kwOUT), 
         (Keyword: 'OUTER'; Token: kwOUTER), 
         (Keyword: 'OUTFILE'; Token: kwOUTFILE), 
+        (Keyword: 'PACK_KEYS'; Token: kwPACK_KEYS), 
+        (Keyword: 'PARTIAL'; Token: kwPARTIAL), 
         (Keyword: 'PARTITION'; Token: kwPARTITION), 
         (Keyword: 'PARTITIONS'; Token: kwPARTITIONS), 
         (Keyword: 'PASSWORD'; Token: kwPASSWORD), 
+        (Keyword: 'PHASE'; Token: kwPHASE), 
+        (Keyword: 'POINT'; Token: kwPOINT), 
+        (Keyword: 'POINTFROMTEXT'; Token: kwPOINTFROMTEXT), 
+        (Keyword: 'POINTFROMWKB'; Token: kwPOINTFROMWKB), 
+        (Keyword: 'POLYFROMTEXT'; Token: kwPOLYFROMTEXT), 
+        (Keyword: 'POLYFROMWKB'; Token: kwPOLYFROMWKB), 
+        (Keyword: 'POLYGON'; Token: kwPOLYGON), 
+        (Keyword: 'POLYGONFROMTEXT'; Token: kwPOLYGONFROMTEXT), 
+        (Keyword: 'POLYGONFROMWKB'; Token: kwPOLYGONFROMWKB), 
+        (Keyword: 'POSITION'; Token: kwPOSITION), 
         (Keyword: 'PRECISION'; Token: kwPRECISION), 
+        (Keyword: 'PREPARE'; Token: kwPREPARE), 
+        (Keyword: 'PREV'; Token: kwPREV), 
         (Keyword: 'PRIMARY'; Token: kwPRIMARY), 
         (Keyword: 'PRIVILEGES'; Token: kwPRIVILEGES), 
         (Keyword: 'PROCEDURE'; Token: kwPROCEDURE), 
+        (Keyword: 'PROCESS'; Token: kwPROCESS), 
+        (Keyword: 'PROCESSLIST'; Token: kwPROCESSLIST), 
         (Keyword: 'PURGE'; Token: kwPURGE), 
+        (Keyword: 'QUARTER'; Token: kwQUARTER), 
+        (Keyword: 'QUERY'; Token: kwQUERY), 
+        (Keyword: 'QUICK'; Token: kwQUICK), 
+        (Keyword: 'RAID0'; Token: kwRAID0), 
+        (Keyword: 'RAID_CHUNKS'; Token: kwRAID_CHUNKS), 
+        (Keyword: 'RAID_CHUNKSIZE'; Token: kwRAID_CHUNKSIZE), 
+        (Keyword: 'RAID_TYPE'; Token: kwRAID_TYPE), 
+        (Keyword: 'RAND'; Token: kwRAND), 
         (Keyword: 'RANGE'; Token: kwRANGE), 
         (Keyword: 'READ'; Token: kwREAD), 
+        (Keyword: 'READS'; Token: kwREADS), 
         (Keyword: 'REAL'; Token: kwREAL), 
+        (Keyword: 'RECOVER'; Token: kwRECOVER), 
+        (Keyword: 'REDUNDANT'; Token: kwREDUNDANT), 
         (Keyword: 'REFERENCES'; Token: kwREFERENCES), 
         (Keyword: 'REGEXP'; Token: kwREGEXP), 
+        (Keyword: 'RELAY_LOG_FILE'; Token: kwRELAY_LOG_FILE), 
+        (Keyword: 'RELAY_LOG_POS'; Token: kwRELAY_LOG_POS), 
+        (Keyword: 'RELAY_THREAD'; Token: kwRELAY_THREAD), 
+        (Keyword: 'RELEASE'; Token: kwRELEASE), 
+        (Keyword: 'RELOAD'; Token: kwRELOAD), 
         (Keyword: 'RENAME'; Token: kwRENAME), 
+        (Keyword: 'REPAIR'; Token: kwREPAIR), 
         (Keyword: 'REPEAT'; Token: kwREPEAT), 
+        (Keyword: 'REPEATABLE'; Token: kwREPEATABLE), 
         (Keyword: 'REPLACE'; Token: kwREPLACE), 
+        (Keyword: 'REPLICATION'; Token: kwREPLICATION), 
         (Keyword: 'REQUIRE'; Token: kwREQUIRE), 
+        (Keyword: 'RESET'; Token: kwRESET), 
+        (Keyword: 'RESTORE'; Token: kwRESTORE), 
         (Keyword: 'RESTRICT'; Token: kwRESTRICT), 
+        (Keyword: 'RESUME'; Token: kwRESUME), 
         (Keyword: 'RETURN'; Token: kwRETURN), 
         (Keyword: 'RETURNS'; Token: kwRETURNS), 
         (Keyword: 'REVOKE'; Token: kwREVOKE), 
         (Keyword: 'RIGHT'; Token: kwRIGHT), 
         (Keyword: 'RLIKE'; Token: kwRLIKE), 
         (Keyword: 'ROLLBACK'; Token: kwROLLBACK), 
+        (Keyword: 'ROLLUP'; Token: kwROLLUP), 
+        (Keyword: 'ROUND'; Token: kwROUND), 
+        (Keyword: 'ROUTINE'; Token: kwROUTINE), 
+        (Keyword: 'ROW'; Token: kwROW), 
+        (Keyword: 'ROWS'; Token: kwROWS), 
+        (Keyword: 'ROW_COUNT'; Token: kwROW_COUNT), 
+        (Keyword: 'ROW_FORMAT'; Token: kwROW_FORMAT), 
+        (Keyword: 'RTREE'; Token: kwRTREE), 
+        (Keyword: 'SAVEPOINT'; Token: kwSAVEPOINT), 
         (Keyword: 'SCHEMA'; Token: kwSCHEMA), 
         (Keyword: 'SCHEMAS'; Token: kwSCHEMAS), 
+        (Keyword: 'SECOND'; Token: kwSECOND), 
         (Keyword: 'SECOND_MICROSECOND'; Token: kwSECOND_MICROSECOND), 
+        (Keyword: 'SECURITY'; Token: kwSECURITY), 
         (Keyword: 'SELECT'; Token: kwSELECT), 
         (Keyword: 'SENSITIVE'; Token: kwSENSITIVE), 
         (Keyword: 'SEPARATOR'; Token: kwSEPARATOR), 
+        (Keyword: 'SERIAL'; Token: kwSERIAL), 
+        (Keyword: 'SERIALIZABLE'; Token: kwSERIALIZABLE), 
+        (Keyword: 'SESSION'; Token: kwSESSION), 
+        (Keyword: 'SESSION_USER'; Token: kwSESSION_USER), 
         (Keyword: 'SET'; Token: kwSET), 
+        (Keyword: 'SHARE'; Token: kwSHARE), 
         (Keyword: 'SHOW'; Token: kwSHOW), 
+        (Keyword: 'SHUTDOWN'; Token: kwSHUTDOWN), 
+        (Keyword: 'SIGNED'; Token: kwSIGNED), 
+        (Keyword: 'SIMPLE'; Token: kwSIMPLE), 
+        (Keyword: 'SLAVE'; Token: kwSLAVE), 
         (Keyword: 'SMALLINT'; Token: kwSMALLINT), 
+        (Keyword: 'SNAPSHOT'; Token: kwSNAPSHOT), 
+        (Keyword: 'SOME'; Token: kwSOME), 
         (Keyword: 'SONAME'; Token: kwSONAME), 
+        (Keyword: 'SOUNDS'; Token: kwSOUNDS), 
         (Keyword: 'SPATIAL'; Token: kwSPATIAL), 
         (Keyword: 'SPECIFIC'; Token: kwSPECIFIC), 
         (Keyword: 'SQL'; Token: kwSQL), 
@@ -730,19 +1333,57 @@ const KeywordCount = 248;
         (Keyword: 'SQLSTATE'; Token: kwSQLSTATE), 
         (Keyword: 'SQLWARNING'; Token: kwSQLWARNING), 
         (Keyword: 'SQL_BIG_RESULT'; Token: kwSQL_BIG_RESULT), 
+        (Keyword: 'SQL_BUFFER_RESULT'; Token: kwSQL_BUFFER_RESULT), 
+        (Keyword: 'SQL_CACHE'; Token: kwSQL_CACHE), 
         (Keyword: 'SQL_CALC_FOUND_ROWS'; Token: kwSQL_CALC_FOUND_ROWS), 
+        (Keyword: 'SQL_NO_CACHE'; Token: kwSQL_NO_CACHE), 
         (Keyword: 'SQL_SMALL_RESULT'; Token: kwSQL_SMALL_RESULT), 
+        (Keyword: 'SQL_THREAD'; Token: kwSQL_THREAD), 
+        (Keyword: 'SQL_TSI_DAY'; Token: kwSQL_TSI_DAY), 
+        (Keyword: 'SQL_TSI_FRAC_SECOND'; Token: kwSQL_TSI_FRAC_SECOND), 
+        (Keyword: 'SQL_TSI_HOUR'; Token: kwSQL_TSI_HOUR), 
+        (Keyword: 'SQL_TSI_MINUTE'; Token: kwSQL_TSI_MINUTE), 
+        (Keyword: 'SQL_TSI_MONTH'; Token: kwSQL_TSI_MONTH), 
+        (Keyword: 'SQL_TSI_QUARTER'; Token: kwSQL_TSI_QUARTER), 
+        (Keyword: 'SQL_TSI_SECOND'; Token: kwSQL_TSI_SECOND), 
+        (Keyword: 'SQL_TSI_WEEK'; Token: kwSQL_TSI_WEEK), 
+        (Keyword: 'SQL_TSI_YEAR'; Token: kwSQL_TSI_YEAR), 
         (Keyword: 'SSL'; Token: kwSSL), 
         (Keyword: 'START'; Token: kwSTART), 
         (Keyword: 'STARTING'; Token: kwSTARTING), 
+        (Keyword: 'STATUS'; Token: kwSTATUS), 
+        (Keyword: 'STD'; Token: kwSTD), 
+        (Keyword: 'STDDEV'; Token: kwSTDDEV), 
+        (Keyword: 'STDDEV_POP'; Token: kwSTDDEV_POP), 
+        (Keyword: 'STDDEV_SAMP'; Token: kwSTDDEV_SAMP), 
+        (Keyword: 'STOP'; Token: kwSTOP), 
+        (Keyword: 'STORAGE'; Token: kwSTORAGE), 
         (Keyword: 'STRAIGHT_JOIN'; Token: kwSTRAIGHT_JOIN), 
+        (Keyword: 'STRING'; Token: kwSTRING), 
+        (Keyword: 'STRIPED'; Token: kwSTRIPED), 
+        (Keyword: 'SUBDATE'; Token: kwSUBDATE), 
+        (Keyword: 'SUBJECT'; Token: kwSUBJECT), 
+        (Keyword: 'SUBSTR'; Token: kwSUBSTR), 
+        (Keyword: 'SUBSTRING'; Token: kwSUBSTRING), 
+        (Keyword: 'SUBSTRING_INDEX'; Token: kwSUBSTRING_INDEX), 
+        (Keyword: 'SUM'; Token: kwSUM), 
+        (Keyword: 'SUPER'; Token: kwSUPER), 
+        (Keyword: 'SUSPEND'; Token: kwSUSPEND), 
+        (Keyword: 'SYSDATE'; Token: kwSYSDATE), 
+        (Keyword: 'SYSTEM_USER'; Token: kwSYSTEM_USER), 
         (Keyword: 'TABLE'; Token: kwTABLE), 
         (Keyword: 'TABLES'; Token: kwTABLES), 
+        (Keyword: 'TABLESPACE'; Token: kwTABLESPACE), 
         (Keyword: 'TEMPORARY'; Token: kwTEMPORARY), 
+        (Keyword: 'TEMPTABLE'; Token: kwTEMPTABLE), 
         (Keyword: 'TERMINATED'; Token: kwTERMINATED), 
+        (Keyword: 'TEXT'; Token: kwTEXT), 
         (Keyword: 'THAN'; Token: kwTHAN), 
         (Keyword: 'THEN'; Token: kwTHEN), 
+        (Keyword: 'TIME'; Token: kwTIME), 
         (Keyword: 'TIMESTAMP'; Token: kwTIMESTAMP), 
+        (Keyword: 'TIMESTAMPADD'; Token: kwTIMESTAMPADD), 
+        (Keyword: 'TIMESTAMPDIFF'; Token: kwTIMESTAMPDIFF), 
         (Keyword: 'TINYBLOB'; Token: kwTINYBLOB), 
         (Keyword: 'TINYINT'; Token: kwTINYINT), 
         (Keyword: 'TINYTEXT'; Token: kwTINYTEXT), 
@@ -750,16 +1391,30 @@ const KeywordCount = 248;
         (Keyword: 'TRAILING'; Token: kwTRAILING), 
         (Keyword: 'TRANSACTION'; Token: kwTRANSACTION), 
         (Keyword: 'TRIGGER'; Token: kwTRIGGER), 
+        (Keyword: 'TRIGGERS'; Token: kwTRIGGERS), 
+        (Keyword: 'TRIM'; Token: kwTRIM), 
         (Keyword: 'TRUE'; Token: kwTRUE), 
+        (Keyword: 'TRUNCATE'; Token: kwTRUNCATE), 
+        (Keyword: 'TYPE'; Token: kwTYPE), 
+        (Keyword: 'TYPES'; Token: kwTYPES), 
+        (Keyword: 'UNCOMMITTED'; Token: kwUNCOMMITTED), 
         (Keyword: 'UNDEFINED'; Token: kwUNDEFINED), 
         (Keyword: 'UNDO'; Token: kwUNDO), 
+        (Keyword: 'UNICODE'; Token: kwUNICODE), 
         (Keyword: 'UNION'; Token: kwUNION), 
         (Keyword: 'UNIQUE'; Token: kwUNIQUE), 
+        (Keyword: 'UNIQUE_USERS'; Token: kwUNIQUE_USERS), 
+        (Keyword: 'UNIX_TIMESTAMP'; Token: kwUNIX_TIMESTAMP), 
+        (Keyword: 'UNKNOWN'; Token: kwUNKNOWN), 
         (Keyword: 'UNLOCK'; Token: kwUNLOCK), 
         (Keyword: 'UNSIGNED'; Token: kwUNSIGNED), 
+        (Keyword: 'UNTIL'; Token: kwUNTIL), 
         (Keyword: 'UPDATE'; Token: kwUPDATE), 
         (Keyword: 'USAGE'; Token: kwUSAGE), 
         (Keyword: 'USE'; Token: kwUSE), 
+        (Keyword: 'USER'; Token: kwUSER), 
+        (Keyword: 'USER_RESOURCES'; Token: kwUSER_RESOURCES), 
+        (Keyword: 'USE_FRM'; Token: kwUSE_FRM), 
         (Keyword: 'USING'; Token: kwUSING), 
         (Keyword: 'UTC_DATE'; Token: kwUTC_DATE), 
         (Keyword: 'UTC_TIME'; Token: kwUTC_TIME), 
@@ -769,14 +1424,25 @@ const KeywordCount = 248;
         (Keyword: 'VARBINARY'; Token: kwVARBINARY), 
         (Keyword: 'VARCHAR'; Token: kwVARCHAR), 
         (Keyword: 'VARCHARACTER'; Token: kwVARCHARACTER), 
+        (Keyword: 'VARIABLES'; Token: kwVARIABLES), 
+        (Keyword: 'VARIANCE'; Token: kwVARIANCE), 
         (Keyword: 'VARYING'; Token: kwVARYING), 
+        (Keyword: 'VAR_POP'; Token: kwVAR_POP), 
+        (Keyword: 'VAR_SAMP'; Token: kwVAR_SAMP), 
         (Keyword: 'VIEW'; Token: kwVIEW), 
+        (Keyword: 'WARNINGS'; Token: kwWARNINGS), 
+        (Keyword: 'WEEK'; Token: kwWEEK), 
         (Keyword: 'WHEN'; Token: kwWHEN), 
         (Keyword: 'WHERE'; Token: kwWHERE), 
         (Keyword: 'WHILE'; Token: kwWHILE), 
         (Keyword: 'WITH'; Token: kwWITH), 
+        (Keyword: 'WORK'; Token: kwWORK), 
         (Keyword: 'WRITE'; Token: kwWRITE), 
+        (Keyword: 'X509'; Token: kwX509), 
+        (Keyword: 'XA'; Token: kwXA), 
         (Keyword: 'XOR'; Token: kwXOR), 
+        (Keyword: 'YEAR'; Token: kwYEAR), 
+        (Keyword: 'YEARWEEK'; Token: kwYEARWEEK), 
         (Keyword: 'YEAR_MONTH'; Token: kwYEAR_MONTH), 
         (Keyword: 'ZEROFILL'; Token: kwZEROFILL)
 );

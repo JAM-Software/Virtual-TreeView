@@ -58,6 +58,7 @@ type
 
     FReadScriptInput: Boolean;
 
+    FAsyncExecution,
     FExecuting: Boolean;
 
     procedure SetConsolePrompt(ConsolePrompt: WideString);
@@ -106,6 +107,9 @@ type
     property ConsoleCommandSelStart: Integer write SetConsoleCommandSelStart;
 
     property ConsoleHistory: AnsiString read GetConsoleHistory write SetConsoleHistory;
+
+    property AsyncExecution: Boolean read FAsyncExecution write FAsyncExecution;
+    property Executing: Boolean read FExecuting write FExecuting;
   end;
 
   TUniCodeConsole = class(TCustomUniCodeConsole)
@@ -225,6 +229,7 @@ begin
   FConsoleDelimiter := ';';
   Content.OnChangeLine := LineChanged;
 
+  FAsyncExecution := False;
   FExecuting := False;
 end;
 
@@ -258,7 +263,7 @@ procedure TCustomUniCodeConsole.LineChanged(Sender: TObject; Line: TUCELine);
 
 begin
   if Assigned(Line) then
-    InvalidateLine(Line.Index);
+    RefreshLine(Line.Index);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -325,11 +330,14 @@ begin
           begin
             if (Assigned(OnExecuteCommand)) then
             begin
-              FExecuting := True;
+              if Not(FAsyncExecution) then
+                FExecuting := True;
+
               try
                 OnExecuteCommand(Cmd, Key, Shift)
               finally
-                FExecuting := False;
+                if Not(FAsyncExecution) then
+                  FExecuting := False;
               end;
             end
             else
@@ -343,11 +351,14 @@ begin
               begin
                 if (Assigned(OnExecuteCommand)) then
                 begin
-                  FExecuting := True;
+                  if Not(FAsyncExecution) then
+                    FExecuting := True;
+
                   try
                     OnExecuteCommand(Cmd, Key, Shift)
                   finally
-                    FExecuting := False;
+                    if Not(FAsyncExecution) then
+                      FExecuting := False;
                   end;
                 end
                 else

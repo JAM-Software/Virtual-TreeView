@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.1
+// Version 2.2.3
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,6 +25,11 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// November 2005
+//   - Bug fix: line validation during change.
+//   - Improvement: CaretOffset, for giving a x/y pair and a linear offset for caret placing.
+//   - Bug fix: line deletion.
+//   - Bug fix: cut text.
 // September 2005
 //   - Improvement: Added undo handling for Clear and Text set actions.
 //   - Bug fix: Undo/Redo handling reworked.
@@ -107,7 +112,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.1';
+  UCEVersion = '2.2.3';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -705,6 +710,7 @@ type
     procedure BlockIndent;
     procedure BlockUnindent;
 //    function ActivateKeyboard(const C: WideChar): Boolean;
+    procedure CaretOffset(Position: TPoint; Offset: Integer);
     function CharPositionToRowColumn(Position: Cardinal): TPoint;
     procedure ClearAll(KeepUndoList: Boolean);
     procedure ClearSelection;
@@ -2182,23 +2188,23 @@ begin
       // First do a couple of sanity checks.
       Temp1 := MinPoint(Start, Stop);
       Temp2 := MaxPoint(Start, Stop);
+
+      if Temp1.Y < 0 then
+        Temp1.Y := 0;
+      if Temp1.Y > FCount - 1 then
+        Temp1.Y := FCount - 1;
+      if Temp2.Y < 0 then
+        Temp2.Y := 0;
+      if Temp2.Y > FCount - 1 then
+        Temp2.Y := FCount - 1;
+
+      if Temp1.X < 0 then
+        Temp1.X := 0;
+      if Temp2.X < 0 then
+        Temp2.X := 0;
+
       Start := Point(FLines[Temp1.Y].ColumnToCharIndex(Temp1.X), Temp1.Y);
       Stop := Point(FLines[Temp2.Y].ColumnToCharIndex(Temp2.X), Temp2.Y);
-
-      if Start.Y < 0 then
-        Start.Y := 0;
-      if Start.Y > FCount - 1 then
-        Start.Y := FCount - 1;
-      if Stop.Y < 0 then
-        Stop.Y := 0;
-      if Stop.Y > FCount - 1 then
-        Stop.Y := FCount - 1;
-
-      if Start.X < 0 then
-        Start.X := 0;
-      if Stop.X < 0 then
-        Stop.X := 0;
-
       if Start.Y = Stop.Y then
       begin
         // Start and stop on the same line.
@@ -3568,15 +3574,10 @@ procedure TCustomUniCodeEdit.SetSelText(const Value: WideString);
 
 begin
   if SelectionAvailable then
-  begin
-    RefreshLines(BlockBegin.Y, BlockEnd.Y);
     DeleteSelection(Value = '');
-  end;
   if Value <> '' then
-  begin
     InsertText(Value);
-    RefreshLines(BlockBegin.Y, BlockEnd.Y);
-  end;
+  RefreshToBottom(BlockBegin.Y);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3585,7 +3586,7 @@ procedure TCustomUniCodeEdit.SetSelTextExternal(const Value: WideString);
 
 
 begin
-  FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, SelectedText);
+  FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, Value);
   SetSelText(Value);
   CaretXY := BlockEnd;
 
@@ -4269,7 +4270,6 @@ begin
   BeginX := FContent[BlockBegin.Y].ColumnToCharIndex(BlockBegin.X);
   EndX := FContent[BlockEnd.Y].ColumnToCharIndex(BlockEnd.X);
 
-  CaretX := BlockBegin.X;
   if BlockBegin.Y = BlockEnd.Y then
   begin
     TempString := FContent[BlockBegin.Y].Text;
@@ -4278,7 +4278,6 @@ begin
   end
   else
   begin
-    CaretY := BlockBegin.Y;
     TempString := FContent[BlockBegin.Y].Text;
     if Length(TempString) < BeginX then
       TempString := TempString + WideStringOfChar(' ', BeginX - Length(TempString))
@@ -4307,10 +4306,14 @@ begin
       if (Start > 0) and NeedRescan then
         RescanLine(Start - 1);
     end;
-    // if all lines have been removed then TempString can only be an empty WideString
+    // If all lines have been removed then TempString can only be an empty WideString.
     if Start < FContent.Count then
       FContent[Start].Text := TempString;
+
+    CaretY := BlockBegin.Y;
   end;
+
+  CaretX := BlockBegin.X;
   BlockBegin := CaretXY;
 end;
 
@@ -4596,7 +4599,7 @@ end;
 
 procedure TCustomUniCodeEdit.InsertText(Value: WideString);
 
-// Inserts the given text at the current block start position and updates BlockEnd to point to begin and end
+// Inserts the given text at the current block start position and updates BlockEnd to point to the end
 // of the new text in the editor.
 
 var
@@ -4616,11 +4619,15 @@ begin
     try
       Temp.Text := Value + WideCRLF;
       if FContent.Count = 0 then
-        CX := BlockBegin.X
+      begin
+        CX := BlockBegin.X;
+        TempString := '';
+      end
       else
+      begin
         CX := FContent[BlockBegin.Y].ColumnToCharIndex(BlockBegin.X);
-
-      TempString := LineText;
+        TempString := FContent[BlockBegin.Y].Text;
+      end;
       Len := CX - Length(TempString);
 
       if Temp.Count = 1 then
@@ -4628,7 +4635,10 @@ begin
         if Len > 0 then
           TempString := TempString + WideStringOfChar(' ', Len);
         Insert(Temp[0], TempString, CX + 1);
-        LineText := TempString;
+        if FContent.Count = 0 then
+          FContent.AddLine(TempString)
+        else
+          FContent[BlockBegin.Y].Text := TempString;
         TempY := BlockBegin.Y;
         TempString := Value;
       end
@@ -4643,8 +4653,17 @@ begin
           TempString := Temp[0]
         else
           TempString := Copy(TempString, 1, CX) + Temp[0];
-        TempString2 := Copy(LineText, CX + 1, Length(LineText));
-        FContent[FCaretY].Text := TempString;
+
+        if FContent.Count = 0 then
+        begin
+          TempString2 := '';
+          FContent.AddLine(TempString);
+        end
+        else
+        begin
+          TempString2 := Copy(FContent[BlockBegin.Y].Text, CX + 1, Length(FContent[BlockBegin.Y].Text));
+          FContent[FCaretY].Text := TempString;
+        end;
         TempY := FCaretY + 1;
         for I := 1 to Temp.Count - 2 do
         begin
@@ -6329,10 +6348,10 @@ begin
       until not FHighLighter.HasMoreTokens;
 
       NewEndState := FHighlighter.GetRange;
-      if FContent[Index + 1].LexerState <> NewEndState then
+      if FContent.LineNoInit[Index + 1].LexerState <> NewEndState then
       begin
         // End states differ. Everything following must be rescanned.
-        FContent[Index + 1].LexerState := NewEndState;
+        FContent.LineNoInit[Index + 1].LexerState := NewEndState;
         FLastValidLine := Index;
         RefreshToBottom(Index);
       end;
@@ -6839,6 +6858,63 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TCustomUniCodeEdit.CaretOffset(Position: TPoint; Offset: Integer);
+
+// Places the caret at the given location and moves it then by the number of characters given in Offset (back or forth,
+// depending on the sign of Offset). Advance is computed as if the entire content would be one long string.
+
+var
+  LineLength: Integer;
+  
+begin
+  if Position.Y < 0 then
+    Position.Y := 0;
+  if Position.Y >= FContent.Count then
+    Position.Y := FContent.Count - 1;
+
+  if Offset <> 0 then
+  begin
+    if Offset < 0 then
+    begin
+      Offset := -Offset;
+      repeat
+        if Position.X < Offset then
+        begin
+          Dec(Offset, Position.X + 2); // +2 for the line break
+          Position.X := Length(FContent[Position.Y].Text);
+          Dec(Position.Y);
+        end
+        else
+        begin
+          Dec(Position.X, Offset);
+          Break;
+        end;
+      until Position.Y < 0;
+    end
+    else
+    begin
+      repeat
+        LineLength := Length(FContent[Position.Y].Text);
+        if Position.X + Offset > LineLength then
+        begin
+          Dec(Offset, LineLength - Position.X + 2); // +2 for the line break
+          Position.X := 0;
+          Inc(Position.Y);
+        end
+        else
+        begin
+          Inc(Position.X, Offset);
+          Break;
+        end;
+      until Position.Y >= FContent.Count;
+    end;
+  end;
+
+  CaretXY := Position;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TCustomUniCodeEdit.CharPositionToRowColumn(Position: Cardinal): TPoint;
 
 // Calculates the total position of the column/row reference point as would all lines be
@@ -6922,6 +6998,9 @@ var
   Caret: TPoint;
   LastCaretPos: TPoint;
 
+  Start: TPoint;
+  Stop: TPoint;
+  
 begin
   ProcessCommand(Command, AChar, Data);
   if (Command = ecNone) or (Command >= ecUserFirst) then
@@ -7315,7 +7394,20 @@ begin
     ecDeleteLine:
       if not (eoReadOnly in FOptions) and (FCaretY < FContent.Count) then
       begin
-        FUndoList.PrepareDeleteChange(Point(0, FCaretY), Point(0, FCaretY + 1));
+        Start := Point(0, FCaretY);
+        Stop := Point(0, FCaretY + 1);
+        if Stop.Y = FContent.Count then
+        begin
+          // Last line is about to be deleted.
+          Dec(Stop.Y);
+          Stop.X := FContent[FCaretY].CharIndexToColumn(Length(FContent[FCaretY].Text));
+          if Start.Y > 0 then
+          begin
+            Dec(Start.Y);
+            Start.X := FContent[FCaretY].CharIndexToColumn(Length(FContent[Start.Y].Text));
+          end;
+        end;
+        FUndoList.PrepareDeleteChange(Start, Stop);
         FContent.DeleteLine(FCaretY);
         CaretXY := Point(0, FCaretY);
         BlockBegin := CaretXY;
