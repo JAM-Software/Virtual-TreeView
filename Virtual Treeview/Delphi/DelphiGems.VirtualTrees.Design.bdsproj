@@ -4,7 +4,7 @@
 		<Option>
 			<Option Name="Personality">DelphiDotNet.Personality</Option>
 			<Option Name="ProjectType"></Option>
-			<Option Name="Version">1.0</Option>
+			<Option Name="Version">2.0</Option>
 			<Option Name="GUID">{E5253B31-77A9-4639-AD05-2EB7F33F9C9F}</Option>
 		</Option>
 	</PersonalityInfo>
@@ -102,8 +102,8 @@
 			<Compiler Name="WideCharReduced">True</Compiler>
 			<Compiler Name="DuplicatesIgnored">True</Compiler>
 			<Compiler Name="UnitInitSeq">True</Compiler>
-			<Compiler Name="LocalPInvoke">True</Compiler>
-		</Compiler>
+			<Compiler Name="LocalPInvoke">True</Compiler>  <Compiler Name="CodePage"></Compiler>
+    </Compiler>
 		<Linker>
 			<Linker Name="MapFile">0</Linker>
 			<Linker Name="OutputObjs">0</Linker>
@@ -114,8 +114,8 @@
 			<Linker Name="MinStackSize">4096</Linker>
 			<Linker Name="MaxStackSize">1048576</Linker>
 			<Linker Name="ImageBase">4194304</Linker>
-			<Linker Name="ExeDescription"></Linker>
-		</Linker>
+			<Linker Name="ExeDescription"></Linker>  <Linker Name="GenerateHpps">False</Linker>
+    </Linker>
 		<Directories>
 			<Directories Name="OutputDir"></Directories>
 			<Directories Name="UnitOutputDir">V:\MySQL\Temp</Directories>
@@ -137,8 +137,10 @@
 			<Parameters Name="RemotePath"></Parameters>
 			<Parameters Name="RemoteLauncher"></Parameters>
 			<Parameters Name="RemoteCWD"></Parameters>
-			<Parameters Name="RemoteDebug">False</Parameters>
-		</Parameters>
+			<Parameters Name="RemoteDebug">False</Parameters>  <Parameters Name="Debug Symbols Search Path"></Parameters>
+      <Parameters Name="LoadAllSymbols">True</Parameters>
+      <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+    </Parameters>
 		<VersionInfo>
 			<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 			<VersionInfo Name="AutoIncBuild">False</VersionInfo>
@@ -174,13 +176,15 @@
     
     
     
+    
+    
+    
+    
+    
     <FileList>
-      <File FileName="ModelSupport\default.txaPackage" ContainerId="TogetherDiagram" ModuleName="default"/>
-      <File FileName="ModelSupport\default.txvpck" ContainerId="TogetherDiagram" ModuleName="default"/>
-      <File FileName="ModelSupport\VirtualControls\default.txvpck" ContainerId="TogetherDiagram" ModuleName="default"/>
-      <File FileName="c:\programme\gemeinsame dateien\borland shared\bds\shared assemblies\4.0\Borland.Delphi.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Delphi" AssemblyName="Borland.Delphi" Version="10.0.1998.7650" LinkUnits="False"/>
+      <File FileName="c:\programme\gemeinsame dateien\borland shared\bds\shared assemblies\4.0\Borland.Delphi.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Delphi" AssemblyName="Borland.Delphi" Version="10.0.4137.0" LinkUnits="False"/>
       <File FileName="V:\Demos\Virtual Treeview .NET\DelphiGems.VirtualTrees.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="DelphiGems.VirtualTrees" AssemblyName="DelphiGems.VirtualTrees" LinkUnits="False"/>
-      <File FileName="c:\programme\gemeinsame dateien\borland shared\bds\shared assemblies\4.0\Borland.Vcl.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Vcl" AssemblyName="Borland.Vcl" Version="10.0.1998.7650" LinkUnits="False"/>
+      <File FileName="c:\programme\gemeinsame dateien\borland shared\bds\shared assemblies\4.0\Borland.Vcl.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Vcl" AssemblyName="Borland.Vcl" Version="10.0.4137.0" LinkUnits="False"/>
       <File FileName="..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas" ContainerId="PascalCompiler" ModuleName="DelphiGems.VirtualControls.VirtualTreesReg"/>
     </FileList>
   </DelphiDotNet.Personality>

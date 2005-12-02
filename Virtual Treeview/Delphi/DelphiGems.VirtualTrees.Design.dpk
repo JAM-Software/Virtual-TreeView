@@ -23,9 +23,6 @@ package DelphiGems.VirtualTrees.Design;
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
 {$IMPLICITBUILD OFF}
-{%TogetherDiagram 'ModelSupport\default.txaPackage'}
-{%TogetherDiagram 'ModelSupport\default.txvpck'}
-{%TogetherDiagram 'ModelSupport\VirtualControls\default.txvpck'}
 
 requires
   Borland.Delphi,
