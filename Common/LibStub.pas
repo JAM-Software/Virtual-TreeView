@@ -155,6 +155,11 @@ implementation
 uses
   Math, SysUtils, DateUtils;
 
+{$ifndef COMPILER_6_UP}
+const
+  NaN = 0.0 / 0.0;
+{$endif COMPILER_6_UP}
+
 var
   _daylight: Boolean;
   _timezone: Integer;
