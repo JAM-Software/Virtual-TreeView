@@ -1,181 +1,171 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2002 Marti Maria
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 
 // Named color support
 
 #include "lcms.h"
 
 
-LPcmsNAMEDCOLORLIST  cdecl cmsAllocNamedColorList(void);
-void				 cdecl cmsFreeNamedColorList(LPcmsNAMEDCOLORLIST List);
-BOOL				 cdecl cmsAppendNamedColor(cmsHTRANSFORM xform, const char* Name, WORD PCS[3], WORD Colorant[MAXCHANNELS]);
-
-
-// ---------------------------------------------------------------------------------
 
 static
-BOOL GrowNamedColorList(LPcmsNAMEDCOLORLIST v, int ByElements)
-{
-	LPcmsNAMEDCOLOR NewList;
-	int NewElements;
-	
-	if (ByElements > v ->Allocated) {
+LPcmsNAMEDCOLORLIST GrowNamedColorList(LPcmsNAMEDCOLORLIST v, int ByElements)
+{           
+    if (ByElements > v ->Allocated) {
+        
+        LPcmsNAMEDCOLORLIST TheNewList;
+        int NewElements;
+        size_t size;
 
-		if (v ->Allocated == 0)
-			NewElements = 64;	// Initial guess
-		else
-			NewElements = v ->Allocated;
+        if (v ->Allocated == 0)
+            NewElements = 64;   // Initial guess
+        else
+            NewElements = v ->Allocated;
 
-		while (ByElements > NewElements)
-				NewElements *= 2;
-		
-		NewList = (LPcmsNAMEDCOLOR) malloc(sizeof(cmsNAMEDCOLOR) * NewElements);
+        while (ByElements > NewElements)
+                NewElements *= 2;
+        
+        size = sizeof(cmsNAMEDCOLORLIST) + (sizeof(cmsNAMEDCOLOR) * NewElements);
+        TheNewList = (LPcmsNAMEDCOLORLIST) malloc(size);
+        
 
-		if (NewList == NULL) {
-			cmsSignalError(LCMS_ERRC_ABORTED, "Out of memory reallocating named color list");
-			return FALSE;
-		}
-		else {
+        if (TheNewList == NULL) {
+            cmsSignalError(LCMS_ERRC_ABORTED, "Out of memory reallocating named color list");
+            return NULL;
+        }
+        else {
+              ZeroMemory(TheNewList, size);
+              CopyMemory(TheNewList, v, sizeof(cmsNAMEDCOLORLIST) + (v ->nColors - 1) * sizeof(cmsNAMEDCOLOR));
+              TheNewList -> Allocated = NewElements;
 
-			if (v -> List) {
-				CopyMemory(NewList, v -> List, v ->nColors* sizeof(cmsNAMEDCOLOR));
-				free(v -> List);				
-			}
-
-			v -> List = NewList;
-			v -> Allocated = NewElements;
-			return TRUE;
-		}
-	}
-
-	return TRUE;
+              free(v);
+              return TheNewList;
+        }
+    }
+    
+    return v;
 }
 
 
-LPcmsNAMEDCOLORLIST cmsAllocNamedColorList(void)
+LPcmsNAMEDCOLORLIST cmsAllocNamedColorList(int n)
 {
-	LPcmsNAMEDCOLORLIST v = (LPcmsNAMEDCOLORLIST) malloc(sizeof(cmsNAMEDCOLORLIST));
+    size_t size = sizeof(cmsNAMEDCOLORLIST) + (n - 1) * sizeof(cmsNAMEDCOLOR);
 
-	if (v == NULL) {
-		cmsSignalError(LCMS_ERRC_ABORTED, "Out of memory creating named color list");
-		return NULL;
-	}
+    LPcmsNAMEDCOLORLIST v = (LPcmsNAMEDCOLORLIST) malloc(size);
+    
 
-	ZeroMemory(v, sizeof(cmsNAMEDCOLORLIST));
+    if (v == NULL) {
+        cmsSignalError(LCMS_ERRC_ABORTED, "Out of memory creating named color list");
+        return NULL;
+    }
 
-	v ->nColors   = 0;
-	v ->Allocated = 0;	
-	v ->Prefix[0] = 0;
-	v ->Suffix[0] = 0;	
-	v -> List	  = NULL; 
-	
-	
-	return v;
+    ZeroMemory(v, size);
+
+    v ->nColors   = n;
+    v ->Allocated = n;  
+    v ->Prefix[0] = 0;
+    v ->Suffix[0] = 0;  
+           
+    return v;
 }
 
 void cmsFreeNamedColorList(LPcmsNAMEDCOLORLIST v)
 {
-	if (v == NULL) {
-		cmsSignalError(LCMS_ERRC_RECOVERABLE, "Couldn't free a NULL named color list");
-		return;
-	}
-				
-	if (v -> List) free(v->List);
-	free(v);
-}	
-
-
-
+    if (v == NULL) {
+        cmsSignalError(LCMS_ERRC_RECOVERABLE, "Couldn't free a NULL named color list");
+        return;
+    }
+                    
+    free(v);
+}   
 
 BOOL cmsAppendNamedColor(cmsHTRANSFORM xform, const char* Name, WORD PCS[3], WORD Colorant[MAXCHANNELS])
 {
-	_LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
-	LPcmsNAMEDCOLORLIST List = v ->NamedColorList;
-	int i;
+    _LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
+    LPcmsNAMEDCOLORLIST List;
+    int i;
 
-	if (List == NULL) return FALSE;
-	if (!GrowNamedColorList(List, List ->nColors + 1)) return FALSE;
-	
-	for (i=0; i < MAXCHANNELS; i++)
-		List ->List[List ->nColors].DeviceColorant[i] = Colorant[i];
+    if (v ->NamedColorList == NULL) return FALSE;
 
-	for (i=0; i < 3; i++)
-		List ->List[List ->nColors].PCS[i] = PCS[i];
+    v ->NamedColorList = GrowNamedColorList(v ->NamedColorList, v->NamedColorList ->nColors + 1);
+    
+    List = v ->NamedColorList;
 
-	strncpy(List ->List[List ->nColors].Name, Name, MAX_PATH-1);
+    for (i=0; i < MAXCHANNELS; i++)
+        List ->List[List ->nColors].DeviceColorant[i] = Colorant[i];
 
-	List ->nColors++;
-	return TRUE;
+    for (i=0; i < 3; i++)
+        List ->List[List ->nColors].PCS[i] = PCS[i];
+
+    strncpy(List ->List[List ->nColors].Name, Name, MAX_PATH-1);
+
+    List ->nColors++;
+    return TRUE;
 }
+
 
 
 // Returns named color count 
 
 int LCMSEXPORT cmsNamedColorCount(cmsHTRANSFORM xform)
 {
-	 _LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
+     _LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
 
-	 if (v ->NamedColorList == NULL) return 0;
-	 return v ->NamedColorList ->nColors;
+     if (v ->NamedColorList == NULL) return 0;
+     return v ->NamedColorList ->nColors;
 }
 
 
 BOOL LCMSEXPORT cmsNamedColorInfo(cmsHTRANSFORM xform, int nColor, char* Name, char* Prefix, char* Suffix)
 {
-	_LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
+    _LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
 
 
-	 if (v ->NamedColorList == NULL) return FALSE;
+     if (v ->NamedColorList == NULL) return FALSE;
 
-	 if (nColor < 0 || nColor >= cmsNamedColorCount(xform)) return FALSE;
+     if (nColor < 0 || nColor >= cmsNamedColorCount(xform)) return FALSE;
 
-	 if (Name) strncpy(Name, v ->NamedColorList->List[nColor].Name, 31);
-	 if (Prefix) strncpy(Name, v ->NamedColorList->Prefix, 31);
-	 if (Suffix) strncpy(Name, v ->NamedColorList->Suffix, 31);
+     if (Name) strncpy(Name, v ->NamedColorList->List[nColor].Name, 31);
+     if (Prefix) strncpy(Prefix, v ->NamedColorList->Prefix, 31);
+     if (Suffix) strncpy(Suffix, v ->NamedColorList->Suffix, 31);
 
-	 return TRUE;
+     return TRUE;
 }
 
 
 int  LCMSEXPORT cmsNamedColorIndex(cmsHTRANSFORM xform, const char* Name)
 {
-	_LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;	
-	int i, n;
+    _LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;    
+    int i, n;
 
-		 if (v ->NamedColorList == NULL) return -1;
+         if (v ->NamedColorList == NULL) return -1;
 
-		n = cmsNamedColorCount(xform);
-		for (i=0; i < n; i++) {
-			if (stricmp(Name,  v ->NamedColorList->List[i].Name) == 0)
-					return i;
-		}
+        n = cmsNamedColorCount(xform);
+        for (i=0; i < n; i++) {
+            if (stricmp(Name,  v ->NamedColorList->List[i].Name) == 0)
+                    return i;
+        }
 
-		return -1;
+        return -1;
 }
+
+

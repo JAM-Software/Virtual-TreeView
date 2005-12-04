@@ -1,34 +1,26 @@
 //
-//  Little cms
-//  Copyright (C) 1998-2001 Marti Maria
+//  Little cms DELPHI wrapper
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-// ver 1.10 - BETA 1
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// ver 1.15
 
 UNIT lcmsdll;
 
@@ -51,19 +43,22 @@ USES Windows;
     cmsFLAGS_MATRIXOUTPUT           = $0002;
     cmsFLAGS_MATRIXONLY             = (cmsFLAGS_MATRIXINPUT OR cmsFLAGS_MATRIXOUTPUT);
 
+    cmsFLAGS_NOPRELINEARIZATION     = $0010; // Don't create prelinearization tables
+                                             // on precalculated transforms (internal use)                   
+
     cmsFLAGS_NOTPRECALC             = $0100;
     cmsFLAGS_NULLTRANSFORM          = $0200;  // Don't transform anyway
-
     cmsFLAGS_HIGHRESPRECALC         = $0400;  // Use more memory to give better accurancy
-    cmsFLAGS_LOWRESPRECALC          = $0800;   // Use less memory to minimize resouces
+    cmsFLAGS_LOWRESPRECALC          = $0800;  // Use less memory to minimize resouces
 
     
     cmsFLAGS_GAMUTCHECK             = $1000;  // Mark Out of Gamut as alarm color (on proofing transform)
     cmsFLAGS_SOFTPROOFING           = $4000;  // Softproof of proofing profile
 
-    cmsFLAGS_WHITEBLACKCOMPENSATION = $2000;  // Matches black and white on precalculated transforms
+    cmsFLAGS_WHITEBLACKCOMPENSATION = $2000; 
+    cmsFLAGS_BLACKPOINTCOMPENSATION = $2000;
 
-
+    cmsFLAGS_NODEFAULTRESOURCEDEF   = $10000;   // PostScript
 
     // Format descriptors
 
@@ -168,6 +163,7 @@ USES Windows;
 
         TYPE_XYZ_16                 = $9001A;
         TYPE_Lab_8                  = $A0019;
+        TYPE_LabA_8                 = $A0099;
         TYPE_Lab_16                 = $A001A;
         TYPE_Yxy_16                 = $E001A;
         TYPE_YCbCr_8                = $70019;
@@ -253,15 +249,24 @@ USES Windows;
     lcmsSignature                = $6c636d73;
     icSigLuvKData                = $4C75764B;  {'LuvK'}
     icSigChromaticityTag         = $6368726d;  { As per Addendum 2 to Spec. ICC.1:1998-09 }
-    icSigChromaticityType        = $6368726d;
+    icSigChromaticAdaptationTag  = $63686164;
+    
 
 
   TYPE
 
     cmsHPROFILE            = Pointer;
     cmsHTRANSFORM          = Pointer;
+    LCMSHANDLE             = Pointer;
+
+      LCMSGAMMAPARAMS = PACKED RECORD
+                        Crc32      : DWord;         
+                        TheType    : Integer;
+                        Params     : ARRAY [0..9] OF Double;                        
+                        END;
 
       GAMMATABLE = PACKED RECORD
+                        Birth      : LCMSGAMMAPARAMS;
                         nEntries   : DWord;
                         GammaTable : ARRAY [0..1] OF Word;
                      END;
@@ -344,8 +349,10 @@ USES Windows;
 
 
     LPcmsViewingConditions = ^cmsViewingConditions;
+   
+    cmsErrorHandler =  FUNCTION (Severity: Integer; Msg:PChar): Integer; cdecl;
 
-
+    LCMSARRAYOFPCHAR = ARRAY OF PChar;
 
 // Input/Output
 
@@ -369,9 +376,15 @@ FUNCTION cmsCreateInkLimitingDeviceLink(ColorSpace: icColorSpaceSignature;
                                               Limit: Double) : cmsHPROFILE; StdCall;
 
 
+FUNCTION  cmsCreateNULLProfile : cmsHPROFILE; StdCall;
 FUNCTION  cmsCreateLabProfile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; StdCall;
+FUNCTION  cmsCreateLab4Profile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; StdCall;
 FUNCTION  cmsCreateXYZProfile:cmsHPROFILE; StdCall;
 FUNCTION  cmsCreate_sRGBProfile:cmsHPROFILE; StdCall;
+FUNCTION  cmsCreateBCHSWabstractProfile(nLUTPoints: Integer;
+                                        Bright, Contrast, Hue, Saturation: Double;
+                                        TempSrc, TempDest: Integer): cmsHPROFILE; StdCall;
+
 
 // Utils
 
@@ -379,8 +392,8 @@ PROCEDURE cmsXYZ2xyY(Dest: LPcmsCIExyY; Source: LPcmsCIEXYZ); StdCall;
 PROCEDURE cmsxyY2XYZ(Dest: LPcmsCIEXYZ; Source: LPcmsCIExyY); StdCall;
 PROCEDURE cmsXYZ2Lab(WhitePoint: LPcmsCIEXYZ; xyz: LPcmsCIEXYZ; Lab: LPcmsCIELab); StdCall;
 PROCEDURE cmsLab2XYZ(WhitePoint: LPcmsCIEXYZ; Lab: LPcmsCIELab; xyz: LPcmsCIEXYZ); StdCall;
-PROCEDURE cmsLab2LCh(Lab: LPcmsCIELab; LCh: LPcmsCIELCh); StdCall;
-PROCEDURE cmsLCh2Lab(LCh: LPcmsCIELCh; Lab: LPcmsCIELab); StdCall;
+PROCEDURE cmsLab2LCh(LCh: LPcmsCIELCh; Lab: LPcmsCIELab); StdCall;
+PROCEDURE cmsLCh2Lab(Lab: LPcmsCIELab; LCh: LPcmsCIELCh); StdCall;
 
 // CIELab handling
 
@@ -388,6 +401,7 @@ FUNCTION cmsDeltaE(Lab1, Lab2: LPcmsCIELab): Double; StdCall;
 FUNCTION cmsCIE94DeltaE(Lab1, Lab2: LPcmsCIELab): Double; StdCall;
 FUNCTION cmsBFDdeltaE(Lab1, Lab2: LPcmsCIELab): Double; StdCall;
 FUNCTION cmsCMCdeltaE(Lab1, Lab2: LPcmsCIELab): Double; StdCall;
+FUNCTION cmsCIE2000DeltaE(Lab1, Lab2: LPcmsCIELab; Kl, Kc, Kh: Double): Double; StdCall;
 
 PROCEDURE cmsClampLab(Lab: LPcmsCIELab; amax, amin,  bmax, bmin: Double); StdCall;
 
@@ -403,6 +417,14 @@ PROCEDURE   cmsCIECAM97sDone(hModel : Pointer); StdCall;
 
 PROCEDURE   cmsCIECAM97sForward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); StdCall;
 PROCEDURE   cmsCIECAM97sReverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); StdCall;
+
+// CIECAM02
+
+FUNCTION    cmsCIECAM02Init(pVC : LPcmsViewingConditions ) : Pointer; StdCall;
+PROCEDURE   cmsCIECAM02Done(hModel : Pointer); StdCall;
+
+PROCEDURE   cmsCIECAM02Forward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); StdCall;
+PROCEDURE   cmsCIECAM02Reverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); StdCall;
 
 
 // Gamma curves
@@ -439,26 +461,43 @@ FUNCTION cmsTakeMediaWhitePoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boole
 FUNCTION cmsTakeMediaBlackPoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; StdCall;
 FUNCTION cmsTakeIluminant(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; StdCall;
 FUNCTION cmsTakeColorants(Dest: LPcmsCIEXYZTRIPLE; hProfile: cmsHPROFILE): Boolean; StdCall;
+FUNCTION cmsTakeHeaderFlags(hProfile: cmsHPROFILE): DWord; StdCall;
+
 FUNCTION cmsTakeProductName(hProfile: cmsHPROFILE): PChar; StdCall;
 FUNCTION cmsTakeProductDesc(hProfile: cmsHPROFILE): PChar; StdCall;
+
+FUNCTION cmsTakeManufacturer(hProfile: cmsHPROFILE): PChar; StdCall;
+FUNCTION cmsTakeModel(hProfile: cmsHPROFILE): PChar; StdCall;
+FUNCTION cmsTakeCopyright(hProfile: cmsHPROFILE): PChar; StdCall;
+FUNCTION cmsTakeProfileID(hProfile: cmsHPROFILE): PByte; StdCall;
+
+
+
 FUNCTION cmsIsTag(hProfile: cmsHPROFILE; sig: icTagSignature): Boolean; StdCall;
 FUNCTION cmsTakeRenderingIntent(hProfile: cmsHPROFILE): Integer; StdCall;
 FUNCTION cmsIsIntentSupported(hProfile: cmsHPROFILE; Intent, UsedDirection : Integer): Integer; StdCall;
 FUNCTION cmsTakeCharTargetData(hProfile: cmsHPROFILE; var Data : PChar; var len: Cardinal): Boolean; StdCall;
 
 FUNCTION _cmsICCcolorSpace(OurNotation: Integer) : icColorSpaceSignature; StdCall;
+FUNCTION _cmsLCMScolorSpace(ProfileSpace: icColorSpaceSignature): Integer; StdCall;
 FUNCTION _cmsChannelsOf(ColorSpace: icColorSpaceSignature): Integer; StdCall;
 
 
 FUNCTION cmsGetPCS(hProfile: cmsHPROFILE): icColorSpaceSignature; StdCall;
 FUNCTION cmsGetColorSpace(hProfile: cmsHPROFILE): icColorSpaceSignature; StdCall;
 FUNCTION cmsGetDeviceClass( hProfile: cmsHPROFILE): icProfileClassSignature; StdCall;
+FUNCTION cmsGetProfileICCversion( hProfile: cmsHPROFILE): DWord; StdCall;
 
 // Profile creation
 
 PROCEDURE cmsSetDeviceClass(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); StdCall;
 PROCEDURE cmsSetColorSpace(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); StdCall;
 PROCEDURE cmsSetPCS(hProfile: cmsHPROFILE; pcs: icColorSpaceSignature); StdCall;
+PROCEDURE cmsSetRenderingIntent(hProfile: cmsHPROFILE; Intent: Integer); StdCall;
+PROCEDURE cmsSetHeaderFlags(hProfile: cmsHPROFILE; dwFlags: DWord); StdCall;
+PROCEDURE cmsSetProfileID(hProfile: cmsHPROFILE; ProfileID: PByte); StdCall;
+
+
 
 FUNCTION  cmsAddTag(hProfile: cmsHPROFILE; Sig: icTagSignature; Data: Pointer): Boolean; StdCall;
 FUNCTION  _cmsSaveProfile(hProfile: cmsHPROFILE; FileName: PChar): Boolean; StdCall;
@@ -516,6 +555,7 @@ PROCEDURE cmsChangeBuffersFormat(hTransform: cmsHTRANSFORM;
 FUNCTION cmsTransform2DeviceLink(hTransform: cmsHTRANSFORM; 
                                 dwFlags: DWord): cmsHPROFILE; StdCall;
 
+PROCEDURE _cmsSetLUTdepth(hProfile: cmsHPROFILE; depth: Integer); StdCall;
 
 // Named color support
 
@@ -538,6 +578,13 @@ FUNCTION cmsGetPostScriptCRD(hProfile: cmsHPROFILE ;
                                  Buffer: Pointer;
                                  dwBufferLen: DWord): DWord; StdCall;
 
+FUNCTION cmsGetPostScriptCRDEx(hProfile: cmsHPROFILE ;
+                                 Intent: Integer;
+                                 dwFlags: DWord;
+                                 Buffer: Pointer;
+                                 dwBufferLen: DWord): DWord; StdCall;
+
+
 
 
 // Gamut check
@@ -553,6 +600,72 @@ CONST
         LCMS_ERROR_IGNORE  =  2;
 
 PROCEDURE cmsErrorAction(nAction: Integer); StdCall;
+
+PROCEDURE cmsSetErrorHandler(ErrorHandler: cmsErrorHandler); StdCall;
+
+
+// CGATS.13 parser
+
+FUNCTION  cmsIT8Alloc: LCMSHANDLE; StdCall;
+PROCEDURE cmsIT8Free(hIT8: LCMSHANDLE); StdCall;
+
+// Tables
+
+FUNCTION  cmsIT8TableCount(hIT8: LCMSHANDLE): Integer; StdCall;
+FUNCTION  cmsIT8SetTable(hIT8: LCMSHANDLE; nTable: Integer): Integer; StdCall;
+
+// Persistence
+FUNCTION  cmsIT8LoadFromFile(cFileName: PChar): LCMSHANDLE; StdCall;
+FUNCTION  cmsIT8LoadFromMem(Ptr: Pointer; size :DWord): LCMSHANDLE; StdCall;
+
+FUNCTION cmsIT8SaveToFile(hIT8: LCMSHANDLE; cFileName: PChar): Boolean; StdCall;
+
+// Properties
+
+FUNCTION cmsIT8GetSheetType(hIT8: LCMSHANDLE): PChar; StdCall;
+FUNCTION cmsIT8SetSheetType(hIT8: LCMSHANDLE; TheType: PChar): Boolean; StdCall;
+
+FUNCTION cmsIT8SetComment(hIT8: LCMSHANDLE; cComment: PChar): Boolean; StdCall;
+
+FUNCTION cmsIT8SetPropertyStr(hIT8: LCMSHANDLE; cProp, Str: PChar): Boolean; StdCall;
+FUNCTION cmsIT8SetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar; Val: Double): Boolean; StdCall;
+FUNCTION cmsIT8SetPropertyHex(hIT8: LCMSHANDLE; cProp: PChar; Val: Integer): Boolean; StdCall;
+FUNCTION cmsIT8SetPropertyUncooked(hIT8: LCMSHANDLE; Key, Buffer: PChar): Boolean; StdCall;
+
+
+FUNCTION cmsIT8GetProperty(hIT8: LCMSHANDLE; cProp: PChar): PChar; StdCall;
+FUNCTION cmsIT8GetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar): Double; StdCall;
+FUNCTION cmsIT8EnumProperties(hIT8: LCMSHANDLE; var PropertyNames: LCMSARRAYOFPCHAR): Integer; StdCall;
+
+// Datasets
+
+FUNCTION cmsIT8GetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer): PChar; StdCall;                                                
+FUNCTION cmsIT8GetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer): Double; StdCall;
+
+FUNCTION cmsIT8SetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer; Val: PChar): Boolean; StdCall;
+FUNCTION cmsIT8SetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer; Val: Double): Boolean; StdCall;
+
+FUNCTION cmsIT8GetData(hIT8: LCMSHANDLE; cPatch, cSample: PChar): PChar; StdCall;                                                
+
+FUNCTION cmsIT8GetDataDbl(hIT8: LCMSHANDLE;cPatch, cSample: PChar): Double; StdCall;
+
+FUNCTION cmsIT8SetData(hIT8: LCMSHANDLE; cPatch, cSample, Val: PChar): Boolean; StdCall;
+
+FUNCTION cmsIT8SetDataDbl(hIT8: LCMSHANDLE; cPatch, cSample: PChar; Val: Double): Boolean; StdCall;                                                
+
+FUNCTION cmsIT8SetDataFormat(hIT8: LCMSHANDLE; n: Integer; Sample: PChar): Boolean; StdCall;
+FUNCTION cmsIT8EnumDataFormat(hIT8: LCMSHANDLE; var SampleNames: LCMSARRAYOFPCHAR): Integer; StdCall;
+FUNCTION cmsIT8GetPatchName(hIT8: LCMSHANDLE; nPatch: Integer; Buffer: PChar): PChar; StdCall;
+
+// The LABEL extension
+
+FUNCTION cmsIT8SetTableByLabel(hIT8: LCMSHANDLE; cSet, cField, ExpectedType: PChar): Integer; StdCall;
+
+
+
+
+
+
 
 
 // Provided for compatibility with anterior revisions
@@ -637,10 +750,16 @@ FUNCTION cmsCreateInkLimitingDeviceLink(ColorSpace: icColorSpaceSignature;
                                               Limit: Double) : cmsHPROFILE; EXTERNAL 'lcms.dll';
 
 
+FUNCTION  cmsCreateNULLProfile : cmsHPROFILE; EXTERNAL 'lcms.dll';
 FUNCTION  cmsCreateLabProfile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; EXTERNAL 'lcms.dll';
+FUNCTION  cmsCreateLab4Profile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; EXTERNAL 'lcms.dll';
 
 FUNCTION  cmsCreateXYZProfile: cmsHPROFILE; EXTERNAL 'lcms.dll';
 FUNCTION  cmsCreate_sRGBProfile: cmsHPROFILE; EXTERNAL 'lcms.dll';
+FUNCTION  cmsCreateBCHSWabstractProfile(nLUTPoints: Integer;
+                                        Bright, Contrast, Hue, Saturation: Double;
+                                        TempSrc, TempDest: Integer): cmsHPROFILE; EXTERNAL 'lcms.dll';
+
 
 FUNCTION  cmsCloseProfile( hProfile : cmsHPROFILE) : Boolean; EXTERNAL 'lcms.dll';
 
@@ -652,24 +771,37 @@ FUNCTION  cmsTakeMediaBlackPoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Bool
 
 FUNCTION  cmsTakeIluminant(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; EXTERNAL 'lcms.dll';
 FUNCTION  cmsTakeColorants(Dest: LPcmsCIEXYZTRIPLE; hProfile: cmsHPROFILE): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeHeaderFlags(hProfile: cmsHPROFILE): DWord; EXTERNAL 'lcms.dll';
 
-FUNCTION  cmsTakeProductName(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
-FUNCTION  cmsTakeProductDesc(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
-FUNCTION  cmsIsTag(hProfile: cmsHPROFILE; sig: icTagSignature): Boolean; EXTERNAL 'lcms.dll';
-FUNCTION  cmsTakeRenderingIntent( hProfile: cmsHPROFILE): Integer; EXTERNAL 'lcms.dll';
-FUNCTION  cmsGetPCS(hProfile: cmsHPROFILE): icColorSpaceSignature; EXTERNAL 'lcms.dll';
-FUNCTION  cmsGetColorSpace(hProfile: cmsHPROFILE): icColorSpaceSignature; EXTERNAL 'lcms.dll';
-FUNCTION  cmsGetDeviceClass( hProfile: cmsHPROFILE): icProfileClassSignature; EXTERNAL 'lcms.dll';
-FUNCTION  cmsTakeCharTargetData(hProfile: cmsHPROFILE; var Data: PChar; var len: Cardinal): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeProductName(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeProductDesc(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeManufacturer(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeModel(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeCopyright(hProfile: cmsHPROFILE): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeProfileID(hProfile: cmsHPROFILE): PByte; EXTERNAL 'lcms.dll';
+
+
+FUNCTION cmsIsTag(hProfile: cmsHPROFILE; sig: icTagSignature): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeRenderingIntent( hProfile: cmsHPROFILE): Integer; EXTERNAL 'lcms.dll';
+FUNCTION cmsGetPCS(hProfile: cmsHPROFILE): icColorSpaceSignature; EXTERNAL 'lcms.dll';
+FUNCTION cmsGetColorSpace(hProfile: cmsHPROFILE): icColorSpaceSignature; EXTERNAL 'lcms.dll';
+FUNCTION cmsGetDeviceClass( hProfile: cmsHPROFILE): icProfileClassSignature; EXTERNAL 'lcms.dll';
+FUNCTION cmsGetProfileICCversion( hProfile: cmsHPROFILE): DWord; EXTERNAL 'lcms.dll';
+FUNCTION cmsTakeCharTargetData(hProfile: cmsHPROFILE; var Data: PChar; var len: Cardinal): Boolean; EXTERNAL 'lcms.dll';
 
 FUNCTION _cmsICCcolorSpace(OurNotation: Integer) : icColorSpaceSignature; EXTERNAL 'lcms.dll';
+FUNCTION _cmsLCMScolorSpace(ProfileSpace: icColorSpaceSignature): Integer; EXTERNAL 'lcms.dll';
 FUNCTION _cmsChannelsOf(ColorSpace: icColorSpaceSignature): Integer; EXTERNAL 'lcms.dll';
+
 
 
 
 PROCEDURE cmsSetDeviceClass(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); EXTERNAL 'lcms.dll';
 PROCEDURE cmsSetColorSpace(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); EXTERNAL 'lcms.dll';
 PROCEDURE cmsSetPCS(hProfile: cmsHPROFILE; pcs: icColorSpaceSignature); EXTERNAL 'lcms.dll';
+PROCEDURE cmsSetRenderingIntent(hProfile: cmsHPROFILE; Intent: Integer); EXTERNAL 'lcms.dll';
+PROCEDURE cmsSetHeaderFlags(hProfile: cmsHPROFILE; dwFlags: DWord); EXTERNAL 'lcms.dll';
+PROCEDURE cmsSetProfileID(hProfile: cmsHPROFILE; ProfileID: PByte); EXTERNAL 'lcms.dll';
 
 FUNCTION  cmsAddTag(hProfile: cmsHPROFILE; Sig: icTagSignature; Data: Pointer): Boolean; EXTERNAL 'lcms.dll';
 
@@ -718,6 +850,8 @@ PROCEDURE cmsChangeBuffersFormat(hTransform: cmsHTRANSFORM;
 
 FUNCTION cmsTransform2DeviceLink(hTransform: cmsHTRANSFORM; dwFlags: DWord): cmsHPROFILE; EXTERNAL 'lcms.dll';
 
+PROCEDURE _cmsSetLUTdepth(hProfile: cmsHPROFILE; depth: Integer);  EXTERNAL 'lcms.dll';
+
 FUNCTION cmsNamedColorCount(xform: cmsHTRANSFORM): Integer; EXTERNAL 'lcms.dll';
 FUNCTION cmsNamedColorInfo(xform: cmsHTRANSFORM; nColor: Integer; 
                              Name, Prefix, Suffix: PChar) : Boolean; EXTERNAL 'lcms.dll';
@@ -735,20 +869,36 @@ FUNCTION cmsGetPostScriptCRD(hProfile: cmsHPROFILE ;
                                  Buffer: Pointer;
                                  dwBufferLen: DWord): DWord; EXTERNAL 'lcms.dll';
 
+FUNCTION cmsGetPostScriptCRDEx(hProfile: cmsHPROFILE ;
+                                 Intent: Integer;
+                                 dwFlags: DWord;
+                                 Buffer: Pointer;
+                                 dwBufferLen: DWord): DWord; EXTERNAL 'lcms.dll';
+
 FUNCTION    cmsCIECAM97sInit(pVC : LPcmsViewingConditions ) : Pointer; EXTERNAL 'lcms.dll';
 PROCEDURE   cmsCIECAM97sDone(hModel : Pointer); EXTERNAL 'lcms.dll';
 
 PROCEDURE   cmsCIECAM97sForward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); EXTERNAL 'lcms.dll';
 PROCEDURE   cmsCIECAM97sReverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); EXTERNAL 'lcms.dll';
 
+// CIECAM02
+
+FUNCTION    cmsCIECAM02Init(pVC : LPcmsViewingConditions ) : Pointer;  EXTERNAL 'lcms.dll';
+PROCEDURE   cmsCIECAM02Done(hModel : Pointer);  EXTERNAL 'lcms.dll';
+
+PROCEDURE   cmsCIECAM02Forward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh );  EXTERNAL 'lcms.dll';
+PROCEDURE   cmsCIECAM02Reverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ );  EXTERNAL 'lcms.dll';
+
 // Utils
 
 PROCEDURE cmsXYZ2xyY(Dest: LPcmsCIExyY; Source: LPcmsCIEXYZ); EXTERNAL 'lcms.dll';
 PROCEDURE cmsxyY2XYZ(Dest: LPcmsCIEXYZ; Source: LPcmsCIExyY); EXTERNAL 'lcms.dll';
+
 PROCEDURE cmsXYZ2Lab(WhitePoint: LPcmsCIEXYZ; xyz: LPcmsCIEXYZ; Lab: LPcmsCIELab); EXTERNAL 'lcms.dll';
 PROCEDURE cmsLab2XYZ(WhitePoint: LPcmsCIEXYZ; Lab: LPcmsCIELab; xyz: LPcmsCIEXYZ); EXTERNAL 'lcms.dll';
-PROCEDURE cmsLab2LCh(Lab: LPcmsCIELab; LCh: LPcmsCIELCh); EXTERNAL 'lcms.dll';
-PROCEDURE cmsLCh2Lab(LCh: LPcmsCIELCh; Lab: LPcmsCIELab); EXTERNAL 'lcms.dll';
+PROCEDURE cmsLab2LCh(LCh: LPcmsCIELCh; Lab: LPcmsCIELab); EXTERNAL 'lcms.dll';
+PROCEDURE cmsLCh2Lab(Lab: LPcmsCIELab; LCh: LPcmsCIELCh); EXTERNAL 'lcms.dll';
+
 
 // CIELab handling
 
@@ -756,7 +906,7 @@ FUNCTION cmsDeltaE(Lab1, Lab2: LPcmsCIELab): Double; EXTERNAL 'lcms.dll';
 FUNCTION cmsCIE94DeltaE(Lab1, Lab2: LPcmsCIELab): Double; EXTERNAL 'lcms.dll';
 FUNCTION cmsBFDdeltaE(Lab1, Lab2: LPcmsCIELab): Double; EXTERNAL 'lcms.dll';
 FUNCTION cmsCMCdeltaE(Lab1, Lab2: LPcmsCIELab): Double; EXTERNAL 'lcms.dll';
-
+FUNCTION cmsCIE2000DeltaE(Lab1, Lab2: LPcmsCIELab; Kl, Kc, Kh: Double): Double; StdCall; EXTERNAL 'lcms.dll';
 
 PROCEDURE cmsClampLab(Lab: LPcmsCIELab; amax, amin,  bmax, bmin: Double); EXTERNAL 'lcms.dll';
 
@@ -764,6 +914,68 @@ PROCEDURE cmsSetAlarmCodes(r, g, b: Integer); EXTERNAL 'lcms.dll';
 PROCEDURE cmsGetAlarmCodes(VAR r, g, b: Integer); EXTERNAL 'lcms.dll';
 
 PROCEDURE cmsErrorAction(nAction: Integer); EXTERNAL 'lcms.dll';
+
+PROCEDURE cmsSetErrorHandler(ErrorHandler: cmsErrorHandler); EXTERNAL 'lcms.dll';
+
+
+
+FUNCTION  cmsIT8Alloc: LCMSHANDLE; EXTERNAL 'lcms.dll';
+PROCEDURE cmsIT8Free(hIT8: LCMSHANDLE); EXTERNAL 'lcms.dll';
+
+// Tables
+
+FUNCTION  cmsIT8TableCount(hIT8: LCMSHANDLE): Integer; EXTERNAL 'lcms.dll';
+FUNCTION  cmsIT8SetTable(hIT8: LCMSHANDLE; nTable: Integer): Integer; EXTERNAL 'lcms.dll';
+
+// Persistence
+FUNCTION  cmsIT8LoadFromFile(cFileName: PChar): LCMSHANDLE; EXTERNAL 'lcms.dll';
+FUNCTION  cmsIT8LoadFromMem(Ptr: Pointer; size :DWord): LCMSHANDLE; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8SaveToFile(hIT8: LCMSHANDLE; cFileName: PChar): Boolean; EXTERNAL 'lcms.dll';
+
+// Properties
+
+FUNCTION cmsIT8GetSheetType(hIT8: LCMSHANDLE): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8SetSheetType(hIT8: LCMSHANDLE; TheType: PChar): Boolean; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8SetComment(hIT8: LCMSHANDLE; cComment: PChar): Boolean; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8SetPropertyStr(hIT8: LCMSHANDLE; cProp, Str: PChar): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8SetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar; Val: Double): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8SetPropertyHex(hIT8: LCMSHANDLE; cProp: PChar; Val: Integer): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8SetPropertyUncooked(hIT8: LCMSHANDLE; Key, Buffer: PChar): Boolean; EXTERNAL 'lcms.dll';
+
+
+FUNCTION cmsIT8GetProperty(hIT8: LCMSHANDLE; cProp: PChar): PChar; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8GetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar): Double; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8EnumProperties(hIT8: LCMSHANDLE; var PropertyNames: LCMSARRAYOFPCHAR): Integer; EXTERNAL 'lcms.dll';
+
+// Datasets
+
+FUNCTION cmsIT8GetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer): PChar; EXTERNAL 'lcms.dll';                                                
+FUNCTION cmsIT8GetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer): Double; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8SetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer; Val: PChar): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8SetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer; Val: Double): Boolean; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8GetData(hIT8: LCMSHANDLE; cPatch, cSample: PChar): PChar; EXTERNAL 'lcms.dll';                                                
+
+FUNCTION cmsIT8GetDataDbl(hIT8: LCMSHANDLE;cPatch, cSample: PChar): Double; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8SetData(hIT8: LCMSHANDLE; cPatch, cSample, Val: PChar): Boolean; EXTERNAL 'lcms.dll';
+
+FUNCTION cmsIT8SetDataDbl(hIT8: LCMSHANDLE; cPatch, cSample: PChar; Val: Double): Boolean; EXTERNAL 'lcms.dll';                                                
+
+FUNCTION cmsIT8SetDataFormat(hIT8: LCMSHANDLE; n: Integer; Sample: PChar): Boolean; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8EnumDataFormat(hIT8: LCMSHANDLE; var SampleNames: LCMSARRAYOFPCHAR): Integer; EXTERNAL 'lcms.dll';
+FUNCTION cmsIT8GetPatchName(hIT8: LCMSHANDLE; nPatch: Integer; Buffer: PChar): PChar; EXTERNAL 'lcms.dll';
+
+// The LABEL extension
+
+FUNCTION cmsIT8SetTableByLabel(hIT8: LCMSHANDLE; cSet, cField, ExpectedType: PChar): Integer; EXTERNAL 'lcms.dll';
+
+
+
 
 PROCEDURE cmsLabEncoded2Float(Lab: LPcmsCIELab; wLab: Pointer); EXTERNAL 'lcms.dll';
 PROCEDURE cmsFloat2LabEncoded(wLab: Pointer; Lab: LPcmsCIELab); EXTERNAL 'lcms.dll';

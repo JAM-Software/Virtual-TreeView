@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="..\..\testbed\testcms.exe"/>
+    <OBJFILES value="TESTCMS.obj"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value="..\..\Lib\BC\lcms110.lib"/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="rtl.bpi vcl.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="_NO_VCL;_VIS_NOLIB"/>
+    <MAINSOURCE value="testcms.cpp"/>
+    <INCLUDEPATH value="..\..\src;..\..\include;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="$(BCB)\lib"/>
+    <WARNINGS value=""/>
+    <WARNOPTSTR value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\..\src -I..\..\include -I$(BCB)\include -I$(BCB)\include\vcl 
+      -src_suffix cpp -boa"/>
+    <CFLAG1 value="-O2 -w -x- -RT- -Tkh30000 -X- -a8 -5 -b -k- -vi -c -tWM -tWC"/>
+    <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHN -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES)  import32.lib cw32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="TESTCMS.CPP" FORMNAME="" UNITNAME="testcms" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\BC\lcms110.lib" FORMNAME="" UNITNAME="lcms110" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=3082
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=Executable (Console)
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclmlwiz60.bpl=Borland Markup Language Wizards
+c:\programme\borland\cbuilder6\Bin\dclado60.bpl=Borland ADO DB Components
+C:\Programme\Borland\CBuilder6\Bin\dcldb60.bpl=Borland Database Components
+c:\programme\borland\cbuilder6\Bin\dclbde60.bpl=Borland BDE DB Components
+C:\Programme\Borland\CBuilder6\Bin\dbx60.bpl=Borland SQL Explorer UI Package
+c:\programme\borland\cbuilder6\Bin\DCLIB60.bpl=InterBase Data Access Components
+c:\programme\borland\cbuilder6\Bin\dclcds60.bpl=Borland Base Cached ClientDataset Component
+C:\Programme\Borland\CBuilder6\Bin\dclmid60.bpl=Borland MyBase DataAccess Components
+c:\programme\borland\cbuilder6\Bin\dclbdecds60.bpl=Borland Local BDE ClientDataset Components
+c:\programme\borland\cbuilder6\Bin\dclqrt60.bpl=QuickReport Components
+c:\programme\borland\cbuilder6\Bin\dcltee60.bpl=TeeChart Components
+c:\programme\borland\cbuilder6\Bin\dcldss60.bpl=Borland Decision Cube Components
+c:\programme\borland\cbuilder6\Bin\dcltqr60.bpl=TeeChart for QuickReport Components
+c:\programme\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+C:\Programme\Borland\CBuilder6\Bin\dclclxstd60.bpl=Borland CLX Standard Components
+c:\programme\borland\cbuilder6\Bin\dclmcn60.bpl=Borland DataSnap Connection Components
+c:\programme\borland\cbuilder6\Bin\applet60.bpl=Borland Control Panel Applet Package
+c:\programme\borland\cbuilder6\Bin\dclemacsedit60.bpl=Borland Editor Emacs Enhancements
+c:\programme\borland\cbuilder6\Bin\dclact60.bpl=Borland ActionBar Components
+c:\programme\borland\cbuilder6\Bin\dclbcbsmp60.bpl=Borland Sample Controls Design Time Package
+c:\programme\borland\cbuilder6\Bin\dclnet60.bpl=Borland Internet Components
+c:\programme\borland\cbuilder6\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+c:\programme\borland\cbuilder6\Bin\DCLNMF60.bpl=NetMasters Fastnet Tools
+c:\programme\borland\cbuilder6\Bin\dclwbm60.bpl=Borland InternetExpress Components
+c:\programme\borland\cbuilder6\Bin\bcbie60.bpl=Borland C++Builder Internet Explorer 5 Components Package
+c:\programme\borland\cbuilder6\Bin\dclwebsnap60.bpl=Borland WebSnap Components
+c:\programme\borland\cbuilder6\Bin\dclsoap60.bpl=Borland SOAP Components
+c:\programme\borland\cbuilder6\Bin\dclocx60.bpl=Borland Sample Imported ActiveX Controls
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dcldbx60.bpl=Borland dbExpress Components
+c:\programme\borland\cbuilder6\Bin\dcldbxcds60.bpl=Borland Local DBX ClientDataset Components
+c:\programme\borland\cbuilder6\Bin\dclindy60.bpl=Internet Direct (Indy) for D6 Property and Component Editors
+c:\programme\borland\cbuilder6\Bin\bcb2kaxserver60.bpl=Borland C++Builder COM Server Components Sample Package
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=..\..\src;..\..\include;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=2
+Item0=$(BCB)\lib
+Item1=$(BCB)\lib;
+
+[HistoryLists\hlDebugSourcePath]
+Count=10
+Item0=.[Parameters]
+Item1=..\..\testbedItem1=..\..\testbedItem1=.\..\..\testbedItem1=..\..\testbedItem1=..\..\testbedItem1=..\..\testbedItem1=..\..\testbedItem1=..\..\testbedItem1=..\..\testbed
+Item2=
+Item3=
+Item4=
+Item5=
+Item6=
+Item7=
+Item8=
+Item9=
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\testbed\
+
+[Debugging]
+DebugSourceDirs=.[Parameters]
+
+[Parameters]
+RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=1
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+  </IDEOPTIONS>
+</PROJECT>

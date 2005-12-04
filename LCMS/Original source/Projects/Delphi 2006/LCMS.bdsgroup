@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+  <PersonalityInfo>
+    <Option>
+      <Option Name="Personality">Default.Personality</Option>
+      <Option Name="ProjectType"></Option>
+      <Option Name="Version">1.0</Option>
+      <Option Name="GUID">{AEAC4A76-BB01-4EE1-9F3C-D77B1D9EC2DA}</Option>
+    </Option>
+  </PersonalityInfo>
+  <Default.Personality>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <Projects>
+      <Projects Name="lcms.lib">lcms.bdsproj</Projects>
+      <Projects Name="lcmsdll.dll">lcmsdll.bdsproj</Projects>
+      <Projects Name="TestCMS.exe">TestCMS.bdsproj</Projects>
+      <Projects Name="Targets">lcms.lib lcmsdll.dll TestCMS.exe</Projects>
+    </Projects>
+    <Dependencies/>
+  </Default.Personality>
+  <StarTeamAssociation></StarTeamAssociation>
+  <StarTeamNonRelativeFiles></StarTeamNonRelativeFiles>
+</BorlandProject>

@@ -2,6 +2,16 @@
 //  Little cms
 //  Copyright (C) 1998-2003 Marti Maria
 //
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
+//
 // THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
 // WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
@@ -13,30 +23,8 @@
 // LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 // OF THIS SOFTWARE.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Version 1.14
 
-// Version 1.10
-
-
-// Ugly-- swig doesn't like VC6 __declspec and so, so force to non-windows
-// (this has no significance at all)
-
-#ifndef NON_WINDOWS
-#define NON_WINDOWS	1
-#endif
 
 /* File lcms.i */
 %module lcms
@@ -44,15 +32,13 @@
 #include "lcms.h"
 %}
 
-
 #define register
 %varargs(char* args) cmsSignalError;
 
 %ignore USE_FLOAT;
 %ignore USE_C;
 %ignore USE_ASSEMBLER;
-%ignore USE_TRILINEAR;
-%ignore USE_TETRAHEDRAL;
+%ignore USE_INLINE;
 %ignore LCMS_DLL;
 %ignore LCMS_DLL_BUILD;
 %ignore USE_BIG_ENDIAN;
@@ -60,16 +46,50 @@
 %ignore USE_CUSTOM_SWAB;
 %ignore M_PI;
 %ignore LOGE;
-%ignore LCMS_APIONLY;
 %ignore MAX_PATH;
 %ignore TRUE;
 %ignore FALSE;
 %ignore _cmsSAMPLER;
 %ignore SAMPLEDCURVE;
 %ignore LPSAMPLEDCURVE;
-%ignore cmsDoTransform;
 
 %rename (cmsSaveProfile) _cmsSaveProfile;
+
+
+%{
+static PyObject *lcmsError;
+static volatile int InErrorFlag;
+
+static 
+int MyErrorHandler(int Severity, const char* Txt)
+{
+	
+	if (Severity == LCMS_ERRC_WARNING)
+		PyErr_Warn(lcmsError, (char*) Txt);
+	else
+		PyErr_SetString(lcmsError, Txt);
+	
+	InErrorFlag = 1;
+	return 1;
+}
+%}
+
+
+%init %{
+
+lcmsError = PyErr_NewException("lcms.error", NULL, NULL);
+PyDict_SetItemString(d, "error", lcmsError);
+cmsSetErrorHandler(MyErrorHandler);
+ 
+%}
+
+%exception %{
+ 
+	InErrorFlag = 0;	
+	$function
+	if (InErrorFlag) SWIG_fail; 		  
+%}
+
 
 /*
 * Some typemaps
@@ -89,9 +109,9 @@
       return NULL;
     }
 	
-	if ((SWIG_ConvertPtr(tmp[0], (void **) &gamma[0], SWIGTYPE_LPGAMMATABLE,1)) == -1) return NULL;
-	if ((SWIG_ConvertPtr(tmp[1], (void **) &gamma[1], SWIGTYPE_LPGAMMATABLE,1)) == -1) return NULL;
-	if ((SWIG_ConvertPtr(tmp[2], (void **) &gamma[2], SWIGTYPE_LPGAMMATABLE,1)) == -1) return NULL;
+	if ((SWIG_ConvertPtr(tmp[0], (void **) &gamma[0], SWIGTYPE_p_GAMMATABLE,1)) == -1) return NULL;
+	if ((SWIG_ConvertPtr(tmp[1], (void **) &gamma[1], SWIGTYPE_p_GAMMATABLE,1)) == -1) return NULL;
+	if ((SWIG_ConvertPtr(tmp[2], (void **) &gamma[2], SWIGTYPE_p_GAMMATABLE,1)) == -1) return NULL;
 
     $1 = gamma;
 
@@ -100,8 +120,6 @@
     return NULL;
   }
 }
-
-
 
 
 /*
@@ -124,21 +142,18 @@ typedef struct {
 	} COLORB;
 
 typedef COLORB* LPCOLORB;
+
+typedef struct {
+
+    LCMSHANDLE hIT8;
+    
+    } IT8;
+
+typedef IT8* LPIT8;
 %}
 
-/*
-*  Turn off all symbols of lcms.h except pure API
-*/
 
-#define  LCMS_APIONLY   1
 %include "lcms.h"
-
-
-/*
-* Usefull for debug
-*/
-
-extern BOOL _cmsSaveProfile(cmsHPROFILE hProfile, const char* FileName);
 
 
 /*
@@ -428,6 +443,189 @@ class icTagSignature {
                 free(self);
     }
 };
+
+
+%extend IT8 {
+
+        IT8(const char* FileName) {
+                LPIT8 it8;
+                it8 = (LPIT8) malloc(sizeof(IT8));
+                InErrorFlag = 0;	
+                it8 -> hIT8 = cmsIT8LoadFromFile(FileName); 				              
+                if (InErrorFlag) {
+                    free(it8);
+                    return NULL;
+                }
+                return it8;
+        }
+
+        IT8() {
+                LPIT8 it8;
+                it8 = (LPIT8) malloc(sizeof(IT8));
+                it8 -> hIT8 = cmsIT8Alloc();                
+                return it8;
+        }
+
+        ~IT8() {
+                cmsIT8Free(self -> hIT8);
+                free(self);
+        }
+        
+        const char* __repr__() {
+                return "CGATS.13/IT8 parser";
+        }
+
+
+        int saveToFile(const char* Filename) {
+
+        return cmsIT8SaveToFile(self -> hIT8, Filename);
+        }
+
+        int tableCount()        { return cmsIT8TableCount(self -> hIT8); }
+        int setTable(int n)     { return cmsIT8SetTable(self -> hIT8, n); }
+
+        const char* getSheetType()                         { return cmsIT8GetSheetType(self -> hIT8); }
+        int         setSheetType(const char* Type)         { return cmsIT8SetSheetType(self -> hIT8, Type); }
+
+        int         addComment(const char* txt)            { return cmsIT8SetComment(self -> hIT8, txt); }
+
+        int setProperty(const char* Prop, const char* Str) { return cmsIT8SetPropertyStr(self -> hIT8, Prop, Str); }
+        int setProperty(const char* Prop, double dbl)      { return cmsIT8SetPropertyDbl(self -> hIT8, Prop, dbl); }
+        int setPropertyAsHex(const char* Prop, int Val)    { return cmsIT8SetPropertyHex(self -> hIT8, Prop, Val); }
+        int setPropertyUncooked(const char* Prop, 
+                                const char* Str)           { return cmsIT8SetPropertyUncooked(self -> hIT8, Prop, Str); }
+
+
+        const char* getProperty(const char* Prop)          { return cmsIT8GetProperty(self -> hIT8, Prop); }
+        double      getPropertyAsDbl(const char* Prop)     { return cmsIT8GetPropertyDbl(self -> hIT8, Prop); }
+
+        const char* getData(int row, int col)              { return cmsIT8GetDataRowCol(self -> hIT8, row, col); }
+
+        const char* getData(const char* Patch, 
+                               const char* Sample)         { return cmsIT8GetData(self -> hIT8, Patch, Sample); }
+
+        double      getDataAsDbl(int row, int col)         { return cmsIT8GetDataRowColDbl(self -> hIT8, row, col); }
+               
+        double      getDataAsDbl(const char* Patch, 
+                                    const char* Sample)    { return cmsIT8GetDataDbl(self -> hIT8, Patch, Sample); }
+
+
+        int setData(int row, int col, const char* Val)     { return cmsIT8SetDataRowCol(self ->hIT8, row, col, Val); }
+        int setData(int row, int col, double dbl)          { return cmsIT8SetDataRowColDbl(self ->hIT8, row, col, dbl); }
+
+        int setData(const char* Patch, 
+                    const char* Sample,
+                    const char* Val)                       { return cmsIT8SetData(self ->hIT8, Patch, Sample, Val); }
+
+        int setData(const char* Patch, 
+                    const char* Sample,
+                    double dbl)                            { return cmsIT8SetDataDbl(self ->hIT8, Patch, Sample, dbl); }
+
+
+
+       int setDataFormat(int nSample, const char* Sample)  { return cmsIT8SetDataFormat(self -> hIT8, nSample, Sample); }
+
+       const char* getPatchName(int nPatch)                { return  cmsIT8GetPatchName(self -> hIT8, nPatch, NULL); }
+	   int         getDataFormat(const char* Patch)		   { return  cmsIT8GetDataFormat(self -> hIT8, Patch); }	
+
+       PyObject* enumDataFormat() {
+
+            char** DataFormat;
+            PyObject* TheList;
+            PyObject* OneDataFormat;
+            int i, n;
+  
+    
+            n = cmsIT8EnumDataFormat(self -> hIT8, &DataFormat);
+
+            TheList = PyList_New(n);
+            if (!TheList) return NULL;
+
+            for (i = 0; i < n; i++) {
+                OneDataFormat = PyString_FromString(DataFormat[i]);
+                PyList_SET_ITEM(TheList, i, OneDataFormat);
+            }
+    
+            return TheList; 
+        }
+
+
+        PyObject* enumProperties() {
+
+            char** Props;
+            PyObject* TheList;
+            PyObject* OneProp;
+            int i, n;
+  
+    
+            n = cmsIT8EnumProperties(self -> hIT8, &Props);
+
+            TheList = PyList_New(n);
+            if (!TheList) return NULL;
+
+            for (i = 0; i < n; i++) {
+                OneProp = PyString_FromString(Props[i]);
+                PyList_SET_ITEM(TheList, i, OneProp);
+            }
+    
+            return TheList; 
+        }
+
+        
+        int setTableByLabel(const char* cSet, const char *cFld = NULL, const char* ExpectedType = NULL) {
+
+            return cmsIT8SetTableByLabel(self -> hIT8, cSet, cFld, ExpectedType);
+        }
+	
+       PyObject* getRow(int n) {
+			
+			PyObject* TheList;
+            PyObject* OneProp;
+            int i;
+            int nf = (int) cmsIT8GetPropertyDbl(self -> hIT8, "NUMBER_OF_FIELDS");
+            if (nf <= 0) return NULL;
+
+			TheList = PyList_New(nf);
+			if (!TheList) return NULL;
+
+            for (i = 0; i < nf; i++) {
+
+                OneProp = PyString_FromString(cmsIT8GetDataRowCol(self ->hIT8, n, i));
+                PyList_SET_ITEM(TheList, i, OneProp);
+            }
+    
+           return TheList;
+	   }
+
+       PyObject* getCol(const char *Patch) {
+			
+	   	    PyObject* TheList;
+            PyObject* OneProp;
+            int i;
+			
+			int n  = cmsIT8GetDataFormat(self -> hIT8, Patch);
+			if (n < 0) return NULL;
+
+            int ns = (int) cmsIT8GetPropertyDbl(self -> hIT8, "NUMBER_OF_SETS");
+            if (ns <= 0) return NULL;
+
+			TheList = PyList_New(ns);
+			if (!TheList) return NULL;
+
+            for (i = 0; i < ns; i++) {
+
+                OneProp = PyString_FromString(cmsIT8GetDataRowCol(self ->hIT8, i, n));
+                PyList_SET_ITEM(TheList, i, OneProp);
+            }
+    
+           return TheList;
+	   }
+	
+
+};
+
+
+
 
 
 // ----------------------------------------------------------------------- TODO

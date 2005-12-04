@@ -6,13 +6,13 @@
 
            How to use the engine in your applications
 
-                          by Marti Maria                               
+                          by Marti Maria
 
-                            Ver 1.10 (draft)
+                            Ver 1.15 
 
         ---------------------------------------------------
 
-                            Introduction
+                         Introduction
 
                          BASIC USAGE
                          ===========
@@ -23,10 +23,11 @@
                          4. Device-link profiles 
                          
                          5. Built-in profiles
-                         6. On-the-fly RGB profiles
+                         6. On-the-fly profiles
                          7. Gamma tables
                          8. Proofing
-                         9. White/Black compensation
+                         9.1 Black point compensation
+						 9.2 Black preservation
                         
                         10. Error handling
                         11. Getting information from profiles.
@@ -39,7 +40,7 @@
                         14. Helper functions
                         15. Color difference functions
                         16. PostScript operators
-                        17. CIECAM97s
+                        17. CIECAM02
                         18. Named color profiles
                          
                         19. Conclusion
@@ -66,12 +67,12 @@ Introduction:
   recommend the excellent color & gamma FAQs by Charles A.
   Poynton,
 
-                http://www.inforamp.net/~poynton
+                http://www.poynton.com
 
   For more details about profile architecture, you can reach the
   latest ICC specs on:
 
-                      http://www.color.org
+                http://www.color.org
 
 
     **PLEASE NOTE THAN lcms IS NOT A ICC SUPPORTED LIBRARY**
@@ -135,9 +136,8 @@ Introduction:
 2. Step-by-step Example:
 ============================================================================
 
-  Here is an example to show, step by step, how a client
-  application can transform a bitmap between two ICC profiles using the
-  lcms API
+  Here is an example to show, step by step, how a client application 
+  can transform a bitmap between two ICC profiles using the lcms API
 
   This is an example of how to do the whole thing:
 
@@ -235,7 +235,7 @@ int main(void)
    lcms can handle a lot of formats. In fact, it can handle:
 
                 - 8 and 16 bits per sample
-                - up to 15 channels
+                - up to 16 channels
                 - extra channels like alpha
                 - swapped-channels like BGR
                 - endian-swapped 16 bps formats like PNG
@@ -412,7 +412,7 @@ int main(void)
                 colors (Pantone, TruMatch, logo colors, ...)
 
                 In lcms: relative colorimetric intent is used
-                with white/black point scaling.
+                with undoing of chromatic adaptation.
 
 
   Not all profiles does support all intents, there is a function
@@ -523,7 +523,7 @@ int main(void)
 NOTES:
 
   Once opened, you can safely FREE the memory block. lcms keeps a
-  temporary copy in memory.
+  temporary copy.
 
   You can retrieve information of this profile, but generally
   these are minimal shaper-matrix profiles with little if none
@@ -532,7 +532,7 @@ NOTES:
   Be also warned that some software does embed WRONG profiles,
   i.e., profiles marked as using different colorspace that
   one the profile really manages. lcms is NOT likely to understand
-  these profiles since they will be wrong at all if not embedded.
+  these profiles since they will be wrong at all.
 
 
 4. Device-link profiles
@@ -590,6 +590,7 @@ NOTES:
     - RGB matrix-shaper.
     - Linearization device link
     - Ink-Limiting
+    - Bright/Contrast/Hue/Saturation/White point adjust devicelink.
 
  sRGB, Lab and XYZ are very usefull for tricking & trapping. For example,
  creating a transform from sRGB to Lab could be done without any disk file.
@@ -621,7 +622,7 @@ NOTES:
 
 
 
-6. On-the-fly profiles.
+6. - On-the-fly profiles.
 ============================================================================
 
   There are several situations where it will be useful to build
@@ -723,8 +724,8 @@ NOTES:
   primaries!
 
 
- 7. Gamma tables
- ================
+ 7. - Gamma tables
+ ============================================================================
 
   The gamma tables or transfer functions are stored in a simple way,
   let's examine the GAMMATABLE typedef:
@@ -801,7 +802,6 @@ NOTES:
 
   Another functions for dealing with gamma curves are:
 
-
   LPGAMMATABLE cmsDupGamma(LPGAMMATABLE Src); 
   
   Duplicates a gamma table, allocatine a new memory block
@@ -866,7 +866,8 @@ NOTES:
  colors that displays cannot render (darker ones) some gamut-remapping must
  be done to accommodate such colors. Normally INTENT_ABSOLUTE_COLORIMETRIC
  is to be used: is is likely the user wants to see the exact colors on screen,
- cutting off these unrepresentable colors.
+ cutting off these unrepresentable colors. INTENT_RELATIVE_COLORIMETRIC could
+ serve as well. 
 
 
  Proofing transforms can also be used to show the colors that are out of the
@@ -881,32 +882,97 @@ NOTES:
  in range 0..255
 
 
-9. White/Black compensation
+ NOTES: For activating the preview or gamut check features, you MUST
+ include the corresponding flags
+
+        cmsFLAGS_SOFTPROOFING 
+        cmsFLAGS_GAMUTCHECK
+
+ This is done in such way because the user usually wants to compare 
+ with/without softproofing. Then, you can share same code. If any of the flags 
+ is present, the transform does the proofing stuff. If not, the transform
+ ignores the proofing profile/intent and behaves like a normal input-output
+ transform. In practical usage, you need only to associate the check boxes of
+ "softproofing" and "gamut check" with these flags.
+
+
+9.1 Black point compensation
 ============================================================================
 
-  ICC spec does state clearly that white must match white and black
-  must match black, but there are some profiles that does not fully
-  adheres this statement. For "patching" these profiles, lcms has
-  an special flag:
+  The black point compensation feature does work in conjunction 
+  with relative colorimetric intent. Perceptual intent should make no 
+  difference, although it affects some profiles.
 
-                cmsFLAGS_WHITEBLACKCOMPENSATION
+  The mechanics are simple. BPC does scale full image across gray 
+  axis in order to accommodate the darkest tone origin media can 
+  render to darkest tone destination media can render. As a such, 
+  BPC is primarily targeting CMYK.
 
-  This is like the "goto statement" in color management, Better
-  don't use this flag, unless you really need it. It forces lcms
-  to map black on black, and white on white no matter what
-  profiles are saying. For doing this, lcms builds a 3D CLUT and
-  then patches this CLUT in order to get the matching. It can be
-  useful when using CMYK profiles on both sides of transform
-  (converting separations from a printer to another printer) or
-  in a very special cases.
+  Let's take an example. You have a separation (CMYK image) for,
+  say, SWOP. Then you want to translate this separation to another 
+  media on another printer. The destination media/printer can deliver 
+  a black darker that original SWOP. Now you have several options. 
 
-  This is not a simple clip of black/white, but a gradient
-  interpolation to the desired values. Use it if your cmyk output
-  for pure black is other than pure black and printer driver
-  dithers text, or if white backgrounds results not in pure white
-  and the page print shows dispersed dots. If you are using
-  matrix shaper profiles, this will slow down a lot transforms,
-  probably to accomplish nothing, so, use with caution.
+  a) use perceptual intent, and let profile do the gamut remapping for 
+  you. Some users complains about the profiles moving too much the 
+  colors. This is the "normal" ICC way.
+
+  b) use relative colorimetric.This will not move any color, but 
+  depending on different media you would end with "flat" images, 
+  taking only a fraction of available grays or a "collapsed" images, 
+  with loss of detail in dark shadows.
+
+  c) Use relative colorimetric + black point compensation. This is 
+  the discussion theme. Colors are unmoved *except* gray balance 
+  that is scaled in order to accommodate to  the dynamic range of new 
+  media. Is not a smart CMM, but a fist step letting the CMM to do 
+  some remapping.
+
+ The algorithm used for black point compensation is a XYZ linear scaling 
+ in order to match endpoints. 
+
+ You can enable the BPC feature by using this in the dwFlags field, it works
+ on softproofs too.
+
+                cmsFLAGS_BLACKPOINTCOMPENSATION
+
+
+9.2 - Black preserving transforms
+===========================================================================
+
+Black preservation deals with CMYK -> CMYK transforms, and is intended 
+to preserve, as much as possible, the black (K) channel
+whilst matching color by using CMY inks. There is a tradeoff between 
+accuracy and black preservation, so you lost some accuracy 
+in order to preserve the original separation.  Not to be a big problem 
+in most  cases, benefits of keeping K channel are huge!
+
+
+For sure you have seen prints of gray images with a huge 
+color cast towards magenta or green. That's very unpleasant. 
+
+Mainly, this happens because metamerism is not taken into 
+account when doing the profile. Black ink chromaticity  changes on 
+different illuminants. For example, a profile is done measuring black 
+ink under D50, then, under D50 this black ink have tendency to 
+magenta. Ok, the profile captures such chroma and, when
+reproducing colorimetrically, replaces the destination black with
+CMY reproducing this magenta. Now, If you take the original K ink
+and examine it under sunlight, it is not magenta anymore! But the 
+reproduction using CMY keeps going magenta. Result: a nasty color 
+cast . 
+
+And this is just one of the reasons why keeping black ink is so important. 
+Maybe there is a slight discontinuity, as big as the chromaticity of
+blacks differ, but it is so small that the smoothing induced by the 
+CLUT is enough to compensate. And this is almost nothing when 
+compared with the huge cast on grays a CMYK->Lab->CMYK 
+may create.
+
+
+ You can enable the black preservation feature by using this flag:
+
+			cmsFLAGS_PRESERVEBLACK
 
 
 
@@ -945,23 +1011,42 @@ NOTES:
  the error is detected.
 
 
-If you doesn't like this scheme, and you are using lcms as a linkable library,
-you can provide  your own error handling function: all remaining modules does
-call this entry when a error is detected. This function must return to caller in order
-to free any opened resource like memory of file handles.
+ If you doesn't like this scheme, you can provide your own error handling,
+ function by using:
 
-        void cmsSignalError(int ErrorCode, const char *ErrorText, ...)
+    void cmsSetErrorHandler(cmsErrorHandlerFunction Fn);
 
- It takes variable number of parameters like printf(). See the source module
- cmserr.c for more info.
+ You need to write your own error handling function, in the form:
 
+  int MyErrorHandlerFunction(int ErrorCode, const char *ErrorText)
+  {
+    ... do whatsever you want with error codes ..
+
+  }
+
+  And then register the error handler by using:
+
+    cmsSetErrorHandler(MyErrorHandlerFunction);
+
+
+
+  ErrorCode can be one of the following values:
+
+        LCMS_ERRC_WARNING        0x1000
+        LCMS_ERRC_RECOVERABLE    0x2000
+        LCMS_ERRC_ABORTED        0x3000
+
+  ErrorText is a text holding an english description of error.
+
+  You should return 1 if you are handling the error. Returning 0, 
+  throws the error back to the default error handler.
 
 
 11. Getting information from profiles.
 ============================================================================
 
-  Finally, there are some functions for retrieve information on opened
-  profiles. These are:
+  There are some functions for retrieve information on opened profiles. 
+  These are:
 
         BOOL  cmsIsTag(cmsHPROFILE hProfile, icTagSignature sig);
 
@@ -1018,7 +1103,7 @@ to free any opened resource like memory of file handles.
 12. Creating and writting new profiles.
 ============================================================================
  
-  From version 1.09, lcms has the capability of writting profiles. The
+  Since version 1.09, lcms has the capability of writting profiles. The
   interface is very simple, despite its use does imply certain knowleage 
   of profile internals.
 
@@ -1027,6 +1112,8 @@ to free any opened resource like memory of file handles.
     void cmsSetDeviceClass(cmsHPROFILE hProfile, icProfileClassSignature sig);
     void cmsSetColorSpace(cmsHPROFILE hProfile, icColorSpaceSignature sig);
     void cmsSetPCS(cmsHPROFILE hProfile, icColorSpaceSignature pcs);
+    void cmsSetRenderingIntent(cmsHPROFILE hProfile, int RenderingIntent);
+
     BOOL cmsAddTag(cmsHPROFILE hProfile, icTagSignature sig, void* data);
 
    And the generic file management ones:
@@ -1034,13 +1121,13 @@ to free any opened resource like memory of file handles.
    cmsOpenProfileFromFile() and cmsCloseProfile()
 
    Device class, colorspace and PCS type does affect to header and overall 
-   profile. Rest of information is included using cmsAddTag().
+   profile. cmsSetRenderingIntent() sets the (informative) intent field on
+   header. Rest of information is included using cmsAddTag().
 
    Of course you must know which tags to include and the meaning of each tag.
    LittleCms does nothing to check the validity of newly created profiles. 
    These functions are only intended to be a low level interface to profile
-   creation. For a higher point of view, please take a look on the profiler
-   construction set, available on lcms site.
+   creation. 
 
    Creating a new profile
    -----------------------
@@ -1051,8 +1138,10 @@ to free any opened resource like memory of file handles.
    setting its colorspace, device class, PCS and then add the required 
    tags. cmsAddTag() does understand following tags:
 
-        Signature                   Expected data type
-        =================           ==================
+      
+
+       Signature                   Expected data type
+       ==========================  ==================
 
        icSigCharTargetTag               const char*
        icSigCopyrightTag                const char*
@@ -1079,12 +1168,16 @@ to free any opened resource like memory of file handles.
        icSigPreview1Tag                 LPLUT
        icSigPreview2Tag                 LPLUT
        icSigChromaticityTag             LPcmsCIExyYTRIPLE
+       icSigNamedColor2Tag              LPcmsNAMEDCOLORLIST
+	   icSigColorantTableTag		    LPcmsNAMEDCOLORLIST
+       icSigColorantTableOutTag         LPcmsNAMEDCOLORLIST
+	   icSigCalibrationDateTimeTag	    const struct tm*
     
     More tags are expected to be added in future revisions.
               
 
   Another way to create profiles is by using _cmsSaveProfile() or
-  _cmsSaveProfileToMem(). See the API reference for details on that.
+  _cmsSaveProfileToMem(). See the API reference for details.
 
 
 
@@ -1092,17 +1185,25 @@ to free any opened resource like memory of file handles.
 ============================================================================
 
  LUT stands for L)ook U)p T)ables. This is a generalizad way to handle
- pipelines consisting of:
+ workflows consisting of a quite complex stages. Here is the pipeline 
+ scheme, Don't panic!
 
-    [3x3 Matrix]->[Prelinearization]->
-                -> [Multidimensional table]->[PostLinearization]
+   
+    [Mat] -> [L1] -> [Mat3] -> [Ofs3] -> [L3] -> 
+                [CLUT] -> [L4] -> [Mat4] -> [Ofs4] -> [L2]
 
- They can handle up to 6 channels on input and 16 channels of output.
 
+    Mat{n} are matrices of 3x3
+    Ofs{n} are offsets
+    CLUT is a multidimensional LUT table
+
+
+ Some or all of these stages may be missing. LUTS can handle up to 
+ 8 channels on input and 16 channels of output.
 
  The programmer can allocate a LUT by calling: 
  
-        cmsAllocLUT();
+        NewLUT = cmsAllocLUT();
 
  This allocates an empty LUT. Input is passed transparently to output 
  by default. The programmer can optionally add pre/post linearization 
@@ -1112,17 +1213,29 @@ to free any opened resource like memory of file handles.
 
  Being Table:
 
-                1 - Prelinearization 1D table
-                2 - Postlinearization 1D table
+                1 - Prelinearization 1D table L1
+                2 - Postlinearization 1D table L2
+                3 - linearization 1D table L3
+                4 - linearization 1D table L4
+  
 
-  Values 3 and 4 are reserved for futures ampliations.
+  The 3x3 matrices can be set by:
 
-  The 3x3 matrix can be set by:
+  
+   LPLUT cmsSetMatrixLUT4(LPLUT Lut, LPMAT3 M, LPVEC3 off, DWORD dwFlags);
 
-    LPLUT cmsSetMatrixLUT(LPLUT Lut, LPMAT3 M)
+   Flags define the matrix to set:
 
+        LUT_HASMATRIX:   Mat
+        LUT_HASMATRIX3:  Mat3 
+        LUT_HASMATRIX4:  Mat4 
+   
+  The CLUT is a multidimensional table where most of the magic of 
+  colormanagement is done. It holds as many (hyper)cubes as ouput 
+  channels and the dimension of these hypercubes is the number of
+  input channels.
 
-  To fill LUT with sampled valies, the programmer must call
+  To fill the CLUT with sampled values, the programmer can call:
   
     BOOL cmsSample3DGrid(LPLUT Lut, 
                         _cmsSAMPLER Sampler, 
@@ -1141,7 +1254,7 @@ to free any opened resource like memory of file handles.
 
    The programmer has to write his callback function. This function
    should calculate Out[] values given a In[] set. For example, if we 
-   want a LUT to invert channels, a sampler could be:
+   want a LUT to invert (negate) channels, a sampler could be:
 
    int InvertSampler(register WORD In[],
                             register WORD Out[],
@@ -1150,7 +1263,7 @@ to free any opened resource like memory of file handles.
         for (i=0; i < 3; i++)
                 Out[i] = ~ In[i];
 
-    return 0;
+    return TRUE;
     }
 
 
@@ -1169,7 +1282,7 @@ to free any opened resource like memory of file handles.
                             the callback.
 
     LUT_INSPECT             Does NOT write any data to the 3D CLUT, 
-                            instead, retrive the coordinates for inspection 
+                            instead, retrieve the coordinates for inspection 
                             only. If using such flag, Out[] will hold
                             the CLUT contents.
                                     In[]  -> The CLUT indexes
@@ -1184,7 +1297,7 @@ to free any opened resource like memory of file handles.
     (non-postlinearized) space as well. The linearization cooking is done
     automatically.
      
-    The callback must return 0 if all is ok, or any other value
+    The callback must return TRUE if all is ok, or zero
     to indicate error. If error condition is raised, whole CLUT
     construction is aborted.
 
@@ -1192,7 +1305,7 @@ to free any opened resource like memory of file handles.
 
     void   cmsEvalLUT(LPLUT Lut, WORD In[], WORD Out[]);
 
-    That does interpolate values according on LUT tables.
+    That does interpolate values according on pipeline tables.
 
     Finally, a LUT can be freed by 
     
@@ -1206,10 +1319,7 @@ to free any opened resource like memory of file handles.
     a pointer to LUT structure as parameters. See cmsAddTag() in the API
     reference for more info.
 
-
-   More to come in LUT pipeline is expected in next revision, in order
-   to accomodate spec 4.0
-
+  
 
  14. Helper functions
 ============================================================================
@@ -1230,7 +1340,6 @@ to free any opened resource like memory of file handles.
     Notation conversion: (converts from PT_* colorspaces to ICC notation)
 
     icColorSpaceSignature _cmsICCcolorSpace(int OurNotation);
-
     
     Channels of a given colorspace:
 
@@ -1239,8 +1348,8 @@ to free any opened resource like memory of file handles.
     
    Chromatic Adaptation:
 
-       BOOL cmsAdaptToIlluminant(LPcmsCIEXYZ Result, LPcmsCIExyY SourceWhitePt,
-                                     LPcmsCIExyY Illuminant, LPcmsCIEXYZ Value);
+       BOOL cmsAdaptToIlluminant(LPcmsCIEXYZ Result, LPcmsCIEXYZ SourceWhitePt,
+                                     LPcmsCIEXYZ Illuminant, LPcmsCIEXYZ Value);
 
    Build a balanced transfer matrix with chromatic adaptation, this
    is equivalent to "cooking" required to conform a colorant matrix.
@@ -1262,21 +1371,22 @@ double  cmsDeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
 double  cmsCIE94DeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
 double  cmsBFDdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
 double  cmsCMCdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
-
+double  cmsCIE2000DeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2, double Kl, double Kc, double Kh);
 
 
 
  16. PostScript generation
  ============================================================================
- Two functions carry the task of obtaining CRD and CSA. 
+ 3 functions carry the task of obtaining CRD and CSA. 
 
 
-    size_t cmmPostScriptCSA(cmmHPROFILE hProfile, int Intent, 
-                                        char* Buffer, size_t len);
+    DWORD cmsGetPostScriptCSA(cmsHPROFILE hProfile, int Intent, LPVOID Buffer, DWORD dwBufferLen);
+    DWORD cmsGetPostScriptCRD(cmsHPROFILE hProfile, int Intent, LPVOID Buffer, DWORD dwBufferLen);
+    DWORD cmsGetPostScriptCRDEx(cmsHPROFILE hProfile, int Intent, DWORD dwFlags, LPVOID Buffer, DWORD dwBufferLen);
 
-    size_t cmmPostScriptCRD(cmmHPROFILE hProfile, int Intent, 
-                                        char* Buffer, size_t len);
 
+ cmsGetPostScriptCRDEx allows black point compensation using 
+ cmsFLAGS_WHITEBLACKCOMPENSATION in flags field.
 
  PostScrip colorflow is often done in a different way. Insted of creating a 
  transform, it is sometimes desirable to delegate the color management to 
@@ -1308,13 +1418,16 @@ double  cmsCMCdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
   be used in conjuntion with cmsCreateMultiprofileTransform(), 
   and cmsTransform2DeviceLink() to embed complex color flow into PostScript.
 
+
+  
   WARNING: Preccision of PostScript is limited to 8 bits per sample. If you 
   can choose between normal transforms and CSA/CRD, normal transforms will 
   give more accurancy. However, there are situations where there is no 
   chance.
 
 
- 17. CIECAM97s
+
+ 17. CIECAM02
  ============================================================================
 
   The model input data are the adapting field luminance in cd/m2
@@ -1341,20 +1454,73 @@ double  cmsCMCdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
               } cmsViewingConditions, FAR* LPcmsViewingConditions;
 
     
-    surround can be one of these
+    Surround can be one of these
 
-        #define AVG_SURROUND_4     0
+        
         #define AVG_SURROUND       1
         #define DIM_SURROUND       2
         #define DARK_SURROUND      3
-        #define CUTSHEET_SURROUND  4
 
 
-    D_value (adaptation degree) is any value between 0 and 1, and additionally:
 
-            #define D_CALCULATE             (-1)    // Calculate D
-            #define D_CALCULATE_DISCOUNT    (-2)    // Calculate w/ partial discounting
+    D_value (adaptation degree) is any value between 0 and 1
 
+    
+    The functions for dealing with CAM02 appearance model are:
+    
+    
+    LCMSHANDLE cmsCIECAM02Init(LPcmsViewingConditions pVC);
+    void       cmsCIECAM02Done(LCMSHANDLE hModel);
+    void       cmsCIECAM02Forward(LCMSHANDLE hModel, LPcmsCIEXYZ pIn, LPcmsJCh pOut);
+    void       cmsCIECAM02Reverse(LCMSHANDLE hModel, LPcmsJCh pIn,    LPcmsCIEXYZ pOut);
+        
+
+    For example, to convert XYZ values from a given viewing condition to another:
+
+    a) Create descriptions of both viewing conditions by using cmsCIECAM02Init
+    b) Convert XYZ to JCh using cmsCIECAM02Forward for viewing condition 1
+    c) Convert JCh back to XYZ using cmsCIECAM02Reverse for viewing condition 2
+    d) when done, free both descriptions
+
+
+        cmsViewingConditions vc1, vc2;
+        cmsJCh Out;
+        cmsCIEXYZ In;
+        HANDLE h1, h2;
+
+   
+        vc.whitePoint.X = 98.88;
+        vc.whitePoint.Y = 90.00;
+        vc.whitePoint.Z = 32.03;
+        vc.Yb = 18;
+        vc.La = 200;
+        vc.surround = AVG_SURROUND;
+        vc.D_value  = 1.0;
+
+        h1 = cmsCIECAM02Init(&vc);
+
+
+        vc2.whitePoint.X = 98.88;
+        vc2.whitePoint.Y = 100.00;
+        vc2.whitePoint.Z = 32.03;
+        vc2.Yb = 20;
+        vc2.La = 20;
+        vc2.surround = AVG_SURROUND;
+        vc2.D_value  = 1.0;
+
+        h2 = cmsCIECAM02Init(&vc);
+      
+        In.X= 19.31; 
+        In.Y= 23.93; 
+        In.Z =10.14;
+
+        cmsCIECAM02Forward(h1, &In, &Out);       
+        cmsCIECAM02Reverse(h2, &Out, &In);
+        
+        cmsCIECAM02Done(h1);        
+        cmsCIECAM02Done(h2);        
+
+ See the CIECAM02 paper on CIE site for further details.
 
 
  18. Named color profiles
@@ -1375,7 +1541,7 @@ double  cmsCMCdeltaE(LPcmsCIELab Lab1, LPcmsCIELab Lab2);
  We create a transform using:
 
 
- hTransform = cmmCreateColorTransform(hNamedColorProfile,
+ hTransform = cmsCreateTransform(hNamedColorProfile,
                                            TYPE_NAMED_COLOR_INDEX,
                                            hOutputProfile,
                                            TYPE_BGR_8,
@@ -1644,7 +1810,7 @@ int main(void)
 
 
 Annex A. About intents
-======================
+============================================================================
 
   Charles Cowens gives to me a clear explanation about
   accomplished intents. Since it is very useful to understand how
@@ -1694,7 +1860,7 @@ Annex A. About intents
 
 
 Annex B Apparent bug in XYZ -> sRGB transforms
-==============================================
+============================================================================
 
 John van den Heuvel warns me about an apparent bug on
 XYZ -> sRGB transforms. Ver 1.10 should minimize this effect.

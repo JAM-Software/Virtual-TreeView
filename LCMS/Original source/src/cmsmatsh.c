@@ -1,32 +1,24 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2000 Marti Maria
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 #include "lcms.h"
@@ -59,9 +51,9 @@
 static
 int ComputeTables(LPGAMMATABLE Table[3], LPWORD Out[3], LPL16PARAMS p16)
 {
-	int i, AllLinear;
+    int i, AllLinear;
 
-	   cmsCalcL16Params(Table[0] -> nEntries, p16);
+       cmsCalcL16Params(Table[0] -> nEntries, p16);
 
        AllLinear = 0;
        for (i=0; i < 3; i++)
@@ -83,19 +75,19 @@ int ComputeTables(LPGAMMATABLE Table[3], LPWORD Out[3], LPL16PARAMS p16)
 
        // If is all linear, then supress table interpolation (this
        // will speed greately some trivial operations. 
-	   // Return 1 if present, 0 if all linear
-	   
+       // Return 1 if present, 0 if all linear
+       
 
        if (AllLinear != 3) return 1;
 
-	   return 0;
+       return 0;
 
 }
 
 
 LPMATSHAPER cmsAllocMatShaper2(LPMAT3 Matrix, LPGAMMATABLE In[], LPGAMMATABLE Out[], DWORD Behaviour)
 {
-	   LPMATSHAPER NewMatShaper;
+       LPMATSHAPER NewMatShaper;
        int rc;
 
        NewMatShaper = (LPMATSHAPER) malloc(sizeof(MATSHAPER));
@@ -115,28 +107,28 @@ LPMATSHAPER cmsAllocMatShaper2(LPMAT3 Matrix, LPGAMMATABLE In[], LPGAMMATABLE Ou
 
        // Now, on the table characteristics
 
-	   if (Out) {
+       if (Out) {
 
-			rc = ComputeTables(Out, NewMatShaper ->L, &NewMatShaper ->p16);
-			if (rc < 0) {
-				 cmsFreeMatShaper(NewMatShaper);
-				 return NULL;
-			}
-			if (rc == 1) NewMatShaper -> dwFlags |= MATSHAPER_HASSHAPER;		
-	   }
+            rc = ComputeTables(Out, NewMatShaper ->L, &NewMatShaper ->p16);
+            if (rc < 0) {
+                 cmsFreeMatShaper(NewMatShaper);
+                 return NULL;
+            }
+            if (rc == 1) NewMatShaper -> dwFlags |= MATSHAPER_HASSHAPER;        
+       }
 
 
-	   if (In) {
+       if (In) {
 
-			rc = ComputeTables(In, NewMatShaper ->L2, &NewMatShaper ->p2_16);
-			if (rc < 0) {
-				cmsFreeMatShaper(NewMatShaper);
-				return NULL;
-			}
-			if (rc == 1) NewMatShaper -> dwFlags |= MATSHAPER_HASINPSHAPER;		
-	   }
+            rc = ComputeTables(In, NewMatShaper ->L2, &NewMatShaper ->p2_16);
+            if (rc < 0) {
+                cmsFreeMatShaper(NewMatShaper);
+                return NULL;
+            }
+            if (rc == 1) NewMatShaper -> dwFlags |= MATSHAPER_HASINPSHAPER;     
+       }
 
-	   
+       
        return NewMatShaper;
 
 }
@@ -215,7 +207,7 @@ void cmsFreeMatShaper(LPMATSHAPER MatShaper)
        for (i=0; i < 3; i++)
        {
               if (MatShaper -> L[i]) free(MatShaper ->L[i]);
-			  if (MatShaper -> L2[i]) free(MatShaper ->L2[i]);
+              if (MatShaper -> L2[i]) free(MatShaper ->L2[i]);
        }
 
        free(MatShaper);
@@ -228,10 +220,10 @@ static
 void AllSmeltedBehaviour(LPMATSHAPER MatShaper, WORD In[], WORD Out[])
 {
 
-	   WORD tmp[3];
-	   WVEC3 InVect, OutVect;
+       WORD tmp[3];
+       WVEC3 InVect, OutVect;
 
-	   if (MatShaper -> dwFlags & MATSHAPER_HASINPSHAPER)
+       if (MatShaper -> dwFlags & MATSHAPER_HASINPSHAPER)
        {
        InVect.n[VX] = cmsLinearInterpFixed(In[0], MatShaper -> L2[0], &MatShaper -> p2_16);
        InVect.n[VY] = cmsLinearInterpFixed(In[1], MatShaper -> L2[1], &MatShaper -> p2_16);
@@ -239,43 +231,43 @@ void AllSmeltedBehaviour(LPMATSHAPER MatShaper, WORD In[], WORD Out[])
        }
        else
        {
-			InVect.n[VX] = ToFixedDomain(In[0]);
-			InVect.n[VY] = ToFixedDomain(In[1]);
-			InVect.n[VZ] = ToFixedDomain(In[2]);
+            InVect.n[VX] = ToFixedDomain(In[0]);
+            InVect.n[VY] = ToFixedDomain(In[1]);
+            InVect.n[VZ] = ToFixedDomain(In[2]);
        }
 
 
        if (MatShaper -> dwFlags & MATSHAPER_HASMATRIX)
        {       
-			 		     
+                         
              MAT3evalW(&OutVect, &MatShaper -> Matrix, &InVect);
-	   }
-	   else {
+       }
+       else {
 
-		   OutVect.n[VX] = InVect.n[VX];
-		   OutVect.n[VY] = InVect.n[VY];
-		   OutVect.n[VZ] = InVect.n[VZ];
-	   }
+           OutVect.n[VX] = InVect.n[VX];
+           OutVect.n[VY] = InVect.n[VY];
+           OutVect.n[VZ] = InVect.n[VZ];
+       }
 
-			 
-	   tmp[0] = Clamp_XYZ(FromFixedDomain(OutVect.n[VX]));
-	   tmp[1] = Clamp_XYZ(FromFixedDomain(OutVect.n[VY]));
-	   tmp[2] = Clamp_XYZ(FromFixedDomain(OutVect.n[VZ]));
+             
+       tmp[0] = _cmsClampWord(FromFixedDomain(OutVect.n[VX]));
+       tmp[1] = _cmsClampWord(FromFixedDomain(OutVect.n[VY]));
+       tmp[2] = _cmsClampWord(FromFixedDomain(OutVect.n[VZ]));
 
        
-       	   
-	   if (MatShaper -> dwFlags & MATSHAPER_HASSHAPER)
+           
+       if (MatShaper -> dwFlags & MATSHAPER_HASSHAPER)
        {
        Out[0] = cmsLinearInterpLUT16(tmp[0], MatShaper -> L[0], &MatShaper -> p16);
        Out[1] = cmsLinearInterpLUT16(tmp[1], MatShaper -> L[1], &MatShaper -> p16);
        Out[2] = cmsLinearInterpLUT16(tmp[2], MatShaper -> L[2], &MatShaper -> p16);
        }
        else
-	   {
-		   Out[0] = tmp[0];
-		   Out[1] = tmp[1];
-		   Out[2] = tmp[2];
-	   }
+       {
+           Out[0] = tmp[0];
+           Out[1] = tmp[1];
+           Out[2] = tmp[2];
+       }
         
 }
 
@@ -310,9 +302,9 @@ void InputBehaviour(LPMATSHAPER MatShaper, WORD In[], WORD Out[])
 
        // PCS in 1Fixed15 format, adjusting
 
-       Out[0] = (WORD) Clamp_XYZ(OutVect.n[VX] >> 1);
-       Out[1] = (WORD) Clamp_XYZ(OutVect.n[VY] >> 1);
-       Out[2] = (WORD) Clamp_XYZ(OutVect.n[VZ] >> 1);
+       Out[0] = _cmsClampWord((OutVect.n[VX]) >> 1);
+       Out[1] = _cmsClampWord((OutVect.n[VY]) >> 1);
+       Out[2] = _cmsClampWord((OutVect.n[VZ]) >> 1);
 
 }
 
@@ -346,7 +338,7 @@ void OutputBehaviour(LPMATSHAPER MatShaper, WORD In[], WORD Out[])
               {
 
               Out[i] = cmsLinearInterpLUT16(
-                     Clamp_RGB(FromFixedDomain(OutVect.n[i])),
+                     _cmsClampWord(FromFixedDomain(OutVect.n[i])),
                      MatShaper -> L[i],
                      &MatShaper ->p16);
               }
@@ -355,9 +347,9 @@ void OutputBehaviour(LPMATSHAPER MatShaper, WORD In[], WORD Out[])
        {
        // Result from fixed domain to RGB
 
-       Out[0] = Clamp_RGB(FromFixedDomain(OutVect.n[VX]));
-       Out[1] = Clamp_RGB(FromFixedDomain(OutVect.n[VY]));
-       Out[2] = Clamp_RGB(FromFixedDomain(OutVect.n[VZ]));
+       Out[0] = _cmsClampWord(FromFixedDomain(OutVect.n[VX]));
+       Out[1] = _cmsClampWord(FromFixedDomain(OutVect.n[VY]));
+       Out[2] = _cmsClampWord(FromFixedDomain(OutVect.n[VZ]));
        }
 
 }

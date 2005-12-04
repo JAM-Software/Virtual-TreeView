@@ -1,6 +1,16 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2001 Marti Maria
+//  Copyright (C) 1998-2003 Marti Maria
+//
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
 // THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
@@ -13,20 +23,7 @@
 // LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 // OF THIS SOFTWARE.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Version 1.12
 
 #include "lcms.h"
 #include <stdarg.h>
@@ -45,7 +42,8 @@ static char *cInProf = NULL;
 static char *cOutProf = NULL;
 static int Intent = INTENT_PERCEPTUAL;
 static FILE* OutFile;
-
+static int BlackPointCompensation = FALSE;
+static int Undecorated = FALSE;
 
 static
 void FatalError(const char *frm, ...)
@@ -68,11 +66,11 @@ void HandleSwitches(int argc, char *argv[])
 {
        int s;
       
-       while ((s = xgetopt(argc,argv,"I:i:O:o:T:t:")) != EOF) {
+       while ((s = xgetopt(argc,argv,"uUbBI:i:O:o:T:t:")) != EOF) {
 
        switch (s){
 
-     
+	 
        case 'i':
        case 'I':
             cInProf = xoptarg;
@@ -83,6 +81,10 @@ void HandleSwitches(int argc, char *argv[])
            cOutProf = xoptarg;
             break;
 
+       case 'b':
+       case 'B': BlackPointCompensation =TRUE;
+            break;
+
 
        case 't':
        case 'T':
@@ -91,7 +93,10 @@ void HandleSwitches(int argc, char *argv[])
             if (Intent < 0) Intent = 0;
             break;
      
-     
+       case 'U':
+       case 'u':
+            Undecorated = TRUE;
+            break;
 
   default:
 
@@ -103,22 +108,21 @@ void HandleSwitches(int argc, char *argv[])
 static
 void Help(void)
 {
-     fprintf(stderr, "\nGenerates PostScript CRD or CSA from ICC profiles.\n");
-     fprintf(stderr, "If no file is given, output goes to stdout.\n");
-     fprintf(stderr, "You can specify by %ci or %co the desired profile(s).\n", SW, SW);
-     fprintf(stderr, "Devicelink profiles are accepted as long as input\n");
-     fprintf(stderr, "for CRD / output for CSA were XYZ or Lab.\n\n");    
-
-     fprintf(stderr, "usage: icc2ps [flags] [output file]\n\n");
+    
+         
+     fprintf(stderr, "usage: icc2ps [flags]\n\n");
 
      fprintf(stderr, "flags:\n\n");
      
      fprintf(stderr, "%ci<profile> - Input profile: Generates Color Space Array (CSA)\n", SW);
-     fprintf(stderr, "%co<profile> - Output profile: Generates Color Rendering Dictionary (CRD)\n", SW);   
+     fprintf(stderr, "%co<profile> - Output profile: Generates Color Rendering Dictionary(CRD)\n", SW);   
      
      fprintf(stderr, "%ct<0,1,2,3> - Intent (0=Perceptual, 1=Colorimetric, 2=Saturation, 3=Absolute)\n", SW);    
           
-     fprintf(stderr, "\n");
+     fprintf(stderr, "%cb - Black point compensation (CRD only)\n", SW);    
+     fprintf(stderr, "%cu - Do NOT generate resource name on CRD\n", SW);    
+
+	 fprintf(stderr, "\n");
      fprintf(stderr, "This program is intended to be a demo of the little cms\n"
                      "engine. Both lcms and this program are freeware. You can\n"
                      "obtain both in source code at http://www.littlecms.com\n"
@@ -131,78 +135,91 @@ void Help(void)
 static
 void GenerateCSA(void)
 {
-    cmsHPROFILE hProfile = cmsOpenProfileFromFile(cInProf, "r");
-    size_t n;
-    char* Buffer;
+	cmsHPROFILE hProfile = cmsOpenProfileFromFile(cInProf, "r");
+	size_t n;
+	char* Buffer;
 
-    n = cmsGetPostScriptCSA(hProfile, Intent, NULL, 0);
-    if (n == 0) return;
+	n = cmsGetPostScriptCSA(hProfile, Intent, NULL, 0);
+	if (n == 0) return;
 
-    Buffer = (char*) malloc(n + 1);
-    cmsGetPostScriptCSA(hProfile, Intent, Buffer, n);
-    Buffer[n] = 0;
+	Buffer = (char*) malloc(n + 1);
+	cmsGetPostScriptCSA(hProfile, Intent, Buffer, n);
+	Buffer[n] = 0;
 
-    fprintf(OutFile, "%s", Buffer); 
-    
-    free(Buffer);
-    cmsCloseProfile(hProfile);
+	fprintf(OutFile, "%s", Buffer);	
+	
+	free(Buffer);
+	cmsCloseProfile(hProfile);
 }
 
 
 static
 void GenerateCRD(void)
 {
-    cmsHPROFILE hProfile = cmsOpenProfileFromFile(cOutProf, "r");
-    size_t n;
-    char* Buffer;
+	cmsHPROFILE hProfile = cmsOpenProfileFromFile(cOutProf, "r");
+	size_t n;
+	char* Buffer;
+    DWORD dwFlags = 0;
+    
+    if (BlackPointCompensation) dwFlags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
+    if (Undecorated)            dwFlags |= cmsFLAGS_NODEFAULTRESOURCEDEF;
 
-    n = cmsGetPostScriptCRD(hProfile, Intent, NULL, 0);
-    if (n == 0) return;
+	n = cmsGetPostScriptCRDEx(hProfile, Intent, dwFlags, NULL, 0);
+	if (n == 0) return;
 
-    Buffer = (char*) malloc(n + 1);
-    cmsGetPostScriptCRD(hProfile, Intent, Buffer, n);
-    Buffer[n] = 0;
+	Buffer = (char*) malloc(n + 1);
+    cmsGetPostScriptCRDEx(hProfile, Intent, dwFlags, Buffer, n);
+	Buffer[n] = 0;
 
-    fprintf(OutFile, "%s", Buffer);         
-    free(Buffer);
-    cmsCloseProfile(hProfile);
+	fprintf(OutFile, "%s", Buffer);			
+	free(Buffer);
+	cmsCloseProfile(hProfile);
+}
+
+
+static
+int MyErrorHandler(int ErrorCode, const char *ErrorText)
+{
+    FatalError("icc2ps: %s", ErrorText);
+    return 0;
 }
 
 
 
 int main(int argc, char *argv[])
 {
-    int nargs;
+	int nargs;
 
-    fprintf(stderr, "little cms PostScript converter - v1.1\n");
+     fprintf(stderr, "little cms PostScript converter - v1.4\n\n");
 
-     HandleSwitches(argc, argv);
+	 HandleSwitches(argc, argv);
+
+     cmsSetErrorHandler(MyErrorHandler);
 
      nargs = (argc - xoptind);
-     if (nargs != 0 && nargs != 1)
-                Help();            
+	 if (nargs != 0 && nargs != 1)
+				Help();            
+	
+	 if (nargs == 0) 
+			OutFile = stdout;
+	 else
+			OutFile = fopen(argv[xoptind], "wt");
+	   		
+
+	 if (cInProf == NULL && cOutProf == NULL)
+				Help();
+
     
-     if (nargs == 0) 
-            OutFile = stdout;
-     else
-            OutFile = fopen(argv[xoptind], "wt");
-        
+	  if (cInProf != NULL)
+			GenerateCSA();
+		  
+	  if (cOutProf != NULL)
+			GenerateCRD();
+		
+	  if (nargs == 1) {
+		  fclose(OutFile);
+	  }
 
-     if (cInProf == NULL && cOutProf == NULL)
-                Help();
-
-    
-      if (cInProf != NULL)
-            GenerateCSA();
-          
-      if (cOutProf != NULL)
-            GenerateCRD();
-        
-      if (nargs == 1) {
-          fclose(OutFile);
-      }
-
-      fprintf(stderr, "Ok\n");
       return 0;     
 }
 

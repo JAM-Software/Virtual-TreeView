@@ -1,39 +1,35 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2000 Marti Maria
+//  Copyright (C) 1998-2004 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "lcms.h"
 
+// Uncomment this line if you want lcms to use the black point tag in profile, 
+// if commented, lcms will compute the black point by its own. 
+// It is safer to leve it commented out
+// #define HONOR_BLACK_POINT_TAG
 
 // Conversions
 
-void LCMSEXPORT cmsXYZ2xyY(LPcmsCIExyY Dest, const LPcmsCIEXYZ Source)
+void LCMSEXPORT cmsXYZ2xyY(LPcmsCIExyY Dest, const cmsCIEXYZ* Source)
 {
        double ISum;
 
@@ -45,7 +41,7 @@ void LCMSEXPORT cmsXYZ2xyY(LPcmsCIExyY Dest, const LPcmsCIEXYZ Source)
 }
 
 
-void LCMSEXPORT cmsxyY2XYZ(LPcmsCIEXYZ Dest, const LPcmsCIExyY Source)
+void LCMSEXPORT cmsxyY2XYZ(LPcmsCIEXYZ Dest, const cmsCIExyY* Source)
 {
 
         Dest -> X = (Source -> x / Source -> y) * Source -> Y;
@@ -174,37 +170,24 @@ BOOL LCMSEXPORT cmsBuildRGB2XYZtransferMatrix(LPMAT3 r, LPcmsCIExyY WhitePt,
 
 
 
-/*
- TODO: Use CMCCAT2000
-
-     0.7982  0.3389 -0.1371 
-    -0.5918  1.5512  0.0406 
-     0.0008  0.0239  0.9753 
-
- */
-
-// This procedure implements the Lam & Rigg Bradford chromatic adaptation.
+// Compute chromatic adaptation matrix using Chad as cone matrix 
 
 static
-void BradfordLamRiggChromaticAdaptation(LPMAT3 Conversion,
-                                        LPcmsCIEXYZ SourceWhitePoint,
-                                        LPcmsCIEXYZ DestWhitePoint)
+void ComputeChromaticAdaptation(LPMAT3 Conversion,
+                                LPcmsCIEXYZ SourceWhitePoint,
+                                LPcmsCIEXYZ DestWhitePoint,
+                                LPMAT3 Chad)
 
 {
-       MAT3 LamRigg   = {{ // Bradford matrix
-                     {{  0.8951,  0.2664, -0.1614 }},
-                     {{ -0.7502,  1.7135,  0.0367 }},
-                     {{  0.0389, -0.0685,  1.0296 }}
-                     }};
-       MAT3 LamRigg_1 = {{ // |Bradford|^^-1
-                     {{  0.9870, -0.1471,  0.1600 }},
-                     {{  0.4323,  0.5184,  0.0493 }},
-                     {{ -0.0085,  0.0400,  0.9685 }},
-                     }};
-
+      
+        MAT3 Chad_Inv;
         VEC3 ConeSourceXYZ, ConeSourceRGB;
         VEC3 ConeDestXYZ, ConeDestRGB;
         MAT3 Cone, Tmp;
+
+
+        Tmp = *Chad;
+        MAT3inverse(&Tmp, &Chad_Inv);
 
         VEC3init(&ConeSourceXYZ, SourceWhitePoint -> X,
                                  SourceWhitePoint -> Y,
@@ -214,8 +197,8 @@ void BradfordLamRiggChromaticAdaptation(LPMAT3 Conversion,
                                  DestWhitePoint -> Y,
                                  DestWhitePoint -> Z);
 
-        MAT3eval(&ConeSourceRGB, &LamRigg, &ConeSourceXYZ);
-        MAT3eval(&ConeDestRGB,   &LamRigg, &ConeDestXYZ);
+        MAT3eval(&ConeSourceRGB, Chad, &ConeSourceXYZ);
+        MAT3eval(&ConeDestRGB,   Chad, &ConeDestXYZ);
 
         // Build matrix
 
@@ -225,20 +208,33 @@ void BradfordLamRiggChromaticAdaptation(LPMAT3 Conversion,
 
 
         // Normalize
-        MAT3per(&Tmp, &Cone, &LamRigg);
-        MAT3per(Conversion, &LamRigg_1, &Tmp);
+        MAT3per(&Tmp, &Cone, Chad);
+        MAT3per(Conversion, &Chad_Inv, &Tmp);
 
 }
 
 
-BOOL cmsAdaptationMatrix(LPMAT3 r, LPcmsCIEXYZ FromIll, LPcmsCIEXYZ ToIll)
+// Returns the final chrmatic adaptation from illuminant FromIll to Illuminant ToIll
+// The cone matrix can be specified in ConeMatrix. If NULL, Bradford is assumed
+
+BOOL cmsAdaptationMatrix(LPMAT3 r, LPMAT3 ConeMatrix, LPcmsCIEXYZ FromIll, LPcmsCIEXYZ ToIll)
 {
-    
-        BradfordLamRiggChromaticAdaptation(r, FromIll, ToIll);
-        return TRUE;
+     MAT3 LamRigg   = {{ // Bradford matrix
+                      {{  0.8951,  0.2664, -0.1614 }},
+                      {{ -0.7502,  1.7135,  0.0367 }},
+                      {{  0.0389, -0.0685,  1.0296 }}
+                      }};
+
+
+      if (ConeMatrix == NULL)
+            ConeMatrix = &LamRigg;
+
+      ComputeChromaticAdaptation(r, FromIll, ToIll, ConeMatrix);
+      return TRUE;
 
 }
 
+// Same as anterior, but assuming D50 destination. White point is given in xyY
 
 BOOL cmsAdaptMatrixToD50(LPMAT3 r, LPcmsCIExyY SourceWhitePt)
 {
@@ -247,13 +243,17 @@ BOOL cmsAdaptMatrixToD50(LPMAT3 r, LPcmsCIExyY SourceWhitePt)
         MAT3 Tmp;
 
         cmsxyY2XYZ(&Dn, SourceWhitePt);
+        
+        cmsAdaptationMatrix(&Bradford, NULL, &Dn, cmsD50_XYZ());
 
-        BradfordLamRiggChromaticAdaptation(&Bradford, &Dn, cmsD50_XYZ());
         Tmp = *r;
         MAT3per(r, &Bradford, &Tmp);
 
         return TRUE;
 }
+
+
+// Same as anterior, but assuming D50 source. White point is given in xyY
 
 BOOL cmsAdaptMatrixFromD50(LPMAT3 r, LPcmsCIExyY DestWhitePt)
 {
@@ -262,8 +262,9 @@ BOOL cmsAdaptMatrixFromD50(LPMAT3 r, LPcmsCIExyY DestWhitePt)
         MAT3 Tmp;
 
         cmsxyY2XYZ(&Dn, DestWhitePt);
+        
+        cmsAdaptationMatrix(&Bradford, NULL, cmsD50_XYZ(), &Dn);
 
-        BradfordLamRiggChromaticAdaptation(&Bradford, cmsD50_XYZ(), &Dn);
         Tmp = *r;
         MAT3per(r, &Bradford, &Tmp);
 
@@ -272,15 +273,19 @@ BOOL cmsAdaptMatrixFromD50(LPMAT3 r, LPcmsCIExyY DestWhitePt)
 
 
 // Adapts a color to a given illuminant. Original color is expected to have
-// a SourceWhitePt white point. (Currently uses a von-kries simplification
-// of Bradford transform).
+// a SourceWhitePt white point. 
 
-BOOL LCMSEXPORT cmsAdaptToIlluminant(LPcmsCIEXYZ Result, LPcmsCIEXYZ SourceWhitePt, LPcmsCIEXYZ Illuminant, LPcmsCIEXYZ Value)
+BOOL LCMSEXPORT cmsAdaptToIlluminant(LPcmsCIEXYZ Result, 
+                                     LPcmsCIEXYZ SourceWhitePt, 
+                                     LPcmsCIEXYZ Illuminant, 
+                                     LPcmsCIEXYZ Value)
 {
         MAT3 Bradford;
         VEC3 In, Out;
     
-        BradfordLamRiggChromaticAdaptation(&Bradford, SourceWhitePt, Illuminant);
+        // BradfordLamRiggChromaticAdaptation(&Bradford, SourceWhitePt, Illuminant);
+
+        cmsAdaptationMatrix(&Bradford, NULL, SourceWhitePt, Illuminant);
 
         VEC3init(&In, Value -> X, Value -> Y, Value -> Z);
         MAT3eval(&Out, &Bradford, &In);
@@ -465,3 +470,240 @@ void _cmsIdentifyWhitePoint(char *Buffer, LPcmsCIEXYZ WhitePt)
               
 }
 
+
+// Use darker colorant to obtain black point
+
+static
+int BlackPointAsDarkerColorant(cmsHPROFILE hInput,                               
+                               int Intent,
+                               LPcmsCIEXYZ BlackPoint,
+                               DWORD dwFlags)
+{
+    WORD *Black, *White;
+    cmsHTRANSFORM xform;
+    icColorSpaceSignature Space;
+    int nChannels;
+    DWORD dwFormat; 
+    cmsHPROFILE hLab;
+    cmsCIELab  Lab;
+    cmsCIEXYZ  BlackXYZ, MediaWhite;        
+    
+    // If the profile does not support input direction, assume Black point 0
+    
+    if (!cmsIsIntentSupported(hInput, Intent, LCMS_USED_AS_INPUT)) {
+
+        BlackPoint -> X = BlackPoint ->Y = BlackPoint -> Z = 0.0;
+        return 0;
+    }
+    
+
+    // Try to get black by using black colorant
+
+    Space = cmsGetColorSpace(hInput);
+    
+    if (!_cmsEndPointsBySpace(Space, &White, &Black, &nChannels)) {
+        
+        BlackPoint -> X = BlackPoint ->Y = BlackPoint -> Z = 0.0;
+        return 0;
+    }
+    
+    dwFormat = CHANNELS_SH(nChannels)|BYTES_SH(2);
+
+    hLab = cmsCreateLabProfile(NULL);
+    
+    xform = cmsCreateTransform(hInput, dwFormat,
+                                hLab, TYPE_Lab_DBL, Intent, cmsFLAGS_NOTPRECALC);
+    
+    
+    cmsDoTransform(xform, Black, &Lab, 1);
+
+    // Force it to be neutral, clip to max. L* of 50
+
+    Lab.a = Lab.b = 0;
+    if (Lab.L > 50) Lab.L = 50;
+
+    cmsCloseProfile(hLab);
+    cmsDeleteTransform(xform);
+    
+    cmsLab2XYZ(NULL, &BlackXYZ, &Lab);
+    
+    if (Intent == INTENT_ABSOLUTE_COLORIMETRIC) {
+        
+        *BlackPoint = BlackXYZ; 
+    }
+    else {
+        
+        if (!(dwFlags & LCMS_BPFLAGS_D50_ADAPTED)) {
+
+            cmsTakeMediaWhitePoint(&MediaWhite, hInput);
+            cmsAdaptToIlluminant(BlackPoint, cmsD50_XYZ(), &MediaWhite, &BlackXYZ);
+        }
+        else
+            *BlackPoint = BlackXYZ;
+    }
+        
+    return 1;
+}
+
+
+// Get a black point of output CMYK profile, discounting any ink-limiting embedded 
+// in the profile. Fou doing that, use perceptual intent in input direction:
+// Lab (0, 0, 0) -> [Perceptual] Profile -> CMYK -> [Rel. colorimetric] Profile -> Lab
+
+static
+int BlackPointUsingPerceptualBlack(LPcmsCIEXYZ BlackPoint, 
+                                   cmsHPROFILE hProfile, 
+                                   DWORD dwFlags)
+{
+    cmsHTRANSFORM hPercLab2CMYK, hRelColCMYK2Lab;
+    cmsHPROFILE hLab;
+    cmsCIELab LabIn, LabOut;
+    WORD CMYK[MAXCHANNELS];
+    cmsCIEXYZ  BlackXYZ, MediaWhite;        
+
+
+     if (!cmsIsIntentSupported(hProfile, INTENT_PERCEPTUAL, LCMS_USED_AS_INPUT)) {
+
+        BlackPoint -> X = BlackPoint ->Y = BlackPoint -> Z = 0.0;
+        return 0;
+    }
+   
+    hLab = cmsCreateLabProfile(NULL);
+
+    hPercLab2CMYK  = cmsCreateTransform(hLab, TYPE_Lab_DBL, 
+                                        hProfile, TYPE_CMYK_16, 
+                                        INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+
+    hRelColCMYK2Lab = cmsCreateTransform(hProfile, TYPE_CMYK_16, 
+                                         hLab, TYPE_Lab_DBL, 
+                                         INTENT_RELATIVE_COLORIMETRIC, cmsFLAGS_NOTPRECALC);
+
+    LabIn.L = LabIn.a = LabIn.b = 0;
+
+    cmsDoTransform(hPercLab2CMYK, &LabIn, CMYK, 1);
+    cmsDoTransform(hRelColCMYK2Lab, CMYK, &LabOut, 1);
+
+    if (LabOut.L > 50) LabOut.L = 50;
+    LabOut.a = LabOut.b = 0;
+
+    cmsDeleteTransform(hPercLab2CMYK);
+    cmsDeleteTransform(hRelColCMYK2Lab);
+    cmsCloseProfile(hLab);
+
+    cmsLab2XYZ(NULL, &BlackXYZ, &LabOut);   
+    
+    if (!(dwFlags & LCMS_BPFLAGS_D50_ADAPTED)){
+            cmsTakeMediaWhitePoint(&MediaWhite, hProfile);
+            cmsAdaptToIlluminant(BlackPoint, cmsD50_XYZ(), &MediaWhite, &BlackXYZ);
+    }
+    else
+            *BlackPoint = BlackXYZ;
+   
+    return 1;
+
+}
+
+
+// Get Perceptual black of v4 profiles.
+static
+int GetV4PerceptualBlack(LPcmsCIEXYZ BlackPoint, cmsHPROFILE hProfile, DWORD dwFlags)
+{
+        if (dwFlags & LCMS_BPFLAGS_D50_ADAPTED) {
+
+            BlackPoint->X = PERCEPTUAL_BLACK_X;
+            BlackPoint->Y = PERCEPTUAL_BLACK_Y;
+            BlackPoint->Z = PERCEPTUAL_BLACK_Z;
+        }
+        else {
+
+            cmsCIEXYZ D50BlackPoint, MediaWhite;
+
+            cmsTakeMediaWhitePoint(&MediaWhite, hProfile);
+            D50BlackPoint.X = PERCEPTUAL_BLACK_X; 
+            D50BlackPoint.Y = PERCEPTUAL_BLACK_Y;
+            D50BlackPoint.Z = PERCEPTUAL_BLACK_Z;
+            cmsAdaptToIlluminant(BlackPoint, cmsD50_XYZ(), &MediaWhite, &D50BlackPoint);
+        }
+
+
+        return 1;
+}
+
+
+// This function shouldn't exist at all -- there is such quantity of broken
+// profiles on black point tag, that we must somehow fix chromaticity to 
+// avoid huge tint when doing Black point compensation. This function does
+// just that. If BP is specified, then forces it to neutral and uses only L
+// component. If does not exist, computes it by taking 400% of ink or RGB=0 This
+// works well on relative intent and is undefined on perceptual & saturation.
+// However, I will support all intents for tricking & trapping.
+
+
+int cmsDetectBlackPoint(LPcmsCIEXYZ BlackPoint, cmsHPROFILE hProfile, int Intent, DWORD dwFlags)
+{    
+
+    // v4 + perceptual & saturation intents does have its own black point
+
+    if ((cmsGetProfileICCversion(hProfile) >= 0x4000000) &&     
+        (Intent == INTENT_PERCEPTUAL || Intent == INTENT_SATURATION)) {
+
+       // Matrix shaper share MRC & perceptual intents
+
+       if (_cmsIsMatrixShaper(hProfile)) 
+           return BlackPointAsDarkerColorant(hProfile, INTENT_RELATIVE_COLORIMETRIC, BlackPoint, cmsFLAGS_NOTPRECALC);
+
+       // Get fixed value
+       return GetV4PerceptualBlack(BlackPoint, hProfile, dwFlags);
+    }
+
+
+#ifdef HONOR_BLACK_POINT_TAG
+
+    // v2, v4 rel/abs colorimetric
+    if (cmsIsTag(hProfile, icSigMediaBlackPointTag) && 
+                    Intent == INTENT_RELATIVE_COLORIMETRIC) {
+
+        cmsCIEXYZ BlackXYZ, UntrustedBlackPoint, TrustedBlackPoint, MediaWhite;
+        cmsCIELab Lab;
+
+             // If black point is specified, then use it, 
+        
+             cmsTakeMediaBlackPoint(&BlackXYZ, hProfile);
+             cmsTakeMediaWhitePoint(&MediaWhite, hProfile);
+
+             // Black point is absolute XYZ, so adapt to D50 to get PCS value
+
+             cmsAdaptToIlluminant(&UntrustedBlackPoint, &MediaWhite, cmsD50_XYZ(), &BlackXYZ);
+
+             // Force a=b=0 to get rid of any chroma
+
+             cmsXYZ2Lab(NULL, &Lab, &UntrustedBlackPoint);
+             Lab.a = Lab.b = 0;
+             if (Lab.L > 50) Lab.L = 50; // Clip to L* <= 50
+
+             cmsLab2XYZ(NULL, &TrustedBlackPoint, &Lab);
+
+             // Return BP as D50 relative or absolute XYZ (depends on flags)
+
+             if (!(dwFlags & LCMS_BPFLAGS_D50_ADAPTED))
+                    cmsAdaptToIlluminant(BlackPoint, cmsD50_XYZ(), &MediaWhite, &TrustedBlackPoint);
+             else
+                    *BlackPoint = TrustedBlackPoint;
+
+             return 1;
+    }
+
+#endif
+    
+    // If output profile, discount ink-limiting
+
+    if (Intent == INTENT_RELATIVE_COLORIMETRIC && 
+            (cmsGetDeviceClass(hProfile) == icSigOutputClass) &&
+            (cmsGetColorSpace(hProfile) == icSigCmykData))
+                return BlackPointUsingPerceptualBlack(BlackPoint, hProfile, dwFlags);
+
+    // Nope, compute BP using current intent.
+
+    return BlackPointAsDarkerColorant(hProfile, Intent, BlackPoint, dwFlags);
+
+}

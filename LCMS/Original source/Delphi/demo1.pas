@@ -116,8 +116,12 @@ begin
      ComboBoxIntent.ItemIndex := INTENT_PERCEPTUAL;
 end;
 
+
+
 procedure TForm1.Button2Click(Sender: TObject);
 begin
+
+
      if OpenPictureDialog1.Execute then begin
             Image1.Picture.LoadFromFile(OpenPictureDialog1.FileName);
             Image1.Picture.Bitmap.PixelFormat := pf24bit;

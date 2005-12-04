@@ -40,14 +40,15 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir "DllRelease"
-# PROP Ignore_Export_Lib 1
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMSDLL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "..\include" /D "NDEBUG" /D "LCMS_DLL" /D "LCMS_DLL_BUILD" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMS108DLL_EXPORTS" /Fp"Release/lcms108dll.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c
+# ADD CPP /nologo /Zp1 /MT /W3 /O2 /I "..\include" /I "..\..\include" /D "NDEBUG" /D "LCMS_DLL" /D "LCMS_DLL_BUILD" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Fo"Release/" /Fd"Release/" /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc0a /d "NDEBUG"
-# ADD RSC /l 0xc0a /d "NDEBUG"
+# ADD RSC /l 0x417 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -69,11 +70,12 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMSDLL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMSDLL_EXPORTS" /D "LCMS_DLL_BUILD" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LCMSDLL_EXPORTS" /D "LCMS_DLL" /D "LCMS_DLL_BUILD" /FD /GZ /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc0a /d "_DEBUG"
-# ADD RSC /l 0xc0a /d "_DEBUG"
+# ADD RSC /l 0x417 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -92,7 +94,15 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\src\cmscam02.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\cmscam97.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\cmscgats.c
 # End Source File
 # Begin Source File
 
@@ -113,6 +123,10 @@ SOURCE=..\..\src\cmsgmt.c
 # Begin Source File
 
 SOURCE=..\..\src\cmsintrp.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\cmsio0.c
 # End Source File
 # Begin Source File
 
@@ -152,6 +166,10 @@ SOURCE=..\..\src\cmssamp.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\cmsvirt.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\cmswtpnt.c
 # End Source File
 # Begin Source File
@@ -160,11 +178,11 @@ SOURCE=..\..\src\cmsxform.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\lcms.rc
+SOURCE=..\..\src\lcms.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\lcmsvc.def
+SOURCE=.\lcms.rc
 # End Source File
 # End Group
 # Begin Group "Header Files"

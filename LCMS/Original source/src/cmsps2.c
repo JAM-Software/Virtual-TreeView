@@ -1,34 +1,28 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2003 Marti Maria
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 
 // Postscript level 2 operators
+
 
 
 #include "lcms.h"
@@ -37,9 +31,9 @@
 
 // PostScript ColorRenderingDictionary and ColorSpaceArray
 
-LCMSAPI DWORD LCMSEXPORT cmsGetPSCSA(cmsHPROFILE hProfile, int Intent, LPVOID Buffer, DWORD dwBufferLen);
-LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Buffer, DWORD dwBufferLen);
-
+LCMSAPI DWORD LCMSEXPORT cmsGetPostScriptCSA(cmsHPROFILE hProfile, int Intent, LPVOID Buffer, DWORD dwBufferLen);
+LCMSAPI DWORD LCMSEXPORT cmsGetPostScriptCRD(cmsHPROFILE hProfile, int Intent, LPVOID Buffer, DWORD dwBufferLen);
+LCMSAPI DWORD LCMSEXPORT cmsGetPostScriptCRDEx(cmsHPROFILE hProfile, int Intent, DWORD dwFlags, LPVOID Buffer, DWORD dwBufferLen);
 // -------------------------------------------------------------------- Implementation
 
 #define MAXPSCOLS   60      // Columns on tables
@@ -50,17 +44,17 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
 
   PostScript does use XYZ as its internal PCS. But since PostScript 
   interpolation tables are limited to 8 bits, I use Lab as a way to 
-  improve the accurancy, favoring perceptual results. So, for the creation 
+  improve the accuracy, favoring perceptual results. So, for the creation 
   of each CRD, CSA the profiles are converted to Lab via a device 
   link between  profile -> Lab or Lab -> profile. The PS code necessary to
-  convert Lab <-> XYZ is also added.
+  convert Lab <-> XYZ is also included.
 
 
 
   Color Space Arrays (CSA) 
   ==================================================================================
 
-  In order to obtain precision, code chooses between three ways to implement
+  In order to obtain precission, code chooses between three ways to implement
   the device -> XYZ transform. These cases identifies monochrome profiles (often
   implemented as a set of curves), matrix-shaper and LUT-based.
 
@@ -80,10 +74,10 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
             /MatrixA [D50]  
             /RangeLMN [ 0.0 D50X 0.0 D50Y 0.0 D50Z ]
             /WhitePoint [D50]
-            /BlackPoint [Perfect absorber]
+            /BlackPoint [BP]
             /RenderingIntent (intent)
       >>
-    ] /Current exch /ColorSpace defineresource pop
+    ] 
 
    On simpler profiles, the PCS is already XYZ, so no conversion is required.
 
@@ -104,10 +98,10 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
                 /RangeLMN [ 0.0 D50X 0.0 D50Y 0.0 D50Z ]
                 /DecodeLMN [ { / 2} dup dup ]
                 /WhitePoint [D50]
-                /BlackPoint [Perfect absorber]
+                /BlackPoint [BP]
                 /RenderingIntent (intent)
             >>
-    ] /Current exch /ColorSpace defineresource pop
+    ] 
 
 
     CLUT based
@@ -123,19 +117,20 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
             /DecodeABC[ <postlinearization> ]
             /MatrixABC [ 1 1 1 1 0 0 0 0 -1]
             /WhitePoint [D50]
-            /BlackPoint [Perfect absorber]
+            /BlackPoint [BP]
             /RenderingIntent (intent)
     ] 
 
 
   Color Rendering Dictionaries (CRD)
   ==================================
-  These are always implemented as CLUT, and always are using Lab.
+  These are always implemented as CLUT, and always are using Lab. Since CRD are expected to
+  be used as resources, the code adds the definition as well.
 
   <<
     /ColorRenderingType 1
     /WhitePoint [ D50 ]
-    /BlackPoint [Perfect absorber]
+    /BlackPoint [BP]
     /MatrixPQR [ Bradford ]
     /RangePQR [-0.125 1.375 -0.125 1.375 -0.125 1.375 ]
     /TransformPQR [            
@@ -143,14 +138,14 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
     {4 index 4 get div 2 index 4 get mul exch pop exch pop exch pop exch pop } bind
     {4 index 5 get div 2 index 5 get mul exch pop exch pop exch pop exch pop } bind
     ]
-	/MatrixABC <...>
+    /MatrixABC <...>
     /EncodeABC <...>
     /RangeABC  <.. used for  XYZ -> Lab>
-	/EncodeLMN
+    /EncodeLMN
     /RenderTable [ p p p [<...>]]   
     
     /RenderingIntent (Perceptual)
-  >>
+  >> 
   /Current exch /ColorRendering defineresource pop
 
 
@@ -162,12 +157,14 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
   Encode LMN gives us f(X/Xn), f(Y/Yn), f(Z/Zn)
 
   /EncodeLMN [
+
     { 0.964200  div dup 0.008856 le {7.787 mul 16 116 div add}{1 3 div exp} ifelse } bind
     { 1.000000  div dup 0.008856 le {7.787 mul 16 116 div add}{1 3 div exp} ifelse } bind
     { 0.824900  div dup 0.008856 le {7.787 mul 16 116 div add}{1 3 div exp} ifelse } bind
+
     ]
-	
-	  
+    
+      
   MatrixABC is used to compute f(Y/Yn), f(X/Xn) - f(Y/Yn), f(Y/Yn) - f(Z/Zn)
 
   | 0  1  0|
@@ -183,22 +180,22 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
     { 500 mul 128 add 255 div  } bind
     { 200 mul 128 add 255 div  } bind
     ]   
-	
+    
   The following stages are used to convert Lab to XYZ
   ----------------------------------------------------
 
-  	/RangeABC [ 0 1 0 1 0 1]
-	/DecodeABC [ { 100 mul 16 add 116 div } bind
-				 { 255 mul 128 sub 500 div } bind
-				 { 255 mul 128 sub 200 div } bind 
-			   ]
-	
-	/MatrixABC [ 1 1 1 1 0 0 0 0 -1]
-	/DecodeLMN [
-				{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.964200 mul} bind
-				{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse } bind
-				{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.824900 mul} bind
-				]
+    /RangeABC [ 0 1 0 1 0 1]
+    /DecodeABC [ { 100 mul 16 add 116 div } bind
+                 { 255 mul 128 sub 500 div } bind
+                 { 255 mul 128 sub 200 div } bind 
+               ]
+    
+    /MatrixABC [ 1 1 1 1 0 0 0 0 -1]
+    /DecodeLMN [
+                {dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.964200 mul} bind
+                {dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse } bind
+                {dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.824900 mul} bind
+                ]
 
 
 */
@@ -206,7 +203,7 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
 /*
 
  PostScript algorithms discussion.
- ======================================================================================
+ =========================================================================================================
 
   1D interpolation algorithm 
 
@@ -271,10 +268,10 @@ LCMSAPI DWORD LCMSEXPORT cmsGetPSCRD(cmsHPROFILE hProfile, int Intent, LPVOID Bu
 
 */
 
-static icTagSignature Device2PCS[] = {icSigAToB0Tag,       // Perceptual
-                                      icSigAToB1Tag,       // Relative colorimetric
-                                      icSigAToB2Tag,       // Saturation
-                                      icSigAToB1Tag };     // Absolute colorimetric
+static icTagSignature Device2PCSTab[] = {icSigAToB0Tag,       // Perceptual
+                                         icSigAToB1Tag,       // Relative colorimetric
+                                         icSigAToB2Tag,       // Saturation
+                                         icSigAToB1Tag };     // Absolute colorimetric
                                                            // (Relative/WhitePoint)
 
 
@@ -299,16 +296,23 @@ typedef struct {
                 LPLUT Lut;
                 LPMEMSTREAM m;
                 
-				int FirstComponent;
-				int SecondComponent;
-				
+                int FirstComponent;
+                int SecondComponent;
+                
                 int   bps;
-				char* PreMaj;
-				char* PostMaj;
-				char* PreMin;
-				char* PostMin;
+                const char* PreMaj;
+                const char* PostMaj;
+                const char* PreMin;
+                const char* PostMin;
 
+                int  lIsInput;    // Handle L* encoding
+                int  FixWhite;    // Force mapping of pure white 
+
+                icColorSpaceSignature  ColorSpace;  // ColorSpace of profile
+
+                
             } SAMPLERCARGO, FAR* LPSAMPLERCARGO;
+
 
 // Creates a ready to use memory stream
 static
@@ -317,12 +321,12 @@ LPMEMSTREAM CreateMemStream(LPBYTE Buffer, DWORD dwMax, int MaxCols)
     LPMEMSTREAM m = (LPMEMSTREAM) malloc(sizeof(MEMSTREAM));
 
     ZeroMemory(m, sizeof(MEMSTREAM));
+
     m -> Block   = m -> Ptr = Buffer;
     m -> dwMax   = dwMax;
     m -> dwUsed  = 0;
     m -> MaxCols = MaxCols;
     m -> Col     = 0;
-
     m -> HasError = 0;
 
     return m;
@@ -331,11 +335,23 @@ LPMEMSTREAM CreateMemStream(LPBYTE Buffer, DWORD dwMax, int MaxCols)
 
 
 // Convert to byte
-
 static
 BYTE Word2Byte(WORD w)
 {
     return (BYTE) floor((double) w / 257.0 + 0.5);
+}
+
+
+// Convert to byte (using ICC2 notation)
+
+static
+BYTE L2Byte(WORD w)
+{    
+	int ww = w + 0x0080;
+
+	if (ww > 0xFFFF) return 0xFF;
+
+    return (BYTE) ((WORD) (ww >> 8) & 0xFF);
 }
 
 // Write a raw, uncooked byte. Check for space
@@ -406,15 +422,15 @@ void Writef(LPMEMSTREAM m, const char *frm, ...)
 static 
 char* RemoveCR(const char* txt)
 {
-	static char Buffer[2048];
-	char* pt;
+    static char Buffer[2048];
+    char* pt;
 
-	strncpy(Buffer, txt, 2047);
-	Buffer[2047] = 0;
-	for (pt = Buffer; *pt; pt++)
-			if (*pt == '\n' || *pt == '\r') *pt = ' ';
+    strncpy(Buffer, txt, 2047);
+    Buffer[2047] = 0;
+    for (pt = Buffer; *pt; pt++)
+            if (*pt == '\n' || *pt == '\r') *pt = ' ';
 
-	return Buffer;
+    return Buffer;
 
 }
 
@@ -422,30 +438,38 @@ static
 void EmitHeader(LPMEMSTREAM m, const char* Title, cmsHPROFILE hProfile)
 {
 
-	time_t timer;
+    time_t timer;
     
     time(&timer);
 
-	Writef(m, "%%!PS-Adobe-3.0\n");
-	Writef(m, "%%\n");
-	Writef(m, "%% %s\n", Title);
-	Writef(m, "%% Source: %s\n", RemoveCR(cmsTakeProductName(hProfile)));
-	Writef(m, "%% Description: %s\n", RemoveCR(cmsTakeProductDesc(hProfile)));
-	Writef(m, "%% Created: %s", ctime(&timer)); // ctime appends a \n!!!
-	Writef(m, "%%\n");
-	Writef(m, "%%%%BeginResource\n");
+    Writef(m, "%%!PS-Adobe-3.0\n");
+    Writef(m, "%%\n");
+    Writef(m, "%% %s\n", Title);
+    Writef(m, "%% Source: %s\n", RemoveCR(cmsTakeProductName(hProfile)));
+    Writef(m, "%% Description: %s\n", RemoveCR(cmsTakeProductDesc(hProfile)));
+    Writef(m, "%% Created: %s", ctime(&timer)); // ctime appends a \n!!!
+    Writef(m, "%%\n");
+    Writef(m, "%%%%BeginResource\n");
 
 }
 
+
+// Emits White & Black point. White point is always D50, Black point is the device 
+// Black point adapted to D50. 
+
 static
-void EmitWhiteBlackD50(LPMEMSTREAM m)
+void EmitWhiteBlackD50(LPMEMSTREAM m, LPcmsCIEXYZ BlackPoint)
 {
 
-    Writef(m, "/BlackPoint [0.0 0.0 0.0]\n" 
-              "/WhitePoint [%f %f %f]\n", cmsD50_XYZ()->X, 
+    Writef(m, "/BlackPoint [%f %f %f]\n", BlackPoint -> X,
+                                          BlackPoint -> Y,
+                                          BlackPoint -> Z);
+
+    Writef(m, "/WhitePoint [%f %f %f]\n", cmsD50_XYZ()->X, 
                                           cmsD50_XYZ()->Y,
                                           cmsD50_XYZ()->Z);
 }
+
 
 static
 void EmitRangeCheck(LPMEMSTREAM m)
@@ -497,23 +521,24 @@ void EmitL2Y(LPMEMSTREAM m)
 */
 
 
-// Lab -> XYZ
+// Lab -> XYZ, see the discussion above
 
 static
 void EmitLab2XYZ(LPMEMSTREAM m)
 {
-	Writef(m, "/RangeABC [ 0 1 0 1 0 1]\n");
-	Writef(m, "/DecodeABC [\n");
-	Writef(m, "{100 mul  16 add 116 div } bind\n");
-	Writef(m, "{255 mul 128 sub 500 div } bind\n");
-	Writef(m, "{255 mul 128 sub 200 div } bind\n");
-	Writef(m, "]\n");
-	Writef(m, "/MatrixABC [ 1 1 1 1 0 0 0 0 -1]\n");
-	Writef(m, "/DecodeLMN [\n");
-	Writef(m, "{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.964200 mul} bind\n");
-	Writef(m, "{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse } bind\n");
-	Writef(m, "{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.824900 mul} bind\n");
-	Writef(m, "]\n");
+    Writef(m, "/RangeABC [ 0 1 0 1 0 1]\n");
+    Writef(m, "/DecodeABC [\n");
+    Writef(m, "{100 mul  16 add 116 div } bind\n");
+    Writef(m, "{255 mul 128 sub 500 div } bind\n");
+    Writef(m, "{255 mul 128 sub 200 div } bind\n");
+    Writef(m, "]\n");
+    Writef(m, "/MatrixABC [ 1 1 1 1 0 0 0 0 -1]\n");
+	Writef(m, "/RangeLMN [ 0.0 0.9642 0.0 1.0000 0.0 0.8249 ]\n");
+    Writef(m, "/DecodeLMN [\n");
+    Writef(m, "{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.964200 mul} bind\n");
+    Writef(m, "{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse } bind\n");
+    Writef(m, "{dup 6 29 div ge {dup dup mul mul} {4 29 div sub 108 841 div mul} ifelse 0.824900 mul} bind\n");
+    Writef(m, "]\n");
 }
 
 
@@ -532,7 +557,7 @@ void Emit1Gamma(LPMEMSTREAM m, LPWORD Table, int nEntries)
     // Suppress whole if identity
     if (cmsIsLinear(Table, nEntries)) return;
 
-    // Check if is really an exponential. If so, emit
+    // Check if is really an exponential. If so, emit "exp"
      gamma = cmsEstimateGammaEx(Table, nEntries, 0.001);
      if (gamma > 0) {
             Writef(m, "{ %g exp } bind ", gamma);
@@ -619,9 +644,6 @@ void EmitNGamma(LPMEMSTREAM m, int n, LPWORD g[], int nEntries)
 }
 
 
-// Extract the curve Input -> Y. Useful on Lut-based monochrome profiles
-
-
 // Check whatever a profile has CLUT tables (only on input)
 
 static
@@ -630,7 +652,7 @@ BOOL IsLUTbased(cmsHPROFILE hProfile, int Intent)
     icTagSignature Tag;
 
     // Check if adequate tag is present
-    Tag = Device2PCS[Intent];
+    Tag = Device2PCSTab[Intent];
         
     if (cmsIsTag(hProfile, Tag)) return 1;
 
@@ -640,6 +662,8 @@ BOOL IsLUTbased(cmsHPROFILE hProfile, int Intent)
     // If no tag present, try matrix-shaper
     return cmsIsTag(hProfile, Tag);
 }
+
+
 
 // Following code dumps a LUT onto memory stream
         
@@ -662,40 +686,65 @@ int OutputValueSampler(register WORD In[], register WORD Out[], register LPVOID 
     LPSAMPLERCARGO sc = (LPSAMPLERCARGO) Cargo;
     unsigned int i;
 
-	// Hadle the parenthesis on rows
+
+    if (sc -> FixWhite) {
+
+        if (In[0] == 0xFFFF) {  // Only in L* = 100
+
+            if ((In[1] >= 0x8000 && In[1] <= 0x87FF) ||
+                (In[2] >= 0x8000 && In[2] <= 0x87FF)) {
+
+                WORD* Black;
+                WORD* White;
+                int nOutputs;
+
+                if (!_cmsEndPointsBySpace(sc ->ColorSpace, &White, &Black, &nOutputs))
+                        return 0;
+
+                for (i=0; i < (unsigned int) nOutputs; i++)
+                        Out[i] = White[i];
+            }
+
+             
+        }
+    }
+
+
+    // Hadle the parenthesis on rows
 
     if (In[0] != sc ->FirstComponent) {
             
             if (sc ->FirstComponent != -1) {
 
-					Writef(sc ->m, sc ->PostMin);
-					sc ->SecondComponent = -1;
-               		Writef(sc ->m, sc ->PostMaj);			
+                    Writef(sc ->m, sc ->PostMin);
+                    sc ->SecondComponent = -1;
+                    Writef(sc ->m, sc ->PostMaj);           
             }
 
             // Begin block  
             sc->m->Col = 0;
-        			
-			Writef(sc ->m, sc ->PreMaj);			
+                    
+            Writef(sc ->m, sc ->PreMaj);            
             sc ->FirstComponent = In[0]; 
     }
 
 
-	  if (In[1] != sc ->SecondComponent) {
+      if (In[1] != sc ->SecondComponent) {
             
             if (sc ->SecondComponent != -1) {
 
-               		Writef(sc ->m, sc ->PostMin);			
+                    Writef(sc ->m, sc ->PostMin);           
             }
-            		
-			Writef(sc ->m, sc ->PreMin);			
+                    
+            Writef(sc ->m, sc ->PreMin);            
             sc ->SecondComponent = In[1]; 
     }
+
 
     
     // Dump table. Could be Word or byte based on
     // depending on bps member (16 bps mode is not currently 
-	// being used at all, but is here for future ampliations)
+    // being used at all, but is here for future ampliations)
 
     for (i=0; i < sc -> Lut ->OutputChan; i++) {
 
@@ -704,8 +753,19 @@ int OutputValueSampler(register WORD In[], register WORD Out[], register LPVOID 
         if (sc ->bps == 8) {
 
             // Value as byte
-            BYTE wByteOut = Word2Byte(wWordOut);
-            WriteByte(sc -> m, wByteOut );
+            BYTE wByteOut;
+            
+            // If is input, convert from Lab2 to Lab4 (just divide by 256)
+
+            if (sc ->lIsInput) {
+
+          
+                wByteOut = L2Byte(wWordOut);
+            }
+            else
+                wByteOut = Word2Byte(wWordOut);
+
+            WriteByte(sc -> m, wByteOut);
         }
         else {
 
@@ -721,24 +781,30 @@ int OutputValueSampler(register WORD In[], register WORD Out[], register LPVOID 
 // Writes a LUT on memstream. Could be 8 or 16 bits based
 
 static
-void WriteCLUT(LPMEMSTREAM m, LPLUT Lut, int bps, char* PreMaj, 
-												  char* PostMaj,
-												  char* PreMin,
-												  char* PostMin)
+void WriteCLUT(LPMEMSTREAM m, LPLUT Lut, int bps, const char* PreMaj, 
+                                                  const char* PostMaj,
+                                                  const char* PreMin,
+                                                  const char* PostMin,
+                                                  int lIsInput,
+                                                  int FixWhite,
+                                                  icColorSpaceSignature ColorSpace)
 {
     unsigned int i;
     SAMPLERCARGO sc;
 
     sc.FirstComponent = -1;
-	sc.SecondComponent = -1;
+    sc.SecondComponent = -1;
     sc.Lut = Lut;
     sc.m   = m;
     sc.bps = bps;
     sc.PreMaj = PreMaj;
-	sc.PostMaj= PostMaj;
+    sc.PostMaj= PostMaj;
 
-	sc.PreMin = PreMin;
-	sc.PostMin= PostMin;
+    sc.PreMin = PreMin;
+    sc.PostMin= PostMin;
+    sc.lIsInput = lIsInput;
+    sc.FixWhite = FixWhite;
+    sc.ColorSpace = ColorSpace;
 
     Writef(m, "[");
 
@@ -752,11 +818,11 @@ void WriteCLUT(LPMEMSTREAM m, LPLUT Lut, int bps, char* PreMaj,
     cmsSample3DGrid(Lut, OutputValueSampler, (LPVOID) &sc, SAMPLER_INSPECT);
     
     
-	Writef(m, PostMin);
-	Writef(m, PostMaj);
-	Writef(m, "] ");
+    Writef(m, PostMin);
+    Writef(m, PostMaj);
+    Writef(m, "] ");
 
-	
+    
 
 }
 
@@ -764,26 +830,26 @@ void WriteCLUT(LPMEMSTREAM m, LPLUT Lut, int bps, char* PreMaj,
 // Dumps CIEBasedA Color Space Array
 
 static
-int EmitCIEBasedA(LPMEMSTREAM m, LPWORD Tab, int nEntries)
+int EmitCIEBasedA(LPMEMSTREAM m, LPWORD Tab, int nEntries, LPcmsCIEXYZ BlackPoint)
 {
             
         Writef(m, "[ /CIEBasedA\n");
         Writef(m, "  <<\n");
 
-        Writef(m, "/DecodeA [ ");
+        Writef(m, "/DecodeA ");
 
         Emit1Gamma(m,Tab, nEntries);
 
-        Writef(m, " ]\n");
+        Writef(m, " \n");
 
         Writef(m, "/MatrixA [ 0.9642 1.0000 0.8249 ]\n");
         Writef(m, "/RangeLMN [ 0.0 0.9642 0.0 1.0000 0.0 0.8249 ]\n");
         
-        EmitWhiteBlackD50(m);
+        EmitWhiteBlackD50(m, BlackPoint);
         EmitIntent(m, INTENT_PERCEPTUAL);
 
         Writef(m, ">>\n");        
-        Writef(m, "] /Current exch /ColorSpace defineresource pop\n");
+        Writef(m, "]\n");
         
         return 1;
 }
@@ -792,7 +858,7 @@ int EmitCIEBasedA(LPMEMSTREAM m, LPWORD Tab, int nEntries)
 // Dumps CIEBasedABC Color Space Array
 
 static
-int EmitCIEBasedABC(LPMEMSTREAM m, LPWORD L[], int nEntries, LPWMAT3 Matrix)
+int EmitCIEBasedABC(LPMEMSTREAM m, LPWORD L[], int nEntries, LPWMAT3 Matrix, LPcmsCIEXYZ BlackPoint)
 {
     int i;
 
@@ -818,38 +884,39 @@ int EmitCIEBasedABC(LPMEMSTREAM m, LPWORD L[], int nEntries, LPWMAT3 Matrix)
         Writef(m, "]\n");
 
         Writef(m, "/RangeLMN [ 0.0 0.9642 0.0 1.0000 0.0 0.8249 ]\n");
-		
-        EmitWhiteBlackD50(m);
+        
+        EmitWhiteBlackD50(m, BlackPoint);
         EmitIntent(m, INTENT_PERCEPTUAL);
 
-        Writef(m, ">>\n");       
-        Writef(m, "] /Current exch /ColorSpace defineresource pop\n");
+        Writef(m, ">>\n");
+        Writef(m, "]\n");
+        
 
         return 1;
 }
 
 
 static
-int EmitCIEBasedDEF(LPMEMSTREAM m, LPLUT Lut, int Intent)
+int EmitCIEBasedDEF(LPMEMSTREAM m, LPLUT Lut, int Intent, LPcmsCIEXYZ BlackPoint)
 {
-	char* PreMaj;
-	char* PostMaj;
-	char* PreMin, *PostMin;
+    const char* PreMaj;
+    const char* PostMaj;
+    const char* PreMin, *PostMin;
 
     switch (Lut ->InputChan) {
     case 3:
 
             Writef(m, "[ /CIEBasedDEF\n");
-			PreMaj ="<"; 
-			PostMaj= ">\n";
-			PreMin = PostMin = "";
+            PreMaj ="<"; 
+            PostMaj= ">\n";
+            PreMin = PostMin = "";
             break;
     case 4:
             Writef(m, "[ /CIEBasedDEFG\n");
-			PreMaj = "[";
-			PostMaj = "]\n";
-			PreMin = "<";
-			PostMin = ">\n";
+            PreMaj = "[";
+            PostMaj = "]\n";
+            PreMin = "<";
+            PostMin = ">\n";
             break;
     default:
             return 0;
@@ -870,16 +937,17 @@ int EmitCIEBasedDEF(LPMEMSTREAM m, LPLUT Lut, int Intent)
     if (Lut ->wFlags & LUT_HAS3DGRID) {
 
             Writef(m, "/Table ");    
-            WriteCLUT(m, Lut, 8, PreMaj, PostMaj, PreMin, PostMin);
+            WriteCLUT(m, Lut, 8, PreMaj, PostMaj, PreMin, PostMin, TRUE, FALSE, (icColorSpaceSignature) 0);
             Writef(m, "]\n");
     }
-	   
-	EmitLab2XYZ(m);
-    EmitWhiteBlackD50(m);
+       
+    EmitLab2XYZ(m);
+    EmitWhiteBlackD50(m, BlackPoint);
     EmitIntent(m, Intent);
 
     Writef(m, "   >>\n");       
-    Writef(m, "] /Current exch /ColorSpace defineresource pop\n");
+    Writef(m, "]\n");
+    
 
     return 1;
 }
@@ -899,6 +967,7 @@ int WriteInputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
     DWORD InputFormat;
     int rc;
     cmsHPROFILE Profiles[2];
+    cmsCIEXYZ BlackPointAdaptedToD50;
 
     // Does create a device-link based transform. 
     // The DeviceLink is next dumped as working CSA.
@@ -907,6 +976,8 @@ int WriteInputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
     ColorSpace  =  cmsGetColorSpace(hProfile);
     nChannels   = _cmsChannelsOf(ColorSpace);
     InputFormat = CHANNELS_SH(nChannels) | BYTES_SH(2);
+
+    cmsDetectBlackPoint(&BlackPointAdaptedToD50, hProfile, Intent,LCMS_BPFLAGS_D50_ADAPTED);
 
     // Is a devicelink profile?
     if (cmsGetDeviceClass(hProfile) == icSigLinkClass) {
@@ -956,7 +1027,7 @@ int WriteInputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
             // rc = EmitCIEBasedA(m, Gray2Y->GammaTable, Gray2Y ->nEntries, hProfile);
             // cmsFreeGamma(Gray2Y);
 
-			cmsSignalError(LCMS_ERRC_ABORTED, "Monochrome LUT-based currently unsupported for CSA generation");
+            cmsSignalError(LCMS_ERRC_ABORTED, "Monochrome LUT-based currently unsupported for CSA generation");
             }
             break;
 
@@ -966,10 +1037,10 @@ int WriteInputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
             _LPcmsTRANSFORM v = (_LPcmsTRANSFORM) xform;
 
             if (v ->DeviceLink) 
-                rc = EmitCIEBasedDEF(m, v->DeviceLink, Intent);
+                rc = EmitCIEBasedDEF(m, v->DeviceLink, Intent, &BlackPointAdaptedToD50);
             else {
                 DeviceLink = _cmsPrecalculateDeviceLink(xform, 0);
-                rc = EmitCIEBasedDEF(m, DeviceLink, Intent);
+                rc = EmitCIEBasedDEF(m, DeviceLink, Intent, &BlackPointAdaptedToD50);
                 cmsFreeLUT(DeviceLink);
             }
             }
@@ -997,9 +1068,13 @@ int WriteInputMatrixShaper(LPMEMSTREAM m, cmsHPROFILE hProfile)
     icColorSpaceSignature ColorSpace;
     LPMATSHAPER MatShaper;
     int rc;
+    cmsCIEXYZ BlackPointAdaptedToD50;
+
 
     ColorSpace = cmsGetColorSpace(hProfile);
-    MatShaper  = cmsBuildInputMatrixShaper(hProfile, NULL);
+    MatShaper  = cmsBuildInputMatrixShaper(hProfile);
+
+    cmsDetectBlackPoint(&BlackPointAdaptedToD50, hProfile, INTENT_RELATIVE_COLORIMETRIC, LCMS_BPFLAGS_D50_ADAPTED);
 
     if (MatShaper == NULL) {
 
@@ -1010,7 +1085,8 @@ int WriteInputMatrixShaper(LPMEMSTREAM m, cmsHPROFILE hProfile)
     if (ColorSpace == icSigGrayData) {
             
             rc = EmitCIEBasedA(m, MatShaper ->L[0], 
-                                  MatShaper ->p16.nSamples);
+                                  MatShaper ->p16.nSamples,
+                                  &BlackPointAdaptedToD50);
         
     }
     else
@@ -1019,7 +1095,8 @@ int WriteInputMatrixShaper(LPMEMSTREAM m, cmsHPROFILE hProfile)
         
             rc = EmitCIEBasedABC(m, MatShaper->L, 
                                         MatShaper ->p16.nSamples, 
-                                        &MatShaper ->Matrix);      
+                                        &MatShaper ->Matrix,
+                                        &BlackPointAdaptedToD50);      
         }
         else  {
 
@@ -1074,8 +1151,8 @@ int WriteNamedColorCSA(LPMEMSTREAM m, cmsHPROFILE hNamedColor, int Intent)
     }
 
 
-    
-    Writef(m, ">> /Current exch /HPSpotTable defineresource pop\n");
+        
+    Writef(m, ">>\n");
 
     cmsDeleteTransform(xform);
     cmsCloseProfile(hLab);
@@ -1094,11 +1171,10 @@ DWORD LCMSEXPORT cmsGetPostScriptCSA(cmsHPROFILE hProfile,
     DWORD dwBytesUsed;
     
     // Set up the serialization engine
-    mem = CreateMemStream(Buffer, dwBufferLen, MAXPSCOLS);
+    mem = CreateMemStream((LPBYTE) Buffer, dwBufferLen, MAXPSCOLS);
     if (!mem) return 0;
 
-	EmitHeader(mem, "Color Space Array (CSA)", hProfile);
-
+    
     // Is a named color profile?
     if (cmsGetDeviceClass(hProfile) == icSigNamedColorClass) {
 
@@ -1120,7 +1196,7 @@ DWORD LCMSEXPORT cmsGetPostScriptCSA(cmsHPROFILE hProfile,
 
             cmsSignalError(LCMS_ERRC_ABORTED, "Invalid output color space");
             free((void*) mem);
-                    return 0;
+            return 0;
     }
     
     // Is there any CLUT?
@@ -1145,9 +1221,7 @@ DWORD LCMSEXPORT cmsGetPostScriptCSA(cmsHPROFILE hProfile,
     }
     }
 
-	Writef(mem, "%%%%EndResource\n");
-	Writef(mem, "\n%% CSA End\n");
-
+    
     // Done, keep memory usage
     dwBytesUsed = mem ->dwUsed;
 
@@ -1161,16 +1235,128 @@ DWORD LCMSEXPORT cmsGetPostScriptCSA(cmsHPROFILE hProfile,
 // ------------------------------------------------------ Color Rendering Dictionary (CRD)
 
 
+
+/*
+
+  Black point compensation plus chromatic adaptation:
+
+  Step 1 - Chromatic adaptation
+  =============================
+
+          WPout
+    X = ------- PQR
+          Wpin
+
+  Step 2 - Black point compensation
+  =================================
+
+          (WPout - BPout)*X - WPout*(BPin - BPout)
+    out = --------------------------------------- 
+                        WPout - BPin
+
+
+  Algorithm discussion
+  ====================
+      
+  TransformPQR(WPin, BPin, WPout, BPout, PQR)
+
+  Wpin,etc= { Xws Yws Zws Pws Qws Rws }
+
+
+  Algorithm             Stack 0...n
+  ===========================================================
+                        PQR BPout WPout BPin WPin
+  4 index 3 get         WPin PQR BPout WPout BPin WPin  
+  div                   (PQR/WPin) BPout WPout BPin WPin   
+  2 index 3 get         WPout (PQR/WPin) BPout WPout BPin WPin   
+  mult                  WPout*(PQR/WPin) BPout WPout BPin WPin   
+  
+  2 index 3 get         WPout WPout*(PQR/WPin) BPout WPout BPin WPin   
+  2 index 3 get         BPout WPout WPout*(PQR/WPin) BPout WPout BPin WPin     
+  sub                   (WPout-BPout) WPout*(PQR/WPin) BPout WPout BPin WPin    
+  mult                  (WPout-BPout)* WPout*(PQR/WPin) BPout WPout BPin WPin   
+          
+  2 index 3 get         WPout (BPout-WPout)* WPout*(PQR/WPin) BPout WPout BPin WPin     
+  4 index 3 get         BPin WPout (BPout-WPout)* WPout*(PQR/WPin) BPout WPout BPin WPin     
+  3 index 3 get         BPout BPin WPout (BPout-WPout)* WPout*(PQR/WPin) BPout WPout BPin WPin
+  
+  sub                   (BPin-BPout) WPout (BPout-WPout)* WPout*(PQR/WPin) BPout WPout BPin WPin     
+  mult                  (BPin-BPout)*WPout (BPout-WPout)* WPout*(PQR/WPin) BPout WPout BPin WPin     
+  sub                   (BPout-WPout)* WPout*(PQR/WPin)-(BPin-BPout)*WPout BPout WPout BPin WPin     
+
+  3 index 3 get         BPin (BPout-WPout)* WPout*(PQR/WPin)-(BPin-BPout)*WPout BPout WPout BPin WPin     
+  3 index 3 get         WPout BPin (BPout-WPout)* WPout*(PQR/WPin)-(BPin-BPout)*WPout BPout WPout BPin WPin     
+  exch
+  sub                   (WPout-BPin) (BPout-WPout)* WPout*(PQR/WPin)-(BPin-BPout)*WPout BPout WPout BPin WPin       
+  div                
+  
+  exch pop 
+  exch pop
+  exch pop
+  exch pop
+
+*/
+
+
 static
-void EmitPQRStage(LPMEMSTREAM m)
+void EmitPQRStage(LPMEMSTREAM m, int DoBPC, int lIsAbsolute)
 {
-    Writef(m, "/MatrixPQR [0.40024 -0.2263 0.0 0.7076 1.16532 0.0 -0.08081 0.0457 0.91822 ]\n");
-    Writef(m, "/RangePQR [-0.125 1.375 -0.125 1.375 -0.125 1.375 ]\n");
-    Writef(m, "/TransformPQR [\n");
-    Writef(m, "{4 index 3 get div 2 index 3 get mul exch pop exch pop exch pop exch pop } bind\n");
-    Writef(m, "{4 index 4 get div 2 index 4 get mul exch pop exch pop exch pop exch pop } bind\n");
-    Writef(m, "{4 index 5 get div 2 index 5 get mul exch pop exch pop exch pop exch pop } bind\n");
-    Writef(m, "]\n");
+
+    
+        Writef(m,"%% Bradford Cone Space\n"
+                 "/MatrixPQR [0.8951 -0.7502 0.0389 0.2664 1.7135 -0.0685 -0.1614 0.0367 1.0296 ] \n");
+
+        Writef(m, "/RangePQR [ -0.5 2 -0.5 2 -0.5 2 ]\n");
+
+        
+        if (lIsAbsolute) {
+
+            // For absolute colorimetric intent, do nothing
+        
+            Writef(m, "%% Absolute colorimetric -- no transformation\n"
+                      "/TransformPQR [\n"
+                      "{exch pop exch pop exch pop exch pop} bind dup dup]\n"); 
+            return;
+        }
+        
+
+        // No BPC
+
+        if (!DoBPC) {
+
+            Writef(m, "%% VonKries-like transform in Bradford Cone Space\n"
+                      "/TransformPQR [\n"
+                      "{exch pop exch 3 get mul exch pop exch 3 get div} bind\n"
+                      "{exch pop exch 4 get mul exch pop exch 4 get div} bind\n"
+                      "{exch pop exch 5 get mul exch pop exch 5 get div} bind\n]\n"); 
+        } else {
+
+            // BPC
+
+            Writef(m, "%% VonKries-like transform in Bradford Cone Space plus BPC\n"
+                      "/TransformPQR [\n");
+                  
+            Writef(m, "{4 index 3 get div 2 index 3 get mul "
+                    "2 index 3 get 2 index 3 get sub mul "                          
+                    "2 index 3 get 4 index 3 get 3 index 3 get sub mul sub "
+                    "3 index 3 get 3 index 3 get exch sub div "
+                    "exch pop exch pop exch pop exch pop } bind\n");
+
+            Writef(m, "{4 index 4 get div 2 index 4 get mul "
+                    "2 index 4 get 2 index 4 get sub mul "
+                    "2 index 4 get 4 index 4 get 3 index 4 get sub mul sub "
+                    "3 index 4 get 3 index 4 get exch sub div "
+                    "exch pop exch pop exch pop exch pop } bind\n");
+
+            Writef(m, "{4 index 5 get div 2 index 5 get mul "
+                    "2 index 5 get 2 index 5 get sub mul "
+                    "2 index 5 get 4 index 5 get 3 index 5 get sub mul sub "
+                    "3 index 5 get 3 index 5 get exch sub div "
+                    "exch pop exch pop exch pop exch pop } bind\n]\n");
+
+        }
+          
+        
 }
 
 
@@ -1184,11 +1370,22 @@ void EmitXYZ2Lab(LPMEMSTREAM m)
     Writef(m, "]\n");
     Writef(m, "/MatrixABC [ 0 1 0 1 -1 1 0 0 -1 ]\n");
     Writef(m, "/EncodeABC [\n");
+    
+    
+    
     Writef(m, "{ 116 mul  16 sub 100 div  } bind\n");
     Writef(m, "{ 500 mul 128 add 255 div  } bind\n");
     Writef(m, "{ 200 mul 128 add 255 div  } bind\n");
+    
+    
+    /*
+    Writef(m, "{ 116 mul  16 sub 256 mul 25700 div  } bind\n");
+    Writef(m, "{ 500 mul 128 add 256 mul 65535 div  } bind\n");
+    Writef(m, "{ 200 mul 128 add 256 mul 65535 div  } bind\n");
+    */
+    
     Writef(m, "]\n");
-    // Writef(m, "/RangeABC [ 0 1 0 1 0 1]\n");
+    
 
 }
 
@@ -1199,7 +1396,7 @@ void EmitXYZ2Lab(LPMEMSTREAM m)
 // 8 bits.
 
 static
-int WriteOutputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
+int WriteOutputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent, DWORD dwFlags)
 {
     cmsHPROFILE hLab;
     cmsHTRANSFORM xform;
@@ -1209,34 +1406,40 @@ int WriteOutputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
     _LPcmsTRANSFORM v;
     LPLUT DeviceLink;
     cmsHPROFILE Profiles[3];
-	BOOL lFreeDeviceLink = FALSE;
-
+    cmsCIEXYZ BlackPointAdaptedToD50;
+    BOOL lFreeDeviceLink = FALSE;
+    BOOL lDoBPC = (dwFlags & cmsFLAGS_BLACKPOINTCOMPENSATION);
+        
     
-    hLab         = cmsCreateLabProfile(NULL);
+    // Trick our v4 profile as it were v2. This prevents the ajusting done
+    // in perceptual & saturation. We only neew v4 encoding!
+
+    hLab         = cmsCreateLab4Profile(NULL);
+    cmsSetProfileICCversion(hLab, 0);
+
     ColorSpace  =  cmsGetColorSpace(hProfile);
     nChannels   = _cmsChannelsOf(ColorSpace);
     OutputFormat = CHANNELS_SH(nChannels) | BYTES_SH(2);
-
     
     // Is a devicelink profile?
     if (cmsGetDeviceClass(hProfile) == icSigLinkClass) {
 
-        // if devicelink input already in Lab, use it directly
+        // if devicelink input already in Lab
 
         if (ColorSpace == icSigLabData) {
-            
-            xform = cmsCreateTransform(hProfile, TYPE_Lab_DBL, NULL, 
-                            OutputFormat, Intent, 0);
-        }
-        else {
 
-            // Nope, adjust input to Lab if possible
+              // adjust input to Lab to out v4
 
             Profiles[0] = hLab;
             Profiles[1] = hProfile;
 
             xform = cmsCreateMultiprofileTransform(Profiles, 2, TYPE_Lab_DBL, 
-                                    OutputFormat, Intent, 0);
+                                                        OutputFormat, Intent, cmsFLAGS_NOPRELINEARIZATION);
+            
+        }
+        else {
+          cmsSignalError(LCMS_ERRC_ABORTED, "Cannot use devicelink profile for CRD creation");
+          return 0;
         }
 
 
@@ -1244,14 +1447,13 @@ int WriteOutputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
     else {
 
         // This is a normal profile
-        xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, 
-                                  hProfile, OutputFormat, 
-                                  Intent, 0);
+        xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hProfile, 
+                            OutputFormat, Intent, cmsFLAGS_NOPRELINEARIZATION);
     }
 
     if (xform == NULL) {
                         
-            cmsSignalError(LCMS_ERRC_ABORTED, "Cannot create transform Lab -> Profile");
+            cmsSignalError(LCMS_ERRC_ABORTED, "Cannot create transform Lab -> Profile in CRD creation");
             return 0;
     }
 
@@ -1259,41 +1461,46 @@ int WriteOutputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
 
     v = (_LPcmsTRANSFORM) xform;
     DeviceLink = v ->DeviceLink;
-	
-	if (!DeviceLink) {
+    
+    if (!DeviceLink) {
 
-		DeviceLink = _cmsPrecalculateDeviceLink(xform, 0);
-		lFreeDeviceLink = TRUE;
-	}
+        DeviceLink = _cmsPrecalculateDeviceLink(xform, 0);
+        lFreeDeviceLink = TRUE;
+    }
 
     Writef(m, "<<\n");
     Writef(m, "/ColorRenderingType 1\n");
 
+
+    cmsDetectBlackPoint(&BlackPointAdaptedToD50, hProfile, Intent, LCMS_BPFLAGS_D50_ADAPTED);
+
     // Emit headers, etc.
-    EmitWhiteBlackD50(m);
-    EmitPQRStage(m);
+    EmitWhiteBlackD50(m, &BlackPointAdaptedToD50);
+    EmitPQRStage(m, lDoBPC, Intent == INTENT_ABSOLUTE_COLORIMETRIC);
     EmitXYZ2Lab(m);
         
     if (DeviceLink ->wFlags & LUT_HASTL1) {
 
         // Shouldn't happen
-        cmsSignalError(LCMS_ERRC_ABORTED, "Internal error (prelinearization on CRD)");
-
-        /*
-        Writef(m, "/EncodeABC [ ");
-        EmitNGamma(m, DeviceLink ->InputChan, DeviceLink ->L1, DeviceLink ->CLut16params.nSamples);
-        Writef(m, "]\n");
-        */
+        cmsSignalError(LCMS_ERRC_ABORTED, "Internal error (prelinearization on CRD)");       
     }
+    
+
+    // FIXUP: map Lab (100, 0, 0) to perfect white, because the particular encoding for Lab 
+    // does map a=b=0 not falling into any specific node. Since range a,b goes -128..127, 
+    // zero is slightly moved towards right, so assure next node (in L=100 slice) is mapped to
+    // zero. This would sacrifice a bit of highlights, but failure to do so would cause
+    // scum dot. Ouch.
     
     Writef(m, "/RenderTable ");
     
-    WriteCLUT(m, DeviceLink, 8, "<", ">\n", "", "");
-
+    WriteCLUT(m, DeviceLink, 8, "<", ">\n", "", "", FALSE, 
+                (Intent != INTENT_ABSOLUTE_COLORIMETRIC), ColorSpace);
+    
     Writef(m, " %d {} bind ", nChannels);
 
-	for (i=1; i < nChannels; i++)
-			Writef(m, "dup ");
+    for (i=1; i < nChannels; i++)
+            Writef(m, "dup ");
 
     Writef(m, "]\n");
 
@@ -1301,7 +1508,11 @@ int WriteOutputLUT(LPMEMSTREAM m, cmsHPROFILE hProfile, int Intent)
     EmitIntent(m, Intent);
 
     Writef(m, ">>\n");
-    Writef(m, "/Current exch /ColorRendering defineresource pop\n");
+
+    if (!(dwFlags & cmsFLAGS_NODEFAULTRESOURCEDEF)) {
+
+        Writef(m, "/Current exch /ColorRendering defineresource pop\n");
+    }
 
     if (lFreeDeviceLink) cmsFreeLUT(DeviceLink);
     cmsDeleteTransform(xform);
@@ -1334,7 +1545,7 @@ void BuildColorantList(char *Colorant, int nColorant, WORD Out[])
 // This is a HP extension.
 
 static
-int WriteNamedColorCRD(LPMEMSTREAM m, cmsHPROFILE hNamedColor, int Intent)
+int WriteNamedColorCRD(LPMEMSTREAM m, cmsHPROFILE hNamedColor, int Intent, DWORD dwFlags)
 {
     cmsHTRANSFORM xform;    
     int i, nColors, nColorant;
@@ -1373,8 +1584,12 @@ int WriteNamedColorCRD(LPMEMSTREAM m, cmsHPROFILE hNamedColor, int Intent)
         Writef(m, "  (%s) [ %s ]\n", ColorName, Colorant);
     }
 
-    
-    Writef(m, "   >> /Current exch /HPSpotTable defineresource pop\n");
+    Writef(m, "   >>");
+
+    if (!(dwFlags & cmsFLAGS_NODEFAULTRESOURCEDEF)) {
+
+    Writef(m, " /Current exch /HPSpotTable defineresource pop\n");
+    }
 
     cmsDeleteTransform(xform);  
     return 1;
@@ -1386,8 +1601,8 @@ int WriteNamedColorCRD(LPMEMSTREAM m, cmsHPROFILE hNamedColor, int Intent)
 // CRD are always LUT-Based, no matter if profile is
 // implemented as matrix-shaper.
 
-DWORD LCMSEXPORT cmsGetPostScriptCRD(cmsHPROFILE hProfile, 
-                              int Intent, 
+DWORD LCMSEXPORT cmsGetPostScriptCRDEx(cmsHPROFILE hProfile, 
+                              int Intent, DWORD dwFlags,
                               LPVOID Buffer, DWORD dwBufferLen)
 {
     
@@ -1395,16 +1610,20 @@ DWORD LCMSEXPORT cmsGetPostScriptCRD(cmsHPROFILE hProfile,
     DWORD dwBytesUsed;
 
     // Set up the serialization artifact
-    mem = CreateMemStream(Buffer, dwBufferLen, MAXPSCOLS);
+    mem = CreateMemStream((LPBYTE) Buffer, dwBufferLen, MAXPSCOLS);
     if (!mem) return 0;
 
     
-	EmitHeader(mem, "Color Rendering Dictionary (CRD)", hProfile);
+    if (!(dwFlags & cmsFLAGS_NODEFAULTRESOURCEDEF)) {
+
+    EmitHeader(mem, "Color Rendering Dictionary (CRD)", hProfile);
+    }
+
 
     // Is a named color profile?
     if (cmsGetDeviceClass(hProfile) == icSigNamedColorClass) {
 
-        if (!WriteNamedColorCRD(mem, hProfile, Intent)) {
+        if (!WriteNamedColorCRD(mem, hProfile, Intent, dwFlags)) {
 
                     free((void*) mem);
                     return 0;
@@ -1415,14 +1634,17 @@ DWORD LCMSEXPORT cmsGetPostScriptCRD(cmsHPROFILE hProfile,
     // CRD are always implemented as LUT. 
 
 
-    if (!WriteOutputLUT(mem, hProfile, Intent)) {
+    if (!WriteOutputLUT(mem, hProfile, Intent, dwFlags)) {
         free((void*) mem);
         return 0;
     }
     }
-     
-	Writef(mem, "%%%%EndResource\n");
-	Writef(mem, "\n%% CRD End\n");
+    
+    if (!(dwFlags & cmsFLAGS_NODEFAULTRESOURCEDEF)) {
+
+    Writef(mem, "%%%%EndResource\n");
+    Writef(mem, "\n%% CRD End\n");
+    }
 
     // Done, keep memory usage
     dwBytesUsed = mem ->dwUsed;
@@ -1434,3 +1656,12 @@ DWORD LCMSEXPORT cmsGetPostScriptCRD(cmsHPROFILE hProfile,
     return dwBytesUsed;
 }
 
+
+// For compatibility with previous versions
+
+DWORD LCMSEXPORT cmsGetPostScriptCRD(cmsHPROFILE hProfile, 
+                              int Intent, 
+                              LPVOID Buffer, DWORD dwBufferLen)
+{
+    return cmsGetPostScriptCRDEx(hProfile, Intent, 0, Buffer, dwBufferLen);
+}

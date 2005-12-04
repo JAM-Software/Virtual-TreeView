@@ -1,36 +1,56 @@
- New in ver 1.10
+
+ New in ver 1.15
  ===============
+  
+New features
+    
+  Black preservation on CMYK-> CMYK transforms
+  Ability to set adaptation state of observer on absolute colorimetric transforms. 
+  A rather advanced feature. Actually it only allows No adaptation (d=0) and observer fully adapted (d=1)
+  lcms can now "fix" some broken 8-bit profiles that have gray axes misplaced.
+  icctrans can now read CGATS/IT8 files.
+  improved tifficc with tiff Lab8 support
+  
 
-  [Added] named color profiles support. This turns lcms from a "wide subset" 
-          into a "full implementation" of ICC 3.4, with some ICC 4.0 support.
-  [Added] PostScript CSA, CRD generation
-  [Added] Ink-Limiting capabilities for CMYK
-  [Added] Devicelink profile generation.
-  [Added] Gray scale virtual profiles
-  [Added] Linearization virtual device link profiles
-  [Added] New ICCLINK and ICC2PS utilities
-  [Added] SWIG wrapper. This enables lcms from Python.
-  [Added] Floating-point formats are now accepted as well.
-  [Added] More ICC 4.0 compatibility. Some 4.0 profiles are now are fully 
-          undestood  (still experimental)
-  [Added] Profiles can now be saved to memory (thanks to Steven Greaves for
-          providing the code)
-  [Added] Char Target data are now handled. Some profiles does store 
-          the data profiler has used. This is all information needed 
-          to rebuild the profile from scratch.
-  [Added] New low-resolution flag cmsFLAGS_LOWRESPRECALC to save memory.
-  [Added] User-defined encodings are now supported.
-  [Added] cmsChangeBuffersFormat() to change the encoding of buffers on 
-          runtime allows reuse of existing transforms.
-  [Added] gamma estimation routines cmsEstimateGamma() and cmsEstimateGammaEx()
-  [Added] multilocalized unicode is now supported. Language and codepage
-          is selected via cmsSetLanguage() (ICC 4.0 only)
-  [Added] LUT handling has been enhanced with enumerators. (SAMPLER_INSPECT)
+ New functions
 
-   Improved TIFFICC, JPEGICC and ICCTRANS utilities.   
-   cmsOpenProfileFromMem() no longer creates temporary files. 
-   Transforms does accept now a maximum of 8 channels on input and
-   16 on output. (last version did accept 6 on input)
-   8 <-> 16 bits per sample are now always computed accurately.
-   Some minor bugs fixed.
+LCMSAPI double       LCMSEXPORT cmsSetAdaptationState(cmsHTRANSFORM hTransform, double d);
+
+LCMSAPI void          LCMSEXPORT cmsSetHeaderAttributes(cmsHPROFILE hProfile, DWORD Flags);
+LCMSAPI DWORD         LCMSEXPORT cmsTakeHeaderAttributes(cmsHPROFILE hProfile);
+
+LCMSAPI icInt32Number           LCMSEXPORT cmsGetTagCount(cmsHPROFILE hProfile);
+LCMSAPI icTagSignature          LCMSEXPORT cmsGetTagSignature(cmsHPROFILE hProfile, icInt32Number n);
+
+
+LCMSAPI BOOL            LCMSEXPORT cmsIT8SaveToMem(LCMSHANDLE hIT8, void *MemPtr, size_t* BytesNeeded);
+
+  BOOL  _cmsIsMatrixShaper(cmsHPROFILE hProfile);
+  BOOL  _cmsAddDateTimeTag(cmsHPROFILE hProfile, icTagSignature sig, struct tm *DateTime);
+  BOOL  _cmsAddColorantTableTag(cmsHPROFILE hProfile, icTagSignature sig, LPcmsNAMEDCOLORLIST nc);
+
+  double cmsEvalLUTreverse(LPLUT Lut, WORD Target[], WORD Result[], LPWORD Hint);
+
+LPcmsNAMEDCOLORLIST LCMSEXPORT cmsReadColorantTable(cmsHPROFILE hProfile, icTagSignature sig)
+
+
+LPcmsGAMUTEX cmsReadExtendedGamut(cmsHPROFILE hProfile, int index);
+void         cmsFreeExtendedGamut(LPcmsGAMUTEX gex);
+
+
+New tags supported
+
+       icSigColorantTableTag		    LPcmsNAMEDCOLORLIST
+       icSigColorantTableOutTag         LPcmsNAMEDCOLORLIST
+       icSigCalibrationDateTimeTag	    const struct tm*
+    
+		
+New flags:
+
+cmsFLAGS_PRESERVEBLACK
+cmsFLAGS_GRIDPOINTS(n)
+
+
+And of course some bug fixing.
+
 

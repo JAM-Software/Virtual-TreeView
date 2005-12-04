@@ -1,32 +1,25 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2000 Marti Maria
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 
 #include "lcms.h"
 
@@ -53,27 +46,40 @@ BOOL _cmsEndPointsBySpace(icColorSpaceSignature Space, WORD **White, WORD **Blac
 
        static WORD RGBblack[4]  = { 0, 0, 0 };
        static WORD RGBwhite[4]  = { 0xffff, 0xffff, 0xffff };
-       static WORD CMYKblack[4] = { 0, 0, 0, 0xffff };
+       static WORD CMYKblack[4] = { 0xffff, 0xffff, 0xffff, 0xffff };   // 400% of ink
        static WORD CMYKwhite[4] = { 0, 0, 0, 0 };
-       static WORD LABblack[4]  = { 0, 0, 0 };
+       static WORD LABblack[4]  = { 0, 0x8000, 0x8000 };
        static WORD LABwhite[4]  = { 0xFF00, 0x8000, 0x8000 };
-
+       static WORD CMYblack[4]  = { 0xffff, 0xffff, 0xffff };
+       static WORD CMYwhite[4]  = { 0, 0, 0 };
+       static WORD Grayblack[4] = { 0 };
+       static WORD GrayWhite[4] = { 0xffff };
 
        switch (Space) {
 
-       case icSigRgbData:  *White = RGBwhite;
-                           *Black = RGBblack;
-                           *nOutputs = 3;
+       case icSigGrayData: if (White)    *White = GrayWhite;
+                           if (Black)    *Black = Grayblack;
+                           if (nOutputs) *nOutputs = 1;
+                           return TRUE;
+                        
+       case icSigRgbData:  if (White)    *White = RGBwhite;
+                           if (Black)    *Black = RGBblack;
+                           if (nOutputs) *nOutputs = 3;
                            return TRUE;
 
-       case icSigLabData:  *White = LABwhite;
-                           *Black = LABblack;
-                           *nOutputs = 3;
+       case icSigLabData:  if (White)    *White = LABwhite;
+                           if (Black)    *Black = LABblack;
+                           if (nOutputs) *nOutputs = 3;
                            return TRUE;
 
-       case icSigCmykData: *White = CMYKwhite;
-                           *Black = CMYKblack;
-                           *nOutputs = 4;
+       case icSigCmykData: if (White)    *White = CMYKwhite;
+                           if (Black)    *Black = CMYKblack;
+                           if (nOutputs) *nOutputs = 4;
+                           return TRUE;
+
+       case icSigCmyData:  if (White)    *White = CMYwhite;
+                           if (Black)    *Black = CMYblack;
+                           if (nOutputs) *nOutputs = 3;
                            return TRUE;
 
        default:;
@@ -97,19 +103,6 @@ WORD *_cmsWhiteBySpace(icColorSpaceSignature Space)
 }
 
 
-WORD Clamp_XYZ(int in)
-{
-       if (in < 0) return 0;
-       if (in > 0xFFFF) return 0xFFFFU;   // Including marker
-       return (WORD) in;
-}
-
-WORD Clamp_RGB(int in)
-{
-       if (in < 0) return 0;
-       if (in > 0xFFFF) return 0xFFFFU;   // Including marker
-       return (WORD) in;
-}
 
 
 WORD Clamp_L(Fixed32 in)
@@ -315,7 +308,7 @@ double atan2deg(double b, double a)
 {
    double h;
 
-   if (a == 0)
+   if (a == 0 && b == 0)
             h   = 0;
     else
             h = atan2(a, b);
@@ -483,7 +476,7 @@ void LCMSEXPORT cmsClampLab(LPcmsCIELab Lab, double amax, double amin,
                         Lab -> a = bmin / slope;
                  }
                  else
-                        cmsSignalError(-1, "Invalid angle");
+                        cmsSignalError(LCMS_ERRC_ABORTED, "Invalid angle");
 
         }
 }
@@ -513,10 +506,73 @@ icColorSpaceSignature LCMSEXPORT _cmsICCcolorSpace(int OurNotation)
        case PT_HLS:  return  icSigHlsData;
        case PT_Yxy:  return  icSigYxyData;
        case PT_HiFi: return  icSigHexachromeData;
+       case PT_HiFi7: return icSigHeptachromeData;
+       case PT_HiFi8: return icSigOctachromeData;
+
+       case PT_HiFi9:  return icSigMCH9Data;
+       case PT_HiFi10: return icSigMCHAData;
+       case PT_HiFi11: return icSigMCHBData;
+       case PT_HiFi12: return icSigMCHCData;
+       case PT_HiFi13: return icSigMCHDData;
+       case PT_HiFi14: return icSigMCHEData;
+       case PT_HiFi15: return icSigMCHFData;
 
        default:  return icMaxEnumData;
        }
 }
+
+
+int LCMSEXPORT _cmsLCMScolorSpace(icColorSpaceSignature ProfileSpace)
+{    
+    switch (ProfileSpace) {
+        
+    case icSigGrayData: return  PT_GRAY;
+    case icSigRgbData:  return  PT_RGB;
+    case icSigCmyData:  return  PT_CMY;
+    case icSigCmykData: return  PT_CMYK;
+    case icSigYCbCrData:return  PT_YCbCr;
+    case icSigLuvData:  return  PT_YUV;
+    case icSigXYZData:  return  PT_XYZ;
+    case icSigLabData:  return  PT_Lab;
+    case icSigLuvKData: return  PT_YUVK;
+    case icSigHsvData:  return  PT_HSV;
+    case icSigHlsData:  return  PT_HLS;
+    case icSigYxyData:  return  PT_Yxy;
+        
+    case icSig6colorData:
+    case icSigHexachromeData: return PT_HiFi;
+        
+    case icSigHeptachromeData:
+    case icSig7colorData:     return PT_HiFi7;
+        
+    case icSigOctachromeData:
+    case icSig8colorData:     return PT_HiFi8;
+        
+    case icSigMCH9Data:
+    case icSig9colorData:     return PT_HiFi9;
+        
+    case icSigMCHAData:
+    case icSig10colorData:     return PT_HiFi10;
+        
+    case icSigMCHBData:
+    case icSig11colorData:     return PT_HiFi11;
+        
+    case icSigMCHCData:
+    case icSig12colorData:     return PT_HiFi12;
+        
+    case icSigMCHDData:
+    case icSig13colorData:     return PT_HiFi13;
+        
+    case icSigMCHEData:
+    case icSig14colorData:     return PT_HiFi14;
+        
+    case icSigMCHFData:
+    case icSig15colorData:     return PT_HiFi15;
+                
+    default:  return icMaxEnumData;
+    }
+}
+
 
 int LCMSEXPORT _cmsChannelsOf(icColorSpaceSignature ColorSpace)
 {
@@ -537,27 +593,42 @@ int LCMSEXPORT _cmsChannelsOf(icColorSpaceSignature ColorSpace)
     case icSigHlsData:
     case icSigCmyData: 
     case icSig3colorData:  return 3;
-
-        
-            
+                   
     case icSigLuvKData:
     case icSigCmykData:
     case icSig4colorData:  return 4;
 
-
+    case icSigMCH5Data:
     case icSig5colorData:  return 5;  
 
     case icSigHexachromeData:   
     case icSig6colorData:  return 6;
         
+    case icSigHeptachromeData:
     case icSig7colorData:  return  7;
+
+    case icSigOctachromeData:
     case icSig8colorData:  return  8;
+
+    case icSigMCH9Data:
     case icSig9colorData:  return  9;
+
+    case icSigMCHAData:
     case icSig10colorData: return 10;
+
+    case icSigMCHBData:
     case icSig11colorData: return 11;
+    
+    case icSigMCHCData:
     case icSig12colorData: return 12;
+
+    case icSigMCHDData:
     case icSig13colorData: return 13;
+
+    case icSigMCHEData:
     case icSig14colorData: return 14;
+
+    case icSigMCHFData:
     case icSig15colorData: return 15;
 
     default: return 3;
@@ -566,12 +637,44 @@ int LCMSEXPORT _cmsChannelsOf(icColorSpaceSignature ColorSpace)
 }
 
 
+// v2 L=100 is supposed to be placed on 0xFF00. There is no reasonable 
+// number of gridpoints that would make exact match. However, a 
+// prelinearization of 258 entries, would map 0xFF00 on entry 257. 
+// This is almost what we need, unfortunately, the rest of entries 
+// should be scaled by (255*257/256) and this is not exact.
+// 
+// An intermediate solution would be to use 257 entries. This does not
+// map 0xFF00 exactly on a node, but so close that the dE induced is
+// negligible. AND the rest of curve is exact.
+
+static
+void CreateLabPrelinearization(LPGAMMATABLE LabTable[])
+{
+    int i;
+
+    LabTable[0] = cmsAllocGamma(257);
+    LabTable[1] = cmsBuildGamma(257, 1.0);
+    LabTable[2] = cmsBuildGamma(257, 1.0);
+
+    // L* uses 257 entries. Entry 256 holds 0xFFFF, so, the effective range
+    // is 0..0xFF00. Last entry (257) is also collapsed to 0xFFFF
+
+    // From 0 to 0xFF00
+    for (i=0; i < 256; i++) 
+        LabTable[0]->GammaTable[i] = RGB_8_TO_16(i);
+
+    // Repeat last for 0xFFFF
+    LabTable[0] ->GammaTable[256] = 0xFFFF;        
+}
+
 
 // Used by gamut & softproofing
 
 typedef struct {
 
-    cmsHTRANSFORM hForward, hReverse;
+    cmsHTRANSFORM hInput;               // From whatever input color space. NULL for Lab
+    cmsHTRANSFORM hForward, hReverse;   // Transforms going from Lab to colorant and back
+    double Thereshold;                  // The thereshold after which is considered out of gamut
     
     } GAMUTCHAIN,FAR* LPGAMUTCHAIN;
 
@@ -580,91 +683,96 @@ typedef struct {
 // of maximum are considered out of gamut.
 
 
-#define ERR_THERESHOLD	12
+#define ERR_THERESHOLD      5 
+
+
 static
 int GamutSampler(register WORD In[], register WORD Out[], register LPVOID Cargo)
 {
-	LPGAMUTCHAIN t = (LPGAMUTCHAIN) Cargo;
-	WORD Proof[MAXCHANNELS], Check[MAXCHANNELS];
-	WORD Proof2[MAXCHANNELS], Check2[MAXCHANNELS];
-	cmsCIELab LabIn1, LabOut1;  
-	cmsCIELab LabIn2, LabOut2;  
-	double dE1, dE2, ErrorRatio;
-	
-	// Assume in-gamut by default.
-	dE1 = 0.;
-	dE2 = 0;
-	ErrorRatio = 1.0;
-	
-	// converts from PCS to colorant. This always
-	// does return in-gamut values, 
-	cmsDoTransform(t -> hForward, In, Proof, 1);
-	
-	// Now, do the inverse, from colorant to PCS.
-	cmsDoTransform(t -> hReverse, Proof, Check, 1);
-	
-	
-	// Try again, but this time taking Check as input
-	cmsDoTransform(t -> hForward, Check, Proof2,  1);
-	cmsDoTransform(t -> hReverse, Proof2, Check2, 1);
-	
-	
-	
-	// Does the transform returns out-of-gamut?
-	if (Check[0] == 0xFFFF && 
-		Check[1] == 0xFFFF && 
-		Check[2] == 0xFFFF) 
-		
-		Out[0] = 0xF000;    // Out of gamut!
-	else {
-		
-		// Transport encoded values
-		cmsLabEncoded2Float(&LabIn1, In);
-		cmsLabEncoded2Float(&LabOut1, Check);
-        
-		// Take difference of direct value
-		dE1 = cmsDeltaE(&LabIn1, &LabOut1);        
-		
-		
-		cmsLabEncoded2Float(&LabIn2, Check);
-		cmsLabEncoded2Float(&LabOut2, Check2);
-        
-		// Take difference of converted value
-		dE2 = cmsDeltaE(&LabIn2, &LabOut2);        			
-		       
-		
-		// if dE1 is small and dE2 is small, value is likely to be in gamut
-		if (dE1 < ERR_THERESHOLD && dE2 < ERR_THERESHOLD) 
-			Out[0] = 0;
-		else
-			// if dE1 is small and dE2 is big, undefined. Assume in gamut
-			if (dE1 < ERR_THERESHOLD && dE2 > ERR_THERESHOLD)
-				Out[0] = 0;
-			else
-				// dE1 is big and dE2 is small, clearly out of gamut
-				if (dE1 > ERR_THERESHOLD && dE2 < ERR_THERESHOLD)
-					Out[0] = (WORD) floor((dE1 - ERR_THERESHOLD) + .5);
-				else  {
-					
-					// dE1 is big and dE2 is also big, could be due to perceptual mapping
-					// so take error ratio
-					if (dE2 == 0.0)
-						ErrorRatio = dE1;
-					else
-						ErrorRatio = dE1 / dE2;
-					
-					if (ErrorRatio > ERR_THERESHOLD) 
-						Out[0] = (WORD)  floor((ErrorRatio - ERR_THERESHOLD) + .5);
-					else
-						Out[0] = 0;
-				}
-			
-	}    
+    LPGAMUTCHAIN t = (LPGAMUTCHAIN) Cargo;
+    WORD Proof[MAXCHANNELS], Check[MAXCHANNELS];
+    WORD Proof2[MAXCHANNELS], Check2[MAXCHANNELS];
+    cmsCIELab LabIn1, LabOut1;  
+    cmsCIELab LabIn2, LabOut2;  
+    double dE1, dE2, ErrorRatio;
     
-	return TRUE;
+    // Assume in-gamut by default.
+    dE1 = 0.;
+    dE2 = 0;
+    ErrorRatio = 1.0;
+    
+
+    // Any input space? I can use In[] no matter channels 
+    // because is just one pixel
+
+    if (t -> hInput != NULL) cmsDoTransform(t -> hInput, In, In, 1);
+
+    // converts from PCS to colorant. This always
+    // does return in-gamut values, 
+    cmsDoTransform(t -> hForward, In, Proof, 1);
+    
+    // Now, do the inverse, from colorant to PCS.
+    cmsDoTransform(t -> hReverse, Proof, Check, 1);
+    
+    
+    // Try again, but this time taking Check as input
+    cmsDoTransform(t -> hForward, Check, Proof2,  1);
+    cmsDoTransform(t -> hReverse, Proof2, Check2, 1);
+    
+    
+    
+    // Does the transform returns out-of-gamut?
+    if (Check[0] == 0xFFFF && 
+        Check[1] == 0xFFFF && 
+        Check[2] == 0xFFFF) 
+        
+        Out[0] = 0xFF00;            // Out of gamut!
+    else {
+        
+        // Transport encoded values
+        cmsLabEncoded2Float(&LabIn1,  In);
+        cmsLabEncoded2Float(&LabOut1, Check);
+        
+        // Take difference of direct value
+        dE1 = cmsDeltaE(&LabIn1, &LabOut1);        
+                
+        cmsLabEncoded2Float(&LabIn2,  Check);
+        cmsLabEncoded2Float(&LabOut2, Check2);
+        
+        // Take difference of converted value
+        dE2 = cmsDeltaE(&LabIn2, &LabOut2);                 
+               
+        
+        // if dE1 is small and dE2 is small, value is likely to be in gamut
+        if (dE1 < t->Thereshold && dE2 < t->Thereshold) 
+            Out[0] = 0;
+        else
+            // if dE1 is small and dE2 is big, undefined. Assume in gamut
+            if (dE1 < t->Thereshold && dE2 > t->Thereshold)
+                Out[0] = 0;
+            else
+                // dE1 is big and dE2 is small, clearly out of gamut
+                if (dE1 > t->Thereshold && dE2 < t->Thereshold)
+                    Out[0] = (WORD) _cmsQuickFloor((dE1 - t->Thereshold) + .5);
+                else  {
+                    
+                    // dE1 is big and dE2 is also big, could be due to perceptual mapping
+                    // so take error ratio
+                    if (dE2 == 0.0)
+                        ErrorRatio = dE1;
+                    else
+                        ErrorRatio = dE1 / dE2;
+                    
+                    if (ErrorRatio > t->Thereshold) 
+                        Out[0] = (WORD)  _cmsQuickFloor((ErrorRatio - t->Thereshold) + .5);
+                    else
+                        Out[0] = 0;
+                }
+            
+    }    
+    
+    return TRUE;
 }
-
-
 
 
 // Does compute a gamut LUT going back and forth across 
@@ -679,71 +787,134 @@ int GamutSampler(register WORD In[], register WORD Out[], register LPVOID Cargo)
 // of course, many perceptual and saturation intents does
 // not work in such way, but relativ. ones should.
 
-
-LPLUT _cmsComputeGamutLUT(cmsHPROFILE hProfile, int Intent)
+static
+LPLUT ComputeGamutWithInput(cmsHPROFILE hInput, cmsHPROFILE hProfile, int Intent)
 {
-
     cmsHPROFILE hLab;
     LPLUT Gamut;
     DWORD dwFormat;
     GAMUTCHAIN Chain;
-    int nErrState;
-        
-
+    int nErrState, nChannels, nGridpoints;
+    LPGAMMATABLE Trans[3];
+    icColorSpaceSignature ColorSpace;
+            
+    
     ZeroMemory(&Chain, sizeof(GAMUTCHAIN)); 
-
+       
     hLab = cmsCreateLabProfile(NULL);
-
-    // ONLY 4 channels  
-    dwFormat = (CHANNELS_SH(4)|BYTES_SH(2));
     
     // Safeguard against early abortion
     nErrState = cmsErrorAction(LCMS_ERROR_IGNORE);
 
-    // Does create the first step
+    // The figure of merit. On matrix-shaper profiles, should be almost zero as
+    // the conversion is pretty exact. On LUT based profiles, different resolutions
+    // of input and output CLUT may result in differences. 
+
+    if (!cmsIsIntentSupported(hProfile, Intent, LCMS_USED_AS_INPUT) &&
+        !cmsIsIntentSupported(hProfile, Intent, LCMS_USED_AS_OUTPUT))
+
+        Chain.Thereshold = 1.0;
+    else
+        Chain.Thereshold = ERR_THERESHOLD;
+   
+    ColorSpace  = cmsGetColorSpace(hProfile);  
+
+    // If input profile specified, create a transform from such profile to Lab
+    if (hInput != NULL) {
+          
+        nChannels   = _cmsChannelsOf(ColorSpace);     
+        nGridpoints = _cmsReasonableGridpointsByColorspace(ColorSpace, cmsFLAGS_HIGHRESPRECALC);
+        dwFormat    = (CHANNELS_SH(nChannels)|BYTES_SH(2));
+
+        Chain.hInput = cmsCreateTransform(hInput, dwFormat, 
+                                          hLab,   TYPE_Lab_16, 
+                                          Intent, 
+                                          cmsFLAGS_NOTPRECALC);
+    }
+    else  {
+        // Input transform=NULL (Lab) Used to compute the gamut tag
+        // This table will take 53 points to give some accurancy, 
+        // 53 * 53 * 53 * 2 = 291K
+
+        nChannels    = 3;      // For Lab
+        nGridpoints  = 53;
+        Chain.hInput = NULL;
+        dwFormat = (CHANNELS_SH(_cmsChannelsOf(ColorSpace))|BYTES_SH(2)); 
+    }
+
+   
+    // Does create the forward step
     Chain.hForward = cmsCreateTransform(hLab, TYPE_Lab_16, 
                                         hProfile, dwFormat, 
-                                        Intent, 
+                                        INTENT_RELATIVE_COLORIMETRIC,
                                         cmsFLAGS_NOTPRECALC);
 
-    // Does create the last step
+    // Does create the backwards step
     Chain.hReverse = cmsCreateTransform(hProfile, dwFormat, 
                                         hLab, TYPE_Lab_16,                                      
-                                        Intent, 
+                                        INTENT_RELATIVE_COLORIMETRIC,
                                         cmsFLAGS_NOTPRECALC);
 
     // Restores error handler previous state
     cmsErrorAction(nErrState);
 
+   
     // All ok?
     if (Chain.hForward && Chain.hReverse) {
-            
+           
     // Go on, try to compute gamut LUT from PCS.
     // This consist on a single channel containing 
     // dE when doing a transform back and forth on
-    // the colorimetric intent. This table will
-    // take 42 points to give some accurancy, 
-    // 42 * 42 * 42 * 2 = 203K
+    // the colorimetric intent. 
 
     Gamut = cmsAllocLUT();
-    Gamut = cmsAlloc3DGrid(Gamut, 42, 3, 1);
-    
-    cmsSample3DGrid(Gamut, GamutSampler, (LPVOID) &Chain, 0);
-    
+    Gamut = cmsAlloc3DGrid(Gamut, nGridpoints, nChannels, 1);
+     
+    // If no input, then this is a gamut tag operated by Lab,
+    // so include pertinent prelinearization
+    if (hInput == NULL) {
+       
+        CreateLabPrelinearization(Trans);               
+        cmsAllocLinearTable(Gamut, Trans, 1);              
+        cmsFreeGammaTriple(Trans);
+    }
+
+   
+    cmsSample3DGrid(Gamut, GamutSampler, (LPVOID) &Chain, Gamut ->wFlags);          
     }
     else 
         Gamut = NULL;   // Didn't work...
 
     // Free all needed stuff.
+    if (Chain.hInput)   cmsDeleteTransform(Chain.hInput);
     if (Chain.hForward) cmsDeleteTransform(Chain.hForward);
     if (Chain.hReverse) cmsDeleteTransform(Chain.hReverse);
 
     cmsCloseProfile(hLab);
-
-
+    
     // And return computed hull
     return Gamut;
 }
+
+
+// Wrapper
+
+LPLUT _cmsComputeGamutLUT(cmsHPROFILE hProfile, int Intent)
+{    
+    return ComputeGamutWithInput(NULL, hProfile, Intent);
+}
+
+
+// This routine does compute the gamut check CLUT. This CLUT goes from whatever 
+// input space to the 0 or != 0 gamut check.
+
+LPLUT _cmsPrecalculateGamutCheck(cmsHTRANSFORM h)
+{
+       _LPcmsTRANSFORM p = (_LPcmsTRANSFORM) h;
+       
+       return ComputeGamutWithInput(p->InputProfile, p ->PreviewProfile, p->Intent);
+}
+
 
 // SoftProofing. Convert from Lab to device, then back to Lab, 
 // any gamut remapping is applied
@@ -772,7 +943,13 @@ LPLUT _cmsComputeSoftProofLUT(cmsHPROFILE hProfile, int nIntent)
     DWORD dwFormat;
     GAMUTCHAIN Chain;
     int nErrState;
+    LPGAMMATABLE Trans[3];
         
+
+    // LUTs are never abs. colorimetric, is the transform who
+    // is responsible of generating white point displacement
+    if (nIntent == INTENT_ABSOLUTE_COLORIMETRIC)
+        nIntent = INTENT_RELATIVE_COLORIMETRIC;
 
     ZeroMemory(&Chain, sizeof(GAMUTCHAIN));
 
@@ -793,7 +970,7 @@ LPLUT _cmsComputeSoftProofLUT(cmsHPROFILE hProfile, int nIntent)
     // Does create the last step
     Chain.hReverse = cmsCreateTransform(hProfile, dwFormat, 
                                         hLab, TYPE_Lab_16,                                      
-                                        nIntent, 
+                                        INTENT_RELATIVE_COLORIMETRIC, 
                                         cmsFLAGS_NOTPRECALC);
 
     // Restores error handler previous state
@@ -806,7 +983,11 @@ LPLUT _cmsComputeSoftProofLUT(cmsHPROFILE hProfile, int nIntent)
     SoftProof = cmsAllocLUT();
     SoftProof = cmsAlloc3DGrid(SoftProof, 33, 3, 3);
 
-    cmsSample3DGrid(SoftProof, SoftProofSampler, (LPVOID) &Chain, 0);
+    CreateLabPrelinearization(Trans);
+    cmsAllocLinearTable(SoftProof, Trans, 1);
+    cmsFreeGammaTriple(Trans);
+
+    cmsSample3DGrid(SoftProof, SoftProofSampler, (LPVOID) &Chain, SoftProof->wFlags);
     }
     else 
         SoftProof = NULL;   // Didn't work...
@@ -860,7 +1041,7 @@ int MostlyLinear(WORD Table[], int nEntries)
        return 1;
 }
 
-/*
+
 static
 void SlopeLimiting(WORD Table[], int nEntries)
 {
@@ -875,21 +1056,78 @@ void SlopeLimiting(WORD Table[], int nEntries)
         Table[i] = (WORD) floor(i * Slope + 0.5);
 
 }
-*/
+
+
+// Check for monotonicity.
+
+static
+BOOL IsMonotonic(LPGAMMATABLE t)
+{
+    int n = t -> nEntries;
+    int i, last;
+
+    last = t ->GammaTable[n-1];
+
+    for (i = n-2; i >= 0; --i) {
+        
+        if (t ->GammaTable[i] > last)
+
+               return FALSE;
+        else
+                last = t ->GammaTable[i];
+
+    }
+
+    return TRUE;
+}
+
+// Check for endpoints
+
+static
+BOOL HasProperEndpoints(LPGAMMATABLE t)
+{
+    if (t ->GammaTable[0] != 0) return FALSE;
+    if (t ->GammaTable[t ->nEntries-1] != 0xFFFF) return FALSE;
+
+    return TRUE;
+}
+
+
+
+#define PRELINEARIZATION_POINTS 4096
 
 // Fixes the gamma balancing of transform. Thanks to Mike Chaney
 // for pointing this subtle bug.
 
-#define PRELINEARIZATION_POINTS 256
-
 void _cmsComputePrelinearizationTablesFromXFORM(cmsHTRANSFORM h[], int nTransforms, LPLUT Grid)
 {
     LPGAMMATABLE Trans[MAXCHANNELS];
-    unsigned int t, i, v;
+    unsigned int t, i, v;  
     int j;
     WORD In[MAXCHANNELS], Out[MAXCHANNELS];
     BOOL lIsSuitable;
+    _LPcmsTRANSFORM InputXForm   = (_LPcmsTRANSFORM) h[0];   
+    _LPcmsTRANSFORM OutputXForm  = (_LPcmsTRANSFORM) h[nTransforms-1];   
+
     
+    // First space is *Lab, use our specialized curves for v2 Lab
+    
+    if (InputXForm ->EntryColorSpace == icSigLabData && 
+        OutputXForm->ExitColorSpace != icSigLabData) {
+    
+                CreateLabPrelinearization(Trans);
+                cmsAllocLinearTable(Grid, Trans, 1);
+                cmsFreeGammaTriple(Trans);
+                return;
+    }
+              
+
+    // Do nothing on all but RGB to RGB transforms
+
+    if ((InputXForm ->EntryColorSpace != icSigRgbData) || 
+        (OutputXForm->ExitColorSpace  != icSigRgbData)) return;
+    
+
     for (t = 0; t < Grid -> InputChan; t++) 
             Trans[t] = cmsAllocGamma(PRELINEARIZATION_POINTS);
 
@@ -914,18 +1152,36 @@ void _cmsComputePrelinearizationTablesFromXFORM(cmsHTRANSFORM h[], int nTransfor
     lIsSuitable = TRUE;
     for (t=0; (lIsSuitable && (t < Grid->InputChan)); t++) {
 
-    //  SlopeLimiting(Trans[t]->GammaTable, PRELINEARIZATION_POINTS );
-
+    
         // Exclude if already linear
         if (MostlyLinear(Trans[t]->GammaTable, PRELINEARIZATION_POINTS))
                     lIsSuitable = FALSE;
+
+        // Exclude if non-monotonic
+        if (!IsMonotonic(Trans[t]))
+                    lIsSuitable = FALSE;        
+        
+        // Exclude if weird endpoints
+        if (!HasProperEndpoints(Trans[t]))
+                    lIsSuitable = FALSE;
+
+        // Exclude if transfer function is not smooth enough
+        // to be modelled as a gamma function, or the gamma is reversed
+
+        if (cmsEstimateGamma(Trans[t]) < 1.0)
+                    lIsSuitable = FALSE;
+              
     }
 
     if (lIsSuitable) {
 
-        cmsAllocLinearTable(Grid, Trans, 1);
-    }
     
+            for (t = 0; t < Grid ->InputChan; t++) 
+                SlopeLimiting(Trans[t]->GammaTable, Trans[t]->nEntries);
+    }
+
+       
+
 
 #ifdef DEBUG    
     if (lIsSuitable) {
@@ -934,9 +1190,91 @@ void _cmsComputePrelinearizationTablesFromXFORM(cmsHTRANSFORM h[], int nTransfor
             ASAVE(Trans[2], "\\gammab.txt");
     }
 #endif
+       
+      
+    if (lIsSuitable) cmsAllocLinearTable(Grid, Trans, 1);
+
 
     for (t = 0; t < Grid ->InputChan; t++) 
                         cmsFreeGamma(Trans[t]);
 
+    
 }
 
+
+// Compute K -> L* relationship
+static
+LPGAMMATABLE ComputeKToLstar(cmsHPROFILE hProfile, int nPoints, int Intent)
+{
+    LPGAMMATABLE out;   
+    int i;
+    WORD cmyk[4], wLab[3];
+    cmsHPROFILE   hLab  = cmsCreateLabProfile(NULL);
+    cmsHTRANSFORM xform = cmsCreateTransform(hProfile, TYPE_CMYK_16,
+                                             hLab, TYPE_Lab_16, 
+                                             Intent, cmsFLAGS_NOTPRECALC);
+
+
+    out = cmsAllocGamma(nPoints);
+    for (i=0; i < nPoints; i++) {
+
+        cmyk[0] = 0;
+        cmyk[1] = 0;
+        cmyk[2] = 0;
+        cmyk[3] = _cmsQuantizeVal(i, nPoints);
+
+        cmsDoTransform(xform, cmyk, wLab, 1);
+        out->GammaTable[i] = (WORD) (0xFFFF - wLab[0]);
+    }
+
+    cmsDeleteTransform(xform);
+    cmsCloseProfile(hLab);
+
+    return out;
+}
+
+
+
+// Compute Black tone curve on a CMYK -> CMYK transform. This is done by
+// using the proof direction on both profiles to find K->L* relationship
+// then joining both curves
+
+LPGAMMATABLE _cmsBuildKToneCurve(cmsHTRANSFORM hCMYK2CMYK, int nPoints)
+{
+    LPGAMMATABLE in, out;   
+    LPGAMMATABLE KTone; 
+    _LPcmsTRANSFORM p = (_LPcmsTRANSFORM) hCMYK2CMYK;
+
+
+    // Make sure CMYK -> CMYK
+    if (p -> EntryColorSpace != icSigCmykData ||
+        p -> ExitColorSpace  != icSigCmykData) return NULL;
+
+    // Create individual curves
+    in  = ComputeKToLstar(p ->InputProfile,  nPoints, p->Intent);
+    out = ComputeKToLstar(p ->OutputProfile, nPoints, p->Intent);
+
+    // Build the relationship
+    KTone = cmsJoinGamma(in, out);
+            
+#ifdef DEBUG
+    ASAVE(in,    "\\in.txt");
+    ASAVE(out,   "\\out.txt");
+    ASAVE(KTone, "\\KTone.txt");
+#endif  
+
+    cmsFreeGamma(in); cmsFreeGamma(out);
+
+    // Make sure it is monotonic
+    
+    if (!IsMonotonic(KTone)) {
+
+        cmsFreeGamma(KTone);
+        return NULL;
+    }
+    
+
+
+
+    return KTone;
+}

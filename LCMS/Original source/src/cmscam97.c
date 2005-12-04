@@ -1,32 +1,25 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2001 Marti Maria
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 
 #include "lcms.h"
 
@@ -40,10 +33,10 @@ typedef struct {
                } cmsJCh, FAR* LPcmsJCh;
 
 
-#define AVG_SURROUND_4	   0
-#define AVG_SURROUND	   1
-#define DIM_SURROUND	   2
-#define DARK_SURROUND	   3
+#define AVG_SURROUND_4     0
+#define AVG_SURROUND       1
+#define DIM_SURROUND       2
+#define DARK_SURROUND      3
 #define CUTSHEET_SURROUND  4
 
 
@@ -51,7 +44,7 @@ typedef struct {
 
               cmsCIEXYZ whitePoint;
               double    Yb;
-              double	La;
+              double    La;
               int       surround;
               double    D_value;
 
@@ -160,7 +153,7 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sDone(LCMSHANDLE hModel)
 static
 double discount(double d, double chan)
 {
-	return (d * chan + 1 - d);
+    return (d * chan + 1 - d);
 }
 
 
@@ -310,7 +303,7 @@ LCMSAPI LCMSHANDLE LCMSEXPORT cmsCIECAM97sInit(LPcmsViewingConditions pVC)
     VEC3 tmp;
 
     if((lpMod = (LPcmsCIECAM97s) malloc(sizeof(cmsCIECAM97s))) == NULL) {
-		return (LCMSHANDLE) NULL;
+        return (LCMSHANDLE) NULL;
     }
 
 
@@ -363,13 +356,13 @@ LCMSAPI LCMSHANDLE LCMSEXPORT cmsCIECAM97sInit(LPcmsViewingConditions pVC)
 
 
     if (pVC->D_value == -1.0)
-   		  lpMod->calculate_D = 1;
+          lpMod->calculate_D = 1;
     else
     if (pVC->D_value == -2.0)
-		   lpMod->calculate_D = 2;
+           lpMod->calculate_D = 2;
     else {
-   		lpMod->calculate_D = 0;
-	   	lpMod->D = pVC->D_value;
+        lpMod->calculate_D = 0;
+        lpMod->D = pVC->D_value;
     }
 
    // Table I (revised)
@@ -377,41 +370,41 @@ LCMSAPI LCMSHANDLE LCMSEXPORT cmsCIECAM97sInit(LPcmsViewingConditions pVC)
    switch (lpMod->surround) {
 
     case AVG_SURROUND_4:
-	   lpMod->F = 1.0;
-	   lpMod->c = 0.69;
-	   lpMod->Fll = 0.0;    // Not included on Rev 2
-	   lpMod->Nc = 1.0;
-	   break;
+       lpMod->F = 1.0;
+       lpMod->c = 0.69;
+       lpMod->Fll = 0.0;    // Not included on Rev 2
+       lpMod->Nc = 1.0;
+       break;
     case AVG_SURROUND:
-	   lpMod->F = 1.0;
-	   lpMod->c = 0.69;
-	   lpMod->Fll = 1.0;
-	   lpMod->Nc = 1.0;
-	   break;
+       lpMod->F = 1.0;
+       lpMod->c = 0.69;
+       lpMod->Fll = 1.0;
+       lpMod->Nc = 1.0;
+       break;
     case DIM_SURROUND:
-	   lpMod->F = 0.99;
-	   lpMod->c = 0.59;
-	   lpMod->Fll = 1.0;
-	   lpMod->Nc = 0.95;
-	   break;
+       lpMod->F = 0.99;
+       lpMod->c = 0.59;
+       lpMod->Fll = 1.0;
+       lpMod->Nc = 0.95;
+       break;
     case DARK_SURROUND:
-	   lpMod->F = 0.9;
-	   lpMod->c = 0.525;
-	   lpMod->Fll = 1.0;
-	   lpMod->Nc = 0.8;
-	   break;
+       lpMod->F = 0.9;
+       lpMod->c = 0.525;
+       lpMod->Fll = 1.0;
+       lpMod->Nc = 0.8;
+       break;
     case CUTSHEET_SURROUND:
-	   lpMod->F = 0.9;
-	   lpMod->c = 0.41;
-	   lpMod->Fll = 1.0;
-	   lpMod->Nc = 0.8;
-	   break;
+       lpMod->F = 0.9;
+       lpMod->c = 0.41;
+       lpMod->Fll = 1.0;
+       lpMod->Nc = 0.8;
+       break;
     default:
-	   lpMod->F = 1.0;
-	   lpMod->c = 0.69;
-	   lpMod->Fll = 1.0;
-	   lpMod->Nc = 1.0;
-	   break;
+       lpMod->F = 1.0;
+       lpMod->c = 0.69;
+       lpMod->Fll = 1.0;
+       lpMod->Nc = 1.0;
+       break;
     }
 
     lpMod->k = 1 / (5 * lpMod->La  + 1);
@@ -419,9 +412,9 @@ LCMSAPI LCMSHANDLE LCMSEXPORT cmsCIECAM97sInit(LPcmsViewingConditions pVC)
 
     if (lpMod->calculate_D > 0) {
 
-	   lpMod->D = lpMod->F * (1 - 1 / (1 + 2*pow(lpMod->La, 0.25) + pow(lpMod->La, 2)/300.0));
-	   if (lpMod->calculate_D > 1)
-		   lpMod->D = (lpMod->D + 1.0) / 2;
+       lpMod->D = lpMod->F * (1 - 1 / (1 + 2*pow(lpMod->La, 0.25) + pow(lpMod->La, 2)/300.0));
+       if (lpMod->calculate_D > 1)
+           lpMod->D = (lpMod->D + 1.0) / 2;
     }
 
 
@@ -478,7 +471,7 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sForward(LCMSHANDLE hModel, LPcmsCIEXYZ inPtr
 
         if (inPtr -> Y <= 0.0) {
 
-	  outPtr -> J = outPtr -> C = outPtr -> h = 0.0;
+      outPtr -> J = outPtr -> C = outPtr -> h = 0.0;
           return;
         }
 
@@ -619,10 +612,10 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sReverse(LCMSHANDLE hModel, LPcmsJCh inPtr, L
     sec_h = sqrt(1 + tan_h * tan_h);
 
     if ((h > 90) && (h < 270))
-			sec_h = -sec_h;
+            sec_h = -sec_h;
 
     a = s * ( A/lpMod->Nbb + NOISE_CONSTANT) / ( sec_h * 50000.0 * es * lpMod->Nc * lpMod->Ncb/ 13.0 +
-		   s * (11.0 / 23.0 + (108.0/23.0) * tan_h));
+           s * (11.0 / 23.0 + (108.0/23.0) * tan_h));
 
     b = a * tan_h;
 
@@ -636,35 +629,35 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sReverse(LCMSHANDLE hModel, LPcmsJCh inPtr, L
 
     if ((R_suba_prime - 1) < 0) {
 
-		 R_prime = -100.0 * pow((2.0 - 2.0 * R_suba_prime) /
-							(39.0 + R_suba_prime), 1.0/0.73);
+         R_prime = -100.0 * pow((2.0 - 2.0 * R_suba_prime) /
+                            (39.0 + R_suba_prime), 1.0/0.73);
     }
     else
     {
-		 R_prime = 100.0 * pow((2.0 * R_suba_prime - 2.0) /
-							(41.0 - R_suba_prime), 1.0/0.73);
+         R_prime = 100.0 * pow((2.0 * R_suba_prime - 2.0) /
+                            (41.0 - R_suba_prime), 1.0/0.73);
     }
 
     if ((G_suba_prime - 1) < 0)
     {
-		 G_prime = -100.0 * pow((2.0 - 2.0 * G_suba_prime) /
-							(39.0 + G_suba_prime), 1.0/0.73);
+         G_prime = -100.0 * pow((2.0 - 2.0 * G_suba_prime) /
+                            (39.0 + G_suba_prime), 1.0/0.73);
     }
     else
     {
-		 G_prime = 100.0 * pow((2.0 * G_suba_prime - 2.0) /
-							(41.0 - G_suba_prime), 1.0/0.73);
+         G_prime = 100.0 * pow((2.0 * G_suba_prime - 2.0) /
+                            (41.0 - G_suba_prime), 1.0/0.73);
     }
 
     if ((B_suba_prime - 1) < 0)
     {
-		 B_prime = -100.0 * pow((2.0 - 2.0 * B_suba_prime) /
-							(39.0 + B_suba_prime), 1.0/0.73);
+         B_prime = -100.0 * pow((2.0 - 2.0 * B_suba_prime) /
+                            (39.0 + B_suba_prime), 1.0/0.73);
     }
     else
     {
-		 B_prime = 100.0 * pow((2.0 * B_suba_prime - 2.0) /
-							(41.0 - B_suba_prime), 1.0/0.73);
+         B_prime = 100.0 * pow((2.0 * B_suba_prime - 2.0) /
+                            (41.0 - B_suba_prime), 1.0/0.73);
     }
 
 
@@ -680,7 +673,7 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sReverse(LCMSHANDLE hModel, LPcmsJCh inPtr, L
 
 #ifdef USE_CIECAM97s2
 
-	   // (12)
+       // (12)
 
 
            RvAdaptationDegree(lpMod, &RGBY, &RGB_subc_Y);
@@ -694,7 +687,7 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sReverse(LCMSHANDLE hModel, LPcmsJCh inPtr, L
 
            // (12) Calculate Yc
 
-	   Y_subc = 0.43231*RGB_subc_Y.n[0]+0.51836*RGB_subc_Y.n[1]+0.04929*RGB_subc_Y.n[2];
+       Y_subc = 0.43231*RGB_subc_Y.n[0]+0.51836*RGB_subc_Y.n[1]+0.04929*RGB_subc_Y.n[2];
 
            // (13) Calculate (Y/Yc)R, (Y/Yc)G and (Y/Yc)B
 
@@ -702,20 +695,19 @@ LCMSAPI void LCMSEXPORT cmsCIECAM97sReverse(LCMSHANDLE hModel, LPcmsJCh inPtr, L
            RvAdaptationDegree(lpMod, &Y_over_Y_subc_RGB, &RGB_subc_Y);
 
            // (14) Calculate Y'
-	   Y_prime = 0.43231*(Y_over_Y_subc_RGB.n[0]*Y_subc) + 0.51836*(Y_over_Y_subc_RGB.n[1]*Y_subc) + 0.04929 * (Y_over_Y_subc_RGB.n[2]*Y_subc);
+       Y_prime = 0.43231*(Y_over_Y_subc_RGB.n[0]*Y_subc) + 0.51836*(Y_over_Y_subc_RGB.n[1]*Y_subc) + 0.04929 * (Y_over_Y_subc_RGB.n[2]*Y_subc);
 
            if (Y_prime < 0 || Y_subc < 0)
            {
                 // Discard to near black point
-                // cmsSignalError(-1, "CIECAM97s: bad Y'\n");
-
+               
                 outPtr -> X = 0;
                 outPtr -> Y = 0;
                 outPtr -> Z = 0;
                 return;
            }
 
-	   B_term = pow(Y_prime / Y_subc, (1.0 / lpMod->p) - 1);
+       B_term = pow(Y_prime / Y_subc, (1.0 / lpMod->p) - 1);
 
           // (15) Calculate X'', Y'' and Z''
            Y_over_Y_subc_RGB.n[2] /= B_term;

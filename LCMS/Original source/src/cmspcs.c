@@ -1,32 +1,24 @@
 //
 //  Little cms
-//  Copyright (C) 1998-2003 Marti Maria
+//  Copyright (C) 1998-2005 Marti Maria
 //
-// THIS SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-// WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
 //
-// IN NO EVENT SHALL MARTI MARIA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-// INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-// OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-// WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-// LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-// OF THIS SOFTWARE.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 //
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //      inter PCS conversions XYZ <-> CIE L* a* b*
 
@@ -78,11 +70,24 @@ CIE XYZ             X             0 -> 1.99997        0x0000 -> 0xffff
 CIE XYZ             Y             0 -> 1.99997        0x0000 -> 0xffff
 CIE XYZ             Z             0 -> 1.99997        0x0000 -> 0xffff
 
+Version 2,3
+-----------
+
 CIELAB (16 bit)     L*            0 -> 100.0          0x0000 -> 0xff00
-CIELAB (16 bit)     a*            -128.0 -> +127.996  0x0000 -> 0xffff
-CIELAB (16 bit)     b*            -128.0 -> +127.996  0x0000 -> 0xffff
+CIELAB (16 bit)     a*            -128.0 -> +127.996  0x0000 -> 0x8000 -> 0xffff
+CIELAB (16 bit)     b*            -128.0 -> +127.996  0x0000 -> 0x8000 -> 0xffff
+
+
+Version 4
+---------
+
+CIELAB (16 bit)     L*            0 -> 100.0          0x0000 -> 0xffff
+CIELAB (16 bit)     a*            -128.0 -> +127      0x0000 -> 0x8080 -> 0xffff
+CIELAB (16 bit)     b*            -128.0 -> +127      0x0000 -> 0x8080 -> 0xffff
 
 */
+
+
 
 
 // On most modern computers, D > 4 M (i.e. a division takes more than 4
@@ -144,14 +149,14 @@ double f(double t)
 {
 
        if (t <= 0.008856)
-              return 7.787*t + (16./116.);
+              return 7.787037037037037037037037037037*t + (16./116.);
        else
               return CubeRoot((float) t); // more precisse than return pow(t, 1.0/3.0);
 
 }
 
 
-void LCMSEXPORT cmsXYZ2Lab(LPcmsCIEXYZ WhitePoint, LPcmsCIELab Lab, const LPcmsCIEXYZ xyz)
+void LCMSEXPORT cmsXYZ2Lab(LPcmsCIEXYZ WhitePoint, LPcmsCIELab Lab, const cmsCIEXYZ* xyz)
 {
        double fx, fy, fz;
 
@@ -163,8 +168,8 @@ void LCMSEXPORT cmsXYZ2Lab(LPcmsCIEXYZ WhitePoint, LPcmsCIELab Lab, const LPcmsC
         return;
        }
 
-	   if (WhitePoint == NULL) 
-			WhitePoint = cmsD50_XYZ();
+       if (WhitePoint == NULL) 
+            WhitePoint = cmsD50_XYZ();
 
        fx = f(xyz->X / WhitePoint->X);
        fy = f(xyz->Y / WhitePoint->Y);
@@ -200,9 +205,9 @@ void cmsXYZ2LabEncoded(WORD XYZ[3], WORD Lab[3])
        // PCS is in D50
 
 
-       x = FIXED_TO_DOUBLE(X) / 0.964294;
-       y = FIXED_TO_DOUBLE(Y);
-       z = FIXED_TO_DOUBLE(Z) / 0.825104;
+       x = FIXED_TO_DOUBLE(X) / D50X;
+       y = FIXED_TO_DOUBLE(Y) / D50Y;
+       z = FIXED_TO_DOUBLE(Z) / D50Z;
 
 
        fx = f(x);
@@ -240,7 +245,7 @@ double f_1(double t)
        {
               double tmp;
 
-              tmp = ((t - (16./116.)) / 7.787);
+              tmp = ((t - (16./116.)) / 7.787037037037037037037037037037);
               if (tmp <= 0.0) return 0.0;
               else return tmp;
        }
@@ -250,7 +255,7 @@ double f_1(double t)
 
 
 
-void LCMSEXPORT cmsLab2XYZ(LPcmsCIEXYZ WhitePoint, LPcmsCIEXYZ xyz,  const LPcmsCIELab Lab)
+void LCMSEXPORT cmsLab2XYZ(LPcmsCIEXYZ WhitePoint, LPcmsCIEXYZ xyz,  const cmsCIELab* Lab)
 {
         double x, y, z;
 
@@ -262,8 +267,8 @@ void LCMSEXPORT cmsLab2XYZ(LPcmsCIEXYZ WhitePoint, LPcmsCIEXYZ xyz,  const LPcms
         }
 
 
-	   if (WhitePoint == NULL) 
-			WhitePoint = cmsD50_XYZ();
+       if (WhitePoint == NULL) 
+            WhitePoint = cmsD50_XYZ();
 
        y = (Lab-> L + 16.) / 116.0;
        x = y + 0.002 * Lab -> a;
@@ -284,8 +289,8 @@ void cmsLab2XYZEncoded(WORD Lab[3], WORD XYZ[3])
 
 
        L = ((double) Lab[0] * 100.0) / 65280.0;
-       if (L==0.0)
-       {
+       if (L==0.0) {
+
        XYZ[0] = 0; XYZ[1] = 0; XYZ[2] = 0;
        return;
        }
@@ -297,15 +302,17 @@ void cmsLab2XYZEncoded(WORD Lab[3], WORD XYZ[3])
        x = y + 0.002 * a;
        z = y - 0.005 * b;
 
-       X = f_1(x) * 0.964294;
-       Y = f_1(y) * 1.000000 ;
-       Z = f_1(z) * 0.825104;
+       X = f_1(x) * D50X;
+       Y = f_1(y) * D50Y;
+       Z = f_1(z) * D50Z;
 
        // Convert to 1.15 fixed format PCS
 
-       XYZ[0] = Clamp_XYZ((DOUBLE_TO_FIXED(X) >> 1));
-       XYZ[1] = Clamp_XYZ((DOUBLE_TO_FIXED(Y) >> 1));
-       XYZ[2] = Clamp_XYZ((DOUBLE_TO_FIXED(Z) >> 1));
+       
+       XYZ[0] = _cmsClampWord((int) floor(X * 32768.0 + 0.5));
+       XYZ[1] = _cmsClampWord((int) floor(Y * 32768.0 + 0.5));
+       XYZ[2] = _cmsClampWord((int) floor(Z * 32768.0 + 0.5));
+       
 
 }
 
@@ -342,14 +349,13 @@ WORD ab2Fix3(double ab)
         return (WORD) ((ab + 128.0) * 256.0 + 0.5);
 }
 
-#if 0
 
-// ICC 4.0 -- Braindead. ICC has changed PCS Lab encoding.
+// ICC 4.0 -- ICC has changed PCS Lab encoding.
 
 static 
 WORD L2Fix4(double L)
 {
-	 return (WORD) (L *  655.35 + 0.5);
+     return (WORD) (L *  655.35 + 0.5);
 }
 
 static
@@ -371,7 +377,7 @@ double L2float4(WORD v)
 // the a/b part
 
 static
-double ab2float3(WORD v)
+double ab2float4(WORD v)
 {
        Fixed32 fix32;
 
@@ -380,76 +386,122 @@ double ab2float3(WORD v)
 }
 
 
-
-#endif
-
 void LCMSEXPORT cmsLabEncoded2Float(LPcmsCIELab Lab, const WORD wLab[3])
 {
         Lab->L = L2float3(wLab[0]);
-		Lab->a = ab2float3(wLab[1]);
-		Lab->b = ab2float3(wLab[2]);
+        Lab->a = ab2float3(wLab[1]);
+        Lab->b = ab2float3(wLab[2]);
 }
 
-void LCMSEXPORT cmsFloat2LabEncoded(WORD wLab[3], const LPcmsCIELab fLab)
+
+void LCMSEXPORT cmsLabEncoded2Float4(LPcmsCIELab Lab, const WORD wLab[3])
 {
-	cmsCIELab Lab;
+        Lab->L = L2float4(wLab[0]);
+        Lab->a = ab2float4(wLab[1]);
+        Lab->b = ab2float4(wLab[2]);
+}
 
-	
-	Lab.L = fLab ->L;
-	Lab.a = fLab ->a;
-	Lab.b = fLab ->b;
-                              	
+static
+double Clamp_L_double(double L)
+{
+    if (L < 0) L = 0;
+    if (L > 100) L = 100;
 
-	if (Lab.L < 0) Lab.L = 0;
+    return L;
+}
+
+
+static
+double Clamp_ab_double(double ab)
+{
+    if (ab < -128) ab = -128.0;
+    if (ab > +127.9961) ab = +127.9961;
+
+    return ab;
+}
+
+void LCMSEXPORT cmsFloat2LabEncoded(WORD wLab[3], const cmsCIELab* fLab)
+{
+    cmsCIELab Lab;
+
+    
+    Lab.L = Clamp_L_double(fLab ->L);
+    Lab.a = Clamp_ab_double(fLab ->a);
+    Lab.b = Clamp_ab_double(fLab ->b);
+                                                
+    wLab[0] = L2Fix3(Lab.L);
+    wLab[1] = ab2Fix3(Lab.a);
+    wLab[2] = ab2Fix3(Lab.b);
+}
+
+
+void LCMSEXPORT cmsFloat2LabEncoded4(WORD wLab[3], const cmsCIELab* fLab)
+{
+    cmsCIELab Lab;
+
+    
+    Lab.L = fLab ->L;
+    Lab.a = fLab ->a;
+    Lab.b = fLab ->b;
+                                
+
+    if (Lab.L < 0) Lab.L = 0;
     if (Lab.L > 100.) Lab.L = 100.;
 
-    if (Lab.a < -128.) Lab.a = -128;
-	if (Lab.a > 127.9961) Lab.a = 127.9961;
-    if (Lab.b < -128.) Lab.b = -128;
-    if (Lab.b > 127.9961) Lab.b = 127.9961;
+    if (Lab.a < -128.) Lab.a = -128.;
+    if (Lab.a > 127.) Lab.a = 127.;
+    if (Lab.b < -128.) Lab.b = -128.;
+    if (Lab.b > 127.) Lab.b = 127.;
                 
 
-	wLab[0] = L2Fix3(Lab.L);
-	wLab[1] = ab2Fix3(Lab.a);
-	wLab[2] = ab2Fix3(Lab.b);
+    wLab[0] = L2Fix4(Lab.L);
+    wLab[1] = ab2Fix4(Lab.a);
+    wLab[2] = ab2Fix4(Lab.b);
 }
 
 
 
 
-void LCMSEXPORT cmsLab2LCh(LPcmsCIELCh LCh, const LPcmsCIELab Lab)
+void LCMSEXPORT cmsLab2LCh(LPcmsCIELCh LCh, const cmsCIELab* Lab)
 {
+    double a, b;
 
+    LCh -> L = Clamp_L_double(Lab -> L);
 
-    LCh -> L = Lab -> L;
-	LCh -> C = pow(Lab -> a * Lab -> a + Lab -> b * Lab -> b, 0.5);
+    a = Clamp_ab_double(Lab -> a);
+    b = Clamp_ab_double(Lab -> b);
 
-    if (Lab -> a == 0)
+    LCh -> C = pow(a * a + b * b, 0.5);
+
+    if (a == 0 && b == 0)
             LCh -> h   = 0;
     else
-        	LCh -> h = atan2(Lab -> b, Lab -> a);
+            LCh -> h = atan2(b, a);
+    
 
-	LCh -> h *= (180. / M_PI);
+    LCh -> h *= (180. / M_PI);
 
-    while (LCh -> h > 360.)         // Not necessary, but included as a check.
+    
+    while (LCh -> h >= 360.)         // Not necessary, but included as a check.
                 LCh -> h -= 360.;
 
-	while (LCh -> h < 0)
-		LCh -> h += 360.;
+    while (LCh -> h < 0)
+                LCh -> h += 360.;    
 
 }
 
-void LCMSEXPORT cmsLCh2Lab(LPcmsCIELab Lab, const LPcmsCIELCh LCh)
+
+
+
+void LCMSEXPORT cmsLCh2Lab(LPcmsCIELab Lab, const cmsCIELCh* LCh)
 {
-        double h = LCh -> h;
-
-	h *= (M_PI /180.0);
-
-
-        Lab -> L = LCh -> L;
-
-	Lab -> a = LCh -> C * cos(h);
-	Lab -> b = LCh -> C * sin(h);
+        
+    double h = (LCh -> h * M_PI) / 180.0;
+    
+    Lab -> L = Clamp_L_double(LCh -> L);
+    Lab -> a = Clamp_ab_double(LCh -> C * cos(h));
+    Lab -> b = Clamp_ab_double(LCh -> C * sin(h));          
+    
 }
 
 
@@ -460,57 +512,57 @@ void LCMSEXPORT cmsLCh2Lab(LPcmsCIELab Lab, const LPcmsCIELCh LCh)
 
 static
 WORD XYZ2Fix(double d)
-{
-       return (WORD) ((Fixed32) (DOUBLE_TO_FIXED(d) >> 1));
+{     
+    return (WORD) floor(d * 32768.0 + 0.5);
 }
 
 
-void LCMSEXPORT cmsFloat2XYZEncoded(WORD XYZ[3], const LPcmsCIEXYZ fXYZ)
+void LCMSEXPORT cmsFloat2XYZEncoded(WORD XYZ[3], const cmsCIEXYZ* fXYZ)
 {
-	cmsCIEXYZ xyz;
-	
-	xyz.X = fXYZ -> X;
-	xyz.Y = fXYZ -> Y;
-	xyz.Z = fXYZ -> Z;
+    cmsCIEXYZ xyz;
+    
+    xyz.X = fXYZ -> X;
+    xyz.Y = fXYZ -> Y;
+    xyz.Z = fXYZ -> Z;
 
 
-	// Clamp to encodeable values. 
-	// 1.99997 is reserved as out-of-gamut marker
+    // Clamp to encodeable values. 
+    // 1.99997 is reserved as out-of-gamut marker
 
-	
-	if (xyz.Y <= 0) {
+    
+    if (xyz.Y <= 0) {
 
-				xyz.X = 0;
+                xyz.X = 0;
                 xyz.Y = 0;
-				xyz.Z = 0;
-	}
-	
-	
-	if (xyz.X > 1.99996) 			
+                xyz.Z = 0;
+    }
+    
+    
+    if (xyz.X > 1.99996)            
            xyz.X = 1.99996;
-	
-	if (xyz.X < 0)
+    
+    if (xyz.X < 0)
            xyz.X = 0;
 
-	if (xyz.Y > 1.99996) 			
+    if (xyz.Y > 1.99996)            
                 xyz.Y = 1.99996;
-	
-	if (xyz.Y < 0)
+    
+    if (xyz.Y < 0)
            xyz.Y = 0;
 
 
-	if (xyz.Z > 1.99996) 			
+    if (xyz.Z > 1.99996)            
                 xyz.Z = 1.99996;
-	
-	if (xyz.Z < 0)
+    
+    if (xyz.Z < 0)
            xyz.Z = 0;
 
-		
+        
 
-	XYZ[0] = XYZ2Fix(xyz.X);
-	XYZ[1] = XYZ2Fix(xyz.Y);
-	XYZ[2] = XYZ2Fix(xyz.Z);		
-	
+    XYZ[0] = XYZ2Fix(xyz.X);
+    XYZ[1] = XYZ2Fix(xyz.Y);
+    XYZ[2] = XYZ2Fix(xyz.Z);        
+    
 }
 
 
@@ -534,11 +586,11 @@ double XYZ2float(WORD v)
 void LCMSEXPORT cmsXYZEncoded2Float(LPcmsCIEXYZ fXYZ, const WORD XYZ[3])
 {
 
-	fXYZ -> X = XYZ2float(XYZ[0]);
-	fXYZ -> Y = XYZ2float(XYZ[1]);
-	fXYZ -> Z = XYZ2float(XYZ[2]);
+    fXYZ -> X = XYZ2float(XYZ[0]);
+    fXYZ -> Y = XYZ2float(XYZ[1]);
+    fXYZ -> Z = XYZ2float(XYZ[2]);
 
-}		
+}       
 
 
 

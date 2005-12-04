@@ -1,0 +1,112 @@
+LIBRARY     LCMS.DLL
+
+EXPORTS
+    _cmsICCcolorSpace            = _cmsICCcolorSpace
+    _cmsSaveProfile              = _cmsSaveProfile
+    cmsAdaptToIlluminant         = cmsAdaptToIlluminant
+    cmsAllocGamma                = cmsAllocGamma
+    cmsBuildGamma                = cmsBuildGamma
+	cmsSmoothGamma				 = cmsSmoothGamma
+    cmsBuildRGB2XYZtransferMatrix= cmsBuildRGB2XYZtransferMatrix
+    cmsCloseProfile              = cmsCloseProfile
+    cmsCreateProofingTransform   = cmsCreateProofingTransform
+    cmsCreateRGBProfile          = cmsCreateRGBProfile
+    cmsCreateTransform           = cmsCreateTransform
+    cmsDeleteTransform           = cmsDeleteTransform
+    cmsDoTransform               = cmsDoTransform
+    cmsErrorAction               = cmsErrorAction
+    cmsFreeGamma                 = cmsFreeGamma
+	cmsFreeGammaTriple           = cmsFreeGammaTriple
+    cmsGetAlarmCodes             = cmsGetAlarmCodes
+    cmsGetColorSpace             = cmsGetColorSpace
+    cmsGetDeviceClass            = cmsGetDeviceClass
+    cmsGetPCS                    = cmsGetPCS
+    cmsIsIntentSupported         = cmsIsIntentSupported
+    cmsIsTag                     = cmsIsTag
+    cmsJoinGamma                 = cmsJoinGamma
+	cmsJoinGammaEx               = cmsJoinGammaEx
+    cmsOpenProfileFromFile       = cmsOpenProfileFromFile
+    cmsOpenProfileFromMem        = cmsOpenProfileFromMem
+    cmsReverseGamma              = cmsReverseGamma
+    cmsSetAlarmCodes             = cmsSetAlarmCodes    
+    cmsTakeColorants             = cmsTakeColorants
+    cmsTakeIluminant             = cmsTakeIluminant
+    cmsTakeMediaBlackPoint       = cmsTakeMediaBlackPoint
+    cmsTakeMediaWhitePoint       = cmsTakeMediaWhitePoint
+    cmsTakeProductDesc           = cmsTakeProductDesc
+    cmsTakeProductInfo           = cmsTakeProductInfo
+    cmsTakeProductName           = cmsTakeProductName
+    cmsTakeRenderingIntent       = cmsTakeRenderingIntent
+    cmsWhitePointFromTemp        = cmsWhitePointFromTemp
+    cmsXYZ2xyY                   = cmsXYZ2xyY
+    cmsxyY2XYZ                   = cmsxyY2XYZ
+	cmsLCh2Lab					 = cmsLCh2Lab
+	cmsLab2LCh					 = cmsLab2LCh
+	cmsLab2XYZ					 = cmsLab2XYZ
+	cmsXYZ2Lab					 = cmsXYZ2Lab
+	cmsClampLab					 = cmsClampLab
+	cmsCreateLabProfile			 = cmsCreateLabProfile
+	cmsCreateXYZProfile			 = cmsCreateXYZProfile
+	cmsCreate_sRGBProfile		 = cmsCreate_sRGBProfile
+	cmsD50_XYZ					 = cmsD50_XYZ
+	cmsD50_xyY					 = cmsD50_xyY
+	cmsDeltaE					 = cmsDeltaE
+	cmsCIE94DeltaE				 = cmsCIE94DeltaE
+	cmsBFDdeltaE				 = cmsBFDdeltaE
+	cmsCMCdeltaE				 = cmsCMCdeltaE
+	cmsFloat2LabEncoded			 = cmsFloat2LabEncoded
+	cmsFloat2XYZEncoded			 = cmsFloat2XYZEncoded
+	cmsLabEncoded2Float			 = cmsLabEncoded2Float
+	cmsXYZEncoded2Float			 = cmsXYZEncoded2Float
+	cmsBuildParametricGamma		 = cmsBuildParametricGamma
+	cmsCIECAM97sInit			 = cmsCIECAM97sInit
+	cmsCIECAM97sDone			 = cmsCIECAM97sDone
+	cmsCIECAM97sForward			 = cmsCIECAM97sForward
+	cmsCIECAM97sReverse			 = cmsCIECAM97sReverse
+	cmsCreateMultiprofileTransform  = cmsCreateMultiprofileTransform
+	cmsAddTag					 = cmsAddTag
+	cmsAllocLUT				     = cmsAllocLUT
+	cmsAllocLinearTable			 = cmsAllocLinearTable
+	cmsAlloc3DGrid				 = cmsAlloc3DGrid
+	cmsFreeLUT					 = cmsFreeLUT
+	cmsEvalLUT					 = cmsEvalLUT
+	cmsReadICCLut				 = cmsReadICCLut
+	cmsSample3DGrid				 = cmsSample3DGrid
+	cmsSetMatrixLUT			     = cmsSetMatrixLUT
+	cmsDupGamma					 = cmsDupGamma
+	cmsReadICCGamma				 = cmsReadICCGamma
+	cmsReadICCGammaReversed      = cmsReadICCGammaReversed
+	cmsCreateGrayProfile		 = cmsCreateGrayProfile
+	cmsCreateLinearizationDeviceLink = cmsCreateLinearizationDeviceLink
+	cmsEstimateGamma			 = cmsEstimateGamma
+	cmsEstimateGammaEx			 = cmsEstimateGammaEx
+	cmsReadICCGamma				 = cmsReadICCGamma
+	cmsReadICCGammaReversed		 = cmsReadICCGammaReversed
+	cmsSetLanguage				 = cmsSetLanguage
+	cmsTakeCharTargetData		 = cmsTakeCharTargetData
+	_cmsICCcolorSpace			 = _cmsICCcolorSpace
+	_cmsChannelsOf				 = _cmsChannelsOf
+	cmsSetDeviceClass			 = cmsSetDeviceClass
+	cmsSetColorSpace			 = cmsSetColorSpace
+	cmsSetPCS					 = cmsSetPCS
+	cmsChangeBuffersFormat		 = cmsChangeBuffersFormat
+	cmsNamedColorCount			 = cmsNamedColorCount
+	cmsNamedColorInfo			 = cmsNamedColorInfo
+	cmsNamedColorIndex			 = cmsNamedColorIndex
+	_cmsSaveProfileToMem		 = _cmsSaveProfileToMem
+	cmsGetPostScriptCSA			 = cmsGetPostScriptCSA
+	cmsGetPostScriptCRD			 = cmsGetPostScriptCRD
+	cmsTransform2DeviceLink		 = cmsTransform2DeviceLink
+	_cmsAddXYZTag				 = _cmsAddXYZTag
+	_cmsAddLUTTag				 = _cmsAddLUTTag
+	_cmsAddTextTag				 = _cmsAddTextTag
+	_cmsAddGammaTag				 = _cmsAddGammaTag
+	_cmsAddChromaticityTag		 = _cmsAddChromaticityTag
+	cmsCreateInkLimitingDeviceLink = cmsCreateInkLimitingDeviceLink
+
+
+
+
+
+
+
