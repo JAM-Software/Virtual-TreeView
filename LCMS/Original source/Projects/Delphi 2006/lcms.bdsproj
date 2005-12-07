@@ -65,7 +65,8 @@
         <property category="win32.Debug_Build.win32b.bcc32" name="option.V1.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.align-1.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.align-2.enabled" value="0"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.align-3.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.align-3.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.align-4.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.align-5.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.infomsgs.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.k.enabled" value="1"/>
@@ -77,7 +78,6 @@
         <property category="win32.Debug_Build.win32b.bcc32" name="option.pr.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.ps.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.r.enabled" value="0"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.u.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.v.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.vi.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.y.enabled" value="1"/>
@@ -238,6 +238,12 @@
         <FILE FILENAME="..\..\src\cmscam97.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmscam97" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="..\..\src\cmsps2.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmsps2" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="..\..\src\cmsnamed.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmsnamed" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\include\icc34.h" CONTAINERID="" LOCALCOMMAND=""/>
+        <FILE FILENAME="..\..\include\lcms.h" CONTAINERID="" LOCALCOMMAND=""/>
+        <FILE FILENAME="..\..\src\cmscam02.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmscam02" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\src\cmscgats.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmscgats" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\src\cmsio0.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmsio0" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\src\cmsvirt.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="cmsvirt" FORMNAME="" DESIGNCLASS=""/>
       </FILELIST>
       <IDEOPTIONS>
         <VersionInfo>

@@ -174,10 +174,7 @@
 			<VersionInfoKeys Name="OriginalFilename" Type="String"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductName" Type="String"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductVersion" Type="String">1.0.0.0</VersionInfoKeys>
-		</VersionInfoKeys>  
-    
-    
-    <Excluded_Packages>
+		</VersionInfoKeys>  <Excluded_Packages>
       <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\dclmlwiz90.bpl">Borland Markup Language Wizards</Excluded_Packages>
       <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\applet90.bpl">Borland Control Panel Applet Package</Excluded_Packages>
       <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\dclsmp90.bpl">Borland Sample Components</Excluded_Packages>

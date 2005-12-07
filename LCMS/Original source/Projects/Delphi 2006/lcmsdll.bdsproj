@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <PersonalityInfo>
-    <Option>
-      <Option Name="Personality">CPlusPlusBuilder.Personality</Option>
-      <Option Name="ProjectType">CppDynamicLibrary</Option>
-      <Option Name="Version">1.0</Option>
-      <Option Name="GUID">{5EAC4BF4-6B4F-429C-BB88-E5DC287F43A9}</Option>
-    </Option>
-  </PersonalityInfo>
-  <CPlusPlusBuilder.Personality>
-    <BCBPROJECT>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">CPlusPlusBuilder.Personality</Option>
+			<Option Name="ProjectType">CppDynamicLibrary</Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{5EAC4BF4-6B4F-429C-BB88-E5DC287F43A9}</Option>
+		</Option>
+	</PersonalityInfo>
+	<CPlusPlusBuilder.Personality>
+		<BCBPROJECT>
       <project version="10.0">
         <property category="build.config" name="active" value="0"/>
         <property category="build.config" name="count" value="1"/>
@@ -122,6 +122,11 @@
           <property category="win32.*.win32b.bcc32" name="option.Ve.enabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.Vx.enabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.X.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-2.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-3.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-4.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-5.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.b.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.d.enabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.k.enabled" value="0"/>
@@ -305,9 +310,9 @@
         </Linker>
       </IDEOPTIONS>
     </BCBPROJECT>
-    <Source>
-      <Source Name="MainSource">lcmsdll.cpp</Source>
-    </Source>
-    <buildevents/>
-  </CPlusPlusBuilder.Personality>
+		<Source>
+			<Source Name="MainSource">lcmsdll.cpp</Source>
+		</Source>
+		<buildevents/>
+	</CPlusPlusBuilder.Personality>
 </BorlandProject>

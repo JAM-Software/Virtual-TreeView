@@ -116,7 +116,7 @@
 			<Linker Name="MinStackSize">4096</Linker>
 			<Linker Name="MaxStackSize">1048576</Linker>
 			<Linker Name="ImageBase">4194304</Linker>
-			<Linker Name="ExeDescription">Components related to color tasks</Linker>
+			<Linker Name="ExeDescription">Soft Gems color components</Linker>
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir">..\..\bin\Windows</Directories>
@@ -170,23 +170,6 @@
 			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
-		</VersionInfoKeys>  
-    <Excluded_Packages>
-      <Excluded_Packages Name="V:\MySQL\Temp\TntUnicodeVcl_D90.bpl">Tnt Unicode Controls</Excluded_Packages>
-      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dcldb100.bpl">Borland Database Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclsmp100.bpl">Borland Sample Components</Excluded_Packages>
-      <Excluded_Packages Name="V:\MySQL\temp\EmbeddedWBPackageD9.bpl">Embedded Webbrowser</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcldbx100.bpl">Borland dbExpress Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclmid100.bpl">Borland MyBase DataAccess Components</Excluded_Packages>
-      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dclbde100.bpl">Borland BDE DB Components</Excluded_Packages>
-      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dbx100.bpl">Borland SQL Explorer UI Package</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\bin\dclado100.bpl">Borland ADO DB Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclib100.bpl">Borland InterBase Express Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcl31w100.bpl">Delphi 1.0 Compatibility Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\ibevnt100.bpl">Borland Interbase Event Alerter Component</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcltee100.bpl">TeeChart Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dclmcn100.bpl">Borland DataSnap Connection Components</Excluded_Packages>
-      <Excluded_Packages Name="c:\programme\borland\bds\4.0\Bin\dcldbxcds100.bpl">Borland SimpleDataset Component (DBX)</Excluded_Packages>
-    </Excluded_Packages>
-  </Delphi.Personality>
+		</VersionInfoKeys>
+	</Delphi.Personality>
 </BorlandProject>

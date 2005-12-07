@@ -22,7 +22,7 @@ package ColorD10;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DESCRIPTION 'Components related to color tasks'}
+{$DESCRIPTION 'Soft Gems color components'}
 {$IMPLICITBUILD ON}
 
 requires
