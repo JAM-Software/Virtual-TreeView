@@ -9071,10 +9071,12 @@ begin
           Invalidate(nil);
           Treeview.Invalidate;
         end;
-      // This is mainly to let the designer know when a change occurs at design time which
-      // doesn't involve the object inspector (like column resizing with the mouse).
-      // This does NOT include design time code as the communication is done via an interface.
-      Treeview.UpdateDesigner;
+
+      if not (tsUpdating in Treeview.FStates) then
+        // This is mainly to let the designer know when a change occurs at design time which
+        // doesn't involve the object inspector (like column resizing with the mouse).
+        // This does NOT include design time code as the communication is done via an interface.
+        Treeview.UpdateDesigner;
     end;
   end;
 end;
@@ -18025,7 +18027,8 @@ begin
     if hsTracking in FHeader.States then
       UpdateWindow(Handle);
     
-    UpdateDesigner; // design time only
+    if not (tsUpdating in FStates) then
+      UpdateDesigner; // design time only
 
     if Assigned(FOnColumnResize) then
       FOnColumnResize(FHeader, Column);
@@ -24106,6 +24109,7 @@ begin
       SetUpdateState(False);
       if HandleAllocated then
         Invalidate;
+      UpdateDesigner;
     end;
 
     if FUpdateCount = 0 then
