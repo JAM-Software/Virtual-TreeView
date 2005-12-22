@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.2
+// Version 4.4.3
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,9 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
-// November 2005
-//   - Bug fix: check for column index for autosetting main column if the current one is deleted.
-//   - Improvement: fixed column implementation completed (code donation by Igor Savkic)
+// December 2005
+//   - Bug fix: check for column index for auto setting main column if the current one is deleted.
 //
 // For full document history see help file.
 //
@@ -84,7 +83,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.2';
+  VTVersion = '4.4.3';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
