@@ -1,7 +1,7 @@
 unit ThemeMgr;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Version 1.10.3
+// Version 1.12.0
 //
 // Windows XP Theme Manager is freeware. You may freely use it in any software, including commercial software, provided
 // you accept the following conditions:
@@ -46,6 +46,11 @@ unit ThemeMgr;
 // Credits for their valuable help go to:
 //   Bert Moorthaemer, Rob Schoenaker, John W. Long, Vassiliev V.V., Steve Moss, Torsten Detsch, Milan Vandrovec
 //----------------------------------------------------------------------------------------------------------------------
+//
+// December 2005
+//   - Correct text cliprect computation for TGroupBox (code donation by Nils Maier)
+//   - Subclassing of TCustomTreeview for handling of the WM_CTLCOLOREDIT message (inplace editor).
+//
 
 interface
 
@@ -67,7 +72,7 @@ uses
   ThemeSrv;
 
 const
-  TMVersion = '1.10.3';
+  TMVersion = '1.12.0';
 
   // Sent to any control to give it a chance to deny its subclassing. This is mainly useful for controls
   // which are derived from classes which are usually subclassed by the Theme Manager but do their own
@@ -116,12 +121,13 @@ type
     toResetMouseCapture,     // If set then TToolButtons get their csCaptureMouse flag removed to properly show
                              // their pressed state.
     toSetTransparency,       // If set then TCustomLabel and TToolBar controls are automatically set to transparent.
-    toAlternateTabSheetDraw  // If set then use alternate drawing for TTabSheet body.
+    toAlternateTabSheetDraw, // If set then use alternate drawing for TTabSheet body.
+    toSubclassTreeview       // Enables subclassing of tree view controls.
   );
   TThemeOptions = set of TThemeOption;
 
 const
-  DefaultThemeOptions = [toAllowNonClientArea..toAllowWebContent, toSubclassButtons..toSetTransparency];
+  DefaultThemeOptions = [toAllowNonClientArea..toAllowWebContent, toSubclassButtons..toSetTransparency, toSubclassTreeview];
 
 type
   // These message records are not declared in Delphi 6 and lower.
@@ -171,6 +177,7 @@ type
       FFrameList,                      // Frames are first available in Delphi 5.
     {$endif COMPILER_5_UP}
     FListViewList,
+    FTreeViewList,
     FTabSheetList,
     FWinControlList,
     FGroupBoxList,
@@ -213,6 +220,7 @@ type
     procedure StatusBarWindowProc(Control: TControl; var Message: TMessage);
     procedure TabSheetWindowProc(Control: TControl; var Message: TMessage);
     procedure TrackBarWindowProc(Control: TControl; var Message: TMessage);
+    procedure TreeViewWindowProc(Control: TControl; var Message: TMessage);
     procedure WinControlWindowProc(Control: TControl; var Message: TMessage);
 
     procedure PreAnimateWindowProc(var Message: TMessage);
@@ -232,6 +240,7 @@ type
     procedure PreStatusBarWindowProc(var Message: TMessage);
     procedure PreTabSheetWindowProc(var Message: TMessage);
     procedure PreTrackBarWindowProc(var Message: TMessage);
+    procedure PreTreeViewWindowProc(var Message: TMessage);
     procedure PreWinControlWindowProc(var Message: TMessage);
   protected
     procedure AddRecreationCandidate(Control: TControl); virtual;
@@ -706,6 +715,7 @@ begin
   FPendingFormsList := TList.Create;
   FPendingRecreationList := TList.Create;
   FListViewList := TWindowProcList.Create(Self, PreListviewWindowProc, TCustomListView);
+  FTreeviewList := TWindowProcList.Create(Self, PreTreeviewWindowProc, TCustomTreeView);
   FTabSheetList := TWindowProcList.Create(Self, PreTabSheetWindowProc, TTabSheet);
   FGroupBoxList := TWindowProcList.Create(Self, PreGroupBoxWindowProc, TCustomGroupBox);
   FButtonControlList := TWindowProcList.Create(Self, PreButtonControlWindowProc, TButtonControl);
@@ -774,6 +784,7 @@ begin
   FSplitterList.Free;
   FButtonControlList.Free;
   FListViewList.Free;
+  FTreeViewList.Free;
   FTabSheetList.Free;
   FGroupBoxList.Free;
 
@@ -1223,7 +1234,6 @@ procedure TThemeManager.GroupBoxWindowProc(Control: TControl; var Message: TMess
   var
     CaptionRect,
     OuterRect: TRect;
-    Size: TSize;
     LastFont: HFONT;
     Box: TThemedButton;
     Details: TThemedElementDetails;
@@ -1232,13 +1242,19 @@ procedure TThemeManager.GroupBoxWindowProc(Control: TControl; var Message: TMess
     with TGroupBoxCast(Control) do
     begin
       LastFont := SelectObject(DC, Font.Handle);
+      if Control.Enabled then
+        Box := tbGroupBoxNormal
+      else
+        Box := tbGroupBoxDisabled;
+      Details := ThemeServices.GetElementDetails(Box);
+
       if Text <> '' then
       begin
         SetTextColor(DC, Graphics.ColorToRGB(Font.Color));
+
         // Determine size and position of text rectangle.
         // This must be clipped out before painting the frame.
-        GetTextExtentPoint32(DC, PChar(Text), Length(Text), Size);
-        CaptionRect := Rect(0, 0, Size.cx, Size.cy);
+        CaptionRect := ThemeServices.GetTextExtent(DC, Details, Text, DT_LEFT);
         if not UseRightToLeftAlignment then
           OffsetRect(CaptionRect, 8, 0)
         else
@@ -1251,11 +1267,6 @@ procedure TThemeManager.GroupBoxWindowProc(Control: TControl; var Message: TMess
       OuterRect.Top := (CaptionRect.Bottom - CaptionRect.Top) div 2;
       with CaptionRect do
         ExcludeClipRect(DC, Left, Top, Right, Bottom);
-      if Control.Enabled then
-        Box := tbGroupBoxNormal
-      else
-        Box := tbGroupBoxDisabled;
-      Details := ThemeServices.GetElementDetails(Box);
       ThemeServices.DrawElement(DC, Details, OuterRect);
 
       SelectClipRgn(DC, 0);
@@ -1323,14 +1334,30 @@ begin
   begin
     // In opposition to the other window procedures we should always apply the fix for TListView,
     // regardless of whether themes are enabled or not.
-    if (Message.Msg = LVM_SETCOLUMN) or (Message.Msg = LVM_INSERTCOLUMN) then
-    begin
-      with PLVColumn(Message.LParam)^ do
-      begin
-        // Fix TListView report mode bug.
-        if iImage = - 1 then
-          Mask := Mask and not LVCF_IMAGE;
-      end;
+    case Message.Msg of
+      LVM_SETCOLUMN,
+      LVM_INSERTCOLUMN:
+        begin
+          with PLVColumn(Message.LParam)^ do
+          begin
+            // Fix TListView report mode bug.
+            if iImage = - 1 then
+              Mask := Mask and not LVCF_IMAGE;
+          end;
+        end;
+      else
+        if (ThemeServices <> nil) and ThemeServices.ThemesEnabled then
+        begin
+          case Message.Msg of
+            WM_CTLCOLOREDIT:
+              with TWMCtlColorEdit(Message) do
+              begin
+                SetBkColor(ChildDC, ColorToRGB(TControlCast(Control).Color));
+                SetTextColor(ChildDC, ColorToRGB(TControlCast(Control).Font.Color));
+                Result := TWinControl(Control).Brush.Handle;
+              end;
+          end;
+        end;
     end;
 
     // This special notification message is not handled in the VCL and creates an access violation when
@@ -1919,6 +1946,32 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TThemeManager.TreeViewWindowProc(Control: TControl; var Message: TMessage);
+
+begin
+  if not DoControlMessage(Control, Message) then
+  begin
+    if (ThemeServices <> nil) and ThemeServices.ThemesEnabled then
+    begin
+      case Message.Msg of
+        WM_CTLCOLOREDIT:
+          with TWMCtlColorEdit(Message) do
+          begin
+            SetBkColor(ChildDC, ColorToRGB(TControlCast(Control).Color));
+            SetTextColor(ChildDC, ColorToRGB(TControlCast(Control).Font.Color));
+            Result := TWinControl(Control).Brush.Handle;
+          end;
+      else
+        FTreeViewList.DispatchMessage(Control, Message);
+      end;
+    end
+    else
+      FTreeViewList.DispatchMessage(Control, Message);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TThemeManager.WinControlWindowProc(Control: TControl; var Message: TMessage);
 
 var
@@ -2140,6 +2193,17 @@ procedure TThemeManager.PreTrackBarWindowProc(var Message: TMessage);
 begin
   Assert(Assigned(MainManager));
   MainManager.TrackBarWindowProc(TControl(Self), Message);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TThemeManager.PreTreeViewWindowProc(var Message: TMessage);
+
+// Read more about this code in PreAnimateWindowProc.
+
+begin
+  Assert(Assigned(MainManager));
+  MainManager.TreeViewWindowProc(TControl(Self), Message);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2707,7 +2771,7 @@ begin
                       List := FFrameList;
                   end
                   else
-                {$endif COMPILER_5_UP}  
+                {$endif COMPILER_5_UP}
                   if Control is TCustomListView then
                   begin
                     if (toSubclassListView in FOptions) or not Inserting then
@@ -2721,50 +2785,56 @@ begin
                     end;
                   end
                   else
-                    if Control is TTrackBar then
+                    if Control is TCustomTreeview then
                     begin
-                      if (toSubclassTrackBar in FOptions) or not Inserting then
-                        List := FTrackBarList;
+                      if (toSubclassTreeview in FOptions) or not Inserting then
+                        List := FTreeViewList;
                     end
                     else
-                      {$ifdef CheckListSupport}
-                        if Control is TCheckListBox then
-                        begin
-                          if (toSubclassCheckListBox in FOptions) or not Inserting then
-                            List := FCheckListBoxList;
-                        end
-                        else
-                      {$endif CheckListSupport}
-                        if Control is TCustomStatusBar then
-                        begin
-                          if (toSubclassStatusBar in FOptions) or not Inserting then
-                            List := FStatusBarList;
-                        end
-                        else
-                          if Control is TSplitter then
+                      if Control is TTrackBar then
+                      begin
+                        if (toSubclassTrackBar in FOptions) or not Inserting then
+                          List := FTrackBarList;
+                      end
+                      else
+                        {$ifdef CheckListSupport}
+                          if Control is TCheckListBox then
                           begin
-                            if (toSubclassSplitter in FOptions) or not Inserting then
-                              List := FSplitterList;
+                            if (toSubclassCheckListBox in FOptions) or not Inserting then
+                              List := FCheckListBoxList;
                           end
                           else
-                            if Control is TAnimate then
+                        {$endif CheckListSupport}
+                          if Control is TCustomStatusBar then
+                          begin
+                            if (toSubclassStatusBar in FOptions) or not Inserting then
+                              List := FStatusBarList;
+                          end
+                          else
+                            if Control is TSplitter then
                             begin
-                              if (toSubclassAnimate in FOptions) or not Inserting then
-                                List := FAnimateList;
+                              if (toSubclassSplitter in FOptions) or not Inserting then
+                                List := FSplitterList;
                             end
                             else
-                              if Control is TCustomForm then
+                              if Control is TAnimate then
                               begin
-                                List := FFormList;
-                                if Inserting then
-                                  FPendingFormsList.Remove(Control);
+                                if (toSubclassAnimate in FOptions) or not Inserting then
+                                  List := FAnimateList;
                               end
                               else
-                                if Control is TWinControl then
+                                if Control is TCustomForm then
                                 begin
-                                  if (toSubclassWinControl in FOptions) or not Inserting then
-                                    List := FWinControlList;
-                                end;
+                                  List := FFormList;
+                                  if Inserting then
+                                    FPendingFormsList.Remove(Control);
+                                end
+                                else
+                                  if Control is TWinControl then
+                                  begin
+                                    if (toSubclassWinControl in FOptions) or not Inserting then
+                                      List := FWinControlList;
+                                  end;
     end;
 
     if Assigned(List) then
@@ -2969,6 +3039,7 @@ begin
   FListViewList.Clear;
   if ThemeServices.ThemesEnabled then
   begin
+    FTreeViewList.Clear;
     {$ifdef CheckListSupport}
       FCheckListBoxList.Clear;
     {$endif CheckListSupport}

@@ -447,6 +447,7 @@ type
     procedure DrawParentBackground(Window: HWND; Target: HDC; Details: PThemedElementDetails; OnlyIfTransparent: Boolean;
       Bounds: PRect = nil);
     procedure DrawText(DC: HDC; Details: TThemedElementDetails; const S: WideString; R: TRect; Flags, Flags2: Cardinal);
+    function GetTextExtent(DC: HDC; Details: TThemedElementDetails; const S: WideString; const Flags: Cardinal): TRect;
     function HasTransparentParts(Details: TThemedElementDetails): Boolean;
     procedure PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
     procedure UpdateThemes;
@@ -1967,6 +1968,16 @@ procedure TThemeServices.DrawText(DC: HDC; Details: TThemedElementDetails; const
 begin
   with Details do
     DrawThemeText(Theme[Element], DC, Part, State, PWideChar(S), Length(S), Flags, Flags2, R);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TThemeServices.GetTextExtent(DC: HDC; Details: TThemedElementDetails; const S: WideString; const Flags: Cardinal) : TRect;
+
+begin
+  Result := Rect(0,0,0,0);
+  with Details do
+    GetThemeTextExtent(Theme[Element], DC, Part, State, PWideChar(S), Length(S), Flags, nil, Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
