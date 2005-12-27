@@ -50,7 +50,7 @@
 // - COMPILER_8_UP : Kylix/Delphi/BCB 8.x or higher is the compiler.
 // - COMPILER_9    : Kylix/Delphi/BCB 9.x is the compiler.
 // - COMPILER_9_UP : Kylix/Delphi/BCB 9.x or higher is the compiler.
-// - COMPILER_10    : Kylix/Delphi/BCB 9.x is the compiler.
+// - COMPILER_10    : Kylix/Delphi/BCB 10.x is the compiler.
 // - COMPILER_10_UP : Kylix/Delphi/BCB 10.x or higher is the compiler.
 //
 // Only defined if Windows is the target:
@@ -117,8 +117,6 @@
 {$endif CLR}
 
 {$ifdef Win32}
-
-// Compiler defines not specific to a particlular platform.
 
   // DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER180}
@@ -305,15 +303,15 @@
       {$ifdef conditionalexpressions}
         {$if Declared(RTLVersion) and (RTLVersion = 14)}
           {$define KYLIX_1}
-        {$ifend}
+        {$endif}
 
         {$if Declared(RTLVersion) and (RTLVersion = 14.2)}
           {$define KYLIX_2}
-        {$ifend}
+        {$endif}
 
         {$if Declared(RTLVersion) and (RTLVersion = 14.5)}
           {$define KYLIX_3}
-        {$ifend}
+        {$endif}
       {$endif}
   {$endif}
 
@@ -342,6 +340,7 @@
 
 {$endif Win32}
 
+// Compiler defines not specific to a particlular platform.
 
 {$ifdef COMPILER_1}
   {$define COMPILER_1_UP}
