@@ -303,15 +303,15 @@
       {$ifdef conditionalexpressions}
         {$if Declared(RTLVersion) and (RTLVersion = 14)}
           {$define KYLIX_1}
-        {$endif}
+        {$ifend}
 
         {$if Declared(RTLVersion) and (RTLVersion = 14.2)}
           {$define KYLIX_2}
-        {$endif}
+        {$ifend}
 
         {$if Declared(RTLVersion) and (RTLVersion = 14.5)}
           {$define KYLIX_3}
-        {$endif}
+        {$ifend}
       {$endif}
   {$endif}
 
