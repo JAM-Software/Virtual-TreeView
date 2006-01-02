@@ -22,21 +22,26 @@ package DelphiGems.VirtualTrees.Design;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$IMPLICITBUILD OFF}
+{$DESCRIPTION 'Soft Gems Virtual Treeview design time package'}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
 
 requires
   Borland.Delphi,
+  Borland.Vcl,
+  System.Drawing,
+  System.Windows.Forms,
   DelphiGems.VirtualTrees,
-  Borland.Vcl;
+  Borland.Studio.Vcl.Design;
 
 contains
   DelphiGems.VirtualControls.VirtualTreesReg in '..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas';
 
 ')]
 [assembly: AssemblyConfiguration('')]
-[assembly: AssemblyCompany('')]
-[assembly: AssemblyProduct('')]
-[assembly: AssemblyCopyright('')]
+[assembly: AssemblyCompany('Soft Gems')]
+[assembly: AssemblyProduct('Virtual Treeview')]
+[assembly: AssemblyCopyright('Soft Gems Software Solutions')]
 [assembly: AssemblyTrademark('')]
 [assembly: AssemblyCulture('')]
 

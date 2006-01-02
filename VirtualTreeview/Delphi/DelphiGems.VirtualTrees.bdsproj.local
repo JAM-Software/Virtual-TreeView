@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>2005.07.03 14:38:33.634.resources,V:\Library\VirtualTreeview\Resources\DelphiGems.VirtualControls.VirtualTreeview.resources=</Transaction>
-    <Transaction>2005.07.03 14:51:28.558.bdsproj,V:\Library\VirtualTreeview\Delphi\DelphiGems.VirtualControls.VirtualTrees.bdsproj=V:\Library\VirtualTreeview\Delphi\DelphiGems.VirtualTrees.bdsproj</Transaction>
-    <Transaction>2005.07.03 14:53:56.110.resx,V:\Library\VirtualTreeview\Resources\DelphiGems.VirtualControls.VirtualTreeview.resx=</Transaction>
+    <Transaction>2006.01.02 17:01:53.181.bdsproj,C:\Dokumente und Einstellungen\Mike\Eigene Dateien\Borland Studio Projects\Package1.bdsproj=V:\Library\VirtualTreeview\Delphi\DelphiGems.VirtualTrees.bdsproj</Transaction>
+    <Transaction>2006.01.02 17:04:03.138.pas,V:\Library\VirtualTreeview\Source\VTHeaderPopup.pas=V:\Library\VirtualTreeview\Source\DelphiGems.VirtualControls.VTHeaderPopup.pas</Transaction>
   </Transactions>
 </BorlandProject>

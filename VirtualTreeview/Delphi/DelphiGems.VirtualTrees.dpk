@@ -1,7 +1,7 @@
 package DelphiGems.VirtualTrees;
 
 
-{$ALIGN 8}
+{$ALIGN 0}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
 {$DEBUGINFO ON}
@@ -21,19 +21,21 @@ package DelphiGems.VirtualTrees;
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
-{$IMAGEBASE $400000}
-{$DESCRIPTION 'Virtual Treeview.NET assembly'}
-{$IMPLICITBUILD OFF}
+{$IMAGEBASE $408000}
+{$DESCRIPTION 'Soft Gems Virtual Treeview'}
+{$IMPLICITBUILD ON}
 
 requires
   Borland.Delphi,
+  Borland.Vcl,
+  Borland.VclRtl,
   System.Drawing,
-  System.Windows.Forms,
-  Borland.Vcl;
+  System.Windows.Forms;
 
 contains
-  DelphiGems.VirtualControls.VirtualTrees in '..\Source\DelphiGems.VirtualControls.VirtualTrees.pas',
-  DelphiGems.VirtualControls.VirtualTreesReg in '..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas';
+  DelphiGems.VirtualControls.VirtualTreesReg in '..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas',
+  DelphiGems.VirtualControls.VTHeaderPopup in '..\Source\DelphiGems.VirtualControls.VTHeaderPopup.pas',
+  DelphiGems.VirtualControls.VirtualTrees in '..\Source\DelphiGems.VirtualControls.VirtualTrees.pas';
 
 [assembly: AssemblyDescription('')]
 [assembly: AssemblyConfiguration('')]
@@ -59,7 +61,7 @@ contains
 //      Build Number
 //      Revision
 //
-// You can specify all the values or you can default the Revision and Build Numbers
+// You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 
 [assembly: AssemblyVersion('1.0.*')]
