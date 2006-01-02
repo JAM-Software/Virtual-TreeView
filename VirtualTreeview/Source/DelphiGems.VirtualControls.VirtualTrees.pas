@@ -46,11 +46,12 @@ interface
 
 {$booleval OFF} // Use fastest possible boolean evaluation.
 
-{$I Compilers.inc}
+{$include Compilers.inc}
 {$warn UNIT_PLATFORM off}
 {$warn SYMBOL_PLATFORM off}
 
 uses
+  System.ComponentModel, 
   System.Runtime.InteropServices,
   System.Collections,
   System.Drawing,
@@ -2035,7 +2036,6 @@ type
     procedure Change(Node: TVirtualNode);
     procedure ChangeScale(M, D: Integer); override;
     function CheckParentCheckState(Node: TVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
-    procedure ClearTempCache; virtual;
     function ColumnIsEmpty(Node: TVirtualNode; Column: TColumnIndex): Boolean; virtual;
     function CountLevelDifference(Node1, Node2: TVirtualNode): Integer; virtual;
     function CountVisibleChildren(Node: TVirtualNode): Integer; virtual;
@@ -20002,8 +20002,6 @@ const
   Style: array[TImageType] of Integer = (0, ILD_MASK);
 
 var
-  OverlayImage: Integer;
-  OverlayGhosted: Boolean;
   ExtraStyle: Integer;
   ForegroundColor: COLORREF;
   CutNode: Boolean;
@@ -20028,9 +20026,9 @@ begin
     // Since the overlay image must be specified together with the image to draw
     // it is meaningfull to retrieve it in advance.
     if DoOverlay then
-      OverlayImage := GetImageIndex(PaintInfo, ikOverlay, ImageInfoIndex, Images)
+      GetImageIndex(PaintInfo, ikOverlay, ImageInfoIndex, Images)
     else
-      OverlayImage := -1;
+      PaintInfo.ImageInfo[iiOverlay].Index := -1;
     if (vsDisabled in Node.FStates) or not Enabled then
     begin
       // The internal handling for disabled images in TImageList destroys the forground color on Windows API level.
@@ -20039,8 +20037,8 @@ begin
 
       // If the tree or the current node is disabled then let the VCL draw the image as it already
       // contains code to convert the image to the system colors.
-      if OverlayImage > -1 then
-        Images.DrawOverlay(Canvas, XPos, YPos, Ord(Index), OverlayImage, False)
+      if PaintInfo.ImageInfo[iiOverlay].Index > -1 then
+        Images.DrawOverlay(Canvas, XPos, YPos, Ord(Index), PaintInfo.ImageInfo[iiOverlay].Index, False)
       else
         Images.Draw(Canvas, XPos, YPos, Ord(Index), False);
 
@@ -20048,8 +20046,8 @@ begin
     end
     else
     begin
-      if OverlayImage > -1 then
-        ExtraStyle := ILD_TRANSPARENT or ILD_OVERLAYMASK and IndexToOverlayMask(OverlayImage + 1)
+      if PaintInfo.ImageInfo[iiOverlay].Index > -1 then
+        ExtraStyle := ILD_TRANSPARENT or ILD_OVERLAYMASK and IndexToOverlayMask(PaintInfo.ImageInfo[iiOverlay].Index + 1)
       else
         ExtraStyle := ILD_TRANSPARENT;
 
@@ -20273,7 +20271,7 @@ begin
         with Node do
         begin
           // Set states first, in case the node is invisble.
-          FStates := ChunkBody.FStates;
+          FStates := ChunkBody.States;
 
           FNodeHeight := ChunkBody.NodeHeight;
           AdjustTotalHeight(Node, FNodeHeight);
@@ -20696,7 +20694,7 @@ begin
   // released before the mouse is moved or vice versa. The first case is referred to as wheel scrolling while the
   // latter is called wheel panning.
   StopTimer(ScrollTimer);
-  DoStateChange([tsWheelPanning, tsWheelScrolling]);
+  DoStateChange([tsWheelPanning, tsWheelScrolling], []);
 
   // Register the helper window class.
   PanningWindowClass.hInstance := HInstance;
@@ -21262,7 +21260,7 @@ begin
       Body.ChildCount := ChildCount;
       Body.NodeHeight := FNodeHeight;
       // Some states are only temporary so take them out as they make no sense at the new location.
-      Body.FStates := FStates - [vsChecking, vsCutOrCopy, vsDeleting, vsInitialUserData, vsHeightMeasured];
+      Body.States := FStates - [vsChecking, vsCutOrCopy, vsDeleting, vsInitialUserData, vsHeightMeasured];
       Body.Align := FAlign;
       Body.CheckState := FCheckState;
       Body.CheckType := FCheckType;
@@ -21561,7 +21559,7 @@ procedure TBaseVirtualTree.BeginDrag(Immediate: Boolean; Threshold: Integer);
 begin
   if FDragType = dtVCL then
   begin
-    DoStateChange([tsVCLDragPending]);
+    DoStateChange([tsVCLDragPending], []);
     inherited;
   end
   else
@@ -21575,7 +21573,7 @@ begin
       if Immediate then
         DoDragging(FLastClickPos)
       else
-        DoStateChange([tsOLEDragPending]);
+        DoStateChange([tsOLEDragPending], []);
     end;
 end;
 
@@ -21614,7 +21612,7 @@ begin
       DoUpdating(usSynch);
   end;
   Inc(FSynchUpdateCount);
-  DoStateChange([tsSynchMode]);
+  DoStateChange([tsSynchMode], []);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21633,7 +21631,7 @@ begin
       DoUpdating(usUpdate);
   end;
   Inc(FUpdateCount);
-  DoStateChange([tsUpdating]);
+  DoStateChange([tsUpdating], []);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21719,6 +21717,23 @@ begin
     finally
       EndUpdate;
     end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.ClearChecked;
+
+var
+  Node: TVirtualNode;
+
+begin
+  Node := RootNode.FirstChild;
+  while Assigned(Node) do
+  begin
+    if Node.FCheckState <> csUncheckedNormal then
+      CheckState[Node] := csUncheckedNormal;
+    Node := GetNextNoInit(Node);
   end;
 end;
 
@@ -22310,7 +22325,7 @@ procedure TBaseVirtualTree.FlushClipboard;
 begin
   if ClipboardStates * FStates <> [] then
   begin
-    DoStateChange([tsClipboardFlushing]);
+    DoStateChange([tsClipboardFlushing], []);
     // TODO: clipboard operation
     //OleFlushClipboard;
     CancelCutOrCopy;
@@ -22335,7 +22350,7 @@ begin
     if Node = FRoot then
       Node := nil;
 
-    DoStateChange([tsCollapsing]);
+    DoStateChange([tsCollapsing], []);
     BeginUpdate;
     try
       Stop := Node;
@@ -22375,7 +22390,7 @@ var
 begin
   if FRoot.FTotalCount > 1 then
   begin
-    DoStateChange([tsExpanding]);
+    DoStateChange([tsExpanding], []);
     BeginUpdate;
     try
       if Node = nil then
@@ -22442,10 +22457,9 @@ function TBaseVirtualTree.GetDisplayRect(Node: TVirtualNode; Column: TColumnInde
 var
   Temp: TVirtualNode;
   Offset: Integer;
-  Indent,
+  Indent: Integer;
   TextWidth: Integer;
-  MainColumnHit,
-  Ghosted: Boolean;
+  MainColumnHit: Boolean;
   CurrentBidiMode: TBidiMode;
   CurrentAlignment: TAlignment;
 
@@ -22536,9 +22550,9 @@ begin
         Inc(Offset, FCheckImages.Width + 2);
     end;
     // Consider associated images.
-    if Assigned(FStateImages) and (GetImageIndex(Node, ikState, Column, Ghosted) > -1) then
+    if Assigned(FStateImages) and HasImage(Node, ikState, Column) then
       Inc(Offset, FStateImages.Width + 2);
-    if Assigned(FImages) and (GetImageIndex(Node, ikNormal, Column, Ghosted) > -1) then
+    if Assigned(FImages) and HasImage(Node, ikNormal, Column) then
       Inc(Offset, FImages.Width + 2);
 
     // Offset contains now the distance from the left or right border of the rectangle (depending on bidi mode).
@@ -22607,6 +22621,16 @@ begin
   Result := FRoot.FirstChild;
   if Assigned(Result) and not (vsInitialized in Result.FStates) then
     InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetFirstChecked(State: TCheckState): TVirtualNode;
+
+// Returns the first node in the tree with the given check state.
+
+begin
+  Result := GetNextChecked(nil, State);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23119,15 +23143,14 @@ function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex): Integer;
 var
   Run,
   NextNode: TVirtualNode;
-  NodeLeft,
-  TextLeft,
+  NodeLeft: Integer;
+  TextLeft: Integer;
   CurrentWidth: Integer;
-  WithCheck,
-  WithImages,
-  WithStateImages,
-  Ghosted: Boolean;
-  CheckOffset,
-  ImageOffset,
+  WithCheck: Boolean;
+  WithImages: Boolean;
+  WithStateImages: Boolean;
+  CheckOffset: Integer;
+  ImageOffset: Integer;
   StateImageOffset: Integer;
 
 begin
@@ -23173,9 +23196,9 @@ begin
     TextLeft := NodeLeft;
     if WithCheck and (Run.FCheckType <> ctNone) then
       Inc(TextLeft, CheckOffset);
-    if WithImages and (GetImageIndex(Run, ikNormal, Column, Ghosted) > -1) then
+    if WithImages and HasImage(Run, ikNormal, Column) then
       Inc(TextLeft, ImageOffset);
-    if WithStateImages and (GetImageIndex(Run, ikState, Column, Ghosted) > -1) then
+    if WithStateImages and HasImage(Run, ikState, Column) then
       Inc(TextLeft, StateImageOffset);
 
     CurrentWidth := DoGetNodeWidth(Run, Column);
@@ -23245,6 +23268,23 @@ begin
     if Assigned(Result) and not (vsInitialized in Result.FStates) then
       InitNode(Result);
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNextChecked(Node: TVirtualNode; State: TCheckState = csCheckedNormal): TVirtualNode;
+
+begin
+  if (Node = nil) or (Node = FRoot) then
+    Result := FRoot.FirstChild
+  else
+    Result := GetNextNoInit(Node);
+
+  while Assigned(Result) and (Result.FCheckState <> State) do
+    Result := GetNextNoInit(Result);
+
+  if Assigned(Result) and not (vsInitialized in Result.FStates) then
+    InitNode(Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24009,6 +24049,19 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.GetTextInfo(Node: TVirtualNode; Column: TColumnIndex; const AFont: TFont; var R: TRect;
+  var Text: WideString);
+
+// Generic base method for editors, hint windows etc. to get some info about a node.
+
+begin
+  R := Rect(0, 0, 0, 0);
+  Text := '';
+  AFont.Assign(Font);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetTreeRect: TRect;
 
 // Returns the true size of the tree in pixels. This size is at least ClientHeight x ClientWidth and depends on
@@ -24317,7 +24370,7 @@ begin
   Assert(Node <> FRoot, 'Node must not be the hidden root node.');
 
   WasIterating := tsIterating in FStates;
-  DoStateChange([tsIterating]);
+  DoStateChange([tsIterating], []);
   try
     // prepare function to be used when advancing
     if DoInit then
@@ -24705,7 +24758,7 @@ var
   FirstColumn: TColumnIndex;   // Index of first column which is at least partially visible in the given window.
 
 begin
-  DoStateChange([tsPainting]);
+  DoStateChange([tsPainting], []);
 
   DoBeforePaint(TargetCanvas);
 
@@ -24918,7 +24971,7 @@ begin
                         ImageInfo[iiCheck].Index := Ord(ckInvalid);
                       if ShowStateImages then
                       begin
-                        ImageInfo[iiState].Index := GetImageIndex(Node, ikState, Column, ImageInfo[iiState].Ghosted);
+                        GetImageIndex(PaintInfo, ikState, iiState, FStateImages);
                         if ImageInfo[iiState].Index > -1 then
                           AdjustImageBorder(FStateImages, BidiMode, VAlign, ContentRect, ImageInfo[iiState]);
                       end
@@ -24926,8 +24979,7 @@ begin
                         ImageInfo[iiState].Index := -1;
                       if ShowImages then
                       begin
-                        ImageInfo[iiNormal].Index := GetImageIndex(Node, ImageKind[vsSelected in Node.FStates], Column,
-                          ImageInfo[iiNormal].Ghosted);
+                        GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.FStates], iiNormal, FImages);
                         if ImageInfo[iiNormal].Index > -1 then
                           AdjustImageBorder(FImages, BidiMode, VAlign, ContentRect, ImageInfo[iiNormal]);
                       end
@@ -27496,9 +27548,9 @@ function TCustomVirtualStringTree.DoGetNodeHint(Node: TVirtualNode; Column: TCol
   var LineBreakStyle: TVTTooltipLineBreakStyle): string;
 
 begin
-  Result := inherited DoGetNodeHint(Node, Column);
+  Result := inherited DoGetNodeHint(Node, Column, LineBreakStyle);
   if Assigned(FOnGetHint) then
-    FOnGetHint(Self, Node, Column, ttNormal, Result);
+    FOnGetHint(Self, Node, Column, LineBreakStyle, Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -27622,6 +27674,28 @@ procedure TCustomVirtualStringTree.DoPaintText(Node: TVirtualNode; const Canvas:
 begin
   if Assigned(FOnPaintText) then
     FOnPaintText(Self, Canvas, Node, Column, TextType);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomVirtualStringTree.DoTextDrawing(var PaintInfo: TVTPaintInfo; Text: string; CellRect: TRect;
+  DrawFormat: Integer);
+
+begin
+  DrawTextW(PaintInfo.Canvas.Handle, Text, Length(Text), CellRect, DrawFormat)
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCustomVirtualStringTree.DoTextMeasuring(Canvas: TCanvas; Node: TVirtualNode; Column: TColumnIndex;
+  Text: string): Integer;
+
+var
+  Size: TSize;
+
+begin
+  GetTextExtentPoint32W(Canvas.Handle, Text, Length(Text), Size);
+  Result := Size.cx;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28791,14 +28865,14 @@ begin
               Buffer.Append(Copy(Tabs, 1, Level));
               // Wrap the text with quotation marks if it contains the separator character.
               if (Pos(Separator, Text) > 0) or (Pos('"', Text) > 0) then
-                Buffer.Append(AnsiQuotedStr(Text, '"'))
+                Buffer.Append(QuotedStr(Text, '"'))
               else
                 Buffer.Append(Text);
               Buffer.Append(Copy(Tabs, 1, MaxLevel - Level));
             end
             else
               if (Pos(Separator, Text) > 0) or (Pos('"', Text) > 0) then
-                Buffer.Append(AnsiQuotedStr(Text, '"'))
+                Buffer.Append(QuotedStr(Text, '"'))
               else
                 Buffer.Append(Text);
 
