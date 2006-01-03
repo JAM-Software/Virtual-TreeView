@@ -6,14 +6,12 @@ unit DelphiGems.VirtualControls.VirtualTreesReg;
 interface
 
 {$include Compilers.inc}
+{$warn UNIT_PLATFORM off}
+{$warn SYMBOL_PLATFORM off}
 
 uses
-  Windows,
-  Classes,
-  Borland.Vcl.Design.DesignIntf,
+  Windows, Classes,
   DesignEditors,
-  //Borland.Vcl.Design.VCLEditors,
-//  Borland.Vcl.Design.PropertyCategories,
   DelphiGems.VirtualControls.VirtualTrees;
 
 type
@@ -29,13 +27,11 @@ procedure Register;
 implementation
 
 uses
-  Borland.Vcl.Design.ColnEdit,
-  Borland.Vcl.Design.StrEdit,
-  Borland.Vcl.Types,
+  Types,
   Dialogs, TypInfo, SysUtils, Graphics;
 
 type
-  TClipboardElement = class(TNestedProperty {$ifdef COMPILER_6_UP}, ICustomPropertyDrawing {$endif COMPILER_6_UP})
+  TClipboardElement = class(TNestedProperty, ICustomPropertyDrawing)
   private
     FElement: string;
   protected
@@ -66,10 +62,10 @@ type
     procedure PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
   end;
 
-    resourcestring
-      sVTHeaderCategoryName = 'Header';
-      sVTPaintingCategoryName = 'Custom painting';
-      sVTIncremenalCategoryName = 'Incremental search';
+  resourcestring
+    sVTHeaderCategoryName = 'Header';
+    sVTPaintingCategoryName = 'Custom painting';
+    sVTIncremenalCategoryName = 'Incremental search';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -281,15 +277,9 @@ end;
       Font.Color := clBtnHighlight;
       S := '(OLE drag and clipboard)';
       SetBkMode(Handle, TRANSPARENT);
-{$IFDEF DELPHI.NET}
       ExtTextOut(Handle, R.Left + 1, R.Top + 1, ETO_CLIPPED, R, S, Length(S), nil);
       Font.Color := clBtnShadow;
       ExtTextOut(Handle, R.Left, R.Top, ETO_CLIPPED, R, S, Length(S), nil);
-{$ELSE DELPHI.NET}
-      ExtTextOut(Handle, R.Left + 1, R.Top + 1, ETO_CLIPPED, @R, PChar(S), Length(S), nil);
-      Font.Color := clBtnShadow;
-      ExtTextOut(Handle, R.Left, R.Top, ETO_CLIPPED, @R, PChar(S), Length(S), nil);
-{$ENDIF DELPHI.NET}
     end;
   end;
 

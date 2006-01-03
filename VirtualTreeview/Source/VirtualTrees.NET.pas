@@ -1,4 +1,4 @@
-﻿unit DelphiGems.VirtualControls.VirtualTrees;
+﻿unit VirtualTrees.NET;
 
 // Version 1.0.0
 //
@@ -2517,6 +2517,7 @@ type
     property RootNode: TVirtualNode read FRoot;
     property SearchBuffer: string read FSearchBuffer;
     property Selected[Node: TVirtualNode]: Boolean read GetSelected write SetSelected;
+    property Selection: ArrayList read FSelection;
     property TotalCount: Integer read GetTotalCount;
     property TreeStates: TVirtualTreeStates read FStates write FStates;
     property TopNode: TVirtualNode read GetTopNode write SetTopNode;
@@ -3165,8 +3166,6 @@ procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
 
 implementation
               
-{$R 'DelphiGems.VirtualControls.VirtualTreeview.resources'}
-
 uses
   // TODO: Check, which units are obsolete.
   Consts, Math,
@@ -3202,8 +3201,8 @@ const
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
-  Copyright: string = 'Virtual Treeview © 1999, 2005 Mike Lischke';
-  ResourceBaseName = 'DelphiGems.VirtualControls.VirtualTreeview';
+  Copyright: string = 'Virtual Treeview © 1999 - 2006 Mike Lischke';
+  ResourceBaseName = 'VirtualTrees.NET';
 
 var
   StandardOLEFormat: TFormatEtc = (

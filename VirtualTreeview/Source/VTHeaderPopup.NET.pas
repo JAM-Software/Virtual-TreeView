@@ -1,4 +1,4 @@
-unit DelphiGems.VirtualControls.VTHeaderPopup;
+unit VTHeaderPopup.NET;
 
 //----------------------------------------------------------------------------------------------------------------------
 // The contents of this file are subject to the Mozilla Public License
@@ -40,21 +40,21 @@ unit DelphiGems.VirtualControls.VTHeaderPopup;
 //   - Conditional code rearrangement to get back Ctrl+Shift+Up/Down navigation.
 //
 // Modified 31 Mar 2003 by Mike Lischke <public@soft-gems.net>.
-//   - Added a check for the PopupComponent property before casting it hardly to 
+//   - Added a check for the PopupComponent property before casting it hardly to
 //     a Virtual Treeview. People might (accidentally) misuse the header popup.
 //
 // Modified 20 Oct 2002 by Borut Maricic <borut.maricic@pobox.com>.
-//   - Added the possibility to use Troy Wolbrink's Unicode aware popup menu. 
-//     Define the compiler symbol TNT to enable it. You can get Troy's Unicode 
+//   - Added the possibility to use Troy Wolbrink's Unicode aware popup menu.
+//     Define the compiler symbol TNT to enable it. You can get Troy's Unicode
 //     controls collection from http://home.ccci.org/wolbrink/tnt/delphi_unicode_controls.htm.
 //
 // Modified 24 Feb 2002 by Ralf Junker <delphi@zeitungsjunge.de>.
-//   - Fixed a bug where the OnAddHeaderPopupItem would interfere with 
+//   - Fixed a bug where the OnAddHeaderPopupItem would interfere with
 //     poAllowHideAll options.
 //   - All column indexes now consistently use TColumnIndex (instead of Integer).
 //
 // Modified 23 Feb 2002 by Ralf Junker <delphi@zeitungsjunge.de>.
-//   - Added option to show menu items in the same order as the columns or in 
+//   - Added option to show menu items in the same order as the columns or in
 //     original order.
 //   - Added option to prevent the user to hide all columns.
 //
@@ -64,10 +64,13 @@ unit DelphiGems.VirtualControls.VTHeaderPopup;
 
 {$I Compilers.inc}
 
+{$warn UNIT_PLATFORM off}
+{$warn SYMBOL_PLATFORM off}
+
 interface
 
 uses
-  Menus, VirtualTrees;
+  Borland.Vcl.Menus, Variants, VirtualTrees.NET;
 
 type
   TVTHeaderPopupOption = (
@@ -143,14 +146,14 @@ procedure TVTHeaderPopupMenu.OnMenuItemClick(Sender: TObject);
 begin
   if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then
     with TVTMenuItem(Sender),
-      TVirtualTreeCast(PopupComponent).Header.Columns.Items[Tag] do
+      TVirtualTreeCast(PopupComponent).Header.Columns.Items[Tag as Integer] do
     begin
       if Checked then
         Options := Options - [coVisible]
       else
         Options := Options + [coVisible];
 
-       DoColumnChange(TVTMenuItem(Sender).Tag, not Checked);
+       DoColumnChange(TVTMenuItem(Sender).Tag as Integer, not Checked);
     end;
 end;
 
@@ -205,7 +208,7 @@ begin
           if Cmd <> apHidden then
           begin
             NewMenuItem := TVTMenuItem.Create(Self);
-            NewMenuItem.Tag := ColIdx;
+            NewMenuItem.Tag := Variant(ColIdx);
             NewMenuItem.Caption := Text;
             NewMenuItem.Hint := Hint;
             NewMenuItem.ImageIndex := ImageIndex;
