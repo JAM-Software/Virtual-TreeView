@@ -653,6 +653,10 @@ type
   end;
 
   // ----- OLE drag'n drop handling
+  
+  { 01.05.2006  Jim - Problem with BDS2006 C++ compiler and ambiguous defines
+  {$EXTERNALSYM IDropTargetHelper}
+
   IDropTargetHelper = interface(IUnknown)
     [SID_IDropTargetHelper]
     function DragEnter(hwndTarget: HWND; pDataObject: IDataObject; var ppt: TPoint; dwEffect: Integer): HRESULT; stdcall;
