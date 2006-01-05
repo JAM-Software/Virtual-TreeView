@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.3
+// Version 4.4.4
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// January 2006
+//   - Improvement: tree states for double clicks (left, middle, right).
 // December 2005
 //   - Bug fix: check for column index for auto setting main column if the current one is deleted.
 //
@@ -83,7 +85,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.3';
+  VTVersion = '4.4.4';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1277,14 +1279,17 @@ type
     tsIterating,              // Set when IterateSubtree is currently in progress.
     tsKeyCheckPending,        // A check operation is under way, initiated by a key press (space key). Ignore mouse.
     tsLeftButtonDown,         // Set when the left mouse button is down.
+    tsLeftDblClick,           // Set when the left mouse button was doubly clicked.
     tsMouseCheckPending,      // A check operation is under way, initiated by a mouse click. Ignore space key.
     tsMiddleButtonDown,       // Set when the middle mouse button is down.
+    tsMiddleDblClick,         // Set when the middle mouse button was doubly clicked.
     tsNeedScale,              // On next ChangeScale scale the default node height.
     tsNeedRootCountUpdate,    // Set if while loading a root node count is set.
     tsOLEDragging,            // OLE dragging in progress.
     tsOLEDragPending,         // User has requested to start delayed dragging.
     tsPainting,               // The tree is currently painting itself.
     tsRightButtonDown,        // Set when the right mouse button is down.
+    tsRightDblClick,          // Set when the right mouse button was doubly clicked.
     tsPopupMenuShown,         // The user clicked the right mouse button, which might cause a popup menu to appear.
     tsScrolling,              // Set when autoscrolling is active.
     tsScrollPending,          // Set when waiting for the scroll delay time to elapse.
@@ -16115,11 +16120,13 @@ var
   HitInfo: THitInfo;
 
 begin
+  DoStateChange([tsLeftDblClick]);
   inherited;
 
   // get information about the hit
   GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
   HandleMouseDblClick(Message, HitInfo);
+  DoStateChange([], [tsLeftDblClick]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -16163,6 +16170,7 @@ var
   HitInfo: THitInfo;
 
 begin
+  DoStateChange([tsMiddleDblClick]);
   inherited;
 
   // get information about the hit
@@ -16171,6 +16179,7 @@ begin
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
     HandleMouseDblClick(Message, HitInfo);
   end;
+  DoStateChange([tsMiddleDblClick]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -16438,6 +16447,7 @@ var
   HitInfo: THitInfo;
 
 begin
+  DoStateChange([tsRightDblClick]);
   inherited;
 
   // get information about the hit
@@ -16446,6 +16456,7 @@ begin
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
     HandleMouseDblClick(Message, HitInfo);
   end;
+  DoStateChange([tsRightDblClick]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21774,7 +21785,7 @@ begin
         else
           Images.Draw(Canvas, XPos, YPos, Index, False);
 
-        SetTextColor(Canvas.Handle, Canvas.Font.Color);
+        SetTextColor(Canvas.Handle, ColorToRGB(Canvas.Font.Color));
       end
     else
       with ImageInfo[ImageInfoIndex] do
