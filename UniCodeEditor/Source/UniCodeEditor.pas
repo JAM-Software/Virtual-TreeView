@@ -276,8 +276,9 @@ type
   TUCELineStates = set of (
     lsFolded,                // The line is folded. Use the line info record to know what to display and
                              // how large the folded area is.
-    lsValidated,             // If not set then line has not been validated (parsed, bounds are not determined etc.).
     lsSelected,              // Set when the whole line is selected.
+    lsValidated,             // If not set then line has not been officially validated (for users of the edit control).
+    lsValidatedInternally,   // If not set then line has not initialized its internal structures.
     lsWrapped                // Line is wrapped at the the right margin.
   );
 
@@ -325,8 +326,6 @@ type
     FData: TObject;                              // Application defined data.
     FCharWidthArray: TDistanceArray;             // Distances between two consecutive characters. Needed for ExtTextOut.
     procedure SetText(const Value: WideString);
-    function GetValid: Boolean;
-    procedure SetValid(const Value: Boolean);
   protected
     procedure Changed; virtual;
     function CharIndexToColumn(Index: Integer): Integer;
@@ -334,7 +333,8 @@ type
     procedure ComputeCharacterWidths(TabSize, DefaultWidth: Integer);
     procedure DrawMarkers(Index: Integer; Canvas: TCanvas; X, Y: Integer); virtual;
     function GetLineEnd(IgnoreWhiteSpace: Boolean): Integer;
-    procedure Invalidate; virtual;
+    procedure InternalInvalidate; virtual;
+    procedure InternalValidate; virtual;
     function NextCharPos(ThisPosition: Integer; ForceNonDefault: Boolean = False): Integer;
     function PreviousCharPos(ThisPosition: Integer): Integer; overload;
   public
@@ -346,6 +346,7 @@ type
     procedure ClearMarkers;
     procedure ClearStyles;
     function HasMarker(Marker: IUCELineMarker): Boolean;
+    procedure Invalidate; virtual;
     procedure RemoveMarker(Marker: IUCELineMarker);
     procedure ReplaceMarker(OldMarker, NewMarker: IUCELineMarker);
     function PeekStyle: IUCELineStyle;
@@ -361,7 +362,6 @@ type
     property LexerState: Integer read FLexerState write FLexerState;
     property States: TUCELineStates read FStates;
     property Text: WideString read FText write SetText;
-    property Valid: Boolean read GetValid write SetValid;
   end;
 
   // The format of the text to load or write.
@@ -418,8 +418,6 @@ type
     function InsertLine(Index: Integer; const Text: WideString): TUCELine;
     procedure InvalidateAll;
     procedure LoadFromStream(Stream: TStream; Format: TTextFormat; Language: LCID = 0);
-    procedure RevalidateLine(Index: Integer); overload;
-    procedure RevalidateLine(Line: TUCELine); overload;
     procedure SaveToStream(Stream: TStream; Format: TTextFormat; Language: LCID = 0; WithBOM: Boolean = True);
 
     property Modified: Boolean read FModified write SetModified;
@@ -1508,14 +1506,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TUCELine.GetValid: Boolean;
-
-begin
-  Result := lsValidated in FStates;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TUCELine.SetText(const Value: WideString);
 
 begin
@@ -1525,24 +1515,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TUCELine.SetValid(const Value: Boolean);
-
-begin
-  if (lsValidated in FStates) <> Value then
-  begin
-    if Value then
-      Validate
-    else
-      Invalidate;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TUCELine.Changed;
 
 begin
-  Invalidate;
+  InternalInvalidate;
   FOwner.DoChangeLine(Self);
 end;
 
@@ -1557,8 +1533,7 @@ var
   CharWidth: Integer;
 
 begin
-  if not (lsValidated in FStates) then
-    Validate;
+  InternalValidate;
 
   I := 0;
   Result := 0;
@@ -1589,8 +1564,7 @@ var
   CharWidth: Integer;
 
 begin
-  if not (lsValidated in FStates) then
-    Validate;
+  InternalValidate;
 
   CharWidth := FOwner.FOwner.CharWidth;
   Column := Column * CharWidth;
@@ -1678,21 +1652,37 @@ function TUCELine.GetLineEnd(IgnoreWhiteSpace: Boolean): Integer;
 // hence the returned column is the first one after the last non-white space character.
 
 begin
-  if not (lsValidated in FStates) then
-    Validate;
-
   Result := CharIndexToColumn(Length(FText));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TUCELine.Invalidate;
+procedure TUCELine.InternalInvalidate;
+
+// Invalidates the line's internal structures and its external state as seen by the application.
 
 begin
-  if lsValidated in FStates then
+  if lsValidatedInternally in FStates then
   begin
-    Exclude(FStates, lsValidated);
-    FCharWidthArray := nil;
+    Exclude(FStates, lsValidatedInternally);
+    FCharwidthArray := nil;
+  end;
+
+  // Changes made to the line that invalidates it also very likely renders the external state invalid.
+  Invalidate;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TUCELine.InternalValidate;
+
+// Validates the line's internal structures.
+
+begin
+  if not (lsValidatedInternally in FStates) then
+  begin
+    Include(FStates, lsValidatedInternally);
+    ComputeCharacterWidths(FOwner.FOwner.TabSize, FOwner.FOwner.CharWidth);
   end;
 end;
 
@@ -1708,8 +1698,7 @@ var
   I: Cardinal;
 
 begin
-  if not (lsValidated in FStates) then
-    Validate;
+  InternalValidate;
 
   with FOwner.FOwner do
   begin
@@ -1753,8 +1742,7 @@ var
   I: Integer;
 
 begin
-  if not (lsValidated in FStates) then
-    Validate;
+  InternalValidate;
 
   with FOwner.FOwner do
   begin
@@ -1874,6 +1862,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TUCELine.Invalidate;
+
+// Invalidates the line's external validation state as seen by the application.
+
+begin
+  if lsValidated in FStates then
+    Exclude(FStates, lsValidated);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TUCELine.RemoveMarker(Marker: IUCELineMarker);
 
 // Removes the given marker from the list of markers for this line.
@@ -1983,11 +1982,13 @@ end;
 
 procedure TUCELine.Validate;
 
+// Validates the line's external validation state as seen by the application.
+
 begin
   if not (lsValidated in FStates) then
   begin
     Include(FStates, lsValidated);
-    ComputeCharacterWidths(FOwner.FOwner.TabSize, FOwner.FOwner.CharWidth);
+    FOwner.DoValidateLine(Self);
   end;
 end;
 
@@ -2017,10 +2018,10 @@ function TUniCodeEditorContent.GetLine(Index: Integer): TUCELine;
 
 begin
   Result := FLines[Index];
-  if Assigned(Result) and not (lsValidated in Result.FStates) then
+  if Assigned(Result) then
   begin
+    Result.InternalValidate;
     Result.Validate;
-    DoValidateLine(Result);
   end;
 end;
 
@@ -2331,7 +2332,7 @@ end;
 
 procedure TUniCodeEditorContent.InvalidateAll;
 
-// Invalidates all lines.
+// Invalidates all lines (external validation state).
 
 var
   I: Integer;
@@ -2433,7 +2434,10 @@ begin
   else
   begin
     Result.Y := FCount - 1;
-    Result.X := Self[FCount - 1].GetLineEnd(False);
+
+    // Don't trigger the external validation event for that line. To determine its end
+    // it is enough to internally validate the line.
+    Result.X := FLines[FCount - 1].GetLineEnd(False);
   end;
 end;
 
@@ -2510,22 +2514,6 @@ begin
         SetText(SW);
       end;
   end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TUniCodeEditorContent.RevalidateLine(Index: Integer);
-
-begin
-  FLines[Index].Invalidate;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TUniCodeEditorContent.RevalidateLine(Line: TUCELine);
-
-begin
-  Line.Invalidate;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

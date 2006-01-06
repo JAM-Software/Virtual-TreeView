@@ -21,12 +21,14 @@ unit GraphicEx;
 //
 // See help file for a description of supported image formats.
 //
-// Version II.1.13
+// Version II.1.14
 //
 // Note: This library can be compiled with Delphi 5 or newer versions.
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// December 2005
+//   - Bug fix: The filter string returned for open dialogs was incorrect, which caused missing files in the dialog.
 // November 2005
 //   - Bug fix: correct handling of 256 colors in PPM files.
 // October 2005
@@ -62,7 +64,7 @@ uses
   GraphicCompression, GraphicStrings, GraphicColor;
 
 const
-  GraphicExVersion = 'II.1.13';
+  GraphicExVersion = 'II.1.14';
 
 type
   TCardinalArray = array of Cardinal;
@@ -1588,7 +1590,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure SwapDouble(const Source; var Target); 
+function SwapLong(Value: Integer): Integer; overload;
+
+// Swaps high and low bytes of the given 32 bit value.
+
+asm
+        BSWAP   EAX
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure SwapDouble(const Source; var Target);
 
 // Reverses the byte order in Source which must be 8 bytes in size (as well as the target). 
 
@@ -1622,6 +1634,18 @@ function ReadBigEndianDouble(var Run: PChar): Double;
 begin
   SwapDouble(Run^, Result);
   Inc(Run, SizeOf(Double));
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function ReadBigEndianInteger(var Run: PChar): Integer;
+
+// Reads the next four bytes from the memory pointed to by Run, converts this into a cardinal number (inclusive byte
+// order swapping) and advances Run.
+
+begin
+  Result := SwapLong(PInteger(Run)^);
+  Inc(PInteger(Run));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7161,10 +7185,10 @@ begin
         begin
           with Bounds do
           begin
-            Top := ReadBigEndianCardinal(Run);
-            Left := ReadBigEndianCardinal(Run);
-            Bottom := ReadBigEndianCardinal(Run);
-            Right := ReadBigEndianCardinal(Run);
+            Top := ReadBigEndianInteger(Run);
+            Left := ReadBigEndianInteger(Run);
+            Bottom := ReadBigEndianInteger(Run);
+            Right := ReadBigEndianInteger(Run);
           end;
           DefaultColor := Byte(Run^);
           Inc(Run);
@@ -9718,8 +9742,8 @@ begin
     // First include the general entry if wanted (this entry is never taken into sort order.
     S := '';
     for J := 0 to All.Count - 1 do
-      S := S + '*.' + All[J] + '; ';
-    SetLength(S, Length(S) - 2);
+      S := S + '*.' + All[J] + ';';
+    SetLength(S, Length(S) - 1);
     Result := gesAllImages + '|' + S + '|';
   end;
 
@@ -10045,9 +10069,7 @@ initialization
     {$ifdef TIFFGraphic}
       RegisterFileFormat('tif', gesTIFF, gesPCTIF, [ftRaster, ftMultiImage], False, TTIFFGraphic);
       RegisterFileFormat('tiff', '', gesMacTIFF, [ftRaster, ftMultiImage], False, TTIFFGraphic);
-      // TODO: Including the fax extension registration will make the filter string for open/save dialogs somehow
-      //       messed up, so that tif images do not show up. Must be further investigated.
-      //RegisterFileFormat('fax', '', gesGFIFax, [ftRaster, ftMultiImage], False, TTIFFGraphic);
+      RegisterFileFormat('fax', '', gesGFIFax, [ftRaster, ftMultiImage], False, TTIFFGraphic);
       {$ifdef EPSGraphic}
         RegisterFileFormat('eps', gesEPS, '', [ftRaster], False, TEPSGraphic);
       {$endif EPSGraphic}

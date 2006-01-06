@@ -27,11 +27,10 @@ package Misc7;
 
 requires
   rtl,
-  vcl;
+  vcl,
+  Tools;
 
 contains
-  Tools in '..\Tools.pas',
-  LexicalTools in '..\LexicalTools.pas',
-  GraphicTools in '..\GraphicTools.pas';
+  LexicalTools in '..\LexicalTools.pas';
 
 end.
