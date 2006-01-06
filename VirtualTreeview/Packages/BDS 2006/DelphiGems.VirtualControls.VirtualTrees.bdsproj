@@ -16,7 +16,7 @@
 			<FileVersion Name="Version">7.0</FileVersion>
 		</FileVersion>
 		<Compiler>
-			<Compiler Name="A">8</Compiler>
+			<Compiler Name="A">4</Compiler>
 			<Compiler Name="B">0</Compiler>
 			<Compiler Name="C">1</Compiler>
 			<Compiler Name="D">1</Compiler>
@@ -127,11 +127,11 @@
 			<Directories Name="Packages">c:\windows\microsoft.net\framework\v1.1.4322\System.XML.dll;c:\windows\microsoft.net\framework\v1.1.4322\System.Data.dll;c:\windows\microsoft.net\framework\v1.1.4322\System.dll;c:\windows\microsoft.net\framework\v1.1.4322\System.Windows.Forms.dll;Borland.Vcl;c:\windows\microsoft.net\framework\v1.1.4322\System.Drawing.dll</Directories>
 			<Directories Name="Conditionals"></Directories>
 			<Directories Name="DebugSourceDirs"></Directories>
-			<Directories Name="UsePackages">False</Directories>
+			<Directories Name="UsePackages">True</Directories>
 		</Directories>
 		<Parameters>
 			<Parameters Name="RunParams"></Parameters>
-			<Parameters Name="HostApplication"></Parameters>
+			<Parameters Name="HostApplication">V:\Demos\Virtual Treeview .NET\Test\Output\VCLFormsApp.exe</Parameters>
 			<Parameters Name="Launcher"></Parameters>
 			<Parameters Name="UseLauncher">False</Parameters>
 			<Parameters Name="DebugCWD"></Parameters>
@@ -168,28 +168,8 @@
 		</VersionInfoKeys>  
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     <FileList>
+      <File FileName="..\..\Source\VirtualTrees.NET.resx" ContainerId="ResXCompiler" ModuleName="VirtualTrees.NET"/>
       <File FileName="$(SystemRoot)\microsoft.net\framework\v1.1.4322\System.Drawing.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="System.Drawing" AssemblyName="system.drawing" Version="1.0.5000.0" LinkUnits="False"/>
       <File FileName="c:\programme\gemeinsame dateien\borland shared\bds\shared assemblies\4.0\Borland.Vcl.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Vcl" AssemblyName="Borland.Vcl" Version="10.0.4143.0" LinkUnits="False"/>
       <File FileName="$(SystemRoot)\microsoft.net\framework\v1.1.4322\System.Windows.Forms.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="System.Windows.Forms" AssemblyName="System.Windows.Forms" Version="1.0.5000.0" LinkUnits="False"/>

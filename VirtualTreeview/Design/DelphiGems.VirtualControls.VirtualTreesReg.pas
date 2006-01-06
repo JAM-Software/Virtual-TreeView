@@ -11,14 +11,16 @@ interface
 
 uses
   Windows, Classes,
-  DesignEditors,
-  DelphiGems.VirtualControls.VirtualTrees;
+  // DesignEditors,
+  VirtualTrees.NET;
 
+{
 type
   TVirtualTreeEditor = class (TDefaultEditor)
   public
     procedure Edit; override;
   end;
+}
 
 procedure Register;
 
@@ -30,6 +32,7 @@ uses
   Types,
   Dialogs, TypInfo, SysUtils, Graphics;
 
+{
 type
   TClipboardElement = class(TNestedProperty, ICustomPropertyDrawing)
   private
@@ -291,11 +294,14 @@ end;
     // Nothing to do here.
   end;
 
+}
 
 procedure Register;
 
 begin
-  RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree{.sm not now, TVTHeaderPopupMenu}]);
+  RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree, TVTHeaderPopupMenu]);
+
+  {
   RegisterComponentEditor(TVirtualStringTree, TVirtualTreeEditor);
   RegisterComponentEditor(TVirtualDrawTree, TVirtualTreeEditor);
   RegisterPropertyEditor(TypeInfo(TClipboardFormats), nil, '', TClipboardFormatsProperty);
@@ -398,6 +404,7 @@ begin
     RegisterPropertiesInCategory(sVTIncremenalCategoryName,
       TBaseVirtualTree,
       ['*Incremental*']);
+  }
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

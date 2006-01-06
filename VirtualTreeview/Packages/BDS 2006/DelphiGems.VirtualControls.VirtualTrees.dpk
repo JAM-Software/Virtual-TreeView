@@ -1,6 +1,6 @@
 package DelphiGems.VirtualControls.VirtualTrees;
 
-{$ALIGN 8}
+{$ALIGN 4}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
 {$DEBUGINFO ON}
@@ -24,6 +24,7 @@ package DelphiGems.VirtualControls.VirtualTrees;
 {$DESCRIPTION 'Virtual Treeview runtime package'}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
+{$R '..\..\Source\VirtualTrees.NET.resources' '..\..\Source\VirtualTrees.NET.resx'}
 
 requires
   System.Drawing,

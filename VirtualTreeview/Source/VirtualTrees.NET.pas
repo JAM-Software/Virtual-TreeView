@@ -3165,7 +3165,9 @@ procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
 //----------------------------------------------------------------------------------------------------------------------
 
 implementation
-              
+
+{$R VirtualTrees.NET.resources}
+
 uses
   // TODO: Check, which units are obsolete.
   Consts, Math,
