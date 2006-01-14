@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.4
+// Version 4.4.5
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // January 2006
+//   - Bug fix: VT.EndUpdate did not invalidate the cache so the cache was never used again after that.
 //   - Improvement: tree states for double clicks (left, middle, right).
 // December 2005
 //   - Bug fix: check for column index for auto setting main column if the current one is deleted.
@@ -85,7 +86,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.4';
+  VTVersion = '4.4.5';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -10312,7 +10313,7 @@ function TVTHeader.HandleHeaderMouseMove(var Message: TWMMouseMove): Boolean;
 
 var
   P: TPoint;
-  I: Integer;
+  I: TColumnIndex;
   
 begin
   Result := False;
@@ -10381,7 +10382,7 @@ function TVTHeader.HandleMessage(var Message: TMessage): Boolean;
 var
   P: TPoint;
   R: TRect;
-  I: Integer;
+  I: TColumnIndex;
   OldPosition: Integer;
   HitIndex: TColumnIndex;
   NewCursor: HCURSOR;
@@ -10829,7 +10830,7 @@ end;
 procedure TVTHeader.UpdateSpringColumns;
 
 var
-  I: Integer;
+  I: TColumnIndex;
   SpringCount: Integer;
   Sign: Integer;
   ChangeBy: Single;
@@ -11110,7 +11111,7 @@ procedure TVTHeader.RestoreColumns;
 // Restores all columns to their width which they had before they have been auto fitted.
 
 var
-  I: Integer;
+  I: TColumnIndex;
 
 begin
   with FColumns do
@@ -16183,7 +16184,7 @@ begin
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
     HandleMouseDblClick(Message, HitInfo);
   end;
-  DoStateChange([tsMiddleDblClick]);
+  DoStateChange([], [tsMiddleDblClick]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -16460,7 +16461,7 @@ begin
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
     HandleMouseDblClick(Message, HitInfo);
   end;
-  DoStateChange([tsRightDblClick]);
+  DoStateChange([], [tsRightDblClick]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23256,6 +23257,7 @@ begin
       else
         ShowError(SCannotSetUserData, hcTFCannotSetUserData);
 
+    InvalidateCache;
     if FUpdateCount = 0 then
     begin
       ValidateCache;
@@ -24108,6 +24110,8 @@ begin
         FSelectionCount := NewSize;
         SetLength(FSelection, FSelectionCount);
       end;
+      
+      InvalidateCache;
       ValidateCache;
       if HandleAllocated then
         UpdateScrollBars(False);
