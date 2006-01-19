@@ -1,7 +1,7 @@
 unit ThemeMgr;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Version 1.12.0
+// Version 1.12.1
 //
 // Windows XP Theme Manager is freeware. You may freely use it in any software, including commercial software, provided
 // you accept the following conditions:
@@ -34,6 +34,8 @@ unit ThemeMgr;
 //       is usually not allocated) is set to that of the main application, e.g. by passing it via an exported function.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// January 2006
+//   - Improvement: color edit messages handling for treeviews and listviews.
 // February 2005
 //   - Code donation by Ervin Marguc: Grayed out image for disabled TBitBtn and TSpeedButton if there is only one image.
 //   - Bug fix: control list handling is wrong when theming is switched off programmatically and closing the application. 
@@ -1345,18 +1347,12 @@ begin
               Mask := Mask and not LVCF_IMAGE;
           end;
         end;
-      else
-        if (ThemeServices <> nil) and ThemeServices.ThemesEnabled then
+      WM_CTLCOLOREDIT:
+        with TWMCtlColorEdit(Message) do
         begin
-          case Message.Msg of
-            WM_CTLCOLOREDIT:
-              with TWMCtlColorEdit(Message) do
-              begin
-                SetBkColor(ChildDC, ColorToRGB(TControlCast(Control).Color));
-                SetTextColor(ChildDC, ColorToRGB(TControlCast(Control).Font.Color));
-                Result := TWinControl(Control).Brush.Handle;
-              end;
-          end;
+          SetBkColor(ChildDC, ColorToRGB(TControlCast(Control).Color));
+          SetTextColor(ChildDC, ColorToRGB(TControlCast(Control).Font.Color));
+          Result := TWinControl(Control).Brush.Handle;
         end;
     end;
 

@@ -151,8 +151,6 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   CF_HTML,
   CF_CSV: Word;
 
-{$MinEnumSize 4, make enumerations integer sized to have room for later expansion}
-
 type
   // Indices for check state images used for checking.
   TCheckImageIndex = (
@@ -531,6 +529,7 @@ type
   public
     constructor Create(Tree: TBaseVirtualTree); virtual;
 
+    property CheckType: TCheckType read FCheckType;
     property ChildCount: Integer read FChildCount;
     property Data: TObject read FData write FData;
     property FirstChild: TVirtualNode read FFirstChild write FFirstChild; 
@@ -539,6 +538,7 @@ type
     property Parent: TVirtualNode read FParent write FParent;
     property PreviousSibling: TVirtualNode read FPrevSibling write FPrevSibling;
     property Index: Integer read FIndex write FIndex;
+    property States: TVirtualNodeStates read FStates;
   end;
   TVirtualNodeClass = class of TVirtualNode;
 
@@ -2740,10 +2740,9 @@ type
 
     function ComputeNodeHeight(Canvas: TCanvas; Node: TVirtualNode; Column: TColumnIndex; S: string): Integer; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
-    function ContentToHTML(Source: TVSTTextSourceType; Caption: string = ''): string;
-    function ContentToRTF(Source: TVSTTextSourceType): string;
-    function ContentToText(Source: TVSTTextSourceType; Separator: Char): string;
-    function ContentToUnicode(Source: TVSTTextSourceType; Separator: Char): string;
+    function ContentToHTML(Source: TVSTTextSourceType; Caption: string = ''): StringBuilder;
+    function ContentToRTF(Source: TVSTTextSourceType): StringBuilder;
+    function ContentToText(Source: TVSTTextSourceType; Separator: string): StringBuilder;
     procedure GetTextInfo(Node: TVirtualNode; Column: TColumnIndex; const AFont: TFont; var R: TRect;
       var Text: string); override;
     function InvalidateNode(Node: TVirtualNode): TRect; override;
@@ -10267,6 +10266,7 @@ begin
   FClipboardFormats := TClipboardFormats.Create(Self);
   FOptions := GetOptionsClass.Create(Self);
   FSelection := ArrayList.Create;
+  FHintData := TVTHintData.Create;
 
   AddThreadReference;
   InitRootNode;
@@ -11973,12 +11973,11 @@ var
   CLRBitmap: System.Drawing.Bitmap;
   Bits: TVTLineStyleBits;
   Details: TThemedElementDetails;
-  Instance: HINST;
+  BitmapHandle: HBITMAP;
 
 begin
   if NeedButtons then
   begin
-    Instance := HINST(Marshal.GetHINSTANCE(Assembly.GetCallingAssembly.GetModules(true)[0]));
     with FMinusBM, Canvas do
     begin
       // box is always of odd size
@@ -12012,7 +12011,7 @@ begin
           LineTo(Width - 2 , Width div 2);
         end
         else
-          FMinusBM.Handle := LoadBitmap(Instance, 'VT XP button minus.bmp');
+          FMinusBM.Handle := LoadBitmap(0, 'VT XP button minus.bmp');
       end;
     end;
 
@@ -12051,7 +12050,7 @@ begin
           LineTo(Width div 2, Width - 2);
         end
         else
-          FPlusBM.Handle := LoadBitmap(Instance, 'VT XP button plus.bmp');
+          FPlusBM.Handle := LoadBitmap(0, 'VT XP button plus.bmp');
       end;
     end;
 
@@ -12079,21 +12078,22 @@ begin
       Bits := LineBitsDotted;
       DoGetLineStyle(Bits);
     end;
-    //convert LineBits into 8x8 bitmap and create FDottedBrush
-    CLRBitmap:=System.Drawing.Bitmap.Create(8, 8, PixelFormat.Format1bppIndexed);
-    try
-      CLRBitmapData:=CLRBitmap.LockBits(System.Drawing.Rectangle.Create(0, 0, 7, 7), ImageLockMode.WriteOnly, PixelFormat.Format1bppIndexed);
-      try
-        Marshal.Copy(Bits, 0, CLRBitmapData.Scan0, 8);
-      finally
-        CLRBitmap.UnlockBits(CLRBitmapData);
-      end;
-      FDottedBrush := CreatePatternBrush(HBitmap(CLRBitmap.GetHbitmap));
-    finally
-      CLRBitmap.Free; 
-    end;
-  end;
 
+    // Convert LineBits into 8x8 bitmap and create FDottedBrush.
+    CLRBitmap := System.Drawing.Bitmap.Create(8, 8, PixelFormat.Format1bppIndexed);
+    CLRBitmapData := CLRBitmap.LockBits(System.Drawing.Rectangle.Create(0, 0, 8, 8), ImageLockMode.WriteOnly,
+      PixelFormat.Format1bppIndexed);
+    try
+      Marshal.Copy(Bits, 0, CLRBitmapData.Scan0, 8);
+    finally
+      CLRBitmap.UnlockBits(CLRBitmapData);
+    end;
+    {$ifopt R+}  {$define RangeCheck} {$R-} {$endif}
+    BitmapHandle := HBITMAP(CLRBitmap.GetHbitmap);
+    {$ifdef RangeCheck} {$undef RangeCheck} {$R+} {$endif}
+    FDottedBrush := CreatePatternBrush(BitmapHandle);
+    DeleteObject(BitmapHandle);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -17578,10 +17578,20 @@ begin
 
             ScrollWindow(Handle, DeltaX, 0, R, R);
             if DeltaY <> 0 then
-              ScrollWindow(Handle, 0, DeltaY, ClipRect, ClipRect);
+            begin
+              if ClipRect.IsEmpty then
+                ScrollWindow(Handle, 0, DeltaY, nil, nil)
+              else
+                ScrollWindow(Handle, 0, DeltaY, ClipRect, ClipRect);
+            end;
           end
           else
-            ScrollWindow(Handle, DeltaX, DeltaY, ClipRect, ClipRect);
+          begin
+            if ClipRect.IsEmpty then
+              ScrollWindow(Handle, DeltaX, DeltaY, nil, nil)
+            else
+              ScrollWindow(Handle, DeltaX, DeltaY, ClipRect, ClipRect);
+          end;
         end;
       end;
 
@@ -20943,13 +20953,10 @@ begin
   // Register the helper window class.
   PanningWindowClass.hInstance := HInstance;
   ClassRegistered := GetClassInfo(HInstance, PanningWindowClass.lpszClassName, TempClass);
-  // TODO: Watch here what Borland does with delegates once it is finished.
-  if not ClassRegistered (*or (TempClass.lpfnWndProc <> @DefWindowProc)*) then
-  begin
-    if ClassRegistered then
-      Windows.UnregisterClass(PanningWindowClass.lpszClassName, HInstance);
+
+  if not ClassRegistered then
     Windows.RegisterClass(PanningWindowClass);
-  end;
+
   // Create the helper window and show it at the given position without activating it.
   with ClientToScreen(Position) do
     FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, X - 16, Y - 16,
@@ -20992,10 +20999,9 @@ begin
     DoStateChange([], [tsWheelPanning, tsWheelScrolling]);
 
     // Destroy the helper window.
-    DestroyWindow(FPanningWindow);
+    //DestroyWindow(FPanningWindow);
     FPanningWindow := 0;
-    FPanningImage.Free;
-    FPanningImage := nil;
+    FreeAndNil(FPanningImage);
     DeleteObject(FPanningCursor);
     FPanningCursor := 0;
     Windows.SetCursor(Screen.Cursors[Cursor]);
@@ -21645,6 +21651,8 @@ begin
       Result.Data := UserData;
       Include(Result.FStates, vsInitialUserData);
     end;
+
+    InvalidateCache;
     if FUpdateCount = 0 then
     begin
       ValidateCache;
@@ -22477,6 +22485,8 @@ begin
       NewSize := PackList(FSelection, FSelection.Count);
       if NewSize >-1 then
         FSelection.RemoveRange(NewSize, Max(0, FSelection.Count-NewSize-1));
+
+      InvalidateCache;
       ValidateCache;
       if HandleAllocated then
         UpdateScrollBars(True);
@@ -28311,7 +28321,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; Caption: string = ''): string;
+function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; Caption: string = ''): StringBuilder;
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
@@ -28325,9 +28335,6 @@ const
   MaximumUCS4: UCS4 = $7FFFFFFF;
   ReplacementCharacter: UCS4 = $0000FFFD;
 
-var
-  Buffer: StringBuilder;
-  
   //--------------- local functions -------------------------------------------
 
   function ConvertSurrogate(S1, S2: UCS2): UCS4;
@@ -28343,6 +28350,7 @@ var
 
   //---------------------------------------------------------------------------
 
+  // TODO: replace by VCL variant.
   function UTF16ToUTF8(const S: string): string;
 
   // Converts the given Unicode text (which may contain surrogates) into
@@ -28428,7 +28436,7 @@ var
     Value: Byte;
 
   begin
-    Buffer.Append('#');
+    Result.Append('#');
     WinColor := ColorToRGB(Color);
     I := 1;
     while I <= 6 do
@@ -28438,13 +28446,13 @@ var
       Value := 48 + (Component shr 4);
       if Value > $39 then
         Inc(Value, 7);
-      Buffer.Append(Char(Value));
+      Result.Append(Char(Value));
       Inc(I);
 
       Value := 48 + (Component and $F);
       if Value > $39 then
         Inc(Value, 7);
-      Buffer.Append(Char(Value));
+      Result.Append(Char(Value));
       Inc(I);
 
       WinColor := WinColor shr 8;
@@ -28460,25 +28468,25 @@ var
 
   begin
     if Length(Name) = 0 then
-      Buffer.Append(' style="{font:')
+      Result.Append(' style="{font:')
     else
     begin
-      Buffer.Append('.');
-      Buffer.Append(Name);
-      Buffer.Append('{font:');
+      Result.Append('.');
+      Result.Append(Name);
+      Result.Append('{font:');
     end;
     if fsUnderline in Font.Style then
-      Buffer.Append(' underline');
+      Result.Append(' underline');
     if fsItalic in Font.Style then
-      Buffer.Append(' italic');
+      Result.Append(' italic');
     if fsBold in Font.Style then
-      Buffer.Append(' bold');
-    Buffer.Append(Format(' %dpt "%s";', [Font.Size, Font.Name]));
-    Buffer.Append('color:');
+      Result.Append(' bold');
+    Result.Append(Format(' %dpt "%s";', [Font.Size, Font.Name]));
+    Result.Append('color:');
     WriteColorAsHex(Font.Color);
-    Buffer.Append(';}');
+    Result.Append(';}');
     if Length(Name) = 0 then
-      Buffer.Append('"');
+      Result.Append('"');
   end;
 
   //--------------- end local functions ---------------------------------------
@@ -28495,7 +28503,6 @@ var
   Columns: TColumnsArray;
   ColumnColors: array of string;
   Index: Integer;
-  IndentWidth,
   LineStyleText: string;
   Alignment: TAlignment;
   BidiMode: TBidiMode;
@@ -28503,293 +28510,279 @@ var
   CellPadding: string;
 
 begin
-  Buffer := StringBuilder.Create;
-  try
-    // For customization by the application or descentants we use again the redirected font change event.
-    RedirectFontChangeEvent(Canvas);
+  Result := StringBuilder.Create;
 
-    CellPadding := Format('padding-left:%dpx;padding-right:%0:dpx;', [FMargin]);
+  // For customization by the application or descentants we use again the redirected font change event.
+  RedirectFontChangeEvent(Canvas);
 
-    IndentWidth := IntToStr(FIndent);
-    AddHeader := ' ';
-    // Add title if adviced so by giving a caption.
-    if Length(Caption) > 0 then
-      AddHeader := AddHeader + 'caption="' + UTF16ToUTF8(Caption) + '"'; 
-    if Borderstyle <> bsNone then
-      AddHeader := AddHeader + Format('border="%d" frame=box', [BorderWidth + 1]);
+  CellPadding := Format('padding-left:%dpx;padding-right:%0:dpx;', [FMargin]);
 
-    // Create HTML table based on the tree structure. To simplify formatting we use styles defined in a small CSS area.
-    Buffer.Append('<style type="text/css">');
-    Buffer.Append(#13#10);
-    WriteStyle('default', Font);
-    Buffer.Append(#13#10);
-    WriteStyle('header', FHeader.Font);
-    Buffer.Append(#13#10);
+  AddHeader := ' ';
+  // Add title if adviced so by giving a caption.
+  if Length(Caption) > 0 then
+    AddHeader := AddHeader + 'caption="' + UTF16ToUTF8(Caption) + '"'; 
+  if Borderstyle <> bsNone then
+    AddHeader := AddHeader + Format('border="%d" frame=box', [BorderWidth + 1]);
 
-    // Determine grid/table lines and create CSS for it.
-    // Vertical and/or horizontal border to show.
-    if FLineStyle = lsSolid then
-      LineStyleText := 'solid;'
-    else
-      LineStyleText := 'dotted;';
-    if toShowHorzGridLines in FOptions.FPaintOptions then
+  // Create HTML table based on the tree structure. To simplify formatting we use styles defined in a small CSS area.
+  Result.Append('<style type="text/css">');
+  Result.Append(#13#10);
+  WriteStyle('default', Font);
+  Result.Append(#13#10);
+  WriteStyle('header', FHeader.Font);
+  Result.Append(#13#10);
+
+  // Determine grid/table lines and create CSS for it.
+  // Vertical and/or horizontal border to show.
+  if FLineStyle = lsSolid then
+    LineStyleText := 'solid;'
+  else
+    LineStyleText := 'dotted;';
+  if toShowHorzGridLines in FOptions.FPaintOptions then
+  begin
+    Result.Append('.noborder{border-style:');
+    Result.Append(LineStyleText);
+    Result.Append(' border-bottom:1;border-left:0;border-right:0; border-top:0;');
+    Result.Append(CellPadding);
+    Result.Append('}');
+  end
+  else
+  begin
+    Result.Append('.noborder{border-style:none;');
+    Result.Append(CellPadding);
+    Result.Append('}');
+  end;
+  Result.Append(#13#10);
+
+  Result.Append('.normalborder {border-top:none; border-left:none; ');
+  if toShowVertGridLines in FOptions.FPaintOptions then
+    Result.Append('border-right:1 ' + LineStyleText)
+  else
+    Result.Append('border-right:none;');
+  if toShowHorzGridLines in FOptions.FPaintOptions then
+    Result.Append('border-bottom:1 ' + LineStyleText)
+  else
+    Result.Append('border-bottom:none;');
+  Result.Append(CellPadding);
+  Result.Append('}');
+  Result.Append('</style>');
+  Result.Append(#13#10);
+
+  // General table properties.
+  Result.Append('<table class="default" bgcolor=');
+  WriteColorAsHex(Color);
+  Result.Append(AddHeader);
+  Result.Append(' cellspacing="0" cellpadding=');
+  Result.Append(IntToStr(FMargin) + '>');
+  Result.Append(#13#10);
+
+  Columns := nil;
+  ColumnColors := nil;
+  RenderColumns := FHeader.UseColumns;
+  if RenderColumns then
+  begin
+    Columns := FHeader.FColumns.GetVisibleColumns;
+    SetLength(ColumnColors, Length(Columns));
+  end;
+
+  GetRenderStartValues(Source, Run, GetNextNode);
+  Save := Run;
+
+  MaxLevel := 0;
+  // The table consists of visible columns and rows as used in the tree, but the main tree column is splitted
+  // into several HTML columns to accomodate the indentation. 
+  while Assigned(Run) do
+  begin
+    Level := GetNodeLevel(Run);
+    If Level > MaxLevel then
+      MaxLevel := Level;
+    Run := GetNextNode(Run);
+  end;
+
+  if RenderColumns then
+  begin
+    Result.Append('<tr class="header" style="');
+    Result.Append(CellPadding);
+    Result.Append('">');
+    Result.Append(#13#10);
+    // Make the first row in the HTML table an image of the tree header.
+    for I := 0 to High(Columns) do
     begin
-      Buffer.Append('.noborder{border-style:');
-      Buffer.Append(LineStyleText);
-      Buffer.Append(' border-bottom:1;border-left:0;border-right:0; border-top:0;');
-      Buffer.Append(CellPadding);
-      Buffer.Append('}');
-    end
-    else
-    begin
-      Buffer.Append('.noborder{border-style:none;');
-      Buffer.Append(CellPadding);
-      Buffer.Append('}');
-    end;
-    Buffer.Append(#13#10);
-
-    Buffer.Append('.normalborder {border-top:none; border-left:none; ');
-    if toShowVertGridLines in FOptions.FPaintOptions then
-      Buffer.Append('border-right:1 ' + LineStyleText)
-    else
-      Buffer.Append('border-right:none;');
-    if toShowHorzGridLines in FOptions.FPaintOptions then
-      Buffer.Append('border-bottom:1 ' + LineStyleText)
-    else
-      Buffer.Append('border-bottom:none;');
-    Buffer.Append(CellPadding);
-    Buffer.Append('}');
-    Buffer.Append('</style>');
-    Buffer.Append(#13#10);
-
-    // General table properties.
-    Buffer.Append('<table class="default" bgcolor=');
-    WriteColorAsHex(Color);
-    Buffer.Append(AddHeader);
-    Buffer.Append(' cellspacing="0" cellpadding=');
-    Buffer.Append(IntToStr(FMargin) + '>');
-    Buffer.Append(#13#10);
-
-    Columns := nil;
-    ColumnColors := nil;
-    RenderColumns := FHeader.UseColumns;
-    if RenderColumns then
-    begin
-      Columns := FHeader.FColumns.GetVisibleColumns;
-      SetLength(ColumnColors, Length(Columns));
-    end;
-
-    GetRenderStartValues(Source, Run, GetNextNode);
-    Save := Run;
-
-    MaxLevel := 0;
-    // The table consists of visible columns and rows as used in the tree, but the main tree column is splitted
-    // into several HTML columns to accomodate the indentation. 
-    while Assigned(Run) do
-    begin
-      Level := GetNodeLevel(Run);
-      If Level > MaxLevel then
-        MaxLevel := Level;
-      Run := GetNextNode(Run);
-    end;
-
-    if RenderColumns then
-    begin
-      Buffer.Append('<tr class="header" style="');
-      Buffer.Append(CellPadding);
-      Buffer.Append('">');
-      Buffer.Append(#13#10);
-      // Make the first row in the HTML table an image of the tree header.
-      for I := 0 to High(Columns) do
+      Result.Append('<th height="');
+      Result.Append(IntToStr(FHeader.FHeight));
+      Result.Append('px"');
+      Alignment := Columns[I].Alignment;
+      // Consider directionality.
+      if Columns[I].FBiDiMode <> bdLeftToRight then
       begin
-        Buffer.Append('<th height="');
-        Buffer.Append(IntToStr(FHeader.FHeight));
-        Buffer.Append('px"');
-        Alignment := Columns[I].Alignment;
-        // Consider directionality.
-        if Columns[I].FBiDiMode <> bdLeftToRight then
-        begin
-          ChangeBidiModeAlignment(Alignment);
-          Buffer.Append(' dir="rtl"');
-        end;
-
-          // Consider aligment.
-        case Alignment of
-          taRightJustify:
-            Buffer.Append(' align=right');
-          taCenter:
-            Buffer.Append(' align=center');
-        else
-          Buffer.Append(' align=left');
-        end;
-
-        Index := Columns[I].Index;
-        // Merge cells of the header emulation in the main column.
-        if (MaxLevel > 0) and (Index = Header.MainColumn) then
-        begin
-          Buffer.Append(' colspan="');
-          Buffer.Append(IntToStr(MaxLevel + 1));
-          Buffer.Append('"');
-        end;
-
-        // The color of the header is usually clBtnFace.
-        Buffer.Append(' bgcolor=');
-        WriteColorAsHex(clBtnFace);
-
-        // Set column width in pixels.
-        Buffer.Append(' width="');
-        Buffer.Append(IntToStr(Columns[I].Width));
-        Buffer.Append('px">');
-
-        if Length(Columns[I].Text) > 0 then
-          Buffer.Append(UTF16ToUTF8(Columns[I].Text));
-        Buffer.Append('</th>');
+        ChangeBidiModeAlignment(Alignment);
+        Result.Append(' dir="rtl"');
       end;
-      Buffer.Append('</tr>');
-      Buffer.Append(#13#10);
-    end;
-  
-    // Now go through the tree.
-    Run := Save;
-    while Assigned(Run) do
-    begin
-      Level := GetNodeLevel(Run);
-      Buffer.Append(' <tr class="default">');
-      Buffer.Append(#13#10);
 
-      I := 0;
-      while (I < Length(Columns)) or not RenderColumns do
+        // Consider aligment.
+      case Alignment of
+        taRightJustify:
+          Result.Append(' align=right');
+        taCenter:
+          Result.Append(' align=center');
+      else
+        Result.Append(' align=left');
+      end;
+
+      Index := Columns[I].Index;
+      // Merge cells of the header emulation in the main column.
+      if (MaxLevel > 0) and (Index = Header.MainColumn) then
       begin
-        if RenderColumns then
-          Index := Columns[I].Index
-        else
-          Index := NoColumn;
+        Result.Append(' colspan="');
+        Result.Append(IntToStr(MaxLevel + 1));
+        Result.Append('"');
+      end;
 
-        if not RenderColumns or (coVisible in Columns[I].FOptions) then
+      // The color of the header is usually clBtnFace.
+      Result.Append(' bgcolor=');
+      WriteColorAsHex(clBtnFace);
+
+      // Set column width in pixels.
+      Result.Append(' width="');
+      Result.Append(IntToStr(Columns[I].Width));
+      Result.Append('px">');
+
+      if Length(Columns[I].Text) > 0 then
+        Result.Append(UTF16ToUTF8(Columns[I].Text));
+      Result.Append('</th>');
+    end;
+    Result.Append('</tr>');
+    Result.Append(#13#10);
+  end;
+  
+  // Now go through the tree.
+  Run := Save;
+  while Assigned(Run) do
+  begin
+    Level := GetNodeLevel(Run);
+    Result.Append(' <tr class="default">');
+    Result.Append(#13#10);
+
+    I := 0;
+    while (I < Length(Columns)) or not RenderColumns do
+    begin
+      if RenderColumns then
+        Index := Columns[I].Index
+      else
+        Index := NoColumn;
+
+      if not RenderColumns or (coVisible in Columns[I].FOptions) then
+      begin
+        // Call back the application to know about font customization.
+        Canvas.Font := Font;
+        FFontChanged := False;
+        DoPaintText(Run, Canvas, Index, ttNormal);
+
+        if Index = Header.MainColumn then
         begin
-          // Call back the application to know about font customization.
-          Canvas.Font := Font;
-          FFontChanged := False;
-          DoPaintText(Run, Canvas, Index, ttNormal);
-
-          if Index = Header.MainColumn then
-          begin
-            // Create a cell for each indentation level.
-            if RenderColumns and not (coParentColor in Columns[I].FOptions) then
-            begin
-              for J := 1 to Level do
-              begin
-                Buffer.Append('<td class="noborder" width="');
-                Buffer.Append(IndentWidth);
-                Buffer.Append('" height="');
-                Buffer.Append(IntToStr(NodeHeight[Run]));
-                Buffer.Append('px"');
-                if not (coParentColor in Columns[I].FOptions) then
-                begin
-                  Buffer.Append(' bgcolor=');
-                  WriteColorAsHex(Columns[I].Color);
-                end;
-                Buffer.Append('>&nbsp;</td>');
-              end;
-            end
-            else
-            begin
-              for J := 1 to Level do
-                if J = 1 then
-                begin
-                  Buffer.Append(' <td height="');
-                  Buffer.Append(IntToStr(NodeHeight[Run]));
-                  Buffer.Append('px">&nbsp;</td>');
-                end
-                else
-                  Buffer.Append(' <td>&nbsp;</td>');
-            end;
-          end;
-
-          if FFontChanged then
-          begin
-            Buffer.Append(' <td class="normalborder" ');
-            WriteStyle('', Canvas.Font);
-            Buffer.Append(' height="');
-            Buffer.Append(IntToStr(NodeHeight[Run]));
-            Buffer.Append('px"');
-          end
-          else
-          begin
-            Buffer.Append(' <td class="normalborder"  height="');
-            Buffer.Append(IntToStr(NodeHeight[Run]));
-            Buffer.Append('px"');
-          end;
-
-          if RenderColumns then
-          begin
-            Alignment := Columns[I].Alignment;
-            BidiMode := Columns[I].BidiMode;
-          end
-          else
-          begin
-            Alignment := Self.Alignment;
-            BidiMode := Self.BidiMode;
-          end;
-          // Consider directionality.
-          if BiDiMode <> bdLeftToRight then
-          begin
-            ChangeBidiModeAlignment(Alignment);
-            Buffer.Append(' dir="rtl"');
-          end;
-
-          // Consider aligment.
-          case Alignment of
-            taRightJustify:
-              Buffer.Append(' align=right');
-            taCenter:
-              Buffer.Append(' align=center');
-          else
-            Buffer.Append(' align=left');
-          end;
-          // Merge cells in the main column.
-          if (MaxLevel > 0) and (Index = FHeader.MainColumn) and (Level < MaxLevel) then
-          begin
-            Buffer.Append(' colspan="');
-            Buffer.Append(IntToStr(MaxLevel - Level + 1));
-            Buffer.Append('"');
-          end;
+          // Create a cell for each indentation level.
           if RenderColumns and not (coParentColor in Columns[I].FOptions) then
           begin
-            Buffer.Append(' bgcolor=');
-            WriteColorAsHex(Columns[I].Color);
-          end;
-          Buffer.Append('>');
-          Text := Self.Text[Run, Index];
-          if Length(Text) > 0 then
+            for J := 1 to Level do
+            begin
+              Result.AppendFormat('<td class="noborder" width="%d" height="%d"', [FIndent, NodeHeight[Run]]);
+              if not (coParentColor in Columns[I].FOptions) then
+              begin
+                Result.Append(' bgcolor=');
+                WriteColorAsHex(Columns[I].Color);
+              end;
+              Result.Append('>&nbsp;</td>');
+            end;
+          end
+          else
           begin
-            Text := UTF16ToUTF8(Text);
-            Buffer.Append(Text);
+            for J := 1 to Level do
+              if J = 1 then
+                Result.AppendFormat(' <td height="%d">&nbsp;</td>', [NodeHeight[Run]])
+              else
+                Result.Append(' <td>&nbsp;</td>');
           end;
-          Buffer.Append('</td>');
         end;
 
-        if not RenderColumns then
-          Break;
-        Inc(I);
+        if FFontChanged then
+        begin
+          Result.Append(' <td class="normalborder" ');
+          WriteStyle('', Canvas.Font);
+          Result.Append(' height="');
+          Result.Append(IntToStr(NodeHeight[Run]));
+          Result.Append('px"');
+        end
+        else
+        begin
+          Result.Append(' <td class="normalborder"  height="');
+          Result.Append(IntToStr(NodeHeight[Run]));
+          Result.Append('px"');
+        end;
+
+        if RenderColumns then
+        begin
+          Alignment := Columns[I].Alignment;
+          BidiMode := Columns[I].BidiMode;
+        end
+        else
+        begin
+          Alignment := Self.Alignment;
+          BidiMode := Self.BidiMode;
+        end;
+        // Consider directionality.
+        if BiDiMode <> bdLeftToRight then
+        begin
+          ChangeBidiModeAlignment(Alignment);
+          Result.Append(' dir="rtl"');
+        end;
+
+        // Consider aligment.
+        case Alignment of
+          taRightJustify:
+            Result.Append(' align=right');
+          taCenter:
+            Result.Append(' align=center');
+        else
+          Result.Append(' align=left');
+        end;
+        // Merge cells in the main column.
+        if (MaxLevel > 0) and (Index = FHeader.MainColumn) and (Level < MaxLevel) then
+        begin
+          Result.Append(' colspan="');
+          Result.Append(IntToStr(MaxLevel - Level + 1));
+          Result.Append('"');
+        end;
+        if RenderColumns and not (coParentColor in Columns[I].FOptions) then
+        begin
+          Result.Append(' bgcolor=');
+          WriteColorAsHex(Columns[I].Color);
+        end;
+        Result.Append('>');
+        Text := Self.Text[Run, Index];
+        if Length(Text) > 0 then
+        begin
+          Text := UTF16ToUTF8(Text);
+          Result.Append(Text);
+        end;
+        Result.Append('</td>');
       end;
-      Run := GetNextNode(Run);
-      Buffer.Append(' </tr>');
-      Buffer.Append(#13#10);
+
+      if not RenderColumns then
+        Break;
+      Inc(I);
     end;
-    Buffer.Append('</table>');
-
-    RestoreFontChangeEvent(Canvas);
-
-    Result := Buffer.ToString;
-  finally
-    Buffer.Free;
+    Run := GetNextNode(Run);
+    Result.Append(' </tr>');
+    Result.Append(#13#10);
   end;
+  Result.Append('</table>');
+
+  RestoreFontChangeEvent(Canvas);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): string;
+function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): StringBuilder;
 
 // Renders the current tree content (depending on Source) as RTF (rich text).
 // Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
@@ -28800,8 +28793,7 @@ var
   CurrentFontIndex,
   CurrentFontColor,
   CurrentFontSize: Integer;
-  Buffer: StringBuilder;
-  
+
   //--------------- local functions -------------------------------------------
 
   procedure SelectFont(Font: string);
@@ -28816,16 +28808,16 @@ var
       // Font has already been used
       if I <> CurrentFontIndex then
       begin
-        Buffer.Append('\f');
-        Buffer.Append(IntToStr(I));
+        Result.Append('\f');
+        Result.Append(IntToStr(I));
         CurrentFontIndex := I;
       end;
     end
     else
     begin
       I := Fonts.Add(Font);
-      Buffer.Append('\f');
-      Buffer.Append(IntToStr(I));
+      Result.Append('\f');
+      Result.Append(IntToStr(I));
       CurrentFontIndex := I;
     end;
   end;
@@ -28844,16 +28836,16 @@ var
       // Color has already been used
       if I <> CurrentFontColor then
       begin
-        Buffer.Append('\cf');
-        Buffer.Append(IntToStr(I + 1));
+        Result.Append('\cf');
+        Result.Append(IntToStr(I + 1));
         CurrentFontColor := I;
       end;
     end
     else
     begin
       I := Colors.Add(IntPtr(Color));
-      Buffer.Append('\cf');
-      Buffer.Append(IntToStr(I + 1));
+      Result.Append('\cf');
+      Result.Append(IntToStr(I + 1));
       CurrentFontColor := I;
     end;
   end;
@@ -28873,34 +28865,34 @@ var
     begin
       UseUnderline := fsUnderline in Font.Style;
       if UseUnderline then
-        Buffer.Append('\ul');
+        Result.Append('\ul');
       UseItalic := fsItalic in Font.Style;
       if UseItalic then
-        Buffer.Append('\i');
+        Result.Append('\i');
       UseBold := fsBold in Font.Style;
       if UseBold then
-        Buffer.Append('\b');
+        Result.Append('\b');
       SelectFont(Font.Name);
       SelectColor(Font.Color);
       if Font.Size <> CurrentFontSize then
       begin
         // Font size must be given in half points.
-        Buffer.Append('\fs');
-        Buffer.Append(IntToStr(2 * Font.Size));
+        Result.Append('\fs');
+        Result.Append(IntToStr(2 * Font.Size));
         CurrentFontSize := Font.Size;
       end;
       // Use escape sequences to note Unicode text.
-      Buffer.Append(' ');
+      Result.Append(' ');
       // Note: Unicode values > 32767 must be expressed as negative numbers. This is implicitly done
       //       by interpreting the wide chars (word values) as small integers.
       for I := 1 to Length(Text) do
-        Buffer.Append(Format('\u%d\''3f', [SmallInt(Text[I])]));
+        Result.Append(Format('\u%d\''3f', [SmallInt(Text[I])]));
       if UseUnderline then
-        Buffer.Append('\ul0');
+        Result.Append('\ul0');
       if UseItalic then
-        Buffer.Append('\i0');
+        Result.Append('\i0');
       if UseBold then
-        Buffer.Append('\b0');
+        Result.Append('\b0');
     end;
   end;
 
@@ -28911,9 +28903,10 @@ var
   I, J: Integer;
   Save, Run: TVirtualNode;
   GetNextNode: TGetNextNodeProc;
-  S, Tabs : string;
+  Tabs : string;
   Text: string;
   Twips: Integer;
+  Buffer: StringBuilder;
 
   RenderColumns: Boolean;
   Columns: TColumnsArray;
@@ -28922,321 +28915,184 @@ var
   BidiMode: TBidiMode;
 
 begin
-  Buffer := StringBuilder.Create;
-  try
-    // For customization by the application or descentants we use again the redirected font change event.
-    RedirectFontChangeEvent(Canvas);
+  Result := StringBuilder.Create;
+  
+  // For customization by the application or descentants we use again the redirected font change event.
+  RedirectFontChangeEvent(Canvas);
 
-    Fonts := TStringList.Create;
-    Colors := TList.Create;
-    CurrentFontIndex := -1;
-    CurrentFontColor := -1;
-    CurrentFontSize := -1;
+  Fonts := TStringList.Create;
+  Colors := TList.Create;
+  CurrentFontIndex := -1;
+  CurrentFontColor := -1;
+  CurrentFontSize := -1;
 
-    Columns := nil;
-    Tabs := '';
-    LastLevel := 0;
+  Columns := nil;
+  Tabs := '';
+  LastLevel := 0;
 
-    RenderColumns := FHeader.UseColumns;
-    if RenderColumns then
-      Columns := FHeader.FColumns.GetVisibleColumns;
+  RenderColumns := FHeader.UseColumns;
+  if RenderColumns then
+    Columns := FHeader.FColumns.GetVisibleColumns;
 
-    GetRenderStartValues(Source, Run, GetNextNode);
-    Save := Run;
+  GetRenderStartValues(Source, Run, GetNextNode);
+  Save := Run;
 
-    // First make a table structure. The \rtf and other header stuff is included
-    // when the font and color tables are created.
-    Buffer.Append('\uc1\trowd\trgaph70');
-    J := 0;
-    if RenderColumns then
+  // First make a table structure. The \rtf and other header stuff is included
+  // when the font and color tables are created.
+  Result.Append('\uc1\trowd\trgaph70');
+  J := 0;
+  if RenderColumns then
+  begin
+    for I := 0 to High(Columns) do
     begin
-      for I := 0 to High(Columns) do
-      begin
-        Inc(J, Columns[I].Width);
-        // This value must be expressed in twips (1 inch = 1440 twips).
-        Twips := Round(1440 * J / Screen.PixelsPerInch);
-        Buffer.Append('\cellx');
-        Buffer.Append(IntToStr(Twips));
-      end;
-    end
-    else
-    begin
-      Twips := Round(1440 * ClientWidth / Screen.PixelsPerInch);
-      Buffer.Append('\cellx');
-      Buffer.Append(IntToStr(Twips));
+      Inc(J, Columns[I].Width);
+      // This value must be expressed in twips (1 inch = 1440 twips).
+      Twips := Round(1440 * J / Screen.PixelsPerInch);
+      Result.Append('\cellx');
+      Result.Append(IntToStr(Twips));
     end;
-    
-    // Fill table header.
-    if RenderColumns then
+  end
+  else
+  begin
+    Twips := Round(1440 * ClientWidth / Screen.PixelsPerInch);
+    Result.Append('\cellx');
+    Result.Append(IntToStr(Twips));
+  end;
+
+  // Fill table header.
+  if RenderColumns then
+  begin
+    Result.Append('\pard\intbl');
+    for I := 0 to High(Columns) do
     begin
-      Buffer.Append('\pard\intbl');
-      for I := 0 to High(Columns) do
+      Alignment := Columns[I].Alignment;
+      BidiMode := Columns[I].BidiMode;
+
+      // Alignment is not supported with older RTF formats, however it will be ignored.
+      if BidiMode <> bdLeftToRight then
+        ChangeBidiModeAlignment(Alignment);
+      case Alignment of
+        taRightJustify:
+          Result.Append('\qr');
+        taCenter:
+          Result.Append('\qc');
+      end;
+
+      TextPlusFont(Columns[I].Text, Header.Font);
+      Result.Append('\cell');
+    end;
+    Result.Append('\row');
+  end;
+  
+  // Now write the contents.
+  Run := Save;
+  while Assigned(Run) do
+  begin
+    I := 0;
+    while not RenderColumns or (I < Length(Columns)) do
+    begin
+      if RenderColumns then
       begin
+        Index := Columns[I].Index;
         Alignment := Columns[I].Alignment;
         BidiMode := Columns[I].BidiMode;
+      end
+      else
+      begin
+        Index := NoColumn;
+        Alignment := FAlignment;
+        BidiMode := Self.BidiMode;
+      end;
+        
+      if not RenderColumns or (coVisible in Columns[I].Options) then
+      begin
+        Text := Self.Text[Run, Index];
+        Result.Append('\pard\intbl');
 
         // Alignment is not supported with older RTF formats, however it will be ignored.
         if BidiMode <> bdLeftToRight then
           ChangeBidiModeAlignment(Alignment);
         case Alignment of
           taRightJustify:
-            Buffer.Append('\qr');
+            Result.Append('\qr');
           taCenter:
-            Buffer.Append('\qc');
+            Result.Append('\qc');
         end;
 
-        TextPlusFont(Columns[I].Text, Header.Font);
-        Buffer.Append('\cell');
-      end;
-      Buffer.Append('\row');
-    end;
-  
-    // Now write the contents.
-    Run := Save;
-    while Assigned(Run) do
-    begin
-      I := 0;
-      while not RenderColumns or (I < Length(Columns)) do
-      begin
-        if RenderColumns then
-        begin
-          Index := Columns[I].Index;
-          Alignment := Columns[I].Alignment;
-          BidiMode := Columns[I].BidiMode;
-        end
-        else
-        begin
-          Index := NoColumn;
-          Alignment := FAlignment;
-          BidiMode := Self.BidiMode;
-        end;
-        
-        if not RenderColumns or (coVisible in Columns[I].Options) then
-        begin
-          Text := Self.Text[Run, Index];
-          Buffer.Append('\pard\intbl');
+        // Call back the application to know about font customization.
+        Canvas.Font := Font;
+        FFontChanged := False;
+        DoPaintText(Run, Canvas, Index, ttNormal);
 
-          // Alignment is not supported with older RTF formats, however it will be ignored.
-          if BidiMode <> bdLeftToRight then
-            ChangeBidiModeAlignment(Alignment);
-          case Alignment of
-            taRightJustify:
-              Buffer.Append('\qr');
-            taCenter:
-              Buffer.Append('\qc');
-          end;
-
-          // Call back the application to know about font customization.
-          Canvas.Font := Font;
-          FFontChanged := False;
-          DoPaintText(Run, Canvas, Index, ttNormal);
-
-          if Index = Header.MainColumn then
+        if Index = Header.MainColumn then
+        begin
+          Level := GetNodeLevel(Run);
+          if Level <> LastLevel then
           begin
-            Level := GetNodeLevel(Run);
-            if Level <> LastLevel then
-            begin
-              LastLevel := Level;
-              Tabs := '';
-              for J := 0 to Level - 1 do
-                Tabs := Tabs + '\tab';
-            end;
-            if Level > 0 then
-            begin
-              Buffer.Append(Tabs);
-              Buffer.Append(' ');
-              TextPlusFont(Text, Canvas.Font);
-              Buffer.Append('\cell');
-            end
-            else
-            begin
-              TextPlusFont(Text, Canvas.Font);
-              Buffer.Append('\cell');
-            end;
+            LastLevel := Level;
+            Tabs := '';
+            for J := 0 to Level - 1 do
+              Tabs := Tabs + '\tab';
+          end;
+          if Level > 0 then
+          begin
+            Result.Append(Tabs);
+            Result.Append(' ');
+            TextPlusFont(Text, Canvas.Font);
+            Result.Append('\cell');
           end
           else
           begin
             TextPlusFont(Text, Canvas.Font);
-            Buffer.Append('\cell');
+            Result.Append('\cell');
           end;
+        end
+        else
+        begin
+          TextPlusFont(Text, Canvas.Font);
+          Result.Append('\cell');
         end;
+      end;
         
-        if not RenderColumns then
-          Break;
-        Inc(I);
-      end;
-      Buffer.Append('\row');
-      Run := GetNextNode(Run);
+      if not RenderColumns then
+        Break;
+      Inc(I);
     end;
-
-    Buffer.Append('\pard\par');
-
-    // Build lists with fonts and colors. They have to be at the start of the document.
-    S := '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl';
-    for I := 0 to Fonts.Count - 1 do
-      S := S + Format('{\f%d %s;}', [I, Fonts[I]]);
-    S := S + '}';
-
-    S := S + '{\colortbl;';
-    for I := 0 to Colors.Count - 1 do
-    begin
-      J := ColorToRGB(TColor(Colors[I]));
-      S := S + Format('\red%d\green%d\blue%d;', [J and $FF, (J shr 8) and $FF, (J shr 16) and $FF]);
-    end;
-    S := S + '}';
-
-    Result := S + Buffer.ToString + '}';
-    Fonts.Free;
-    Colors.Free;
-
-    RestoreFontChangeEvent(Canvas);
-  finally
-    Buffer.Free;
+    Result.Append('\row');
+    Run := GetNextNode(Run);
   end;
+
+  Result.Append('\pard\par');
+
+  // Build lists with fonts and colors. They have to be at the start of the document.
+  Buffer := StringBuilder.Create('{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl');
+  for I := 0 to Fonts.Count - 1 do
+    Buffer.AppendFormat('{\f%d %s;}', [I, Fonts[I]]);
+  Buffer.Append('}');
+
+  Buffer.Append('{\colortbl;');
+  for I := 0 to Colors.Count - 1 do
+  begin
+    J := ColorToRGB(TColor(Colors[I]));
+    Buffer.AppendFormat('\red%d\green%d\blue%d;', [J and $FF, (J shr 8) and $FF, (J shr 16) and $FF]);
+  end;
+  Buffer.Append('}');
+
+  Result.Insert(0, Buffer);
+  Result.Append('}');
+
+  RestoreFontChangeEvent(Canvas);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToText(Source: TVSTTextSourceType; Separator: Char): string;
-
-// Renders the current tree content (depending on Source) as plain ANSI text.
-// If an entry contains the separator char or double quotes then it is wrapped with double quotes
-// and existing double quotes are duplicated.
-// Note: Unicode strings are implicitely converted to ANSI strings based on the currently active user locale.
-
-var
-  RenderColumns: Boolean;
-  Tabs: string;
-  GetNextNode: TGetNextNodeProc;
-  Run, Save: TVirtualNode;
-  Level, MaxLevel: Integer;
-  Columns: TColumnsArray;
-  LastColumn: TVTColumn;
-  Index,
-  I: Integer;
-  Text: string;
-  Buffer: StringBuilder;
-
-begin
-  Columns := nil;
-  Buffer := StringBuilder.Create;
-  try
-    RenderColumns := FHeader.UseColumns;
-    if RenderColumns then
-      Columns := FHeader.FColumns.GetVisibleColumns;
-
-    GetRenderStartValues(Source, Run, GetNextNode);
-    Save := Run;
-
-    // The text consists of visible groups representing the columns, which are separated by one or more separator
-    // characters. There are always MaxLevel separator chars in a line (main column only). Either before the caption
-    // to ident it or after the caption to make the following column aligned.
-    MaxLevel := 0;
-    while Assigned(Run) do
-    begin
-      Level := GetNodeLevel(Run);
-      If Level > MaxLevel then
-        MaxLevel := Level;
-      Run := GetNextNode(Run);
-    end;
-
-    SetLength(Tabs, MaxLevel);
-    // TODO: FillChar still not defined.
-    //FillChar(PChar(Tabs)^, MaxLevel, Separator);
-
-    // First line is always the header if used.
-    if RenderColumns then
-    begin
-      LastColumn := Columns[High(Columns)];
-      for I := 0 to High(Columns) do
-      begin
-        Buffer.Append(Columns[I].Text);
-        if Columns[I] <> LastColumn then
-        begin
-          if Columns[I].Index = Header.MainColumn then
-          begin
-            Buffer.Append(Tabs);
-            Buffer.Append(Separator);
-          end
-          else
-            Buffer.Append(Separator);
-        end;
-      end;
-      Buffer.Append(#13#10);
-    end
-    else
-      LastColumn := nil;
-
-    Run := Save;
-    if RenderColumns then
-    begin
-      while Assigned(Run) do
-      begin
-        for I := 0 to High(Columns) do
-        begin
-          if coVisible in Columns[I].Options then
-          begin
-            Index := Columns[I].Index;
-            // This line implicitly converts the Unicode text to ANSI.
-            Text := Self.Text[Run, Index];
-            if Index = Header.MainColumn then
-            begin
-              Level := GetNodeLevel(Run);
-              Buffer.Append(Copy(Tabs, 1, Level));
-              // Wrap the text with quotation marks if it contains the separator character.
-              if (Pos(Separator, Text) > 0) or (Pos('"', Text) > 0) then
-                Buffer.Append(QuotedStr(Text, '"'))
-              else
-                Buffer.Append(Text);
-              Buffer.Append(Copy(Tabs, 1, MaxLevel - Level));
-            end
-            else
-              if (Pos(Separator, Text) > 0) or (Pos('"', Text) > 0) then
-                Buffer.Append(QuotedStr(Text, '"'))
-              else
-                Buffer.Append(Text);
-
-            if Columns[I] <> LastColumn then
-              Buffer.Append(Separator);
-          end;
-        end;
-        Run := GetNextNode(Run);
-        Buffer.Append(#13#10);
-      end;
-    end
-    else
-    begin
-      while Assigned(Run) do
-      begin
-        // This line implicitly converts the Unicode text to ANSI.
-        Text := Self.Text[Run, NoColumn];
-        Level := GetNodeLevel(Run);
-        Buffer.Append(Copy(Tabs, 1, Level));
-        Buffer.Append(Text);
-        Buffer.Append(#13#10);
-
-        Run := GetNextNode(Run);
-      end;
-    end;
-    
-    Result := Buffer.ToString;
-  finally
-    Buffer.Free;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TCustomVirtualStringTree.ContentToUnicode(Source: TVSTTextSourceType; Separator: Char): string;
+function TCustomVirtualStringTree.ContentToText(Source: TVSTTextSourceType; Separator: string): StringBuilder;
 
 // Renders the current tree content (depending on Source) as Unicode text.
 // If an entry contains the separator char then it is wrapped with double quotation marks.
 // Note: There is no QuotedStr function for Unicode in the VCL (like AnsiQuotedStr) so we have the limitation here
 //       that an entry must not contain double quotation marks, otherwise import into other programs might fail!
 
-const
-  WideCRLF: string = #13#10;
-
 var
   RenderColumns: Boolean;
   Tabs: string;
@@ -29249,119 +29105,112 @@ var
   Index,
   I: Integer;
   Text: string;
-  Buffer: StringBuilder;
 
 begin
   Columns := nil;
 
-  Buffer := StringBuilder.Create;
-  try
-    RenderColumns := FHeader.UseColumns;
-    if RenderColumns then
-      Columns := FHeader.FColumns.GetVisibleColumns;
+  Result := StringBuilder.Create;
+  RenderColumns := FHeader.UseColumns;
+  if RenderColumns then
+    Columns := FHeader.FColumns.GetVisibleColumns;
 
-    GetRenderStartValues(Source, Run, GetNextNode);
-    Save := Run;
+  GetRenderStartValues(Source, Run, GetNextNode);
+  Save := Run;
 
-    // The text consists of visible groups representing the columns, which are separated by one or more separator
-    // characters. There are always MaxLevel separator chars in a line (main column only). Either before the caption
-    // to ident it or after the caption to make the following column aligned.
-    MaxLevel := 0;
+  // The text consists of visible groups representing the columns, which are separated by one or more separator
+  // characters. There are always MaxLevel separator chars in a line (main column only). Either before the caption
+  // to ident it or after the caption to make the following column aligned.
+  MaxLevel := 0;
+  while Assigned(Run) do
+  begin
+    Level := GetNodeLevel(Run);
+    If Level > MaxLevel then
+      MaxLevel := Level;
+    Run := GetNextNode(Run);
+  end;
+
+  for I := 1 to MaxLevel do
+    Tabs := Tabs + Separator;
+
+  // First line is always the header if used.
+  if RenderColumns then
+  begin
+    LastColumn := Columns[High(Columns)];
+    for I := 0 to High(Columns) do
+    begin
+      Result.Append(Columns[I].Text);
+      if Columns[I] <> LastColumn then
+      begin
+        if Columns[I].Index = Header.MainColumn then
+        begin
+          Result.Append(Tabs);
+          Result.Append(Separator);
+        end
+        else
+          Result.Append(Separator);
+      end;
+    end;
+    Result.Append(#13#10);
+  end
+  else
+    LastColumn := nil;
+
+  Run := Save;
+  if RenderColumns then
+  begin
     while Assigned(Run) do
     begin
-      Level := GetNodeLevel(Run);
-      If Level > MaxLevel then
-        MaxLevel := Level;
-      Run := GetNextNode(Run);
-    end;
-
-    SetLength(Tabs, MaxLevel);
-    for I := 1 to MaxLevel do
-      Tabs[I] := Separator;
-
-    // First line is always the header if used.
-    if RenderColumns then
-    begin
-      LastColumn := Columns[High(Columns)];
       for I := 0 to High(Columns) do
       begin
-        Buffer.Append(Columns[I].Text);
-        if Columns[I] <> LastColumn then
+        if coVisible in Columns[I].Options then
         begin
-          if Columns[I].Index = Header.MainColumn then
+          Index := Columns[I].Index;
+          Text := Self.Text[Run, Index];
+          if Index = Header.MainColumn then
           begin
-            Buffer.Append(Tabs);
-            Buffer.Append(Separator);
-          end
-          else
-            Buffer.Append(Separator);
-        end;
-      end;
-      Buffer.Append(#13#10);
-    end
-    else
-      LastColumn := nil;
-
-    Run := Save;
-    if RenderColumns then
-    begin
-      while Assigned(Run) do
-      begin
-        for I := 0 to High(Columns) do
-        begin
-          if coVisible in Columns[I].Options then
-          begin
-            Index := Columns[I].Index;
-            Text := Self.Text[Run, Index];
-            if Index = Header.MainColumn then
+            Level := GetNodeLevel(Run);
+            Result.Append(Copy(Tabs, 1, Level));
+            // Wrap the text with quotation marks if it contains the separator character.
+            if Pos(Separator, Text) > 0 then
             begin
-              Level := GetNodeLevel(Run);
-              Buffer.Append(Copy(Tabs, 1, Level));
-              // Wrap the text with quotation marks if it contains the separator character.
-              if Pos(Separator, Text) > 0 then
-              begin
-                Buffer.Append('"');
-                Buffer.Append(Text);
-                Buffer.Append('"');
-              end
-              else
-                Buffer.Append(Text);
-              Buffer.Append(Copy(Tabs, 1, MaxLevel - Level));
+              Result.Append('"');
+              Result.Append(Text);
+              Result.Append('"');
             end
             else
-              if Pos(Separator, Text) > 0 then
-              begin
-                Buffer.Append('"');
-                Buffer.Append(Text);
-                Buffer.Append('"');
-              end
-              else
-                Buffer.Append(Text);
+              Result.Append(Text);
+            Result.Append(Copy(Tabs, 1, MaxLevel - Level));
+          end
+          else
+            if Pos(Separator, Text) > 0 then
+            begin
+              Result.Append('"');
+              Result.Append(Text);
+              Result.Append('"');
+            end
+            else
+              Result.Append(Text);
 
-            if Columns[I] <> LastColumn then
-              Buffer.Append(Separator);
-          end;
+          if Columns[I] <> LastColumn then
+            Result.Append(Separator);
         end;
-        Run := GetNextNode(Run);
-        Buffer.Append(#13#10);
       end;
-    end
-    else
-    begin
-      while Assigned(Run) do
-      begin
-        Text := Self.Text[Run, NoColumn];
-        Level := GetNodeLevel(Run);
-        Buffer.Append(Copy(Tabs, 1, Level));
-        Buffer.Append(Text);
-        Buffer.Append(#13#10);
-
-        Run := GetNextNode(Run);
-      end;
+      Run := GetNextNode(Run);
+      Result.Append(#13#10);
     end;
-    Result := Buffer.ToString;
-  finally
-    Buffer.Free;
+  end
+  else
+  begin
+    while Assigned(Run) do
+    begin
+      Text := Self.Text[Run, NoColumn];
+      Level := GetNodeLevel(Run);
+      Result.Append(Copy(Tabs, 1, Level));
+      Result.Append(Text);
+      Result.Append(#13#10);
+
+      Run := GetNextNode(Run);
+    end;
   end;
 end;
 

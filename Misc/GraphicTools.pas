@@ -284,7 +284,7 @@ procedure DrawGradientBox(DC: HDC; const R: TRect; Colors: array of TRGB);
 
 // Draws a box with a gradient for all four corners. The Colors parameter carries the required colors where
 // index 0 contains the color for the left-upper corner and the others keep the colors for the remaining vertices
-// in clock-wise direction. If there are less color than there are corners then the missing colors are derived from the
+// in clock-wise direction. If there are less colors than there are corners then the missing colors are derived from the
 // last given color by simply copying it.
 
 var

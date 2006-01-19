@@ -11,16 +11,18 @@ interface
 
 uses
   Windows, Classes,
-  // DesignEditors,
-  VirtualTrees.NET;
+  DesignIntf,
+  DesignEditors,
+  VclEditors,
+  StrEdit,
+  ColnEdit,
+  VirtualTrees.NET, VTHeaderPopup.NET;
 
-{
 type
   TVirtualTreeEditor = class (TDefaultEditor)
   public
     procedure Edit; override;
   end;
-}
 
 procedure Register;
 
@@ -32,7 +34,6 @@ uses
   Types,
   Dialogs, TypInfo, SysUtils, Graphics;
 
-{
 type
   TClipboardElement = class(TNestedProperty, ICustomPropertyDrawing)
   private
@@ -78,7 +79,7 @@ type
   public
     property Header;
   end;
-  
+
 procedure TVirtualTreeEditor.Edit;
 
 begin
@@ -294,14 +295,11 @@ end;
     // Nothing to do here.
   end;
 
-}
-
 procedure Register;
 
 begin
   RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree, TVTHeaderPopupMenu]);
 
-  {
   RegisterComponentEditor(TVirtualStringTree, TVirtualTreeEditor);
   RegisterComponentEditor(TVirtualDrawTree, TVirtualTreeEditor);
   RegisterPropertyEditor(TypeInfo(TClipboardFormats), nil, '', TClipboardFormatsProperty);
@@ -404,7 +402,6 @@ begin
     RegisterPropertiesInCategory(sVTIncremenalCategoryName,
       TBaseVirtualTree,
       ['*Incremental*']);
-  }
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

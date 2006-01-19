@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.3
+// Version 2.2.4
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,6 +25,8 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// January 2006
+//   - Bug fix: line highlighting with custom styles was wrong.
 // November 2005
 //   - Bug fix: line validation during change.
 //   - Improvement: CaretOffset, for giving a x/y pair and a linear offset for caret placing.
@@ -35,22 +37,17 @@ unit UniCodeEditor;
 //   - Bug fix: Undo/Redo handling reworked.
 //   - Improvement: TUCELine.ClearStyles and TUCELine.ClearMarkers
 //   - Improvement: More line specific routines moved to the line class (e.g. column <-> char index conversion etc.).
-//
 // April 2005
 //   - Bug fix: Internal line index of a line not updated when a new line is inserted.
-//
 // February 2005
 //   - Bug fix: key handled flag removed, as it does not work with multiple keypresses.
-//
 // January 2005
 //   - Change: UCE is now released under the MIT license.
 //   - Bug fix: Cursor was not visible when moved to the right border.
 //   - Bug fix: Thumb scrolling does not work correctly for large scroll ranges.
 //   - Improvement: Introduction of local index in lines for quick lookup.
-//
 // December 2004
 //   - Improvement: new option eoLineNumbersZeroBased to display line numbers in the gutter starting with 0 or 1.
-//
 // November 2004
 //   - Bug fix: Correct insertion point for CutToClipboard.
 //   - Bug fix: Wrong selection state when cutting/deleting text.
@@ -58,7 +55,6 @@ unit UniCodeEditor;
 //   - Improvement: Added bookmark change event.
 //   - Bug fix: Selection end must be set too when start is set.
 //   - Improvement: ClearSelection
-//
 //   Version 2.1, 2003-08-17, Mike Zinner
 //     Added LineHeight property, ControlStyle csNeedsBorderPaint for XP border
 //     Added properties SelStart, SelEnd, method SetCaretToEditorBottom
@@ -112,7 +108,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.3';
+  UCEVersion = '2.2.4';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -5451,7 +5447,7 @@ var
 
     Run := LineBase + Start;
     Counter := Len;
-    // TODO: Draw only as much characters as fit in the update rect.
+    // TODO: Draw only as many characters as fit in the update rect.
     with TextCanvas do
       while Counter > 0 do
       begin
@@ -5507,34 +5503,42 @@ var
 
   //----------------------------------------------------------------------------
 
-  procedure PickColors(Foreground, Background: TColor; Reversed: Boolean);
+  procedure PickColors(Foreground, Background: TColor; ForSelection: Boolean);
 
   // Selects the given colors into the target canvas. If CustomStyle is Assigned
   // then use this style instead of the given colors.
-  // If Reversed is true then fore- and background colors of the custom style
-  // (if assinged) are reversed. This parameter is only valid if a custom style is given.
+  // If ForSelection is true then fore- and background colors of the custom style
+  // (if assigned) are reversed. If no custom style is given then the the passed in
+  // colors are directly used. In this case the default style has no influence.
   // If there is a custom style assigned, which has its font style forcing flag set
   // then also font styles from this custom style are applied.
 
   var
-    Temp: TColor;
     Style: IUCELineStyle;
 
   begin
-    Style := FDefaultStyle;
-    if Assigned(CustomStyle) then
-      Style := CustomStyle;
-    if Assigned(Style) then
+    if ForSelection then
     begin
-      if Style.Foreground <> clDefault then
-        Foreground := Style.Foreground;
-      if Style.Background <> clDefault then
-        Background := Style.Background;
-      if Reversed then
+      if Assigned(CustomStyle) then
       begin
-        Temp := Foreground;
-        Foreground := Background;
-        Background := Temp;
+        if CustomStyle.Foreground <> clDefault then
+          Background := CustomStyle.Foreground;
+        if CustomStyle.Background <> clDefault then
+          Foreground := CustomStyle.Background;
+      end;
+    end
+    else
+    begin
+      Style := FDefaultStyle;
+      if Assigned(CustomStyle) then
+        Style := CustomStyle;
+
+      if Assigned(Style) then
+      begin
+        if Style.Foreground <> clDefault then
+          Foreground := Style.Foreground;
+        if Style.Background <> clDefault then
+          Background := Style.Background;
       end;
     end;
 
@@ -5707,6 +5711,7 @@ begin
             // set needed styles
             with TokenData do
             begin
+              Font.Style := Style;
               PickColors(Foreground, Background, False);
               CurrentStyle := 1;
               if eoShowControlChars in FOptions then
@@ -5726,6 +5731,7 @@ begin
           begin
             if CurrentStyle <> 2 then // other than selected style?
             begin
+              Font.Style := TokenData.Style;
               // Set the selection highlight colors.
               with FSelectedColor do
                 PickColors(Foreground, Background, True);
@@ -5749,6 +5755,7 @@ begin
           begin
             if CurrentStyle <> 1 then // other than unselected style?
             begin
+              Font.Style := TokenData.Style;
               // set needed styles
               with TokenData do
                 PickColors(Foreground, Background, False);
@@ -5769,18 +5776,11 @@ begin
         // Prepare drawing of the rest of the line.
         if LineIndex < BlockEnd.Y then
         begin
-          if Assigned(CustomStyle) then
-            Brush.Color := CustomStyle.Foreground
-          else
-            Brush.Color := FSelectedColor.Background;
-        end
-        else
           with FSelectedColor do
             PickColors(Foreground, Background, True);
-          if Assigned(CustomStyle) then
-            Brush.Color := CustomStyle.Background
-          else
-            Brush.Color := Self.Color;
+        end
+        else
+          PickColors(clDefault, clDefault, False);
         if ShowLineBreak then
         begin
           if StopIndex < SelEnd then
@@ -5996,34 +5996,42 @@ var
 
   //----------------------------------------------------------------------------
 
-  procedure PickColors(Foreground, Background: TColor; Reversed: Boolean);
+  procedure PickColors(Foreground, Background: TColor; ForSelection: Boolean);
 
   // Selects the given colors into the target canvas. If CustomStyle is Assigned
   // then use this style instead of the given colors.
-  // If Reversed is true then fore- and background colors of the custom style
-  // (if assinged) are reversed. This parameter is only valid if a custom style is given.
+  // If ForSelection is true then fore- and background colors of the custom style
+  // (if assigned) are reversed. If no custom style is given then the the passed in
+  // colors are directly used. In this case the default style has no influence.
   // If there is a custom style assigned, which has its font style forcing flag set
   // then also font styles from this custom style are applied.
 
   var
-    Temp: TColor;
     Style: IUCELineStyle;
 
   begin
-    Style := FDefaultStyle;
-    if Assigned(CustomStyle) then
-      Style := CustomStyle;
-    if Assigned(Style) then
+    if ForSelection then
     begin
-      if Style.Foreground <> clDefault then
-        Foreground := Style.Foreground;
-      if Style.Background <> clDefault then
-        Background := Style.Background;
-      if Reversed then
+      if Assigned(CustomStyle) then
       begin
-        Temp := Foreground;
-        Foreground := Background;
-        Background := Temp;
+        if CustomStyle.Foreground <> clDefault then
+          Background := CustomStyle.Foreground;
+        if CustomStyle.Background <> clDefault then
+          Foreground := CustomStyle.Background;
+      end;
+    end
+    else
+    begin
+      Style := FDefaultStyle;
+      if Assigned(CustomStyle) then
+        Style := CustomStyle;
+
+      if Assigned(Style) then
+      begin
+        if Style.Foreground <> clDefault then
+          Foreground := Style.Foreground;
+        if Style.Background <> clDefault then
+          Background := Style.Background;
       end;
     end;
 
@@ -7055,37 +7063,51 @@ begin
 
     ecUp,
     ecSelUp:
+      if FCaretY > 0 then
       begin
         FUndoList.PrepareStateChange;
-        CaretY := FCaretY - 1;
-        if (Command = ecSelUp) then
+        if Command = ecSelUp then
         begin
           if not SelectionAvailable then
-            BlockBegin := Point(FCaretX, FCaretY + 1);
+            BlockBegin := CaretXY;
+          CaretY := FCaretY - 1;
           BlockEnd := CaretXY;
         end
         else
+        begin
+          CaretY := FCaretY - 1;
           BlockBegin := CaretXY;
+        end;
 
         FUndoList.FinishPendingChange;
-      end;
+      end
+      else
+        if (Command <> ecSelUp) and SelectionAvailable then
+          ClearSelection;
 
     ecDown,
     ecSelDown:
+      if FCaretY < FContent.Count - 1 then
       begin
         FUndoList.PrepareStateChange;
-        CaretY := FCaretY + 1;
         if Command = ecSelDown then
         begin
           if not SelectionAvailable then
-            BlockBegin := Point(FCaretX, FCaretY - 1);
+            BlockBegin := CaretXY;
+          CaretY := FCaretY + 1;
           BlockEnd := CaretXY;
         end
         else
+        begin
+          CaretY := FCaretY + 1;
           BlockBegin := CaretXY;
+        end;
 
         FUndoList.FinishPendingChange;
-      end;
+      end
+      else
+        if (Command <> ecSelDown) and SelectionAvailable then
+          ClearSelection;
 
     ecWordLeft,
     ecSelWordLeft:

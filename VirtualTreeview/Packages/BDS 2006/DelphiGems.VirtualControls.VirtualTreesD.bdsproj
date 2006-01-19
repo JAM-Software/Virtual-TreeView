@@ -45,7 +45,7 @@
 			<Compiler Name="ShowHints">True</Compiler>
 			<Compiler Name="ShowWarnings">True</Compiler>
 			<Compiler Name="UnitAliases">WinTypes=Borland.Vcl.Windows;WinProcs=Borland.Vcl.Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</Compiler>
-			<Compiler Name="NamespacePrefix">Borland.Vcl</Compiler>
+			<Compiler Name="NamespacePrefix">Borland.Vcl;Borland.Vcl.Design</Compiler>
 			<Compiler Name="GenerateDocumentation">False</Compiler>
 			<Compiler Name="DefaultNamespace"></Compiler>
 			<Compiler Name="SymbolDeprecated">True</Compiler>
@@ -123,8 +123,8 @@
 			<Directories Name="UnitOutputDir">V:\MySQL\Temp</Directories>
 			<Directories Name="PackageDLLOutputDir">V:\MySQL\Temp</Directories>
 			<Directories Name="PackageDCPOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="SearchPath">..\..\..\Common;..\..\Source;V:\Library\VirtualTreeview\Packages\BDS 2006;c:\windows\microsoft.net\framework\v1.1.4322</Directories>
-			<Directories Name="Packages">c:\windows\microsoft.net\framework\v1.1.4322\System.Drawing.dll</Directories>
+			<Directories Name="SearchPath">..\..\..\Common;..\..\Source;V:\Library\VirtualTreeview\Packages\BDS 2006;c:\windows\microsoft.net\framework\v1.1.4322;c:\programme\borland\bds\4.0\bin;V:\MySQL\Temp;v:\mysql\temp</Directories>
+			<Directories Name="Packages">Borland.Vcl.Design.Standard;DelphiGems.VirtualControls.VirtualTrees;Borland.Studio.Vcl.Design;c:\windows\microsoft.net\framework\v1.1.4322\System.Design.dll;c:\windows\microsoft.net\framework\v1.1.4322\System.Drawing.dll</Directories>
 			<Directories Name="Conditionals"></Directories>
 			<Directories Name="DebugSourceDirs"></Directories>
 			<Directories Name="UsePackages">True</Directories>
@@ -165,10 +165,12 @@
 			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
-		</VersionInfoKeys>  
-    
-    
-    
+		</VersionInfoKeys>
+		<Language>
+			<Language Name="ActiveLang"></Language>
+			<Language Name="ProjectLang">$00000000</Language>
+			<Language Name="RootDir"></Language>
+		</Language>  
     
     
     <FileList>
@@ -176,6 +178,8 @@
       <File FileName="$(SystemRoot)\microsoft.net\framework\v1.1.4322\System.Drawing.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="System.Drawing" AssemblyName="system.drawing" Version="1.0.5000.0" LinkUnits="False"/>
       <File FileName="$(SystemRoot)\microsoft.net\framework\v1.1.4322\System.Design.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="System.Design" AssemblyName="System.Design" Version="1.0.5000.0" LinkUnits="False"/>
       <File FileName="c:\programme\borland\bds\4.0\bin\Borland.Studio.Vcl.Design.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Studio.Vcl.Design" AssemblyName="Borland.Studio.Vcl.Design" Version="10.0.4143.0" LinkUnits="False"/>
+      <File FileName="v:\mysql\temp\DelphiGems.VirtualControls.VirtualTrees.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="DelphiGems.VirtualControls.VirtualTrees" AssemblyName="DelphiGems.VirtualControls.VirtualTrees" Project="{4FCCE024-951F-4E08-B0E5-77793DEF4D17}" Version="0.0.0.0" LinkUnits="False"/>
+      <File FileName="c:\programme\borland\bds\4.0\bin\Borland.Vcl.Design.Standard.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Vcl.Design.Standard" AssemblyName="Borland.Vcl.Design.Standard" Version="10.0.4143.0" LinkUnits="False"/>
       <File FileName="..\..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas" ContainerId="PascalCompiler" ModuleName="DelphiGems.VirtualControls.VirtualTreesReg"/>
     </FileList>
   </DelphiDotNet.Personality>

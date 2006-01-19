@@ -29,7 +29,9 @@ package DelphiGems.VirtualControls.VirtualTreesD;
 requires
   System.Drawing,
   System.Design,
-  Borland.Studio.Vcl.Design;
+  Borland.Studio.Vcl.Design,
+  DelphiGems.VirtualControls.VirtualTrees,
+  Borland.Vcl.Design.Standard;
 
 contains
   DelphiGems.VirtualControls.VirtualTreesReg in '..\..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas';
