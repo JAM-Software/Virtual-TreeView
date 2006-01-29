@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.6
+// Version 4.4.7
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // January 2006
+//   - Bug fix: disabled images are now drawn like enabled ones (with respect to position, indices etc.).
 //   - Improvement: New property BottomSpace, allows to specify an additional area below the last node in the tree.
 //   - Bug fix: VT.EndUpdate did not invalidate the cache so the cache was never used again after that.
 //   - Improvement: tree states for double clicks (left, middle, right).
@@ -87,7 +88,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.6';
+  VTVersion = '4.4.7';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -21779,7 +21780,8 @@ var
   ExtraStyle: Cardinal;
   CutNode: Boolean;
   PaintFocused: Boolean;
-
+  DrawEnabled: Boolean;
+  
 begin
   with PaintInfo do
   begin
@@ -21793,69 +21795,52 @@ begin
     else
       PaintInfo.ImageInfo[iiOverlay].Index := -1;
 
-    if (vsDisabled in Node.States) or not Enabled then
-      with ImageInfo[iiOverlay] do
+    DrawEnabled := not (vsDisabled in Node.States) and Enabled;
+    with ImageInfo[ImageInfoIndex] do
+    begin
+      if (vsSelected in Node.States) and not (Ghosted or CutNode) then
       begin
-        // The internal handling for disabled images in TImageList destroys the forground color on Windows API level.
-        // Hence the canvas does not recognize the change and we have to restore the color manually.
-        Images.BlendColor := Canvas.Font.Color;
-
-        // If the tree or the current node is disabled then let the VCL draw the image as it already
-        // contains code to convert the image to the system colors.
-        // TODO: Disabled overlay images must respect the new enhanced image index.
-        if Index > -1 then
-          Images.DrawOverlay(Canvas, XPos, YPos, Index, Index, False)
+        if PaintFocused or (toPopupMode in FOptions.FPaintOptions) then
+          Images.BlendColor := FColors.FocusedSelectionColor
         else
-          Images.Draw(Canvas, XPos, YPos, Index, False);
-
-        SetTextColor(Canvas.Handle, ColorToRGB(Canvas.Font.Color));
+          Images.BlendColor := FColors.UnfocusedSelectionColor;
       end
-    else
-      with ImageInfo[ImageInfoIndex] do
-      begin
-        if (vsSelected in Node.States) and not (Ghosted or CutNode) then
-        begin
-          if PaintFocused or (toPopupMode in FOptions.FPaintOptions) then
-            Images.BlendColor := FColors.FocusedSelectionColor
-          else
-            Images.BlendColor := FColors.UnfocusedSelectionColor;
-        end
-        else
-          Images.BlendColor := Color;
+      else
+        Images.BlendColor := Color;
 
-        // If the user returned an index >= 15 then we cannot use the built-in overlay image drawing.
-        // Instead we do it manually.
-        if (ImageInfo[iiOverlay].Index > -1) and (ImageInfo[iiOverlay].Index < 15) then
-          ExtraStyle := ILD_TRANSPARENT or ILD_OVERLAYMASK and IndexToOverlayMask(ImageInfo[iiOverlay].Index + 1)
-        else
-          ExtraStyle := ILD_TRANSPARENT;
+      // If the user returned an index >= 15 then we cannot use the built-in overlay image drawing.
+      // Instead we do it manually.
+      if (ImageInfo[iiOverlay].Index > -1) and (ImageInfo[iiOverlay].Index < 15) then
+        ExtraStyle := ILD_TRANSPARENT or ILD_OVERLAYMASK and IndexToOverlayMask(ImageInfo[iiOverlay].Index + 1)
+      else
+        ExtraStyle := ILD_TRANSPARENT;
 
-        // Blend image if enabled and the tree has the focus (or ghosted images must be drawn also if unfocused) ...
-        if (toUseBlendedImages in FOptions.FPaintOptions) and PaintFocused
-          // ... and the image is ghosted...
-          and (Ghosted or
-          // ... or it is not the check image and the node is selected (but selection is not for the entire row)...
-          ((vsSelected in Node.States) and
-          not (toFullRowSelect in FOptions.FSelectionOptions) and
-          not (toGridExtensions in FOptions.FMiscOptions)) or
-          // ... or the node must be shown in cut mode.
-          CutNode) then
-          ExtraStyle := ExtraStyle or ILD_BLEND50;
+      // Blend image if enabled and the tree has the focus (or ghosted images must be drawn also if unfocused) ...
+      if (toUseBlendedImages in FOptions.FPaintOptions) and PaintFocused
+        // ... and the image is ghosted...
+        and (Ghosted or
+        // ... or it is not the check image and the node is selected (but selection is not for the entire row)...
+        ((vsSelected in Node.States) and
+        not (toFullRowSelect in FOptions.FSelectionOptions) and
+        not (toGridExtensions in FOptions.FMiscOptions)) or
+        // ... or the node must be shown in cut mode.
+        CutNode) then
+        ExtraStyle := ExtraStyle or ILD_BLEND50;
 
-        if (vsSelected in Node.States) and not Ghosted then
-          Images.BlendColor := clDefault;
+      if (vsSelected in Node.States) and not Ghosted then
+        Images.BlendColor := clDefault;
 
-        TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle {$ifndef COMPILER_6_UP}, True {$endif});
-      
-        // Now, draw the overlay. This circumnavigates limitations in the overlay mask index (it has to be 4 bits in size,
-        // anything larger will be truncated by the ILD_OVERLAYMASK).
-        // However this will only be done if the overlay image index is > 15, to avoid breaking code that relies
-        // on overlay image indices (e.g. when using system image lists).
-        if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
-          // Note: XPos and YPos are those of the normal images.
-          TCustomImageListCast(ImageInfo[iiOverlay].Images).DoDraw(ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
-            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle {$ifndef COMPILER_6_UP}, True {$endif});
-      end;
+      TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle, DrawEnabled);
+
+      // Now, draw the overlay. This circumnavigates limitations in the overlay mask index (it has to be 4 bits in size,
+      // anything larger will be truncated by the ILD_OVERLAYMASK).
+      // However this will only be done if the overlay image index is > 15, to avoid breaking code that relies
+      // on overlay image indices (e.g. when using system image lists).
+      if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
+        // Note: XPos and YPos are those of the normal images.
+        TCustomImageListCast(ImageInfo[iiOverlay].Images).DoDraw(ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
+          Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle, DrawEnabled);
+    end;
   end;
 end;
 
