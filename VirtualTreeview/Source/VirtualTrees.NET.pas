@@ -1745,6 +1745,7 @@ type
     FOffsetY: Integer;                           // determines left and top scroll offset
     FRangeX,
     FRangeY: Integer;                            // current virtual width and height of the tree
+    FBottomSpace: Integer;                       // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
     FSingletonNodeArray: &Array;                 // Contains only one element for quick addition of single nodes
@@ -1929,6 +1930,7 @@ type
     procedure SetBackground(const Value: TPicture);
     procedure SetBackgroundOffset(const Index, Value: Integer);
     procedure SetBorderStyle(Value: TBorderStyle);
+    procedure SetBottomSpace(const Value: Integer);
     procedure SetButtonFillMode(const Value: TVTButtonFillMode);
     procedure SetButtonStyle(const Value: TVTButtonStyle);
     procedure SetCheckImageKind(Value: TCheckImageKind);
@@ -2241,6 +2243,7 @@ type
     property BevelKind;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
     property BorderWidth;
+    property BottomSpace: Integer read FBottomSpace write SetBottomSpace default 0;
     property ButtonFillMode: TVTButtonFillMode read FButtonFillMode write SetButtonFillMode default fmTreeColor;
     property ButtonStyle: TVTButtonStyle read FButtonStyle write SetButtonStyle default bsRectangle;
     property ChangeDelay: Integer read FChangeDelay write FChangeDelay default 0;
@@ -2779,6 +2782,7 @@ type
     property BevelKind;
     property BevelWidth;
     property BorderStyle;
+    property BottomSpace;
     property ButtonFillMode;
     property ButtonStyle;
     property BorderWidth;
@@ -2987,6 +2991,7 @@ type
     property BevelKind;
     property BevelWidth;
     property BorderStyle;
+    property BottomSpace;
     property ButtonFillMode;
     property ButtonStyle;
     property BorderWidth;
@@ -12306,6 +12311,18 @@ begin
   begin
     FBorderStyle := Value;
     RecreateWnd;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBottomSpace(const Value: Integer);
+
+begin
+  if FBottomSpace <> Value then
+  begin
+    FBottomSpace := Value;
+    UpdateVerticalScrollbar(True);
   end;
 end;
 
@@ -25103,6 +25120,8 @@ begin
     // Determine node to start drawing with.
     BaseOffset := 0;
     PaintInfo.Node := GetNodeAt(0, Window.Top, False, BaseOffset);
+    if PaintInfo.Node = nil then
+      BaseOffset := Window.Top;
 
     // Transform selection rectangle into node bitmap coordinates.
     if DrawSelectionRect then
@@ -25578,7 +25597,7 @@ begin
         R := OrderRect(FNewSelRect);
         // Remap the selection rectangle to the current window of the tree.
         // Since Target has been used for other tasks BaseOffset got the left extent of the target position here.
-        OffsetRect(R, -Target.X + BaseOffset - Window.Left, -Target.Y);
+        OffsetRect(R, -Target.X + BaseOffset - Window.Left, -Target.Y + FOffsetY);
         SetBrushOrgEx(NodeBitmap.Canvas.Handle, 0, Target.X and 1, nil);
         PaintSelectionRectangle(NodeBitmap.Canvas, 0, R, TargetRectangle);
       end;
@@ -26860,7 +26879,7 @@ begin
   // Total node height includes the height of the invisble root node.
   if FRoot.FTotalHeight < FDefaultNodeHeight then
     FRoot.FTotalHeight := FDefaultNodeHeight;
-  FRangeY := FRoot.FTotalHeight - FRoot.FNodeHeight;
+  FRangeY := FRoot.FTotalHeight - FRoot.FNodeHeight + FBottomSpace;
 
   if FScrollBarOptions.ScrollBars in [ssVertical, ssBoth] then
   begin
