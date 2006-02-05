@@ -90,7 +90,7 @@ type
   PCIExyY = ^TCIExyY;
   
   TLCh = record
-    L, C, h: Double
+    L, C, h: Double;
   end;
 
   TCIELCh = TLCh;
@@ -98,7 +98,7 @@ type
   
   PJCh  = ^TJCh;
   TJCh   = record
-    J, C, h: Double
+    J, C, h: Double;
   end;
 
   // Transformation matrix for linear conversions between color schemes (e.g. CIE XYZ to RGB) and for general

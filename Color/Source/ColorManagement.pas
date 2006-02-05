@@ -219,7 +219,7 @@ type
 
 // Helper functions for color management.
 function GetFullColorProfileFileName(const FileName: string): string;
-function GetProfileColorSpace(FileName: string): TColorSpaceSignature;
+function GetProfileColorSpace(FileName: string): icColorSpaceSignature;
 
 // APIs, which are either not yet defined or are defined wrongly.
 function GetColorDirectory(pMachineName: PChar; pBuffer: PChar; var pdwSize: Cardinal): BOOL; stdcall;
@@ -262,7 +262,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function GetProfileColorSpace(FileName: string): TColorSpaceSignature;
+function GetProfileColorSpace(FileName: string): icColorSpaceSignature;
 
 // Determines the color space the given profile is for. The Filename can either be a full path or a file name only,
 // in which case the file is loaded from the system's color directory.

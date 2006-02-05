@@ -78,7 +78,7 @@ type
 
 implementation
 
-{$R 'Extra.res'}
+{$R 'Extra.res' 'Extra.rc'}
 
 uses
   Dialogs, SysUtils, ColorTools, ColorPickerStrings;

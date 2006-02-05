@@ -11,7 +11,7 @@ package ColorD10;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION OFF}
+{$OPTIMIZATION ON}
 {$OVERFLOWCHECKS ON}
 {$RANGECHECKS ON}
 {$REFERENCEINFO OFF}
@@ -31,22 +31,22 @@ requires
   dclstd;
 
 contains
-  ColorManagement in '..\Source\ColorManagement.pas',
-  ColorPicker in '..\Source\ColorPicker.pas',
-  ColorPickerStrings in '..\Source\ColorPickerStrings.pas',
-  ColorPickerTypes in '..\Source\ColorPickerTypes.pas',
-  ColorSwatchWidgets in '..\Source\ColorSwatchWidgets.pas',
-  ColorTools in '..\Source\ColorTools.pas',
-  ColorTypes in '..\Source\ColorTypes.pas',
-  DefaultWidgets in '..\Source\DefaultWidgets.pas',
-  HLSWidgets in '..\Source\HLSWidgets.pas',
-  WebWidgets in '..\Source\WebWidgets.pas',
-  LexicalTools in '..\..\Misc\LexicalTools.pas',
-  GraphicTools in '..\..\Misc\GraphicTools.pas',
-  LCMS in '..\..\LCMS\LCMS.pas',
-  LibStub in '..\..\Common\LibStub.pas',
-  ColorRegistration in '..\Design\ColorRegistration.pas',
-  WidgetEditor in '..\Design\WidgetEditor.pas',
-  UsesClause in '..\..\Design\UsesClause.pas';
+  ColorManagement in '..\..\Source\ColorManagement.pas',
+  ColorPicker in '..\..\Source\ColorPicker.pas',
+  ColorPickerStrings in '..\..\Source\ColorPickerStrings.pas',
+  ColorPickerTypes in '..\..\Source\ColorPickerTypes.pas',
+  ColorSwatchWidgets in '..\..\Source\ColorSwatchWidgets.pas',
+  ColorTools in '..\..\Source\ColorTools.pas',
+  ColorTypes in '..\..\Source\ColorTypes.pas',
+  DefaultWidgets in '..\..\Source\DefaultWidgets.pas',
+  HLSWidgets in '..\..\Source\HLSWidgets.pas',
+  WebWidgets in '..\..\Source\WebWidgets.pas',
+  LexicalTools in '..\..\..\Misc\LexicalTools.pas',
+  GraphicTools in '..\..\..\Misc\GraphicTools.pas',
+  LCMS in '..\..\..\LCMS\LCMS.pas',
+  LibStub in '..\..\..\Common\LibStub.pas',
+  ColorRegistration in '..\..\Design\ColorRegistration.pas',
+  WidgetEditor in '..\..\Design\WidgetEditor.pas',
+  UsesClause in '..\..\..\Design\UsesClause.pas';
 
 end.

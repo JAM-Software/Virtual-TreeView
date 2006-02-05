@@ -704,7 +704,7 @@ procedure TCMMFileNameProperty.SetValue(const Value: string);
 // Check if the given file is really a CMYK color profile.
 
 var
-  ColorSpace: TColorSpaceSignature;
+  ColorSpace: icColorSpaceSignature;
   FileName: string;
 
 begin

@@ -59,8 +59,8 @@
 //----------------------------------------------------------------------------------------------------------------------
 
 #ifdef _Windows
-  // DELPHI and BCB are no longer defined, only COMPILER
-  #if (__BORLANDC__ >= 0x570)
+  #if (__BORLANDC__ >= 0x580)
+    // DELPHI and BCB are no longer defined, only COMPILER
     #define COMPILER_10
   #endif
 
