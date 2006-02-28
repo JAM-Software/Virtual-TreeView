@@ -3,8 +3,8 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="&quot;$(BCB)\Projects\Bpl\VirtualTrees.bpl&quot;"/>
-    <OBJFILES value="&quot;$(BCB)\Projects\Intermed\VirtualTrees.obj&quot; &quot;c:\program files\borland\cbuilder5\Projects\Intermed\VirtualTrees.obj&quot;"/>
+    <PROJECT value="&quot;$(BCB)\Projects\Bpl\VirtualTreesR.bpl&quot;"/>
+    <OBJFILES value="&quot;$(BCB)\Projects\Intermed\VirtualTreesR.obj&quot; &quot;c:\program files\borland\cbuilder5\Projects\Intermed\VirtualTreesR.obj&quot;"/>
     <RESFILES value="VirtualTrees.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -21,7 +21,7 @@
     <LINKER value="tlink32"/>
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;USEPACKAGES"/>
-    <MAINSOURCE value="VirtualTrees.cpp"/>
+    <MAINSOURCE value="VirtualTreesR.cpp"/>
     <INCLUDEPATH value="..\Source;..;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj"/>
     <WARNINGS value="-w-par"/>

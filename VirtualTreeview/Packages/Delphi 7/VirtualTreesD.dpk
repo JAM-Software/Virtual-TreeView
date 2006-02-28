@@ -29,7 +29,7 @@ package VirtualTreesD;
 
 requires
   dclstd,
-  VirtualTrees;
+  VirtualTreesR;
 
 contains
   VirtualTreesReg in '..\Design\VirtualTreesReg.pas';

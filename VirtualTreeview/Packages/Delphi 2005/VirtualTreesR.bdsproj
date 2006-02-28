@@ -10,7 +10,7 @@
 	</PersonalityInfo>
 	<Delphi.Personality>
 		<Source>
-			<Source Name="MainSource" Type="String">VirtualTrees.dpk</Source>
+			<Source Name="MainSource" Type="String">VirtualTreesR.dpk</Source>
 		</Source>
 		<FileVersion>
 			<FileVersion Name="Version" Type="String">7.0</FileVersion>

@@ -30,7 +30,7 @@ package VirtualTreesD;
 requires
   vcl50,
   dclstd50,
-  VirtualTrees;
+  VirtualTreesR;
 
 contains
   VirtualTreesReg in '..\Design\VirtualTreesReg.pas';

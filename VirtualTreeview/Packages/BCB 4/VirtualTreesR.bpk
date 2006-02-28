@@ -13,8 +13,8 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = VirtualTrees.bpl
-OBJFILES = ..\VirtualTrees.obj VirtualTrees.obj
+PROJECT = VirtualTreesR.bpl
+OBJFILES = ..\VirtualTreesR.obj VirtualTreesR.obj
 RESFILES = VirtualTrees.res ..\Design\VirtualTrees.dcr
 RESDEPEN = $(RESFILES)
 LIBFILES =

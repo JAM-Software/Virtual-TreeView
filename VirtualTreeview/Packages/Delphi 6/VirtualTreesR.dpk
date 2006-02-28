@@ -1,7 +1,7 @@
-package VirtualTrees;
+package VirtualTreesR;
 
-{$R *.RES}
-{$ALIGN ON}
+{$R *.res}
+{$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
 {$DEBUGINFO ON}
@@ -21,14 +21,14 @@ package VirtualTrees;
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
-{$IMAGEBASE $400000}
-{$DESCRIPTION 'Virtual Treeview run time package'}
+{$IMAGEBASE $30400000}
+{$DESCRIPTION 'Virtual Treeview runtime package'}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
 
 requires
-  vcl50,
-  dclstd50,
+  vcl,
+  vclx,
   ThemeManager;
 
 contains
