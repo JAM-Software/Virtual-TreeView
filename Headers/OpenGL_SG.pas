@@ -218,7 +218,7 @@ unit OpenGL_SG;
 //
 //  Contact: public@soft-gems.net, www.soft-gems.net
 //
-//  Version: 2.0.1
+//  Version: 2.0.2
 //----------------------------------------------------------------------------------------------------------------------
 //
 // August 2005
@@ -9993,11 +9993,30 @@ function InitMultisampling(DC: HDC; Options: TRCOptions; ColorBits, StencilBits,
 const
   MemoryDCs = [OBJ_MEMDC, OBJ_METADC, OBJ_ENHMETADC];
 
+type
+  TAttributeEntry = record
+    Name: GLint;
+    Value: GLint;
+  end;
+
+  //---------------------------------------------------------------------------
+
+  function Attribute(const Name, Value: GLint): TAttributeEntry;
+
+  // Since we do not have macros we use a simple local function to create
+  // name/value pairs.
+  
+  begin
+    Result.Name := Name;
+    Result.Value := Value;
+  end;
+
+  //---------------------------------------------------------------------------
+
 var
   PFDescriptor: TPixelFormatDescriptor;
   AType: DWORD;
-  FloatAttributes: array[0..1] of GLfloat;
-  IntAttributes: array[0..21] of GLint;
+  Attributes: array[0..10] of TAttributeEntry;
   FormatCount: Cardinal;
   Valid: LongBool;
   PixelFormat: Integer;
@@ -10042,44 +10061,31 @@ begin
 
   if GL_ARB_multisample then
   begin
-    FloatAttributes[0] := 0;
-    FloatAttributes[1] := 0;
-
-    IntAttributes[0] := WGL_DRAW_TO_WINDOW_ARB;
     if AType in MemoryDCs then
-      IntAttributes[1] := 0
+      Attributes[0] := Attribute(WGL_DRAW_TO_BITMAP_ARB, 1)
     else
-      IntAttributes[1] := 1;
-    IntAttributes[2] := WGL_SUPPORT_OPENGL_ARB;
-    IntAttributes[3] := 1;
-    IntAttributes[4] := WGL_ACCELERATION_ARB;
-    IntAttributes[5] := WGL_FULL_ACCELERATION_ARB;
-    IntAttributes[6] := WGL_COLOR_BITS_ARB;
-    IntAttributes[7] := 24;
-    IntAttributes[8] := WGL_ALPHA_BITS_ARB;
-    if ColorBits = 32 then
-      IntAttributes[9] := 8
-    else
-      IntAttributes[9] := 0;
-    IntAttributes[10] := WGL_DEPTH_BITS_ARB;
-    IntAttributes[11] := 16;
-    IntAttributes[12] := WGL_STENCIL_BITS_ARB;
-    IntAttributes[13] := StencilBits;
-    IntAttributes[14] := WGL_DOUBLE_BUFFER_ARB;
-    IntAttributes[15] := Ord(opDoubleBuffered in Options);
-    IntAttributes[16] := WGL_SAMPLE_BUFFERS_ARB;
-    IntAttributes[17] := 1;
-    IntAttributes[18] := WGL_SAMPLES_ARB;
-    IntAttributes[19] := 4;
-    IntAttributes[20] := 0;
-    IntAttributes[21] := 0;
+      Attributes[0] := Attribute(WGL_DRAW_TO_WINDOW_ARB, 1);
 
-    Valid := wglChoosePixelFormatARB(DC, @IntAttributes, @FloatAttributes, 1, @PixelFormat, @FormatCount);
+    Attributes[1] := Attribute(WGL_SUPPORT_OPENGL_ARB, 1);
+    Attributes[2] := Attribute(WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB);
+    Attributes[3] := Attribute(WGL_COLOR_BITS_ARB, 24);
+    if ColorBits = 32 then
+      Attributes[4] := Attribute(WGL_ALPHA_BITS_ARB, 8)
+    else
+      Attributes[4] := Attribute(WGL_ALPHA_BITS_ARB, 0);
+    Attributes[5] := Attribute(WGL_DEPTH_BITS_ARB, 16);
+    Attributes[6] := Attribute(WGL_STENCIL_BITS_ARB, StencilBits);
+    Attributes[7] := Attribute(WGL_DOUBLE_BUFFER_ARB, Ord(opDoubleBuffered in Options));
+    Attributes[8] := Attribute(WGL_SAMPLE_BUFFERS_ARB, 1);
+    Attributes[9] := Attribute(WGL_SAMPLES_ARB, 6);
+    Attributes[10] := Attribute(0, 0); // End marker.
+
+    Valid := wglChoosePixelFormatARB(DC, @Attributes, nil, 1, @PixelFormat, @FormatCount);
     if not Valid or (FormatCount = 0) then
     begin
       // Quad sampling not supported. Try factor 2 then.
-      IntAttributes[19] := 2;
-      Valid := wglChoosePixelFormatARB(DC, @IntAttributes, @FloatAttributes, 1, @PixelFormat, @FormatCount);
+      Attributes[9] := Attribute(WGL_SAMPLES_ARB, 2);
+      Valid := wglChoosePixelFormatARB(DC, @Attributes, nil, 1, @PixelFormat, @FormatCount);
       if Valid and (FormatCount > 0) then
         Result := PixelFormat;
     end
@@ -11388,3 +11394,4 @@ finalization
   ContextList.Free;
   // We don't need to reset the FPU control word as the previous set call is process specific.
 end.
+

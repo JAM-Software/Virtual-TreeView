@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.8
+// Version 4.4.10
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,7 +24,11 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// March 2006
+//   - Bug fix: variable node height computation
+//   - Bug fix: FLastChangedNode was not reset in DoFreeNode
 // February 2006
+//   - Improvement: GetFirstChecked now also has a default value for its state parameter.
 //   - Improvement: avoid potential reentrancy problems in paint code by checking for the paint state there.
 // January 2006
 //   - Bug fix: disabled images are now drawn like enabled ones (with respect to position, indices etc.).
@@ -90,7 +94,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.8';
+  VTVersion = '4.4.10';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -2448,7 +2452,7 @@ type
     function GetControlsAlignment: TAlignment; override;
     function GetDisplayRect(Node: PVirtualNode; Column: TColumnIndex; TextOnly: Boolean; Unclipped: Boolean = False): TRect;
     function GetFirst: PVirtualNode;
-    function GetFirstChecked(State: TCheckState): PVirtualNode;
+    function GetFirstChecked(State: TCheckState = csCheckedNormal): PVirtualNode;
     function GetFirstChild(Node: PVirtualNode): PVirtualNode;
     function GetFirstCutCopy: PVirtualNode;
     function GetFirstInitialized: PVirtualNode;
@@ -12600,10 +12604,12 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): Cardinal;
-                                       
+
 begin
   if Assigned(Node) and (Node <> FRoot) then
   begin
+    if not (vsInitialized in Node.States) then
+      InitNode(Node);
     if toVariableNodeHeight in FOptions.FMiscOptions then
       // Ensure the node's height is determined.
       MeasureItemHeight(Canvas, Node);
@@ -13766,7 +13772,7 @@ begin
             Index := 0;
             Include(Node.States, vsHasChildren);
           end;
-          Exclude(Node.States, vsAllChildrenHidden);
+          Node.States := Node.States - [vsAllChildrenHidden, vsHeightMeasured];
 
           // New nodes are by default always visible, so we don't need to check the visibility.
           while Count > 0 do
@@ -13782,7 +13788,10 @@ begin
               Node.FirstChild := Child;
             Dec(Count);
             Inc(Index);
-            Inc(NewHeight, NodeHeight[Child]);
+
+            // The actual node height will later be computed once it is clear
+            // whether this node has a variable node height or not.
+            Inc(NewHeight, Child.NodeHeight);
           end;
 
           if vsExpanded in Node.States then
@@ -18423,6 +18432,8 @@ end;
 procedure TBaseVirtualTree.DoFreeNode(Node: PVirtualNode);
 
 begin
+  if Node = FLastChangedNode then
+    FLastChangedNode := nil;
   if Node = FCurrentHotNode then
     FCurrentHotNode := nil;
   if Assigned(FOnFreeNode) and ([vsInitialized, vsInitialUserData] * Node.States <> []) then
@@ -29975,7 +29986,6 @@ function TCustomVirtualStringTree.ComputeNodeHeight(Canvas: TCanvas; Node: PVirt
 // S is the string for which the height must be computed. If this string is empty the cell text is used instead.
 
 var
-  R: TRect;
   DrawFormat: Cardinal;
   BidiMode: TBidiMode;
   Alignment: TAlignment;
@@ -29985,7 +29995,6 @@ var
 begin
   if Length(S) = 0 then
     S := Text[Node, Column];
-  R := GetDisplayRect(Node, Column, True);
   DrawFormat := DT_TOP or DT_NOPREFIX or DT_CALCRECT or DT_WORDBREAK;
   if Column <= NoColumn then
   begin
@@ -30005,7 +30014,11 @@ begin
   PaintInfo.Node := Node;
   PaintInfo.BidiMode := BidiMode;
   PaintInfo.Column := Column;
-  PaintInfo.CellRect := R;
+  PaintInfo.CellRect := Rect(0, 0, 0, 0);
+  if Column > NoColumn then
+    PaintInfo.CellRect.Right := FHeader.Columns[Column].Width
+  else
+    PaintInfo.CellRect.Right := ClientWidth;
   AdjustPaintCellRect(PaintInfo, Dummy);
 
   if BidiMode <> bdLeftToRight then
@@ -31398,5 +31411,6 @@ finalization
   Watcher.Free;
   Watcher := nil;
 end.
+
 
 
