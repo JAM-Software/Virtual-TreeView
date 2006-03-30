@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.10
+// Version 4.4.11
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // March 2006
+//   - Bug fix: total count and total height is wrong after loading from stream
 //   - Bug fix: variable node height computation
 //   - Bug fix: FLastChangedNode was not reset in DoFreeNode
 // February 2006
@@ -94,7 +95,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.10';
+  VTVersion = '4.4.11';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -22104,17 +22105,12 @@ begin
 
             ReadNode(Stream, Version, Run);
             Dec(ChunkBody.ChildCount);
-            Inc(Node.TotalCount, Run.TotalCount);
-            if Node.Parent = FRoot then
-              Inc(FRoot.TotalCount, Run.TotalCount);
+
+            // Only add this one node. Due to recursive loading all children have been added already.
+            AdjustTotalCount(Node, 1, True);
 
             // The total height is not stored in the stream so we have to determine it on-the-fly.
-            if (vsVisible in Run.States) and (vsExpanded in Node.States) then
-            begin
-              Inc(Node.TotalHeight, Run.TotalHeight);
-              if Node.Parent = FRoot then
-                Inc(FRoot.TotalHeight, Run.TotalHeight);
-            end;
+            AdjustTotalHeight(Node, Run.NodeHeight, True);
           end;
         end;
         Result := True;
