@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.11
+// Version 4.4.12
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// April 2006
+//   - Bug fix: check for MMX availabiltiy is missing in some places before calling MMX code
 // March 2006
 //   - Bug fix: total count and total height is wrong after loading from stream
 //   - Bug fix: variable node height computation
@@ -95,7 +97,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.11';
+  VTVersion = '4.4.12';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -13440,7 +13442,7 @@ begin
               (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
-              if toUseBlendedSelection in FOptions.PaintOptions then
+              if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
                 AlphaBlendSelection(Brush.Color)
               else
                 with InnerRect do
@@ -13468,7 +13470,7 @@ begin
             if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
-              if toUseBlendedSelection in FOptions.PaintOptions then
+              if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
                 AlphaBlendSelection(Brush.Color)
               else
                 with InnerRect do
