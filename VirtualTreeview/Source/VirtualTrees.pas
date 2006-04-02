@@ -22112,7 +22112,8 @@ begin
             AdjustTotalCount(Node, 1, True);
 
             // The total height is not stored in the stream so we have to determine it on-the-fly.
-            AdjustTotalHeight(Node, Run.NodeHeight, True);
+            if (vsVisible in Run.States) and (vsExpanded in Node.States) then
+              AdjustTotalHeight(Node, Run.NodeHeight, True);
           end;
         end;
         Result := True;
