@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.12
+// Version 4.4.13
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -26,6 +26,7 @@ unit VirtualTrees;
 //
 // April 2006
 //   - Bug fix: check for MMX availabiltiy is missing in some places before calling MMX code
+//   - Bug fix: flag for VCL dragging was removed too late causing all kind of problems with mouse up code in VCL drag mode.
 // March 2006
 //   - Bug fix: total count and total height is wrong after loading from stream
 //   - Bug fix: variable node height computation
@@ -97,7 +98,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.12';
+  VTVersion = '4.4.13';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -2465,7 +2466,7 @@ type
     function GetFirstVisibleChild(Node: PVirtualNode): PVirtualNode;
     function GetFirstVisibleChildNoInit(Node: PVirtualNode): PVirtualNode;
     function GetFirstVisibleNoInit: PVirtualNode;
-    procedure GetHitTestInfoAt(X, Y: Integer; Relative: Boolean; var HitInfo: THitInfo);
+    procedure GetHitTestInfoAt(X, Y: Integer; Relative: Boolean; var HitInfo: THitInfo); virtual;
     function GetLast(Node: PVirtualNode = nil): PVirtualNode;
     function GetLastInitialized(Node: PVirtualNode = nil): PVirtualNode;
     function GetLastNoInit(Node: PVirtualNode = nil): PVirtualNode;
@@ -2649,7 +2650,7 @@ type
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
   protected
-    procedure AutoAdjustSize;
+    procedure AutoAdjustSize; virtual;
     procedure CreateParams(var Params: TCreateParams); override;
   public
     constructor Create(Link: TStringEditLink); reintroduce;
@@ -19482,6 +19483,8 @@ var
   P: TPoint;
   
 begin
+  DoStateChange([], [tsVCLDragPending, tsVCLDragging, tsUserDragObject]);
+
   GetCursorPos(P);
   P := ScreenToClient(P);
   if tsRightButtonDown in FStates then
@@ -19491,7 +19494,6 @@ begin
       Perform(WM_MBUTTONUP, 0, Longint(PointToSmallPoint(P)))
     else
       Perform(WM_LBUTTONUP, 0, Longint(PointToSmallPoint(P)));
-  DoStateChange([], [tsVCLDragPending, tsVCLDragging, tsUserDragObject]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
