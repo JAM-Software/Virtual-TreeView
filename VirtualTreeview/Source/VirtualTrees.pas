@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.13
+// Version 4.4.14
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -27,6 +27,7 @@ unit VirtualTrees;
 // April 2006
 //   - Bug fix: check for MMX availabiltiy is missing in some places before calling MMX code
 //   - Bug fix: flag for VCL dragging was removed too late causing all kind of problems with mouse up code in VCL drag mode.
+//   - Bug fix: If the past mode in ProcessOLEData is amInsertAfter then nodes where inserted in the wrong order. 
 // March 2006
 //   - Bug fix: total count and total height is wrong after loading from stream
 //   - Bug fix: variable node height computation
@@ -98,7 +99,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.13';
+  VTVersion = '4.4.14';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -27758,6 +27759,11 @@ begin
                     else
                       DoNodeCopied(Node);
                     StructureChange(Node, ChangeReason);
+
+                    // In order to maintain the same node order when restoring nodes in the case of amInsertAfter
+                    // we have to move the reference node continously. Othwise we would end up with reversed node order.
+                    if Mode = amInsertAfter then
+                      TargetNode := Node; 
                   end;
                   Result := True;
                 finally
