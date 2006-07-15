@@ -120,10 +120,10 @@
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir"></Directories>
-			<Directories Name="UnitOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="PackageDLLOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="PackageDCPOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="SearchPath">V:\Library\Common;V:\Library\Virtual Treeview\Source;V:\Library\Virtual Treeview\Resources</Directories>
+			<Directories Name="UnitOutputDir">D:\Work\MySQL\Temp</Directories>
+			<Directories Name="PackageDLLOutputDir">D:\Work\MySQL\Temp</Directories>
+			<Directories Name="PackageDCPOutputDir">D:\Work\MySQL\Temp</Directories>
+			<Directories Name="SearchPath">D:\Work\Library\Common;D:\Work\Library\VirtualTreeview\Source;D:\Work\Library\VirtualTreeview\Resources</Directories>
 			<Directories Name="Packages"></Directories>
 			<Directories Name="Conditionals"></Directories>
 			<Directories Name="DebugSourceDirs"></Directories>
