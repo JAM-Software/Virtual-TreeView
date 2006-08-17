@@ -26,11 +26,9 @@ uses
   Windows, SysUtils, Classes, Graphics,
   LibStub; // Stubs for external C RTL functions referenced by JPEG OBJ files.
 
-{$Z4}      // enum size = dword
-
 // Align record structures to 4 byte boundaries.
 {$ifdef COMPILER_7_UP}
-  {$Align 4}
+  {$Align 8}
 {$else}
   {$Align On}
 {$endif COMPILER_7_UP}
@@ -409,7 +407,7 @@ type
     // Source of compressed data
     src: jpeg_source_mgr_ptr;
 
-    // Basic description of image --- filled in by jpeg_read_header().
+    // Basic description of image --- filled in by _jpeg_read_header().
     // Application may inspect these values to decide how to process image.
     image_width: JDIMENSION;	       // nominal image width (from SOF marker)
     image_height: JDIMENSION;	       // nominal image height
@@ -417,7 +415,7 @@ type
     jpeg_color_space: J_COLOR_SPACE;   // colorspace of JPEG image
 
     // Decompression processing parameters --- these fields must be set before
-    // calling jpeg_start_decompress().  Note that jpeg_read_header() initializes
+    // calling _jpeg_start_decompress().  Note that _jpeg_read_header() initializes
     // them to default values.
     out_color_space: J_COLOR_SPACE;    // colorspace for output      
     scale_num: Cardinal;
@@ -441,9 +439,9 @@ type
     enable_2pass_quant: Boolean;       // enable future use of 2-pass quantizer
 
     // Description of actual output image that will be returned to application.
-    // These fields are computed by jpeg_start_decompress().
-    // You can also use jpeg_calc_output_dimensions() to determine these values
-    // in advance of calling jpeg_start_decompress().
+    // These fields are computed by _jpeg_start_decompress().
+    // You can also use _jpeg_calc_output_dimensions() to determine these values
+    // in advance of calling _jpeg_start_decompress().
 
     output_width: JDIMENSION;          // scaled image width
     output_height: JDIMENSION;         // scaled image height
@@ -458,8 +456,8 @@ type
 
     // When quantizing colors, the output colormap is described by these fields.
     // The application can supply a colormap by setting colormap non-NULL before
-    // calling jpeg_start_decompress; otherwise a colormap is created during
-    // jpeg_start_decompress or jpeg_start_output.
+    // calling _jpeg_start_decompress; otherwise a colormap is created during
+    // _jpeg_start_decompress or jpeg_start_output.
     // The map has out_color_components rows and actual_number_of_colors columns.
     actual_number_of_colors: Integer;  // number of entries in use
     colormap: JSAMPARRAY;              // The color map as a 2-D pixel array
@@ -752,46 +750,45 @@ const
 procedure GetJPEGInfo(FileName: string; var Width, Height: Cardinal); overload;
 procedure GetJPEGInfo(Stream: TStream; var Width, Height: Cardinal); overload;
 
-procedure jpeg_CreateDecompress(cinfo: j_decompress_ptr; version: Integer; structsize: Integer); 
-procedure jpeg_stdio_src(cinfo: j_decompress_ptr; input_file: TStream); 
-function jpeg_read_header(cinfo: j_decompress_ptr; RequireImage: LongBool): Integer; 
+procedure jpeg_CreateDecompress(cinfo: j_decompress_ptr; version: Integer; structsize: Integer);
+procedure jpeg_stdio_src(cinfo: j_decompress_ptr; input_file: TStream);
+function jpeg_read_header(cinfo: j_decompress_ptr; RequireImage: LongBool): Integer;
 procedure jpeg_calc_output_dimensions(cinfo: j_decompress_ptr); 
 function jpeg_start_decompress(cinfo: j_decompress_ptr): Longbool; 
-function jpeg_read_scanlines(cinfo: j_decompress_ptr; scanlines: JSAMParray; max_lines: JDIMENSION): JDIMENSION; 
-function jpeg_read_raw_data(cinfo: j_decompress_ptr; data: JSAMPIMAGE; max_lines: JDIMENSION): JDIMENSION; 
-function jpeg_finish_decompress(cinfo: j_decompress_ptr): Longbool; 
-procedure jpeg_destroy_decompress(cinfo: j_decompress_ptr); 
-function jpeg_has_multiple_scans(cinfo: j_decompress_ptr): Longbool; 
-function jpeg_consume_input(cinfo: j_decompress_ptr): Integer; 
-function jpeg_start_output(cinfo: j_decompress_ptr; scan_number: Integer): Longbool; 
-function jpeg_finish_output(cinfo: j_decompress_ptr): LongBool; 
-procedure jpeg_abort(cinfo: j_decompress_ptr); 
-procedure jpeg_destroy(cinfo: j_decompress_ptr); 
+function jpeg_read_scanlines(cinfo: j_decompress_ptr; scanlines: JSAMParray; max_lines: JDIMENSION): JDIMENSION;
+function jpeg_read_raw_data(cinfo: j_decompress_ptr; data: JSAMPIMAGE; max_lines: JDIMENSION): JDIMENSION;
+function jpeg_finish_decompress(cinfo: j_decompress_ptr): Longbool;
+procedure jpeg_destroy_decompress(cinfo: j_decompress_ptr);
+function jpeg_has_multiple_scans(cinfo: j_decompress_ptr): Longbool;
+function jpeg_consume_input(cinfo: j_decompress_ptr): Integer;
+function jpeg_start_output(cinfo: j_decompress_ptr; scan_number: Integer): Longbool;
+function jpeg_finish_output(cinfo: j_decompress_ptr): LongBool;
+procedure jpeg_abort(cinfo: j_decompress_ptr);
+procedure jpeg_destroy(cinfo: j_decompress_ptr);
 
-procedure jpeg_CreateCompress(cinfo: j_compress_ptr; version: Integer; structsize: Integer); 
-procedure jpeg_stdio_dest(cinfo: j_compress_ptr; output_file: TStream); 
-procedure jpeg_set_defaults(cinfo: j_compress_ptr); 
-procedure jpeg_set_quality(cinfo: j_compress_ptr; Quality: Integer; Baseline: Longbool); 
-procedure jpeg_set_colorspace(cinfo: j_compress_ptr; colorspace: J_COLOR_SPACE); 
-procedure jpeg_simple_progression(cinfo: j_compress_ptr); 
-procedure jpeg_start_compress(cinfo: j_compress_ptr; WriteAllTables: LongBool); 
-function jpeg_write_scanlines(cinfo: j_compress_ptr; scanlines: JSAMParray; max_lines: JDIMENSION): JDIMENSION; 
-procedure jpeg_finish_compress(cinfo: j_compress_ptr); 
-function jpeg_resync_to_restart(cinfo: j_decompress_ptr; desired: Integer): LongBool; 
+procedure jpeg_CreateCompress(cinfo: j_compress_ptr; version: Integer; structsize: Integer);
+procedure jpeg_stdio_dest(cinfo: j_compress_ptr; output_file: TStream);
+procedure jpeg_set_defaults(cinfo: j_compress_ptr);
+procedure jpeg_set_quality(cinfo: j_compress_ptr; Quality: Integer; Baseline: Longbool);
+procedure jpeg_set_colorspace(cinfo: j_compress_ptr; colorspace: J_COLOR_SPACE);
+procedure jpeg_simple_progression(cinfo: j_compress_ptr);
+procedure jpeg_start_compress(cinfo: j_compress_ptr; WriteAllTables: LongBool);
+function jpeg_write_scanlines(cinfo: j_compress_ptr; scanlines: JSAMParray; max_lines: JDIMENSION): JDIMENSION;
+procedure jpeg_finish_compress(cinfo: j_compress_ptr);
+function jpeg_resync_to_restart(cinfo: j_decompress_ptr; desired: Integer): LongBool;
 
-procedure jpeg_suppress_tables(cinfo: j_compress_ptr; suppress: BOOL); 
-procedure jpeg_make_c_derived_tbl(cinfo: j_compress_ptr; isDC: BOOL; tblno: Integer; var pdtbl: c_derived_tbl_ptr); 
-procedure jpeg_gen_optimal_table(cinfo: j_compress_ptr; htbl: JHUFF_TBL_ptr; freq: TFrequencyarray); 
-procedure jpeg_make_d_derived_tbl(cinfo: j_decompress_ptr; isDC: BOOL; tblno: Integer; var pdtbl: d_derived_tbl_ptr); 
-function jpeg_fill_bit_buffer(state: bitread_working_state_ptr; get_buffer: bit_buf_type; bits_left, nbits: Integer): BOOL; 
+procedure jpeg_suppress_tables(cinfo: j_compress_ptr; suppress: BOOL);
+procedure jpeg_make_c_derived_tbl(cinfo: j_compress_ptr; isDC: BOOL; tblno: Integer; var pdtbl: c_derived_tbl_ptr);
+procedure jpeg_gen_optimal_table(cinfo: j_compress_ptr; htbl: JHUFF_TBL_ptr; freq: TFrequencyarray);
+procedure jpeg_make_d_derived_tbl(cinfo: j_decompress_ptr; isDC: BOOL; tblno: Integer; var pdtbl: d_derived_tbl_ptr);
+function jpeg_fill_bit_buffer(state: bitread_working_state_ptr; get_buffer: bit_buf_type; bits_left, nbits: Integer): BOOL;
 function jpeg_huff_decode(state: bitread_working_state_ptr; get_buffer: bit_buf_type; bits_left: Integer; htbl: d_derived_tbl_ptr;
-  min_bits: Integer): Integer; 
+  min_bits: Integer): Integer;
 
 // Make some special routines accessible by other libraries (e.g. TIF).
 function jpeg_std_error(err: jpeg_error_mgr_ptr): jpeg_error_mgr_ptr;
 function jpeg_write_raw_data(cinfo: j_compress_ptr; data: JSAMPIMAGE; num_lines: JDIMENSION): JDIMENSION;
 procedure jpeg_write_tables(cinfo: j_compress_ptr);
-procedure jpeg_reset_huff_decode(cinfo: j_decompress_ptr; Data: PSingle);
 function jpeg_alloc_quant_table(cinfo: j_common_ptr): JQUANT_TBL_ptr;
 function jpeg_alloc_huff_table(cinfo: j_common_ptr): JHUFF_TBL_ptr;
 
@@ -1139,7 +1136,6 @@ function jpeg_huff_decode(state: bitread_working_state_ptr; get_buffer: bit_buf_
 function jpeg_std_error(err: jpeg_error_mgr_ptr): jpeg_error_mgr_ptr; external;
 function jpeg_write_raw_data(cinfo: j_compress_ptr; data: JSAMPIMAGE; num_lines: JDIMENSION): JDIMENSION; external;
 procedure jpeg_write_tables(cinfo: j_compress_ptr); external;
-procedure jpeg_reset_huff_decode(cinfo: j_decompress_ptr; Data: PSingle); external;
 function jpeg_alloc_quant_table(cinfo: j_common_ptr): JQUANT_TBL_ptr; external;
 function jpeg_alloc_huff_table(cinfo: j_common_ptr): JHUFF_TBL_ptr; external;
 
