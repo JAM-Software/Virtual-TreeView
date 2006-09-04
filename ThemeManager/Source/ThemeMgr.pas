@@ -1,7 +1,7 @@
 unit ThemeMgr;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Version 1.12.1
+// Version 1.12.2
 //
 // Windows XP Theme Manager is freeware. You may freely use it in any software, including commercial software, provided
 // you accept the following conditions:
@@ -34,11 +34,16 @@ unit ThemeMgr;
 //       is usually not allocated) is set to that of the main application, e.g. by passing it via an exported function.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// August 2006
+//   - Bug fix: correct DC handling for WM_PAINT in group boxes (code donation by Patrick Vorgers)
 // January 2006
 //   - Improvement: color edit messages handling for treeviews and listviews.
+// December 2005
+//   - Correct text cliprect computation for TGroupBox (code donation by Nils Maier)
+//   - Subclassing of TCustomTreeview for handling of the WM_CTLCOLOREDIT message (inplace editor).
 // February 2005
 //   - Code donation by Ervin Marguc: Grayed out image for disabled TBitBtn and TSpeedButton if there is only one image.
-//   - Bug fix: control list handling is wrong when theming is switched off programmatically and closing the application. 
+//   - Bug fix: control list handling is wrong when theming is switched off programmatically and closing the application.
 //
 // January 2005
 //   - Bug fix: Test for Windows XP was wrong.
@@ -48,11 +53,6 @@ unit ThemeMgr;
 // Credits for their valuable help go to:
 //   Bert Moorthaemer, Rob Schoenaker, John W. Long, Vassiliev V.V., Steve Moss, Torsten Detsch, Milan Vandrovec
 //----------------------------------------------------------------------------------------------------------------------
-//
-// December 2005
-//   - Correct text cliprect computation for TGroupBox (code donation by Nils Maier)
-//   - Subclassing of TCustomTreeview for handling of the WM_CTLCOLOREDIT message (inplace editor).
-//
 
 interface
 
@@ -1283,6 +1283,7 @@ procedure TThemeManager.GroupBoxWindowProc(Control: TControl; var Message: TMess
 var
   PS: TPaintStruct;
   Details: TThemedElementDetails;
+  PaintMessage: TWMPaint;
 
 begin
   if not DoControlMessage(Control, Message) then
@@ -1312,10 +1313,18 @@ begin
           end;
         WM_PAINT:
           begin
-            BeginPaint(TGroupBoxCast(Control).Handle, PS);
-            NewPaint(PS.hdc);
-            TGroupBoxCast(Control).PaintControls(PS.hdc, nil);
-            EndPaint(TGroupBoxCast(Control).Handle, PS);
+            PaintMessage := TWMPaint(Message);
+            DC := PaintMessage.DC;
+            if DC = 0 then
+              DC := BeginPaint(TGroupBoxCast(Control).Handle, PS);
+            try
+              NewPaint(DC);
+              TGroupBoxCast(Control).PaintControls(DC, nil);
+              EndPaint(TGroupBoxCast(Control).Handle, PS);
+            finally
+              if PaintMessage.DC = 0 then
+                EndPaint(TGroupBoxCast(Control).Handle, PS);
+            end;
             Message.Result := 0;
           end;
       else
