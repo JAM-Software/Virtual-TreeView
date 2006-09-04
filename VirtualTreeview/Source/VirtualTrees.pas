@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.16
+// Version 4.4.17
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// September 2006
+//   - Bug fix: Mantis issue #326
 // July 2006
 //  - Change: value for crHeaderSplit cursor conflicts with other resource IDs, so I changed it.
 //  - Published OnStartDrag in VirtualDrawTree.
@@ -102,7 +104,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.16';
+  VTVersion = '4.4.17';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -12617,11 +12619,14 @@ function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): Cardinal;
 begin
   if Assigned(Node) and (Node <> FRoot) then
   begin
-    if not (vsInitialized in Node.States) then
-      InitNode(Node);
     if toVariableNodeHeight in FOptions.FMiscOptions then
+    begin
+      if not (vsInitialized in Node.States) then
+        InitNode(Node);
+
       // Ensure the node's height is determined.
       MeasureItemHeight(Canvas, Node);
+    end;
     Result := Node.NodeHeight
   end
   else
