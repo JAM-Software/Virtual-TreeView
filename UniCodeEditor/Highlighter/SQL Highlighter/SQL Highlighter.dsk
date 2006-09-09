@@ -1,0 +1,14 @@
+[Globals]
+Maximized=F
+Left=443
+Top=191
+Width=1033
+Height=817
+DockHeight=260
+DockWidth=379
+ActivePage=0
+
+[Editor Files]
+File0=SQL.l,1,8,19,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,50,120
+File1=SQLHighlighter.cod,587,103,629,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,50,120
+File2=UCESQLHighlighter.pas,7,0,0,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,50,120
