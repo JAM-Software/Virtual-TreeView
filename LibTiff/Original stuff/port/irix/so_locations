@@ -1,0 +1,4 @@
+libtiff.so \
+		:st = .text 0x5ff70000, 0x00030000:\
+		:st = .data 0x5ffd0000, 0x00030000:\
+

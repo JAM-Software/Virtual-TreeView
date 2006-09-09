@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of QUERY</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>QUERY</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFCurrentRow,
+TIFFCurrentStrip,
+TIFFCurrentTile,
+TIFFCurrentDirectory,
+TIFFLastDirectory,
+TIFFFileno,
+TIFFFileName,
+TIFFGetMode,
+TIFFIsTiled,
+TIFFIsByteSwapped,
+TIFFIsUpSampled,
+TIFFIsMSB2LSB
+- query routines
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<PRE>
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+<B>uint32 TIFFCurrentRow(TIFF* tif)</B>
+<B>tstrip_t TIFFCurrentStrip(TIFF* tif)</B>
+<B>ttile_t TIFFCurrentTile(TIFF* tif)</B>
+<B>tdir_t TIFFCurrentDirectory(TIFF* tif)</B>
+<B>int TIFFLastDirectory(TIFF* tif)</B>
+<B>int TIFFFileno(TIFF* tif)</B>
+<B>char* TIFFFileName(TIFF* tif)</B>
+<B>int TIFFGetMode(TIFF* tif)</B>
+<B>int TIFFIsTiled(TIFF* tif)</B>
+<B>int TIFFIsByteSwapped(TIFF* tif)</B>
+<B>int TIFFIsUpSampled(TIFF* tif)</B>
+<B>int TIFFIsMSB2LSB(TIFF* tif)</B>
+<B>const char* TIFFGetVersion(void)</B>
+</PRE>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+The following routines return status information about an open
+<FONT SIZE="-1">TIFF</FONT>
+file.
+<P>
+
+<I>TIFFCurrentDirectory</I>
+
+returns the index of the current directory (directories
+are numbered starting at 0).
+This number is suitable for use with the
+<I>TIFFSetDirectory</I>
+
+routine.
+<P>
+
+<I>TIFFLastDirectory</I>
+
+returns a non-zero value if the current directory is the
+last directory in the file;
+otherwise zero is returned.
+<P>
+
+<I>TIFFCurrentRow</I>,
+
+<I>TIFFCurrentStrip</I>,
+
+and
+<I>TIFFCurrentTile</I>,
+
+return the current row, strip, and tile, respectively,
+that is being read or written.
+These values are updated each time a read or write is done.
+<P>
+
+<I>TIFFFileno</I>
+
+returns the underlying file descriptor used to access the 
+<FONT SIZE="-1">TIFF</FONT>
+image in the filesystem.
+<P>
+
+<I>TIFFFileName</I>
+
+returns the pathname argument passed to
+<I>TIFFOpen</I>
+
+or
+<I>TIFFFdOpen</I>.
+
+<P>
+
+<I>TIFFGetMode</I>
+
+returns the mode with which the underlying file was opened.
+On
+<FONT SIZE="-1">UNIX</FONT>
+systems, this is the value passed to the
+<I><A HREF="open+2">open</A></I>(2)
+
+system call.
+<P>
+
+<I>TIFFIsTiled</I>
+
+returns a non-zero value if the image data has
+a tiled organization.
+Zero is returned if the image data is organized in strips.
+<P>
+
+<I>TIFFIsByteSwapped</I>
+
+returns a non-zero value if the image data was in a different
+byte-order than the host machine.
+Zero is returned if the image data and local host byte-orders
+are the same.
+Data samples that are more than 8 bits wide must be byte-swapped
+by the application.
+<P>
+
+<I>TIFFIsUpSampled</I>
+
+returns a non-zero value if image data returned through the
+read interface routines is being up-sampled.
+This can be useful to applications that want to calculate
+I/O buffer sizes to reflect this usage (though the usual
+strip and tile size routines already do this).
+<P>
+
+<I>TIFFIsMSB2LSB</I>
+
+returns a non-zero value if the image data is being returned with
+bit 0 as the most significant bit.
+<P>
+
+<I>TIFFGetVersion</I>
+
+returns an
+<FONT SIZE="-1">ASCII</FONT>
+string that has a version stamp for the 
+<FONT SIZE="-1">TIFF</FONT>
+library software.
+<A NAME="lbAE">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+None.
+<A NAME="lbAF">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFFdOpen.3t.html">TIFFFdOpen</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAF">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:39 GMT, November 23, 1999
+</BODY>
+</HTML>

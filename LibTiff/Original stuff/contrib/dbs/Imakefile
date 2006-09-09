@@ -1,0 +1,12 @@
+#
+# Imakefile -- to generate a Makefile, do xmkmf
+#
+            TIFF = ../../libtiff
+ EXTRA_LIBRARIES = $(TIFF)/libtiff.a
+  EXTRA_INCLUDES = -I$(TIFF)
+
+AllTarget(bi gray pal rgb)
+NormalProgramTarget(bi,tiff-bi.o,,,)
+NormalProgramTarget(gray,tiff-grayscale.o,,,-lm)
+NormalProgramTarget(pal,tiff-palette.o,,,)
+NormalProgramTarget(rgb,tiff-rgb.o,,,-lm)

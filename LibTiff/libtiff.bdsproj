@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">CPlusPlusBuilder.Personality</Option>
+			<Option Name="ProjectType">CppStaticLibrary</Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{56554E9E-3EC1-48A9-B90D-AA207A877FC8}</Option>
+		</Option>
+	</PersonalityInfo>
+	<CPlusPlusBuilder.Personality>
+		<Source>
+			<Source Name="MainSource">libtiff.cpp</Source>
+		</Source>
+		<BCBPROJECT>
+      <project version="10.0">
+        <property category="build.config" name="active" value="0"/>
+        <property category="build.config" name="count" value="1"/>
+        <property category="build.config" name="excludedefaultforzero" value="0"/>
+        <property category="build.config.0" name="builddir" value="Debug"/>
+        <property category="build.config.0" name="key" value="Debug_Build"/>
+        <property category="build.config.0" name="name" value="Debug Build"/>
+        <property category="build.config.0" name="settings.win32b" value="default"/>
+        <property category="build.config.0" name="type" value="Toolset"/>
+        <property category="build.config.0" name="win32.win32b.builddir" value="Debug_Build"/>
+        <property category="build.config.1" name="key" value="Release_Build"/>
+        <property category="build.config.1" name="name" value="Release Build"/>
+        <property category="build.config.1" name="settings.win32b" value="default"/>
+        <property category="build.config.1" name="type" value="Toolset"/>
+        <property category="build.config.1" name="win32.win32b.builddir" value="Release_Build"/>
+        <property category="build.node" name="name" value="libtiff.lib"/>
+        <property category="build.node" name="packages" value="vcl;rtl;vclx;indy;xmlrtl;vclactnband;bcbsmp;bcbie"/>
+        <property category="build.node" name="use_packages" value="0"/>
+        <property category="build.platform" name="active" value="win32"/>
+        <property category="build.platform" name="win32.Debug_Build.toolset" value="win32b"/>
+        <property category="build.platform" name="win32.Release_Build.toolset" value="win32b"/>
+        <property category="build.platform" name="win32.default" value="win32b"/>
+        <property category="build.platform" name="win32.enabled" value="1"/>
+        <property category="build.platform" name="win32.win32b.enabled" value="1"/>
+        <property category="win32.*.win32b.dcc32" name="param.filenames.merge" value="1"/>
+        <property category="win32.*.win32b.tasm32" name="param.listfile.merge" value="1"/>
+        <property category="win32.*.win32b.tasm32" name="param.objfile.merge" value="1"/>
+        <property category="win32.*.win32b.tasm32" name="param.xreffile.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="container.SelectedOptimizations.containerenabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.D.arg.1" value="_DEBUG"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.Od.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.R.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.k.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.r.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.v.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.vi.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.y.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.$D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.$O.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.D.arg.1" value="DEBUG"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.V.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.Gn.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.L.arg.1" value="$(BDS)\lib\debug"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.L.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.L.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.v.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.z.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.zd.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.zi.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="param.listfile.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="param.objfile.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="param.xreffile.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.D.arg.1" value="NDEBUG"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.D.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.O2.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.k.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.r.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.vi.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.$D.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.$O.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.V.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.L.arg.1" value="$(BDS)\lib\release"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.L.arg.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.L.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.z.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.zd.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.zi.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.zn.enabled" value="1"/>
+        <optionset name="all_configurations">
+          <property category="node" name="displayname" value="All Configurations"/>
+          <property category="win32.*.win32b.bcc32" name="container.SelectedOptimizations.containerenabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="container.SelectedWarnings.containerenabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.3.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.4.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.5.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.6.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.A.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.AK.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.AU.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.H=.arg.1" value="$(BDS)\lib\vcl100.csm"/>
+          <property category="win32.*.win32b.bcc32" name="option.H=.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.H=.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Hc.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.He.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Hs.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.1" value="src"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.2" value="..\libJpg\src"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.3" value="..\zLibEx\src"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.4" value="$(BDS)\include"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.5" value="$(BDS)\include\dinkumware"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.6" value="$(BDS)\include\vcl"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.Jgi.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Jgx.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.O1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.O2.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Od.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Q.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.R.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.U.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.U.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.V0.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.V1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vmd.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vmm.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vms.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-2.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-3.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-5.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.b.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.d.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.disablewarns.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.infomsgs.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.n.arg.1" value="obj"/>
+          <property category="win32.*.win32b.bcc32" name="option.n.arg.merge" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.n.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.noregistervars.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.p.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.pc.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.pm.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.pr.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.ps.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.rd.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.sysdefines.arg.1" value="NO_STRICT"/>
+          <property category="win32.*.win32b.bcc32" name="option.sysdefines.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.sysdefines.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.tW.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.tWC.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.tWD.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.tWM.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.u.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.w.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.1" value="$(BDS)\source\cpprtl\Source\process"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.2" value="src"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.3" value="src\libtiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.4" value="D:\Work\Library\LibTiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.1" value="$(BDS)\source\cpprtl\Source\process"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.2" value="src"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.3" value="src\libtiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.4" value="D:\Work\Library\LibTiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.1" value="$(BDS)\source\cpprtl\Source\process"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.2" value="src"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.3" value="src\libtiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.4" value="D:\Work\Library\LibTiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.1" value="$(BDS)\source\cpprtl\Source\process"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.2" value="src"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.3" value="src\libtiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.4" value="D:\Work\Library\LibTiff"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.5" value="D:\Data\Mike\Eigene Dateien\Borland Studio Projects"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.6" value="$(BDS)\lib"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.7" value="$(BDS)\lib\obj"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="param.filenames.merge" value="1"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.1" value="$(BDS)\source\cpprtl\Source\process"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.2" value="src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.3" value="src\libtiff"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.4" value="D:\Work\Library\LibTiff"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.merge" value="1"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.Gi.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.1" value="$(BDS)\lib"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.2" value="$(BDS)\lib\obj"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.3" value="$(BDS)\lib\psdk"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.Tpd.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.Tpe.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.Tpp.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.aa.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.ap.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.dynamicrtl.enabled" value="1"/>
+          <property category="win32.*.win32b.tlib" name="option.P.arg" value="64"/>
+          <property category="win32.*.win32b.tlib" name="option.P.arg.merge" value="1"/>
+          <property category="win32.*.win32b.tlib" name="option.P.enabled" value="1"/>
+          <property category="win32.*.win32b.tlib" name="option.dynamicrtl.enabled" value="0"/>
+          <property category="win32.*.win32b.tlib" name="option.outputdir.arg.1" value="lib"/>
+          <property category="win32.*.win32b.tlib" name="option.outputdir.arg.merge" value="0"/>
+          <property category="win32.*.win32b.tlib" name="option.outputdir.enabled" value="1"/>
+        </optionset>
+      </project>
+      <FILELIST>
+        <FILE FILENAME="libtiff.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="libtiff" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_print.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_print" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_read.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_read" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_strip.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_strip" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_swab.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_swab" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_thunder.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_thunder" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_tile.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_tile" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_version.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_version" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_warning.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_warning" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_win32.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_win32" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_write.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_write" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_zip.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_zip" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\fax3sm_winnt.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="fax3sm_winnt" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_aux.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_aux" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_close.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_close" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_codec.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_codec" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_color.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_color" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_compress.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_compress" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_dir.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_dir" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_dirinfo.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_dirinfo" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_dirread.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_dirread" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_dirwrite.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_dirwrite" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_dumpmode.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_dumpmode" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_error.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_error" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_extension.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_extension" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_fax3.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_fax3" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_flush.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_flush" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_getimage.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_getimage" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_jpeg.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_jpeg" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_luv.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_luv" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_lzw.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_lzw" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_ojpeg.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_ojpeg" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_open.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_open" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_packbits.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_packbits" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_pixarlog.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_pixarlog" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_predict.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_predict" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="src\tif_next.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tif_next" FORMNAME="" DESIGNCLASS=""/>
+      </FILELIST>
+      <IDEOPTIONS>
+        <VersionInfo>
+          <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+          <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+          <VersionInfo Name="MajorVer">1</VersionInfo>
+          <VersionInfo Name="MinorVer">0</VersionInfo>
+          <VersionInfo Name="Release">0</VersionInfo>
+          <VersionInfo Name="Build">0</VersionInfo>
+          <VersionInfo Name="Debug">False</VersionInfo>
+          <VersionInfo Name="PreRelease">False</VersionInfo>
+          <VersionInfo Name="Special">False</VersionInfo>
+          <VersionInfo Name="Private">False</VersionInfo>
+          <VersionInfo Name="DLL">False</VersionInfo>
+          <VersionInfo Name="Locale">1031</VersionInfo>
+          <VersionInfo Name="CodePage">1252</VersionInfo>
+        </VersionInfo>
+        <VersionInfoKeys>
+          <VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+          <VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+          <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+          <VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+          <VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+          <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+          <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+          <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+          <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+          <VersionInfoKeys Name="Comments"></VersionInfoKeys>
+        </VersionInfoKeys>
+        <Debugging>
+          <Debugging Name="DebugSourceDirs"></Debugging>
+        </Debugging>
+        <Parameters>
+          <Parameters Name="RunParams"></Parameters>
+          <Parameters Name="Launcher"></Parameters>
+          <Parameters Name="UseLauncher">False</Parameters>
+          <Parameters Name="DebugCWD"></Parameters>
+          <Parameters Name="HostApplication"></Parameters>
+          <Parameters Name="RemoteHost"></Parameters>
+          <Parameters Name="RemotePath"></Parameters>
+          <Parameters Name="RemoteParams"></Parameters>
+          <Parameters Name="RemoteLauncher"></Parameters>
+          <Parameters Name="UseRemoteLauncher">False</Parameters>
+          <Parameters Name="RemoteCWD"></Parameters>
+          <Parameters Name="RemoteDebug">False</Parameters>
+          <Parameters Name="Debug Symbols Search Path"></Parameters>
+          <Parameters Name="LoadAllSymbols">True</Parameters>
+          <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+        </Parameters>
+        <Linker>
+          <Linker Name="LibPrefix"></Linker>
+          <Linker Name="LibSuffix"></Linker>
+          <Linker Name="LibVersion"></Linker>
+        </Linker>
+      </IDEOPTIONS>
+    </BCBPROJECT>
+		<buildevents/>
+	</CPlusPlusBuilder.Personality>
+</BorlandProject>

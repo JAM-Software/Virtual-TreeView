@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFReadRawStrip</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFReadRawStrip</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFReadRawStrip - return the undecoded contents
+of a strip of data from an open
+<FONT SIZE="-1">TIFF</FONT>
+file
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>tsize_t TIFFReadRawStrip(TIFF* tif, tstrip_t strip, tdata_t buf, tsize_t size)</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+Read the contents of the specified strip into the
+(user supplied) data buffer.
+Note that the value of
+<I>strip</I>
+
+is a ``raw strip number.''
+That is, the caller must take into account whether or not the
+data is organized in separate planes (<I>PlanarConfiguration</I>=2).
+
+To read a full strip of data the data buffer should typically be
+at least as large as the number returned by
+<I>TIFFStripSize</I>.
+
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+The actual number of bytes of data that were placed in
+<I>buf</I>
+
+is returned;
+<I>TIFFReadEncodedStrip</I>
+
+returns -1 if an error was encountered.
+<A NAME="lbAF">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All error messages are directed to the
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T)
+
+routine.
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFReadEncodedStrip.3t.html">TIFFReadEncodedStrip</A></I>(3T),
+
+<I><A HREF="TIFFReadScanline.3t.html">TIFFReadScanline</A></I>(3T),
+
+<I><A HREF="TIFFStripSize.3t.html">TIFFStripSize</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAF">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:38 GMT, November 23, 1999
+</BODY>
+</HTML>

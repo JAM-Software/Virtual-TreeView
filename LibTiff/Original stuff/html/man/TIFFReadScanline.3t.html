@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFReadScanline</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFReadScanline</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFReadScanline - read and decode a scanline of data from an open
+<FONT SIZE="-1">TIFF</FONT>
+file
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>int TIFFReadScanline(TIFF* tif, tdata_t buf, uint32 row, tsample_t sample)</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+Read the data for the specified row into the (user supplied)
+data buffer
+<I>buf</I>.
+
+The data are returned decompressed and, in the native byte-
+and bit-ordering, but are otherwise packed (see further below).
+The buffer must be large enough to hold an entire scanline of data.
+Applications should call the routine
+<I>TIFFScanlineSize</I>
+
+to find out the size (in bytes) of a scanline buffer.
+The
+<I>row</I>
+
+parameter is always used by
+<I>TIFFReadScanline</I>;
+
+the
+<I>sample</I>
+
+parameter is used only if data are organized in separate planes (<I>PlanarConfiguration</I>=2).
+
+<A NAME="lbAE">&nbsp;</A>
+<H2>NOTES</H2>
+
+The library attempts to hide bit- and byte-ordering differences
+between the image and the native machine by converting data
+to the native machine order.
+Bit reversal is done if the
+<I>FillOrder</I>
+
+tag is opposite to the native machine bit order.
+16- and 32-bit samples are automatically byte-swapped if the
+file was written with a byte order opposite to the native
+machine byte order,
+<P>
+
+In C++ the
+<I>sample</I>
+
+parameter defaults to 0.
+<A NAME="lbAF">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+<I>TIFFReadScanline</I>
+
+returns -1 if it detects an error; otherwise 1 is returned.
+<A NAME="lbAG">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All error messages are directed to the
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T)
+
+routine.
+<P>
+
+<B>Compression algorithm does not support random access</B>.
+
+Data was requested in a non-sequential order from a file that
+uses a compression algorithm and that has
+<I>RowsPerStrip</I>
+
+greater than one.
+That is, data in the image is stored in a compressed form,
+and with multiple rows packed into a strip.
+In this case, the library does not support random access to the data.
+The data should either be accessed sequentially, or the file
+should be converted so that each strip is made up of one row
+of data.
+<A NAME="lbAH">&nbsp;</A>
+<H2>BUGS</H2>
+
+Reading subsampled YCbCR data does not work correctly
+because, for 
+<I>PlanarConfiguration</I>=2
+
+the size of a scanline is not calculated on a per-sample basis,
+and for
+<I>PlanarConfiguration</I>=1
+
+the library does not unpack the block-interleaved samples; use
+the strip- and tile-based interfaces to read these formats.
+<A NAME="lbAI">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFReadEncodedStrip.3t.html">TIFFReadEncodedStrip</A></I>(3T),
+
+<I><A HREF="TIFFReadRawStrip.3t.html">TIFFReadRawStrip</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">NOTES</A><DD>
+<DT><A HREF="#lbAF">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAG">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAH">BUGS</A><DD>
+<DT><A HREF="#lbAI">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:38 GMT, November 23, 1999
+</BODY>
+</HTML>

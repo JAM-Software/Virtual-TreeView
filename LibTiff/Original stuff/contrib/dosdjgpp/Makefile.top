@@ -1,0 +1,54 @@
+#! smake
+#	$Header: /cvsroot/osrs/libtiff/contrib/dosdjgpp/Makefile.top,v 1.1.1.1 1999/07/27 21:50:27 mike Exp $
+#
+# manually derived from Makefile.in (though basically nothing remains)
+# for DJGPP v2.x (GNU C for DOS/386).
+#
+# A warning about the filename structure:
+#
+# Some of the filenames used in the Makefiles are longer than 8 characters
+# this will work with the normal 8.3 file system since all files are unique
+# in the first 8 chars. To compile under the long filename support in Win95
+# you can either extract the files with a program that truncates filenames
+# (e.g. the DOS pkunzip) and disable LFN support with set LFN=n or with a
+# program that supports long filenames (e.g. WinZip 6.0) and set LFN=y.
+# The default environment in djgpp 2 is supposed to have LFN disabled, but
+# due to a bug in the init code it doesn't work properly. Setting the LFN
+# variable explicitly should fix that.
+#
+# Tag Image File Format Library
+#
+# Copyright (c) 1988-1996 Sam Leffler
+# Copyright (c) 1991-1996 Silicon Graphics, Inc.
+# 
+# Permission to use, copy, modify, distribute, and sell this software and 
+# its documentation for any purpose is hereby granted without fee, provided
+# that (i) the above copyright notices and this permission notice appear in
+# all copies of the software and related documentation, and (ii) the names of
+# Sam Leffler and Silicon Graphics may not be used in any advertising or
+# publicity relating to the software without the specific, prior written
+# permission of Sam Leffler and Silicon Graphics.
+# 
+# THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+# EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+# WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+# 
+# IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
+# ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+# OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+# WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+# LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+# OF THIS SOFTWARE.
+#
+
+SRCDIR  = .
+
+all default:
+	@${MAKE} -C libtiff
+	@${MAKE} -C tools
+
+clean:
+	@${MAKE} -C libtiff clean
+	@${MAKE} -C tools clean
+
+

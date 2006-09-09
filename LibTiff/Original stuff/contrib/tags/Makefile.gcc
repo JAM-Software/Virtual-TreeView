@@ -1,0 +1,56 @@
+# Makefile for XLIBTIFF
+#
+#  Written by: Niles Ritter
+#
+# This Makefile is for use with gcc (2.2.2 or later)
+#
+DESTDIR=.
+#
+AR      = /usr/bin/ar
+AROPTS  = rc
+RANLIB  = /usr/bin/ranlib
+NULL=
+
+TIFFLIB=../../libtiff
+PORT=../..
+
+IPATH=  -I.  -I${TIFFLIB} -I${PORT}
+CONF_LIBRARY=\
+	${NULL}
+CC=	gcc
+COPTS=	-g
+CFLAGS=	${COPTS} ${IPATH} ${CONF_LIBRARY}
+#
+LIBS=   ./libxtiff.a ${TIFFLIB}/libtiff.a -lm
+
+OBJS=	\
+	xtif_dir.o \
+	maketif.o \
+	listtif.o \
+	${NULL}
+
+PROGS=  maketif listtif
+LIBXTIFF=	libxtiff.a 
+ALL=	${LIBXTIFF} ${PROGS}
+
+all:	${ALL}
+
+library:  ${LIBXTIFF}
+
+test:  ${PROGS}
+	./maketif
+	./listtif
+
+maketif: maketif.o libxtiff.a
+	${CC} ${COPTS} maketif.o ${LIBS} -o maketif
+
+listtif: listtif.o libxtiff.a
+	${CC} ${COPTS} listtif.o ${LIBS} -o listtif
+
+libxtiff.a: xtif_dir.o
+	${AR} ${AROPTS} libxtiff.a xtif_dir.o
+	${RANLIB} libxtiff.a
+
+clean:
+	rm -f ${ALL} ${OBJS} core a.out newtif.tif
+

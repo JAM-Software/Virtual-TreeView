@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFSTRIP</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFSTRIP</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFDefaultStripSize,
+TIFFStripSize,
+TIFFVStripSize,
+TIFFComputeStrip,
+TIFFNumberOfStrips
+- strip-related utility routines
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<PRE>
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+<B>uint32 TIFFDefaultStripSize(TIFF* tif, uint32 estimate)</B>
+<B>tsize_t TIFFStripSize(TIFF* tif)</B>
+<B>tsize_t TIFFVStripSize(TIFF* tif, uint32 nrows)</B>
+<B>tstrip_t TIFFComputeStrip(TIFF* tif, uint32 row, tsample_t sample)</B>
+<B>tstrip_t TIFFNumberOfStrips(TIFF* tif)</B>
+</PRE>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<I>TIFFDefaultStripSize</I>
+
+returns the number of rows for a reasonable-sized strip according
+to the current settings of the
+<I>ImageWidth</I>,
+
+<I>BitsPerSample</I>,
+
+<I>SamplesPerPixel</I>,
+
+tags and any compression-specific requirements.
+If the
+<I>estimate</I>
+
+parameter, if non-zero, then it is taken as an estimate of the desired
+strip size and adjusted according to any compression-specific requirements.
+The value returned by this function is typically used to define the
+<I>RowsPerStrip</I>
+
+tag.
+In lieu of any unusual requirements
+<I>TIFFDefaultStripSize</I>
+
+tries to create strips that have approximately
+8 kilobytes of uncompressed data.
+<P>
+
+<I>TIFFStripSize</I>
+
+returns the equivalent size for a strip of data as it would
+be returned in a call to
+<I>TIFFReadEncodedStrip</I>
+
+or as it would be expected in a call to
+<I>TIFFWriteEncodedStrip</I>.
+
+<P>
+
+<I>TIFFVStripSize</I>
+
+returns the number of bytes in a strip with
+<I>nrows</I>
+
+rows of data.
+<P>
+
+<I>TIFFComputeStrip</I>
+
+returns the strip that contains the specified coordinates.
+A valid strip is always returned;
+out-of-range coordinate values are clamped to the bounds of the image.
+The
+<I>row</I>
+
+parameter is always used in calculating a strip.
+The
+<I>sample</I>
+
+parameter is used only if data are organized in separate planes (<I>PlanarConfiguration</I>=2).
+
+<P>
+
+<I>TIFFNumberOfStrips</I>
+
+returns the number of strips in the image.
+<A NAME="lbAE">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+None.
+<A NAME="lbAF">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFReadEncodedStrip.3t.html">TIFFReadEncodedStrip</A></I>(3T),
+
+<I><A HREF="TIFFReadRawStrip.3t.html">TIFFReadRawStrip</A></I>(3T),
+
+<I><A HREF="TIFFWriteEncodedStrip.3t.html">TIFFWriteEncodedStrip</A></I>(3T),
+
+<I><A HREF="TIFFWriteRawStrip.3t.html">TIFFWriteRawStrip</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAF">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:39 GMT, November 23, 1999
+</BODY>
+</HTML>

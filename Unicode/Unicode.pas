@@ -4871,7 +4871,8 @@ end;
 function TWideStrings.GetText: WideString;
 
 begin
-  Result := GetSeparatedText(WideLineSeparator);
+  //Result := GetSeparatedText(WideLineSeparator);
+  Result := GetSeparatedText(WideCRLF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

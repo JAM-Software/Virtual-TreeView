@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFReadEncodedTile</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFReadEncodedTile</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFReadEncodedTile - read and decode a tile of data from an open
+<FONT SIZE="-1">TIFF</FONT>
+file
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>int TIFFReadEncodedTile(TIFF* tif, u_long tile, u_char* buf, u_long size)</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+Read the specified tile of data and place up to
+<I>size</I>
+
+bytes of decompressed information in the (user supplied) data buffer.
+<A NAME="lbAE">&nbsp;</A>
+<H2>NOTES</H2>
+
+The value of
+<I>tile</I>
+
+is a ``raw tile number.''
+That is, the caller must take into account whether or not the
+data are organized in separate planes (<I>PlanarConfiguration</I>=2).
+
+<I>TIFFComputeTile</I>
+
+automatically does this when converting an (x,y,z,sample)
+coordinate quadruple to a tile number.
+To read a full tile of data the data buffer should be
+at least as large as the value returned by
+<I>TIFFTileSize</I>.
+
+<P>
+
+The library attempts to hide bit- and byte-ordering differences
+between the image and the native machine by converting data
+to the native machine order.
+Bit reversal is done if the
+<I>FillOrder</I>
+
+tag is opposite to the native machine bit order.
+16- and 32-bit samples are automatically byte-swapped if the
+file was written with a byte order opposite to the native
+machine byte order,
+<A NAME="lbAF">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+The actual number of bytes of data that were placed in
+<I>buf</I>
+
+is returned;
+<I>TIFFReadEncodedTile</I>
+
+returns -1 if an error was encountered.
+<A NAME="lbAG">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All error messages are directed to the
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T)
+
+routine.
+<A NAME="lbAH">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFReadRawTile.3t.html">TIFFReadRawTile</A></I>(3T),
+
+<I><A HREF="TIFFReadTile.3t.html">TIFFReadTile</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">NOTES</A><DD>
+<DT><A HREF="#lbAF">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAG">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAH">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:38 GMT, November 23, 1999
+</BODY>
+</HTML>

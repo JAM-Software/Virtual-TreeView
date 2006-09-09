@@ -21,12 +21,14 @@ unit GraphicEx;
 //
 // See help file for a description of supported image formats.
 //
-// Version II.1.14
+// Version II.1.15
 //
 // Note: This library can be compiled with Delphi 5 or newer versions.
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// August 2005
+//   - Bug fix: added exceptions for PCX and PCD images in case they cannot be read.
 // December 2005
 //   - Bug fix: The filter string returned for open dialogs was incorrect, which caused missing files in the dialog.
 // November 2005
@@ -60,11 +62,11 @@ interface
 {$endif COMPILER_7_UP}
 
 uses
-  Windows, Classes, ExtCtrls, Graphics, SysUtils, Contnrs, JPEG, TIFF,
+  Windows, Classes, ExtCtrls, Graphics, SysUtils, Contnrs, JPG, TIFF,
   GraphicCompression, GraphicStrings, GraphicColor;
 
 const
-  GraphicExVersion = 'II.1.14';
+  GraphicExVersion = 'II.1.15';
 
 type
   TCardinalArray = array of Cardinal;
@@ -81,20 +83,20 @@ type
 
   // describes the compression used in the image file
   TCompressionType = (
-    ctUnknown,     // Compression type is unknown.
-    ctNone,        // No compression.
-    ctRLE,         // Run length encoding.
-    ctPackedBits,  // Macintosh packed bits.
-    ctLZW,         // Lempel-Zif-Welch.
-    ctFax3,        // CCITT T.4 (1D), also known as fax group 3.
-    ct2DFax3,      // CCITT T.4 (2D).
-    ctFaxRLE,      // Modified Huffman (CCITT T.4 derivative).
-    ctFax4,        // CCITT T.6, also known as fax group 4.
-    ctFaxRLEW,     // CCITT T.4 with word alignment.
-    ctLZ77,        // Hufman inflate/deflate.
-    ctJPEG,        // TIF JPEG compression (new version)
-    ctOJPEG,       // TIF JPEG compression (old version)
-    ctThunderscan, // TIF thunderscan compression
+    ctUnknown,          // Compression type is unknown.
+    ctNone,             // No compression.
+    ctRLE,              // Run length encoding.
+    ctPackedBits,       // Macintosh packed bits.
+    ctLZW,              // Lempel-Zif-Welch.
+    ctFax3,             // CCITT T.4 (1D), also known as fax group 3.
+    ct2DFax3,           // CCITT T.4 (2D).
+    ctFaxRLE,           // Modified Huffman (CCITT T.4 derivative).
+    ctFax4,             // CCITT T.6, also known as fax group 4.
+    ctFaxRLEW,          // CCITT T.4 with word alignment.
+    ctLZ77,             // Hufman inflate/deflate.
+    ctJPEG,             // TIF JPEG compression (new version)
+    ctOJPEG,            // TIF JPEG compression (old version)
+    ctThunderscan,      // TIF thunderscan compression
     ctNext,
     ctIT8CTPAD,
     ctIT8LW,
@@ -104,9 +106,11 @@ type
     ctPixarLog,
     ctDCS,
     ctJBIG,
-    ctPCDHuffmann, // PhotoCD Hufman compression
-    ctPlainZip,    // ZIP compression without prediction
-    ctPredictedZip // ZIP comression with prediction
+    ctPCDHuffmann,      // PhotoCD Hufman compression
+    ctPlainZip,         // ZIP compression without prediction
+    ctPredictedZip,     // ZIP comression with prediction
+    ctSGILog,           // SGI Log Luminance RLE
+    ctSGILog24          // SGI Log 24-bit packed
   );
 
   // properties of a particular image which are set while loading an image or when
@@ -750,7 +754,7 @@ var
 implementation
 
 uses
-  Consts, Math, GXZLib;
+  Consts, Math, zLibEx;
 
 type
   {$ifndef COMPILER_6_UP}
@@ -2737,7 +2741,7 @@ type
 // For the libtiff library we need global functions to do the data retrieval. The setup is so that the currently
 // loading TIFF instance is given in the fd parameter.
 
-function TIFFReadProc(fd: thandle_t; buf: tdata_t; size: tsize_t): tsize_t;
+function TIFFReadProc(fd: thandle_t; buf: tdata_t; size: tsize_t): tsize_t; cdecl;
 
 var
   Graphic: TTIFFGraphic;
@@ -2751,7 +2755,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TIFFWriteProc(fd: thandle_t; buf: tdata_t; size: tsize_t): tsize_t;
+function TIFFWriteProc(fd: thandle_t; buf: tdata_t; size: tsize_t): tsize_t; cdecl;
 
 begin
   Result := 0; // Writing is not supported yet.
@@ -2759,7 +2763,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TIFFSeekProc(fd: thandle_t; off: toff_t; whence: Integer): toff_t;
+function TIFFSeekProc(fd: thandle_t; off: toff_t; whence: Integer): toff_t; cdecl;
 
 const
   SEEK_SET = 0; // seek to an absolute position
@@ -2785,7 +2789,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TIFFCloseProc(fd: thandle_t): Integer;
+function TIFFCloseProc(fd: thandle_t): Integer; cdecl;
 
 var
   Graphic: TTIFFGraphic;
@@ -2798,7 +2802,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TIFFSizeProc(fd: thandle_t): toff_t;
+function TIFFSizeProc(fd: thandle_t): toff_t; cdecl;
 
 var
   Graphic: TTIFFGraphic;
@@ -2810,7 +2814,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TIFFMapProc(fd: thandle_t; var pbase: tdata_t; var psize: toff_t): Integer;
+function TIFFMapProc(fd: thandle_t; var pbase: tdata_t; var psize: toff_t): Integer; cdecl;
 
 begin
   Result := 0;
@@ -2818,7 +2822,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TIFFUnmapProc(fd: thandle_t; base: tdata_t; size: toff_t);
+procedure TIFFUnmapProc(fd: thandle_t; base: tdata_t; size: toff_t); cdecl;
 
 begin
 end;
@@ -3328,6 +3332,10 @@ begin
             Compression := ctDCS;
           COMPRESSION_JBIG:
             Compression := ctJBIG;
+          COMPRESSION_SGILOG:
+            Compression := ctSGILog;
+          COMPRESSION_SGILOG24:
+            Compression := ctSGILog24;
         else
           Compression := ctUnknown;
         end;
@@ -4023,7 +4031,7 @@ begin
     with Header, FImageProperties do
     begin
       if not (FileID in [$0A, $CD]) then
-        GraphicExError(gesInvalidImage, ['PCX or SCR']);
+        GraphicExError(gesInvalidImage, ['PCX, PCC or SCR']);
 
       with ColorManager do
       begin
@@ -4188,7 +4196,9 @@ begin
       end;
       Progress(Self, psEnding, 0, False, FProgressRect, '');
     end;
-  end;
+  end
+  else
+    GraphicExError(gesInvalidImage, ['PCX, PCC or SCR']);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4531,7 +4541,9 @@ begin
           FreeMem(YCbCrData[0]);
       end;
     end;
-  end;
+  end
+  else
+    GraphicExError(gesInvalidImage, ['PCD']);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10037,7 +10049,8 @@ initialization
   begin
     // Since we are going to add these four image types below, we better unregister them first
     // in order to avoid double entries.
-    TPicture.UnregisterGraphicClass(TJPEGImage);
+    // TODO: enable jpeg image
+    //TPicture.UnregisterGraphicClass(TJPEGImage);
     TPicture.UnregisterGraphicClass(TBitmap);
     TPicture.UnregisterGraphicClass(TIcon);
     TPicture.UnregisterGraphicClass(TMetafile);
@@ -10046,10 +10059,11 @@ initialization
     RegisterFileFormat('ico', gesIcons, '', [ftRaster], False, TIcon);
     RegisterFileFormat('wmf', gesMetaFiles, '', [ftVector], False, TMetafile);
     RegisterFileFormat('emf', gesMetaFiles, gesEnhancedMetaFiles, [ftVector], False, TMetafile);
-    RegisterFileFormat('jfif', gesJPGImages, gesJFIFImages, [ftRaster], False, TJPEGImage);
-    RegisterFileFormat('jpg', '', gesJPGImages, [ftRaster], False, TJPEGImage);
-    RegisterFileFormat('jpe', '', gesJPEImages, [ftRaster], False, TJPEGImage);
-    RegisterFileFormat('jpeg', '', gesJPEGImages, [ftRaster], False, TJPEGImage);
+    // TODO: enable jpeg image
+    //RegisterFileFormat('jfif', gesJPGImages, gesJFIFImages, [ftRaster], False, TJPEGImage);
+    //RegisterFileFormat('jpg', '', gesJPGImages, [ftRaster], False, TJPEGImage);
+    //RegisterFileFormat('jpe', '', gesJPEImages, [ftRaster], False, TJPEGImage);
+    //RegisterFileFormat('jpeg', '', gesJPEGImages, [ftRaster], False, TJPEGImage);
 
     // Paintshop pro *.msk files are just grayscale bitmaps.
     RegisterFileFormat('msk', '', '', [ftRaster], False, TBitmap);

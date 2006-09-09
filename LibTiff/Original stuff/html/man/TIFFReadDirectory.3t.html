@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFReadDirectory</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFReadDirectory</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFReadDirectory - get the contents of the next directory in an open
+<FONT SIZE="-1">TIFF</FONT>
+file
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>int TIFFReadDirectory(TIFF* tif)</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+Read the next directory in the specified file and make it the
+current directory.
+Applications only need to call
+<I>TIFFReadDirectory</I>
+
+to read multiple subfiles in a single
+<FONT SIZE="-1">TIFF</FONT>
+file-
+the first directory in a file is automatically read when
+<I>TIFFOpen</I>
+
+is called.
+<A NAME="lbAE">&nbsp;</A>
+<H2>NOTES</H2>
+
+If the library is compiled with 
+<FONT SIZE="-1">STRIPCHOP_SUPPORT</FONT>
+enabled, then images that have a single uncompressed strip or
+tile of data are automatically treated as if they were made
+up of multiple strips or tiles of approximately 8 kilobytes each.
+This operation is done only in-memory; it does not alter the
+contents of the file.
+However, the construction of the ``chopped strips'' is visible
+to the application through the number of strips [tiles]
+returned by 
+<I>TIFFNumberOfStrips</I>
+
+[<I>TIFFNumberOfTiles</I>].
+
+<A NAME="lbAF">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+If the next directory was successfully read, 1 is returned.
+Otherwise, 0 is returned if an error was encountered,
+or if there are no more directories to be read.
+<A NAME="lbAG">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All error messages are directed to the
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T)
+
+routine.
+All warning messages are directed to the
+<I><A HREF="TIFFWarning.3t.html">TIFFWarning</A></I>(3T)
+
+routine.
+<P>
+
+<B>Seek error accessing TIFF directory</B>.
+An error occurred while positioning to the location of the
+directory.
+<P>
+
+<B>Wrong data type %d for field &quot;%s&quot;</B>.
+The tag entry in the directory had an incorrect data type.
+For example, an
+<I>ImageDescription</I>
+
+tag with a
+<FONT SIZE="-1">SHORT</FONT>
+data type.
+<P>
+
+<B>TIFF directory is missing required &quot;%s&quot; field</B>.
+The specified tag is required to be present by the
+<FONT SIZE="-1">TIFF</FONT>
+5.0 specification, but is missing.
+The directory is (usually) unusable.
+<P>
+
+<B>%s: Rational with zero denominator</B>.
+A directory tag has a
+<FONT SIZE="-1">RATIONAL</FONT>
+value whose denominator is zero.
+<P>
+
+<B>Incorrect count %d for field &quot;%s&quot; (%lu, expecting %lu); tag ignored</B>.
+The specified tag's count field is bad.
+For example, a count other than 1 for a
+<I>SubFileType</I>
+
+tag.
+<P>
+
+<B>Cannot handle different per-sample values for field &quot;%s&quot;</B>.
+The tag has
+<I>SamplesPerPixel</I>
+
+values and they are not all the same; e.g.
+<I>BitsPerSample</I>.
+
+The library is unable to handle images of this sort.
+<P>
+
+<B>Count mismatch for field &quot;%s&quot;; expecting %d, got %d</B>.
+The count field in a
+tag does not agree with the number expected by the library.
+This should never happen, so if it does, the library refuses to
+read the directory.
+<P>
+
+<B>Invalid TIFF directory; tags are not sorted in ascending order</B>.
+The directory tags are not properly sorted as specified
+in the
+<FONT SIZE="-1">TIFF</FONT>
+5.0 specification.
+This error is not fatal.
+<P>
+
+<B>Ignoring unknown field with tag %d (0x%x)</B>.
+An unknown tag was encountered in the directory;
+the library ignores all such tags.
+<P>
+
+<B>TIFF directory is missing requred &quot;ImageLength&quot; field</B>.
+The image violates the specification by not having a necessary field.
+There is no way for the library to recover from this error.
+<P>
+
+<B>TIFF directory is missing requred &quot;PlanarConfig&quot; field</B>.
+The image violates the specification by not having a necessary field.
+There is no way for the library to recover from this error.
+<P>
+
+<B>TIFF directory is missing requred &quot;StripOffsets&quot; field</B>.
+The image has multiple strips, but is missing the tag that
+specifies the file offset to each strip of data.
+There is no way for the library to recover from this error.
+<P>
+
+<B>TIFF directory is missing requred &quot;TileOffsets&quot; field</B>.
+The image has multiple tiles, but is missing the tag that
+specifies the file offset to each tile of data.
+There is no way for the library to recover from this error.
+<P>
+
+<B>TIFF directory is missing required &quot;StripByteCounts&quot; field</B>.
+The image has multiple strips, but is missing the tag that
+specifies the size of each strip of data.
+There is no way for the library to recover from this error.
+<P>
+
+<B>TIFF directory is missing required &quot;StripByteCounts&quot; field, calculating from imagelength</B>.
+The image violates the specification by not having a necessary field.
+However, when the image is comprised of only one strip or tile, the
+library will estimate the missing value based on the file size.
+<P>
+
+<B>Bogus &quot;StripByteCounts&quot; field, ignoring and calculating from imagelength</B>.
+Certain vendors violate the specification by writing zero for
+the StripByteCounts tag when they want to leave the value
+unspecified.
+If the image has a single strip, the library will estimate
+the missing value based on the file size.
+<A NAME="lbAH">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFWriteDirectory.3t.html">TIFFWriteDirectory</A></I>(3T),
+
+<I><A HREF="TIFFSetDirectory.3t.html">TIFFSetDirectory</A></I>(3T),
+
+<I><A HREF="TIFFSetSubDirectory.3t.html">TIFFSetSubDirectory</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">NOTES</A><DD>
+<DT><A HREF="#lbAF">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAG">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAH">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:38 GMT, November 23, 1999
+</BODY>
+</HTML>

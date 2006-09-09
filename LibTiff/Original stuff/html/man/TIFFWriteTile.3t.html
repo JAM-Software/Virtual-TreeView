@@ -1,0 +1,109 @@
+Content-type: text/html
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFWriteTile</TITLE>
+</HEAD><BODY>
+<H1>TIFFWriteTile</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: November 29, 1999<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFWriteTile - encode and write a tile of data to an open
+<FONT SIZE="-1">TIFF</FONT>
+file
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>tsize_t TIFFWriteTile(TIFF* tif, tdata_t buf, uint32 x, uint32 y, uint32 z, tsample_t sample)</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+Write the data for the tile
+<I>containing</I>
+
+the specified coordinates.
+The data in
+<I>buf</I>
+
+are is (potentially) compressed, and written to the indicated file, normally
+being appended to the end of the file.
+The buffer must be contain an entire tile of data.
+Applications should call the routine
+<I>TIFFTileSize</I>
+
+to find out the size (in bytes) of a tile buffer.
+The
+<I>x</I>
+
+and
+<I>y</I>
+
+parameters are always used by
+<I>TIFFWriteTile</I>.
+
+The
+<I>z</I>
+
+parameter is used if the image is deeper than 1 slice (<I>ImageDepth</I>&gt;1).
+
+The
+<I>sample</I>
+
+parameter is used only if data are organized in separate planes (<I>PlanarConfiguration</I>=2).
+
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+<I>TIFFWriteTile</I>
+
+returns -1 if it detects an error; otherwise the number of
+bytes in the tile is returned.
+<A NAME="lbAF">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All error messages are directed to the
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T)
+
+routine.
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFCheckTile.3t.html">TIFFCheckTile</A></I>(3T),
+
+<I><A HREF="TIFFComputeTile.3t.html">TIFFComputeTile</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFReadTile.3t.html">TIFFReadTile</A></I>(3T),
+
+<I><A HREF="TIFFWriteScanline.3t.html">TIFFWriteScanline</A></I>(3T),
+
+<I><A HREF="TIFFWriteEncodedTile.3t.html">TIFFWriteEncodedTile</A></I>(3T),
+
+<I><A HREF="TIFFWriteRawTile.3t.html">TIFFWriteRawTile</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAF">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+Time: 18:38:00 GMT, November 30, 1999
+</BODY>
+</HTML>

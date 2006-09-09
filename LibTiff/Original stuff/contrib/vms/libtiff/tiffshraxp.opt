@@ -1,0 +1,122 @@
+! VMS linker options file for linking the TIFF library into a shareable image
+!
+IDENTIFICATION="LIBTIFF 3.4-032"
+!
+! Please update the minor version number below, when adding new routines
+GSMATCH=LEQUAL,1,9
+!
+! Here goes the definitions of all public functions in the library, plus
+! a few extra that are called by the tools.
+! The sequence MUST NOT be changed, otherwise you will have to relink
+! all applications. Add new functions at the end.
+!
+SYMBOL_VECTOR=(-
+	TIFFCheckTile=PROCEDURE,-
+	TIFFClose=PROCEDURE,-
+	TIFFComputeStrip=PROCEDURE,-
+	TIFFComputeTile=PROCEDURE,-
+	TIFFCurrentDirectory=PROCEDURE,-
+	TIFFCurrentRow=PROCEDURE,-
+	TIFFCurrentStrip=PROCEDURE,-
+	TIFFCurrentTile=PROCEDURE,-
+	TIFFError=PROCEDURE,-
+	TIFFFdOpen=PROCEDURE,-
+	TIFFFileName=PROCEDURE,-
+	TIFFFileno=PROCEDURE,-
+	TIFFFlush=PROCEDURE,-
+	TIFFFlushData=PROCEDURE,-
+	TIFFGetField=PROCEDURE,-
+	TIFFGetFieldDefaulted=PROCEDURE,-
+	TIFFGetMode=PROCEDURE,-
+	TIFFIsTiled=PROCEDURE,-
+	TIFFModeCCITTFax3=PRIVATE_PROCEDURE,- ! gone in 3.3 beta 024
+	TIFFNumberOfStrips=PROCEDURE,-
+	TIFFNumberOfTiles=PROCEDURE,-
+	TIFFOpen=PROCEDURE,-
+	TIFFPrintDirectory=PROCEDURE,-
+	TIFFReadBufferSetup=PROCEDURE,-
+	TIFFReadDirectory=PROCEDURE,-
+	TIFFReadEncodedStrip=PROCEDURE,-
+	TIFFReadEncodedTile=PROCEDURE,-
+	TIFFReadRawStrip=PROCEDURE,-
+	TIFFReadRawTile=PROCEDURE,-
+	TIFFReadRGBAImage=PROCEDURE,-
+	TIFFReadScanline=PROCEDURE,-
+	TIFFReadTile=PROCEDURE,-
+	TIFFReverseBits=PROCEDURE,-
+	TIFFScanlineSize=PROCEDURE,-
+	TIFFSetDirectory=PROCEDURE,-
+	TIFFSetErrorHandler=PROCEDURE,-
+	TIFFSetField=PROCEDURE,-
+	TIFFSetWarningHandler=PROCEDURE,-
+	TIFFStripSize=PROCEDURE,-
+	TIFFSwabShort=PROCEDURE,-
+	TIFFSwabLong=PROCEDURE,-
+	TIFFSwabArrayOfShort=PROCEDURE,-
+	TIFFSwabArrayOfLong=PROCEDURE,-
+	TIFFTileRowSize=PROCEDURE,-
+	TIFFTileSize=PROCEDURE,-
+	TIFFVGetField=PROCEDURE,-
+	TIFFVGetFieldDefaulted=PROCEDURE,-
+	TIFFVSetField=PROCEDURE,-
+	TIFFWarning=PROCEDURE,-
+	TIFFWriteDirectory=PROCEDURE,-
+	TIFFWriteEncodedStrip=PROCEDURE,-
+	TIFFWriteEncodedTile=PROCEDURE,-
+	TIFFWriteRawStrip=PROCEDURE,-
+	TIFFWriteRawTile=PROCEDURE,-
+	TIFFWriteScanline=PROCEDURE,-
+	TIFFWriteTile=PROCEDURE,-
+!
+! New entries in version 3.1
+!
+	TIFFClientOpen=PROCEDURE,-
+	TIFFVStripSize=PROCEDURE,-	! For tiffcp
+!
+! New entries in version 3.2
+!
+	TIFFGetVersion=PROCEDURE,-
+	TIFFGetBitRevTable=PROCEDURE,-
+	_TIFFmalloc=PROCEDURE,-	! For fax2tiff
+!
+! New entries in version 3.3
+!
+	TIFFIsByteSwapped=PROCEDURE,-
+	TIFFSetWriteOffset=PROCEDURE,-
+!
+! New entries in version 3.3 beta 020
+!
+	TIFFSetSubDirectory=PROCEDURE,-
+	TIFFUnlinkDirectory=PROCEDURE,-
+!
+! These needs to be global on the Alpha (used in fax2tiff)
+!
+	tiffDataWidth=DATA,-
+	tiffFieldInfo=DATA,-
+!
+! New entries in version 3.3 beta 026 (for the tools)
+!
+	_TIFFfree=PROCEDURE,-
+	_TIFFrealloc=PROCEDURE,-
+	_TIFFmemset=PROCEDURE,-
+	_TIFFmemcpy=PROCEDURE,-
+	_TIFFmemcmp=PROCEDURE,-
+!
+! New entries in version 3.4 beta 002
+!
+	TIFFRasterScanlineSize=PROCEDURE,-
+	TIFFDefaultStripSize=PROCEDURE,-
+	TIFFDefaultTileSize=PROCEDURE,-
+	TIFFVTileSize=PROCEDURE,- ! not new, but omitted previously
+	TIFFSwabDouble=PROCEDURE,-
+	TIFFSwabArrayOfDouble=PROCEDURE,-
+	TIFFLastDirectory=PROCEDURE,- ! not new either
+!
+! New entries in version 3.4 beta 007 through 032
+!
+	TIFFCurrentDirOffset=PROCEDURE,-
+	TIFFWriteBufferSetup=PROCEDURE)
+!
+! Then take the object library
+!
+TIFF/LIBRARY

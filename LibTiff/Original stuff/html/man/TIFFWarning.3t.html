@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFWarning</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFWarning</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFWarning, TIFFSetWarningHandler - library warning interface
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>void TIFFWarning(const char* module, const char* fmt, ...)</B>
+
+<P>
+<B>#include &lt;<A HREF="file:/usr/include/stdargh.h">stdargh.h</A>&gt;</B>
+
+<BR>
+
+<B>typedef void (*TIFFWarningHandler)(const char* module, const char* fmt, va_list ap);</B>
+
+<BR>
+
+<B>TIFFWarningHandler TIFFSetWarningHandler(TIFFWarningHandler handler);</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<I>TIFFWarning</I>
+
+invokes the library-wide warning handler function
+to (normally) write a warning message to the
+<B>stderr</B>.
+
+The
+<I>fmt</I>
+
+parameter is a
+<I><A HREF="printf.3s.html">printf</A></I>(3S)
+
+format string, and any number arguments can be supplied.
+The
+<I>module</I>
+
+parameter is interpreted as a string that, if non-zero,
+should be printed before the message; it typically
+is used to identify the software module in which a warning
+is detected.
+<P>
+
+Applications that desire to capture control in the event of a warning
+should use
+<I>TIFFSetWarningHandler</I>
+
+to override the default warning handler.
+A
+<FONT SIZE="-1">NULL</FONT>
+(0) warning handler function may be installed to
+suppress error messages.
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+<I>TIFFSetWarningHandler</I>
+
+returns a reference to the previous error handling function.
+<A NAME="lbAF">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T),
+
+<I><A HREF="printf.3s.html">printf</A></I>(3S)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAF">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:38 GMT, November 23, 1999
+</BODY>
+</HTML>

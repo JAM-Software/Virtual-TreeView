@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of CODEC</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>CODEC</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFFindCODEC, TIFFRegisterCODEC, TIFFUnRegisterCODEC - codec-related utility routines
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+
+<BR>
+
+<B>const TIFFCodec* TIFFFindCODEC(uint16 scheme);</B>
+
+<BR>
+
+<B>TIFFCodec* TIFFRegisterCODEC(uint16 scheme, const char* method, TIFFInitMethod init);</B>
+
+<BR>
+
+<B>void TIFFUnRegisterCODEC(TIFFCodec* codec);</B>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<I>libtiff</I>
+
+supports a variety of compression schemes implemented by software
+<I>codecs</I>.
+
+Each codec adheres to a modular interface that provides for
+the decoding and encoding of image data; as well as some other
+methods for initialization, setup, cleanup, and the control
+of default strip and tile sizes.
+Codecs are identified by the associated value of the 
+<FONT SIZE="-1">TIFF</FONT>
+<I>Compression</I>
+
+tag; e.g. 5 for
+<FONT SIZE="-1">LZW</FONT>
+compression.
+<P>
+
+The
+<I>TIFFRegisterCODEC</I>
+
+routine can be used to
+augment or override the set of codecs available to an application.
+If the specified
+<I>scheme</I>
+
+already has a registered codec then it is
+<I>overridden</I>
+
+and any images with data encoded with this
+compression scheme will be decoded using the supplied coded.
+<A NAME="lbAE">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+<B>No space to register compression scheme %s</B>.
+
+<I>TIFFRegisterCODEC</I>
+
+was unable to allocate memory for the data structures needed
+to register a codec.
+<P>
+
+<B>Cannot remove compression scheme %s; not registered</B>.
+
+<I>TIFFUnRegisterCODEC</I>
+
+did not locate the specified codec in the table of registered 
+compression schemes.
+<A NAME="lbAF">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAF">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:39 GMT, November 23, 1999
+</BODY>
+</HTML>

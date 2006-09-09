@@ -1,0 +1,84 @@
+.\" $Header: /cvsroot/osrs/libtiff/man/TIFFmemory.3t,v 1.1.1.1 1999/07/27 21:50:27 mike Exp $
+.\"
+.\" Copyright (c) 1995 Sam Leffler
+.\" Copyright (c) 1995 Silicon Graphics, Inc.
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and 
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that (i) the above copyright notices and this permission notice appear in
+.\" all copies of the software and related documentation, and (ii) the names of
+.\" Sam Leffler and Silicon Graphics may not be used in any advertising or
+.\" publicity relating to the software without the specific, prior written
+.\" permission of Sam Leffler and Silicon Graphics.
+.\" 
+.\" THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+.\" EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+.\" WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+.\" 
+.\" IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
+.\" ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+.\" OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+.\" WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+.\" LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+.\" OF THIS SOFTWARE.
+.\"
+.if n .po 0
+.TH MEMORY 3T "October 15, 1995"
+.SH NAME
+_TIFFmalloc, \c
+_TIFFrealloc, \c
+_TIFFfree, \c
+_TIFFmemset, \c
+_TIFFmemcpy, \c
+_TIFFmemcmp, \c
+\- memory management-related functions for use with
+.SM TIFF
+files
+.SH SYNOPSIS
+.nf
+.B "#include <tiffio.h>"
+.B "tdata_t _TIFFmalloc(tsize_t);"
+.B "tdata_t _TIFFrealloc(tdata_t, tsize_t);"
+.B "void _TIFFfree(tdata_t);"
+.B "void _TIFFmemset(tdata_t, int, tsize_t);"
+.B "void _TIFFmemcpy(tdata_t, const tdata_t, tsize_t);"
+.B "int _TIFFmemcmp(const tdata_t, const tdata_t, tsize_t);"
+.fi
+.SH DESCRIPTION
+These routines are provided for writing portable software that uses 
+.IR libtiff ;
+they hide any memory-management related issues, such as dealing with
+segmented architectures found on 16-bit machines.
+.PP
+.I _TIFFmalloc
+and
+.I _TIFFrealloc
+are used to dynamically allocate and reallocate memory used by 
+.IR libtiff ;
+such as memory passed into the I/O routines.
+Memory allocated through these interfaces is released back to the
+system using the
+.I _TIFFfree
+routine.
+.PP
+Memory allocated through one of the above interfaces can be set to
+a known value using
+.IR _TIFFmemset ,
+copied to another memory location using
+.IR _TIFFmemcpy ,
+or compared for equality using 
+.IR _TIFFmemcmp .
+These routines conform to the equivalent
+.SM ANSI
+C routines: 
+.IR memset ,
+.IR memcpy ,
+and
+.IR memcmp ,
+repsectively.
+.SH DIAGNOSTICS
+None.
+.SH "SEE ALSO"
+.IR libtiff (3T),
+.IR malloc (3C),
+.IR memory (3C)

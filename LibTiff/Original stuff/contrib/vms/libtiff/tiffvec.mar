@@ -1,0 +1,131 @@
+	.TITLE TIFFVEC - Transfer vector for TIFF library
+	.IDENT /LIBTIFF 3.4-002/
+;	
+	.PSECT TIFFVEC,EXE,NOWRT,PIC,SHR,GBL,QUAD
+;
+; Macro that defines one entry in the transfer vector
+;
+	.MACRO VECTOR,NAME
+	.ALIGN QUAD
+	.TRANSFER NAME
+	.MASK NAME
+	JMP L^NAME+2
+	.ENDM
+;
+; Here goes the definitions of all public functions in the library, plus
+; a few extra that are called by the tools.
+; The sequence MUST NOT be changed, otherwise you will have to relink
+; all applications. Add new functions at the end.
+;
+	VECTOR TIFFCheckTile
+	VECTOR TIFFClose
+	VECTOR TIFFComputeStrip
+	VECTOR TIFFComputeTile
+	VECTOR TIFFCurrentDirectory
+	VECTOR TIFFCurrentRow
+	VECTOR TIFFCurrentStrip
+	VECTOR TIFFCurrentTile
+	VECTOR TIFFError
+	VECTOR TIFFFdOpen
+	VECTOR TIFFFileName
+	VECTOR TIFFFileno
+	VECTOR TIFFFlush
+	VECTOR TIFFFlushData
+	VECTOR TIFFGetField
+	VECTOR TIFFGetFieldDefaulted
+;
+; TIFFGetFileSize was removed in version 3.2. It has been replaced by a 
+; dummy value that makes the program abort with a privileged instruction 
+; fault, in case an old program calls TIFFGetFileSize.
+;
+;	VECTOR TIFFGetFileSize
+	.QUAD  0
+;
+	VECTOR TIFFGetMode
+	VECTOR TIFFIsTiled
+;
+; TIFFModeCCITTFax3 gone in 3.3 beta 024
+;	VECTOR TIFFModeCCITTFax3
+	.QUAD  0
+	VECTOR TIFFNumberOfStrips
+	VECTOR TIFFNumberOfTiles
+	VECTOR TIFFOpen
+	VECTOR TIFFPrintDirectory
+	VECTOR TIFFReadBufferSetup
+	VECTOR TIFFReadDirectory
+	VECTOR TIFFReadEncodedStrip
+	VECTOR TIFFReadEncodedTile
+	VECTOR TIFFReadRawStrip
+	VECTOR TIFFReadRawTile
+	VECTOR TIFFReadRGBAImage
+	VECTOR TIFFReadScanline
+	VECTOR TIFFReadTile
+	VECTOR TIFFReverseBits
+	VECTOR TIFFScanlineSize
+	VECTOR TIFFSetDirectory
+	VECTOR TIFFSetErrorHandler
+	VECTOR TIFFSetField
+	VECTOR TIFFSetWarningHandler
+	VECTOR TIFFStripSize
+	VECTOR TIFFSwabShort
+	VECTOR TIFFSwabLong
+	VECTOR TIFFSwabArrayOfShort
+	VECTOR TIFFSwabArrayOfLong
+	VECTOR TIFFTileRowSize
+	VECTOR TIFFTileSize
+	VECTOR TIFFVGetField
+	VECTOR TIFFVGetFieldDefaulted
+	VECTOR TIFFVSetField
+	VECTOR TIFFWarning
+	VECTOR TIFFWriteDirectory
+	VECTOR TIFFWriteEncodedStrip
+	VECTOR TIFFWriteEncodedTile
+	VECTOR TIFFWriteRawStrip
+	VECTOR TIFFWriteRawTile
+	VECTOR TIFFWriteScanline
+	VECTOR TIFFWriteTile
+;
+; New entries in version 3.1
+;
+	VECTOR TIFFClientOpen
+	VECTOR TIFFVStripSize	; For tiffcp
+;
+; New entries in version 3.2
+;
+	VECTOR TIFFGetVersion
+	VECTOR TIFFGetBitRevTable
+	VECTOR _TIFFmalloc	; For fax2tiff
+;
+; New entries in version 3.3
+;
+	VECTOR TIFFIsByteSwapped
+	VECTOR TIFFSetWriteOffset
+;
+; New entries in version 3.3 beta 020
+;
+	VECTOR TIFFSetSubDirectory
+	VECTOR TIFFUnlinkDirectory
+;
+; New entries in version 3.3 beta 026 (for the tools)
+;
+	VECTOR _TIFFfree
+	VECTOR _TIFFrealloc
+	VECTOR _TIFFmemset
+	VECTOR _TIFFmemcpy
+	VECTOR _TIFFmemcmp
+;
+; New entries in version 3.4 beta 002
+;
+	VECTOR TIFFRasterScanlineSize
+	VECTOR TIFFDefaultStripSize
+	VECTOR TIFFDefaultTileSize
+	VECTOR TIFFVTileSize ; not new, but omitted previously
+	VECTOR TIFFSwabDouble
+	VECTOR TIFFSwabArrayOfDouble
+	VECTOR TIFFLastDirectory ; not new either
+;
+; New entries in version 3.4 beta 007 through 032
+;
+	VECTOR TIFFCurrentDirOffset
+	VECTOR TIFFWriteBufferSetup
+	.END

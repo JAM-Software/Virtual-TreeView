@@ -24,10 +24,10 @@ unit LibStub;
 //----------------------------------------------------------------------------------------------------------------------
 // The original code is LibStub.pas, released February 1, 2003.
 //
-// The initial developer of the original code is Dipl. Ing. Mike Lischke (Pleißa, Germany, www.delphi-gems.com),
+// The initial developer of the original code is Mike Lischke (Pleißa, Germany, www.soft-gems.net),
 //
-// Portions created by Dipl. Ing. Mike Lischke are
-// Copyright (C) 1999-2003 Dipl. Ing. Mike Lischke. All Rights Reserved.
+// Portions created by Mike Lischke are
+// Copyright (C) 1999-2006 Mike Lischke. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
 // LibStub is an utility unit for Borland C++ Builder RTL libraries bound to Delphi code via object files.
@@ -58,7 +58,7 @@ var
   // containing the file structures for stdin, stdout and stderror.
   // With the declaration below we create nil pointers for these standard "files". We can test them in the
   // file functions and act accordingly.
-  __streams: array[0..2] of Pointer;
+  _streams: array[0..2] of Pointer;
 
 type
   cmp_callback = function(P1, P2: Pointer): Integer; cdecl;
@@ -83,80 +83,89 @@ type
 
   Ptime_t = ^time_t;
   time_t = Integer;
-  
-procedure __assert(__cond, __file: PChar; __line: Integer); cdecl;
-procedure __cexit;
-function __ftol: Integer; cdecl;
-function __ltoupper(c: Integer): Integer; cdecl;
-procedure _Abort;
-function _atan2(Y, X: Double): Double; cdecl;
-function _atan(X: Double): Double; cdecl;
-function _atof(Value: PChar): Double; cdecl;
-function _atol(Value: PChar): Integer; cdecl;
-function _calloc(nitems, size: Cardinal): Pointer; cdecl;
-function _ceil(Value: Double): Double; cdecl;
-function _cos(Value: Double): Double; cdecl;
-function _ctime(const clock: Ptime_t): PChar; cdecl;
-procedure _exit; cdecl;
-function _exp(Value: Double): Double; cdecl;
-function _fabs(Value: Double): Double; cdecl;
-function _fclose(Stream: TStream): Integer; cdecl;
-function _fflush(Stream: TStream): Integer; cdecl;
-function _fgetc(Stream: TStream): Integer; cdecl;
-function _floor(Value: Double): Double; cdecl;
-function _fopen(const filename, mode: PChar): TStream; cdecl;
-function _fread(var buf; recsize, reccount: Integer; Stream: TStream): Integer; cdecl;
-procedure _free(P: Pointer); cdecl;
-function _fputc(c: Integer; Stream: TStream): Integer; cdecl;
-function _frexp(x: Double; var Exponent: Integer): Double; cdecl;
-function _fscanf(Stream: TStream; Format: PChar; Argument: array of Pointer): Integer; cdecl;
-function _fseek(Stream: TStream; offset, origin: Integer): Integer; cdecl;
-function _ftell(Stream: TStream): Integer; cdecl;
-function _fwrite(const buf; recsize, reccount: Integer; Stream: TStream): Integer; cdecl;
-function _gmtime(clock: PInteger): ptm; cdecl;
-function _hypot(x, y: Double): Double; cdecl;
-function _isalnum(c: Integer): Integer; cdecl;
-function _isdigit(c: Integer): Integer; cdecl;
-function _isprint(c: Integer): Integer; cdecl;
-function _isxdigit(c: Integer): Integer; cdecl;
-function _ldexp(x: Double; exp: Integer): Double; cdecl;
-function _localtime(clock: PInteger): ptm; cdecl;
-function _log(Value: Double): Double; cdecl;
-function _malloc(size: Integer): Pointer; cdecl;
-function _memcmp(s1, s2: Pointer; n: Integer): Integer; cdecl;
-procedure _memcpy(dest, source: Pointer; count: Integer); cdecl;
-function _memmove(dest, src: Pointer; n: Cardinal): Pointer; cdecl;
-procedure _memset(P: Pointer; B: Integer; count: Integer); cdecl;
-function _pow(x, y: Double): Double; cdecl;
-function _rand: Integer; cdecl;
-procedure _qsort(base: Pointer; nelem, width: Cardinal; fcmp: cmp_callback); cdecl;
-function _sin(Value: Double): Double; cdecl;
-procedure _sprintf(Buffer, Format: PChar; Arguments: va_list); cdecl;
-function _sqrt(Value: Double): Double; cdecl;
-function _sscanf(Buffer, Format: PChar; Argument: array of Pointer): Integer; cdecl;
-function _strcat(dest, src: PChar): PChar; cdecl;
-function _strchr(s: PChar; c: Integer): PChar; cdecl;
-function _strcpy(dest, src: PChar): PChar; cdecl;
-function _strdup(s: PChar): PChar; cdecl;
-function _stricmp(s1, s2: PChar): Integer; cdecl;
-function _strlen(s: PChar): Cardinal; cdecl;
-function _strncmp(s1, s2: PChar; maxlen: Cardinal): Integer; cdecl;
-function _strncpy(strDest, strSource: PChar; count: Cardinal): PChar; cdecl;
-function _strstr(s1, s2: PChar): PChar; cdecl;
-function _strtod(s: PChar; endptr: PPChar): Double; cdecl;
-procedure _swab(__from, __to: PChar; __nbytes: Integer); cdecl;
-function _tan(Value: Double): Double; cdecl;
-function _time(__timer: Ptime_t): time_t; cdecl;
-function _unlink(FileName: PChar): Integer; cdecl;
-function _vfprintf(Stream: TStream; Format: PChar; Arguments: va_list): Integer; cdecl;
-function _vprintf(Format: PChar; Arguments: va_list): Integer; cdecl;
-procedure _vsprintf(Buffer, Format: PChar; Arguments: va_list); cdecl;
-function _wcscpy(Destination, Source: PWideChar): PWideChar; cdecl;
-function _wcstombs(mbstr: PChar; wcstr: PWideChar; count: Cardinal): Cardinal; cdecl;
+
+  Psize_t = ^size_t;
+  size_t = Cardinal;
+
+procedure Abort;
+procedure _assert(__cond, __file: PChar; __line: Integer); cdecl;
+function atan2(Y, X: Double): Double; cdecl;
+function atan(X: Double): Double; cdecl;
+function atof(Value: PChar): Double; cdecl;
+function atol(Value: PChar): Integer; cdecl;
+function bsearch(const Key, Base: PChar; nelem, size: size_t; Compare: cmp_callback): Pointer; cdecl;
+function calloc(nitems, size: Cardinal): Pointer; cdecl;
+function ceil(Value: Double): Double; cdecl;
+procedure cexit;
+function cos(Value: Double): Double; cdecl;
+function ctime(const clock: Ptime_t): PChar; cdecl;
+procedure exit; cdecl;
+function exp(Value: Double): Double; cdecl;
+function fabs(Value: Double): Double; cdecl;
+function fclose(Stream: TStream): Integer; cdecl;
+function fflush(Stream: TStream): Integer; cdecl;
+function fgetc(Stream: TStream): Integer; cdecl;
+function floor(Value: Double): Double; cdecl;
+function fopen(const filename, mode: PChar): TStream; cdecl;
+function fread(var buf; recsize, reccount: Integer; Stream: TStream): Integer; cdecl;
+procedure free(P: Pointer); cdecl;
+function fputc(c: Integer; Stream: TStream): Integer; cdecl;
+function frexp(x: Double; var Exponent: Integer): Double; cdecl;
+function fscanf(Stream: TStream; Format: PChar; Argument: array of Pointer): Integer; cdecl;
+function fseek(Stream: TStream; offset, origin: Integer): Integer; cdecl;
+function ftell(Stream: TStream): Integer; cdecl;
+function _ftol: Integer; cdecl;
+function fwrite(const buf; recsize, reccount: Integer; Stream: TStream): Integer; cdecl;
+function gmtime(clock: PInteger): ptm; cdecl;
+function hypot(x, y: Double): Double; cdecl;
+function isalnum(c: Integer): Integer; cdecl;
+function isdigit(c: Integer): Integer; cdecl;
+function isprint(c: Integer): Integer; cdecl;
+function isxdigit(c: Integer): Integer; cdecl;
+function ldexp(x: Double; exp: Integer): Double; cdecl;
+function _lfind(const key, base: Pointer; num: Psize_t; width: size_t; Compare: cmp_callback): Pointer; cdecl;
+function localtime(clock: PInteger): ptm; cdecl;
+function log(Value: Double): Double; cdecl;
+procedure longjmp(const __jmpb, __retval: Integer); cdecl;
+function ltoupper(c: Integer): Integer; cdecl;
+function malloc(size: Integer): Pointer; cdecl;
+function memcmp(s1, s2: Pointer; n: Integer): Integer; cdecl;
+procedure memcpy(dest, source: Pointer; count: Integer); cdecl;
+function memmove(dest, src: Pointer; n: Cardinal): Pointer; cdecl;
+procedure memset(P: Pointer; B: Integer; count: Integer); cdecl;
+function pow(x, y: Double): Double; cdecl;
+function rand: Integer; cdecl;
+procedure qsort(base: Pointer; nelem, width: Cardinal; fcmp: cmp_callback); cdecl;
+function setjmp(const __jmpb): Integer; cdecl;
+function sin(Value: Double): Double; cdecl;
+procedure sprintf(Buffer, Format: PChar; Arguments: va_list); cdecl;
+function sqrt(Value: Double): Double; cdecl;
+function sscanf(Buffer, Format: PChar; Argument: array of Pointer): Integer; cdecl;
+function strcat(dest, src: PChar): PChar; cdecl;
+function strchr(s: PChar; c: Integer): PChar; cdecl;
+function strcmp(s1, s2: PChar): Integer; cdecl;
+function strcpy(dest, src: PChar): PChar; cdecl;
+function strdup(s: PChar): PChar; cdecl;
+function stricmp(s1, s2: PChar): Integer; cdecl;
+function strlen(s: PChar): Cardinal; cdecl;
+function strncmp(s1, s2: PChar; maxlen: Cardinal): Integer; cdecl;
+function strncpy(strDest, strSource: PChar; count: Cardinal): PChar; cdecl;
+function strstr(s1, s2: PChar): PChar; cdecl;
+function strtod(s: PChar; endptr: PPChar): Double; cdecl;
+procedure swab(__from, __to: PChar; __nbytes: Integer); cdecl;
+function tan(Value: Double): Double; cdecl;
+function time(__timer: Ptime_t): time_t; cdecl;
+function unlink(FileName: PChar): Integer; cdecl;
+function vfprintf(Stream: TStream; Format: PChar; Arguments: va_list): Integer; cdecl;
+function vprintf(Format: PChar; Arguments: va_list): Integer; cdecl;
+procedure vsprintf(Buffer, Format: PChar; Arguments: va_list); cdecl;
+function wcscpy(Destination, Source: PWideChar): PWideChar; cdecl;
+function wcstombs(mbstr: PChar; wcstr: PWideChar; count: Cardinal): Cardinal; cdecl;
 
 // Note: these functions cannot be emulated by Delphi nor forwarded to external APIs.
 // Using them will raise an exception.
-procedure _fprintf; cdecl;
+procedure fprintf; cdecl;
+procedure fputs; cdecl;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -172,8 +181,8 @@ const
 {$endif COMPILER_6_UP}
 
 var
-  _daylight: Boolean;
-  _timezone: Integer;
+  daylight: Boolean;
+  timezone: Integer;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -195,50 +204,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure __assert(__cond, __file: PChar; __line: Integer);
-
-// Emulation of the BCB RTL runtime library function _assert.
-
-begin
-  raise Exception.CreateFmt('Assertion failed: %s, file %s, line %d', [__cond, __file, __line]);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure __cexit;
-
-begin
-  Exit;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function __ftol: Integer;
-
-var
-  F: Double;
-
-begin
-  asm
-    LEA   EAX, F             //  BC++ passes floats on the FPU stack
-    FSTP QWORD PTR [EAX]     //  Delphi passes floats on the CPU stack
-  end;
-  Result := Trunc(f);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function __ltoupper(c: Integer): Integer;
-
-// Note: this code does not consider changes made with setlocale.
-
-begin
-  Result := Integer(Upcase(Char(c)));
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure _Abort;
+procedure Abort;
 
 begin
   Sysutils.Abort;
@@ -246,7 +212,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _atan2(Y, X: Double): Double;
+procedure _assert(__cond, __file: PChar; __line: Integer);
+
+// Emulation of the BCB RTL runtime library function assert.
+
+begin
+  raise Exception.CreateFmt('Assertion failed: %s, file %s, line %d', [__cond, __file, __line]);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function atan2(Y, X: Double): Double;
 
 begin
   Result := Arctan2(Y, X);
@@ -254,7 +230,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _atan(X: Double): Double; cdecl;
+function atan(X: Double): Double; cdecl;
 
 begin
   Result := Arctan2(X, 1);
@@ -262,7 +238,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _atof(Value: PChar): Double;
+function atof(Value: PChar): Double;
 
 // Note: this code does not consider changes made with setlocale.
 
@@ -272,7 +248,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _atol(Value: PChar): Integer;
+function atol(Value: PChar): Integer;
 
 // Note: this code does not consider changes made with setlocale.
 
@@ -282,7 +258,40 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _calloc(nitems, size: Cardinal): Pointer;
+function bsearch(const Key, Base: PChar; nelem, size: size_t; Compare: cmp_callback): Pointer; cdecl;
+
+var
+  I: Cardinal;
+  J: Integer;
+  kmin, probe: PChar;
+
+begin
+  Result := nil;
+  kmin := PChar(Base);
+  while nelem > 0 do
+  begin
+    I := nelem shr 1;
+    probe := kmin + I * size;
+    J := Compare(Key, probe);
+    if J = 0 then
+    begin
+      Result := probe;
+      Break;
+    end
+    else
+      if J < 0 then
+        nelem := i
+      else
+      begin
+        kmin := probe + size;
+        nelem := nelem - I - 1;
+      end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function calloc(nitems, size: Cardinal): Pointer;
 
 begin
   Result := AllocMem(nitems * size);
@@ -290,7 +299,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _ceil(Value: Double): Double;
+function ceil(Value: Double): Double;
 
 begin
   Result := Math.Ceil(Value);
@@ -298,7 +307,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _cos(Value: Double): Double;
+procedure cexit;
+
+begin
+  Exit;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function cos(Value: Double): Double;
 
 begin
   Result := System.Cos(Value); // Different types but same name. Keep this stub!
@@ -311,7 +328,7 @@ var
   // It is overriden everytime ctime is called (just as the BCB equivalent).
   Staticctime: array[0..25] of Char;
 
-function _ctime(const clock: Ptime_t): PChar;
+function ctime(const clock: Ptime_t): PChar;
 
 var
   Time: TDateTime;
@@ -331,7 +348,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _exit;
+procedure exit;
 
 begin
   System.Exit;
@@ -339,7 +356,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _exp(Value: Double): Double;
+function exp(Value: Double): Double;
 
 begin
   Result := System.Exp(Value); // Different types but same name. Keep this stub!
@@ -347,7 +364,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fabs(Value: Double): Double;
+function fabs(Value: Double): Double;
 
 begin
   Result := Abs(Value);
@@ -355,7 +372,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fclose(Stream: TStream): Integer;
+function fclose(Stream: TStream): Integer;
 
 begin
   if Assigned(Stream) then
@@ -365,7 +382,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fflush(Stream: TStream): Integer;
+function fflush(Stream: TStream): Integer;
 
 begin
   Result := 0;
@@ -373,7 +390,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fgetc(Stream: TStream): Integer;
+function fgetc(Stream: TStream): Integer;
 
 var
   B: Byte;
@@ -390,7 +407,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _floor(Value: Double): Double;
+function floor(Value: Double): Double;
 
 begin
   Result := Math.Floor(Value); // Different types but same name. Keep this stub!
@@ -398,7 +415,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fopen(const filename, mode: PChar): TStream;
+function fopen(const filename, mode: PChar): TStream;
 
 // Maps, together with the other file functions, all C file access to a file stream.
 
@@ -440,7 +457,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fread(var buf; recsize, reccount: Integer; Stream: TStream): Integer;
+function fread(var buf; recsize, reccount: Integer; Stream: TStream): Integer;
 
 begin
   if Assigned(Stream) then
@@ -454,7 +471,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _free(P: Pointer);
+procedure free(P: Pointer);
 
 begin
   FreeMem(P);
@@ -462,7 +479,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fputc(c: Integer; Stream: TStream): Integer;
+function fputc(c: Integer; Stream: TStream): Integer;
 
 begin
   Stream.Write(c, 1);
@@ -471,7 +488,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _frexp(x: Double; var Exponent: Integer): Double;
+function frexp(x: Double; var Exponent: Integer): Double;
 
 var
   Mantissa: Extended;
@@ -483,7 +500,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fscanf(Stream: TStream; Format: PChar; Argument: array of Pointer): Integer;
+function fscanf(Stream: TStream; Format: PChar; Argument: array of Pointer): Integer;
 
 // Note: the actual implementation was provided by Evgeni Sorokin.
 
@@ -493,7 +510,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fseek(Stream: TStream; offset, origin: Integer): Integer;
+function fseek(Stream: TStream; offset, origin: Integer): Integer;
 
 begin
   Stream.Seek(offset, origin);
@@ -502,7 +519,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _ftell(Stream: TStream): Integer;
+function ftell(Stream: TStream): Integer;
 
 begin
   Result := Stream.Position;
@@ -510,7 +527,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _fwrite(const buf; recsize, reccount: Integer; Stream: TStream): Integer;
+function _ftol: Integer;
+
+var
+  F: Double;
+
+begin
+  asm
+    LEA   EAX, F             //  BC++ passes floats on the FPU stack
+    FSTP QWORD PTR [EAX]     //  Delphi passes floats on the CPU stack
+  end;
+  Result := Trunc(f);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function fwrite(const buf; recsize, reccount: Integer; Stream: TStream): Integer;
 
 begin
   Result := Stream.Write(buf, recsize * reccount)
@@ -530,7 +562,7 @@ const
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _isDST (hour, yday, month, year: Cardinal): Boolean;
+function isDST (hour, yday, month, year: Cardinal): Boolean;
 
 // Determines whether daylight savings is in effect and returns non-zero if so for the given date.
 //
@@ -639,7 +671,7 @@ begin
     Dec(time, hpery);
   until False; // At end, time is number of hours into current year.
 
-  if dst and _daylight and _isDST(time mod 24, time div 24, 0, tmX.tm_year - 70) then
+  if dst and daylight and isDST(time mod 24, time div 24, 0, tmX.tm_year - 70) then
   begin
     Inc(time);
     tmX.tm_isdst := 1;
@@ -680,7 +712,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _gmtime(clock: PInteger): ptm;
+function gmtime(clock: PInteger): ptm;
 
 // Converts date and time to Greenwich Mean Time.
 // gmtime returns a pointer to a structure containing the broken-down time.
@@ -691,7 +723,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _hypot(x, y: Double): Double;
+function hypot(x, y: Double): Double;
 
 begin
   Result := Math.Hypot(X, Y); // Different types but same name. Keep this stub!
@@ -699,7 +731,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _isalnum(c: Integer): Integer;
+function isalnum(c: Integer): Integer;
 
 // Note: this code does not consider changes made with setlocale. Currently only Latin characters are checked.
 
@@ -709,7 +741,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _isdigit(c: Integer): Integer;
+function isdigit(c: Integer): Integer;
 
 // Note: this code does not consider changes made with setlocale. Currently only Latin characters are checked.
 
@@ -719,7 +751,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _isprint(c: Integer): Integer;
+function isprint(c: Integer): Integer;
 
 begin
   Result := Ord(Char(c) in [#$20..#$7E]);
@@ -727,7 +759,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _isxdigit(c: Integer): Integer;
+function isxdigit(c: Integer): Integer;
 
 // Note: this code does not consider changes made with setlocale. Currently only Latin characters are checked.
 
@@ -737,7 +769,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _ldexp(x: Double; exp: Integer): Double;
+function ldexp(x: Double; exp: Integer): Double;
 
 begin
   Result := Math.Ldexp(x, exp); // Different types but same name. Keep this stub!
@@ -745,18 +777,40 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _localtime(clock: PInteger): ptm;
+function _lfind(const Key, Base: Pointer; num: Psize_t; width: size_t; Compare: cmp_callback): Pointer;
+
+var
+  I: Integer;
+  Run: PChar;
 
 begin
-  if (clock^ < _timezone) then
-    Result := nil
-  else
-    Result := comtime(clock^ - _timezone, True);
+  Result := nil;
+  Run := Base;
+  for I := 0 to num^ - 1 do
+  begin
+    if Compare(Run, Key) = 0 then
+    begin
+      Result := Run;
+      Break;
+    end;
+    Inc(Run, width);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _log(Value: Double): Double;
+function localtime(clock: PInteger): ptm;
+
+begin
+  if (clock^ < timezone) then
+    Result := nil
+  else
+    Result := comtime(clock^ - timezone, True);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function log(Value: Double): Double;
 
 // Returns natural logarithm of Value.
 
@@ -766,7 +820,29 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _malloc(size: Integer): Pointer;
+procedure longjmp(const __jmpb, __retval: Integer); cdecl;
+
+// Used to to return control to another point in code (jump out-of-context).
+// This is old stuff and not supported by Delphi. Since it is used in error case only
+// we just raise a silent exception.
+
+begin
+  Abort;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function ltoupper(c: Integer): Integer;
+
+// Note: this code does not consider changes made with setlocale.
+
+begin
+  Result := Integer(Upcase(Char(c)));
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function malloc(size: Integer): Pointer;
 
 begin
   GetMem(Result, size);
@@ -774,7 +850,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _memcmp(s1, s2: Pointer; n: Integer): Integer;
+function memcmp(s1, s2: Pointer; n: Integer): Integer;
 
 begin
   Result := StrLComp(s1, s2, n);
@@ -782,7 +858,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _memcpy(dest, source: Pointer; count: Integer);
+procedure memcpy(dest, source: Pointer; count: Integer);
 
 begin
   Move(source^, dest^, count);
@@ -790,7 +866,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _memmove(dest, src: Pointer; n: Cardinal): Pointer;
+function memmove(dest, src: Pointer; n: Cardinal): Pointer;
 
 begin
   Move(src^, dest^, n);
@@ -799,7 +875,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _memset(P: Pointer; B: Integer; count: Integer);
+procedure memset(P: Pointer; B: Integer; count: Integer);
 
 begin
   FillChar(P^, count, B);
@@ -807,7 +883,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _pow(x, y: Double): Double;
+function pow(x, y: Double): Double;
 
 begin
   Result := Power(x, y);
@@ -818,7 +894,7 @@ end;
 const
   RAND_MAX = $7FFF; // Predefined constant in BCB.
 
-function _rand: Integer;
+function rand: Integer;
 
 begin
   Result := Random(RAND_MAX);
@@ -975,7 +1051,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _qsort(base: Pointer; nelem, width: Cardinal; fcmp: cmp_callback);
+procedure qsort(base: Pointer; nelem, width: Cardinal; fcmp: cmp_callback);
 
 begin
   if width > 0 then
@@ -988,7 +1064,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _sin(Value: Double): Double;
+function setjmp(const __jmpb): Integer; cdecl;
+
+// See longjmp for a short description.
+
+begin
+  Result := 0;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function sin(Value: Double): Double;
 
 begin
   Result := System.Sin(Value); // Different types but same name. Keep this stub!
@@ -996,17 +1082,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _sprintf(Buffer, Format: PChar; Arguments: va_list);
+procedure sprintf(Buffer, Format: PChar; Arguments: va_list);
 
 // Optional parameters are passed in a va_list as the last parameter. 
 
 begin
-  wvsprintf(Buffer, Format, Arguments);
+  wvsprintf(Buffer, Format, @Arguments);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _sqrt(Value: Double): Double;
+function sqrt(Value: Double): Double;
 
 begin
   Result := System.Sqrt(Value); // Different types but same name. Keep this stub!
@@ -1014,7 +1100,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _sscanf(Buffer, Format: PChar; Argument: array of Pointer): Integer;
+function sscanf(Buffer, Format: PChar; Argument: array of Pointer): Integer;
 
 // Note: the actual implementation was provided by Evgeni Sorokin.
 
@@ -1024,7 +1110,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strcat(dest, src: PChar): PChar;
+function strcat(dest, src: PChar): PChar;
 
 begin
   Result := SysUtils.StrCat(dest, src);
@@ -1032,7 +1118,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strchr(s: PChar; c: Integer): PChar;
+function strchr(s: PChar; c: Integer): PChar;
 
 begin
   Result := StrScan(s, Char(c));
@@ -1040,7 +1126,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strcpy(dest, src: PChar): PChar;
+function strcmp(s1, s2: PChar): Integer;
+
+begin
+  Result := SysUtils.StrComp(s1, s2);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function strcpy(dest, src: PChar): PChar;
 
 begin
   Result := StrCopy(dest, src);
@@ -1048,7 +1142,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strdup(s: PChar): PChar;
+function strdup(s: PChar): PChar;
 
 var
   L: Integer;
@@ -1062,7 +1156,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _stricmp(s1, s2: PChar): Integer;
+function stricmp(s1, s2: PChar): Integer;
 
 begin
   Result := SysUtils.StrIComp(s1, s2);
@@ -1070,7 +1164,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strlen(s: PChar): Cardinal;
+function strlen(s: PChar): Cardinal;
 
 begin
   Result := SysUtils.StrLen(s);
@@ -1078,7 +1172,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strncmp(s1, s2: PChar; maxlen: Cardinal): Integer;
+function strncmp(s1, s2: PChar; maxlen: Cardinal): Integer;
 
 begin
   Result := StrLComp(s1, s2, maxlen);
@@ -1086,7 +1180,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strncpy(strDest, strSource: PChar; count: Cardinal): PChar;
+function strncpy(strDest, strSource: PChar; count: Cardinal): PChar;
 
 var
   Len: Cardinal;
@@ -1105,7 +1199,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strstr(s1, s2: PChar): PChar;
+function strstr(s1, s2: PChar): PChar;
 
 begin
   Result := StrPos(s1, s2);
@@ -1113,7 +1207,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _strtod(s: PChar; endptr: PPChar): Double;
+function strtod(s: PChar; endptr: PPChar): Double;
 
 var
   Buffer: Extended;
@@ -1134,11 +1228,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _swab(__from, __to: PChar; __nbytes: Integer);
+procedure swab(__from, __to: PChar; __nbytes: Integer);
 
-// Swaps a number of words in __from to the opposite byte order and stores it in __to.
+// Swaps a number of words in _from to the opposite byte order and stores it in _to.
 // Areas may overlap, in which case the conversion is done in-place.
-// __nbytes must be even.
+// _nbytes must be even.
 
 begin
   while __nbytes > 0 do
@@ -1152,7 +1246,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _tan(Value: Double): Double;
+function tan(Value: Double): Double;
 
 begin
   Result := Math.Tan(Value); // Different types but same name. Keep this stub!
@@ -1160,7 +1254,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _time(__timer: Ptime_t): time_t;
+function time(__timer: Ptime_t): time_t;
 
 var
   DelphiTime: TDateTime;
@@ -1174,7 +1268,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _unlink(FileName: PChar): Integer;
+function unlink(FileName: PChar): Integer;
 
 begin
   if DeleteFile(FileName) then
@@ -1185,7 +1279,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _vfprintf(Stream: TStream; Format: PChar; Arguments: va_list): Integer;
+function vfprintf(Stream: TStream; Format: PChar; Arguments: va_list): Integer;
 
 var
   Buffer: array[0..10000] of Char;
@@ -1198,7 +1292,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _vprintf(Format: PChar; Arguments: va_list): Integer;
+function vprintf(Format: PChar; Arguments: va_list): Integer;
 
 // In the C RTL this method writes to stdout, which should not be used for Win GUI applications.
 // Hence we write a record to the debug output.
@@ -1215,7 +1309,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _vsprintf(Buffer, Format: PChar; Arguments: va_list);
+procedure vsprintf(Buffer, Format: PChar; Arguments: va_list);
 
 begin
   wvsprintf(Buffer, Format, Arguments);
@@ -1223,7 +1317,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _wcscpy(Destination, Source: PWideChar): PWideChar;
+function wcscpy(Destination, Source: PWideChar): PWideChar;
 
 begin
   Move(Source^, Destination^, 2 * StrLenW(Source) + 2);
@@ -1232,7 +1326,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function _wcstombs(mbstr: PChar; wcstr: PWideChar; count: Cardinal): Cardinal;
+function wcstombs(mbstr: PChar; wcstr: PWideChar; count: Cardinal): Cardinal;
 
 begin
   Result := WideCharToMultibyte(CP_ACP, 0, wcstr, -1, mbstr, -1, nil, nil);
@@ -1240,10 +1334,18 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure _fprintf;
+procedure fprintf;
 
 begin
   raise Exception.Create('Fatal error: stub function fprintf cannot be executed.');
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure fputs;
+
+begin
+  raise Exception.Create('Fatal error: stub function fputs cannot be executed.');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1253,7 +1355,7 @@ var
 
 begin
   GetTimezoneInformation(Info);
-  _daylight := Info.DaylightBias <> 0;
-  _timezone := (Info.Bias + Info.StandardBias) * 60;
+  daylight := Info.DaylightBias <> 0;
+  timezone := (Info.Bias + Info.StandardBias) * 60;
 end.
 

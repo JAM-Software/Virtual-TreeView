@@ -2,7 +2,7 @@ unit ColorSwatchWidgets;
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColorSwatchWidgets contains color picker widgets for the color picker control, which deal with Adobe Photoshop
-// color swatch files. This includes for instance TRUEMATCH, ANPA, FOCULTONE, PANTONE, TOYO and other industrie standard
+// color swatch files. This includes for instance TRUEMATCH, ANPA, FOCULTONE, PANTONE, TOYO and other industry standard
 // color systems if the respective files are present.
 //
 //----------------------------------------------------------------------------------------------------------------------

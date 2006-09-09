@@ -269,7 +269,7 @@ type
     // Read markers until SOS or EOI.
     // Returns same codes as are defined for jpeg_consume_input:
     // JPEG_SUSPENDED, JPEG_REACHED_SOS, or JPEG_REACHED_EOI.
-    read_markers: function (cinfo: j_decompress_ptr): Integer; 
+    read_markers: function (cinfo: j_decompress_ptr): Integer;
     // Read a restart marker --- exported for use by entropy decoder only 
     read_restart_marker: jpeg_marker_parser_method;
     // Application-overridable marker processing methods 
@@ -1138,6 +1138,9 @@ function jpeg_write_raw_data(cinfo: j_compress_ptr; data: JSAMPIMAGE; num_lines:
 procedure jpeg_write_tables(cinfo: j_compress_ptr); external;
 function jpeg_alloc_quant_table(cinfo: j_common_ptr): JQUANT_TBL_ptr; external;
 function jpeg_alloc_huff_table(cinfo: j_common_ptr): JHUFF_TBL_ptr; external;
+
+// Hack required by TIFF Old JPEG support. Read tif_ojpeg.c for reason and further details.
+procedure jpeg_reset_huff_decode(dinfo: j_decompress_ptr); external;
 
 //----------------------------------------------------------------------------------------------------------------------
 

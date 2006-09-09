@@ -60,7 +60,7 @@ interface
 uses                                                
   Windows, Classes, SysUtils, Graphics,  
   JPG,   // JPEG compression support
-  GXzLib;  // general inflate/deflate and LZ77 compression support
+  zLibEx;  // general inflate/deflate and LZ77 compression support
      
 type
   // abstract decoder class to define the base functionality of an encoder/decoder
@@ -200,7 +200,7 @@ type
 
   TLZ77Decoder = class(TDecoder)
   private
-    FStream: z_stream;
+    FStream: TZStreamRec;
     FZLibResult,         // contains the return code of the last ZLib operation
     FFlushMode: Integer; // one of flush constants declard in ZLib.pas
                          // this is usually Z_FINISH for PSP and Z_PARTIAL_FLUSH for PNG

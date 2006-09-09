@@ -1,0 +1,30 @@
+
+This directory contains the files necessary to build the free TIFF library
+with the DJGPP v2 compiler under MSDOS. Since DJGPP defines the unix flag,
+I have created a port.h instead of putting the necessary defines into
+tiffcomp.h. Makefiles are included for the top level and the libtiff and
+tools directories.
+
+All you have to do is copy the files into the respective directories and run
+make. If you want, you can use the conf.bat to do that for you, make sure that
+the file is stored with MSDOS text EOL-convention (CR/LF), otherwise the
+command.com will not do anything (if you used unzip, use the -a option,
+otherwise edit the file and save it again).
+
+Note that you probably will not be able to built the library with the v1.x
+versions of djgpp, due to two problems. First, the top makefile calls a
+sub-make for each directory and you are likely to run out of memory, since
+each recursive invocation of a djgpp v1.x program requires about 130k, to
+avoid that, you can enter the directories manually and call make (well, there
+are only two dirs). The 2nd problem is that djgpp 1.x doesn't call the
+coff2exe (stubify) program when creating an executable. This means that all
+programs compiled are not converted to exe and consequently are not available
+for calling directly. For the tools directory, you can just call coff2exe for
+each program after make finishes, but in the libtiff directory, a few programs
+are created during the make process that have to be called for make to
+continue (e.g. mkg3states). Make will probably report an error at each
+such stage. To fix that, either add a coff2exe call before each program is
+called or call coff2exe manually and rerun make (there 2-3 such programs).
+
+Alexander Lehmann <alex@hal.rhein-main.de>
+

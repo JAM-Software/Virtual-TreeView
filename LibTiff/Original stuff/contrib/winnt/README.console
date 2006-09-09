@@ -1,0 +1,182 @@
+Date:    Fri, 18 Apr 1997 09:25:09 EDT
+To:      "'sam@cthulhu.engr.sgi.com'" <sam@cthulhu.engr.sgi.com>
+cc:      "'tiff@sgi.engr.sgi.com'" <tiff@sgi.engr.sgi.com>
+
+From:    xingong chang <xingong@feith1.FEITH.COM>
+Subject: Contribution: libtiff for Windows-nt console applications
+
+Return-Path: xingong@feith1.FEITH.COM 
+Delivery-Date: Fri, 18 Apr 1997 06:37:38 -0700
+Return-Path: xingong@feith1.FEITH.COM
+MIME-Version: 1.0
+
+Hi, 
+I built the libtiff under WINNT 4.0 as a 32-bit library for pure
+console applications. I made the makefile.nt based on Philippe
+Tenenhaus' makefile.w95 file.  Since I want my stuff to be a pure
+console application running on WinNT, Dave Dyer's makefile for WINNT is
+not good for me since it is for Windows applications.
+
+I used the tif_msdos.c file instead of the tif_win32.c in the $(OBJS)
+list because tif_win32.c is not a pure console program, it includes
+some function calls such as MessageBox etc which requires windows
+application library ($winslib as defined in <ntwin32.mak>).
+
+unlike Philippe Tenenhaus' makefile.w95 file, this makefile.nt does
+support fax3 stuff. And to make the mkg3states.exe,the getopt.obj is
+needed. "getopt" package is ATT public domain source for getopt(3).
+Also you need to inlcude the g3states.h in tif_fax.c fileand modify the
+tif_fax3.h to delete the external declaration of FFFaxMainTable,
+TIFFFaxWhileTable and TIFFFaxBlackTable
+
+
+libtiff version: TIFFLIB_VERSION 19960307
+
+Hardware you are using:  i386
+
+Operating system you are using: Windows NT 4.0
+
+C compiler :  Microsoft Visual C++ 4.1
+
+NMAKE      :  Microsoft nmake 1.61
+
+
+Here is the makefile.nt I used:
+---------------------------------------------------------
+
+# makefile.nt  for the tiff library 
+# Tag Image File Format Library
+#
+# Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
+# Copyright (c) 1991, 1992 Silicon Graphics, Inc.
+# 
+# Permission to use, copy, modify, distribute, and sell this software and 
+# its documentation for any purpose is hereby granted without fee, provided
+# that (i) the above copyright notices and this permission notice appear in
+# all copies of the software and related documentation, and (ii) the names of
+# Sam Leffler and Silicon Graphics may not be used in any advertising or
+# publicity relating to the software without the specific, prior written
+# permission of Sam Leffler and Silicon Graphics.
+# 
+# THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+# EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+# WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+# 
+# IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
+# ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+# OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+# WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+# LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+# OF THIS SOFTWARE.
+#
+# This Makefile is for use with microsoft nmake version 1.61
+#
+
+!include <ntwin32.mak>
+
+DEFS   =  -DBSDTYPES -DO_RDONLY=S_IREAD  -DO_RDWR=S_IWRITE
+
+INCS=   tiff.h tiffio.h
+SRCS=   tif_aux.c \
+	tif_close.c \
+	tif_codec.c \
+	tif_compress.c \
+	tif_dir.c \
+	tif_dirinfo.c \
+	tif_dirread.c \
+	tif_dirwrite.c \
+	tif_dumpmode.c \
+	tif_error.c \
+	tif_getimage.c \
+	tif_jpeg.c \
+	tif_flush.c \
+	tif_lzw.c \
+	tif_next.c \
+	tif_open.c \
+	tif_packbits.c \
+	tif_predict \
+	tif_print.c \
+	tif_read.c \
+	tif_swab.c \
+	tif_strip.c \
+	tif_thunder.c \
+	tif_tile.c \
+	tif_version.c \
+	tif_warning.c \
+	tif_write.c \
+	tif_msdos.c \
+        tif_fax3.c
+		
+	
+OBJS=   tif_aux.obj \
+	tif_close.obj \
+	tif_codec.obj \
+	tif_compress.obj \
+	tif_dir.obj \
+	tif_dirinfo.obj \
+	tif_dirread.obj \
+	tif_dirwrite.obj \
+	tif_dumpmode.obj \
+	tif_error.obj \
+	tif_getimage.obj \
+	tif_jpeg.obj \
+	tif_flush.obj \
+	tif_lzw.obj \
+	tif_next.obj \
+	tif_open.obj \
+	tif_packbits.obj \
+	tif_predict.obj \
+	tif_print.obj \
+	tif_read.obj \
+	tif_swab.obj \
+	tif_strip.obj \
+	tif_thunder.obj \
+	tif_tile.obj \
+	tif_version.obj \
+	tif_warning.obj \
+	tif_write.obj  \
+        tif_msdos.obj  \
+        tif_fax3.obj     
+
+#To make the mkg3states.exe,the getopt.obj is needed. getopt package is
+# ATT public domain source for getopt(3).
+EXTRA_OBJS   =  getopt.obj
+	
+all:    libtiff.lib 
+
+libtiff.lib: $(OBJS)
+	 del libtiff.lib
+	 lib -out:libtiff.lib $(OBJS) 
+
+.c.obj: 
+	$(cc) $(DEFS) $(cdebug) $(cflags) $(cvarsmt) $*.c
+
+
+#To include fax3 support, we did this modification
+#add to the build script : tif_fax3.c and tif_fax3.obj
+#define CCITT_SUPPORT in the file tifconf.h
+#inlcude the g3states.h in tif_fax.c file
+#modify the tif_fax3.h to delete the TIFFFaxMainTable,TIFFFaxWhileTable
+# TIFFFaxBlackTable etc external declaration
+#mkg3states.exe without any command line options will produce the g3states.h 
+
+$(OBJS): tiffio.h tiff.h tiffcomp.h tiffiop.h tiffconf.h
+tif_fax3.obj: tif_fax3.c g3states.h t4.h tif_fax3.h
+
+g3states.h: mkg3states.obj t4.h
+	$(link) $(ldebug) $(conslflags) -out:mkg3states.exe mkg3states.obj \
+				$(EXTRA_OBJS)
+        mkg3states.exe 
+
+clean:
+	del *.obj
+        del g3states.h
+
+clobber: 
+	del libtiff.lib
+	del *.obj
+	del g3states.h
+
+
+
+[60;1H[K

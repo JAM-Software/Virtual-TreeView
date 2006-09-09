@@ -1,0 +1,67 @@
+#***********************************************************************
+#
+#  MPW build file for example LIBXTIFF utilities
+#
+#  written by Niles D. Ritter.
+#
+CC = c
+AR = lib -o
+RM = delete -y
+LN = duplicate -y
+
+#debug option
+#DEBUG= -sym full
+DEBUG=
+
+# data/code model options
+#MODEL=
+MODEL= -model far
+
+TIFFLIB = :::libtiff:
+
+LINK.c = Link   {LDFLAGS}
+.o Ä .c
+	{CC} {DEBUG} {CFLAGS} {CPPFLAGS}     {Default}.c -o {Default}.o
+LDFLAGS = {DEBUG} {MODEL} -c 'MPS ' -t MPST -w 
+CFLAGS = {MODEL}
+CPPFLAGS =  -I {TIFFLIB}                      
+OBJS = maketif.o  listtif.o xtif_dir.o   
+CLEANOBJS = maketif.o listtif.o xtif_dir.o      
+CLEANOTHER = newtif.tif 
+CLEANINC =
+LIBS =          {TIFFLIB}libtiff.o ¶
+		libxtiff.o ¶
+		"{CLibraries}"StdClib.o ¶
+		"{Libraries}"Stubs.o ¶
+		"{Libraries}"Runtime.o ¶
+		"{Libraries}"Interface.o
+
+PROGS=  maketif listtif
+LIBXTIFF=	libxtiff.o
+ALL=	{LIBXTIFF} {PROGS}
+
+all Ä {ALL}
+
+library Ä  {LIBXTIFF}
+
+test Ä {PROGS}
+    maketif
+    listtif
+
+compile Ä  {OBJS}
+
+maketif Ä  maketif.o libxtiff.o
+	{LINK.c} -o maketif maketif.o {LIBS}
+	
+listtif Ä  listtif.o libxtiff.o
+	{LINK.c} -o listtif listtif.o {LIBS}
+
+libxtiff.o Ä xtif_dir.o
+	lib -o libxtiff.o xtif_dir.o
+
+clean Ä 
+	{RM} {CLEANOBJS} || set status 0
+	{RM} {LIBXTIFF}  || set status 0
+	{RM} {PROGS}  || set status 0
+	{RM} Å.tif || set status 0
+	

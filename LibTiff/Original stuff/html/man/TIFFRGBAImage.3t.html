@@ -1,0 +1,370 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML><HEAD><TITLE>Manpage of TIFFRGBAImage</TITLE>
+</HEAD><BODY BGCOLOR=WHITE><FONT FACE="helvetica, sans, arial">
+<H1>TIFFRGBAImage</H1>
+Section: Misc. Reference Manual Pages (3T)<BR>Updated: October 15, 1995<BR><A HREF="#index">Index</A>
+<BR><A HREF="index.html">Return to Main Contents</A>
+<HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+TIFFRGBAImage - read and decode an image into a raster
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<PRE>
+<B>#include &lt;<A HREF="file:/usr/include/tiffio.h">tiffio.h</A>&gt;</B>
+<B>typedef unsigned char TIFFRGBValue;</B>
+<B>typedef struct _TIFFRGBAImage TIFFRGBAImage;</B>
+<B>int TIFFRGBAImageOK(TIFF* tif, char emsg[1024]);</B>
+<B>int TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stopOnError, char emsg[1024]);</B>
+<B>int TIFFRGBAImageGet(TIFFRGBAImage* img, uint32* raster, uint32 width, uint32 height);</B>
+<B>void TIFFRGBAImageEnd(TIFFRGBAImage* img);</B>
+</PRE><A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+The routines described here provide a high-level interface
+through which
+<FONT SIZE="-1">TIFF</FONT>
+images may be read into memory.
+Images may be strip- or tile-based and have a variety of different
+characteristics: bits/sample, samples/pixel, photometric, etc.
+Decoding state is encapsulated in a
+<I>TIFFRGBAImage</I>
+
+structure making it possible to capture state for multiple images
+and quickly switch between them.
+The target raster format can be customized to a particular application's
+needs by installing custom routines that manipulate image data
+according to application requirements.
+<P>
+
+The default usage for these routines is: check if an image can
+be processed using
+<I>TIFFRGBAImageOK</I>,
+
+construct a decoder state block using
+<I>TIFFRGBAImageBegin</I>,
+
+read and decode an image into a target raster using
+<I>TIFFRGBAImageGet</I>,
+
+and then
+release resources using
+<I>TIFFRGBAImageEnd</I>.
+
+<I>TIFFRGBAImageGet</I>
+
+can be called multiple times to decode an image using different
+state parameters.
+If multiple images are to be displayed and there is not enough
+space for each of the decoded rasters, multiple state blocks can
+be managed and then calls can be made to
+<I>TIFFRGBAImageGet</I>
+
+as needed to display an image.
+<P>
+
+The generated raster is assumed to be an array of
+<I>width</I>
+
+times
+<I>height</I>
+
+32-bit entries, where
+<I>width</I>
+
+must be less than or equal to the width of the image (<I>height</I>
+
+may be any non-zero size).
+If the raster dimensions are smaller than the image, the image data
+is cropped to the raster bounds.
+If the raster height is greater than that of the image, then the
+image data are placed in the lower part of the raster.
+(Note that the raster is assume to be organized such that the pixel
+at location (<I>x</I>,<I>y</I>) is <I>raster</I>[<I>y</I>*<I>width</I>+<I>x</I>];
+with the raster origin in the lower-left hand corner.)
+<P>
+
+Raster pixels are 8-bit packed red, green, blue, alpha samples.
+The macros
+<I>TIFFGetR</I>,
+
+<I>TIFFGetG</I>,
+
+<I>TIFFGetB</I>,
+
+and
+<I>TIFFGetA</I>
+
+should be used to access individual samples.
+Images without Associated Alpha matting information have a constant
+Alpha of 1.0 (255).
+<P>
+
+<I>TIFFRGBAImageGet</I>
+
+converts non-8-bit images by scaling sample values.
+Palette, grayscale, bilevel, 
+<FONT SIZE="-1">CMYK</FONT>, and YCbCr images are converted to
+<FONT SIZE="-1">RGB</FONT>
+transparently.
+Raster pixels are returned uncorrected by any colorimetry information
+present in the directory.
+<P>
+
+The paramater
+<I>stopOnError</I>
+
+specifies how to act if an error is encountered while reading
+the image.
+If
+<I>stopOnError</I>
+
+is non-zero, then an error will terminate the operation; otherwise
+<I>TIFFRGBAImageGet</I>
+
+will continue processing data until all the possible data in the
+image have been requested.
+<A NAME="lbAE">&nbsp;</A>
+<H2>ALTERNATE RASTER FORMATS</H2>
+
+To use the core support for reading and processing 
+<FONT SIZE="-1">TIFF</FONT>
+images, but write the resulting raster data in a different format
+one need only override the ``<I>put methods</I>'' used to store raster data.
+These methods are are defined in the
+<I>TIFFRGBAImage</I>
+
+structure and initially setup by
+<I>TIFFRGBAImageBegin</I>
+
+to point to routines that pack raster data in the default
+<FONT SIZE="-1">ABGR</FONT>
+pixel format.
+Two different routines are used according to the physical organization
+of the image data in the file: 
+<I>PlanarConfiguration</I>=1
+
+(packed samples),
+and 
+<I>PlanarConfiguration</I>=2
+
+(separated samples).
+Note that this mechanism can be used to transform the data before
+storing it in the raster.
+For example one can convert data
+to colormap indices for display on a colormap display.
+<A NAME="lbAF">&nbsp;</A>
+<H2>SIMULTANEOUS RASTER STORE AND DISPLAY</H2>
+
+It is simple to display an image as it is being read into memory
+by overriding the put methods as described above for supporting
+alternate raster formats.
+Simply keep a reference to the default put methods setup by
+<I>TIFFRGBAImageBegin</I>
+
+and then invoke them before or after each display operation.
+For example, the
+<I><A HREF="tiffgt+1.html">tiffgt</A></I>(1)
+
+utility uses the following put method to update the display as
+the raster is being filled:
+<P>
+<PRE>
+static void
+putContigAndDraw(TIFFRGBAImage* img, uint32* raster,
+    uint32 x, uint32 y, uint32 w, uint32 h,
+    int32 fromskew, int32 toskew,
+    unsigned char* cp)
+{
+    (*putContig)(img, raster, x, y, w, h, fromskew, toskew, cp);
+    if (x+w == width) {
+        w = width;
+        if (img-&gt;orientation == ORIENTATION_TOPLEFT)
+            lrectwrite(0, y-(h-1), w-1, y, raster-x-(h-1)*w);
+        else
+            lrectwrite(0, y, w-1, y+h-1, raster);
+    }
+}
+</PRE>
+
+<P>
+(the original routine provided by the library is saved in the
+variable 
+<I>putContig</I>.)
+
+<A NAME="lbAG">&nbsp;</A>
+<H2>SUPPORTING ADDITIONAL TIFF FORMATS</H2>
+
+The
+<I>TIFFRGBAImage</I>
+
+routines support the most commonly encountered flavors of
+<FONT SIZE="-1">TIFF.</FONT>
+It is possible to extend this support by overriding the ``<I>get method</I>''
+invoked by
+<I>TIFFRGBAImageGet</I>
+
+to read 
+<FONT SIZE="-1">TIFF</FONT>
+image data.
+Details of doing this are a bit involved, it is best to make a copy
+of an existing get method and modify it to suit the needs of an
+application.
+<A NAME="lbAH">&nbsp;</A>
+<H2>NOTES</H2>
+
+Samples must be either 1, 2, 4, 8, or 16 bits.
+Colorimetric samples/pixel must be either 1, 3, or 4 (i.e.
+<I>SamplesPerPixel</I>
+
+minus
+<I>ExtraSamples</I>).
+
+<P>
+
+Palettte image colormaps that appear to be incorrectly written
+as 8-bit values are automatically scaled to 16-bits.
+<A NAME="lbAI">&nbsp;</A>
+<H2>RETURN VALUES</H2>
+
+All routines return
+1 if the operation was successful.
+Otherwise, 0 is returned if an error was encountered and
+<I>stopOnError</I>
+
+is zero.
+<A NAME="lbAJ">&nbsp;</A>
+<H2>DIAGNOSTICS</H2>
+
+All error messages are directed to the
+<I><A HREF="TIFFError.3t.html">TIFFError</A></I>(3T)
+
+routine.
+<P>
+
+<B>Sorry, can not handle %d-bit pictures</B>.
+
+The image had
+<I>BitsPerSample</I>
+
+other than 1, 2, 4, 8, or 16.
+<P>
+
+<B>Sorry, can not handle %d-channel images</B>.
+
+The image had
+<I>SamplesPerPixel</I>
+
+other than 1, 3, or 4.
+<P>
+
+<B>Missing needed &quot;PhotometricInterpretation&quot; tag</B>.
+The image did not have a tag that describes how to display
+the data.
+<P>
+
+<B>No &quot;PhotometricInterpretation&quot; tag, assuming RGB</B>.
+The image was missing a tag that describes how to display it,
+but because it has 3 or 4 samples/pixel, it is assumed to be
+<FONT SIZE="-1">RGB.</FONT>
+<P>
+
+<B>No &quot;PhotometricInterpretation&quot; tag, assuming min-is-black</B>.
+The image was missing a tag that describes how to display it,
+but because it has 1 sample/pixel, it is assumed to be a grayscale
+or bilevel image.
+<P>
+
+<B>No space for photometric conversion table</B>.
+
+There was insufficient memory for a table used to convert
+image samples to 8-bit
+<FONT SIZE="-1">RGB.</FONT>
+<P>
+
+<B>Missing required &quot;Colormap&quot; tag</B>.
+A Palette image did not have a required
+<I>Colormap</I>
+
+tag.
+<P>
+
+<B>No space for tile buffer</B>.
+
+There was insufficient memory to allocate an i/o buffer.
+<P>
+
+<B>No space for strip buffer</B>.
+
+There was insufficient memory to allocate an i/o buffer.
+<P>
+
+<B>Can not handle format</B>.
+
+The image has a format (combination of
+<I>BitsPerSample</I>,
+
+<I>SamplesPerPixel</I>,
+
+and
+<I>PhotometricInterpretation</I>)
+
+that can not be handled.
+<P>
+
+<B>No space for B&amp;W mapping table</B>.
+
+There was insufficient memory to allocate a table used to map
+grayscale data to
+<FONT SIZE="-1">RGB.</FONT>
+<P>
+
+<B>No space for Palette mapping table</B>.
+
+There was insufficient memory to allocate a table used to map
+data to 8-bit
+<FONT SIZE="-1">RGB.</FONT>
+<A NAME="lbAK">&nbsp;</A>
+<H2>BUGS</H2>
+
+Orientations other than bottom-left, or top-left are
+not handled correctly.
+<A NAME="lbAL">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<I><A HREF="libtiff.3t.html">libtiff</A></I>(3T),
+
+<I><A HREF="TIFFOpen.3t.html">TIFFOpen</A></I>(3T),
+
+<I><A HREF="TIFFReadRGBAImage.3t.html">TIFFReadRGBAImage</A></I>(3T),
+
+<I><A HREF="TIFFReadRGBAStrip.3t.html">TIFFReadRGBAStrip</A></I>(3T),
+
+<I><A HREF="TIFFReadRGBATile.3t.html">TIFFReadRGBATile</A></I>(3T)
+
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">ALTERNATE RASTER FORMATS</A><DD>
+<DT><A HREF="#lbAF">SIMULTANEOUS RASTER STORE AND DISPLAY</A><DD>
+<DT><A HREF="#lbAG">SUPPORTING ADDITIONAL TIFF FORMATS</A><DD>
+<DT><A HREF="#lbAH">NOTES</A><DD>
+<DT><A HREF="#lbAI">RETURN VALUES</A><DD>
+<DT><A HREF="#lbAJ">DIAGNOSTICS</A><DD>
+<DT><A HREF="#lbAK">BUGS</A><DD>
+<DT><A HREF="#lbAL">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="index.html">man2html</A>,
+using the manual pages.<BR>
+Time: 01:31:38 GMT, November 23, 1999
+</BODY>
+</HTML>

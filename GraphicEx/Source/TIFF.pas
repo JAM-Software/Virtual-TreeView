@@ -1,19 +1,33 @@
 unit TIFF;
 
-// The contents of this file are subject to the Mozilla Public License
-// Version 1.1 (the "License"); you may not use this file except in compliance
-// with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+//----------------------------------------------------------------------------------------------------------------------
 //
-// Software distributed under the License is distributed on an "AS IS" basis,
-// WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for the
-// specific language governing rights and limitations under the License.
+// This unit is released under the MIT license:
+// Copyright (c) 1999-2005 Mike Lischke (support@soft-gems.net, www.soft-gems.net).
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+// OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// You are asked to give the author(s) the due credit. This means that you acknowledge the work of the author(s)
+// in the product documentation, about box, help or wherever a prominent place is.
+//
+//----------------------------------------------------------------------------------------------------------------------
 // The original code is TIFF.pas, released November 1, 1999.
 //
-// The initial developer of the original code is Dipl. Ing. Mike Lischke (Pleiﬂa, Germany, www.delphi-gems.com),
+// The initial developer of the original code is Mike Lischke (Pleiﬂa, Germany, www.soft-gems.net),
 //
-// Portions created by Dipl. Ing. Mike Lischke are
-// Copyright (C) 1999-2003 Dipl. Ing. Mike Lischke. All Rights Reserved.
+// Portions created by Mike Lischke are
+// Copyright (C) 1999-2006 Mike Lischke. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
 // This file is part of the image library GraphicEx.
@@ -417,42 +431,68 @@ type
   ttag_t = Cardinal;
   tdir_t = Word;       // directory index
   tstrip_t = Cardinal; // strip number
+  uint16 = Word;
 
-  TTIFFReadWriteProc = function(fd: thandle_t; buf: tdata_t; size: tsize_t): tsize_t;
-  TTIFFSeekProc = function(fd: thandle_t; off: toff_t; whence: Integer): toff_t;
-  TTIFFCloseProc = function(fd: thandle_t): Integer;
-  TTIFFSizeProc = function(fd: thandle_t): toff_t;
-  TTIFFMapFileProc = function(fd: thandle_t; var pbase: tdata_t; var psize: toff_t): Integer;
-  TTIFFUnmapFileProc = procedure(fd: thandle_t; base: tdata_t; size: toff_t);
+  PTIFFFieldInfo = ^TTIFFFieldInfo;
+  TTIFFFieldInfo = record
+    field_tag: ttag_t;                 // field's tag
+    field_readcount: SmallInt;         // read count/TIFF_VARIABLE/TIFF_SPP
+    field_writecount: SmallInt;        // write count/TIFF_VARIABLE
+    field_type: TTIFFDataType;         // type of associated data
+    field_bit: Word;                   // bit in fieldsset bit vector
+    field_oktochange: Byte;            // if true, can change while writing
+    field_passcount: Byte;             // if true, pass dir count on set
+    field_name: PChar;                 // ASCII name
+  end;
 
-  TIFFErrorHandler = procedure(Module: PChar; const Format: PChar; Params: va_list);
+  TTIFFTagValue = record
+    info: PTIFFFieldInfo;
+    count: Integer;
+    value: Pointer;
+  end;
+
+  // No need to know more about this structures. Used internally.
+  // If you really want to see what's behind them then look up the included C source code.
+  PTIFFCIELabToRGB = Pointer;
+  PTIFFDisplay = Pointer;
+  PTIFFYCbCrToRGB = Pointer;
+
+  TTIFFReadWriteProc = function(fd: thandle_t; buf: tdata_t; size: tsize_t): tsize_t; cdecl;
+  TTIFFSeekProc = function(fd: thandle_t; off: toff_t; whence: Integer): toff_t; cdecl;
+  TTIFFCloseProc = function(fd: thandle_t): Integer; cdecl;
+  TTIFFSizeProc = function(fd: thandle_t): toff_t; cdecl;
+  TTIFFMapFileProc = function(fd: thandle_t; var pbase: tdata_t; var psize: toff_t): Integer; cdecl;
+  TTIFFUnmapFileProc = procedure(fd: thandle_t; base: tdata_t; size: toff_t); cdecl;
+
+  TIFFErrorHandler = procedure(Module: PChar; const Format: PChar; Params: va_list); cdecl;
 
 function TIFFClientOpen(name, mode: PChar; clientdata: thandle_t; readproc: TTIFFReadWriteProc;
   writeproc: TTIFFReadWriteProc; seekproc: TTIFFSeekProc; closeproc: TTIFFCloseProc; sizeproc: TTIFFSizeProc;
-  mapproc: TTIFFMapFileProc; unmapproc: TTIFFUnmapFileProc): PTIFF;
-procedure TIFFClose(tif: PTIFF);
-function TIFFCreateDirectory(tif: PTIFF): Integer;
-function TIFFDefaultDirectory(tif: PTIFF): Integer;
-function TIFFFlushData(tif: PTIFF): Integer;
-function TIFFOpen(name, mode: PChar): PTIFF;
-function TIFFReadRGBAImage(tif: PTIFF; rwidth, rheight: Cardinal; raster: Pointer; stop: LONGBOOL): BOOL;
-function TIFFReassignTagToIgnore(task: TTIFFIgnoreSense; TIFFtagID: Integer): Integer;
-function TIFFSetCompressionScheme(tif: PTIFF; scheme: Integer): Integer;
-function TIFFWriteDirectory(tif: PTIFF): Integer;
-function TIFFNumberOfDirectories(tif: PTIFF): tdir_t;
-function TIFFSetDirectory(tif: PTIFF; dirn: tdir_t): Integer;
-function TIFFReadTile(tif: PTIFF; buf: tdata_t; x, y, z: Cardinal; s: tsample_t): tsize_t;
-function TIFFReadEncodedStrip(tif: PTIFF; strip: tstrip_t; buf: tdata_t; size: tsize_t): tsize_t;
-function TIFFTileSize(tif: PTIFF): tsize_t;
-function TIFFTileRowSize(tif: PTIFF): tsize_t;
-function TIFFStripSize(tif: PTIFF): tsize_t;
-function TIFFScanlineSize(tif: PTIFF): tsize_t;
-function TIFFComputeStrip(tif: PTIFF; row: Cardinal; sample: tsample_t): tstrip_t;
+  mapproc: TTIFFMapFileProc; unmapproc: TTIFFUnmapFileProc): PTIFF; cdecl;
+procedure TIFFClose(tif: PTIFF); cdecl;
+procedure TIFFCleanup(tif: PTIFF); cdecl; // called also from TIFFClose
+function TIFFCreateDirectory(tif: PTIFF): Integer; cdecl;
+function TIFFDefaultDirectory(tif: PTIFF): Integer; cdecl;
+function TIFFFlushData(tif: PTIFF): Integer; cdecl;
+function TIFFOpen(name, mode: PChar): PTIFF; cdecl;
+function TIFFReadRGBAImage(tif: PTIFF; rwidth, rheight: Cardinal; raster: Pointer; stop: LONGBOOL): BOOL; cdecl;
+function TIFFReassignTagToIgnore(task: TTIFFIgnoreSense; TIFFtagID: Integer): Integer; cdecl;
+function TIFFSetCompressionScheme(tif: PTIFF; scheme: Integer): Integer; cdecl;
+function TIFFWriteDirectory(tif: PTIFF): Integer; cdecl;
+function TIFFNumberOfDirectories(tif: PTIFF): tdir_t; cdecl;
+function TIFFSetDirectory(tif: PTIFF; dirn: tdir_t): Integer; cdecl;
+function TIFFReadTile(tif: PTIFF; buf: tdata_t; x, y, z: Cardinal; s: tsample_t): tsize_t; cdecl;
+function TIFFReadEncodedStrip(tif: PTIFF; strip: tstrip_t; buf: tdata_t; size: tsize_t): tsize_t; cdecl;
+function TIFFTileSize(tif: PTIFF): tsize_t; cdecl;
+function TIFFTileRowSize(tif: PTIFF): tsize_t; cdecl;
+function TIFFStripSize(tif: PTIFF): tsize_t; cdecl;
+function TIFFScanlineSize(tif: PTIFF): tsize_t; cdecl;
+function TIFFComputeStrip(tif: PTIFF; row: Cardinal; sample: tsample_t): tstrip_t; cdecl;
 
 // Variable argument list functions. Must be used carefully.
-function TIFFVGetField(tif: PTIFF; tag: ttag_t; Values: va_list): Integer;
-function TIFFVSetField(tif: PTIFF; tag: ttag_t; Values: va_list): Integer;
-function TIFFVGetFieldDefaulted(tif: PTIFF; tag: ttag_t; Values: va_list): Integer;
+function TIFFVGetField(tif: PTIFF; tag: ttag_t; Values: va_list): Integer; cdecl;
+function TIFFVSetField(tif: PTIFF; tag: ttag_t; Values: va_list): Integer; cdecl;
+function TIFFVGetFieldDefaulted(tif: PTIFF; tag: ttag_t; Values: va_list): Integer; cdecl;
 
 {$ifdef DELPHI_7_UP}
   function TIFFGetField(tif: PTIFF; tag: ttag_t): Integer; cdecl; varargs;
@@ -466,17 +506,17 @@ function TIFFSetField(tif: PTIFF; tag: ttag_t; Value: Pointer): Integer; cdecl;
   function TIFFGetFieldDefaulted(tif: PTIFF; tag: ttag_t; Values: va_list): Integer; cdecl;
 {$endif DELPHI_7_UP}
 
-function TIFFSetWarningHandler(Handler: TIFFErrorHandler): TIFFErrorHandler;
-function TIFFSetErrorHandler(Handler: TIFFErrorHandler): TIFFErrorHandler;
+function TIFFSetWarningHandler(Handler: TIFFErrorHandler): TIFFErrorHandler; cdecl;
+function TIFFSetErrorHandler(Handler: TIFFErrorHandler): TIFFErrorHandler; cdecl;
 
-function TIFFIsTiled(tif: PTIFF): LONGBOOL;
+function TIFFIsTiled(tif: PTIFF): LONGBOOL; cdecl;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 implementation
 
 uses
-  SysUtils, GraphicEx, LibStub, JPG, GXzLib;
+  SysUtils, GraphicEx, LibStub, JPG, zLibEx;
 
 procedure _TIFFBuiltinCODECS; external;    // Not really a procedure but a structure.
 procedure tiffDataWidth; external;         // Not really a procedure but a structure.
@@ -484,18 +524,14 @@ procedure TIFFFaxMainTable; external;      // Not really a procedure but a struc
 procedure TIFFFaxWhiteTable; external;     // Not really a procedure but a structure.
 procedure TIFFFaxBlackTable; external;     // Not really a procedure but a structure.
 
-function _TIFFgetMode(mode, module: PChar): Integer; external;
-procedure _TIFFMergeFieldInfo(tif: PTIFF; const info; n: Integer); external;
-function _TIFFNoPreCode(tif: TTIFF; s: tsample_t): Integer; external;
-function _TIFFSampleToTagType(tif: PTIFF): TTIFFDataType; external;
-procedure _TIFFSetDefaultCompressionState; external;
-procedure _TIFFsetString(cpp: PPChar; cp: PChar); external;
-procedure _TIFFsetByteArray(vpp: PPointer; vp: Pointer; n: Integer); external;
+function TIFFgetMode(mode, module: PChar): Integer; external;
+procedure TIFFMergeFieldInfo(tif: PTIFF; const info; n: Integer); external;
 
 function TIFFClientOpen(name, mode: PChar; clientdata: thandle_t; readproc: TTIFFReadWriteProc;
   writeproc: TTIFFReadWriteProc; seekproc: TTIFFSeekProc; closeproc: TTIFFCloseProc; sizeproc: TTIFFSizeProc;
   mapproc: TTIFFMapFileProc; unmapproc: TTIFFUnmapFileProc): PTIFF; external;
 procedure TIFFClose(tif: PTIFF); external;
+procedure TIFFCleanup(tif: PTIFF); external;
 function TIFFCreateDirectory(tif: PTIFF): Integer; external;
 function TIFFDefaultDirectory(tif: PTIFF): Integer; external;
 function TIFFFlushData(tif: PTIFF): Integer; external;
@@ -535,10 +571,30 @@ function TIFFSetErrorHandler(Handler: TIFFErrorHandler): TIFFErrorHandler; exter
 
 function TIFFIsTiled(tif: PTIFF): LONGBOOL; external;
 
+function TIFFIsCODECConfigured(scheme: uint16): Integer; external;
+function _TIFFCheckMalloc(tif: PTIFF; nmemb, elem_size: size_t; const what: PChar): tdata_t; external;
+function _TIFFCreateAnonFieldInfo(tif: PTIFF; tag: ttag_t; field_type: TTIFFDataType): PTIFFFieldInfo; external;
+function _TIFFGetExifFieldInfo(var size: size_t): PTIFFFieldInfo; external;
+function _TIFFSampleToTagType(tif: PTIFF): TTIFFDataType; external;
+procedure _TIFFSetDefaultCompressionState(tif: PTIFF); external;
+procedure _TIFFsetString(cpp: PPChar; cp: PChar); external;
+
+function TIFFCIELabToRGBInit(cielab: PTIFFCIELabToRGB; display: PTIFFDisplay; refWhite: PSingle): Integer; external;
+function TIFFYCbCrToRGBInit(ycbcr: PTIFFYCbCrToRGB; luma, refBlackWhite: PSingle): Integer; external;
+procedure TIFFCIELabToXYZ(cielab: PTIFFCIELabToRGB; l: Cardinal; a, b: Integer; var X, Y, Z: Single); external;
+procedure TIFFXYZToRGB(cielab: PTIFFCIELabToRGB; X, Y, Z: Single; var r, g, b: Cardinal); external;
+procedure TIFFYCbCrtoRGB(ycbcr: PTIFFYCbCrToRGB; Y: Cardinal; Cb, Cr: Integer; var r, g, b: Cardinal); external;
+
+procedure _TIFFsetByteArray(vpp: PPointer; vp: Pointer; n: Cardinal); external;
+function TIFFGetTagListCount(tif: PTIFF): Integer; external;
+function _TIFFgetMode(const mode, module: PChar): Integer; external;
+procedure TIFFError(const S: PChar); varargs; external;
+
 {$L fax3sm_winnt.obj}
 {$L tif_aux.obj}
 {$L tif_close.obj}
 {$L tif_codec.obj}
+{$L tif_color.obj}
 {$L tif_compress.obj}
 {$L tif_dir.obj}
 {$L tif_dirinfo.obj}
@@ -569,36 +625,37 @@ function TIFFIsTiled(tif: PTIFF): LONGBOOL; external;
 {$L tif_write.obj}
 {$L tif_zip.obj}
 {$L tif_next.obj}
+{$L tif_extension.obj}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure GraphicExTIFFError(Module: PChar; const Format: PChar; Params: va_list);
+procedure GraphicExTIFFError(Module: PChar; const Format: PChar; Params: va_list); cdecl;
 
 var
   Buffer: array[0..1000] of Char;
-  
+
 begin
   wvsprintf(Buffer, Format, Params);
   GraphicExError(Buffer);
-end;                                     
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure GraphicExTIFFWarning(Module: PChar; const Format: PChar; Params: va_list);
+procedure GraphicExTIFFWarning(Module: PChar; const Format: PChar; Params: va_list); cdecl;
 
 var
   Buffer: array[0..1000] of Char;
 
-begin                                                   
+begin
   wvsprintf(Buffer, Format, Params);
-  OutputDebugString(Buffer);     
+  OutputDebugString(Buffer);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 initialization
-  TIFFSetWarningHandler(GraphicExTIFFWarning);
-  TIFFSetErrorHandler(GraphicExTIFFError);
+  TIFFSetWarningHandler(@GraphicExTIFFWarning);
+  TIFFSetErrorHandler(@GraphicExTIFFError);
 finalization
 end.
 

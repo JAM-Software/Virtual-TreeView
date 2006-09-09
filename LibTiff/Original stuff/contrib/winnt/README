@@ -1,0 +1,26 @@
+Date: Fri, 10 Nov 1995 13:02:33 -0800
+Message-Id: <199511102102.NAA07993@lido>
+To: tiff@sgi.engr.sgi.com
+Subject: Contribution: libtiff for Windows-nt
+Reply-To: Dave Dyer <ddyer@triple-i.com>
+Sender: owner-tiff@sgi.engr.sgi.com
+Precedence: bulk
+
+
+Since I needed it, and the support for windows-nt versions of libtiff
+is sketchy at best, I packaged up my port of libtiff v3.4beta024 
+to windows-nt.
+
+	ftp://torii.triple-i.com/pub/ddyer/libtiff.tar.gz
+
+this contains "libtiff.mak", a makefile for microsoft visual c++,
+a couple of hand-built .h and .c files (corresponding to those which
+are automatically constructed by unix makefiles) and static libraries
+compiled for intel and dec alpha.
+
+As customary, I make no claims regarding the completeness or
+correctness of these libraries, and accept no responsibily for any
+mishaps you may have as a result of using them.  They work for me.
+
+I hope Sam will copy and incorporate this into the "contrib" section
+of the next libtiff release.
