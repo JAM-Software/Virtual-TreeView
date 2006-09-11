@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.4
+// Version 2.2.5
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,6 +25,9 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// August 2006
+//   - Change: OnFocusChanged event
+//   - Change: Extended text collection (from block or position)
 // January 2006
 //   - Bug fix: line highlighting with custom styles was wrong.
 // November 2005
@@ -178,6 +181,7 @@ type
   TGutterMouseDownEvent = procedure(Sender: TCustomUnicodeEdit; Button: TMouseButton; Shift: TShiftState; X, Y,
     Line: Integer) of object;
   TBookmarkChangeEvent = procedure(Sender: TCustomUniCodeEdit; Index, X, Y: Integer; var Allowed: Boolean) of object;
+  TFocusChangedEvent = procedure(Sender: TObject; HasFocus: Boolean) of object;
 
   TCaretType = (
     ctVerticalLine,
@@ -396,6 +400,7 @@ type
     procedure DoValidateLine(Line: TUCELine); virtual;
     function EndPoint: TPoint;
     procedure InternalClear;
+    function InternalCollectText(Start, Stop: TPoint): WideString;
     procedure SetCapacity(NewCapacity: Integer);
   public
     constructor Create(AOwner: TCustomUniCodeEdit); virtual;
@@ -407,7 +412,8 @@ type
     procedure AddStrings(const Strings: TWideStrings); overload;
     procedure AssignTo(Destination: TObject);
     procedure Clear;
-    function CollectText(Start, Stop: TPoint): WideString;
+    function CollectTextFromBlock(Start, Stop: TPoint): WideString;
+    function CollectTextFromPosition(Start, Stop: TPoint): WideString;
     procedure DeleteLine(Index: Integer);
     procedure Error(const Msg: string; Data: Integer);
     procedure Exchange(Index1, Index2: Integer);
@@ -517,6 +523,7 @@ type
 
     FOnBookmarkChange: TBookmarkChangeEvent;
     FOnCaretChange: TCaretEvent;
+    FOnFocusChanged: TFocusChangedEvent;
     FOnGutterMouseDown: TGutterMouseDownEvent;
     FOnPaint: TPaintEvent;
     FOnProcessCommand: TProcessCommandEvent;
@@ -681,6 +688,7 @@ type
     property OnBookmarkChange: TBookmarkChangeEvent read FOnBookmarkChange write FOnBookmarkChange;
     property OnCaretChange: TCaretEvent read FOnCaretChange write FOnCaretChange;
     property OnGutterMouseDown: TGutterMouseDownEvent read FOnGutterMouseDown write FOnGutterMouseDown;
+    property OnFocusChanged: TFocusChangedEvent read FOnFocusChanged write FOnFocusChanged;
     property OnPaint: TPaintEvent read FOnPaint write FOnPaint;
     property OnProcessCommand: TProcessCommandEvent read FOnProcessCommand write FOnProcessCommand;
     property OnProcessUserCommand: TProcessCommandEvent read FOnProcessUserCommand write FOnProcessUserCommand;
@@ -826,6 +834,7 @@ type
     property OnEndDrag;
     property OnEnter;
     property OnExit;
+    property OnFocusChanged;
     property OnGutterMouseDown;
     property OnKeyDown;
     property OnKeyPress;
@@ -1154,7 +1163,7 @@ begin
     FPendingChange.OldState := FOwner.RecordState;
     FPendingChange.Action.SourceStart := SourceStart;
     FPendingChange.Action.SourceEnd := SourceEnd;
-    FPendingChange.Action.OldText := FOwner.FContent.CollectText(SourceStart, SourceEnd);
+    FPendingChange.Action.OldText := FOwner.FContent.CollectTextFromBlock(SourceStart, SourceEnd);
   end;
 end;
 
@@ -1277,7 +1286,7 @@ begin
     FPendingChange.OldState := FOwner.RecordState;
     FPendingChange.Action.SourceStart := SourceStart;
     FPendingChange.Action.SourceEnd := SourceEnd;
-    FPendingChange.Action.OldText := FOwner.FContent.CollectText(SourceStart, SourceEnd);
+    FPendingChange.Action.OldText := FOwner.FContent.CollectTextFromBlock(SourceStart, SourceEnd);
     FPendingChange.Action.TargetStart := TargetStart;
     FPendingChange.Action.NewText := Text;
   end;
@@ -2166,67 +2175,52 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TUniCodeEditorContent.CollectText(Start, Stop: TPoint): WideString;
+function TUniCodeEditorContent.CollectTextFromBlock(Start, Stop: TPoint): WideString;
 
 // Collects text from a range of lines given by Start and Stop. The character at Stop position is not copied.
 // This method is stable against out-of-range values and returns as much as possible text that can be retrieved.
 // The given coordinates must be row/column adresses and are all 0-based.
 
 var
-  Buffer: TBufferedString;
   Temp1: TPoint;
   Temp2: TPoint;
 
 begin
   if FCount > 0 then
   begin
-    Buffer := TBufferedString.Create;
-    try
-      // First do a couple of sanity checks.
-      Temp1 := MinPoint(Start, Stop);
-      Temp2 := MaxPoint(Start, Stop);
+    // First do a couple of sanity checks.
+    Temp1 := MinPoint(Start, Stop);
+    Temp2 := MaxPoint(Start, Stop);
 
-      if Temp1.Y < 0 then
-        Temp1.Y := 0;
-      if Temp1.Y > FCount - 1 then
-        Temp1.Y := FCount - 1;
-      if Temp2.Y < 0 then
-        Temp2.Y := 0;
-      if Temp2.Y > FCount - 1 then
-        Temp2.Y := FCount - 1;
+    if Temp1.Y < 0 then
+      Temp1.Y := 0;
+    if Temp1.Y > FCount - 1 then
+      Temp1.Y := FCount - 1;
+    if Temp2.Y < 0 then
+      Temp2.Y := 0;
+    if Temp2.Y > FCount - 1 then
+      Temp2.Y := FCount - 1;
 
-      if Temp1.X < 0 then
-        Temp1.X := 0;
-      if Temp2.X < 0 then
-        Temp2.X := 0;
+    if Temp1.X < 0 then
+      Temp1.X := 0;
+    if Temp2.X < 0 then
+      Temp2.X := 0;
 
-      Start := Point(FLines[Temp1.Y].ColumnToCharIndex(Temp1.X), Temp1.Y);
-      Stop := Point(FLines[Temp2.Y].ColumnToCharIndex(Temp2.X), Temp2.Y);
-      if Start.Y = Stop.Y then
-      begin
-        // Start and stop on the same line.
-        if Stop.X - Start.X > 0 then
-          Buffer.Add(Copy(FLines[Start.Y].Text, Start.X + 1, Stop.X - Start.X));
-      end
-      else
-      begin
-        Buffer.Add(Copy(FLines[Start.Y].Text, Start.X + 1, Length(FLines[Start.Y].Text)));
-        Buffer.AddNewLine;
-        Inc(Start.Y);
-        while Start.Y < Stop.Y do
-        begin
-          Buffer.Add(FLines[Start.Y].Text);
-          Buffer.AddNewLine;
-          Inc(Start.Y);
-        end;
-        if Stop.X > 0 then
-          Buffer.Add(Copy(FLines[Stop.Y].Text, 1, Stop.X));
-      end;
-      Result := Buffer.AsString;
-    finally
-      Buffer.Free;
-    end;
+    Start := Point(FLines[Temp1.Y].ColumnToCharIndex(Temp1.X), Temp1.Y);
+    Stop := Point(FLines[Temp2.Y].ColumnToCharIndex(Temp2.X), Temp2.Y);
+    Result := InternalCollectText(Start, Stop);
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TUniCodeEditorContent.CollectTextFromPosition(Start, Stop: TPoint): WideString;
+
+// Same as CollectTextFromBlock but this version works with line/character indices.
+
+begin
+  if FCount > 0 then
+    Result := InternalCollectText(Start, Stop);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2451,6 +2445,70 @@ begin
     FLines[I].Free;
   end;
   SetCapacity(0);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TUniCodeEditorContent.InternalCollectText(Start, Stop: TPoint): WideString;
+
+// Collects text from a range of lines given by Start and Stop. The character at Stop position is not copied.
+// This method is stable against out-of-range values and returns as much as possible text that can be retrieved.
+// The given coordinates must be line/char index pairs (zero based).
+
+var
+  Buffer: TBufferedString;
+  Temp1: TPoint;
+  Temp2: TPoint;
+
+begin
+  // First do a couple of sanity checks.
+  Temp1 := MinPoint(Start, Stop);
+  Temp2 := MaxPoint(Start, Stop);
+
+  if Temp1.Y < 0 then
+    Temp1.Y := 0;
+  if Temp1.Y > FCount - 1 then
+    Temp1.Y := FCount - 1;
+  if Temp2.Y < 0 then
+    Temp2.Y := 0;
+  if Temp2.Y > FCount - 1 then
+    Temp2.Y := FCount - 1;
+
+  if Temp1.X < 0 then
+    Temp1.X := 0;
+  if Temp2.X < 0 then
+    Temp2.X := 0;
+
+  Start := Temp1;
+  Stop := Temp2;
+
+  Buffer := TBufferedString.Create;
+  try
+    if Start.Y = Stop.Y then
+    begin
+      // Start and stop on the same line.
+      if Stop.X - Start.X > 0 then
+        Buffer.Add(Copy(FLines[Start.Y].Text, Start.X + 1, Stop.X - Start.X));
+    end
+    else
+    begin
+      Buffer.Add(Copy(FLines[Start.Y].Text, Start.X + 1, Length(FLines[Start.Y].Text)));
+      Buffer.AddNewLine;
+      Inc(Start.Y);
+      while Start.Y < Stop.Y do
+      begin
+        Buffer.Add(FLines[Start.Y].Text);
+        Buffer.AddNewLine;
+        Inc(Start.Y);
+      end;
+      if Stop.X > 0 then
+        Buffer.Add(Copy(FLines[Stop.Y].Text, 1, Stop.X));
+    end;
+
+    Result := Buffer.AsString;
+  finally
+    Buffer.Free;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2847,7 +2905,7 @@ function TCustomUniCodeEdit.GetSelectedText: WideString;
 // Returns the currently selected text.
 
 begin
-  Result := FContent.CollectText(BlockBegin, BlockEnd);
+  Result := FContent.CollectTextFromBlock(BlockBegin, BlockEnd);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3892,6 +3950,9 @@ begin
   DestroyCaret;
   if (eoHideSelection in FOptions) and SelectionAvailable then
     Invalidate;
+
+  if Assigned(FOnFocusChanged) then
+    FOnFocusChanged(Self, False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3959,6 +4020,9 @@ begin
   UpdateScrollBars;
   if (eoHideSelection in FOptions) and SelectionAvailable then
     Invalidate;
+
+  if Assigned(FOnFocusChanged) then
+    FOnFocusChanged(Self, True);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4665,7 +4729,7 @@ begin
         RescanLine(FCaretY);
         CX := 0;
       end;
-      BlockEnd := Point(FContent[TempY].CharIndexToColumn(CX + Length(TempString)), TempY);
+      BlockEnd := Point(FContent.LineNoInit[TempY].CharIndexToColumn(CX + Length(TempString)), TempY);
     finally
       Temp.Free;
     end;
@@ -8029,7 +8093,7 @@ begin
           ecrDragMove:
             begin
               BlockBegin := Action.TargetStart;
-              SetSelText(FContent.CollectText(Action.SourceStart, Action.SourceEnd));
+              SetSelText(FContent.CollectTextFromBlock(Action.SourceStart, Action.SourceEnd));
               if Action.Reason = ecrDragMove then
               begin
                 BlockBegin := Action.SourceStart;
@@ -8625,7 +8689,7 @@ begin
             begin
               BlockBegin := Action.SourceStart;
               if Action.Reason = ecrDragMove then
-                SetSelText(FContent.CollectText(Action.TargetStart, Action.TargetEnd));
+                SetSelText(FContent.CollectTextFromBlock(Action.TargetStart, Action.TargetEnd));
               BlockBegin := Action.TargetStart;
               BlockEnd := Action.TargetEnd;
               SetSelText('');
