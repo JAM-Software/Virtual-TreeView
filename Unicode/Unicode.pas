@@ -1,6 +1,6 @@
 unit Unicode;
 
-//  Version 3.0
+//  Version 3.1.1
 //
 //------------------------------------------------------------------------------------------------------------------------------------------
 // This unit contains routines and classes to manage and work with Unicode/WideString strings.
@@ -38,9 +38,12 @@ unit Unicode;
 //
 //------------------------------------------------------------------------------------------------------------------------------------------
 //
+// September 2006
+//   - Added ccSeparatorParagraph to white space check function.
+// June 2006:
+//   - Added decimal digits to the check for hex digits.
 // October 2004:
 //   - Code review
-//
 // 29-NOV-2001:
 //   - bug fix
 // 06-JUN-2001:
@@ -7051,7 +7054,7 @@ function UnicodeIsWhiteSpace(C: UCS4Char): Boolean;
 // tabulator, new line etc.)?
 
 begin
-  Result := CategoryLookup(C, ClassSpace + [ccWhiteSpace, ccSegmentSeparator]);
+  Result := CategoryLookup(C, ClassSpace + [ccWhiteSpace, ccSeparatorParagraph, ccSegmentSeparator]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7132,7 +7135,9 @@ function UnicodeIsHexDigit(C: UCS4Char): Boolean;
 // Is the character a hex digit?
 
 begin
-  Result := CategoryLookup(C, [ccHexDigit]);
+  // TODO: switch to ccHexDigit once it is set while compiling Unicode data.
+  // Result := CategoryLookup(C, [ccHexDigit]);
+  Result := ((C and $FF) = C) and (Char(C) in ['a'..'f', 'A'..'F', '0'..'9']);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
