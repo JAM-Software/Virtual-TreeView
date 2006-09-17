@@ -684,7 +684,7 @@ begin
                 fnstsw ax
                 fnclex               // Clear possible exceptions
               end;
-            end else asm fstp; end;  // Just clear the FPU stack
+            end else asm fstp st(0); end;  // Just clear the FPU stack
             {$ELSE}
             if Negative then asm fchs; end;
             asm
