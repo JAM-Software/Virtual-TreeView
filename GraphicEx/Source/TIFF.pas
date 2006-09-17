@@ -34,10 +34,11 @@ unit TIFF;
 
 {$Include Compilers.inc}
 
-{$Z4}      // enum size = dword                                
-// Align record structures to 4 byte boundaries.                   
+{$Z4}      // enum size = dword
+
+// Align record structures to 8 byte boundaries.
 {$ifdef COMPILER_7_UP}
-  {$Align 4}
+  {$Align 8}
 {$else}
   {$Align On}
 {$endif COMPILER_7_UP}

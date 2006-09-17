@@ -18,15 +18,11 @@ unit JPG;
 //
 // This file is part of the image library GraphicEx.
 
-{$Include Compilers.inc}                                       
+{$Include Compilers.inc}
 
-interface
+{$Z4}      // enum size = dword
 
-uses
-  Windows, SysUtils, Classes, Graphics,
-  LibStub; // Stubs for external C RTL functions referenced by JPEG OBJ files.
-
-// Align record structures to 4 byte boundaries.
+// Align record structures to 8 byte boundaries.
 {$ifdef COMPILER_7_UP}
   {$Align 8}
 {$else}
@@ -40,6 +36,12 @@ uses
   {$warn UNSAFE_CAST off}
   {$warn UNSAFE_CODE off}
 {$endif COMPILER_7_UP}
+
+interface
+
+uses
+  Windows, SysUtils, Classes, Graphics,
+  LibStub; // Stubs for external C RTL functions referenced by JPEG OBJ files.
 
 type
   TJPGColorDepth = (
