@@ -21,12 +21,14 @@ unit GraphicEx;
 //
 // See help file for a description of supported image formats.
 //
-// Version II.1.15
+// Version II.1.16
 //
 // Note: This library can be compiled with Delphi 5 or newer versions.
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// October 2006
+//   - Bug fix: 16 bpp SGI images loading failed
 // August 2005
 //   - Bug fix: added exceptions for PCX and PCD images in case they cannot be read.
 // December 2005
@@ -66,7 +68,7 @@ uses
   GraphicCompression, GraphicStrings, GraphicColor;
 
 const
-  GraphicExVersion = 'II.1.15';
+  GraphicExVersion = 'II.1.16';
 
 type
   TCardinalArray = array of Cardinal;

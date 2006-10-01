@@ -970,8 +970,8 @@ begin
       if (Pixel16 and $80) <> 0 then
       begin
         Move(Source16^, Target16^, 2 * RunLength);
-        Inc(Source16^, RunLength);
-        Inc(Target16^, RunLength);
+        Inc(Source16, RunLength);
+        Inc(Target16, RunLength);
       end
       else
       begin
