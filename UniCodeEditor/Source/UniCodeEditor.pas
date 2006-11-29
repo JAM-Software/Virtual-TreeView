@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.5
+// Version 2.2.10
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,6 +25,14 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// November
+//   - Bug fix: handling of <return> key was not correct (on forms with a default button it cause the default button to trigger)
+//   - Improvement: search code optimized
+//   - Bug fix: wrong invalidation on char width change
+//   - Improvement: implicit reset of work area width on clear and full text replacement
+//   - Bug fix: horizontal page-wise scrolling was broken.
+// September 2006
+//   - Change: eoAutoExtendWorkWidth introduced
 // August 2006
 //   - Change: OnFocusChanged event
 //   - Change: Extended text collection (from block or position)
@@ -111,7 +119,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.4';
+  UCEVersion = '2.2.10';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -122,6 +130,8 @@ type
   // To use any of the tab options you must also have eoWantTabs enabled, otherwise the TAB char
   // will never even reach the edit.
   TUniCodeEditOption = (
+    eoAutoExtendWorkWidth,        // Automatically extends the horizontal scroll range if a line grows beyond the current
+                                  // work width. If not set then one cannot lines beyond the current width.
     eoAutoIndent,                 // Do auto indentation when inserting a new line.
     eoAutoUnindent,               // Do auto undindentation when deleting a character which
                                   // is only preceded by whitespace characters.
@@ -159,8 +169,8 @@ const
   DefaultSpaceGlyph     = WideChar($2219); // Note: $B7 should not be used here because it might be interpreted
                                            //       as valid identifier character (e.g. in Catalan)
 
-  DefaultOptions = [eoAutoIndent, eoAutoUnindent, eoCursorThroughTabs, eoGroupUndo, eoHideSelection,
-    eoInserting, eoScrollPastEOL, eoSmartTabs, eoTripleClicks, eoUseSyntaxHighlighting, eoWantTabs];
+  DefaultOptions = [eoAutoExtendWorkWidth, eoAutoIndent, eoAutoUnindent, eoCursorThroughTabs, eoGroupUndo,
+    eoHideSelection, eoInserting, eoScrollPastEOL, eoSmartTabs, eoTripleClicks, eoUseSyntaxHighlighting, eoWantTabs];
 
 type
   TReplaceAction = (raCancel, raSkip, raReplace, raReplaceAll);
@@ -394,6 +404,7 @@ type
     procedure SetModified(const Value: Boolean);
     procedure SetText(const Value: WideString);
   protected
+    procedure AutoAdjustWorkWidth(Index: Integer);
     function ConvertTabs(const S: WideString): WideString;
     procedure DoChangeLine(Line: TUCELine); virtual;
     procedure DoDeleteLine(Line: TUCELine); virtual;
@@ -401,6 +412,7 @@ type
     function EndPoint: TPoint;
     procedure InternalClear;
     function InternalCollectText(Start, Stop: TPoint): WideString;
+    procedure InternalInvalidateAll;
     procedure SetCapacity(NewCapacity: Integer);
   public
     constructor Create(AOwner: TCustomUniCodeEdit); virtual;
@@ -418,7 +430,6 @@ type
     procedure Error(const Msg: string; Data: Integer);
     procedure Exchange(Index1, Index2: Integer);
     function InsertLine(Index: Integer; const Text: WideString): TUCELine;
-    procedure InvalidateAll;
     procedure LoadFromStream(Stream: TStream; Format: TTextFormat; Language: LCID = 0);
     procedure SaveToStream(Stream: TStream; Format: TTextFormat; Language: LCID = 0; WithBOM: Boolean = True);
 
@@ -491,6 +502,7 @@ type
     FCaretY: Integer;
     FCharsInWindow: Integer;
     FCharWidth: Integer;
+    FWorkWidth: Integer;
     FContent: TUniCodeEditorContent;
     FData: TObject;                    // This is a placeholder for application defined data.
                                        // the selection block end or just the cursor position.
@@ -512,7 +524,6 @@ type
     FLastValidLine: Integer;
     FLinesInWindow: Integer;
     FMarginColor: TColor;
-    FMaxRightPos: Integer;
     FModified: Boolean;
     FMultiClicked: Boolean;
     FOffsetX,
@@ -551,7 +562,6 @@ type
     function GetCaretXY: TPoint;
     function GetFont: TFont;
     function GetLineText: WideString;
-    function GetMaxRightChar: Integer;
     function GetMaxUndo: Integer;
     function GetSelectedText: WideString;
     function GetSelectionAvailable: Boolean;
@@ -559,6 +569,7 @@ type
     function GetSelStart: Integer;
     function GetText: WideString;
     function GetTopLine: Integer;
+    function GetWorkWidth: Integer;
 
     procedure SetBlockBegin(Value: TPoint);
     procedure SetBlockEnd(Value: TPoint);
@@ -579,7 +590,6 @@ type
     procedure SetLineNumberFont(const Value: TFont);
     procedure SetLineText(Value: WideString);
     procedure SetMarginColor(const Value: TColor);
-    procedure SetMaxRightChar(const Value: Integer);
     procedure SetMaxUndo(const Value: Integer);
     procedure SetModified(const Value: Boolean);
     procedure SetOffsetX(Value: Integer);
@@ -599,6 +609,7 @@ type
     procedure SetTopLine(Value: Integer);
     procedure SetUpdateState(Updating: Boolean);
     procedure SetWordBlock(Value: TPoint);
+    procedure SetWorkWidth(const Value: Integer);
 
     procedure CMMouseWheel(var Message: TCMMouseWheel); message CM_MOUSEWHEEL;
     procedure CMSysColorChange(var Message: TMessage); message CM_SYSCOLORCHANGE;
@@ -669,6 +680,7 @@ type
     function Unindent(X, Y: Cardinal): Cardinal;
     procedure UpdateCaret;
     procedure UpdateScrollBars;
+    function WorkWidthToCharIndex(const LineIndex: Integer): Integer;
 
     property BookMarkOptions: TBookmarkOptions read FBookmarkOptions write FBookmarkOptions;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
@@ -683,8 +695,18 @@ type
     property Keystrokes: TKeyStrokes read FKeyStrokes write SetKeystrokes;
     property LineNumberFont: TFont read FLineNumberFont write SetLineNumberFont;
     property MarginColor: TColor read FMarginColor write SetMarginColor default clSilver;
-    property MaxRightChar: Integer read GetMaxRightChar write SetMaxRightChar;
     property MaxUndo: Integer read GetMaxUndo write SetMaxUndo;
+    property Options: TUniCodeEditOptions read FOptions write SetOptions default DefaultOptions;
+    property OverwriteCaret: TCaretType read FOverwriteCaret write SetOverwriteCaret default ctBlock;
+    property RightMargin: Integer read FRightMargin write SetRightMargin default 80;
+    property ScrollBars: TScrollStyle read FScrollBars write SetScrollBars default ssBoth;
+    property ScrollHintColor: TUCELineStyle read FScrollHintColor write SetScrollHintColor;
+    property SelectedColor: TUCELineStyle read FSelectedColor write SetSelectedColor;
+    property TabSize: Integer read FTabSize write SetTabSize default 8;
+    property TabStop default True;
+    property UpdateCount: Integer read FUpdateCount;
+    property WorkWidth: Integer read GetWorkWidth write SetWorkWidth;
+
     property OnBookmarkChange: TBookmarkChangeEvent read FOnBookmarkChange write FOnBookmarkChange;
     property OnCaretChange: TCaretEvent read FOnCaretChange write FOnCaretChange;
     property OnGutterMouseDown: TGutterMouseDownEvent read FOnGutterMouseDown write FOnGutterMouseDown;
@@ -695,15 +717,6 @@ type
     property OnReplaceText: TReplaceTextEvent read FOnReplaceText write FOnReplaceText;
     property OnScroll: TUCEScrollEvent read FOnScroll write FOnScroll;
     property OnSettingChange: TNotifyEvent read FOnSettingChange write FOnSettingChange;
-    property Options: TUniCodeEditOptions read FOptions write SetOptions default DefaultOptions;
-    property OverwriteCaret: TCaretType read FOverwriteCaret write SetOverwriteCaret default ctBlock;
-    property RightMargin: Integer read FRightMargin write SetRightMargin default 80;
-    property ScrollBars: TScrollStyle read FScrollBars write SetScrollBars default ssBoth;
-    property ScrollHintColor: TUCELineStyle read FScrollHintColor write SetScrollHintColor;
-    property SelectedColor: TUCELineStyle read FSelectedColor write SetSelectedColor;
-    property TabSize: Integer read FTabSize write SetTabSize default 8;
-    property TabStop default True;
-    property UpdateCount: Integer read FUpdateCount;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -756,7 +769,6 @@ type
     property CaretX: Integer read FCaretX write SetCaretX;
     property CaretXY: TPoint read GetCaretXY write SetCaretXY;
     property CaretY: Integer read FCaretY write SetCaretY;
-    property CharsInWindow: Integer read FCharsInWindow;
     property Content: TUniCodeEditorContent read FContent;
     property Data: TObject read FData write FData;
     property DefaultStyle: IUCELineStyle read FDefaultStyle write SetDefaultStyle;
@@ -803,7 +815,6 @@ type
     property Keystrokes;
     property LineNumberFont;
     property MarginColor;
-    property MaxRightChar;
     property MaxUndo;
     property Name;
     property Options;
@@ -824,6 +835,7 @@ type
     property Tag;
     property Visible;
     property Width;
+    property WorkWidth;
 
     property OnBookmarkChange;
     property OnCaretChange;
@@ -1515,6 +1527,7 @@ procedure TUCELine.SetText(const Value: WideString);
 
 begin
   FText := Value;
+  FOwner.AutoAdjustWorkWidth(FIndex);
   Changed;
 end;
 
@@ -1787,6 +1800,7 @@ var
 begin
   FLexerState := Source.FLexerState;
   FText := Source.FText;
+  FOwner.AutoAdjustWorkWidth(FIndex);
   FStates := Source.FStates;
   FBounds := Source.FBounds;
   for I := 0 to Source.FMarkers.Count - 1 do
@@ -2304,6 +2318,7 @@ begin
   FLines[Index] := TUCELine.Create(Self);
   FLines[Index].FText := Text;
   FLines[Index].FIndex := Index;
+  AutoAdjustWorkWidth(Index);
 
   Result := FLines[Index];
 
@@ -2320,20 +2335,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TUniCodeEditorContent.InvalidateAll;
-
-// Invalidates all lines (external validation state).
-
-var
-  I: Integer;
-
-begin
-  for I := 0 to FCount - 1 do
-    FLines[I].Invalidate;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TUniCodeEditorContent.DoChangeLine(Line: TUCELine);
 
 begin
@@ -2342,6 +2343,26 @@ begin
     FOwner.RescanLine(Line.Index);
   if Assigned(FOnChangeLine) then
     FOnChangeLine(Self, Line);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TUniCodeEditorContent.AutoAdjustWorkWidth(Index: Integer);
+
+// If enabled then this procedure extends the work width of the owner control if the line length of the given line
+// is larger than the current work with.
+// The line is internally validated if queried for its total length.
+
+var
+  NewWidth: Integer;
+
+begin
+  if eoAutoExtendWorkWidth in FOwner.FOptions then
+  begin
+    NewWidth := FLines[Index].GetLineEnd(True) * FOwner.FCharWidth;
+    if FOwner.WorkWidth < NewWidth then
+      FOwner.WorkWidth := NewWidth;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2445,6 +2466,7 @@ begin
     FLines[I].Free;
   end;
   SetCapacity(0);
+  FOwner.WorkWidth := -1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2509,6 +2531,20 @@ begin
   finally
     Buffer.Free;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TUniCodeEditorContent.InternalInvalidateAll;
+
+// Invalidates all lines (internal validation state).
+
+var
+  I: Integer;
+
+begin
+  for I := 0 to FCount - 1 do
+    FLines[I].InternalInvalidate;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2752,13 +2788,15 @@ begin
   FScrollTimer.Interval := 20;
   FScrollTimer.OnTimer := OnScrollTimer;
 
-  FCharsInWindow := 10;
-  // FRightMargin, FCharWidth and MaxRight have to be set before FontChanged
+  FWorkWidth := -1; // -1 means the client width is the work width.
+  FCharsInWindow := 1;
+
+  // FRightMargin and FCharWidth have to be set before FontChanged.
   // is called for the first time.
   FRightMargin := 80;
+
   // This char width value is only a dummy and will be updated later.
   FCharWidth := 8;
-  MaxRightChar := 80;
   FMarginColor := clSilver;
   FGutterWidth := 30;
   ControlStyle := ControlStyle + [csOpaque, csSetCaption, csReflector, csNeedsBorderPaint];
@@ -2785,7 +2823,6 @@ begin
     Bottom := Height;
   end;
   FTabSize := 8;
-  MaxRightChar := 128;
   FUpdateCount := 0;
   FIndentSize := 2;
   FScrollBars := ssBoth;
@@ -2884,14 +2921,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomUniCodeEdit.GetMaxRightChar: Integer;
-
-begin
-  Result := FMaxRightPos div FCharWidth;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function TCustomUniCodeEdit.GetMaxUndo: Integer;
 
 begin
@@ -2983,19 +3012,41 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCustomUniCodeEdit.SetBlockBegin(Value: TPoint);
+function TCustomUniCodeEdit.GetWorkWidth: Integer;
 
 begin
-  if Value.X < 0 then
-    Value.X := 0
+  if FWorkWidth = -1 then
+  begin
+    if HandleAllocated then
+      Result := ClientWidth
+    else
+      Result := 0;
+  end
   else
-    if Value.X > MaxRightChar then
-      Value.X := MaxRightChar;
+    Result := FWorkWidth;
+end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomUniCodeEdit.SetBlockBegin(Value: TPoint);
+
+var
+  Index: Integer;
+
+begin
   if Value.Y > FContent.Count - 1 then
     Value.Y := FContent.Count - 1;
   if Value.Y < 0 then
     Value.Y := 0;
+
+  if Value.X < 0 then
+    Value.X := 0
+  else
+  begin
+    Index := WorkWidthToCharIndex(Value.Y);
+    if Value.X > Index then
+      Value.X := Index;
+  end;
 
   if (FUpdateCount = 0) and SelectionAvailable then
     RefreshLines(FSortedBlockBegin.Y, FSortedBlockEnd.Y);
@@ -3013,17 +3064,23 @@ end;
 
 procedure TCustomUniCodeEdit.SetBlockEnd(Value: TPoint);
 
+var
+  Index: Integer;
+  
 begin
-  if Value.X < 0 then
-    Value.X := 0
-  else
-    if Value.X > MaxRightChar then
-      Value.X := MaxRightChar;
-
   if Value.Y > FContent.Count - 1 then
     Value.Y := FContent.Count - 1;
   if Value.Y < 0 then
     Value.Y := 0;
+
+  if Value.X < 0 then
+    Value.X := 0
+  else
+  begin
+    Index := WorkWidthToCharIndex(Value.Y);
+    if Value.X > Index then
+      Value.X := INdex;
+  end;
 
   if not PointsEqual(Value, FSelectionBlockEnd) then
   begin
@@ -3073,8 +3130,9 @@ begin
 
     if eoScrollPastEOL in FOptions then
     begin
-      if Value > MaxRightChar then
-        Value := MaxRightChar;
+      I := WorkWidthToCharIndex(FCaretY);
+      if Value > I then
+        Value := I;
     end
     else
     begin
@@ -3135,9 +3193,12 @@ begin
     if (FCaretY > -1) and (FCaretY < FContent.Count) and not (eoKeepTrailingBlanks in FOptions) then
     begin
       S := FContent[FCaretY].Text;
-      if (Length(S) > 0) and (S[Length(S)] = ' ') then
+      if (Length(S) > 0) and (S[Length(S)] in [WideSpace, WideTabulator]) then
+      begin
         // Do not trigger a change event here.
         FContent[FCaretY].FText := WideTrimRight(S);
+        FContent.AutoAdjustWorkWidth(FCaretY);
+      end;
     end;
     FCaretY := Value;
 
@@ -3165,18 +3226,13 @@ end;
 
 procedure TCustomUniCodeEdit.SetCharWidth(const Value: Integer);
 
-var
-  RightChar: Integer;
-
 begin
   if FCharWidth <> Value then
   begin
-    RightChar := FMaxRightPos div FCharWidth;
     FCharWidth := Value;
-    MaxRightChar := RightChar;
-
+    
     // Invalidate all lines. They have to recompute their distance arrays.
-    FContent.InvalidateAll;
+    FContent.InternalInvalidateAll;
     Invalidate;
   end;
 end;
@@ -3332,10 +3388,6 @@ begin
     FContent[FCaretY].Text := Value;
     RefreshLine(FCaretY);
   end;
-  if(GetMaxRightChar < (Length(FContent[FCaretY].Text) + 1)) then
-  begin
-    SetMaxRightChar(Length(FContent[FCaretY].Text) + 1);
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3347,22 +3399,6 @@ begin
   begin
     FMarginColor := Value;
     Invalidate;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomUniCodeEdit.SetMaxRightChar(const Value: Integer);
-
-begin
-  if FMaxRightPos <> (Value * FCharWidth) then
-  begin
-    FMaxRightPos := Value * FCharWidth;
-    if HandleAllocated then
-    begin
-      Invalidate;
-      UpdateScrollBars;
-    end;
   end;
 end;
 
@@ -3398,8 +3434,8 @@ var
   R: TRect;
 
 begin
-  if - Value > (FMaxRightPos - ClientWidth + FGutterRect.Right) then
-    Value := -(FMaxRightPos - ClientWidth + FGutterRect.Right);
+  if Value < ClientWidth - FGutterRect.Right - WorkWidth -FCharWidth then
+    Value := ClientWidth - FGutterRect.Right - WorkWidth - FCharWidth;
   if Value > 0 then
     Value := 0;
   if FOffsetX <> Value then
@@ -3452,6 +3488,7 @@ var
   ToBeSet,
   ToBeCleared,
   ToChange: TUniCodeEditOptions;
+  Index: Integer;
 
 begin
   if FOptions <> Value then
@@ -3485,9 +3522,10 @@ begin
       end;
     end;
 
-    // reset pos in case it's past EOL currently
-    if (eoScrollPastEOL in ToBeCleared) and (FCaretX > MaxRightChar) then
-      CaretX := MaxRightChar;
+    // Reset position in case it's past EOL currently.
+    Index := WorkWidthToCharIndex(FCaretY);
+    if (eoScrollPastEOL in ToBeCleared) and (FCaretX > Index) then
+      CaretX := Index;
     if HandleAllocated and (eoLineNumbers in ToChange) and Focused then
       UpdateCaret;
     DoSettingChanged;
@@ -3699,6 +3737,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TCustomUniCodeEdit.SetWorkWidth(const Value: Integer);
+
+begin
+  if FWorkWidth <> Value then
+  begin
+    if Value < 0 then
+      FWorkWidth := -1
+    else
+      FWorkWidth := Value;
+    Invalidate;
+    UpdateScrollbars;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCustomUniCodeEdit.CMMouseWheel(var Message: TCMMouseWheel);
 
 var
@@ -3800,7 +3854,7 @@ end;
 procedure TCustomUniCodeEdit.WMGetDlgCode(var Msg: TWMGetDlgCode);
 
 begin
-  Msg.Result := DLGC_WANTARROWS or DLGC_WANTCHARS;
+  Msg.Result := DLGC_WANTALLKEYS or DLGC_WANTARROWS or DLGC_WANTCHARS;
   if eoWantTabs in FOptions then
     Msg.Result := Msg.Result or DLGC_WANTTAB;
 end;
@@ -3830,15 +3884,14 @@ procedure TCustomUniCodeEdit.WMHScroll(var Message: TWMScroll);
 begin
   case Message.ScrollCode of
     SB_BOTTOM:
-      OffsetX := -FMaxRightPos;
+      OffsetX := -WorkWidth;
     SB_ENDSCROLL:
       ;
     SB_LINELEFT:
       if FOffsetX < 0 then
         OffsetX := FOffsetX + FCharWidth;
     SB_LINERIGHT:
-      if - FOffsetX < (FMaxRightPos - ClientWidth + FGutterRect.Right) then
-        OffsetX := FOffsetX - FCharWidth;
+      OffsetX := FOffsetX - FCharWidth;
     SB_PAGELEFT:
       OffsetX := FOffsetX + ClientWidth - FGutterRect.Right + 1;
     SB_PAGERIGHT:
@@ -3990,7 +4043,7 @@ var
   P: TPoint;
 
 begin
-  if csDesigning in ComponentState then
+  if (csDesigning in ComponentState) or (Screen.Cursor <> crDefault) then
     inherited
   else
   begin
@@ -4031,6 +4084,7 @@ procedure TCustomUniCodeEdit.WMSize(var Message: TWMSize);
 
 begin
   inherited;
+  
   if HandleAllocated then
   begin
     FCharsInWindow := (ClientWidth - FGutterRect.Right + 1) div FCharWidth;
@@ -4038,6 +4092,8 @@ begin
     FGutterRect.Bottom := ClientHeight;
     if (FContent.Count - TopLine + 1) < FLinesInWindow then
       TopLine := FContent.Count - FLinesInWindow + 1;
+
+    OffsetX := FOffsetX; // Used to update the offset if it at the end of the work area.
     UpdateScrollBars;
   end;
 end;
@@ -5751,7 +5807,7 @@ begin
         else
           SelStart := FContent[LineIndex].ColumnToCharIndex(BlockBegin.X);
         if BlockEnd.Y > LineIndex then
-          SelEnd := FMaxRightPos // any large number makes it here
+          SelEnd := MaxInt // any large number makes it here
         else
           SelEnd := FContent[LineIndex].ColumnToCharIndex(BlockEnd.X);
 
@@ -6664,7 +6720,8 @@ begin
     ScrollInfo.fMask := SIF_ALL;
     ScrollInfo.nMin := 0;
     ScrollInfo.nTrackPos := 0;
-    // vertical scrollbar
+
+    // Vertical scrollbar.
     if FScrollBars in [ssBoth, ssVertical] then
     begin
       if (FLinesInWindow > 0) and (FContent.Count > FLinesInWindow) then
@@ -6676,10 +6733,11 @@ begin
       SetScrollInfo(Handle, SB_VERT, ScrollInfo, True);
     end;
 
+    // Horizontal scrollbar.
     if FScrollBars in [ssBoth, ssHorizontal] then
     begin
-      ScrollInfo.nMax := FMaxRightPos + 1;
-      Page := ClientWidth - FGutterRect.Right + 1;
+      ScrollInfo.nMax := WorkWidth + FGutterRect.Right + FCharWidth; // Add one empty cell to the width.
+      Page := ClientWidth;
       if Page >= 0 then
         ScrollInfo.nPage := Page
       else
@@ -6688,6 +6746,19 @@ begin
       SetScrollInfo(Handle, SB_HORZ, ScrollInfo, True);
     end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCustomUniCodeEdit.WorkWidthToCharIndex(const LineIndex: Integer): Integer;
+
+// Converts the current content width to a character index in the given line.
+
+begin
+  if LineIndex < FContent.Count then
+    Result := FContent.LineNoInit[LineIndex].ColumnToCharIndex(WorkWidth div FCharWidth)
+  else
+    Result := 0;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7007,6 +7078,8 @@ var
   I: Integer;
 
 begin
+  FWorkWidth := -1;
+  
   for I := 0 to 9 do
     RemoveBookmark(I);
 
@@ -7273,8 +7346,8 @@ begin
         FUndoList.PrepareStateChange;
         if (Command = ecSelPageLeft) and (not SelectionAvailable) then
           BlockBegin := CaretXY;
-        OffsetX := FOffsetX + CharsInWindow * FCharWidth;
-        CaretX := FCaretX - CharsInWindow;
+        OffsetX := FOffsetX + FCharsInWindow * FCharWidth;
+        CaretX := FCaretX - FCharsInWindow;
         if (Command = ecSelPageLeft) then
           BlockEnd := CaretXY
         else
@@ -7288,8 +7361,8 @@ begin
         FUndoList.PrepareStateChange;
         if (Command = ecSelPageRight) and (not SelectionAvailable) then
           BlockBegin := CaretXY;
-        OffsetX := FOffsetX - CharsInWindow * FCharWidth;
-        CaretX := FCaretX + CharsInWindow;
+        OffsetX := FOffsetX - FCharsInWindow * FCharWidth;
+        CaretX := FCaretX + FCharsInWindow;
         if (Command = ecSelPageRight) then
           BlockEnd := CaretXY
         else
@@ -7376,7 +7449,7 @@ begin
       DeleteLastChar;
 
     ecDeleteChar:
-      if not (eoReadOnly in FOptions) then
+      if not (eoReadOnly in FOptions) and (FCaretY < FContent.Count) then
       begin
         if SelectionAvailable then
         begin
@@ -7391,10 +7464,8 @@ begin
           LineEnd := FContent[FCaretY].GetLineEnd(False);
           if CX > LineEnd then
           begin
-            // Beyond line end means we instert spaces up the caret and delete the line break.
+            // Beyond line end means we insert spaces up the caret and delete the line break.
             // But if the caret is on the last line (or beyond that) do nothing.
-            if FCaretY >= FContent.Count - 1 then
-              Abort;
             Helper := WideStringOfChar(' ', CX - LineEnd - 1);
             WP := Point(LineEnd, FCaretY);
             FUndoList.PrepareReplaceChange(WP, Point(0, FCaretY + 1), WP, Helper);
@@ -7556,8 +7627,8 @@ begin
       begin
         FUndoList.PrepareStateChange;
         Dec(FOffsetX, FCharWidth);
-        if FCaretX > -FOffsetX * FCharWidth + CharsInWindow then
-          CaretX := -FOffsetX * FCharWidth + CharsInWindow;
+        if FCaretX > -FOffsetX * FCharWidth + FCharsInWindow then
+          CaretX := -FOffsetX * FCharWidth + FCharsInWindow;
         FUndoList.FinishPendingChange;
       end;
 
@@ -8247,6 +8318,9 @@ end;
 
 function TCustomUniCodeEdit.SearchReplace(const SearchText, ReplaceText: WideString; Options: TSearchOptions): Integer;
 
+// Searchs for the given text and optionally replaces it with new text.
+// Result is the number of matches found.
+
 var
   StartPoint: TPoint;
   EndPoint: TPoint; // search range
@@ -8270,7 +8344,7 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure DoPlainSearchReplace;
+  procedure DoSearchReplace(Searcher: TSearchEngine);
 
   var
     SearchLen,
@@ -8282,7 +8356,6 @@ var
     ColStop: Integer;
     Found,
     DoStop: Boolean;
-    Searcher: TUTBMSearch;
     SearchOptions: TSearchFlags;
     Offset: Integer;
 
@@ -8314,6 +8387,7 @@ var
         // to the unchanged string but when replacing the string changes all the time
         Offset := 0;
         Found := Searcher.FindAll(FContent[Current.Y].Text);
+
         if DoBackward then
           N := Pred(Searcher.Count)
         else
@@ -8326,9 +8400,10 @@ var
           Searcher.GetResult(N, Start, Stop);
           Inc(Start, Offset);
           Inc(Stop, Offset);
-          // convert character positions to column values,
-          // need to invalidate the char width array in every run because there might be non-single characters
-          // like tabulators in text or replace string
+          
+          // Convert character positions to column values,
+          // Need to invalidate the char width array in every run because there might be non-single characters
+          // like tabulators in text or replace string.
           ColStart := FContent[Current.Y].CharIndexToColumn(Start);
           ColStop := FContent[Current.Y].CharIndexToColumn(Stop);
           if DoBackward then
@@ -8338,7 +8413,10 @@ var
           // Is the search result entirely in the search range?
           if not InValidSearchRange(Start, Stop) then
             Continue;
+
+          // Increase search count.
           Inc(Result);
+          
           // Select the text, so the user can see it in the OnReplaceText event
           // handler or as the search result.
           Current.X := ColStart;
@@ -8349,144 +8427,15 @@ var
           BlockEnd := Current;
           if not DoBackward then
             CaretXY := Current;
-          // if it's a search only we can leave the procedure now
-          if not (DoReplace or DoReplaceAll) then
-            Abort;
 
-          // Prompt and replace or replace all.  If user chooses to replace
-          // all after prompting, turn off prompting.
-          if DoPrompt then
+          // If it's a search only we can leave the procedure now.
+          if not (DoReplace or DoReplaceAll) then
           begin
-            Action := raCancel;
-            Application.ProcessMessages;
-            FOnReplaceText(Self, SearchText, ReplaceText, Current.Y, ColStart, ColStop, Action);
-            if Action = raCancel then
-            begin
-              DoStop := True;
-              Break;
-            end;
-          end
-          else
-            Action := raReplace;
-          if Action <> raSkip then
-          begin
-            // user has been prompted and has requested to silently replace all
-            // so turn off prompting
-            if Action = raReplaceAll then
-            begin
-              if not DoReplaceAll then
-              begin
-                DoReplaceAll := True;
-                BeginUpdate;
-              end;
-              DoPrompt := False;
-            end;
-            SetSelTextExternal(ReplaceText);
-            Changed := True;
-          end;
-          // calculate position offset (this offset is character index not column based)
-          if not DoBackward then
-            Inc(Offset, ReplaceLen - SearchLen);
-          if not DoReplaceAll then
             DoStop := True;
-        end;
-        // search next / previous line
-        if DoBackward then
-          Dec(Current.Y)
-        else
-          Inc(Current.Y);
-      end;
-    finally
-      Searcher.Free;
-    end;
-  end;
-
-  //---------------------------------------------------------------------------
-
-  procedure DoRESearchReplace;
-
-  var
-    SearchLen,
-    ReplaceLen,
-    N: Integer;
-    Start,
-    Stop,
-    ColStart,
-    ColStop: Integer;
-    Found,
-    DoStop: Boolean;
-    Searcher: TURESearch;
-    SearchOptions: TSearchFlags;
-    Offset: Integer;
-
-  begin
-    // TODO: Make the search engine accept other input.
-    //Searcher := TURESearch.Create(FContent);
-    Searcher := TURESearch.Create(nil);
-    try
-      // initialize the search engine
-      SearchOptions := [];
-      if soMatchCase in Options then
-        Include(SearchOptions, sfCaseSensitive);
-      if soIgnoreNonSpacing in Options then
-        Include(SearchOptions, sfIgnoreNonSpacing);
-      if soSpaceCompress in Options then
-        Include(SearchOptions, sfSpaceCompress);
-      if soWholeWord in Options then
-        Include(SearchOptions, sfWholeWordOnly);
-      //soWholeWord in Options;
-      Searcher.FindPrepare(SearchText, SearchOptions);
-      // search while the current search position is inside of the search range
-      SearchLen := Length(SearchText);
-      ReplaceLen := Length(ReplaceText);
-      DoStop := False;
-
-      while not DoStop and (Current.Y >= StartPoint.Y) and (Current.Y <= EndPoint.Y) do
-      begin
-        // need a running offset because further search results are determined with regard
-        // to the unchanged string but when replacing the string changes all the time
-        Offset := 0;
-        Found := Searcher.FindAll(FContent[Current.Y].Text);
-        if DoBackward then
-          N := Pred(Searcher.Count)
-        else
-          N := 0;
-        // Operate on all results in this line.
-        while not DoStop and Found do
-        begin
-          if (N < 0) or (N = Searcher.Count) then
             Break;
-          Searcher.GetResult(N, Start, Stop);
-          Inc(Start, Offset);
-          Inc(Stop, Offset);
-          // convert character positions to column values,
-          // need to invalidate the char width array in every run because there might be non-single characters
-          // like tabulators in text or replace string
-          ColStart := FContent[Current.Y].CharIndexToColumn(Start);
-          ColStop := FContent[Current.Y].CharIndexToColumn(Stop);
-          if DoBackward then
-            Dec(N)
-          else
-            Inc(N);
-          // Is the search result entirely in the search range?
-          if not InValidSearchRange(Start, Stop) then
-            Continue;
-          Inc(Result);
-          // Select the text, so the user can see it in the OnReplaceText event
-          // handler or as the search result.
-          Current.X := ColStart;
-          BlockBegin := Current;
-          if DoBackward then
-            CaretXY := Current;
-          Current.X := ColStop;
-          BlockEnd := Current;
-          if not DoBackward then
-            CaretXY := Current;
-          // if it's a search only we can leave the procedure now
-          if not (DoReplace or DoReplaceAll) then
-            Abort;
+          end;
 
-          // Prompt and replace or replace all.  If user chooses to replace
+          // Prompt and replace or replace all. If user chooses to replace
           // all after prompting, turn off prompting.
           if DoPrompt then
           begin
@@ -8536,6 +8485,9 @@ var
 
   //--------------- end local functions ---------------------------------------
 
+var
+  Engine: TSearchEngine;
+  
 begin
   Result := 0;
   // can't search for or replace an empty WideString
@@ -8552,7 +8504,7 @@ begin
     begin
       StartPoint := BlockBegin;
       EndPoint := BlockEnd;
-      // ignore the cursor position when searching in the selection
+      // Ignore the cursor position when searching in the selection.
       if DoBackward and not (soRegularExpression in Options) then
         Current := EndPoint
       else
@@ -8576,12 +8528,14 @@ begin
     if DoReplaceAll and not DoPrompt then
       BeginUpdate;
 
+    if soRegularExpression in Options then
+      Engine := TURESearch.Create(nil)
+    else
+      Engine := TUTBMSearch.Create(nil);
     try
-      if soRegularExpression in Options then
-        DoRESearchReplace
-      else
-        DoPlainSearchReplace;
+      DoSearchReplace(Engine);
     finally
+      Engine.Free;
       if DoReplaceAll and not DoPrompt then
         EndUpdate;
     end;

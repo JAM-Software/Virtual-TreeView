@@ -17,6 +17,9 @@ const
 const Normal = 2;
       MultilineComment = 4;
       EmbeddedCommand = 6;
+      MLString = 8;
+      DoubleQuotes = 10;
+      BackTickQuotes = 12;
  
  
 const kwFirstKeyword = 257;
@@ -66,297 +69,297 @@ const kwFirstKeyword = 257;
       kwCALL = 300;
       kwCASCADE = 301;
       kwCASCADED = 302;
-      kwCAST = 303;
-      kwCHAIN = 304;
-      kwCHANGE = 305;
-      kwCHANGED = 306;
-      kwCHAR = 307;
-      kwCHARACTER = 308;
-      kwCHARSET = 309;
-      kwCHECK = 310;
-      kwCHECKSUM = 311;
-      kwCIPHER = 312;
-      kwCLIENT = 313;
-      kwCLOSE = 314;
-      kwCOALESCE = 315;
-      kwCOLLATE = 316;
-      kwCOLLATION = 317;
-      kwCOLUMN = 318;
-      kwCOLUMNS = 319;
-      kwCOMMENT = 320;
-      kwCOMMIT = 321;
-      kwCOMMITTED = 322;
-      kwCOMPACT = 323;
-      kwCOMPRESSED = 324;
-      kwCONCAT = 325;
-      kwCONCAT_WS = 326;
-      kwCONCURRENT = 327;
-      kwCONDITION = 328;
-      kwCONNECTION = 329;
-      kwCONSTRAINT = 330;
-      kwCONTAINS = 331;
-      kwCONTINUE = 332;
-      kwCONVERT = 333;
-      kwCONVERT_TZ = 334;
-      kwCOUNT = 335;
-      kwCREATE = 336;
-      kwCROSS = 337;
-      kwCUBE = 338;
-      kwCURDATE = 339;
-      kwCURRENT_DATE = 340;
-      kwCURRENT_TIME = 341;
-      kwCURRENT_TIMESTAMP = 342;
-      kwCURRENT_USER = 343;
-      kwCURSOR = 344;
-      kwCURTIME = 345;
-      kwDATA = 346;
-      kwDATABASE = 347;
-      kwDATABASES = 348;
-      kwDATE = 349;
-      kwDATETIME = 350;
-      kwDATE_ADD = 351;
-      kwDATE_SUB = 352;
-      kwDAY = 353;
-      kwDAY_HOUR = 354;
-      kwDAY_MICROSECOND = 355;
-      kwDAY_MINUTE = 356;
-      kwDAY_SECOND = 357;
-      kwDEALLOCATE = 358;
-      kwDEC = 359;
-      kwDECIMAL = 360;
-      kwDECLARE = 361;
-      kwDECODE = 362;
-      kwDEFAULT = 363;
-      kwDEFINER = 364;
-      kwDELAYED = 365;
-      kwDELAY_KEY_WRITE = 366;
-      kwDELETE = 367;
-      kwDELIMITER = 368;
-      kwDESC = 369;
-      kwDESCRIBE = 370;
-      kwDES_DECRYPT = 371;
-      kwDES_ENCRYPT = 372;
-      kwDES_KEY_FILE = 373;
-      kwDETERMINISTIC = 374;
-      kwDIRECTORY = 375;
-      kwDISABLE = 376;
-      kwDISCARD = 377;
-      kwDISTINCT = 378;
-      kwDISTINCTROW = 379;
-      kwDIV = 380;
-      kwDO = 381;
-      kwDOUBLE = 382;
-      kwDROP = 383;
-      kwDUAL = 384;
-      kwDUMPFILE = 385;
-      kwDUPLICATE = 386;
-      kwDYNAMIC = 387;
-      kwEACH = 388;
-      kwELSE = 389;
-      kwELSEIF = 390;
-      kwELT = 391;
-      kwENABLE = 392;
-      kwENCLOSED = 393;
-      kwENCODE = 394;
-      kwENCRYPT = 395;
-      kwEND = 396;
-      kwENGINE = 397;
-      kwENGINES = 398;
-      kwENUM = 399;
-      kwEQUAL = 400;
-      kwERRORS = 401;
-      kwESCAPE = 402;
-      kwESCAPED = 403;
-      kwEVENTS = 404;
-      kwEXECUTE = 405;
-      kwEXISTS = 406;
-      kwEXIT = 407;
-      kwEXPANSION = 408;
-      kwEXPLAIN = 409;
-      kwEXPORT_SET = 410;
-      kwEXTENDED = 411;
-      kwEXTRACT = 412;
-      kwFALSE = 413;
-      kwFAST = 414;
-      kwFETCH = 415;
-      kwFIELD = 416;
-      kwFIELDS = 417;
-      kwFILE = 418;
-      kwFIRST = 419;
-      kwFIXED = 420;
-      kwFLOAT = 421;
-      kwFLOAT4 = 422;
-      kwFLOAT8 = 423;
-      kwFLUSH = 424;
-      kwFOR = 425;
-      kwFORCE = 426;
-      kwFOREIGN = 427;
-      kwFORMAT = 428;
-      kwFOUND = 429;
-      kwFRAC_SECOND = 430;
-      kwFROM = 431;
-      kwFROM_UNIXTIME = 432;
-      kwFULL = 433;
-      kwFULLTEXT = 434;
-      kwFUNCTION = 435;
-      kwGEOMCOLLFROMTEXT = 436;
-      kwGEOMCOLLFROMWKB = 437;
-      kwGEOMETRY = 438;
-      kwGEOMETRYCOLLECTION = 439;
-      kwGEOMETRYCOLLECTIONFROMTEXT = 440;
-      kwGEOMETRYCOLLECTIONFROMWKB = 441;
-      kwGEOMETRYFROMTEXT = 442;
-      kwGEOMETRYFROMWKB = 443;
-      kwGEOMFROMTEXT = 444;
-      kwGEOMFROMWKB = 445;
-      kwGET_FORMAT = 446;
-      kwGLOBAL = 447;
-      kwGOTO = 448;
-      kwGRANT = 449;
-      kwGRANTS = 450;
-      kwGREATER = 451;
-      kwGREATEST = 452;
-      kwGROUP = 453;
-      kwGROUP_CONCAT = 454;
-      kwGROUP_UNIQUE_USERS = 455;
-      kwHANDLER = 456;
-      kwHASH = 457;
-      kwHAVING = 458;
-      kwHELP = 459;
-      kwHIGH_PRIORITY = 460;
-      kwHOSTS = 461;
-      kwHOUR = 462;
-      kwHOUR_MICROSECOND = 463;
-      kwHOUR_MINUTE = 464;
-      kwHOUR_SECOND = 465;
-      kwIDENTIFIED = 466;
-      kwIF = 467;
-      kwIGNORE = 468;
-      kwIMPORT = 469;
-      kwIN = 470;
-      kwINDEX = 471;
-      kwINDEXES = 472;
-      kwINFILE = 473;
-      kwINNER = 474;
-      kwINNOBASE = 475;
-      kwINNODB = 476;
-      kwINOUT = 477;
-      kwINSENSITIVE = 478;
-      kwINSERT = 479;
-      kwINSERT_METHOD = 480;
-      kwINT = 481;
-      kwINT1 = 482;
-      kwINT2 = 483;
-      kwINT3 = 484;
-      kwINT4 = 485;
-      kwINT8 = 486;
-      kwINTEGER = 487;
-      kwINTERVAL = 488;
-      kwINTO = 489;
-      kwINVOKER = 490;
-      kwIO_THREAD = 491;
-      kwIS = 492;
-      kwISOLATION = 493;
-      kwISSUER = 494;
-      kwITERATE = 495;
-      kwJOIN = 496;
-      kwKEY = 497;
-      kwKEYS = 498;
-      kwKILL = 499;
-      kwLABEL = 500;
-      kwLANGUAGE = 501;
-      kwLAST = 502;
-      kwLAST_INSERT_ID = 503;
-      kwLEADING = 504;
-      kwLEAST = 505;
-      kwLEAVE = 506;
-      kwLEAVES = 507;
-      kwLEFT = 508;
-      kwLESS = 509;
-      kwLEVEL = 510;
-      kwLIKE = 511;
-      kwLIMIT = 512;
-      kwLINEFROMTEXT = 513;
-      kwLINEFROMWKB = 514;
-      kwLINES = 515;
-      kwLINESTRING = 516;
-      kwLINESTRINGFROMTEXT = 517;
-      kwLINESTRINGFROMWKB = 518;
-      kwLIST = 519;
-      kwLOAD = 520;
-      kwLOCAL = 521;
-      kwLOCALTIME = 522;
-      kwLOCALTIMESTAMP = 523;
-      kwLOCATE = 524;
-      kwLOCK = 525;
-      kwLOCKS = 526;
-      kwLOG = 527;
-      kwLOGS = 528;
-      kwLONG = 529;
-      kwLONGBLOB = 530;
-      kwLONGTEXT = 531;
-      kwLOOP = 532;
-      kwLOW_PRIORITY = 533;
-      kwMAKE_SET = 534;
-      kwMASTER = 535;
-      kwMASTER_CONNECT_RETRY = 536;
-      kwMASTER_HOST = 537;
-      kwMASTER_LOG_FILE = 538;
-      kwMASTER_LOG_POS = 539;
-      kwMASTER_PASSWORD = 540;
-      kwMASTER_PORT = 541;
-      kwMASTER_POS_WAIT = 542;
-      kwMASTER_SERVER_ID = 543;
-      kwMASTER_SSL = 544;
-      kwMASTER_SSL_CA = 545;
-      kwMASTER_SSL_CAPATH = 546;
-      kwMASTER_SSL_CERT = 547;
-      kwMASTER_SSL_CIPHER = 548;
-      kwMASTER_SSL_KEY = 549;
-      kwMASTER_USER = 550;
-      kwMATCH = 551;
-      kwMAX = 552;
-      kwMAX_CONNECTIONS_PER_HOUR = 553;
-      kwMAX_QUERIES_PER_HOUR = 554;
-      kwMAX_ROWS = 555;
-      kwMAX_UPDATES_PER_HOUR = 556;
-      kwMAX_USER_CONNECTIONS = 557;
-      kwMEDIUM = 558;
-      kwMEDIUMBLOB = 559;
-      kwMEDIUMINT = 560;
-      kwMEDIUMTEXT = 561;
-      kwMERGE = 562;
-      kwMICROSECOND = 563;
-      kwMID = 564;
-      kwMIDDLEINT = 565;
-      kwMIGRATE = 566;
-      kwMIN = 567;
-      kwMINUTE = 568;
-      kwMINUTE_MICROSECOND = 569;
-      kwMINUTE_SECOND = 570;
-      kwMIN_ROWS = 571;
-      kwMLINEFROMTEXT = 572;
-      kwMLINEFROMWKB = 573;
-      kwMOD = 574;
-      kwMODE = 575;
-      kwMODIFIES = 576;
-      kwMODIFY = 577;
-      kwMONTH = 578;
-      kwMPOINTFROMTEXT = 579;
-      kwMPOINTFROMWKB = 580;
-      kwMPOLYFROMTEXT = 581;
-      kwMPOLYFROMWKB = 582;
-      kwMULTILINESTRING = 583;
-      kwMULTILINESTRINGFROMTEXT = 584;
-      kwMULTILINESTRINGFROMWKB = 585;
-      kwMULTIPOINT = 586;
-      kwMULTIPOINTFROMTEXT = 587;
-      kwMULTIPOINTFROMWKB = 588;
-      kwMULTIPOLYGON = 589;
-      kwMULTIPOLYGONFROMTEXT = 590;
-      kwMULTIPOLYGONFROMWKB = 591;
-      kwMUTEX = 592;
-      kwNAME = 593;
+      kwCASE = 303;
+      kwCAST = 304;
+      kwCHAIN = 305;
+      kwCHANGE = 306;
+      kwCHANGED = 307;
+      kwCHAR = 308;
+      kwCHARACTER = 309;
+      kwCHARSET = 310;
+      kwCHECK = 311;
+      kwCHECKSUM = 312;
+      kwCIPHER = 313;
+      kwCLIENT = 314;
+      kwCLOSE = 315;
+      kwCOALESCE = 316;
+      kwCOLLATE = 317;
+      kwCOLLATION = 318;
+      kwCOLUMN = 319;
+      kwCOLUMNS = 320;
+      kwCOMMENT = 321;
+      kwCOMMIT = 322;
+      kwCOMMITTED = 323;
+      kwCOMPACT = 324;
+      kwCOMPRESSED = 325;
+      kwCONCAT = 326;
+      kwCONCAT_WS = 327;
+      kwCONCURRENT = 328;
+      kwCONDITION = 329;
+      kwCONNECTION = 330;
+      kwCONSTRAINT = 331;
+      kwCONTAINS = 332;
+      kwCONTINUE = 333;
+      kwCONVERT = 334;
+      kwCONVERT_TZ = 335;
+      kwCOUNT = 336;
+      kwCREATE = 337;
+      kwCROSS = 338;
+      kwCUBE = 339;
+      kwCURDATE = 340;
+      kwCURRENT_DATE = 341;
+      kwCURRENT_TIME = 342;
+      kwCURRENT_TIMESTAMP = 343;
+      kwCURRENT_USER = 344;
+      kwCURSOR = 345;
+      kwCURTIME = 346;
+      kwDATA = 347;
+      kwDATABASE = 348;
+      kwDATABASES = 349;
+      kwDATE = 350;
+      kwDATETIME = 351;
+      kwDATE_ADD = 352;
+      kwDATE_SUB = 353;
+      kwDAY = 354;
+      kwDAY_HOUR = 355;
+      kwDAY_MICROSECOND = 356;
+      kwDAY_MINUTE = 357;
+      kwDAY_SECOND = 358;
+      kwDEALLOCATE = 359;
+      kwDEC = 360;
+      kwDECIMAL = 361;
+      kwDECLARE = 362;
+      kwDECODE = 363;
+      kwDEFAULT = 364;
+      kwDEFINER = 365;
+      kwDELAYED = 366;
+      kwDELAY_KEY_WRITE = 367;
+      kwDELETE = 368;
+      kwDELIMITER = 369;
+      kwDESC = 370;
+      kwDESCRIBE = 371;
+      kwDES_DECRYPT = 372;
+      kwDES_ENCRYPT = 373;
+      kwDES_KEY_FILE = 374;
+      kwDETERMINISTIC = 375;
+      kwDIRECTORY = 376;
+      kwDISABLE = 377;
+      kwDISCARD = 378;
+      kwDISTINCT = 379;
+      kwDISTINCTROW = 380;
+      kwDIV = 381;
+      kwDO = 382;
+      kwDOUBLE = 383;
+      kwDROP = 384;
+      kwDUAL = 385;
+      kwDUMPFILE = 386;
+      kwDUPLICATE = 387;
+      kwDYNAMIC = 388;
+      kwEACH = 389;
+      kwELSE = 390;
+      kwELSEIF = 391;
+      kwELT = 392;
+      kwENABLE = 393;
+      kwENCLOSED = 394;
+      kwENCODE = 395;
+      kwENCRYPT = 396;
+      kwEND = 397;
+      kwENGINE = 398;
+      kwENGINES = 399;
+      kwENUM = 400;
+      kwEQUAL = 401;
+      kwERRORS = 402;
+      kwESCAPE = 403;
+      kwESCAPED = 404;
+      kwEVENTS = 405;
+      kwEXECUTE = 406;
+      kwEXISTS = 407;
+      kwEXIT = 408;
+      kwEXPANSION = 409;
+      kwEXPLAIN = 410;
+      kwEXPORT_SET = 411;
+      kwEXTENDED = 412;
+      kwEXTRACT = 413;
+      kwFALSE = 414;
+      kwFAST = 415;
+      kwFETCH = 416;
+      kwFIELD = 417;
+      kwFIELDS = 418;
+      kwFILE = 419;
+      kwFIRST = 420;
+      kwFIXED = 421;
+      kwFLOAT = 422;
+      kwFLOAT4 = 423;
+      kwFLOAT8 = 424;
+      kwFLUSH = 425;
+      kwFOR = 426;
+      kwFORCE = 427;
+      kwFOREIGN = 428;
+      kwFORMAT = 429;
+      kwFOUND = 430;
+      kwFRAC_SECOND = 431;
+      kwFROM = 432;
+      kwFROM_UNIXTIME = 433;
+      kwFULL = 434;
+      kwFULLTEXT = 435;
+      kwFUNCTION = 436;
+      kwGEOMCOLLFROMTEXT = 437;
+      kwGEOMCOLLFROMWKB = 438;
+      kwGEOMETRY = 439;
+      kwGEOMETRYCOLLECTION = 440;
+      kwGEOMETRYCOLLECTIONFROMTEXT = 441;
+      kwGEOMETRYCOLLECTIONFROMWKB = 442;
+      kwGEOMETRYFROMTEXT = 443;
+      kwGEOMETRYFROMWKB = 444;
+      kwGEOMFROMTEXT = 445;
+      kwGEOMFROMWKB = 446;
+      kwGET_FORMAT = 447;
+      kwGLOBAL = 448;
+      kwGOTO = 449;
+      kwGRANT = 450;
+      kwGRANTS = 451;
+      kwGREATER = 452;
+      kwGREATEST = 453;
+      kwGROUP = 454;
+      kwGROUP_CONCAT = 455;
+      kwGROUP_UNIQUE_USERS = 456;
+      kwHANDLER = 457;
+      kwHASH = 458;
+      kwHAVING = 459;
+      kwHELP = 460;
+      kwHIGH_PRIORITY = 461;
+      kwHOSTS = 462;
+      kwHOUR = 463;
+      kwHOUR_MICROSECOND = 464;
+      kwHOUR_MINUTE = 465;
+      kwHOUR_SECOND = 466;
+      kwIDENTIFIED = 467;
+      kwIF = 468;
+      kwIGNORE = 469;
+      kwIMPORT = 470;
+      kwIN = 471;
+      kwINDEX = 472;
+      kwINDEXES = 473;
+      kwINFILE = 474;
+      kwINNER = 475;
+      kwINNOBASE = 476;
+      kwINNODB = 477;
+      kwINOUT = 478;
+      kwINSENSITIVE = 479;
+      kwINSERT = 480;
+      kwINSERT_METHOD = 481;
+      kwINT = 482;
+      kwINT1 = 483;
+      kwINT2 = 484;
+      kwINT3 = 485;
+      kwINT4 = 486;
+      kwINT8 = 487;
+      kwINTEGER = 488;
+      kwINTERVAL = 489;
+      kwINTO = 490;
+      kwINVOKER = 491;
+      kwIO_THREAD = 492;
+      kwIS = 493;
+      kwISOLATION = 494;
+      kwISSUER = 495;
+      kwITERATE = 496;
+      kwJOIN = 497;
+      kwKEY = 498;
+      kwKEYS = 499;
+      kwKILL = 500;
+      kwLABEL = 501;
+      kwLANGUAGE = 502;
+      kwLAST = 503;
+      kwLAST_INSERT_ID = 504;
+      kwLEADING = 505;
+      kwLEAST = 506;
+      kwLEAVE = 507;
+      kwLEAVES = 508;
+      kwLEFT = 509;
+      kwLESS = 510;
+      kwLEVEL = 511;
+      kwLIKE = 512;
+      kwLIMIT = 513;
+      kwLINEFROMTEXT = 514;
+      kwLINEFROMWKB = 515;
+      kwLINES = 516;
+      kwLINESTRING = 517;
+      kwLINESTRINGFROMTEXT = 518;
+      kwLINESTRINGFROMWKB = 519;
+      kwLIST = 520;
+      kwLOAD = 521;
+      kwLOCAL = 522;
+      kwLOCALTIME = 523;
+      kwLOCALTIMESTAMP = 524;
+      kwLOCATE = 525;
+      kwLOCK = 526;
+      kwLOCKS = 527;
+      kwLOG = 528;
+      kwLOGS = 529;
+      kwLONG = 530;
+      kwLONGBLOB = 531;
+      kwLONGTEXT = 532;
+      kwLOOP = 533;
+      kwLOW_PRIORITY = 534;
+      kwMAKE_SET = 535;
+      kwMASTER = 536;
+      kwMASTER_CONNECT_RETRY = 537;
+      kwMASTER_HOST = 538;
+      kwMASTER_LOG_FILE = 539;
+      kwMASTER_LOG_POS = 540;
+      kwMASTER_PASSWORD = 541;
+      kwMASTER_PORT = 542;
+      kwMASTER_POS_WAIT = 543;
+      kwMASTER_SERVER_ID = 544;
+      kwMASTER_SSL = 545;
+      kwMASTER_SSL_CA = 546;
+      kwMASTER_SSL_CAPATH = 547;
+      kwMASTER_SSL_CERT = 548;
+      kwMASTER_SSL_CIPHER = 549;
+      kwMASTER_SSL_KEY = 550;
+      kwMASTER_USER = 551;
+      kwMATCH = 552;
+      kwMAX = 553;
+      kwMAX_CONNECTIONS_PER_HOUR = 554;
+      kwMAX_QUERIES_PER_HOUR = 555;
+      kwMAX_ROWS = 556;
+      kwMAX_UPDATES_PER_HOUR = 557;
+      kwMAX_USER_CONNECTIONS = 558;
+      kwMEDIUM = 559;
+      kwMEDIUMBLOB = 560;
+      kwMEDIUMINT = 561;
+      kwMEDIUMTEXT = 562;
+      kwMERGE = 563;
+      kwMICROSECOND = 564;
+      kwMID = 565;
+      kwMIDDLEINT = 566;
+      kwMIGRATE = 567;
+      kwMIN = 568;
+      kwMINUTE = 569;
+      kwMINUTE_MICROSECOND = 570;
+      kwMINUTE_SECOND = 571;
+      kwMIN_ROWS = 572;
+      kwMLINEFROMTEXT = 573;
+      kwMLINEFROMWKB = 574;
+      kwMOD = 575;
+      kwMODE = 576;
+      kwMODIFIES = 577;
+      kwMODIFY = 578;
+      kwMONTH = 579;
+      kwMPOINTFROMTEXT = 580;
+      kwMPOINTFROMWKB = 581;
+      kwMPOLYFROMTEXT = 582;
+      kwMPOLYFROMWKB = 583;
+      kwMULTILINESTRING = 584;
+      kwMULTILINESTRINGFROMTEXT = 585;
+      kwMULTILINESTRINGFROMWKB = 586;
+      kwMULTIPOINT = 587;
+      kwMULTIPOINTFROMTEXT = 588;
+      kwMULTIPOINTFROMWKB = 589;
+      kwMULTIPOLYGON = 590;
+      kwMULTIPOLYGONFROMTEXT = 591;
+      kwMULTIPOLYGONFROMWKB = 592;
+      kwMUTEX = 593;
       kwNAMES = 594;
       kwNATIONAL = 595;
       kwNATURAL = 596;
@@ -603,20 +606,22 @@ const kwFirstKeyword = 257;
       kwZEROFILL = 837;
       kwLastKeyword = 837;
 
-const COMMENT_WITH_COMMAND = 838;
-      EMBEDDED_COMMAND = 839;
-      FLOATNUMBER = 840;
-      IDENTIFIER = 841;
-      INTEGERNUMBER = 842;
-      KEYWORD = 843;
-      MLCOMMENT = 844;
-      SLCOMMENT = 845;
-      STRINGCONSTANT = 846;
-      SYMBOL = 847;
-      SYSTEM_VARIABLE = 848;
-      UNKNOWN = 849;
-      USER_VARIABLE = 850;
-      WHITESPACE = 851;
+const EMBEDDED_COMMAND = 838;
+      FLOATNUMBER = 839;
+      HEXNUMBER = 840;
+      HEXSTRING = 841;
+      IDENTIFIER = 842;
+      INTEGERNUMBER = 843;
+      KEYWORD = 844;
+      MLCOMMENT = 845;
+      QUOTED_ID = 846;
+      SLCOMMENT = 847;
+      STRINGCONSTANT = 848;
+      SYMBOL = 849;
+      SYSTEM_VARIABLE = 850;
+      UNKNOWN = 851;
+      USER_VARIABLE = 852;
+      WHITESPACE = 853;
 
 
  
@@ -640,17 +645,17 @@ type
     FDoStop: Boolean;                  // token or eof found?
     FEOL: Boolean;
  
-    FSystemVariableAttributes,
-    FUserVariableAttributes,
-    FCommentWithCOmmandAttributes,
-    FEmbeddedCommandAttributes,
-    FStringAttributes,
-    FNumberAttributes,
-    FKeyAttributes,
-    FSymbolAttributes,
-    FCommentAttributes,
-    FIdentifierAttributes,
+    FSystemVariableAttributes: THighlightAttributes;
+    FUserVariableAttributes: THighlightAttributes;
+    FEmbeddedCommandAttributes: THighlightAttributes;
+    FStringAttributes: THighlightAttributes;
+    FNumberAttributes: THighlightAttributes;
+    FKeyAttributes: THighlightAttributes;
+    FSymbolAttributes: THighlightAttributes;
+    FCommentAttributes: THighlightAttributes;
+    FIdentifierAttributes: THighlightAttributes;
     FSpaceAttributes: THighlightAttributes;
+    FQuotedIDAttributes: THighlightAttributes;
     procedure RuleToToken(Rule: Integer);
     function IsKeyword: Boolean;
     function GetNextChar: Char;
@@ -691,16 +696,16 @@ type
     property TokenPosition: Cardinal read FTokenPos;
   published
     property CommentAttributes: THighlightAttributes index 1 read FCommentAttributes write SetAttribute;
-    property CommentWithCommandAttributes: THighlightAttributes index 8 read FCommentWithCommandAttributes write SetAttribute;
     property EmbeddedCommandAttributes: THighlightAttributes index 7 read FEmbeddedCommandAttributes write SetAttribute;
     property IdentifierAttributes: THighlightAttributes index 2 read FIdentifierAttributes write SetAttribute;
     property KeyAttributes: THighlightAttributes index 3 read FKeyAttributes write SetAttribute;
     property NumberAttributes: THighlightAttributes index 4 read FNumberAttributes write SetAttribute;
+    property QuotedIDAttributes: THighlightAttributes index 11 read FQuotedIDAttributes write SetAttribute;
     property SpaceAttributes: THighlightAttributes index 5 read FSpaceAttributes write SetAttribute;
     property StringAttributes: THighlightAttributes index 6 read FStringAttributes write SetAttribute;
     property SymbolAttributes: THighlightAttributes index 7 read FSymbolAttributes write SetAttribute;
     property SystemVariableAttributes: THighlightAttributes index 9 read FSystemVariableAttributes write SetAttribute;
-    property UserVariableAttributes: THighlightAttributes index 10 read FuserVariableAttributes write SetAttribute;
+    property UserVariableAttributes: THighlightAttributes index 10 read FUserVariableAttributes write SetAttribute;
   end;
  
 //----------------------------------------------------------------------------------------------------------------------
@@ -718,143 +723,193 @@ type TTransition = record
      end;
 
 const
-  MarkPositionCount = 38;
-  MatchCount        = 38;
-  TransitionCount   = 92;
-  StateCount        = 46;
+  MarkPositionCount = 59;
+  MatchCount        = 59;
+  TransitionCount   = 132;
+  StateCount        = 77;
 
   MarkPositionTable : array[0..MarkPositionCount - 1] of Integer = (
-    14, 14, 17, 0, 16, 16, 2, 3, 16, 16, 16, 7, 16, 8, 16, 16, 10, 16, 16, 2, 16, 
-    16, 12, 13, 14, 15, 0, 1, 3, 3, 5, 9, 11, 1, 3, 4, 6, 1);
+    26, 26, 23, 23, 9, 9, 13, 13, 17, 17, 29, 0, 28, 28, 0, 28, 5, 28, 4, 5, 28, 
+    28, 8, 28, 12, 28, 16, 28, 28, 21, 28, 28, 4, 28, 28, 26, 27, 23, 24, 9, 10, 
+    11, 13, 14, 15, 17, 18, 19, 0, 1, 5, 6, 20, 25, 1, 7, 22, 2, 3);
 
   MatchTable : array [0..MatchCount - 1] of Integer = (
-    14, 14, 17, 0, 16, 16, 2, 3, 16, 16, 16, 7, 16, 8, 16, 16, 10, 16, 16, 2, 16, 
-    16, 12, 13, 14, 15, 0, 1, 3, 3, 5, 9, 11, 1, 3, 4, 6, 1);
+    26, 26, 23, 23, 9, 9, 13, 13, 17, 17, 29, 0, 28, 28, 0, 28, 5, 28, 4, 5, 28, 
+    28, 8, 28, 12, 28, 16, 28, 28, 21, 28, 28, 4, 28, 28, 26, 27, 23, 24, 9, 10, 
+    11, 13, 14, 15, 17, 18, 19, 0, 1, 5, 6, 20, 25, 1, 7, 22, 2, 3);
 
   TransitionTable : array [0..TransitionCount - 1] of TTransition = (
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#1..#9, #11..' ']; NextState: 20),
-    (CharClass: [#10]; NextState: 11),
-    (CharClass: ['!', '$'..'&', '('..'*', ',', '.', ':'..'?', '['..'^', '{'..#255]; NextState: 21),
-    (CharClass: ['"']; NextState: 16),
-    (CharClass: ['#']; NextState: 18),
-    (CharClass: ['''']; NextState: 15),
-    (CharClass: ['+']; NextState: 10),
-    (CharClass: ['-']; NextState: 17),
-    (CharClass: ['/']; NextState: 19),
-    (CharClass: ['0'..'9']; NextState: 9),
-    (CharClass: ['@']; NextState: 14),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 12),
-    (CharClass: ['`']; NextState: 13),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#1..#9, #11..' ']; NextState: 20),
-    (CharClass: [#10]; NextState: 11),
-    (CharClass: ['!', '$'..'&', '('..'*', ',', '.', ':'..'?', '['..'^', '{'..#255]; NextState: 21),
-    (CharClass: ['"']; NextState: 16),
-    (CharClass: ['#']; NextState: 18),
-    (CharClass: ['''']; NextState: 15),
-    (CharClass: ['+']; NextState: 10),
-    (CharClass: ['-']; NextState: 17),
-    (CharClass: ['/']; NextState: 19),
-    (CharClass: ['0'..'9']; NextState: 9),
-    (CharClass: ['@']; NextState: 14),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 12),
-    (CharClass: ['`']; NextState: 13),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#1..')', '+'..#255]; NextState: 22),
-    (CharClass: ['*']; NextState: 23),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#1..')', '+'..#255]; NextState: 22),
-    (CharClass: ['*']; NextState: 23),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#1..')', '+'..#255]; NextState: 24),
-    (CharClass: ['*']; NextState: 25),
-    (CharClass: [#0]; NextState: 8),
-    (CharClass: [#1..')', '+'..#255]; NextState: 24),
-    (CharClass: ['*']; NextState: 25),
-    (CharClass: ['.']; NextState: 27),
-    (CharClass: ['0'..'9']; NextState: 26),
-    (CharClass: ['A'..'D', 'F'..'Z', '_', 'a'..'d', 'f'..'z']; NextState: 29),
-    (CharClass: ['E', 'e']; NextState: 28),
-    (CharClass: ['0'..'9']; NextState: 30),
-    (CharClass: [#1..' ']; NextState: 11),
-    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 29),
-    (CharClass: ['0'..'9']; NextState: 32),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 31),
-    (CharClass: ['0'..'9']; NextState: 34),
-    (CharClass: ['@']; NextState: 35),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 33),
-    (CharClass: ['-']; NextState: 36),
-    (CharClass: ['0'..'9']; NextState: 30),
-    (CharClass: ['*']; NextState: 37),
-    (CharClass: [#1..' ']; NextState: 11),
-    (CharClass: [#1..')', '+'..#255]; NextState: 22),
-    (CharClass: [#1..')', '+'..#255]; NextState: 24),
-    (CharClass: ['.']; NextState: 27),
-    (CharClass: ['0'..'9']; NextState: 26),
-    (CharClass: ['A'..'D', 'F'..'Z', '_', 'a'..'d', 'f'..'z']; NextState: 29),
-    (CharClass: ['E', 'e']; NextState: 28),
-    (CharClass: ['0'..'9']; NextState: 27),
-    (CharClass: ['E', 'e']; NextState: 38),
-    (CharClass: ['+', '-']; NextState: 39),
-    (CharClass: ['0'..'9']; NextState: 40),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 29),
-    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 29),
-    (CharClass: ['.']; NextState: 27),
-    (CharClass: ['0'..'9']; NextState: 30),
-    (CharClass: ['E', 'e']; NextState: 41),
-    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 31),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..#9, #11..' ']; NextState: 28),
+    (CharClass: [#10]; NextState: 19),
+    (CharClass: ['!', '$'..'&', '('..'*', ',', '.', ':'..'?', '['..'^', '{'..#255]; NextState: 29),
+    (CharClass: ['"']; NextState: 23),
+    (CharClass: ['#']; NextState: 26),
+    (CharClass: ['''']; NextState: 22),
+    (CharClass: ['+']; NextState: 16),
+    (CharClass: ['-']; NextState: 25),
+    (CharClass: ['/']; NextState: 27),
+    (CharClass: ['0']; NextState: 17),
+    (CharClass: ['1'..'9']; NextState: 15),
+    (CharClass: ['@']; NextState: 21),
+    (CharClass: ['A'..'W', 'Y'..'Z', '_', 'a'..'w', 'y'..'z']; NextState: 20),
+    (CharClass: ['X', 'x']; NextState: 18),
+    (CharClass: ['`']; NextState: 24),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..#9, #11..' ']; NextState: 28),
+    (CharClass: [#10]; NextState: 19),
+    (CharClass: ['!', '$'..'&', '('..'*', ',', '.', ':'..'?', '['..'^', '{'..#255]; NextState: 29),
+    (CharClass: ['"']; NextState: 23),
+    (CharClass: ['#']; NextState: 26),
+    (CharClass: ['''']; NextState: 22),
+    (CharClass: ['+']; NextState: 16),
+    (CharClass: ['-']; NextState: 25),
+    (CharClass: ['/']; NextState: 27),
+    (CharClass: ['0']; NextState: 17),
+    (CharClass: ['1'..'9']; NextState: 15),
+    (CharClass: ['@']; NextState: 21),
+    (CharClass: ['A'..'W', 'Y'..'Z', '_', 'a'..'w', 'y'..'z']; NextState: 20),
+    (CharClass: ['X', 'x']; NextState: 18),
+    (CharClass: ['`']; NextState: 24),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..')', '+'..#255]; NextState: 30),
+    (CharClass: ['*']; NextState: 31),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..')', '+'..#255]; NextState: 30),
+    (CharClass: ['*']; NextState: 31),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..')', '+'..#255]; NextState: 32),
+    (CharClass: ['*']; NextState: 33),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..')', '+'..#255]; NextState: 32),
+    (CharClass: ['*']; NextState: 33),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..'&', '('..'[', ']'..#255]; NextState: 34),
+    (CharClass: ['''']; NextState: 36),
+    (CharClass: ['\']; NextState: 35),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..'&', '('..'[', ']'..#255]; NextState: 34),
+    (CharClass: ['''']; NextState: 36),
+    (CharClass: ['\']; NextState: 35),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..'!', '#'..'[', ']'..#255]; NextState: 37),
+    (CharClass: ['"']; NextState: 39),
+    (CharClass: ['\']; NextState: 38),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..'!', '#'..'[', ']'..#255]; NextState: 37),
+    (CharClass: ['"']; NextState: 39),
+    (CharClass: ['\']; NextState: 38),
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..'[', ']'..'_', 'a'..#255]; NextState: 40),
+    (CharClass: ['\']; NextState: 41),
     (CharClass: ['`']; NextState: 42),
-    (CharClass: ['0'..'9']; NextState: 32),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 31),
-    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 33),
-    (CharClass: ['0'..'9']; NextState: 34),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 33),
-    (CharClass: ['0'..'9']; NextState: 35),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 43),
-    (CharClass: ['+', '-']; NextState: 44),
-    (CharClass: ['0'..'9']; NextState: 45),
-    (CharClass: ['0'..'9']; NextState: 45),
-    (CharClass: ['0'..'9']; NextState: 40),
-    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 29),
-    (CharClass: ['+', '-']; NextState: 39),
-    (CharClass: ['0'..'9']; NextState: 45),
-    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 43),
-    (CharClass: ['0'..'9']; NextState: 45),
-    (CharClass: ['0'..'9']; NextState: 45)
+    (CharClass: [#0]; NextState: 14),
+    (CharClass: [#1..'[', ']'..'_', 'a'..#255]; NextState: 40),
+    (CharClass: ['\']; NextState: 41),
+    (CharClass: ['`']; NextState: 42),
+    (CharClass: ['.']; NextState: 44),
+    (CharClass: ['0'..'9']; NextState: 43),
+    (CharClass: ['E', 'e']; NextState: 45),
+    (CharClass: ['0'..'9']; NextState: 46),
+    (CharClass: ['.']; NextState: 44),
+    (CharClass: ['0'..'9']; NextState: 43),
+    (CharClass: ['E', 'e']; NextState: 45),
+    (CharClass: ['x']; NextState: 47),
+    (CharClass: ['''']; NextState: 48),
+    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 49),
+    (CharClass: [#1..' ']; NextState: 19),
+    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 49),
+    (CharClass: ['@']; NextState: 51),
+    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 50),
+    (CharClass: ['-']; NextState: 52),
+    (CharClass: ['0'..'9']; NextState: 46),
+    (CharClass: ['*']; NextState: 53),
+    (CharClass: [#1..' ']; NextState: 19),
+    (CharClass: [#1..')', '+'..#255]; NextState: 30),
+    (CharClass: [#1..')', '+'..#255]; NextState: 32),
+    (CharClass: [#1..'&', '('..'[', ']'..#255]; NextState: 34),
+    (CharClass: [#1..'!', '#'..'[', ']'..#255]; NextState: 37),
+    (CharClass: [#1..'[', ']'..'_', 'a'..#255]; NextState: 40),
+    (CharClass: ['.']; NextState: 44),
+    (CharClass: ['0'..'9']; NextState: 43),
+    (CharClass: ['E', 'e']; NextState: 45),
+    (CharClass: ['0'..'9']; NextState: 44),
+    (CharClass: ['E', 'e']; NextState: 54),
+    (CharClass: ['+', '-']; NextState: 55),
+    (CharClass: ['0'..'9']; NextState: 56),
+    (CharClass: ['.']; NextState: 44),
+    (CharClass: ['0'..'9']; NextState: 46),
+    (CharClass: ['E', 'e']; NextState: 45),
+    (CharClass: ['h']; NextState: 57),
+    (CharClass: ['h']; NextState: 58),
+    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 49),
+    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 50),
+    (CharClass: ['A'..'Z', '_', 'a'..'z']; NextState: 59),
+    (CharClass: ['!']; NextState: 60),
+    (CharClass: ['+', '-']; NextState: 61),
+    (CharClass: ['0'..'9']; NextState: 56),
+    (CharClass: ['0'..'9']; NextState: 56),
+    (CharClass: ['0'..'9']; NextState: 56),
+    (CharClass: ['e']; NextState: 62),
+    (CharClass: ['e']; NextState: 63),
+    (CharClass: ['0'..'9', 'A'..'Z', '_', 'a'..'z']; NextState: 59),
+    (CharClass: ['0'..'9']; NextState: 56),
+    (CharClass: ['x']; NextState: 64),
+    (CharClass: ['x']; NextState: 65),
+    (CharClass: ['d']; NextState: 66),
+    (CharClass: ['d']; NextState: 67),
+    (CharClass: ['i']; NextState: 68),
+    (CharClass: ['i']; NextState: 69),
+    (CharClass: ['g']; NextState: 70),
+    (CharClass: ['g']; NextState: 71),
+    (CharClass: ['i']; NextState: 72),
+    (CharClass: ['i']; NextState: 73),
+    (CharClass: ['t']; NextState: 74),
+    (CharClass: ['t']; NextState: 75),
+    (CharClass: ['h']; NextState: 57),
+    (CharClass: ['''']; NextState: 76),
+    (CharClass: ['h']; NextState: 58)
     );
 
   MarksLow : array [0..StateCount-1] of Integer = (
-    0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 15, 16, 18, 19, 21, 22, 
-    23, 24, 25, 26, 27, 28, 29, 30, 30, 30, 30, 31, 31, 31, 32, 33, 33, 33, 35, 
-    35, 36, 37, 37);
+    0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 18, 19, 21, 22, 
+    24, 26, 28, 29, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 
+    47, 48, 49, 50, 50, 50, 50, 50, 51, 52, 52, 53, 54, 54, 54, 55, 55, 55, 56, 
+    57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 58, 58);
 
   MarksHigh : array [0..StateCount-1] of Integer = (
-    -1, -1, -1, -1, -1, -1, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 14, 15, 17, 18, 20, 
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29, 29, 30, 30, 30, 31, 32, 32, 32, 
-    34, 34, 35, 36, 36, 37);
+    -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 17, 18, 20, 21, 
+    23, 25, 27, 28, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 
+    46, 47, 48, 49, 49, 49, 49, 49, 50, 51, 51, 52, 53, 53, 53, 54, 54, 54, 55, 
+    56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 57, 57, 58);
 
   MatchesLow : array [0..StateCount-1] of Integer = (
-    0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 15, 16, 18, 19, 21, 22, 
-    23, 24, 25, 26, 27, 28, 29, 30, 30, 30, 30, 31, 31, 31, 32, 33, 33, 33, 35, 
-    35, 36, 37, 37);
+    0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 18, 19, 21, 22, 
+    24, 26, 28, 29, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 
+    47, 48, 49, 50, 50, 50, 50, 50, 51, 52, 52, 53, 54, 54, 54, 55, 55, 55, 56, 
+    57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 58, 58);
 
   MatchesHigh : array [0..StateCount-1] of Integer = (
-    -1, -1, -1, -1, -1, -1, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 14, 15, 17, 18, 20, 
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29, 29, 30, 30, 30, 31, 32, 32, 32, 
-    34, 34, 35, 36, 36, 37);
+    -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 17, 18, 20, 21, 
+    23, 25, 27, 28, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 
+    46, 47, 48, 49, 49, 49, 49, 49, 50, 51, 51, 52, 53, 53, 53, 54, 54, 54, 55, 
+    56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 57, 57, 58);
 
   TransitionsLow : array [0..StateCount-1] of Integer = (
-    0, 1, 2, 16, 30, 33, 36, 39, 42, 42, 46, 47, 48, 49, 51, 54, 54, 54, 56, 56, 
-    57, 58, 58, 59, 59, 60, 60, 64, 66, 69, 70, 73, 75, 77, 78, 80, 82, 82, 82, 
-    84, 85, 87, 89, 89, 90, 91);
+    0, 1, 2, 18, 34, 37, 40, 43, 46, 50, 54, 58, 62, 66, 70, 70, 73, 74, 78, 80, 
+    81, 82, 84, 84, 84, 84, 86, 86, 87, 88, 88, 89, 89, 90, 90, 91, 91, 91, 92, 
+    92, 92, 93, 93, 93, 96, 98, 100, 103, 104, 105, 106, 107, 108, 108, 109, 111, 
+    112, 113, 114, 115, 116, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 
+    127, 128, 129, 130, 132);
 
   TransitionsHigh : array [0..StateCount-1] of Integer = (
-    0, 1, 15, 29, 32, 35, 38, 41, 41, 45, 46, 47, 48, 50, 53, 53, 53, 55, 55, 56, 
-    57, 57, 58, 58, 59, 59, 63, 65, 68, 69, 72, 74, 76, 77, 79, 81, 81, 81, 83, 
-    84, 86, 88, 88, 89, 90, 91);
+    0, 1, 17, 33, 36, 39, 42, 45, 49, 53, 57, 61, 65, 69, 69, 72, 73, 77, 79, 80, 
+    81, 83, 83, 83, 83, 85, 85, 86, 87, 87, 88, 88, 89, 89, 90, 90, 90, 91, 91, 
+    91, 92, 92, 92, 95, 97, 99, 102, 103, 104, 105, 106, 107, 107, 108, 110, 111, 
+    112, 113, 114, 115, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 
+    127, 128, 129, 131, 131);
 
 type // keyword table support
      TKeyword = record
@@ -910,6 +965,7 @@ const KeywordCount = 581;
         (Keyword: 'CALL'; Token: kwCALL), 
         (Keyword: 'CASCADE'; Token: kwCASCADE), 
         (Keyword: 'CASCADED'; Token: kwCASCADED), 
+        (Keyword: 'CASE'; Token: kwCASE), 
         (Keyword: 'CAST'; Token: kwCAST), 
         (Keyword: 'CHAIN'; Token: kwCHAIN), 
         (Keyword: 'CHANGE'; Token: kwCHANGE), 
@@ -1200,7 +1256,6 @@ const KeywordCount = 581;
         (Keyword: 'MULTIPOLYGONFROMTEXT'; Token: kwMULTIPOLYGONFROMTEXT), 
         (Keyword: 'MULTIPOLYGONFROMWKB'; Token: kwMULTIPOLYGONFROMWKB), 
         (Keyword: 'MUTEX'; Token: kwMUTEX), 
-        (Keyword: 'NAME'; Token: kwNAME), 
         (Keyword: 'NAMES'; Token: kwNAMES), 
         (Keyword: 'NATIONAL'; Token: kwNATIONAL), 
         (Keyword: 'NATURAL'; Token: kwNATURAL), 
@@ -1493,10 +1548,10 @@ begin
   FSpaceAttributes := THighlightAttributes.Create('space');
   FStringAttributes := THighlightAttributes.Create('String');
   FSymbolAttributes := THighlightAttributes.Create('symbol');
-  FCommentWithCommandAttributes := THighlightAttributes.Create('comment with command');
   FEmbeddedCommandAttributes := THighlightAttributes.Create('embedded command');
   FSystemVariableAttributes := THighlightAttributes.Create('system variable');
   FUserVariableAttributes := THighlightAttributes.Create('user variable');
+  FQuotedIDAttributes := THighlightAttributes.Create('quoted identifier');
  
   FCommentAttributes.Onchange := HighlightChange;
   FIdentifierAttributes.Onchange := HighlightChange;
@@ -1505,10 +1560,10 @@ begin
   FSpaceAttributes.Onchange := HighlightChange;
   FStringAttributes.Onchange := HighlightChange;
   FSymbolAttributes.Onchange := HighlightChange;
-  FCommentWithCommandAttributes.Onchange := HighlightChange;
   FEmbeddedCommandAttributes.Onchange := HighlightChange;
   FSystemVariableAttributes.Onchange := HighlightChange;
   FUserVariableAttributes.Onchange := HighlightChange;
+  FQuotedIDAttributes.Onchange := HighlightChange;
  
   DefaultFilter := 'SQL script files (*.sql)|*.sql';
 end;
@@ -1527,10 +1582,10 @@ begin
   FSpaceAttributes.Free;
   FStringAttributes.Free;
   FSymbolAttributes.Free;
-  FCommentWithCommandAttributes.Free;
   FEmbeddedCommandAttributes.Free;
   FSystemVariableAttributes.Free;
   FUserVariableAttributes.Free;
+  FQuotedIDAttributes.Free;
  
   inherited;
 end;
@@ -1611,63 +1666,50 @@ begin
       0: 
         SetToken(INTEGERNUMBER);
        
-    // <Normal>¤realinteger¤
+    // <Normal>¤float¤
       1: 
         SetToken(FLOATNUMBER);
        
-    // <Normal>¤white¤+
+    // <Normal>0x¤hexnumber¤
       2: 
+        SetToken(HEXNUMBER);
+       
+    // <Normal>[xX]\'¤hexnumber¤\'
+      3: 
+        SetToken(HEXSTRING);
+       
+    // <Normal>¤white¤+
+      4: 
         SetToken(WHITESPACE);
        
     // <Normal>¤identifier¤
-      3: 
-        if IsKeyword then
-          SetToken(KEYWORD)
-        else
-          SetToken(IDENTIFIER);
-       
-    // <Normal>`¤identifier¤`
-      4: 
+      5: 
         if IsKeyword then
           SetToken(KEYWORD)
         else
           SetToken(IDENTIFIER);
        
     // <Normal>@¤identifier¤
-      5: 
+      6: 
         SetToken(USER_VARIABLE);
        
     // <Normal>@@¤identifier¤
-      6: 
+      7: 
         SetToken(SYSTEM_VARIABLE);
        
     // <Normal>'
-      7: 
-        repeat
-          case CurrentChar of
-            '''',
-            CR, #0 :
-              begin
-                if CurrentChar = '''' then
-                  NextChar;
-                SetToken(STRINGCONSTANT);
-                Break;
-              end;
-            '\': // Escape character, skip this and the next one.
-              NextChar;
-          end;
-          NextChar;
-        until False;
-       
-    // <Normal>\"
       8: 
         repeat
           case CurrentChar of
-            '"',
-            CR, #0 :
+            '''':
               begin
-                if CurrentChar = '"' then
-                  NextChar;
+                NextChar;
+                SetToken(STRINGCONSTANT);
+                Break;
+              end;
+            #0:
+              begin
+                State := MLString;
                 SetToken(STRINGCONSTANT);
                 Break;
               end;
@@ -1677,8 +1719,112 @@ begin
           NextChar;
         until False;
        
-    // <Normal>"--"
+    // <MLString>[^'\\]*
       9: 
+        SetToken(STRINGCONSTANT);
+       
+    // <MLString>\\
+      10: 
+        begin
+          // Skip the next char. This is an escape sequence.
+          SetToken(STRINGCONSTANT);
+          if CurrentChar <> #0 then
+            NextChar;
+        end;
+       
+    // <MLString>'
+      11: 
+        begin
+          SetToken(STRINGCONSTANT);
+          State := Normal;
+        end;
+       
+    // <Normal>\"
+      12: 
+        repeat
+          case CurrentChar of
+            '"':
+              begin
+                NextChar;
+                SetToken(QUOTED_ID);
+                Break;
+              end;
+            #0:
+              begin
+                State := DoubleQuotes;
+                SetToken(QUOTED_ID);
+                Break;
+              end;
+            '\': // Escape character, skip this and the next one.
+              NextChar;
+          end;
+          NextChar;
+        until False;
+       
+    // <DoubleQuotes>[^\"\\]*
+      13: 
+        SetToken(QUOTED_ID);
+       
+    // <DoubleQuotes>\\
+      14: 
+        begin
+          // Skip the next char. This is an escape sequence.
+          SetToken(QUOTED_ID);
+          if CurrentChar <> #0 then
+            NextChar;
+        end;
+       
+    // <DoubleQuotes>\"
+      15: 
+        begin
+          SetToken(QUOTED_ID);
+          State := Normal;
+        end;
+       
+    // <Normal>`
+      16: 
+        repeat
+          case CurrentChar of
+            '`':
+              begin
+                NextChar;
+                SetToken(QUOTED_ID);
+                Break;
+              end;
+            #0:
+              begin
+                State := BackTickQuotes;
+                SetToken(QUOTED_ID);
+                Break;
+              end;
+            '\': // Escape character, skip this and the next one.
+              NextChar;
+          end;
+          NextChar;
+        until False;
+       
+    // <BackTickQuotes>[^`\\]*
+      17: 
+        SetToken(QUOTED_ID);
+       
+    // <BackTickQuotes>\\
+      18: 
+        begin
+          // Skip the next char. This is an escape sequence.
+          SetToken(QUOTED_ID);
+          if CurrentChar <> #0 then
+            NextChar;
+        end;
+       
+    // <BackTickQuotes>`
+      19: 
+        begin
+          SetToken(QUOTED_ID);
+          State := Normal;
+        end;
+       
+    // <Normal>"--"
+      20: 
         if CurrentChar in [CR, #0, ' '] then
         begin
           SetToken(SLCOMMENT);
@@ -1698,7 +1844,7 @@ begin
           SetToken(SYMBOL);
        
     // <Normal>"#"
-      10: 
+      21: 
         repeat
           case CurrentChar of
             CR, #0:
@@ -1710,8 +1856,46 @@ begin
           NextChar;
         until False;
        
+    // <Normal>"/*!"
+      22: 
+        repeat
+          case CurrentChar of
+            '*':
+              if Lookahead = '/' then
+              begin
+                // skip lookahead and break loop
+                NextChar;
+                NextChar;
+                SetToken(EMBEDDED_COMMAND);
+                Break;
+              end;
+            #0:
+              begin
+                State := EmbeddedCommand;
+                SetToken(EMBEDDED_COMMAND);
+                Break;
+              end;
+          end;
+          NextChar;
+        until False;
+       
+    // <EmbeddedCommand>[^\*]*
+      23: 
+        SetToken(EMBEDDED_COMMAND);
+       
+    // <EmbeddedCommand>\*
+      24: 
+        begin
+          SetToken(EMBEDDED_COMMAND);
+          if CurrentChar = '/' then
+          begin
+            NextChar;
+            State := Normal;
+          end;
+        end;
+       
     // <Normal>"/*"
-      11: 
+      25: 
         repeat
           case CurrentChar of
             '*':
@@ -1729,22 +1913,16 @@ begin
                 SetToken(MLCOMMENT);
                 Break;
               end;
-            '!': // Very special syntax for MySQL: command in comment.
-              begin
-                State := EmbeddedCommand;
-                SetToken(COMMENT_WITH_COMMAND);
-                Break;
-              end;
           end;
           NextChar;
         until False;
        
-    // <MultilineComment>[^\*]+
-      12: 
+    // <MultilineComment>[^\*]*
+      26: 
         SetToken(MLCOMMENT);
        
     // <MultilineComment>\*
-      13: 
+      27: 
         begin
           SetToken(MLCOMMENT);
           if CurrentChar = '/' then
@@ -1754,29 +1932,12 @@ begin
           end;
         end;
        
-    // <EmbeddedCommand>[^\*]*
-      14: 
-        SetToken(EMBEDDED_COMMAND);
-       
-    // <EmbeddedCommand>\*
-      15: 
-        begin
-          if CurrentChar = '/' then
-          begin
-            SetToken(COMMENT_WITH_COMMAND);
-            NextChar;
-            State := Normal;
-          end
-          else
-            SetToken(EMBEDDED_COMMAND);
-        end;
-       
     // <Normal>.
-      16: 
+      28: 
         SetToken(SYMBOL); // Any other char not catchd before.
        
     // ¤eof¤
-      17: 
+      29: 
         SetToken(-1); // Special token to mark input end. Not really necessary since EOI is catched automatically.
   end;
 end;
@@ -2026,12 +2187,6 @@ begin
           Foreground := ColorToRGB(FSymbolAttributes.Foreground);
           Style := FSymbolAttributes.Style;
         end;
-      COMMENT_WITH_COMMAND:
-        begin
-          Background := ColorToRGB(FCommentWithCommandAttributes.Background);
-          Foreground := ColorToRGB(FCommentWithCommandAttributes.Foreground);
-          Style := FEmbeddedCommandAttributes.Style;
-        end;
       EMBEDDED_COMMAND:
         begin
           Background := ColorToRGB(FEmbeddedCommandAttributes.Background);
@@ -2049,6 +2204,12 @@ begin
           Background := ColorToRGB(FUserVariableAttributes.Background);
           Foreground := ColorToRGB(FUserVariableAttributes.Foreground);
           Style := FUserVariableAttributes.Style;
+        end;
+      QUOTED_ID:
+        begin
+          Background := ColorToRGB(FQuotedIDAttributes.Background);
+          Foreground := ColorToRGB(FQuotedIDAttributes.Foreground);
+          Style := FQuotedIDAttributes.Style;
         end;
     end;
   end;
@@ -2108,12 +2269,12 @@ begin
       Result := FSymbolAttributes;
     7:
       Result := FEmbeddedCommandAttributes;
-    8:
-      Result := FCommentWithCommandAttributes;
     9:
       Result := FSystemVariableAttributes;
     10:
       Result := FUserVariableAttributes;
+    11:
+      Result := FQuotedIDAttributes;
   else
     Result := nil;
   end;
@@ -2149,12 +2310,12 @@ begin
       FSymbolAttributes.Assign(Value);
     7:
       FEmbeddedCommandAttributes.Assign(Value);
-    8:
-      FCommentWithCommandAttributes.Assign(Value);
     9:
       FSystemVariableAttributes.Assign(Value);
     10:
       FUserVariableAttributes.Assign(Value);
+    11:
+      FQuotedIDAttributes.Assign(Value);
   end;
 end;
  

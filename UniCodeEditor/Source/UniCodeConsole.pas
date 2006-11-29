@@ -140,7 +140,6 @@ type
     property Keystrokes;
     property LineNumberFont;
     property MarginColor;
-    property MaxRightChar;
     property MaxUndo;
     property Name;
     property Options;
@@ -170,6 +169,7 @@ type
     property OnDragOver;
     property OnEndDrag;
     property OnEnter;
+    property OnFocusChanged;
     property OnExit;
     property OnKeyDown;
     property OnKeyPress;
@@ -299,9 +299,6 @@ begin
       ((Key = VK_END) and (Shift = [ssShift]))) then
     ClearSelection;
 
-  if (Content.Count > 0) and (Length(Content[CaretY].Text) >= MaxRightChar) then
-    MaxRightChar := MaxRightChar + 20;
-
   if (Key = VK_Return) and (Shift<>[ssShift]) then
   begin
     Cmd := GetConsoleCommand;
@@ -310,7 +307,7 @@ begin
     if (CompareText(CmdTrimmed, 'cls') = 0) then
     begin
       Content.Clear;
-      MaxRightChar := 80;
+      ClientWidth := Width;
 
       PrepareNextConsoleCommand;
       Invalidate;
