@@ -1,0 +1,121 @@
+// September 2004:
+//   - Bug fix: Handling of the HDN_GETDISPINFOW notification message. It also causes an AV in Kernel32 under certain
+//              circumstances.
+//   - Bug fix: Handling of owner drawn TButton controls improved. Their own drawing is now executed instead of that of TM.
+//   - Improvement: TSplitter subclassing (background erasing).
+//   - Improvement: Collection of child controls when a control is added for subclassing.
+// August 2004:
+//   - Bug fix: Mantis #143.
+//   - Bug fix: Mantis #109.
+//   - Bug fix: Mantis #159.
+// July 2004:
+//   - Bug fix: FPendingFormsList and FPendingRecreationList are now released after all other structers (which might
+//              access them) have been freed.
+//   - Bug fix: Docked and double buffered forms now paint the correct background.
+// June 2004
+//   - Improvement: The main window hook is only installed on themed systems.
+// April 2004
+//   - Bug fix: Free notification switched on for all controls (Mantis bug #114).
+// November 2003
+//   - Bug fix: The original method for buttons was not called for CM_MOUSENTER and CM_MOUSELEAVE.
+// July 2003
+//   - Bug fix: Sometimes theming was lost due to window recreation.
+// June 2003
+//   - Improvement: Inactive states added for various window buttons (min, max, close, help etc.).
+//   - Enabled subclassing only for systems with Windows XP or higher.
+// March 2003
+//   - Bug fix: Text color for TSpeedButton and TBitBtn when disabled.
+// February 2003
+//   - Bug fix: Changed removal scheme, to avoid shut down problems.
+//   - Bug fix: Text color for TSpeedButton and TBitBtn.
+// January 2003
+//   - Bug fix: MDI child forms are now correctly themed (Mantis bug #70).
+//   - Improvement: Handling of new XP feature: variable focus rectangle border width and height.
+//   - Bug fix: Exception on IDE or application shutdown, due to missing deallocation call in the theme services unit.
+// November 2002
+//   - Improvement: Explicitly clear window lists when a Theme Manager instance is destroyed.
+// October 2002
+//   - Work around: If a window's handle is destroyed without being recreated before the control is physically destroyed
+//                  then TThemeManager will never get a usable notification and never remove the subclassing. Hence
+//                  TM takes care now to really recreate the handle.
+// September 2002
+//   - Bug fix: Check for CM_DENYSUBCLASSING was wrong in HandleControlChange.
+//   - CheckListSupport switch introduced.
+//   - Improved options synchronization between Theme Manager instances.
+//   - TThemeServices now explicitly checks for the STAP_ALLOW_CONTROLS option (independant of TThemeManager).
+//   - Handle recreation for TListView changed. It caused trouble under some circumstances.
+//   - Removed flickering of disabled speed buttons with flat style.
+// August 2002
+//   - Windows XP theme services is now part of Delphi 7. All applicable fixes for theme support in the Delphi 7 VCL
+//     have been implemented. Hence neither TThemeServices nor TThemeMgr(Db) is needed anymore for D7 and better.
+//   - Improved support for selective subclassing. New event OnAllowSubclassing.
+// July 2002
+//   - Version 1.9
+//   - Improved control handling for subclass window procs (thanks to Vassiliev V.V., vassilievvv@mtu-net.ru).
+//   - WM_PRINTCLIENT handling for TPanel
+//   - Bug fix: broadcasting change messages during loading of the component causes troubles: deactivated.
+// June 2002
+//   - Version 1.7 + 1.8
+//   - PaintBorder moved to TThemeServices.
+//   - Minor changes.
+//   - Bug fix for wrong plus/minus button order in tree theme.
+//   - TCustomStaticText is now supported too.
+//   - Packages for Delphi 5 and 6 are now included. JwaUxTheme.pas and JwaTmSchema.pas are separated from Marcel
+//     van Brakel's Win32API and for Theme Manager only. They have been renamed to UxTheme and TmSchema, respectively.
+//     Win32API is no longer needed for TM.
+// May 2002
+//   - Bug fix in panel paint code.
+//   - Improved Delphi 4 compatibility.
+//   - Bug fix in DBLookupComboBox text display.
+// April 2002
+//   - TCheckListBox subclassing for themed check boxes.
+//   - Possibility to subclass controls twice (e.g. as TWinControl and as particular control class) removed.
+//   - Invalidation call in CollectControls if ParentControl is visible.
+//   - Improved form creation tracking.
+//   - Correct handling of the UI state for focus rectangle and accelerator keys (UI state is no longer forced at
+//     form creation, but set according to the key usage).
+//   - Stable DB Theme Manager.
+//   - Improved Delphi 4 compatibility.
+// March 2002
+//   - Root parts added to all themed elements.
+//   - Default state for bit buttons.
+//   - Button captions are no longer moved one pixel down and right in pressed state.
+//   - Correct handling for double buffered containers.
+//   - Speed button subclassing can individually be switched.
+//   - Frame and panel subclassing.
+//   - Tabsheet border painting.
+//   - Focus rectangle and keyboard accelerator painting fixed (UI state change is forced).
+//   - Subclassing of TWinControl (if not already in any of the other lists) to fix border painting.
+//   - TScrollingWinControl gets also a pseudo transparent background.
+//   - ControlMessage and Listeners implementation to allow an application to change the look of a control
+//     dynamically without having to subclass the control.
+//   - CM_DENYSUBCLASSING introduced.
+// February 2002
+//   - Auto removal of csCaptureMouse from TToolButton to make them appear correctly when pressed.
+//   - Fixed background painting for TButton.
+//   - Split of TThemeManager into two classes: TThemeManager and TThemeServices (and two units).
+//   - Themed painting of TSpeedButton and descentants (e.g. TNavButton in TDBNavigator).
+//   - Correct background painting for child controls of TTabSheet.
+//   - Support of all possible glyphs in TBitBtn and TSpeedButton.
+//   - Removed TToolbar subclassing (it is no longer necessary after removing TToolButton's csCaptureMouse control stlye).
+//   - Introduction of TThemeManagerDB (in ThemeMgrDB.pas) to fix DB controls (not finished yet).
+//   - Improved compatibility to Delphi/BCB versions prior 6.
+//   - Fixed status bar background painting (gradient, grip).
+//   - Improved control reference retrieval for the window procs.
+//   - Correct background painting for nested TPageControls and other controls which use WM_PRINTCLIENT to get
+//     their background.
+// January 2002
+//   - Removed dependency from TransparentBlt.
+//   - TToolBar subclassed to fix the wrong pressed state of the buttons (does not work yet).
+//   - Fixed TCoolBar transparency lost problem when switching theming.
+//   - Fixed TStatusBar repaint problem.
+//   - More checks for design time.
+//   - bug fixes
+//   - speed improvements
+//   - significant stability improvements
+//     + more checks
+//     + safer subclassing
+//     + Auto disable of subclassing for more then one instance.
+//     + Automatic take over if the main manager is destroyed.
+//   - Automatic transparency switch for TLabels and TToolbars.
+//   - bug fixes

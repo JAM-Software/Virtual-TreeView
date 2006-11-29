@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.4.17
+// Version 4.4.18
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// November 2006
+//   - Bug fix: Total height is wrong on reading from stream
 // September 2006
 //   - Bug fix: Mantis issue #326
 // July 2006
@@ -104,7 +106,7 @@ uses
   ;
 
 const
-  VTVersion = '4.4.17';
+  VTVersion = '4.4.18';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1939,6 +1941,8 @@ type
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode; overload;
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
+    procedure FixupTotalCount(Node: PVirtualNode);
+    procedure FixupTotalHeight(Node: PVirtualNode);
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
     function GetChildCount(Node: PVirtualNode): Cardinal;
@@ -6710,13 +6714,13 @@ begin
     // Make sure the whole hint is visible on the monitor. Don't forget multi-monitor systems with the
     // primary monitor not being at the top-left corner.
     if Rect.Top - Screen.DesktopTop + Height > Screen.DesktopHeight then
-      Rect.Top := Screen.DesktopHeight - Height+Screen.DesktopTop;
+      Rect.Top := Screen.DesktopHeight - Height + Screen.DesktopTop;
     if Rect.Left - Screen.DesktopLeft + Width > Screen.DesktopWidth then
-      Rect.Left := Screen.DesktopWidth - Width+Screen.DesktopLeft;
+      Rect.Left := Screen.DesktopWidth - Width + Screen.DesktopLeft;
     if Rect.Bottom - Screen.DesktopTop < Screen.DesktopTop then
-      Rect.Bottom := Screen.DesktopTop+ Screen.DesktopTop;
+      Rect.Bottom := Screen.DesktopTop + Screen.DesktopTop;
     if Rect.Left - Screen.DesktopLeft < Screen.DesktopLeft then
-      Rect.Left := Screen.DesktopLeft+Screen.DesktopLeft;
+      Rect.Left := Screen.DesktopLeft + Screen.DesktopLeft;
 
     // adjust sizes of bitmaps
     FDrawBuffer.Width := Width;
@@ -12511,6 +12515,62 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.FixupTotalCount(Node: PVirtualNode);
+
+// Called after loading a subtree from stream. The child count in each node is already set but not
+// their total count.
+
+var
+  Child: PVirtualNode;
+  
+begin
+  // Initial total count is set to one on node creation.
+  Child := Node.FirstChild;
+  while Assigned(Child) do
+  begin
+    FixupTotalCount(Child);
+    Inc(Node.TotalCount, Child.TotalCount);
+    Child := Child.NextSibling;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.FixupTotalHeight(Node: PVirtualNode);
+
+// Called after loading a subtree from stream. The individual height of each node is set already,
+// but their total height needs an adjustment depending on their visibility state.
+
+var
+  Child: PVirtualNode;
+  
+begin
+  // Initial total height is set to the node height on load.
+  Child := Node.FirstChild;
+
+  if vsExpanded in Node.States then
+  begin
+    while Assigned(Child) do
+    begin
+      FixupTotalHeight(Child);
+      if vsVisible in Child.States then
+        Inc(Node.TotalHeight, Child.TotalHeight);
+      Child := Child.NextSibling;
+    end;
+  end
+  else
+  begin
+    // The node is collapsed, so just update the total height of its child nodes.
+    while Assigned(Child) do
+    begin
+      FixupTotalHeight(Child);
+      Child := Child.NextSibling;
+    end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetCheckState(Node: PVirtualNode): TCheckState;
 
 begin
@@ -17301,10 +17361,11 @@ function TBaseVirtualTree.CountVisibleChildren(Node: PVirtualNode): Cardinal;
 
 begin
   Result := 0;
-  // its direct children
+
+  // The node's direct children...
   if vsExpanded in Node.States then
   begin
-    // and their children
+    // ...and their children.
     Node := Node.FirstChild;
     while Assigned(Node) do
     begin
@@ -20641,7 +20702,7 @@ begin
       DoStateChange([tsClearPending]);
 
     // immediate clearance
-    // Determine for the right mouse button if there is a popup menu. In this case and if drag'n drop is pending
+    // Determine for the right mouse button if there is a popup menu. In this is the case and if drag'n drop is pending
     // the current selection has to stay as it is.
     with HitInfo, Message do
       CanClear := not AutoDrag and
@@ -20910,27 +20971,44 @@ end;
 
 procedure TBaseVirtualTree.InternalAddFromStream(Stream: TStream; Version: Integer; Node: PVirtualNode);
 
-// Loads nodes from the given stream and adds them as children to Node.
+// Loads all details for Node (including its children) from the given stream.
 // Because the new nodes might be selected this method also fixes the selection array.
 
 var
   Stop: PVirtualNode;
-  LastVisibleCount: Cardinal;
   Index: Integer;
+  LastTotalHeight: Cardinal;
+  WasFullyVisible: Boolean;
 
 begin
-  if Node = nil then
-    Node := FRoot;
+  Assert(Node <> FRoot, 'The root node cannot be loaded from stream.');
 
-  // Read in the new nodes, keep number of visible nodes for a correction.
-  LastVisibleCount := FVisibleCount;
+  // Keep the current total height value of Node as it has already been applied
+  // but might change in the load and fixup code. We have to adjust that afterwards.
+  LastTotalHeight := Node.TotalHeight;
+  WasFullyVisible := FullyVisible[Node];
+
+  // Read in the new nodes.
   ReadNode(Stream, Version, Node);
 
-  // I need to fix the visible count here because of the hierarchical load procedure.
-  if (Node = FRoot) or ([vsExpanded, vsVisible] * Node.Parent.States = [vsExpanded, vsVisible]) then
-    FVisibleCount := LastVisibleCount + CountVisibleChildren(Node)
+  // One time update of node-internal states and the global visibility counter.
+  // This is located here to ease and speed up the loading process.
+  FixupTotalCount(Node);
+  AdjustTotalCount(Node.Parent, Node.TotalCount - 1, True); // -1 because Node itself was already set.
+  FixupTotalHeight(Node);
+  AdjustTotalHeight(Node.Parent, Node.TotalHeight - LastTotalHeight, True);
+
+  // New nodes are always visible, so the visible node count has been increased already.
+  // If Node is now invisible we have to take back this increment and don't need to add any visible child node.
+  if not FullyVisible[Node] then
+  begin
+    if WasFullyVisible then
+      Dec(FVisibleCount);
+  end
   else
-    FVisibleCount := LastVisibleCount;
+    // It can never happen that the node is now fully visible but was not before as this would require
+    // that the visibility state of one of its parents has changed, which cannot happen during loading.
+    Inc(FVisibleCount, CountVisibleChildren(Node));
 
   // Fix selection array.
   ClearTempCache;
@@ -22119,13 +22197,6 @@ begin
 
             ReadNode(Stream, Version, Run);
             Dec(ChunkBody.ChildCount);
-
-            // Only add this one node. Due to recursive loading all children have been added already.
-            AdjustTotalCount(Node, 1, True);
-
-            // The total height is not stored in the stream so we have to determine it on-the-fly.
-            if (vsVisible in Run.States) and (vsExpanded in Node.States) then
-              AdjustTotalHeight(Node, Run.NodeHeight, True);
           end;
         end;
         Result := True;
