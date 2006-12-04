@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.10
+// Version 2.2.11
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,6 +25,8 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// December
+//   - Bug fix: target position for replace undo action was wrong.
 // November
 //   - Bug fix: handling of <return> key was not correct (on forms with a default button it cause the default button to trigger)
 //   - Improvement: search code optimized
@@ -119,7 +121,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.10';
+  UCEVersion = '2.2.11';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -3666,7 +3668,7 @@ procedure TCustomUniCodeEdit.SetSelTextExternal(const Value: WideString);
 
 
 begin
-  FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, Value);
+  FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, Value);
   SetSelText(Value);
   CaretXY := BlockEnd;
 
@@ -3740,7 +3742,7 @@ end;
 procedure TCustomUniCodeEdit.SetWorkWidth(const Value: Integer);
 
 begin
-  if FWorkWidth <> Value then
+  if (FWorkWidth <> Value) and HandleAllocated then
   begin
     if Value < 0 then
       FWorkWidth := -1
@@ -4669,7 +4671,7 @@ begin
   if not (eoReadOnly in FOptions) then
   begin
     if SelectionAvailable then
-      FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, WideCRLF)
+      FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, WideCRLF)
     else
     begin
       FUndoList.PrepareInsertChange(CaretXY, WideCRLF);
@@ -4922,7 +4924,7 @@ begin
     begin
       if SelectionAvailable then
       begin
-        FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, NewText);
+        FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, NewText);
         SetSelText(NewText);
       end
       else
@@ -4935,7 +4937,7 @@ begin
         end
         else
         begin
-          FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, NewText);
+          FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, NewText);
           BlockEnd := Point(BlockBegin.X + FContent[FCaretY].NextCharPos(BlockBegin.X), FCaretY);
           SetSelText(NewText);
         end;
@@ -7752,7 +7754,7 @@ begin
         // Replace selected text here with selected text from other edit if the drag cursor
         // points to selected text, otherwise insert the new text.
         if DoReplace then
-          FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, Text)
+          FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, Text)
         else
         begin
           BlockBegin := CaretXY; // Make sure nothing is selected anymore.
@@ -8089,7 +8091,7 @@ begin
   begin
     NewText := TextFromClipboard;
     if SelectionAvailable then
-      FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, CaretXY, NewText)
+      FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, NewText)
     else
     begin
       FUndoList.PrepareInsertChange(CaretXY, NewText);
