@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.11
+// Version 2.2.13
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,9 +25,11 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
-// December
+// December 2006
 //   - Bug fix: target position for replace undo action was wrong.
-// November
+//   - Bug fix: TUniCodeEditorContent.GetText does not add a line break for the last line.
+//   - Bug fix: IME input does not set caret reversing so the correct input order
+// November 2006
 //   - Bug fix: handling of <return> key was not correct (on forms with a default button it cause the default button to trigger)
 //   - Improvement: search code optimized
 //   - Bug fix: wrong invalidation on char width change
@@ -121,7 +123,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.11';
+  UCEVersion = '2.2.13';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -2068,8 +2070,7 @@ begin
     for I := 0 to FCount - 1 do
     begin
       Buffer.Add(FLines[I].FText);
-      if I < FCount - 1 then
-        Buffer.AddNewLine;
+      Buffer.AddNewLine;
     end;
 
     Result := Buffer.AsString;
@@ -3952,6 +3953,11 @@ begin
             PChar(P)[Size - 1] := #0;
             InsertText(PChar(P));
           end;
+
+          // The text is selected when inserted via InsertText so remove selection and put the caret
+          // at the end of the new text.
+          BlockBegin := BlockEnd;
+          CaretXY := BlockEnd;
         finally
           FreeMem(P);
         end;
@@ -4707,6 +4713,8 @@ procedure TCustomUniCodeEdit.InsertText(Value: WideString);
 
 // Inserts the given text at the current block start position and updates BlockEnd to point to the end
 // of the new text in the editor.
+// On return the new text is selected (BlockBegin and BlockEnd point to start and end of the new text).
+// The caret is not moved.
 
 var
   I,
