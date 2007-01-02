@@ -4,16 +4,16 @@ package VirtualTreesR;
 {$ALIGN 8}
 {$ASSERTIONS OFF}
 {$BOOLEVAL OFF}
-{$DEBUGINFO OFF}
+{$DEBUGINFO ON}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
-{$IOCHECKS OFF}
-{$LOCALSYMBOLS OFF}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
-{$OVERFLOWCHECKS OFF}
-{$RANGECHECKS OFF}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
 {$REFERENCEINFO OFF}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES OFF}
@@ -31,8 +31,8 @@ requires
   vclx;
 
 contains
-  VirtualTrees in '..\Source\VirtualTrees.pas',
-  VTHeaderPopup in '..\Source\VTHeaderPopup.pas';
+  VirtualTrees in '..\..\Source\VirtualTrees.pas',
+  VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas';
 
 end.
 
