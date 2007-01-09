@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.13
+// Version 2.2.14
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,10 +25,16 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// January 2006
+//   - Bug fix: default work width being the client width is suboptimal, start with 0
 // December 2006
 //   - Bug fix: target position for replace undo action was wrong.
 //   - Bug fix: TUniCodeEditorContent.GetText does not add a line break for the last line.
 //   - Bug fix: IME input does not set caret reversing so the correct input order
+//   - Bug fix: Control char colors
+//   - Improvement: control char painting using Wingdings 3 font instead relying on the current font.
+//   - Bug fix: tab handling when unindenting
+//   - Bug fix: undo action for auto line end cleanup
 // November 2006
 //   - Bug fix: handling of <return> key was not correct (on forms with a default button it cause the default button to trigger)
 //   - Improvement: search code optimized
@@ -123,7 +129,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.13';
+  UCEVersion = '2.2.14';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -152,7 +158,7 @@ type
     eoReadOnly,                   // Prevent the content of the control from being changed.
     eoReadOnlySelection,          // Show selection if in read-only mode (useful for simulation of static text).
     eoScrollPastEOL,              // Allow the cursor to go past the end of the line.
-    eoShowControlChars,           // Show tabulators, spaces and line breaks (only if not eoScrollPastEOL) as glyphs.
+    eoShowControlChars,           // Show tabulators, spaces and line breaks as glyphs.
     eoShowCursorWhileReadOnly,    // Don't hide the cursor if control is in read-only mode.
     eoShowScrollHint,             // Show a hint window with the current top line while scrolling with the thumb.
     eoSmartTabs,                  // Automatically put in enough spaces when TAB has been pressed to move
@@ -168,10 +174,10 @@ type
   TUniCodeEditOptions = set of TUniCodeEditOption;
 
 const
-  DefaultTabGlyph       = WideChar($2192);
-  DefaultLineBreakGlyph = WideChar('¶');
-  DefaultSpaceGlyph     = WideChar($2219); // Note: $B7 should not be used here because it might be interpreted
-                                           //       as valid identifier character (e.g. in Catalan)
+  // These glyphs are taken from Wingdings 3.
+  DefaultTabGlyph       = WideChar($34);
+  DefaultLineBreakGlyph = WideChar($38);
+  DefaultSpaceGlyph     = WideChar($56);
 
   DefaultOptions = [eoAutoExtendWorkWidth, eoAutoIndent, eoAutoUnindent, eoCursorThroughTabs, eoGroupUndo,
     eoHideSelection, eoInserting, eoScrollPastEOL, eoSmartTabs, eoTripleClicks, eoUseSyntaxHighlighting, eoWantTabs];
@@ -512,7 +518,7 @@ type
                                        // the selection block end or just the cursor position.
     FDoubleClickTime: Cardinal;
     FExtraLineSpacing: Integer;
-    FFontDummy,
+    FControlCharFont: TFont;
     FLineNumberFont: TFont;
     FGutterColor: TColor;
     FGutterRect: TRect;
@@ -573,7 +579,6 @@ type
     function GetSelStart: Integer;
     function GetText: WideString;
     function GetTopLine: Integer;
-    function GetWorkWidth: Integer;
 
     procedure SetBlockBegin(Value: TPoint);
     procedure SetBlockEnd(Value: TPoint);
@@ -709,7 +714,7 @@ type
     property TabSize: Integer read FTabSize write SetTabSize default 8;
     property TabStop default True;
     property UpdateCount: Integer read FUpdateCount;
-    property WorkWidth: Integer read GetWorkWidth write SetWorkWidth;
+    property WorkWidth: Integer read FWorkWidth write SetWorkWidth;
 
     property OnBookmarkChange: TBookmarkChangeEvent read FOnBookmarkChange write FOnBookmarkChange;
     property OnCaretChange: TCaretEvent read FOnCaretChange write FOnCaretChange;
@@ -886,7 +891,7 @@ resourcestring
 
 const
   EmptyState: TEditState = ();
-
+  WideSpaces = WideChar(#32) + WideChar(#9);
 var
   PlatformIsUnicode: Boolean;
 
@@ -1613,33 +1618,23 @@ procedure TUCELine.ComputeCharacterWidths(TabSize, DefaultWidth: Integer);
 // of a given line in pixels.
 
 var
-  I, Run,
-  NewPos: Integer;
+  I: Integer;
   P: PWideChar;
-  Multiplier: Integer;
+  TabPixelSize: Integer;
 
 begin
   P := PWideChar(FText);
   SetLength(FCharWidthArray, Length(FText));
-  Multiplier := TabSize * DefaultWidth;
+  TabPixelSize := TabSize * DefaultWidth;
 
-  // Running term for WideTabulator calculation.
-  Run := 0;
   I := 0;
   while P^ <> WideNull do
   begin
     if P^ = WideTabulator then
-    begin
-      // Calculate new absolute position.
-      NewPos := (Run div Multiplier + 1) * Multiplier;
-
-      // Make this a relative distance.
-      FCharWidthArray[I] := NewPos - Run;
-    end
+      FCharWidthArray[I] := TabPixelSize
     else
       FCharWidthArray[I] := DefaultWidth;
 
-    Inc(Run, FCharWidthArray[I]);
     Inc(I);
     Inc(P);
   end;
@@ -2363,7 +2358,7 @@ begin
   if eoAutoExtendWorkWidth in FOwner.FOptions then
   begin
     NewWidth := FLines[Index].GetLineEnd(True) * FOwner.FCharWidth;
-    if FOwner.WorkWidth < NewWidth then
+    if FOwner.FWorkWidth < NewWidth then
       FOwner.WorkWidth := NewWidth;
   end;
 end;
@@ -2469,7 +2464,7 @@ begin
     FLines[I].Free;
   end;
   SetCapacity(0);
-  FOwner.WorkWidth := -1;
+  FOwner.WorkWidth := 0;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2771,7 +2766,11 @@ begin
   FOptions := DefaultOptions;
   FContent := TUniCodeEditorContent.Create(Self);
 
-  FFontDummy := TFont.Create;
+  FControlCharFont := TFont.Create;
+  FControlCharFont.Name := 'Wingdings 3';
+  FControlCharFont.Size := 10;
+  FControlCharFont.Charset := SYMBOL_CHARSET;
+  
   FLineNumberFont := TFont.Create;
   FLineNumberFont.Name := 'Terminal';
   FLineNumberFont.Size := 6;
@@ -2791,7 +2790,7 @@ begin
   FScrollTimer.Interval := 20;
   FScrollTimer.OnTimer := OnScrollTimer;
 
-  FWorkWidth := -1; // -1 means the client width is the work width.
+  FWorkWidth := 0; 
   FCharsInWindow := 1;
 
   // FRightMargin and FCharWidth have to be set before FontChanged.
@@ -2812,9 +2811,8 @@ begin
   FCaretOffset := Point(0, 0);
   FGutterColor := clBtnFace;
   Font.OnChange := FontChanged;
-  FFontDummy.Name := 'Courier New';
-  FFontDummy.Size := 10;
-  Font.Assign(FFontDummy);
+  Font.Name := 'Courier New';
+  Font.Size := 10;
   ParentFont := False;
   ParentColor := False;
   TabStop := True;
@@ -2856,7 +2854,7 @@ destructor TCustomUniCodeEdit.Destroy;
 begin
   FKeyStrokes.Free;
   FLineNumberFont.Free;
-  FFontDummy.Free;
+  FControlCharFont.Free;
   FContent.Free;
   FSelectedColor.Free;
   FScrollHintColor.Free;
@@ -3011,22 +3009,6 @@ function TCustomUniCodeEdit.GetTopLine: Integer;
 
 begin
   Result := -FOffsetY + 1;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TCustomUniCodeEdit.GetWorkWidth: Integer;
-
-begin
-  if FWorkWidth = -1 then
-  begin
-    if HandleAllocated then
-      Result := ClientWidth
-    else
-      Result := 0;
-  end
-  else
-    Result := FWorkWidth;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3195,12 +3177,16 @@ begin
     // Remove trailing blanks in the line we just leaving
     if (FCaretY > -1) and (FCaretY < FContent.Count) and not (eoKeepTrailingBlanks in FOptions) then
     begin
-      S := FContent[FCaretY].Text;
-      if (Length(S) > 0) and (S[Length(S)] in [WideSpace, WideTabulator]) then
+      S := WideTrimRight(FContent[FCaretY].Text);
+      if S <> FContent[FCaretY].Text then
       begin
-        // Do not trigger a change event here.
+        // Do not trigger a change event here, but add an undo action.
+        // TODO: allow nested undo action registration.
+        FUndoList.PrepareDeleteChange(
+          Point(FContent[FCaretY].CharIndexToColumn(Length(S)), FCaretY),
+          Point(FContent[FCaretY].GetLineEnd(False), FCaretY));
         FContent[FCaretY].FText := WideTrimRight(S);
-        FContent.AutoAdjustWorkWidth(FCaretY);
+        FUndoList.FinishPendingChange;
       end;
     end;
     FCaretY := Value;
@@ -3273,6 +3259,7 @@ begin
   Value.Pitch := fpFixed;
   inherited Font := Value;
   Value.Pitch := SavePitch;
+  FControlCharFont.Size := Value.Size;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3437,7 +3424,7 @@ var
   R: TRect;
 
 begin
-  if Value < ClientWidth - FGutterRect.Right - WorkWidth -FCharWidth then
+  if Value < ClientWidth - FGutterRect.Right - WorkWidth - FCharWidth then
     Value := ClientWidth - FGutterRect.Right - WorkWidth - FCharWidth;
   if Value > 0 then
     Value := 0;
@@ -3746,7 +3733,7 @@ begin
   if (FWorkWidth <> Value) and HandleAllocated then
   begin
     if Value < 0 then
-      FWorkWidth := -1
+      FWorkWidth := 0
     else
       FWorkWidth := Value;
     Invalidate;
@@ -4260,7 +4247,6 @@ var
   I: Integer;
   J: Integer;
   CX: Integer;
-  Helper: WideString;
   TargetPoint: TPoint;
 
 begin
@@ -4277,6 +4263,7 @@ begin
     begin
       Temp := LineText;
       Len := Length(Temp);
+
       // Get char index from column.
       CX := FContent[FCaretY].ColumnToCharIndex(FCaretX);
       if CX <= Len then
@@ -4293,8 +4280,12 @@ begin
             // Fine, all conditions are met to do auto unindentation.
             I := Unindent(FCaretX, FCaretY);
             FUndoList.PrepareDeleteChange(Point(I, FCaretY), CaretXY);
+
+            // Read the current line text again. Unindent might have changed tabs to spaces.
+            Temp := LineText;
             J := FContent[FCaretY].ColumnToCharIndex(I);
-            Helper := Copy(Temp, J + 1, CX - J);
+            CX := FContent[FCaretY].ColumnToCharIndex(FCaretX);
+            
             Delete(Temp, J + 1, CX - J);
             LineText := Temp;
             CaretX := I;
@@ -4307,13 +4298,11 @@ begin
             FUndoList.PrepareDeleteChange(Point(FCaretX - 1, FCaretY), CaretXY);
             if FContent[FCaretY].CharIndexToColumn(CX) = FCaretX then
             begin
-              Helper := Temp[CX];
               Delete(Temp, CX, 1);
               CaretX := FContent[FCaretY].PreviousCharPos(FCaretX);
             end
             else
             begin
-              Helper := Temp[CX + 1];
               Delete(Temp, CX + 1, 1);
               CaretX := FContent[FCaretY].CharIndexToColumn(CX);
             end;
@@ -5500,8 +5489,7 @@ var
   SelStart,
   SelEnd: Integer;
   CurrentStyle: Cardinal; // to optimize drawing selected/unselected text
-  ShowSelection,
-  ShowLineBreak: Boolean;
+  ShowSelection: Boolean;
   LineBase: PWideChar;
 
   CustomStyle: IUCELineStyle;
@@ -5558,40 +5546,29 @@ var
   // side effects: current paint offset will be updated
 
   var
-    I,
-    Counter: Cardinal;
-    Run,
-    TabPos: PWideChar;
+    I: Integer;
+    Counter: Integer;
+    Run: PWideChar;
+    LastFont: HFONT;
 
   begin
-    // replace space characters
     Run := LineBase + Start;
     Counter := Len;
-    while Counter > 0 do
-    begin
-      if Run^ = ' ' then
-        Run^ := DefaultSpaceGlyph;
-      Inc(Run);
-      Dec(Counter);
-    end;
 
-    Run := LineBase + Start;
-    Counter := Len;
     // TODO: Draw only as many characters as fit in the update rect.
     with TextCanvas do
       while Counter > 0 do
       begin
-        // find TAB character
-        TabPos := StrScanW(Run, WideTabulator);
-        // something to draw before tab?
-        if Assigned(TabPos) then
-          I := Min(Counter, TabPos - Run)
-        else
-          I := Counter;
+        // Find Tab or space character.
+        I := StrNScanW(Run, WideSpaces);
+
+        // Something to draw before tab/space?
         if I > 0 then
         begin
+          if I > Counter then
+            I := Counter;
           OldOffset := PaintOffset;
-          Inc(PaintOffset, I * Cardinal(FCharWidth));
+          Inc(PaintOffset, I * FCharWidth);
           R := Rect(OldOffset, YOffset, PaintOffset, YOffset + FTextHeight);
           ExtTextOutW(Handle, OldOffset, YOffset, ETO_OPAQUE, @R, Run, I, @FContent[LineIndex].CharacterDistances[Start]);
           Inc(Start, I);
@@ -5599,36 +5576,36 @@ var
           Inc(Run, I);
         end;
 
-        // tab to draw?
-        if Assigned(TabPos) then
+        // Tabulator or space to draw?
+        if Counter > 0 then
         begin
-          while (TabPos^ = WideTabulator) and (Counter > 0) do
+          SetTextAlign(Handle, TA_CENTER);
+          LastFont := SelectObject(Handle, FControlCharFont.Handle);
+
+          while Counter > 0 do
           begin
             OldOffset := PaintOffset;
             Inc(PaintOffset, FContent[LineIndex].CharacterDistances[Start]);
             R := Rect(OldOffset, YOffset, PaintOffset, YOffset + FTextHeight);
 
-            SetTextAlign(Handle, TA_CENTER);
-            ExtTextOutW(Handle, (PaintOffset + OldOffset) div 2, YOffset, ETO_OPAQUE, @R, DefaultTabGlyph, 1, nil);
-            SetTextAlign(Handle, TA_LEFT);
+            case Run^ of
+              WideTabulator:
+                ExtTextOutW(Handle, (PaintOffset + OldOffset) div 2, YOffset, ETO_OPAQUE, @R, DefaultTabGlyph, 1, nil);
+              WideSpace:
+                // The space glyph does not need to be in the middle but since it is only one char wide it doesn't matter.
+                ExtTextOutW(Handle, (PaintOffset + OldOffset) div 2, YOffset, ETO_OPAQUE, @R, DefaultSpaceGlyph, 1, nil);
+            else
+              Break;
+            end;
             Inc(Start);
             Dec(Counter);
-            Inc(TabPos);
+            Inc(Run);
           end;
-          Run := TabPos;
+
+          SetTextAlign(Handle, TA_LEFT);
+          SelectObject(Handle, LastFont);
         end;
       end;
-  end;
-
-  //----------------------------------------------------------------------------
-
-  procedure PaintLineBreak;
-
-  begin
-    R := Rect(PaintOffset, YOffset, PaintOffset + FCharWidth, YOffset + FTextHeight);
-    if IntersectRect(Dummy, R, UpdateRect) then
-      ExtTextOutW(TextCanvas.Handle, PaintOffset, YOffset, ETO_OPAQUE, @R, DefaultLineBreakGlyph, 1, nil);
-    Inc(PaintOffset, FCharWidth);
   end;
 
   //----------------------------------------------------------------------------
@@ -5687,7 +5664,41 @@ var
         Font.Style := Style.FontStyles;
     end;
   end;
-  
+
+  //----------------------------------------------------------------------------
+
+  procedure PaintLineBreak;
+
+  var
+    LastState: Integer;
+    LastFont: HFONT;
+    
+  begin
+    // Ask highlighter which color to use for line break.
+    // Keep and restore last state. It is used for the next line later.
+    LastState := FHighlighter.GetRange;
+    FHighlighter.SetLine(#13#10);
+    FHighLighter.Next;
+    TokenData := FHighLighter.GetTokenInfo;
+    with TokenData do
+    begin
+      Font.Style := Style;
+      PickColors(Foreground, Background, False);
+    end;
+
+    R := Rect(PaintOffset, YOffset, PaintOffset + Abs(FControlCharFont.Height), YOffset + FTextHeight);
+    if IntersectRect(Dummy, R, UpdateRect) then
+    begin
+      LastFont := SelectObject(TextCanvas.Handle, FControlCharFont.Handle);
+      ExtTextOutW(TextCanvas.Handle, PaintOffset, YOffset, ETO_OPAQUE, @R, DefaultLineBreakGlyph, 1, nil);
+      SelectObject(TextCanvas.Handle, LastFont);
+    end;
+    Inc(PaintOffset, Abs(FControlCharFont.Height));
+
+    FHighlighter.Next;
+    FHighlighter.SetRange(LastState);
+  end;
+
   //--------------- end local functions ----------------------------------------
 
 var
@@ -5735,8 +5746,6 @@ begin
       end;
     end;
     
-    ShowLineBreak := (eoShowControlChars in FOptions) and not (eoScrollPastEOL in FOptions);
-
     // Determine in advance whether to show selection or not.
     // Note: We have four concurrent options determining when to show selection (apart
     //       from SelectionAvailable). These are: focus state, eoReadOnly, eoReadOnlySelection and
@@ -5771,7 +5780,7 @@ begin
       if LineIndex > 0 then
         FHighLighter.SetRange(FContent[LineIndex].LexerState);
       FHighLighter.Next;
-      
+
       LineBase := PWideChar(S);
       PaintOffset := FOffsetX + FGutterRect.Right + 1;
 
@@ -5797,13 +5806,8 @@ begin
           FHighLighter.Next;
         end;
 
-        if PaintOffset < UpdateRect.Right then
-        begin
-          // Determine the colors for the rest of the line.
-          PickColors(Self.Font.Color, Self.Color, False);
-          if ShowLineBreak then
-            PaintLineBreak;
-        end;
+        if (PaintOffset < UpdateRect.Right) and (eoShowControlChars in FOptions) then
+          PaintLineBreak;
 
         // Prepare end of line drawing.
         PickColors(Self.Font.Color, Self.Color, False);
@@ -5911,7 +5915,7 @@ begin
         end
         else
           PickColors(clDefault, clDefault, False);
-        if ShowLineBreak then
+        if eoShowControlChars in FOptions then
         begin
           if StopIndex < SelEnd then
           begin
@@ -5995,7 +5999,6 @@ var
   SelStart,
   SelEnd: Integer;
   ShowSelection: Boolean;
-  ShowLineBreak: Boolean;
   LineBase: PWideChar;
 
   CustomStyle: IUCELineStyle;
@@ -6052,10 +6055,10 @@ var
   // side effects: current paint offset will be updated
 
   var
-    I,
-      Counter: Cardinal;
-    Run,
-      TabPos: PWideChar;
+    I: Cardinal;
+    Counter: Cardinal;
+    Run: PWideChar;
+    TabPos: PWideChar;
 
   begin
     // replace space characters
@@ -6111,17 +6114,6 @@ var
           Run := TabPos;
         end;
       end;
-  end;
-
-  //---------------------------------------------------------------------------
-
-  procedure PaintLineBreak;
-
-  begin
-    R := Rect(PaintOffset, YOffset, PaintOffset + FCharWidth, YOffset + FTextHeight);
-    if IntersectRect(Dummy, R, UpdateRect) then
-      ExtTextOutW(TextCanvas.Handle, PaintOffset, YOffset, ETO_OPAQUE, @R, DefaultLineBreakGlyph, 1, nil);
-    Inc(PaintOffset, FCharWidth);
   end;
 
   //----------------------------------------------------------------------------
@@ -6180,7 +6172,18 @@ var
         Font.Style := Style.FontStyles;
     end;
   end;
-  
+
+  //---------------------------------------------------------------------------
+
+  procedure PaintLineBreak;
+
+  begin
+    R := Rect(PaintOffset, YOffset, PaintOffset + FCharWidth, YOffset + FTextHeight);
+    if IntersectRect(Dummy, R, UpdateRect) then
+      ExtTextOutW(TextCanvas.Handle, PaintOffset, YOffset, ETO_OPAQUE, @R, DefaultLineBreakGlyph, 1, nil);
+    Inc(PaintOffset, FCharWidth);
+  end;
+
   //--------------- end local functions ----------------------------------------
 
 begin
@@ -6197,8 +6200,6 @@ begin
     // The vertical position we will paint at. Start at top and increment by
     // FTextHeight for each iteration of the loop (see bottom of for loop).
     YOffset := (UpdateRect.Top div FTextHeight) * FTextHeight;
-
-    ShowLineBreak := (eoShowControlChars in FOptions) and not (eoScrollPastEOL in FOptions);
 
     // Determine in advance whether to show selection or not.
     // Note: We have four concurrent options determining when to show selection (apart
@@ -6247,7 +6248,7 @@ begin
           else
             PaintToken(0, TokenLen);
 
-          if ShowLineBreak then
+          if eoShowControlChars in FOptions then
             PaintLineBreak;
         end
         else
@@ -6323,7 +6324,7 @@ begin
             PickColors(FSelectedColor.Foreground, FSelectedColor.Background, True)
           else
             PickColors(Self.Font.Color, Self.Color, False);
-          if ShowLineBreak then
+          if eoShowControlChars in FOptions then
           begin
             if ShowSelection and (StopIndex < SelEnd) then
               PickColors(FSelectedColor.Foreground, FSelectedColor.Background, True)
@@ -6664,34 +6665,69 @@ function TCustomUniCodeEdit.Unindent(X, Y: Cardinal): Cardinal;
 
   //--------------- end local functions ---------------------------------------
 
+var
+  Line: WideString;
+  I: Integer;
+  Buffer: TBufferedString;
+  NeedUndo: Boolean;
+
 begin
   // cursor at line 0?
   if (X = 0) or (Y = 0) then
     Result := 0 // no previous tab position available
   else
   begin
-    // find a line above the current line, which is not empty and whose first
-    // non-white character is before X
+    // Start by converting all tab chars into space chars.
+    Line := FContent[Y].Text;
+    Buffer := TBufferedString.Create;
+    try
+      NeedUndo := False;
+      for I := 1 to Length(Line) do
+        if Line[I] = WideTabulator then
+        begin
+          Buffer.Add(StringOfChar(' ', FTabSize));
+          NeedUndo := True;
+        end
+        else
+          Buffer.Add(Line[I]);
+      Line := Buffer.AsString;
+    finally
+      Buffer.Free;
+    end;
+
+    // Add an undo action if we change the line. It should be reversable.
+    // Since we replace tabs with the exact amount of spaces they represent
+    // it is not necessary to change the involved text block boundaries.
+    if NeedUndo then
+    begin
+      FUndoList.PrepareReplaceChange(Point(0, Y), Point(FContent[Y].GetLineEnd(False), Y), Point(0, Y), Line);
+      FContent[Y].Text := Line;
+      FUndoList.FinishPendingChange(Point(FContent[Y].GetLineEnd(False), Y));
+    end;
+
+    // Find a line above the current line, which is not empty and whose first
+    // non-white character is before X.
     repeat
-      // go one line up (picturally speaking, actually we use the previous line)
+      // Go one line up (picturally speaking, actually we use the previous line).
       Dec(Y);
-      // find last non-white space before current column
+
+      // Find last non-white space before current column.
       if FindNonWhiteSpaceColumn(X, Y, Result) then
       begin
-        // we found a non-white space, now search the first white
-        // space column before this column
+        // We found a non-white space. Now search the first white
+        // space column before this column.
         if FindWhiteSpaceColumn(Result, Y, Result) then
         begin
-          // if there's such a column then advance to next column (which is then
-          // a non-white space column)
+          // If there's such a column then advance to next column (which is then
+          // a non-white space column).
           Result := FContent[Y].NextCharPos(Result);
         end;
-        // leave loop, since we either found what we were looking for or
+        // Leave loop, since we either found what we were looking for or
         // the line in question has no white chars at the beginning (which means
-        // unindentation target column is 0)
+        // unindentation target column is 0).
         Break;
       end;
-      // turn around if there was no unindent column by going up one line
+      // Turn around if there was no unindent column by going up one line.
     until Y = 0;
   end;
 end;
@@ -7088,7 +7124,7 @@ var
   I: Integer;
 
 begin
-  FWorkWidth := -1;
+  FWorkWidth := 0;
   
   for I := 0 to 9 do
     RemoveBookmark(I);
@@ -7307,9 +7343,16 @@ begin
         if eoKeepTrailingBlanks in FOptions then
           Helper := LineText
         else
+        begin
           Helper := WideTrimRight(LineText);
-        if Helper <> LineText then
-          LineText := Helper;
+          if Helper <> LineText then
+          begin
+            FUndoList.PrepareDeleteChange(
+              Point(FContent[FCaretY].CharIndexToColumn(Length(Helper)), FCaretY),
+              Point(FContent[FCaretY].GetLineEnd(False), FCaretY));
+            LineText := Helper;
+          end;
+        end;
         CaretX := FContent[FCaretY].GetLineEnd(False);
         if Command = ecSelLineEnd then
           BlockEnd := CaretXY
