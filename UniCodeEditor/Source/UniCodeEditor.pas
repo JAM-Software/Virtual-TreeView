@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.14
+// Version 2.2.15
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -26,6 +26,8 @@ unit UniCodeEditor;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // January 2006
+//   - Improvement: better group undo
+//   - Bug fix: line breaks insertion undo was wrong
 //   - Bug fix: default work width being the client width is suboptimal, start with 0
 // December 2006
 //   - Bug fix: target position for replace undo action was wrong.
@@ -129,7 +131,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.14';
+  UCEVersion = '2.2.15';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -223,6 +225,16 @@ type
     ecrUnindentation
   );
 
+  // Due to group undo it is necessary to determine which reason are similar enough to be undone in one go.
+  TChangeReasonGroup = (
+    crgNone,         // ecrNone
+    crgInsert,       // ecrInsert, ecrReplace
+    crgDelete,       // ecrDelete
+    crgDrag,         // ecrDragMove, ecrDragCopy
+    crgState,        // ecrState
+    crgIndentation   // ecrIndentation, ecrUnindentation
+  );
+
   // Used to store certain values for undo/redo actions.
   TEditState = record
     Caret: TPoint;      // The caret position when this state info was collected.
@@ -233,6 +245,7 @@ type
   // Describes the actual action that was performed and can be undone and redone.
   TChangeAction = record
     Reason: TChangeReason;
+    Group: TChangeReasonGroup;
     SourceStart: TPoint;
     SourceEnd: TPoint;
     OldText: WideString;
@@ -262,7 +275,9 @@ type
     function GetCanRedo: Boolean;
     function GetCanUndo: Boolean;
     function GetCurrentRedoReason: TChangeReason;
+    function GetCurrentRedoReasonGroup: TChangeReasonGroup;
     function GetCurrentUndoReason: TChangeReason;
+    function GetCurrentUndoReasonGroup: TChangeReasonGroup;
     procedure SetMaxUndo(Value: Integer);
   protected
     function CanAcceptNewChange: Boolean;
@@ -288,7 +303,9 @@ type
     property CanRedo: Boolean read GetCanRedo;
     property CanUndo: Boolean read GetCanUndo;
     property CurrentRedoReason: TChangeReason read GetCurrentRedoReason;
+    property CurrentRedoReasonGroup: TChangeReasonGroup read GetCurrentRedoReasonGroup;
     property CurrentUndoReason: TChangeReason read GetCurrentUndoReason;
+    property CurrentUndoReasonGroup: TChangeReasonGroup read GetCurrentUndoReasonGroup;
     property MaxUndo: Integer read FMaxUndo write SetMaxUndo;
   end;
 
@@ -1088,6 +1105,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TUndoList.GetCurrentRedoReasonGroup: TChangeReasonGroup;
+
+begin
+  if FCurrent = FList.Count - 1 then
+    Result := crgNone
+  else
+    Result := PChange(FList.Items[FCurrent + 1]).Action.Group;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TUndoList.GetCurrentUndoReason: TChangeReason;
 
 begin
@@ -1095,6 +1123,17 @@ begin
     Result := ecrNone
   else
     Result := PChange(FList.Items[FCurrent]).Action.Reason;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TUndoList.GetCurrentUndoReasonGroup: TChangeReasonGroup;
+
+begin
+  if FCurrent = -1 then
+    Result := crgNone
+  else
+    Result := PChange(FList.Items[FCurrent]).Action.Group;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1138,6 +1177,21 @@ begin
     while FList.Count >= FMaxUndo do
       RemoveChange(0);
     FPendingChange.NewState := FOwner.RecordState;
+    case FPendingChange.Action.Reason of
+      ecrNone:
+        FPendingChange.Action.Group := crgNone;
+      ecrInsert, ecrReplace:
+        FPendingChange.Action.Group := crgInsert;
+      ecrDelete:
+        FPendingChange.Action.Group := crgDelete;
+      ecrDragMove, ecrDragCopy:
+        FPendingChange.Action.Group := crgDrag;
+      ecrState:
+        FPendingChange.Action.Group := crgState;
+      ecrIndentation, ecrUnindentation:
+        FPendingChange.Action.Group := crgIndentation;
+    end;
+
     FList.Add(FPendingChange);
     Inc(FCurrent);
     FPendingChange := nil;
@@ -1162,6 +1216,21 @@ begin
 
     FPendingChange.Action.TargetEnd := TargetEnd;
     FPendingChange.NewState := FOwner.RecordState;
+    case FPendingChange.Action.Reason of
+      ecrNone:
+        FPendingChange.Action.Group := crgNone;
+      ecrInsert, ecrReplace:
+        FPendingChange.Action.Group := crgInsert;
+      ecrDelete:
+        FPendingChange.Action.Group := crgDelete;
+      ecrDragMove, ecrDragCopy:
+        FPendingChange.Action.Group := crgDrag;
+      ecrState:
+        FPendingChange.Action.Group := crgState;
+      ecrIndentation, ecrUnindentation:
+        FPendingChange.Action.Group := crgIndentation;
+    end;
+
     FList.Add(FPendingChange);
     Inc(FCurrent);
     FPendingChange := nil;
@@ -3166,7 +3235,8 @@ procedure TCustomUniCodeEdit.SetCaretY(Value: Integer);
 var
   Len: Integer;
   S: WideString;
-
+  FinishUndo: Boolean;
+  
 begin
   if (Value < 0) or (FContent.Count = 0) then
     Value := 0;
@@ -3181,12 +3251,12 @@ begin
       if S <> FContent[FCaretY].Text then
       begin
         // Do not trigger a change event here, but add an undo action.
-        // TODO: allow nested undo action registration.
-        FUndoList.PrepareDeleteChange(
+        FinishUndo := FUndoList.PrepareDeleteChange(
           Point(FContent[FCaretY].CharIndexToColumn(Length(S)), FCaretY),
           Point(FContent[FCaretY].GetLineEnd(False), FCaretY));
         FContent[FCaretY].FText := WideTrimRight(S);
-        FUndoList.FinishPendingChange;
+        if FinishUndo then
+          FUndoList.FinishPendingChange;
       end;
     end;
     FCaretY := Value;
@@ -4662,14 +4732,17 @@ procedure TCustomUniCodeEdit.InsertLineBreak(MoveCaret: Boolean);
 // Inserts a new line at the current cursor position. If MoveCaret is True then the cursor is moved to the start
 // of the new line.
 
+var
+  FinishUndo: Boolean;
+  
 begin
   if not (eoReadOnly in FOptions) then
   begin
     if SelectionAvailable then
-      FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, WideCRLF)
+      FinishUndo := FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, WideCRLF)
     else
     begin
-      FUndoList.PrepareInsertChange(CaretXY, WideCRLF);
+      FinishUndo := FUndoList.PrepareInsertChange(CaretXY, WideCRLF);
       BlockBegin := CaretXY;
     end;
     SetSelText(WideCRLF);
@@ -4685,12 +4758,14 @@ begin
       end
       else
         CaretXY := Point(0, FCaretY + 1);
-      FUndoList.FinishPendingChange(BlockEnd);
+      if FinishUndo then
+        FUndoList.FinishPendingChange(BlockEnd);
       RefreshToBottom(FCaretY - 1);
     end
     else
     begin
-      FUndoList.FinishPendingChange(Point(0, FCaretY + 1));
+      if FinishUndo then
+        FUndoList.FinishPendingChange(Point(0, FCaretY + 1));
       RefreshToBottom(FCaretY);
     end;
   end;
@@ -8176,7 +8251,7 @@ procedure TCustomUniCodeEdit.Redo;
 
 var
   Change: PChange;
-  LastReason: TChangeReason;
+  LastReasonGroup: TChangeReasonGroup;
 
 begin
   if CanRedo then
@@ -8184,10 +8259,11 @@ begin
     BeginUpdate;
     repeat
       // Pop last entry from undo stack and get its values.
-      LastReason := FUndoList.GetRedoChange(Change);
+      FUndoList.GetRedoChange(Change);
 
       with Change^ do
       begin
+        LastReasonGroup := Action.Group;
         case Action.Reason of
           ecrInsert:
             begin
@@ -8243,7 +8319,7 @@ begin
         CaretXY := NewState.Caret;
       end;
 
-    until not (eoGroupUndo in FOptions) or not CanRedo or (LastReason <> FUndoList.CurrentRedoReason);
+    until not (eoGroupUndo in FOptions) or not CanRedo or (LastReasonGroup <> FUndoList.CurrentRedoReasonGroup);
     EndUpdate;
   end;
 end;
@@ -8657,7 +8733,7 @@ procedure TCustomUniCodeEdit.Undo;
 
 var
   Change: PChange;
-  LastReason: TChangeReason;
+  LastReasonGroup: TChangeReasonGroup;
 
 begin
   if CanUndo then
@@ -8665,10 +8741,11 @@ begin
     BeginUpdate;                 
     repeat
       // Pop last entry from undo stack and get its values.
-      LastReason := FUndoList.GetUndoChange(Change);
+      FUndoList.GetUndoChange(Change);
 
       with Change^ do
       begin
+        LastReasonGroup := Action.Group;
         case Action.Reason of
           ecrInsert:
             begin
@@ -8718,7 +8795,7 @@ begin
         BlockEnd := OldState.BlockEnd;
         CaretXY := OldState.Caret;
       end;
-    until not (eoGroupUndo in FOptions) or not CanUndo or (LastReason <> FUndoList.CurrentUndoReason);
+    until not (eoGroupUndo in FOptions) or not CanUndo or (LastReasonGroup <> FUndoList.CurrentUndoReasonGroup);
     EndUpdate;
   end;
 end;
