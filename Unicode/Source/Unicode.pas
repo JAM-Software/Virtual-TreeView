@@ -1,6 +1,6 @@
 unit Unicode;
 
-//  Version 3.1.1
+//  Version 3.1.2
 //
 //------------------------------------------------------------------------------------------------------------------------------------------
 // This unit contains routines and classes to manage and work with Unicode/WideString strings.
@@ -38,6 +38,9 @@ unit Unicode;
 //
 //------------------------------------------------------------------------------------------------------------------------------------------
 //
+// January 2007
+//  - Not really a final bug fix but temporary: case data for large and small latin letter i is wrong. The data in memory
+//    is once corrected to compensate for that.
 // September 2006
 //   - Added ccSeparatorParagraph to white space check function.
 // June 2006:
@@ -1221,6 +1224,13 @@ begin
           end;
         end;
 
+        // TODO: there is serious problem in the compiled data. Upper and title case for small latin letter "i"
+        //       is wrong ("large latin latter I with dot above" was used instead the one without the dot.
+        //       This must yet be fixed but cannot currently as it requires to rework the UD extract utility.
+        // For now we fix this one value manually here.
+        CaseMapping[0, Ord('i'), 2, 0] := Ord('I');
+        CaseMapping[0, Ord('i'), 3, 0] := Ord('I');
+        CaseMapping[0, Ord('I'), 1, 0] := Ord('i');
       finally
         Stream.Free;
       end;
