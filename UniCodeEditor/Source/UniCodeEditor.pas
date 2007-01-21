@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.15
+// Version 2.2.16
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -26,6 +26,9 @@ unit UniCodeEditor;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // January 2006
+//   - Bug fix: clipboard operations triggered by messages (WM_PASTE etc.) are not handled by standard code preventing
+//              so proper work of the undo stack etc.
+//   - Change: eoAutoExtendWorkWidth removed, it is problematic with existing apps and does not provide much advantage.
 //   - Improvement: better group undo
 //   - Bug fix: line breaks insertion undo was wrong
 //   - Bug fix: default work width being the client width is suboptimal, start with 0
@@ -131,7 +134,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.15';
+  UCEVersion = '2.2.16';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -142,8 +145,6 @@ type
   // To use any of the tab options you must also have eoWantTabs enabled, otherwise the TAB char
   // will never even reach the edit.
   TUniCodeEditOption = (
-    eoAutoExtendWorkWidth,        // Automatically extends the horizontal scroll range if a line grows beyond the current
-                                  // work width. If not set then one cannot lines beyond the current width.
     eoAutoIndent,                 // Do auto indentation when inserting a new line.
     eoAutoUnindent,               // Do auto undindentation when deleting a character which
                                   // is only preceded by whitespace characters.
@@ -181,8 +182,8 @@ const
   DefaultLineBreakGlyph = WideChar($38);
   DefaultSpaceGlyph     = WideChar($56);
 
-  DefaultOptions = [eoAutoExtendWorkWidth, eoAutoIndent, eoAutoUnindent, eoCursorThroughTabs, eoGroupUndo,
-    eoHideSelection, eoInserting, eoScrollPastEOL, eoSmartTabs, eoTripleClicks, eoUseSyntaxHighlighting, eoWantTabs];
+  DefaultOptions = [eoAutoIndent, eoAutoUnindent, eoCursorThroughTabs, eoGroupUndo, eoHideSelection, eoInserting,
+    eoScrollPastEOL, eoSmartTabs, eoTripleClicks, eoUseSyntaxHighlighting, eoWantTabs];
 
 type
   TReplaceAction = (raCancel, raSkip, raReplace, raReplaceAll);
@@ -2416,7 +2417,7 @@ end;
 
 procedure TUniCodeEditorContent.AutoAdjustWorkWidth(Index: Integer);
 
-// If enabled then this procedure extends the work width of the owner control if the line length of the given line
+// This procedure extends the work width of the owner control if the line length of the given line
 // is larger than the current work with.
 // The line is internally validated if queried for its total length.
 
@@ -2424,12 +2425,9 @@ var
   NewWidth: Integer;
 
 begin
-  if eoAutoExtendWorkWidth in FOwner.FOptions then
-  begin
-    NewWidth := FLines[Index].GetLineEnd(True) * FOwner.FCharWidth;
-    if FOwner.FWorkWidth < NewWidth then
-      FOwner.WorkWidth := NewWidth;
-  end;
+  NewWidth := FLines[Index].GetLineEnd(True) * FOwner.FCharWidth;
+  if FOwner.FWorkWidth < NewWidth then
+    FOwner.WorkWidth := NewWidth;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3846,59 +3844,16 @@ end;
 
 procedure TCustomUniCodeEdit.WMCopy(var Message: TWMCopy);
 
-var
-  Data: THandle;
-  DataPtr: Pointer;
-  SelectedText: WideString;
-  SelLen: integer;
-
 begin
-  SelectedText := GetSelectedText;
-  SelLen := Length(SelectedText);
-
-  if (SelLen > 0) then
-  begin
-    Clipboard.Open;
-    try
-      EmptyClipboard;
-
-      Data := GlobalAlloc(GMEM_MOVEABLE or GMEM_DDESHARE, SelLen * 2 + 2);
-      if (Data <> 0) then
-      begin
-        DataPtr := GlobalLock(Data);
-        try
-          if (DataPtr <> nil) then
-          begin
-            Move(PWideChar(SelectedText)^, DataPtr^, SelLen * 2 + 2);
-            if (SetClipboardData(CF_UNICODETEXT, Data) = 0) then
-              raise Exception.Create('The selected text cannot be copied ' +
-                'to the clipboard.');
-          end;
-        finally
-          GlobalUnlock(Data);
-        end;
-      end;
-
-    finally
-      Clipboard.Close;
-    end;
-  end;
+  CopyToClipboard;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TCustomUniCodeEdit.WMCut(var Message: TWMCut);
 
-var
-  Msg: TWMCopy;
-
 begin
-  Msg.Msg := 769;
-  Msg.Result := 0;
-
-  WMCopy(Msg);
-
-  SetSelText('');
+  CutToClipboard;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4077,27 +4032,8 @@ end;
 
 procedure TCustomUniCodeEdit.WMPaste(var Message: TWMPaste);
 
-var
-  Data: THandle;
-  S: WideString;
 begin
-  if (Clipboard.HasFormat(CF_UNICODETEXT)) then
-  begin
-    Data := Clipboard.GetAsHandle(CF_UNICODETEXT);
-
-    try
-      if (Data <> 0) then
-        S := PWideChar(GlobalLock(Data));
-
-      SetSelText(S);
-    finally
-      if (Data <> 0) then
-        GlobalUnlock(Data);
-    end;
-  end
-  else
-    if (Clipboard.HasFormat(CF_TEXT)) then
-      SetSelText(Clipboard.AsText);
+  PasteFromClipboard;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
