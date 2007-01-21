@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.0
+// Version 4.5.1
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,9 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// January 2007
+//   - Improvement: added code donation from Marco Zehe (with help from Sebastian Modersohn) which implements the
+//                  MS accessability interface for Virtual Treeview.
 // December 2006
 //   - Improvement: bidi mode implementation finished (toAutoBidiColumnOrdering introduced)
 //   - Change: right-to-left flag removed from shorten string methods/events (not necessary)
@@ -74,6 +77,8 @@ unit VirtualTrees;
 //   Dmitri Dmitrienko (initial developer)
 // Source repository:
 //   Subversion (server), TortoiseSVN (client tools), Fisheye (Web interface)
+// Accessability implementation:
+//   Marco Zehe (with help from Sebastian Modersohn)
 //----------------------------------------------------------------------------------------------------------------------
 
 interface
@@ -106,10 +111,11 @@ uses
   {$ifdef TntSupport}
     , TntStdCtrls       // Unicode aware inplace editor.
   {$endif TntSupport}
+  , oleacc // for MSAA IAccessible support
   ;
 
 const
-  VTVersion = '4.5.0';
+  VTVersion = '4.5.1';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1823,6 +1829,11 @@ type
     FPanningImage: TBitmap;                      // A little 32x32 bitmap to indicate the panning reference point.
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
 
+    // MSAA support
+    FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
+    FAccessibleItem: IAccessible;                // The IAccessible to the item that currently has focus.
+    FAccessibleName: string;                     // The name the window is given for screen readers.
+
     // common events
     FOnChange: TVTChangeEvent;                   // selection change
     FOnStructureChange: TVTStructureChangeEvent; // structural change like adding nodes etc.
@@ -2064,6 +2075,7 @@ type
     procedure WMEnable(var Message: TWMEnable); message WM_ENABLE;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
+    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
     procedure WMHScroll(var Message: TWMHScroll); message WM_HSCROLL;
     procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
     procedure WMKeyUp(var Message: TWMKeyUp); message WM_KEYUP;
@@ -2569,6 +2581,9 @@ type
     procedure ValidateChildren(Node: PVirtualNode; Recursive: Boolean);
     procedure ValidateNode(Node: PVirtualNode; Recursive: Boolean);
 
+    property Accessible: IAccessible read FAccessible write FAccessible;
+    property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
+    property AccessibleName: string read FAccessibleName write FAccessibleName;
     property CheckImages: TCustomImageList read FCheckImages;
     property CheckState[Node: PVirtualNode]: TCheckState read GetCheckState write SetCheckState;
     property CheckType[Node: PVirtualNode]: TCheckType read GetCheckType write SetCheckType;
@@ -2830,6 +2845,7 @@ type
   public
     property Canvas;
   published
+    property AccessibleName;
     property Action;
     property Align;
     property Alignment;
@@ -3251,14 +3267,15 @@ implementation
 
 uses
   Consts, Math,
-  AxCtrls,   // TOLEStream
+  AxCtrls,                 // TOLEStream
   {$ifdef UseFlatScrollbars}
-    FlatSB,    // wrapper for systems without flat SB support
+    FlatSB,                // wrapper for systems without flat SB support
   {$endif UseFlatScrollbars}
-  MMSystem,  // for animation timer (does not include further resources)
-  TypInfo,   // for migration stuff
+  MMSystem,                // for animation timer (does not include further resources)
+  TypInfo,                 // for migration stuff
   ActnList,
-  StdActns;  // for standard action support
+  StdActns,                // for standard action support
+  VTAccessibilityFactory;  // accessibility helper class
 
 resourcestring
   // Localizable strings.
@@ -4888,6 +4905,19 @@ begin
     FreeMem(Header);
     FreeMem(Bits);
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure GetAccessibilityFactory;
+
+// Accessibility helper function to create a singleton class that will create or return
+// the IAccessible interface for the tree and the focused node.
+
+begin
+  // Check to see if the class has already been created.
+  if VTAccessibleFactory = nil then
+    VTAccessibleFactory := TVTAccessibilityFactory.Create;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15643,6 +15673,29 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.WMGetObject(var Message: TMessage);
+
+begin
+  GetAccessibilityFactory;
+
+  // Create the IAccessibles for the tree view and tree view items, if necessary.
+  if Assigned(VTAccessibleFactory) then
+  begin
+    if FAccessible = nil then
+      FAccessible := VTAccessibleFactory.CreateIAccessible(Self);
+    if FAccessibleItem = nil then
+      FAccessibleItem := VTAccessibleFactory.CreateIAccessible(Self);
+  end;
+  
+  if Cardinal(Message.LParam) = OBJID_CLIENT then
+    if Assigned(Accessible) then
+      Message.Result := LresultFromObject(IID_IAccessible, Message.WParam, FAccessible)
+    else
+      Message.Result := 0;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.WMHScroll(var Message: TWMHScroll);
 
   //--------------- local functions -------------------------------------------
@@ -18201,6 +18254,8 @@ procedure TBaseVirtualTree.DoChecked(Node: PVirtualNode);
 begin
   if Assigned(FOnChecked) then
     FOnChecked(Self, Node);
+    
+  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18227,6 +18282,8 @@ procedure TBaseVirtualTree.DoCollapsed(Node: PVirtualNode);
 begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
+
+  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18572,6 +18629,8 @@ procedure TBaseVirtualTree.DoExpanded(Node: PVirtualNode);
 begin
   if Assigned(FOnExpanded) then
     FOnExpanded(Self, Node);
+
+  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18591,6 +18650,13 @@ procedure TBaseVirtualTree.DoFocusChange(Node: PVirtualNode; Column: TColumnInde
 begin
   if Assigned(FOnFocusChanged) then
     FOnFocusChanged(Self, Node, Column);
+
+  NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  NotifyWinEvent(EVENT_OBJECT_VALUECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  NotifyWinEvent(EVENT_OBJECT_SELECTION, Handle, OBJID_CLIENT, CHILDID_SELF);
+  NotifyWinEvent(EVENT_OBJECT_FOCUS, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21712,6 +21778,8 @@ procedure TBaseVirtualTree.MainColumnChanged;
 
 begin
   DoCancelEdit;
+
+  NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31664,6 +31732,12 @@ finalization
   InternalClipboardFormats := nil;
   Watcher.Free;
   Watcher := nil;
+
+  if VTAccessibleFactory <> nil then
+  begin
+    VTAccessibleFactory.Free;
+    VTAccessibleFactory := nil;
+  end;
 end.
 
 

@@ -120,9 +120,9 @@
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir" Type="String">C:\Temp\Out9</Directories>
-			<Directories Name="UnitOutputDir" Type="String">D:\Work\MySQL\Temp</Directories>
-			<Directories Name="PackageDLLOutputDir" Type="String">D:\Work\MySQL\Temp</Directories>
-			<Directories Name="PackageDCPOutputDir" Type="String">D:\Work\MySQL\Temp</Directories>
+			<Directories Name="UnitOutputDir" Type="String">D:\Work\MySQL\Output</Directories>
+			<Directories Name="PackageDLLOutputDir" Type="String">D:\Work\MySQL\Output</Directories>
+			<Directories Name="PackageDCPOutputDir" Type="String">D:\Work\MySQL\Output</Directories>
 			<Directories Name="SearchPath" Type="String">..\..\Common;..\Source</Directories>
 			<Directories Name="Packages" Type="String"></Directories>
 			<Directories Name="Conditionals" Type="String"></Directories>
