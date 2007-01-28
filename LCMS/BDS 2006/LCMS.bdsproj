@@ -28,7 +28,6 @@
         <property category="build.config.1" name="settings.win32b" value="default"/>
         <property category="build.config.1" name="type" value="Toolset"/>
         <property category="build.config.1" name="win32.win32b.builddir" value="Release_Build"/>
-        <property category="build.node" name="lastconfig" value="Debug_Build"/>
         <property category="build.node" name="name" value="LCMS.dll"/>
         <property category="build.node" name="packages" value="vcl;rtl;vclx;xmlrtl;vclactnband;bcbsmp;bcbie"/>
         <property category="build.node" name="use_packages" value="0"/>
@@ -43,9 +42,6 @@
         <property category="win32.*.win32b.tasm32" name="param.objfile.merge" value="1"/>
         <property category="win32.*.win32b.tasm32" name="param.xreffile.merge" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="container.SelectedWarnings.containerenabled" value="1"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.A.enabled" value="0"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.AK.enabled" value="0"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.AU.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.D.arg.1" value="_DEBUG"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.D.arg.merge" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.D.enabled" value="1"/>
@@ -54,10 +50,9 @@
         <property category="win32.Debug_Build.win32b.bcc32" name="option.R.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.k.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.r.enabled" value="0"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.u.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.v.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.vi.enabled" value="0"/>
-        <property category="win32.Debug_Build.win32b.bcc32" name="option.vu.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.vu.enabled" value="0"/>
         <property category="win32.Debug_Build.win32b.bcc32" name="option.y.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.dcc32" name="option.$D.enabled" value="1"/>
         <property category="win32.Debug_Build.win32b.dcc32" name="option.$O.enabled" value="0"/>
@@ -92,6 +87,13 @@
           <property category="node" name="displayname" value="All Configurations"/>
           <property category="win32.*.win32b.bcc32" name="container.SelectedOptimizations.containerenabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="container.SelectedWarnings.containerenabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.3.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.4.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.5.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.6.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.A.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.AK.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.AU.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.merge" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.D.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.H.enabled" value="1"/>
@@ -120,8 +122,14 @@
           <property category="win32.*.win32b.bcc32" name="option.Vmd.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.Vmm.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.Vms.enabled" value="0"/>
-          <property category="win32.*.win32b.bcc32" name="option.b.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-2.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-3.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-5.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.b.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.d.enabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.disablewarns.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.infomsgs.enabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.n.arg.1" value="..\obj"/>
           <property category="win32.*.win32b.bcc32" name="option.n.arg.merge" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.n.enabled" value="1"/>
@@ -140,6 +148,7 @@
           <property category="win32.*.win32b.bcc32" name="option.tWC.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.tWD.enabled" value="1"/>
           <property category="win32.*.win32b.bcc32" name="option.tWM.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.u.enabled" value="0"/>
           <property category="win32.*.win32b.bcc32" name="option.w.enabled" value="0"/>
           <property category="win32.*.win32b.dcc32" name="option.I.arg.1" value="..\Original source\src"/>
           <property category="win32.*.win32b.dcc32" name="option.I.arg.2" value="V:\Library\LCMS\BDS 2006"/>
@@ -245,19 +254,49 @@
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.172" value="source\src"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.173" value="..\Original"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.174" value="source\src"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.175" value="V:\Library\LCMS\BDS"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.176" value="2006"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.177" value="V:\Library\LCMS\BDS"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.178" value="2006"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.179" value="V:\Library\LCMS\BDS"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.175" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.176" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.177" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.178" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.179" value="..\Original"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.18" value="source\src"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.180" value="2006"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.181" value="V:\Library\LCMS\BDS"/>
-          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.182" value="2006"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.180" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.181" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.182" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.183" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.184" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.185" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.186" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.187" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.188" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.189" value="..\Original"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.19" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.190" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.191" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.192" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.193" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.194" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.195" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.196" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.197" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.198" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.199" value="..\Original"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.2" value="source\src"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.20" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.200" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.201" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.202" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.203" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.204" value="source\src"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.205" value="V:\Library\LCMS\BDS"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.206" value="2006"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.207" value="V:\Library\LCMS\BDS"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.208" value="2006"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.209" value="V:\Library\LCMS\BDS"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.21" value="..\Original"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.210" value="2006"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.211" value="V:\Library\LCMS\BDS"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.212" value="2006"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.22" value="source\src"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.23" value="..\Original"/>
           <property category="win32.*.win32b.idl2cpp" name="option.I.arg.24" value="source\src"/>
@@ -347,7 +386,7 @@
           <property category="win32.*.win32b.idl2cpp" name="option.I.enabled" value="1"/>
           <property category="win32.*.win32b.ilink32" name="container.SelectedWarnings.containerenabled" value="1"/>
           <property category="win32.*.win32b.ilink32" name="option.-w-.enabled" value="0"/>
-          <property category="win32.*.win32b.ilink32" name="option.Gi.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.Gi.enabled" value="0"/>
           <property category="win32.*.win32b.ilink32" name="option.Gpd.enabled" value="0"/>
           <property category="win32.*.win32b.ilink32" name="option.Gpr.enabled" value="0"/>
           <property category="win32.*.win32b.ilink32" name="option.I.arg.1" value="Intermediate"/>
@@ -364,7 +403,7 @@
           <property category="win32.*.win32b.ilink32" name="option.Tpp.enabled" value="0"/>
           <property category="win32.*.win32b.ilink32" name="option.aa.enabled" value="0"/>
           <property category="win32.*.win32b.ilink32" name="option.ap.enabled" value="0"/>
-          <property category="win32.*.win32b.ilink32" name="option.dynamicrtl.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.dynamicrtl.enabled" value="0"/>
           <property category="win32.*.win32b.ilink32" name="option.j.arg.1" value="..\Original source\src"/>
           <property category="win32.*.win32b.ilink32" name="option.j.arg.2" value="..\obj"/>
           <property category="win32.*.win32b.ilink32" name="option.j.arg.merge" value="1"/>
@@ -461,11 +500,6 @@
           <Parameters Name="LoadAllSymbols">True</Parameters>
           <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
         </Parameters>
-        <Language>
-          <Language Name="ActiveLang"></Language>
-          <Language Name="ProjectLang">$00000000</Language>
-          <Language Name="RootDir"></Language>
-        </Language>
         <Linker>
           <Linker Name="LibPrefix"></Linker>
           <Linker Name="LibSuffix"></Linker>

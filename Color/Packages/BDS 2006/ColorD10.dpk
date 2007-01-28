@@ -1,7 +1,7 @@
 package ColorD10;
 
 {$R *.res}
-{$ALIGN 4}
+{$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
 {$DEBUGINFO ON}
@@ -11,7 +11,7 @@ package ColorD10;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS ON}
 {$RANGECHECKS ON}
 {$REFERENCEINFO OFF}
@@ -47,6 +47,8 @@ contains
   LibStub in '..\..\..\Common\LibStub.pas',
   ColorRegistration in '..\..\Design\ColorRegistration.pas',
   WidgetEditor in '..\..\Design\WidgetEditor.pas',
-  UsesClause in '..\..\..\Design\UsesClause.pas';
+  UsesClause in '..\..\..\Design\UsesClause.pas',
+  Scanf in '..\..\..\Common\Scanf.pas',
+  Scanf_c in '..\..\..\Common\Scanf_c.pas';
 
 end.

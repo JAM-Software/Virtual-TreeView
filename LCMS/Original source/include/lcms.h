@@ -37,8 +37,8 @@
 #define USE_ASSEMBLER    1
 
 // Define this if you are using this package as a DLL (windows only)
-#define LCMS_DLL     1
-#define LCMS_DLL_BUILD   1
+// #define LCMS_DLL     1
+// #define LCMS_DLL_BUILD   1
 
 // Uncomment if you are trying the engine in a non-windows environment
 // like linux, SGI, VAX, FreeBSD, BeOS, etc.

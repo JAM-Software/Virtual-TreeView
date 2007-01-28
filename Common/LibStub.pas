@@ -127,7 +127,7 @@ function _lfind(const key, base: Pointer; num: Psize_t; width: size_t; Compare: 
 function localtime(clock: PInteger): ptm; cdecl;
 function log(Value: Double): Double; cdecl;
 procedure longjmp(const __jmpb, __retval: Integer); cdecl;
-function ltoupper(c: Integer): Integer; cdecl;
+function _ltoupper(c: Integer): Integer; cdecl;
 function malloc(size: Integer): Pointer; cdecl;
 function memcmp(s1, s2: Pointer; n: Integer): Integer; cdecl;
 procedure memcpy(dest, source: Pointer; count: Integer); cdecl;
@@ -832,7 +832,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function ltoupper(c: Integer): Integer;
+function _ltoupper(c: Integer): Integer;
 
 // Note: this code does not consider changes made with setlocale.
 

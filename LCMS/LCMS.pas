@@ -42,8 +42,15 @@ interface
   {$warn UNSAFE_CODE off}
 {$endif COMPILER_7_UP}
 
-{$align 4} // Structures are aligned on quad word boundaries.
-           // Note: This must be the same in the project settings for compiling the C sources!
+{$Z4}      // enum size = dword
+
+// Align record structures to 8 byte boundaries.
+// Note: This must be the same in the project settings for compiling the C sources!
+{$ifdef COMPILER_7_UP}
+  {$align 8}
+{$else}
+  {$align On}
+{$endif COMPILER_7_UP}
 
 uses
   Windows,
@@ -354,77 +361,72 @@ type
   cmsErrorHandler =  function (Severity: Integer; Msg:PChar): Integer; cdecl;
   LCMSARRAYOFPCHAR = array of PChar;
 
-// Note: there is a reason that I use stdcall as calling convention here, although obj files are usually created
-//       with cdecl calling convention. However in order to ease life with underscore decoration by the C compiler
-//       and to have a DLL together with the object files I compiled LCMS with LCMS_DLL and LCMS_DLL_BUILD enabled.
-//       This in turn uses stdcall for all exported functions. Hence its use here.
-
 // Input/Output
-function cmsOpenProfileFromFile(ICCProfile: PChar; sAccess: PChar) : cmsHPROFILE; stdcall;
-function cmsOpenProfileFromMem(MemPtr: Pointer; dwSize: DWORD) : cmsHPROFILE; stdcall;
-function cmsCloseProfile(hProfile : cmsHPROFILE) : Boolean; stdcall;
+function cmsOpenProfileFromFile(ICCProfile: PChar; sAccess: PChar) : cmsHPROFILE; cdecl;
+function cmsOpenProfileFromMem(MemPtr: Pointer; dwSize: DWORD) : cmsHPROFILE; cdecl;
+function cmsCloseProfile(hProfile : cmsHPROFILE) : Boolean; cdecl;
 function cmsCreateRGBProfile(WhitePoint : LPcmsCIExyY; Primaries: LPcmsCIExyYTRIPLE;
-  TransferFunction: array of LPGAMMATABLE) : cmsHPROFILE; stdcall;
-function cmsCreateGrayProfile(WhitePoint: LPcmsCIExyY; TransferFunction: LPGAMMATABLE) :  cmsHPROFILE; stdcall;
+  TransferFunction: array of LPGAMMATABLE) : cmsHPROFILE; cdecl;
+function cmsCreateGrayProfile(WhitePoint: LPcmsCIExyY; TransferFunction: LPGAMMATABLE) :  cmsHPROFILE; cdecl;
 function cmsCreateLinearizationDeviceLink(ColorSpace: icColorSpaceSignature;
-  TransferFunction: array of LPGAMMATABLE) : cmsHPROFILE; stdcall;
-function cmsCreateInkLimitingDeviceLink(ColorSpace: icColorSpaceSignature; Limit: Double) : cmsHPROFILE; stdcall;
-function cmsCreateNULLProfile : cmsHPROFILE; stdcall;
-function cmsCreateLabProfile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; stdcall;
-function cmsCreateLab4Profile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; stdcall;
-function cmsCreateXYZProfile:cmsHPROFILE; stdcall;
-function cmsCreate_sRGBProfile:cmsHPROFILE; stdcall;
+  TransferFunction: array of LPGAMMATABLE) : cmsHPROFILE; cdecl;
+function cmsCreateInkLimitingDeviceLink(ColorSpace: icColorSpaceSignature; Limit: Double) : cmsHPROFILE; cdecl;
+function cmsCreateNULLProfile : cmsHPROFILE; cdecl;
+function cmsCreateLabProfile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; cdecl;
+function cmsCreateLab4Profile(WhitePoint: LPcmsCIExyY): cmsHPROFILE; cdecl;
+function cmsCreateXYZProfile:cmsHPROFILE; cdecl;
+function cmsCreate_sRGBProfile:cmsHPROFILE; cdecl;
 function cmsCreateBCHSWabstractProfile(nLUTPoints: Integer; Bright, Contrast, Hue, Saturation: Double; TempSrc,
-  TempDest: Integer): cmsHPROFILE; stdcall;
+  TempDest: Integer): cmsHPROFILE; cdecl;
 
 // Utils
-procedure cmsXYZ2xyY(var Dest: cmsCIExyY; const Source: cmsCIEXYZ); stdcall;
-procedure cmsxyY2XYZ(Dest: LPcmsCIEXYZ; Source: LPcmsCIExyY); stdcall;
-procedure cmsXYZ2Lab(WhitePoint: LPcmsCIEXYZ; xyz: LPcmsCIEXYZ; Lab: LPcmsCIELab); stdcall;
-procedure cmsLab2XYZ(WhitePoint: LPcmsCIEXYZ; Lab: LPcmsCIELab; xyz: LPcmsCIEXYZ); stdcall;
-procedure cmsLab2LCh(LCh: LPcmsCIELCh; Lab: LPcmsCIELab); stdcall;
-procedure cmsLCh2Lab(Lab: LPcmsCIELab; LCh: LPcmsCIELCh); stdcall;
+procedure cmsXYZ2xyY(var Dest: cmsCIExyY; const Source: cmsCIEXYZ); cdecl;
+procedure cmsxyY2XYZ(Dest: LPcmsCIEXYZ; Source: LPcmsCIExyY); cdecl;
+procedure cmsXYZ2Lab(WhitePoint: LPcmsCIEXYZ; xyz: LPcmsCIEXYZ; Lab: LPcmsCIELab); cdecl;
+procedure cmsLab2XYZ(WhitePoint: LPcmsCIEXYZ; Lab: LPcmsCIELab; xyz: LPcmsCIEXYZ); cdecl;
+procedure cmsLab2LCh(LCh: LPcmsCIELCh; Lab: LPcmsCIELab); cdecl;
+procedure cmsLCh2Lab(Lab: LPcmsCIELab; LCh: LPcmsCIELCh); cdecl;
 
 // CIELab handling
-function cmsDeltaE(Lab1, Lab2: LPcmsCIELab): Double; stdcall;
-function cmsCIE94DeltaE(Lab1, Lab2: LPcmsCIELab): Double; stdcall;
-function cmsBFDdeltaE(Lab1, Lab2: LPcmsCIELab): Double; stdcall;
-function cmsCMCdeltaE(Lab1, Lab2: LPcmsCIELab): Double; stdcall;
-function cmsCIE2000DeltaE(Lab1, Lab2: LPcmsCIELab; Kl, Kc, Kh: Double): Double; stdcall;
+function cmsDeltaE(Lab1, Lab2: LPcmsCIELab): Double; cdecl;
+function cmsCIE94DeltaE(Lab1, Lab2: LPcmsCIELab): Double; cdecl;
+function cmsBFDdeltaE(Lab1, Lab2: LPcmsCIELab): Double; cdecl;
+function cmsCMCdeltaE(Lab1, Lab2: LPcmsCIELab): Double; cdecl;
+function cmsCIE2000DeltaE(Lab1, Lab2: LPcmsCIELab; Kl, Kc, Kh: Double): Double; cdecl;
 
-procedure cmsClampLab(Lab: LPcmsCIELab; amax, amin,  bmax, bmin: Double); stdcall;
+procedure cmsClampLab(Lab: LPcmsCIELab; amax, amin,  bmax, bmin: Double); cdecl;
 
 // White point
-function  cmsWhitePointFromTemp(TempK: Integer; WhitePoint: LPcmsCIExyY) : Boolean; stdcall;
+function  cmsWhitePointFromTemp(TempK: Integer; WhitePoint: LPcmsCIExyY) : Boolean; cdecl;
 
 // CIECAM97s
-function cmsCIECAM97sInit(pVC : LPcmsViewingConditions ) : Pointer; stdcall;
-procedure cmsCIECAM97sDone(hModel : Pointer); stdcall;
+function cmsCIECAM97sInit(pVC : LPcmsViewingConditions ) : Pointer; cdecl;
+procedure cmsCIECAM97sDone(hModel : Pointer); cdecl;
 
-procedure cmsCIECAM97sForward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); stdcall;
-procedure cmsCIECAM97sReverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); stdcall;
+procedure cmsCIECAM97sForward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); cdecl;
+procedure cmsCIECAM97sReverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); cdecl;
 
 // CIECAM02
-function cmsCIECAM02Init(pVC : LPcmsViewingConditions ) : Pointer; stdcall;
-procedure cmsCIECAM02Done(hModel : Pointer); stdcall;
+function cmsCIECAM02Init(pVC : LPcmsViewingConditions ) : Pointer; cdecl;
+procedure cmsCIECAM02Done(hModel : Pointer); cdecl;
 
-procedure cmsCIECAM02Forward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); stdcall;
-procedure cmsCIECAM02Reverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); stdcall;
+procedure cmsCIECAM02Forward(hModel: Pointer; pIn: LPcmsCIEXYZ; pOut: LPcmsJCh ); cdecl;
+procedure cmsCIECAM02Reverse(hModel: Pointer; pIn: LPcmsJCh;   pOut: LPcmsCIEXYZ ); cdecl;
 
 // Gamma curves
-function cmsBuildGamma(nEntries : Integer; Gamma: Double) : LPGAMMATABLE; stdcall;
-function cmsAllocGamma(nEntries : Integer): LPGAMMATABLE; stdcall;
-procedure cmsFreeGamma(Gamma: LPGAMMATABLE); stdcall;
-procedure cmsFreeGammaTriple(Gamma: array of LPGAMMATABLE); stdcall;
-function cmsReverseGamma(nResultSamples: Integer; InGamma : LPGAMMATABLE): LPGAMMATABLE; stdcall;
-function cmsJoinGamma(InGamma, OutGamma: LPGAMMATABLE): LPGAMMATABLE; stdcall;
-function cmsJoinGammaEx(InGamma, OutGamma: LPGAMMATABLE; nPoints: Integer): LPGAMMATABLE; stdcall;
-function cmsSmoothGamma(Gamma: LPGAMMATABLE; SmoothingLambda: Double): Boolean; stdcall;
-function cmsDupGamma(Src: LPGAMMATABLE): LPGAMMATABLE; stdcall;
-function cmsEstimateGamma(Src: LPGAMMATABLE): Double; stdcall;
-function cmsEstimateGammaEx(Src: LPGAMMATABLE; Thereshold: Double): Double; stdcall;
-function cmsReadICCGamma(hProfile: cmsHPROFILE; Sig: icTagSignature): LPGAMMATABLE; stdcall;
-function cmsReadICCGammaReversed(hProfile: cmsHPROFILE; Sig: icTagSignature): LPGAMMATABLE; stdcall;
+function cmsBuildGamma(nEntries : Integer; Gamma: Double) : LPGAMMATABLE; cdecl;
+function cmsAllocGamma(nEntries : Integer): LPGAMMATABLE; cdecl;
+procedure cmsFreeGamma(Gamma: LPGAMMATABLE); cdecl;
+procedure cmsFreeGammaTriple(Gamma: array of LPGAMMATABLE); cdecl;
+function cmsReverseGamma(nResultSamples: Integer; InGamma : LPGAMMATABLE): LPGAMMATABLE; cdecl;
+function cmsJoinGamma(InGamma, OutGamma: LPGAMMATABLE): LPGAMMATABLE; cdecl;
+function cmsJoinGammaEx(InGamma, OutGamma: LPGAMMATABLE; nPoints: Integer): LPGAMMATABLE; cdecl;
+function cmsSmoothGamma(Gamma: LPGAMMATABLE; SmoothingLambda: Double): Boolean; cdecl;
+function cmsDupGamma(Src: LPGAMMATABLE): LPGAMMATABLE; cdecl;
+function cmsEstimateGamma(Src: LPGAMMATABLE): Double; cdecl;
+function cmsEstimateGammaEx(Src: LPGAMMATABLE; Thereshold: Double): Double; cdecl;
+function cmsReadICCGamma(hProfile: cmsHPROFILE; Sig: icTagSignature): LPGAMMATABLE; cdecl;
+function cmsReadICCGammaReversed(hProfile: cmsHPROFILE; Sig: icTagSignature): LPGAMMATABLE; cdecl;
 
 const
   lcmsParametricCurveExp           = 0;
@@ -432,50 +434,50 @@ const
   lcmsParametricCurveIEC_61966_3   = 2;
   lcmsParametricCurveIEC_61966_2_1 = 3;
 
-function cmsBuildParametricGamma(nEntries: Integer; TheType: Integer; Params: array of Double) : LPGAMMATABLE; stdcall;
+function cmsBuildParametricGamma(nEntries: Integer; TheType: Integer; Params: array of Double) : LPGAMMATABLE; cdecl;
 
 // Access to Profile data.
-procedure cmsSetLanguage(LanguageCode: Integer; CountryCode: Integer); stdcall;
+procedure cmsSetLanguage(LanguageCode: Integer; CountryCode: Integer); cdecl;
 
-function cmsTakeMediaWhitePoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; stdcall;
-function cmsTakeMediaBlackPoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; stdcall;
-function cmsTakeIluminant(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; stdcall;
-function cmsTakeColorants(Dest: LPcmsCIEXYZTRIPLE; hProfile: cmsHPROFILE): Boolean; stdcall;
-function cmsTakeHeaderFlags(hProfile: cmsHPROFILE): DWORD; stdcall;
+function cmsTakeMediaWhitePoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; cdecl;
+function cmsTakeMediaBlackPoint(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; cdecl;
+function cmsTakeIluminant(Dest: LPcmsCIEXYZ; hProfile: cmsHPROFILE): Boolean; cdecl;
+function cmsTakeColorants(Dest: LPcmsCIEXYZTRIPLE; hProfile: cmsHPROFILE): Boolean; cdecl;
+function cmsTakeHeaderFlags(hProfile: cmsHPROFILE): DWORD; cdecl;
 
-function cmsTakeProductName(hProfile: cmsHPROFILE): PChar; stdcall;
-function cmsTakeProductDesc(hProfile: cmsHPROFILE): PChar; stdcall;
+function cmsTakeProductName(hProfile: cmsHPROFILE): PChar; cdecl;
+function cmsTakeProductDesc(hProfile: cmsHPROFILE): PChar; cdecl;
 
-function cmsTakeManufacturer(hProfile: cmsHPROFILE): PChar; stdcall;
-function cmsTakeModel(hProfile: cmsHPROFILE): PChar; stdcall;
-function cmsTakeCopyright(hProfile: cmsHPROFILE): PChar; stdcall;
-function cmsTakeProfileID(hProfile: cmsHPROFILE): PByte; stdcall;
+function cmsTakeManufacturer(hProfile: cmsHPROFILE): PChar; cdecl;
+function cmsTakeModel(hProfile: cmsHPROFILE): PChar; cdecl;
+function cmsTakeCopyright(hProfile: cmsHPROFILE): PChar; cdecl;
+function cmsTakeProfileID(hProfile: cmsHPROFILE): PByte; cdecl;
 
-function cmsIsTag(hProfile: cmsHPROFILE; sig: icTagSignature): Boolean; stdcall;
-function cmsTakeRenderingIntent(hProfile: cmsHPROFILE): Integer; stdcall;
-function cmsIsIntentSupported(hProfile: cmsHPROFILE; Intent, UsedDirection : Integer): Integer; stdcall;
-function cmsTakeCharTargetData(hProfile: cmsHPROFILE; var Data : PChar; var len: Cardinal): Boolean; stdcall;
+function cmsIsTag(hProfile: cmsHPROFILE; sig: icTagSignature): Boolean; cdecl;
+function cmsTakeRenderingIntent(hProfile: cmsHPROFILE): Integer; cdecl;
+function cmsIsIntentSupported(hProfile: cmsHPROFILE; Intent, UsedDirection : Integer): Integer; cdecl;
+function cmsTakeCharTargetData(hProfile: cmsHPROFILE; var Data : PChar; var len: Cardinal): Boolean; cdecl;
 
-function _cmsICCcolorSpace(OurNotation: Integer) : icColorSpaceSignature; stdcall;
-function _cmsLCMScolorSpace(ProfileSpace: icColorSpaceSignature): Integer; stdcall;
-function _cmsChannelsOf(ColorSpace: icColorSpaceSignature): Integer; stdcall;
+function _cmsICCcolorSpace(OurNotation: Integer) : icColorSpaceSignature; cdecl;
+function _cmsLCMScolorSpace(ProfileSpace: icColorSpaceSignature): Integer; cdecl;
+function _cmsChannelsOf(ColorSpace: icColorSpaceSignature): Integer; cdecl;
 
-function cmsGetPCS(hProfile: cmsHPROFILE): icColorSpaceSignature; stdcall;
-function cmsGetColorSpace(hProfile: cmsHPROFILE): icColorSpaceSignature; stdcall;
-function cmsGetDeviceClass( hProfile: cmsHPROFILE): icProfileClassSignature; stdcall;
-function cmsGetProfileICCversion( hProfile: cmsHPROFILE): DWORD; stdcall;
+function cmsGetPCS(hProfile: cmsHPROFILE): icColorSpaceSignature; cdecl;
+function cmsGetColorSpace(hProfile: cmsHPROFILE): icColorSpaceSignature; cdecl;
+function cmsGetDeviceClass( hProfile: cmsHPROFILE): icProfileClassSignature; cdecl;
+function cmsGetProfileICCversion( hProfile: cmsHPROFILE): DWORD; cdecl;
 
 // Profile creation
-procedure cmsSetDeviceClass(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); stdcall;
-procedure cmsSetColorSpace(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); stdcall;
-procedure cmsSetPCS(hProfile: cmsHPROFILE; pcs: icColorSpaceSignature); stdcall;
-procedure cmsSetRenderingIntent(hProfile: cmsHPROFILE; Intent: Integer); stdcall;
-procedure cmsSetHeaderFlags(hProfile: cmsHPROFILE; dwFlags: DWORD); stdcall;
-procedure cmsSetProfileID(hProfile: cmsHPROFILE; ProfileID: PByte); stdcall;
+procedure cmsSetDeviceClass(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); cdecl;
+procedure cmsSetColorSpace(hProfile: cmsHPROFILE; sig: icProfileClassSignature ); cdecl;
+procedure cmsSetPCS(hProfile: cmsHPROFILE; pcs: icColorSpaceSignature); cdecl;
+procedure cmsSetRenderingIntent(hProfile: cmsHPROFILE; Intent: Integer); cdecl;
+procedure cmsSetHeaderFlags(hProfile: cmsHPROFILE; dwFlags: DWORD); cdecl;
+procedure cmsSetProfileID(hProfile: cmsHPROFILE; ProfileID: PByte); cdecl;
 
-function  cmsAddTag(hProfile: cmsHPROFILE; Sig: icTagSignature; Data: Pointer): Boolean; stdcall;
-function  _cmsSaveProfile(hProfile: cmsHPROFILE; FileName: PChar): Boolean; stdcall;
-function  _cmsSaveProfileToMem(hProfile: cmsHPROFILE; MemPtr: Pointer; var BytesNeeded: DWORD): Boolean; stdcall;
+function  cmsAddTag(hProfile: cmsHPROFILE; Sig: icTagSignature; Data: Pointer): Boolean; cdecl;
+function  _cmsSaveProfile(hProfile: cmsHPROFILE; FileName: PChar): Boolean; cdecl;
+function  _cmsSaveProfileToMem(hProfile: cmsHPROFILE; MemPtr: Pointer; var BytesNeeded: DWORD): Boolean; cdecl;
 
 const
   LCMS_USED_AS_INPUT   =   0;
@@ -484,33 +486,33 @@ const
 
 // Transforms
 function cmsCreateTransform(Input: cmsHPROFILE; InputFormat: DWORD; Output: cmsHPROFILE; OutputFormat: DWORD;
-  Intent: Integer; dwFlags: DWORD): cmsHTRANSFORM; stdcall;
+  Intent: Integer; dwFlags: DWORD): cmsHTRANSFORM; cdecl;
 function cmsCreateProofingTransform(Input: cmsHPROFILE; InputFormat: DWORD; Output: cmsHPROFILE; OutputFormat: DWORD;
-  Proofing: cmsHPROFILE; Intent: Integer; ProofingIntent: Integer; dwFlags: DWORD): cmsHTRANSFORM; stdcall;
+  Proofing: cmsHPROFILE; Intent: Integer; ProofingIntent: Integer; dwFlags: DWORD): cmsHTRANSFORM; cdecl;
 function cmsCreateMultiprofileTransform(hProfiles : array of cmsHPROFILE; nProfiles : Integer; InputFormat: DWORD;
-  OutputFormat: DWORD; Intent: Integer; dwFlags: DWORD): cmsHTRANSFORM; stdcall;
-procedure cmsDeleteTransform( hTransform: cmsHTRANSFORM); stdcall;
-procedure cmsDoTransform( Transform: cmsHTRANSFORM; InputBuffer: Pointer; OutputBuffer: Pointer; Size: LongInt); stdcall;
-procedure cmsChangeBuffersFormat(hTransform: cmsHTRANSFORM; dwInputFormat, dwOutputFormat: DWORD); stdcall;
+  OutputFormat: DWORD; Intent: Integer; dwFlags: DWORD): cmsHTRANSFORM; cdecl;
+procedure cmsDeleteTransform( hTransform: cmsHTRANSFORM); cdecl;
+procedure cmsDoTransform( Transform: cmsHTRANSFORM; InputBuffer: Pointer; OutputBuffer: Pointer; Size: LongInt); cdecl;
+procedure cmsChangeBuffersFormat(hTransform: cmsHTRANSFORM; dwInputFormat, dwOutputFormat: DWORD); cdecl;
 
 // Devicelink generation
-function cmsTransform2DeviceLink(hTransform: cmsHTRANSFORM; dwFlags: DWORD): cmsHPROFILE; stdcall;
-procedure _cmsSetLUTdepth(hProfile: cmsHPROFILE; depth: Integer); stdcall;
+function cmsTransform2DeviceLink(hTransform: cmsHTRANSFORM; dwFlags: DWORD): cmsHPROFILE; cdecl;
+procedure _cmsSetLUTdepth(hProfile: cmsHPROFILE; depth: Integer); cdecl;
 
 // Named color support
-function cmsNamedColorCount(xform: cmsHTRANSFORM): Integer; stdcall;
-function cmsNamedColorInfo(xform: cmsHTRANSFORM; nColor: Integer; Name, Prefix, Suffix: PChar) : Boolean; stdcall;
-function cmsNamedColorIndex(xform: cmsHTRANSFORM; Name: PChar): Integer; stdcall;
+function cmsNamedColorCount(xform: cmsHTRANSFORM): Integer; cdecl;
+function cmsNamedColorInfo(xform: cmsHTRANSFORM; nColor: Integer; Name, Prefix, Suffix: PChar) : Boolean; cdecl;
+function cmsNamedColorIndex(xform: cmsHTRANSFORM; Name: PChar): Integer; cdecl;
 
 // PostScript ColorRenderingDictionary and ColorSpaceArray
-function cmsGetPostScriptCSA(hProfile: cmsHPROFILE; Intent: Integer; Buffer: Pointer; dwBufferLen: DWORD): DWORD; stdcall;
-function cmsGetPostScriptCRD(hProfile: cmsHPROFILE; Intent: Integer; Buffer: Pointer; dwBufferLen: DWORD): DWORD; stdcall;
+function cmsGetPostScriptCSA(hProfile: cmsHPROFILE; Intent: Integer; Buffer: Pointer; dwBufferLen: DWORD): DWORD; cdecl;
+function cmsGetPostScriptCRD(hProfile: cmsHPROFILE; Intent: Integer; Buffer: Pointer; dwBufferLen: DWORD): DWORD; cdecl;
 function cmsGetPostScriptCRDEx(hProfile: cmsHPROFILE; Intent: Integer; dwFlags: DWORD; Buffer: Pointer;
-  dwBufferLen: DWORD): DWORD; stdcall;
+  dwBufferLen: DWORD): DWORD; cdecl;
 
 // Gamut check
-procedure cmsSetAlarmCodes(r, g, b: Integer); stdcall;
-procedure cmsGetAlarmCodes(var r, g, b: Integer); stdcall;
+procedure cmsSetAlarmCodes(r, g, b: Integer); cdecl;
+procedure cmsGetAlarmCodes(var r, g, b: Integer); cdecl;
 
 // Error handling
 const
@@ -518,69 +520,69 @@ const
   LCMS_ERROR_SHOW    =  1;
   LCMS_ERROR_IGNORE  =  2;
 
-procedure cmsErrorAction(nAction: Integer); stdcall;
-procedure cmsSetErrorHandler(ErrorHandler: cmsErrorHandler); stdcall;
+procedure cmsErrorAction(nAction: Integer); cdecl;
+procedure cmsSetErrorHandler(ErrorHandler: cmsErrorHandler); cdecl;
 
 // CGATS.13 parser
-function cmsIT8Alloc: LCMSHANDLE; stdcall;
-procedure cmsIT8Free(hIT8: LCMSHANDLE); stdcall;
+function cmsIT8Alloc: LCMSHANDLE; cdecl;
+procedure cmsIT8Free(hIT8: LCMSHANDLE); cdecl;
 
 // Tables
-function cmsIT8TableCount(hIT8: LCMSHANDLE): Integer; stdcall;
-function cmsIT8SetTable(hIT8: LCMSHANDLE; nTable: Integer): Integer; stdcall;
+function cmsIT8TableCount(hIT8: LCMSHANDLE): Integer; cdecl;
+function cmsIT8SetTable(hIT8: LCMSHANDLE; nTable: Integer): Integer; cdecl;
 
 // Persistence
-function cmsIT8LoadFromFile(cFileName: PChar): LCMSHANDLE; stdcall;
-function cmsIT8LoadFromMem(Ptr: Pointer; size :DWORD): LCMSHANDLE; stdcall;
+function cmsIT8LoadFromFile(cFileName: PChar): LCMSHANDLE; cdecl;
+function cmsIT8LoadFromMem(Ptr: Pointer; size :DWORD): LCMSHANDLE; cdecl;
 
-function cmsIT8SaveToFile(hIT8: LCMSHANDLE; cFileName: PChar): Boolean; stdcall;
+function cmsIT8SaveToFile(hIT8: LCMSHANDLE; cFileName: PChar): Boolean; cdecl;
 
 // Properties
 
-function cmsIT8GetSheetType(hIT8: LCMSHANDLE): PChar; stdcall;
-function cmsIT8SetSheetType(hIT8: LCMSHANDLE; TheType: PChar): Boolean; stdcall;
+function cmsIT8GetSheetType(hIT8: LCMSHANDLE): PChar; cdecl;
+function cmsIT8SetSheetType(hIT8: LCMSHANDLE; TheType: PChar): Boolean; cdecl;
 
-function cmsIT8SetComment(hIT8: LCMSHANDLE; cComment: PChar): Boolean; stdcall;
+function cmsIT8SetComment(hIT8: LCMSHANDLE; cComment: PChar): Boolean; cdecl;
 
-function cmsIT8SetPropertyStr(hIT8: LCMSHANDLE; cProp, Str: PChar): Boolean; stdcall;
-function cmsIT8SetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar; Val: Double): Boolean; stdcall;
-function cmsIT8SetPropertyHex(hIT8: LCMSHANDLE; cProp: PChar; Val: Integer): Boolean; stdcall;
-function cmsIT8SetPropertyUncooked(hIT8: LCMSHANDLE; Key, Buffer: PChar): Boolean; stdcall;
+function cmsIT8SetPropertyStr(hIT8: LCMSHANDLE; cProp, Str: PChar): Boolean; cdecl;
+function cmsIT8SetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar; Val: Double): Boolean; cdecl;
+function cmsIT8SetPropertyHex(hIT8: LCMSHANDLE; cProp: PChar; Val: Integer): Boolean; cdecl;
+function cmsIT8SetPropertyUncooked(hIT8: LCMSHANDLE; Key, Buffer: PChar): Boolean; cdecl;
 
-function cmsIT8GetProperty(hIT8: LCMSHANDLE; cProp: PChar): PChar; stdcall;
-function cmsIT8GetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar): Double; stdcall;
-function cmsIT8EnumProperties(hIT8: LCMSHANDLE; var PropertyNames: LCMSARRAYOFPCHAR): Integer; stdcall;
+function cmsIT8GetProperty(hIT8: LCMSHANDLE; cProp: PChar): PChar; cdecl;
+function cmsIT8GetPropertyDbl(hIT8: LCMSHANDLE; cProp: PChar): Double; cdecl;
+function cmsIT8EnumProperties(hIT8: LCMSHANDLE; var PropertyNames: LCMSARRAYOFPCHAR): Integer; cdecl;
 
 // Datasets
-function cmsIT8GetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer): PChar; stdcall;
-function cmsIT8GetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer): Double; stdcall;
+function cmsIT8GetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer): PChar; cdecl;
+function cmsIT8GetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer): Double; cdecl;
 
-function cmsIT8SetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer; Val: PChar): Boolean; stdcall;
-function cmsIT8SetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer; Val: Double): Boolean; stdcall;
+function cmsIT8SetDataRowCol(hIT8: LCMSHANDLE; row, col: Integer; Val: PChar): Boolean; cdecl;
+function cmsIT8SetDataRowColDbl(hIT8: LCMSHANDLE; row, col: Integer; Val: Double): Boolean; cdecl;
 
-function cmsIT8GetData(hIT8: LCMSHANDLE; cPatch, cSample: PChar): PChar; stdcall;
+function cmsIT8GetData(hIT8: LCMSHANDLE; cPatch, cSample: PChar): PChar; cdecl;
 
-function cmsIT8GetDataDbl(hIT8: LCMSHANDLE;cPatch, cSample: PChar): Double; stdcall;
+function cmsIT8GetDataDbl(hIT8: LCMSHANDLE;cPatch, cSample: PChar): Double; cdecl;
 
-function cmsIT8SetData(hIT8: LCMSHANDLE; cPatch, cSample, Val: PChar): Boolean; stdcall;
+function cmsIT8SetData(hIT8: LCMSHANDLE; cPatch, cSample, Val: PChar): Boolean; cdecl;
 
-function cmsIT8SetDataDbl(hIT8: LCMSHANDLE; cPatch, cSample: PChar; Val: Double): Boolean; stdcall;
+function cmsIT8SetDataDbl(hIT8: LCMSHANDLE; cPatch, cSample: PChar; Val: Double): Boolean; cdecl;
 
-function cmsIT8SetDataFormat(hIT8: LCMSHANDLE; n: Integer; Sample: PChar): Boolean; stdcall;
-function cmsIT8EnumDataFormat(hIT8: LCMSHANDLE; var SampleNames: LCMSARRAYOFPCHAR): Integer; stdcall;
-function cmsIT8GetPatchName(hIT8: LCMSHANDLE; nPatch: Integer; Buffer: PChar): PChar; stdcall;
+function cmsIT8SetDataFormat(hIT8: LCMSHANDLE; n: Integer; Sample: PChar): Boolean; cdecl;
+function cmsIT8EnumDataFormat(hIT8: LCMSHANDLE; var SampleNames: LCMSARRAYOFPCHAR): Integer; cdecl;
+function cmsIT8GetPatchName(hIT8: LCMSHANDLE; nPatch: Integer; Buffer: PChar): PChar; cdecl;
 
 // The LABEL extension
-function cmsIT8SetTableByLabel(hIT8: LCMSHANDLE; cSet, cField, ExpectedType: PChar): Integer; stdcall;
+function cmsIT8SetTableByLabel(hIT8: LCMSHANDLE; cSet, cField, ExpectedType: PChar): Integer; cdecl;
 
-procedure cmsLabEncoded2Float(Lab: LPcmsCIELab; wLab: Pointer); stdcall;
-procedure cmsFloat2LabEncoded(wLab: Pointer; Lab: LPcmsCIELab); stdcall;
-procedure cmsXYZEncoded2Float(fxyz : LPcmsCIEXYZ; XYZ: Pointer); stdcall;
-procedure cmsFloat2XYZEncoded(XYZ: Pointer; fXYZ: LPcmsCIEXYZ); stdcall;
+procedure cmsLabEncoded2Float(Lab: LPcmsCIELab; wLab: Pointer); cdecl;
+procedure cmsFloat2LabEncoded(wLab: Pointer; Lab: LPcmsCIELab); cdecl;
+procedure cmsXYZEncoded2Float(fxyz : LPcmsCIEXYZ; XYZ: Pointer); cdecl;
+procedure cmsFloat2XYZEncoded(XYZ: Pointer; fXYZ: LPcmsCIEXYZ); cdecl;
 
-function _cmsAddTextTag(hProfile: cmsHPROFILE; sig: icTagSignature; Text: PChar): Boolean; stdcall;
-function _cmsAddXYZTag(hProfile: cmsHPROFILE;  sig: icTagSignature;  XYZ: LPcmsCIEXYZ): Boolean; stdcall;
-function _cmsAddLUTTag(hProfile: cmsHPROFILE;  sig: icTagSignature; lut: PByte): Boolean; stdcall;
+function _cmsAddTextTag(hProfile: cmsHPROFILE; sig: icTagSignature; Text: PChar): Boolean; cdecl;
+function _cmsAddXYZTag(hProfile: cmsHPROFILE;  sig: icTagSignature;  XYZ: LPcmsCIEXYZ): Boolean; cdecl;
+function _cmsAddLUTTag(hProfile: cmsHPROFILE;  sig: icTagSignature; lut: PByte): Boolean; cdecl;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -854,51 +856,51 @@ function _cmsAddLUTTag(hProfile: cmsHPROFILE;  sig: icTagSignature; lut: PByte):
 // Others needed for compilation with obj files.
 // Actual function/procedure types as well as parameters don't matter here.
 // Only the symbol as such is important.
-procedure cmsD50_XYZ; external;
-procedure _cmsCalcCLUT16Params; external;
-procedure __cmsEndPointsBySpace; external;
-procedure __cmsSearchTag; external;
-procedure __cmsCreateProfilePlaceholder; external;
-procedure __cmsCreateProfileFromFilePlaceholder; external;
-procedure __cmsCreateProfileFromMemPlaceholder; external;
-procedure __cmsCrc32OfGammaTable; external;
-procedure _cmsAddGammaTag; external;
-procedure _cmsAddChromaticityTag; external;
-procedure _cmsAddSequenceDescriptionTag; external;
-procedure _cmsAddNamedColorTag; external;
-procedure _cmsAddDateTimeTag; external;
-procedure _cmsAddColorantTableTag; external;
-procedure __cmsSetSaveToDisk; external;
-procedure __cmsSetSaveToMemory; external;
-procedure _cmsTetrahedralInterp8; external;
-procedure _cmsLinearInterpFixed; external;
-procedure _Clamp_L; external;
-procedure _Clamp_ab; external;
-procedure _cmsFreeMatShaper; external;
-procedure cmsSetProfileICCversion; external;
-procedure __cmsIdentifyInputFormat; external;
-procedure __cmsIdentifyOutputFormat; external;
-procedure __cmsComputePrelinearizationTablesFromXFORM; external;
-procedure cmsEvalLUTreverse; external;
-procedure __cmsBuildKToneCurve; external;
-procedure cmsReadICCLut; external;
-procedure cmsD50_xyY; external;
-procedure _cmsEvalMatShaper; external;
-procedure __cmsWhiteBySpace; external;
-procedure _cmsAllocMatShaper; external;
-procedure _cmsReadICCMatrixRGB2XYZ; external;
-procedure _cmsAllocMatShaper2; external;
-procedure _cmsReadChromaticAdaptationMatrix; external;
-procedure _cmsChooseCnvrt; external;
-procedure _cmsTetrahedralInterp16; external;
-procedure __cmsComputeSoftProofLUT; external;
-procedure __cmsComputeGamutLUT; external;
-procedure _cmsReadICCnamedColorList; external;
-procedure __cmsPrecalculateBlackPreservingDeviceLink; external;
-procedure __cmsPrecalculateGamutCheck; external;
-procedure _cmsCalcCLUT16ParamsEx; external;
-procedure __cmsBlessLUT8; external;
-procedure __cmsFixWhiteMisalignment; external;
+procedure cmsD50_XYZ; cdecl; external;
+procedure cmsCalcCLUT16Params; cdecl; external;
+procedure _cmsEndPointsBySpace; cdecl; external;
+procedure _cmsSearchTag; cdecl; external;
+procedure _cmsCreateProfilePlaceholder; cdecl; external;
+procedure _cmsCreateProfileFromFilePlaceholder; cdecl; external;
+procedure _cmsCreateProfileFromMemPlaceholder; cdecl; external;
+procedure _cmsCrc32OfGammaTable; cdecl; external;
+procedure _cmsAddGammaTag; cdecl; external;
+procedure _cmsAddChromaticityTag; cdecl; external;
+procedure _cmsAddSequenceDescriptionTag; cdecl; external;
+procedure _cmsAddNamedColorTag; cdecl; external;
+procedure _cmsAddDateTimeTag; cdecl; external;
+procedure _cmsAddColorantTableTag; cdecl; external;
+procedure _cmsSetSaveToDisk; cdecl; external;
+procedure _cmsSetSaveToMemory; cdecl; external;
+procedure cmsTetrahedralInterp8; cdecl; external;
+procedure cmsLinearInterpFixed; cdecl; external;
+procedure Clamp_L; cdecl; external;
+procedure Clamp_ab; cdecl; external;
+procedure cmsFreeMatShaper; cdecl; external;
+procedure cmsSetProfileICCversion; cdecl; external;
+procedure _cmsIdentifyInputFormat; cdecl; external;
+procedure _cmsIdentifyOutputFormat; cdecl; external;
+procedure _cmsComputePrelinearizationTablesFromXFORM; cdecl; external;
+procedure cmsEvalLUTreverse; cdecl; external;
+procedure _cmsBuildKToneCurve; cdecl; external;
+procedure cmsReadICCLut; cdecl; external;
+procedure cmsD50_xyY; cdecl; external;
+procedure cmsEvalMatShaper; cdecl; external;
+procedure _cmsWhiteBySpace; cdecl; external;
+procedure cmsAllocMatShaper; cdecl; external;
+procedure cmsReadICCMatrixRGB2XYZ; cdecl; external;
+procedure cmsAllocMatShaper2; cdecl; external;
+procedure cmsReadChromaticAdaptationMatrix; cdecl; external;
+procedure cmsChooseCnvrt; cdecl; external;
+procedure cmsTetrahedralInterp16; cdecl; external;
+procedure _cmsComputeSoftProofLUT; cdecl; external;
+procedure _cmsComputeGamutLUT; cdecl; external;
+procedure cmsReadICCnamedColorList; cdecl; external;
+procedure _cmsPrecalculateBlackPreservingDeviceLink; cdecl; external;
+procedure _cmsPrecalculateGamutCheck; cdecl; external;
+procedure cmsCalcCLUT16ParamsEx; cdecl; external;
+procedure _cmsBlessLUT8; cdecl; external;
+procedure _cmsFixWhiteMisalignment; cdecl; external;
 
 //----------------------------------------------------------------------------------------------------------------------
 

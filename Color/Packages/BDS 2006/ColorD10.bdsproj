@@ -16,7 +16,7 @@
 			<FileVersion Name="Version">7.0</FileVersion>
 		</FileVersion>
 		<Compiler>
-			<Compiler Name="A">4</Compiler>
+			<Compiler Name="A">8</Compiler>
 			<Compiler Name="B">0</Compiler>
 			<Compiler Name="C">1</Compiler>
 			<Compiler Name="D">1</Compiler>
@@ -30,7 +30,7 @@
 			<Compiler Name="L">1</Compiler>
 			<Compiler Name="M">0</Compiler>
 			<Compiler Name="N">1</Compiler>
-			<Compiler Name="O">1</Compiler>
+			<Compiler Name="O">0</Compiler>
 			<Compiler Name="P">1</Compiler>
 			<Compiler Name="Q">1</Compiler>
 			<Compiler Name="R">1</Compiler>
@@ -120,9 +120,9 @@
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir">..\..\bin\Windows</Directories>
-			<Directories Name="UnitOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="PackageDLLOutputDir">V:\MySQL\Temp</Directories>
-			<Directories Name="PackageDCPOutputDir">V:\MySQL\Temp</Directories>
+			<Directories Name="UnitOutputDir">D:\Work\MySQL\Output</Directories>
+			<Directories Name="PackageDLLOutputDir">D:\Work\MySQL\Output</Directories>
+			<Directories Name="PackageDCPOutputDir">D:\Work\MySQL\Output</Directories>
 			<Directories Name="SearchPath">..\..\..\Common;..\..\Source;..\..\Res;..\..\Design</Directories>
 			<Directories Name="Packages"></Directories>
 			<Directories Name="Conditionals"></Directories>
@@ -170,6 +170,10 @@
 			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
-		</VersionInfoKeys>
-	</Delphi.Personality>
+		</VersionInfoKeys>  
+    <Excluded_Packages>
+      <Excluded_Packages Name="D:\Work\MySQL\Output\ColorD10.bpl">Soft Gems color components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dcltee100.bpl">TeeChart Components</Excluded_Packages>
+    </Excluded_Packages>
+  </Delphi.Personality>
 </BorlandProject>
