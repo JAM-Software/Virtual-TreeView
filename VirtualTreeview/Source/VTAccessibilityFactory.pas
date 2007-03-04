@@ -32,10 +32,12 @@ type
     procedure UnRegisterAccessibleProvider(AProvider: IVTAccessibleProvider);
   end;
 
-var
-  VTAccessibleFactory: TVTAccessibilityFactory;
+function GetAccessibilityFactory: TVTAccessibilityFactory;
 
 implementation
+
+var
+  VTAccessibleFactory: TVTAccessibilityFactory = nil;
 
 { TVTAccessibilityFactory }
 
@@ -120,4 +122,20 @@ begin
     FAccessibleProviders.Remove(AProvider);
 end;
 
+function GetAccessibilityFactory: TVTAccessibilityFactory;
+
+// Accessibility helper function to create a singleton class that will create or return
+// the IAccessible interface for the tree and the focused node.
+
+begin
+  // Check to see if the class has already been created.
+  if VTAccessibleFactory = nil then
+    VTAccessibleFactory := TVTAccessibilityFactory.Create;
+  result := VTAccessibleFactory;
+end;
+
+initialization
+
+finalization
+  VTAccessibleFactory.free;
 end.

@@ -4909,19 +4909,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure GetAccessibilityFactory;
-
-// Accessibility helper function to create a singleton class that will create or return
-// the IAccessible interface for the tree and the focused node.
-
-begin
-  // Check to see if the class has already been created.
-  if VTAccessibleFactory = nil then
-    VTAccessibleFactory := TVTAccessibilityFactory.Create;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure InitializeGlobalStructures;
 
 // initialization of stuff global to the unit
@@ -15676,16 +15663,11 @@ end;
 procedure TBaseVirtualTree.WMGetObject(var Message: TMessage);
 
 begin
-  GetAccessibilityFactory;
-
   // Create the IAccessibles for the tree view and tree view items, if necessary.
-  if Assigned(VTAccessibleFactory) then
-  begin
-    if FAccessible = nil then
-      FAccessible := VTAccessibleFactory.CreateIAccessible(Self);
-    if FAccessibleItem = nil then
-      FAccessibleItem := VTAccessibleFactory.CreateIAccessible(Self);
-  end;
+  if FAccessible = nil then
+    FAccessible := GetAccessibilityFactory.CreateIAccessible(Self);
+  if FAccessibleItem = nil then
+    FAccessibleItem := GetAccessibilityFactory.CreateIAccessible(Self);
   
   if Cardinal(Message.LParam) = OBJID_CLIENT then
     if Assigned(Accessible) then
@@ -31733,12 +31715,8 @@ finalization
   Watcher.Free;
   Watcher := nil;
 
-  if VTAccessibleFactory <> nil then
-  begin
-    VTAccessibleFactory.Free;
-    VTAccessibleFactory := nil;
-  end;
 end.
+
 
 
 
