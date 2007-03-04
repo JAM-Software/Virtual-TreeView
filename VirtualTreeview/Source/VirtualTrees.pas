@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.1
+// Version 4.5.2
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,9 +24,11 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// March 2007
+//   - Improvement: adjusted accessibility implementation to compile with pre-BDS IDEs.
 // January 2007
 //   - Improvement: added code donation from Marco Zehe (with help from Sebastian Modersohn) which implements the
-//                  MS accessability interface for Virtual Treeview.
+//                  MS accessibility interface for Virtual Treeview.
 // December 2006
 //   - Improvement: bidi mode implementation finished (toAutoBidiColumnOrdering introduced)
 //   - Change: right-to-left flag removed from shorten string methods/events (not necessary)
@@ -99,7 +101,13 @@ interface
 {$HPPEMIT '#include <oleidl.h>'} // Necessary for BCB 6 SP 2.
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Menus, Printers,
+  Windows, 
+  {$ifndef COMPILER_10_UP}
+    MSAAIntf, // MSAA support for Delphi up to 2005
+  {$else}
+    oleacc, // MSAA support in Delphi 2006 or higher
+  {$endif COMPILE_10_UP}
+  Messages, SysUtils, Classes, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Menus, Printers,
   CommCtrl  // image lists, common controls tree structures
   {$ifdef ThemeSupport}
     {$ifndef COMPILER_7_UP}
@@ -111,11 +119,10 @@ uses
   {$ifdef TntSupport}
     , TntStdCtrls       // Unicode aware inplace editor.
   {$endif TntSupport}
-  , oleacc // for MSAA IAccessible support
   ;
 
 const
-  VTVersion = '4.5.1';
+  VTVersion = '4.5.2';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -31716,7 +31723,4 @@ finalization
   Watcher := nil;
 
 end.
-
-
-
 

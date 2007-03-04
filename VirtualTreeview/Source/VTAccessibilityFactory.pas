@@ -6,15 +6,22 @@ unit VTAccessibilityFactory;
 // the tree accessible is returned when the tree receives an WM_GETOBJECT message
 // the AccessibleItem is returned when the Accessible is being asked for the first child
 // To create your own IAccessibles, use the VTStandardAccessible unit as a reference,
-// and assign your Accessibles to the variables in tthe unit's initialization.
+// and assign your Accessibles to the variables in the unit's initialization.
 // You only need to add the unit to your project, and voilá, you have an accessible string tree!
 //
 // Written by Marco Zehe. (c) 2007
 
 interface
 
+{$I Compilers.inc}
+
 uses
-  Classes, oleacc, VirtualTrees;
+ {$ifndef COMPILER_10_UP}
+   MSAAIntf, // MSAA support for Delphi up to 2005
+ {$else}
+   oleacc, // MSAA support in Delphi 2006 or higher
+ {$endif COMPILE_10_UP}
+ Classes, VirtualTrees;
 
 type
   IVTAccessibleProvider = interface
