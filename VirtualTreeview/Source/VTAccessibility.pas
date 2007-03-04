@@ -303,6 +303,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 function TVirtualTreeAccessibility.Get_accName(varChild: OleVariant; out pszName: WideString): HResult;
 // if set, returns the new published AccessibleName property.
+// if not set, tries the name and class name properties.
 // otherwise, returns the default text.
 begin
   pszName := '';
@@ -313,6 +314,10 @@ begin
     begin
       if FVirtualTree.AccessibleName <> '' then
         pszName := FVirtualTree.AccessibleName
+      else if FVirtualTree.Name <> '' then
+        pszName := FVirtualTree.Name
+      else if FVirtualTree.ClassName <> '' then
+             pszName := FVirtualTree.ClassName
       else
         PSZName := FVirtualTree.DefaultText;
       result := S_OK;
@@ -665,5 +670,6 @@ finalization
     GetAccessibilityFactory.UnRegisterAccessibleProvider(IDefaultAccessibleProvider);
     IDefaultAccessibleProvider := nil;
 end.
+
 
 
