@@ -30,10 +30,16 @@ unit MSAAIntf;
 //   Hint: Parameter 'var' of IAccPropServices.SetHwndProp changed to 'var_'
 //   Hint: Parameter 'var' of IAccPropServices.SetHmenuProp changed to 'var_'
 // ************************************************************************ //
+{$I Compilers.inc}
+
 {$TYPEDADDRESS OFF} // Unit must be compiled without type-checked pointers. 
-{$WARN SYMBOL_PLATFORM OFF}
+{$ifdef COMPILER_7_UP}
+  {$WARN SYMBOL_PLATFORM OFF}
+{$endif COMPILE_7_UP}
 {$WRITEABLECONST ON}
-{$VARPROPSETTER ON}
+{$ifdef COMPILER_7_UP}
+  {$VARPROPSETTER ON}
+{$endif COMPILE_7_UP}
 interface
 
 uses Windows, ActiveX;
