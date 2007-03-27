@@ -7,7 +7,16 @@ unit VTAccessibility;
 
 interface
 
-uses Windows, Classes, ActiveX, oleacc, VirtualTrees, VTAccessibilityFactory, Controls;
+{$I Compilers.inc}
+
+uses
+  Windows, Classes, ActiveX,
+{$ifndef COMPILER_10_UP}
+   MSAAIntf, // MSAA support for Delphi up to 2005
+{$else}
+   oleacc, // MSAA support in Delphi 2006 or higher
+{$endif COMPILE_10_UP}
+  VirtualTrees, VTAccessibilityFactory, Controls;
 
 type
   TVirtualTreeAccessibility = class(TInterfacedObject, IDispatch, IAccessible)
@@ -90,7 +99,8 @@ type
 
 implementation
 
-uses Variants, SysUtils, Types, Forms;
+uses SysUtils, Forms;
+
 
 { TVirtualTreeAccessibility }
 //----------------------------------------------------------------------------------------------------------------------
@@ -581,7 +591,7 @@ begin
           pszDescription := FVirtualTree.Text[FVirtualTree.FocusedNode, FVirtualTree.Header.MainColumn]
            +'; ';
         for I := 0 to FVirtualTree.Header.Columns.Count - 1 do
-          if FVirtualTree.Header.MainColumn <> I then
+          if (FVirtualTree.Header.MainColumn <> I) and (coVisible in FVirtualTree.Header.Columns[I].Options) then
           begin
             sTemp := FVirtualTree.Text[FVirtualTree.FocusedNode, I];
             if sTemp <> '' then

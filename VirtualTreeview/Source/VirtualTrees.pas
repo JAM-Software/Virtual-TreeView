@@ -26,6 +26,7 @@ unit VirtualTrees;
 //
 // March 2007
 //   - Improvement: adjusted accessibility implementation to compile with pre-BDS IDEs.
+//   - If a column is not visible, MultiColumnAccessibility now will not include it.
 // January 2007
 //   - Improvement: added code donation from Marco Zehe (with help from Sebastian Modersohn) which implements the
 //                  MS accessibility interface for Virtual Treeview.
