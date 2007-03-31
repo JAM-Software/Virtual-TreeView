@@ -159,6 +159,9 @@ const
 // *********************************************************************//
 // Constants for enum AnnoScope
 type
+  {$IFNDEF COMPILER_5_UP}
+    TOleEnum = type Integer;
+  {$ENDIF}
   AnnoScope = TOleEnum;
   {$EXTERNALSYM AnnoScope}  
 const
