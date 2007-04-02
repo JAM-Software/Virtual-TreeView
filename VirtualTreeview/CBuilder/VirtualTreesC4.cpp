@@ -3,6 +3,9 @@
 #pragma hdrstop
 USERES("VirtualTreesC4.res");
 USEUNIT("..\VirtualTrees.pas");
+USEUNIT("..\VTAccessibilityFactory.pas");
+USEUNIT("..\VTAccessibility.pas");
+USEUNIT("..\MSAAIntf.pas");
 USERES("..\VirtualTrees.dcr");
 USEPACKAGE("vcl40.bpi");
 USEPACKAGE("VCLX40.bpi");

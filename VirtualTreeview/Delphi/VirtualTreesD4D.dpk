@@ -1,7 +1,6 @@
 package VirtualTreesD4D;
 
 {$R *.RES}
-{$R ..\Design\VirtualTrees.dcr}
 {$ALIGN ON}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}

@@ -4,14 +4,18 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="$(BCB)\Projects\Bpl\VirtualTreesC6.bpl"/>
-    <OBJFILES value="&quot;c:\program files\borland\cbuilder6\Projects\Intermed\VirtualTreesC6.obj&quot; &quot;c:\program files\borland\cbuilder6\Projects\Intermed\VirtualTrees.obj&quot;"/>
+    <OBJFILES value="&quot;$(BCB)\Projects\Intermed\VirtualTreesC6.obj&quot; 
+        &quot;$(BCB)\Projects\Intermed\VirtualTrees.obj&quot;
+        &quot;$(BCB)\Projects\Intermed\VTAccessibilityFactory.obj&quot;
+        &quot;$(BCB)\Projects\Intermed\VTAccessibility.obj&quot;
+        &quot;$(BCB)\Projects\Intermed\MSAAIntf.obj&quot;"/>
     <RESFILES value="VirtualTreesC6.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
-    <LIBRARIES value=""/>
+    <LIBRARIES value="oleacc.lib"/>
     <SPARELIBS value=""/>
     <PACKAGES value="ThemeManagerC6.bpi rtl.bpi vcl.bpi vclx.bpi"/>
     <PATHCPP value=".;"/>
@@ -25,7 +29,7 @@
     <SYSDEFINES value="NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="VirtualTreesC6.cpp"/>
     <INCLUDEPATH value="..\Source;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj"/>
+    <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj;$(BCB)\Lib\Psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -52,6 +56,9 @@
       <FILE FILENAME="VirtualTreesC6.cpp" FORMNAME="" UNITNAME="VirtualTreesC6" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="VirtualTreesC6.res" FORMNAME="" UNITNAME="VirtualTreesC6.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\Source\VirtualTrees.pas" FORMNAME="" UNITNAME="VirtualTrees" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\Source\VTAccessibilityFactory.pas" FORMNAME="" UNITNAME="VTAccessibilityFactory" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\Source\VTAccessibility.pas" FORMNAME="" UNITNAME="VTAccessibility" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\Source\MSAAIntf.pas" FORMNAME="" UNITNAME="MSAAIntf" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ThemeManagerC6.bpi" FORMNAME="" UNITNAME="ThemeManagerC6" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="rtl.bpi" FORMNAME="" UNITNAME="rtl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="vcl.bpi" FORMNAME="" UNITNAME="vcl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>

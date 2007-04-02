@@ -100,9 +100,10 @@ interface
 
 {$HPPEMIT '#include <objidl.h>'}
 {$HPPEMIT '#include <oleidl.h>'} // Necessary for BCB 6 SP 2.
+{$HPPEMIT '#include <oleacc.h>'}
 
 uses
-  Windows, 
+  Windows,
   {$ifndef COMPILER_10_UP}
     MSAAIntf, // MSAA support for Delphi up to 2005
   {$else}

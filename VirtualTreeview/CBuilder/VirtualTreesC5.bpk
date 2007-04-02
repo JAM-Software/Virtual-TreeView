@@ -4,12 +4,16 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="&quot;$(BCB)\Projects\Bpl\VirtualTreesC5.bpl&quot;"/>
-    <OBJFILES value="&quot;$(BCB)\Projects\Intermed\VirtualTrees.obj&quot; &quot;c:\program files\borland\cbuilder5\Projects\Intermed\VirtualTreesC5.obj&quot;"/>
+    <OBJFILES value="&quot;$(BCB)\Projects\Intermed\VirtualTrees.obj&quot; 
+        &quot;$(BCB)\Projects\Intermed\VirtualTreesC5.obj&quot;
+        &quot;$(BCB)\Projects\Intermed\VTAccessibilityFactory.obj&quot;
+        &quot;$(BCB)\Projects\Intermed\VTAccessibility.obj&quot;
+        &quot;$(BCB)\Projects\Intermed\MSAAIntf.obj&quot;"/>
     <RESFILES value="VirtualTreesC5.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
-    <LIBRARIES value=""/>
+    <LIBRARIES value="oleacc.lib"/>
     <SPARELIBS value=""/>
     <PACKAGES value="vcl50.bpi VCLX50.bpi ThemeManagerC5.bpi"/>
     <PATHCPP value=".;"/>
@@ -23,7 +27,7 @@
     <SYSDEFINES value="NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="VirtualTreesC5.cpp"/>
     <INCLUDEPATH value="..\Source;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj"/>
+    <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj;$(BCB)\Lib\Psdk"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>

@@ -14,11 +14,11 @@ BCB = $(MAKEDIR)\..
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
 PROJECT = VirtualTreesC4.bpl
-OBJFILES = ..\VirtualTrees.obj VirtualTreesC4.obj
+OBJFILES = ..\VirtualTrees.obj VirtualTreesC4.obj VTAccessibility.obj VTAccessibilityFactory.obj MSAAIntf.obj
 RESFILES = VirtualTreesC4.res ..\Design\VirtualTrees.dcr
 RESDEPEN = $(RESFILES)
 LIBFILES =
-LIBRARIES =
+LIBRARIES = oleacc.lib
 SPARELIBS = VCL40.lib vclx40.lib ThemeManagerC4.lib
 PACKAGES = vcl40.bpi VCLX40.bpi ThemeManagerC4.bpi
 DEFFILE =
