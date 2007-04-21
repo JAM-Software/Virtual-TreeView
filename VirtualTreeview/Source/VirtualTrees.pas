@@ -2235,6 +2235,8 @@ type
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
+    procedure DragAndDrop(AllowedEffects: Integer; DataObject: IDataObject;
+      DragEffect: Integer); virtual;
     procedure DragCanceled; override;
     function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
@@ -6828,7 +6830,7 @@ begin
         if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
         begin
           {$ifndef COMPILER_5_UP}
-            Canvas.Font := HintFont
+            Canvas.Font := HintFont;
           {$else}
             Canvas.Font := Screen.HintFont
           {$endif COMPILER_5_UP}
@@ -12498,6 +12500,12 @@ begin
         Result := Integer(Run1.Index) - Integer(Run2.Index);
       end;
   end;
+end;
+
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Integer;
+  DataObject: IDataObject; DragEffect: Integer);
+begin
+  ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18471,7 +18479,7 @@ begin
     DragEffect := DROPEFFECT_NONE;
     AllowedEffects := GetDragOperations;
     try
-      ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
+      DragAndDrop(AllowedEffects, DataObject, DragEffect);
       DragManager.ForceDragLeave;
     finally
       GetCursorPos(P);
