@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.16
+// Version 2.2.18
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,7 +25,12 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
-// January 2006
+// April 2007
+//   - Bug fix: pressing Delete on the last line with the cursor at the end of the line removed the entire line.
+//   - Bug fix: SetBlockBegin assumed a char index instead column value for computation of the max X coordinate.
+// March 2007
+//   - Improvement: removal of line styles now removes all occurences of this style.
+// January 2007
 //   - Bug fix: clipboard operations triggered by messages (WM_PASTE etc.) are not handled by standard code preventing
 //              so proper work of the undo stack etc.
 //   - Change: eoAutoExtendWorkWidth removed, it is problematic with existing apps and does not provide much advantage.
@@ -134,7 +139,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.16';
+  UCEVersion = '2.2.18';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -1650,7 +1655,7 @@ end;
 
 function TUCELine.ColumnToCharIndex(Column: Integer): Integer;
 
-// Calculates the character index into the line given by Y. Pos is usually a
+// Calculates the character index into the line given by Y. Column is usually a
 // caret position. Because of non-default width characters (like tabulators) the
 // CaretX position is merely a column value and does not directly correspond to a
 // particular character. The result can be used to address a character in the line
@@ -2055,14 +2060,19 @@ var
 begin
   if Assigned(FStyles) then
   begin
-    Index := FStyles.List.IndexOf(Pointer(Style));
-    if Index > -1 then
-    begin
+    repeat
+      Index := FStyles.List.IndexOf(Pointer(Style));
+      if Index < 0 then
+        Break;
+
       FStyles.List.Remove(Pointer(Style));
       Style._Release;
       if FStyles.Count = 0 then
+      begin
         FreeAndNil(FStyles);
-    end;
+        Break;
+      end;
+    until False;
   end;
 end;
 
@@ -3082,6 +3092,8 @@ end;
 
 procedure TCustomUniCodeEdit.SetBlockBegin(Value: TPoint);
 
+// Values are logical coordinates (x -> column).
+
 var
   Index: Integer;
 
@@ -3095,7 +3107,7 @@ begin
     Value.X := 0
   else
   begin
-    Index := WorkWidthToCharIndex(Value.Y);
+    Index := WorkWidth div CharWidth;
     if Value.X > Index then
       Value.X := Index;
   end;
@@ -3234,7 +3246,7 @@ var
   Len: Integer;
   S: WideString;
   FinishUndo: Boolean;
-  
+
 begin
   if (Value < 0) or (FContent.Count = 0) then
     Value := 0;
@@ -7530,12 +7542,15 @@ begin
           begin
             // Beyond line end means we insert spaces up the caret and delete the line break.
             // But if the caret is on the last line (or beyond that) do nothing.
-            Helper := WideStringOfChar(' ', CX - LineEnd - 1);
-            WP := Point(LineEnd, FCaretY);
-            FUndoList.PrepareReplaceChange(WP, Point(0, FCaretY + 1), WP, Helper);
-            BlockBegin := WP;
-            BlockEnd := Point(0, FCaretY + 1);
-            RefreshToBottom(FCaretY);
+            if FCaretY < FContent.Count - 1 then
+            begin
+              Helper := WideStringOfChar(' ', CX - LineEnd - 1);
+              WP := Point(LineEnd, FCaretY);
+              FUndoList.PrepareReplaceChange(WP, Point(0, FCaretY + 1), WP, Helper);
+              BlockBegin := WP;
+              BlockEnd := Point(0, FCaretY + 1);
+              RefreshToBottom(FCaretY);
+            end;
           end
           else
           begin
