@@ -45,6 +45,7 @@ interface
 uses Windows, ActiveX;
 
 (*$HPPEMIT '#include <oleacc.h>' *)
+{$HPPEMIT 'typedef DelphiInterface<IAccessible> _di_IAccessible;'}
 
 (*
 cpp_quote("typedef LRESULT (STDAPICALLTYPE *LPFNLRESULTFROMOBJECT)(REFIID riid, WPARAM wParam, LPUNKNOWN punk);")
