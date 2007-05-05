@@ -14,8 +14,8 @@
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value=""/>
-    <LIBRARIES value="oleacc.lib"/>
+    <LIBFILES value="oleacc.lib"/>
+    <LIBRARIES value=""/>
     <SPARELIBS value=""/>
     <PACKAGES value="ThemeManagerC6.bpi rtl.bpi vcl.bpi vclx.bpi"/>
     <PATHCPP value=".;"/>
@@ -29,7 +29,7 @@
     <SYSDEFINES value="NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="VirtualTreesC6.cpp"/>
     <INCLUDEPATH value="..\Source;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj;$(BCB)\Lib\Psdk"/>
+    <LIBPATH value="..\Source;..;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj;$(BCB)\lib\Psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
