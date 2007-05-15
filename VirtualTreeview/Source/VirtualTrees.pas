@@ -1970,10 +1970,12 @@ type
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
+    function GetCheckedCount: Integer;
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
     function GetChildCount(Node: PVirtualNode): Cardinal;
     function GetChildrenInitialized(Node: PVirtualNode): Boolean;
+    function GetCutCopyCount: Integer;
     function GetDisabled(Node: PVirtualNode): Boolean;
     function GetDragManager: IVTDragManager;
     function GetExpanded(Node: PVirtualNode): Boolean;
@@ -2501,6 +2503,8 @@ type
     function GetFirstChild(Node: PVirtualNode): PVirtualNode;
     function GetFirstCutCopy: PVirtualNode;
     function GetFirstInitialized: PVirtualNode;
+    function GetFirstLeaf: PVirtualNode;
+    function GetFirstLevel(NodeLevel: Cardinal): PVirtualNode;
     function GetFirstNoInit: PVirtualNode;
     function GetFirstSelected: PVirtualNode;
     function GetFirstVisible: PVirtualNode;
@@ -2522,6 +2526,8 @@ type
     function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal): PVirtualNode;
     function GetNextCutCopy(Node: PVirtualNode): PVirtualNode;
     function GetNextInitialized(Node: PVirtualNode): PVirtualNode;
+    function GetNextLeaf(Node: PVirtualNode): PVirtualNode;
+    function GetNextLevel(Node: PVirtualNode; NodeLevel: Cardinal): PVirtualNode;
     function GetNextNoInit(Node: PVirtualNode): PVirtualNode;
     function GetNextSelected(Node: PVirtualNode): PVirtualNode;
     function GetNextSibling(Node: PVirtualNode): PVirtualNode;
@@ -2534,8 +2540,13 @@ type
     function GetNodeData(Node: PVirtualNode): Pointer;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetPrevious(Node: PVirtualNode): PVirtualNode;
+    function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal): PVirtualNode;
+    function GetPreviousCutCopy(Node: PVirtualNode): PVirtualNode;
     function GetPreviousInitialized(Node: PVirtualNode): PVirtualNode;
+    function GetPreviousLeaf(Node: PVirtualNode): PVirtualNode;
+    function GetPreviousLevel(Node: PVirtualNode; NodeLevel: Cardinal): PVirtualNode;
     function GetPreviousNoInit(Node: PVirtualNode): PVirtualNode;
+    function GetPreviousSelected(Node: PVirtualNode): PVirtualNode;
     function GetPreviousSibling(Node: PVirtualNode): PVirtualNode;
     function GetPreviousVisible(Node: PVirtualNode): PVirtualNode;
     function GetPreviousVisibleNoInit(Node: PVirtualNode): PVirtualNode;
@@ -2595,11 +2606,13 @@ type
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
     property AccessibleName: string read FAccessibleName write FAccessibleName;
+    property CheckedCount: Integer read GetCheckedCount;
     property CheckImages: TCustomImageList read FCheckImages;
     property CheckState[Node: PVirtualNode]: TCheckState read GetCheckState write SetCheckState;
     property CheckType[Node: PVirtualNode]: TCheckType read GetCheckType write SetCheckType;
     property ChildCount[Node: PVirtualNode]: Cardinal read GetChildCount write SetChildCount;
     property ChildrenInitialized[Node: PVirtualNode]: Boolean read GetChildrenInitialized;
+    property CutCopyCount: Integer read GetCutCopyCount;
     property DragImage: TVTDragImage read FDragImage;
     property DragManager: IVTDragManager read GetDragManager;
     property DropTargetNode: PVirtualNode read FDropTargetNode;
@@ -12681,6 +12694,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetCheckedCount: Integer;
+
+var
+  Node: PVirtualNode;
+
+begin
+  Result := 0;
+  Node := GetFirstChecked;
+  while Assigned(Node) do begin
+     Inc(Result);
+     Node := GetNextChecked(Node);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetCheckState(Node: PVirtualNode): TCheckState;
 
 begin
@@ -12712,6 +12741,22 @@ function TBaseVirtualTree.GetChildrenInitialized(Node: PVirtualNode): Boolean;
 
 begin
   Result := not (vsHasChildren in Node.States) or (Node.ChildCount > 0);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetCutCopyCount: Integer;
+
+var
+  Node: PVirtualNode;
+
+begin
+  Result := 0;
+  Node := GetFirstCutCopy;
+  while Assigned(Node) do begin
+     Inc(Result);
+     Node := GetNextCutCopy(Node);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15867,7 +15912,10 @@ begin
               else
                 NewColumn := NoColumn;
               // Find a column for the new/current node which can be focused.
-              while (NewColumn > NoColumn) and not DoFocusChanging(FFocusedNode, Node, FFocusedColumn, NewColumn) do
+              // Make the 'DoFocusChanging' for finding a valid column
+              // identifiable from the 'DoFocusChanging' raised later on by
+              // "FocusedNode := Node;"
+              while (NewColumn > NoColumn) and not DoFocusChanging(FFocusedNode, FFocusedNode, FFocusedColumn, NewColumn) do
                 NewColumn := GetNextColumn(NewColumn);
               if NewColumn > InvalidColumn then
               begin
@@ -24891,6 +24939,36 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetFirstLeaf: PVirtualNode;
+
+// Returns the first node in the tree which has currently no children.
+// The result is initialized if necessary.
+
+begin
+  Result := GetNextLeaf(nil);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetFirstLevel(NodeLevel: Cardinal): PVirtualNode;
+
+// Returns the first node in the tree on a specific level.
+// The result is initialized if necessary.
+
+begin
+  Result := GetFirstNoInit;
+  while Assigned(Result) and (GetNodeLevel(Result) <> NodeLevel) do
+    Result := GetNextNoInit(Result);
+
+  if Assigned(Result) and (GetNodeLevel(Result) <> NodeLevel) then // i.e. there is no node with the desired level in the tree
+    Result := nil;
+    
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetFirstNoInit: PVirtualNode;
 
 begin
@@ -25533,6 +25611,68 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetNextLeaf(Node: PVirtualNode): PVirtualNode;
+
+// Returns the next node in the tree which has currently no children.
+// The result is initialized if necessary.
+
+begin
+  if (Node = nil) or (Node = FRoot) then
+    Result := FRoot.FirstChild
+  else
+    Result := GetNext(Node);
+  while Assigned(Result) and (vsHasChildren in Result.States) do
+    Result := GetNext(Result);
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNextLevel(Node: PVirtualNode; NodeLevel: Cardinal): PVirtualNode;
+
+// Returns the next node in the tree on a specific level.
+// The result is initialized if necessary.
+
+var
+  StartNodeLevel: Cardinal;
+
+begin
+  Result := nil;
+
+  if Assigned(Node) and (Node <> FRoot) then begin
+    StartNodeLevel := GetNodeLevel(Node);
+
+    if StartNodeLevel < NodeLevel then
+    begin
+      Result := GetNext(Node);
+      if Assigned(Result) and (GetNodeLevel(Result) <> NodeLevel) then
+        Result := GetNextLevel(Result, NodeLevel);
+    end else if StartNodeLevel = NodeLevel then
+    begin
+      Result := Node.NextSibling;
+      if not Assigned(Result) then // i.e. start node was a last sibling
+      begin
+        Result := Node.Parent;
+        if Assigned(Result) then
+        begin
+          // go to next anchestor of the start node which has a next sibling (if exists)
+          while Assigned(Result) and not Assigned(Result.NextSibling) do
+            Result := Result.Parent;
+          if Assigned(Result) then
+            Result := GetNextLevel(Result.NextSibling, NodeLevel);
+        end;
+      end;
+    end else // i.e. StartNodeLevel > NodeLevel
+      Result := GetNextLevel(Node.Parent, NodeLevel);
+  end;
+
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetNextNoInit(Node: PVirtualNode): PVirtualNode;
 
 // Optimized variant of GetNext, no initialization of nodes is performed (if a node is not initialized
@@ -25948,6 +26088,49 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal): PVirtualNode;
+
+begin
+
+  if (Node = nil) or (Node = FRoot) then
+    Result := FRoot.LastChild
+  else
+    Result := GetPreviousNoInit(Node);
+
+  while Assigned(Result) and (Result.CheckState <> State) do
+    Result := GetPreviousNoInit(Result);
+
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
+
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetPreviousCutCopy(Node: PVirtualNode): PVirtualNode;
+
+// Returns the previous node in the tree which is currently marked for a clipboard operation. Since only visible nodes can
+// be marked (or they are hidden after they have been marked) it is not necessary to initialize nodes to check for
+// child nodes. The result, however, is initialized if necessary.
+
+begin
+  if ClipboardStates * FStates <> [] then
+  begin
+    if (Node = nil) or (Node = FRoot) then
+      Result := FRoot.LastChild
+    else
+      Result := GetPreviousNoInit(Node);
+    while Assigned(Result) and not (vsCutOrCopy in Result.States) do
+      Result := GetPreviousNoInit(Result);
+    if Assigned(Result) and not (vsInitialized in Result.States) then
+      InitNode(Result);
+  end
+  else
+    Result := nil;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetPreviousInitialized(Node: PVirtualNode): PVirtualNode;
 
 // Returns the previous node in tree which is initialized.
@@ -25957,6 +26140,69 @@ begin
   repeat
     Result := GetPreviousNoInit(Result);
   until (Result = nil) or (vsInitialized in Result.States);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetPreviousLeaf(Node: PVirtualNode): PVirtualNode;
+
+// Returns the previous node in the tree which has currently no children.
+// The result is initialized if necessary.
+
+begin
+  if (Node = nil) or (Node = FRoot) then
+    Result := FRoot.LastChild
+  else
+    Result := GetPrevious(Node);
+  while Assigned(Result) and (vsHasChildren in Result.States) do
+    Result := GetPrevious(Result);
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetPreviousLevel(Node: PVirtualNode; NodeLevel: Cardinal): PVirtualNode;
+
+// Returns the previous node in the tree on a specific level.
+// The result is initialized if necessary.
+
+var
+  StartNodeLevel: Cardinal;
+
+begin
+  Result := nil;
+
+  if Assigned(Node) and (Node <> FRoot) then begin
+    StartNodeLevel := GetNodeLevel(Node);
+
+    if StartNodeLevel < NodeLevel then
+    begin
+      Result := Node.PrevSibling;
+      if Assigned(Result) then
+      begin
+        // go to last descendant of previous sibling with desired node level (if exists)
+        while Assigned(Result) and (GetNodeLevel(Result) < NodeLevel) do
+          Result := GetLastChild(Result);
+        if not Assigned(Result) then
+          Result := GetPreviousLevel(Node.PrevSibling, NodeLevel);
+      end else
+        Result := GetPreviousLevel(Node.Parent, NodeLevel);
+    end else if StartNodeLevel = NodeLevel then
+    begin
+      Result := Node.PrevSibling;
+      if not Assigned(Result) then // i.e. start node was a first sibling
+      begin
+        Result := Node.Parent;
+        if Assigned(Result) then
+          Result := GetPreviousLevel(Result, NodeLevel);
+      end;
+    end else // i.e. StartNodeLevel > NodeLevel
+      Result := GetPreviousLevel(Node.Parent, NodeLevel);
+  end;
+
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25987,6 +26233,30 @@ begin
       else
         Result := nil
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetPreviousSelected(Node: PVirtualNode): PVirtualNode;
+
+// Returns the previous node in the tree which is currently selected. Since children of unitialized nodes cannot be
+// in the current selection (because they simply do not exist yet) it is not necessary to initialize nodes here.
+// The result however is initialized if necessary.
+
+begin
+  if FSelectionCount > 0 then
+  begin
+    if (Node = nil) or (Node = FRoot) then
+      Result := FRoot.LastChild
+    else
+      Result := GetPreviousNoInit(Node);
+    while Assigned(Result) and not (vsSelected in Result.States) do
+      Result := GetPreviousNoInit(Result);
+    if Assigned(Result) and not (vsInitialized in Result.States) then
+      InitNode(Result);
+  end
+  else
+    Result := nil;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
