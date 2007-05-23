@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.2
+// Version 4.5.3
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,12 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// May 2007
+//   - New functions: GetPreviousSelected, GetPreviousChecked, GetCheckedCount,
+//     GetPreviousCutCopy, GetCutCopyCount, GetFirstLeaf, GetNextLeaf,
+//     GetPreviousLeaf, GetFirstLevel, GetNextLevel, GetPreviousLevel
+//   - New properties: CheckedCount, CutCopyCount
+//   - Improvement: DoFocusChanging for finding a valid column (TBaseVirtualTree.WMKeyDown)
 // March 2007
 //   - Improvement: adjusted accessibility implementation to compile with pre-BDS IDEs.
 //   - If a column is not visible, MultiColumnAccessibility now will not include it.
@@ -124,7 +130,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.2';
+  VTVersion = '4.5.3';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -25640,7 +25646,8 @@ var
 begin
   Result := nil;
 
-  if Assigned(Node) and (Node <> FRoot) then begin
+  if Assigned(Node) and (Node <> FRoot) then
+  begin
     StartNodeLevel := GetNodeLevel(Node);
 
     if StartNodeLevel < NodeLevel then
@@ -26173,7 +26180,8 @@ var
 begin
   Result := nil;
 
-  if Assigned(Node) and (Node <> FRoot) then begin
+  if Assigned(Node) and (Node <> FRoot) then
+  begin
     StartNodeLevel := GetNodeLevel(Node);
 
     if StartNodeLevel < NodeLevel then
@@ -32003,4 +32011,3 @@ finalization
   Watcher := nil;
 
 end.
-
