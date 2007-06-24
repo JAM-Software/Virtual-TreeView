@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.3
+// Version 4.5.4
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,11 +24,17 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// June 2007
+//   - Bug fix: Fixed a problem with potentially large amount of nodes (larger than 2 billion) in
+//              TBaseVirtualTree.SetChildCount.
+//   - Bug fix: remove hint if any in case the tree loses the focus.
+//   - Improvement: TVirtualTreeColumns.HandleClick is now virtual, introduced TVTHeader.DoSetSortColumn.
+//   - Bug fix: compiler error due to old variable reference when enabling flat scrollbars.
 // May 2007
-//   - New functions: GetPreviousSelected, GetPreviousChecked, GetCheckedCount,
+//   - Improvement: new functions: GetPreviousSelected, GetPreviousChecked, GetCheckedCount,
 //     GetPreviousCutCopy, GetCutCopyCount, GetFirstLeaf, GetNextLeaf,
 //     GetPreviousLeaf, GetFirstLevel, GetNextLevel, GetPreviousLevel
-//   - New properties: CheckedCount, CutCopyCount
+//   - Improvement: new properties: CheckedCount, CutCopyCount
 //   - Improvement: DoFocusChanging for finding a valid column (TBaseVirtualTree.WMKeyDown)
 // March 2007
 //   - Improvement: adjusted accessibility implementation to compile with pre-BDS IDEs.
@@ -130,7 +136,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.3';
+  VTVersion = '4.5.4';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1061,7 +1067,7 @@ type
     procedure FixPositions;
     function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: Integer; Relative: Boolean = True): Integer;
     function GetOwner: TPersistent; override;
-    procedure HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean);
+    procedure HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean); virtual;
     procedure IndexChanged(OldIndex, NewIndex: Integer);
     procedure InitializePositionArray;
     procedure ReorderColumns(RTL: Boolean);
@@ -1197,6 +1203,7 @@ type
     function CanWriteColumns: Boolean; virtual;
     procedure ChangeScale(M, D: Integer); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
+    procedure DoSetSortColumn(Value: TColumnIndex); virtual;
     procedure DragTo(P: TPoint);
     function GetColumnsClass: TVirtualTreeColumnsClass; virtual;
     function GetOwner: TPersistent; override;
@@ -10215,22 +10222,7 @@ begin
   if csLoading in Treeview.ComponentState then
     FSortColumn := Value
   else
-  begin
-    if Value < NoColumn then
-      Value := NoColumn;
-    if Value > Columns.Count - 1 then
-      Value := Columns.Count - 1;
-    if FSortColumn <> Value then
-    begin
-      if FSortColumn > NoColumn then
-        Invalidate(Columns[FSortColumn]);
-      FSortColumn := Value;
-      if FSortColumn > NoColumn then
-        Invalidate(Columns[FSortColumn]);
-      if (toAutoSort in Treeview.FOptions.FAutoOptions) and (Treeview.FUpdateCount = 0) then
-        Treeview.SortTree(FSortColumn, FSortDirection, True);
-    end;
-  end;
+    DoSetSortColumn(Value);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10348,6 +10340,27 @@ begin
             Dec(SplitPoint, FWidth);
           end;
     end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTHeader.DoSetSortColumn(Value: TColumnIndex);
+
+begin
+  if Value < NoColumn then
+    Value := NoColumn;
+  if Value > Columns.Count - 1 then
+    Value := Columns.Count - 1;
+  if FSortColumn <> Value then
+  begin
+    if FSortColumn > NoColumn then
+      Invalidate(Columns[FSortColumn]);
+    FSortColumn := Value;
+    if FSortColumn > NoColumn then
+      Invalidate(Columns[FSortColumn]);
+    if (toAutoSort in Treeview.FOptions.FAutoOptions) and (Treeview.FUpdateCount = 0) then
+      Treeview.SortTree(FSortColumn, FSortDirection, True);
   end;
 end;
 
@@ -13971,10 +13984,10 @@ procedure TBaseVirtualTree.SetChildCount(Node: PVirtualNode; NewChildCount: Card
 // routine is used.
 
 var
-  Count: Integer;
+  Remaining: Cardinal;
   Index: Cardinal;
   Child: PVirtualNode;
-  C: Integer;
+  Count: Integer;
   NewHeight: Integer;
 
 begin
@@ -13987,18 +14000,17 @@ begin
       DeleteChildren(Node)
     else
     begin
-      Count := Integer(NewChildCount) - Integer(Node.ChildCount);
-
       // If nothing changed then do nothing.
-      if Count <> 0 then
+      if NewChildCount <> Node.ChildCount then
       begin
         InterruptValidation;
-
-        C := Count;
         NewHeight := 0;
 
-        if Count > 0 then
+        if NewChildCount > Node.ChildCount then
         begin
+          Remaining := NewChildCount - Node.ChildCount;
+          Count := Remaining;
+          
           // New nodes to add.
           if Assigned(Node.LastChild) then
             Index := Node.LastChild.Index + 1
@@ -14010,7 +14022,7 @@ begin
           Node.States := Node.States - [vsAllChildrenHidden, vsHeightMeasured];
 
           // New nodes are by default always visible, so we don't need to check the visibility.
-          while Count > 0 do
+          while Remaining > 0 do
           begin
             Child := MakeNewNode;
             Child.Index := Index;
@@ -14021,7 +14033,7 @@ begin
             Node.LastChild := Child;
             if Node.FirstChild = nil then
               Node.FirstChild := Child;
-            Dec(Count);
+            Dec(Remaining);
             Inc(Index);
 
             // The actual node height will later be computed once it is clear
@@ -14033,10 +14045,10 @@ begin
           begin
             AdjustTotalHeight(Node, NewHeight, True);
             if FullyVisible[Node] then
-              Inc(Integer(FVisibleCount), C);
+              Inc(Integer(FVisibleCount), Count);
           end;
 
-          AdjustTotalCount(Node, C, True);
+          AdjustTotalCount(Node, Count, True);
           Node.ChildCount := NewChildCount;
           if (FUpdateCount = 0) and (toAutoSort in FOptions.FAutoOptions) and (FHeader.FSortColumn > InvalidColumn) then
             Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, True);
@@ -14046,10 +14058,11 @@ begin
         else
         begin
           // Nodes have to be deleted.
-          while Count < 0 do
+          Remaining := Node.ChildCount - NewChildCount;
+          while Remaining > 0 do
           begin
             DeleteNode(Node.LastChild);
-            Inc(Count);
+            Dec(Remaining);
           end;
         end;
 
@@ -16406,6 +16419,9 @@ var
 
 begin
   inherited;
+
+  // Remove hint if shown currently.
+  Application.CancelHint;
 
   // Stop wheel panning if active.
   StopWheelPanning;
@@ -29144,7 +29160,7 @@ begin
     // Since the position is automatically changed if it doesn't meet the range
     // we better read the current position back to stay synchronized.
     {$ifdef UseFlatScrollbars}
-      FScrollOffsetX := FlatSB_GetScrollPos(Handle, SB_HORZ);
+      FEffectiveOffsetX := FlatSB_GetScrollPos(Handle, SB_HORZ);
     {$else}
       FEffectiveOffsetX := GetScrollPos(Handle, SB_HORZ);
     {$endif UseFlatScrollbars}
