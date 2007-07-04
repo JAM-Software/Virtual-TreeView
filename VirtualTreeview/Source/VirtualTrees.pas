@@ -13310,7 +13310,10 @@ begin
         if PeekMessage(Msg, Handle, 0, 0, PM_REMOVE) then
         begin
           if Msg.message = WM_QUIT then
+          begin
+            PostQuitMessage(Msg.WParam);
             Break;
+          end;
           TranslateMessage(Msg);
           DispatchMessage(Msg);
         end;
