@@ -9143,7 +9143,7 @@ begin
         ; 
     else
       // Indexed color scheme (3), with at most 256 alpha values (for each palette entry).
-      SetLength(FTransparency, 255);
+      SetLength(FTransparency, 256);
       // read the values (at most 256)...
       Move(FRawBuffer^,  FTransparency[0], Min(FHeader.Length, 256));
       // ...and set default values (255, fully opaque) for non-supplied values
