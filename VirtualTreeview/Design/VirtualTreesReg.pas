@@ -561,7 +561,7 @@ begin
        'AutoScroll*',
        'ButtonStyle',
        'DefaultNodeHeight',
-       '*Images*', 'OnGetImageIndex',
+       '*Images*', 'OnGetImageIndex', 'OnGetImageText',
        'Header',
        'Indent',
        'LineStyle', 'OnGetLineStyle',

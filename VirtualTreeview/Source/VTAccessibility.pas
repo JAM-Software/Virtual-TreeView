@@ -7,15 +7,9 @@ unit VTAccessibility;
 
 interface
 
-{$I Compilers.inc}
-
 uses
   Windows, Classes, ActiveX,
-{$ifndef COMPILER_10_UP}
-   MSAAIntf, // MSAA support for Delphi up to 2005
-{$else}
-   oleacc, // MSAA support in Delphi 2006 or higher
-{$endif COMPILE_10_UP}
+  MSAAIntf, // MSAA support
   VirtualTrees, VTAccessibilityFactory, Controls;
 
 type
@@ -478,6 +472,9 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 function TVirtualTreeItemAccessibility.Get_accName(varChild: OleVariant; out pszName: WideString): HResult;
 // the name is the node's caption.
+var
+  kind: TVTImageKind;
+  sTemp: WideString;
 begin
   pszName := '';
   Result := S_FALSE;
@@ -486,7 +483,13 @@ begin
     if FVirtualTree <> nil then
       if FVirtualTree.FocusedNode <> nil then
       begin
-        pszName := FVirtualTree.Text[FVirtualTree.FocusedNode, FVirtualTree.Header.MainColumn];
+        for kind := ikNormal to ikOverlay do
+        begin
+          sTemp := FVirtualTree.ImageText[FVirtualTree.FocusedNode, Kind, FVirtualTree.Header.MainColumn];
+          if sTemp <> '' then
+            pszName := pszName + sTemp  + '  ';
+        end;
+        pszName := pszName + FVirtualTree.Text[FVirtualTree.FocusedNode, FVirtualTree.Header.MainColumn];
         result := S_OK;
       end
       else begin
@@ -578,7 +581,8 @@ function TVTMultiColumnItemAccessibility.GetItemDescription(
   IncludeMainColumn: boolean): HResult;
 var
   I: Integer;
-  sTemp: WideString;
+  sTemp, sTemp2: WideString;
+  kind: TVTImageKind;
 begin
   pszDescription := '';
   Result := S_FALSE;
@@ -588,12 +592,26 @@ begin
       if FVirtualTree.FocusedNode <> nil then
       begin
         if IncludeMainColumn then
-          pszDescription := FVirtualTree.Text[FVirtualTree.FocusedNode, FVirtualTree.Header.MainColumn]
+        begin
+          for kind := ikNormal to ikOverlay do
+          begin
+            sTemp2 := FVirtualTree.ImageText[FVirtualTree.FocusedNode, Kind, FVirtualTree.Header.MainColumn];
+            if sTemp2 <> '' then
+              sTemp2 := sTemp2 + '  ';
+          end;
+          pszDescription := sTemp2 + FVirtualTree.Text[FVirtualTree.FocusedNode, FVirtualTree.Header.MainColumn]
            +'; ';
+        end;
         for I := 0 to FVirtualTree.Header.Columns.Count - 1 do
           if (FVirtualTree.Header.MainColumn <> I) and (coVisible in FVirtualTree.Header.Columns[I].Options) then
           begin
-            sTemp := FVirtualTree.Text[FVirtualTree.FocusedNode, I];
+            for kind := ikNormal to ikOverlay do
+            begin
+              sTemp2 := FVirtualTree.ImageText[FVirtualTree.FocusedNode, Kind, I];
+              if sTemp2 <> '' then
+                sTemp := sTemp2 + '  ';
+            end;
+            sTemp := sTemp + FVirtualTree.Text[FVirtualTree.FocusedNode, I];
             if sTemp <> '' then
               pszDescription := pszDescription
                +FVirtualTree.Header.Columns[I].Text

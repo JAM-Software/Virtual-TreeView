@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.4
+// Version 4.5.5
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -23,6 +23,11 @@ unit VirtualTrees;
 // Portions created by digital publishing AG are Copyright
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
+//
+// August 2007
+//   - for accessibility, added an OnGetImageText event that can be used to give accessible text to images used in nodes.
+//   - Implemented an ImageText property used by the VTAccessibility unit to retrieve text for a given node and its column.
+//   - Switched loading of accessibility libraries to dynamic from static to avoid problems in Win95
 //
 // June 2007
 //   - Bug fix: Fixed a problem with potentially large amount of nodes (larger than 2 billion) in
@@ -116,11 +121,7 @@ interface
 
 uses
   Windows,
-  {$ifndef COMPILER_10_UP}
-    MSAAIntf, // MSAA support for Delphi up to 2005
-  {$else}
-    oleacc, // MSAA support in Delphi 2006 or higher
-  {$endif COMPILE_10_UP}
+  MSAAIntf, // MSAA support
   Messages, SysUtils, Classes, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Menus, Printers,
   CommCtrl  // image lists, common controls tree structures
   {$ifdef ThemeSupport}
@@ -136,7 +137,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.4';
+  VTVersion = '4.5.5';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1614,6 +1615,8 @@ type
     var Ghosted: Boolean; var ImageIndex: Integer) of object;
   TVTGetImageExEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
     var Ghosted: Boolean; var ImageIndex: Integer; var ImageList: TCustomImageList) of object;
+  TVTGetImageTextEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+    var ImageText: WideString) of object;
   TVTHotNodeChangeEvent = procedure(Sender: TBaseVirtualTree; OldNode, NewNode: PVirtualNode) of object;
   TVTInitChildrenEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal) of object;
   TVTInitNodeEvent = procedure(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
@@ -1852,6 +1855,7 @@ type
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
 
     // MSAA support
+    FAccessibilityAvailable: boolean;
     FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
     FAccessibleItem: IAccessible;                // The IAccessible to the item that currently has focus.
     FAccessibleName: string;                     // The name the window is given for screen readers.
@@ -1866,6 +1870,8 @@ type
     FOnGetImage: TVTGetImageEvent;               // Used to retrieve the image index of a given node.
     FOnGetImageEx: TVTGetImageExEvent;           // Used to retrieve the image index of a given node along with a custom
                                                  // image list.
+    FOnGetImageText: TVTGetImageTextEvent;               // Used to retrieve the image alternative text of a given node.
+                                                         // Used by the accessibility interface to provide useful text for status images.
     FOnHotChange: TVTHotNodeChangeEvent;         // called when the current "hot" node (that is, the node under the mouse)
                                                  // changes and hot tracking is enabled
     FOnExpanding,                                // called just before a node is expanded
@@ -2205,6 +2211,8 @@ type
     procedure DoGetHeaderCursor(var Cursor: HCURSOR); virtual;
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: Integer): TCustomImageList; virtual;
+    procedure DoGetImageText(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+      var ImageText: WideString); virtual;
     procedure DoGetLineStyle(var Bits: Pointer); virtual;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): WideString; virtual;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): WideString; virtual;
@@ -2436,6 +2444,7 @@ type
     property OnGetHelpContext: TVTHelpContextEvent read FOnGetHelpContext write FOnGetHelpContext;
     property OnGetImageIndex: TVTGetImageEvent read FOnGetImage write FOnGetImage;
     property OnGetImageIndexEx: TVTGetImageExEvent read FOnGetImageEx write FOnGetImageEx;
+    property OnGetImageText: TVTGetImageTextEvent read FOnGetImageText write FOnGetImageText;
     property OnGetLineStyle: TVTGetLineStyleEvent read FOnGetLineStyle write FOnGetLineStyle;
     property OnGetNodeDataSize: TVTGetNodeDataSizeEvent read FOnGetNodeDataSize write FOnGetNodeDataSize;
     property OnGetPopupMenu: TVTPopupEvent read FOnGetPopupMenu write FOnGetPopupMenu;
@@ -2803,6 +2812,8 @@ type
     FOnNewText: TVSTNewTextEvent;                // used to notify the application about an edited node caption
     FOnShortenString: TVSTShortenStringEvent;    // used to allow the application a customized string shortage
 
+    function GetImageText(Node: PVirtualNode; Kind: TVTImageKind;
+      Column: TColumnIndex): WideString;
     procedure GetRenderStartValues(Source: TVSTTextSourceType; var Node: PVirtualNode;
       var NextNodeProc: TGetNextNodeProc);
     function GetOptions: TCustomStringTreeOptions;
@@ -2870,6 +2881,7 @@ type
     function Path(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; Delimiter: WideChar): WideString;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
 
+    property ImageText[Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex]: WideString read GetImageText;
     property Text[Node: PVirtualNode; Column: TColumnIndex]: WideString read GetText write SetText;
   end;
 
@@ -3011,6 +3023,7 @@ type
     property OnGetHelpContext;
     property OnGetImageIndex;
     property OnGetImageIndexEx;
+    property OnGetImageText;
     property OnGetHint;
     property OnGetLineStyle;
     property OnGetNodeDataSize;
@@ -11646,6 +11659,7 @@ begin
   {$ifdef UseLocalMemoryManager}
     FNodeMemoryManager := TVTNodeMemoryManager.Create;
   {$endif UseLocalMemoryManager}
+  FAccessibilityAvailable := InitAccLibrary;
 
   AddThreadReference;
 end;
@@ -11687,6 +11701,7 @@ begin
   {$endif UseLocalMemoryManager}
   FPlusBM.Free;
   FMinusBM.Free;
+  FreeAccLibrary;
 
   inherited;
 end;
@@ -15747,17 +15762,19 @@ end;
 procedure TBaseVirtualTree.WMGetObject(var Message: TMessage);
 
 begin
-  // Create the IAccessibles for the tree view and tree view items, if necessary.
-  if FAccessible = nil then
-    FAccessible := GetAccessibilityFactory.CreateIAccessible(Self);
-  if FAccessibleItem = nil then
-    FAccessibleItem := GetAccessibilityFactory.CreateIAccessible(Self);
-  
-  if Cardinal(Message.LParam) = OBJID_CLIENT then
-    if Assigned(Accessible) then
-      Message.Result := LresultFromObject(IID_IAccessible, Message.WParam, FAccessible)
-    else
-      Message.Result := 0;
+  if FAccessibilityAvailable then
+  begin
+    // Create the IAccessibles for the tree view and tree view items, if necessary.
+    if FAccessible = nil then
+      FAccessible := GetAccessibilityFactory.CreateIAccessible(Self);
+    if FAccessibleItem = nil then
+      FAccessibleItem := GetAccessibilityFactory.CreateIAccessible(Self);
+    if Cardinal(Message.LParam) = OBJID_CLIENT then
+      if Assigned(Accessible) then
+        Message.Result := LresultFromObject(IID_IAccessible, Message.WParam, FAccessible)
+      else
+        Message.Result := 0;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18326,8 +18343,8 @@ procedure TBaseVirtualTree.DoChecked(Node: PVirtualNode);
 begin
   if Assigned(FOnChecked) then
     FOnChecked(Self, Node);
-    
-  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  if assigned(FAccessibleItem) then
+    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18355,7 +18372,8 @@ begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
 
-  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  if assigned(FAccessibleItem) then
+    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18702,7 +18720,8 @@ begin
   if Assigned(FOnExpanded) then
     FOnExpanded(Self, Node);
 
-  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  if assigned(FAccessibleItem) then
+    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18723,12 +18742,15 @@ begin
   if Assigned(FOnFocusChanged) then
     FOnFocusChanged(Self, Node, Column);
 
-  NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-  NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-  NotifyWinEvent(EVENT_OBJECT_VALUECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-  NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-  NotifyWinEvent(EVENT_OBJECT_SELECTION, Handle, OBJID_CLIENT, CHILDID_SELF);
-  NotifyWinEvent(EVENT_OBJECT_FOCUS, Handle, OBJID_CLIENT, CHILDID_SELF);
+  if assigned(FAccessibleItem) then
+  begin
+    NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+    NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+    NotifyWinEvent(EVENT_OBJECT_VALUECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+    NotifyWinEvent(EVENT_OBJECT_SELECTION, Handle, OBJID_CLIENT, CHILDID_SELF);
+    NotifyWinEvent(EVENT_OBJECT_FOCUS, Handle, OBJID_CLIENT, CHILDID_SELF);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18881,6 +18903,16 @@ begin
   else
     if Assigned(FOnGetImage) then
       FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoGetImageText(Node: PVirtualNode; Kind: TVTImageKind;
+  Column: TColumnIndex; var ImageText: WideString);
+// Queries the application/descendant about alternative image text for a node.
+begin
+  if Assigned(FOnGetImageText) then
+     FOnGetImageText(Self, Node, Kind, Column, ImageText);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21851,7 +21883,8 @@ procedure TBaseVirtualTree.MainColumnChanged;
 begin
   DoCancelEdit;
 
-  NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  if assigned(FAccessibleItem) then
+    NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -29841,6 +29874,20 @@ begin
     Node := GetFirst;
     NextNodeProc := GetNext;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCustomVirtualStringTree.GetImageText(Node: PVirtualNode;
+  Kind: TVTImageKind; Column: TColumnIndex): WideString;
+begin
+  Assert(Assigned(Node), 'Node must not be nil.');
+
+  if not (vsInitialized in Node.States) then
+    InitNode(Node);
+  Result := '';
+
+  DoGetImageText(Node, Kind, Column, Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

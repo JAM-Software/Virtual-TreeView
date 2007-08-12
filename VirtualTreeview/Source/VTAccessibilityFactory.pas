@@ -13,14 +13,8 @@ unit VTAccessibilityFactory;
 
 interface
 
-{$I Compilers.inc}
-
 uses
- {$ifndef COMPILER_10_UP}
-   MSAAIntf, // MSAA support for Delphi up to 2005
- {$else}
-   oleacc, // MSAA support in Delphi 2006 or higher
- {$endif COMPILE_10_UP}
+ MSAAIntf, // MSAA support
  Classes, VirtualTrees;
 
 type

@@ -67,16 +67,17 @@ cpp_quote("typedef HRESULT (STDAPICALLTYPE *LPFNACCESSIBLECHILDREN)(IAccessible*
 // So if you add any more GUIDs, make sure to add them here AND in guids.c
 //----------------------------------------------------------------------------
 *)
+var
   {$EXTERNALSYM LresultFromObject}
-  function LresultFromObject(const riid: TGUID; wParam: WPARAM; punk: IUnknown): LRESULT; stdcall;
+  LresultFromObject: function (const riid: TGUID; wParam: WPARAM; punk: IUnknown): LRESULT; stdcall;
   {$EXTERNALSYM ObjectFromLresult}
-  function ObjectFromLresult(lResult: LRESULT; const riid: TGUID; wParam: WPARAM; out ppvObject): LRESULT; stdcall;
+  ObjectFromLresult: function (lResult: LRESULT; const riid: TGUID; wParam: WPARAM; out ppvObject): LRESULT; stdcall;
 (*  function WindowFromAccessibleObject(IAccessible*, HWND* phwnd);*)
   {$EXTERNALSYM AccessibleObjectFromWindow}
-  function AccessibleObjectFromWindow(hwnd: THandle; dwId: DWORD; const riid: TGUID; out ppvObject): HRESULT; stdcall;
+  AccessibleObjectFromWindow: function: (hwnd: THandle; dwId: DWORD; const riid: TGUID; out ppvObject): HRESULT; stdcall;
 (*  function AccessibleObjectFromEvent(HWND hwnd, DWORD dwId, DWORD dwChildId, IAccessible** ppacc, VARIANT* pvarChild);")
-  function AccessibleObjectFromPoint(POINT ptScreen, IAccessible ** ppacc, VARIANT* pvarChild);")
-  function AccessibleChildren (IAccessible* paccContainer, LONG iChildStart,LONG cChildren, VARIANT* rgvarChildren,LONG* pcObtained);")
+  AccessibleObjectFromPoint: function (POINT ptScreen, IAccessible ** ppacc, VARIANT* pvarChild);")
+  AccessibleChildren : function (IAccessible* paccContainer, LONG iChildStart,LONG cChildren, VARIANT* rgvarChildren,LONG* pcObtained);")
 (*
 cpp_quote("")
 cpp_quote("STDAPI_(UINT)   GetRoleTextA(DWORD lRole, LPSTR lpszRole, UINT cchRoleMax);")
@@ -99,10 +100,10 @@ cpp_quote("")
 cpp_quote("STDAPI_(VOID)   GetOleaccVersionInfo(DWORD* pVer, DWORD* pBuild);")
 cpp_quote("")
 *)
-{$EXTERNALSYM CreateStdAccessibleObject}
-function CreateStdAccessibleObject(hwnd: THandle; idObject: Cardinal; const riid: TGUID; out ppvObject: Pointer): HRESULT; stdcall;
-{$EXTERNALSYM CreateStdAccessibleProxy}
-function CreateStdAccessibleProxy(hwnd: THandle; pClassName: PChar; idObject: Cardinal; const riid: TGUID; out ppvObject): HRESULT; stdcall;
+  {$EXTERNALSYM CreateStdAccessibleObject}
+  CreateStdAccessibleObject: function (hwnd: THandle; idObject: Cardinal; const riid: TGUID; out ppvObject: Pointer): HRESULT; stdcall;
+  {$EXTERNALSYM CreateStdAccessibleProxy}
+  CreateStdAccessibleProxy: function (hwnd: THandle; pClassName: PChar; idObject: Cardinal; const riid: TGUID; out ppvObject): HRESULT; stdcall;
 
 (*
 cpp_quote("STDAPI          CreateStdAccessibleProxyW(HWND hwnd, LPCWSTR pClassName, LONG idObject, REFIID riid, void** ppvObject);")
@@ -650,25 +651,71 @@ function CreateAccessibleProxy(Handle: THandle; Classname: string): IDispatch;
 // In Windows.pas, this declaration is missing a stdcall; at the end, resulting in a crash when called.
 // As a consequence, this unit must always be AFTER windows.pas in the uses clause.
 {$EXTERNALSYM NotifyWinEvent}
-procedure NotifyWinEvent(event: DWORD; hwnd: HWND; idObject, idChild: Cardinal); stdcall;
+  procedure NotifyWinEvent(event: DWORD; hwnd: HWND; idObject, idChild: Cardinal); stdcall;
+
+function InitAccLibrary: boolean;
+procedure FreeAccLibrary;
 
 implementation
 
 uses ComObj;
 
-function LresultFromObject; external 'oleacc.dll' name 'LresultFromObject';
-function ObjectFromLresult; external 'oleacc.dll' name 'ObjectFromLresult';
-(*  function WindowFromAccessibleObject(IAccessible*, HWND* phwnd);*)
-function AccessibleObjectFromWindow; external 'oleacc.dll' name 'AccessibleObjectFromWindow';
-(*  function AccessibleObjectFromEvent(HWND hwnd, DWORD dwId, DWORD dwChildId, IAccessible** ppacc, VARIANT* pvarChild);")
-  function AccessibleObjectFromPoint(POINT ptScreen, IAccessible ** ppacc, VARIANT* pvarChild);")
-  function AccessibleChildren (IAccessible* paccContainer, LONG iChildStart,LONG cChildren, VARIANT* rgvarChildren,LONG* pcObtained);")
-*)
+const
+  OleAccLib = 'oleacc.dll';
+ 
+var
+  AccLibrary: THandle;
+  Lock: TCriticalSection;
+  ReferenceCount: Integer = 0;
+
+function InitAccLibrary: boolean;
+begin
+  Lock.Enter;
+  try
+    Inc(ReferenceCount);
+
+    if AccLibrary = 0 then
+    begin
+      AccLibrary := LoadLibrary(OleAccLib);
+      if AccLibrary > 0 then
+      begin
+        LresultFromObject := GetProcAddress(OleAccLib, 'LresultFromObject');
+        ObjectFromLresult := GetProcAddress(OleAccLib, 'ObjectFromLresult');
+        AccessibleObjectFromWindow := GetProcAddress(OleAccLib, 'AccessibleObjectFromWindow');
+        CreateStdAccessibleObject := GetProcAddress(OleAccLib, 'CreateStdAccessibleObject');
+        CreateStdAccessibleProxy := GetProcAddress(OleAccLib, 'CreateStdAccessibleProxyA');
+      end;
+    end;
+    Result := AccLibrary > 0;
+  finally
+    Lock.Leave;
+  end;
+end;
+
+procedure FreeAccLibrary;
+begin
+  Lock.Enter;
+  try
+    if ReferenceCount > 0 then
+      Dec(ReferenceCount);
+
+    if (AccLibrary <> 0) and (ReferenceCount = 0) then
+    begin
+      FreeLibrary(AccLibrary);
+      AccLibrary := 0;
+  
+      LresultFromObject := nil;
+      ObjectFromLresult := nil;
+      AccessibleObjectFromWindow := nil;
+      CreateStdAccessibleObject := nil;
+      CreateStdAccessibleProxy := nil;
+    end;
+  finally
+    Lock.Leave;
+  end;
+end;
 
 (*$HPPEMIT '#pragma link "oleacc.lib"'*)
-
-function CreateStdAccessibleObject; external 'oleacc.dll' name 'CreateStdAccessibleObject';
-function CreateStdAccessibleProxy; external 'oleacc.dll' name 'CreateStdAccessibleProxyA';
 
 function CreateAccessibleProxy(Handle: THandle; Classname: string): IDispatch;
 var
@@ -690,4 +737,10 @@ end;
 
 procedure NotifyWinEvent; external user32 name 'NotifyWinEvent';
 
+initialization
+  Lock := TCriticalSection.Create;
+finalization
+  while ReferenceCount > 0 do
+    FreeAccLibrary;
+  Lock.Free;
 end.
