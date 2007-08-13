@@ -1855,7 +1855,6 @@ type
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
 
     // MSAA support
-    FAccessibilityAvailable: boolean;
     FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
     FAccessibleItem: IAccessible;                // The IAccessible to the item that currently has focus.
     FAccessibleName: string;                     // The name the window is given for screen readers.
@@ -11659,7 +11658,6 @@ begin
   {$ifdef UseLocalMemoryManager}
     FNodeMemoryManager := TVTNodeMemoryManager.Create;
   {$endif UseLocalMemoryManager}
-  FAccessibilityAvailable := InitAccLibrary;
 
   AddThreadReference;
 end;
@@ -11701,7 +11699,6 @@ begin
   {$endif UseLocalMemoryManager}
   FPlusBM.Free;
   FMinusBM.Free;
-  FreeAccLibrary;
 
   inherited;
 end;
@@ -15762,7 +15759,7 @@ end;
 procedure TBaseVirtualTree.WMGetObject(var Message: TMessage);
 
 begin
-  if FAccessibilityAvailable then
+  if GetAccessibilityFactory <> nil then
   begin
     // Create the IAccessibles for the tree view and tree view items, if necessary.
     if FAccessible = nil then

@@ -39,6 +39,8 @@ implementation
 
 var
   VTAccessibleFactory: TVTAccessibilityFactory = nil;
+  AccessibilityAvailable: boolean = false;
+  
 
 { TVTAccessibilityFactory }
 
@@ -104,6 +106,7 @@ destructor TVTAccessibilityFactory.Destroy;
 begin
   FAccessibleProviders.Free;
   FAccessibleProviders := nil;
+  FreeAccLibrary;
   inherited;
 end;
 
@@ -129,11 +132,20 @@ function GetAccessibilityFactory: TVTAccessibilityFactory;
 // the IAccessible interface for the tree and the focused node.
 
 begin
-  // Check to see if the class has already been created.
-  if VTAccessibleFactory = nil then
-    VTAccessibleFactory := TVTAccessibilityFactory.Create;
-  result := VTAccessibleFactory;
+  // first, check if we've loaded the library already
+  if not AccessibilityAvailable then
+    AccessibilityAvailable := InitAccLibrary;
+  if AccessibilityAvailable then
+  begin
+    // Check to see if the class has already been created.
+    if VTAccessibleFactory = nil then
+      VTAccessibleFactory := TVTAccessibilityFactory.Create;
+    result := VTAccessibleFactory;
+  end
+  else
+    result := nil;
 end;
+
 
 initialization
 
