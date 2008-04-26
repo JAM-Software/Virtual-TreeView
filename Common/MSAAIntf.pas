@@ -74,7 +74,7 @@ var
   ObjectFromLresult: function (lResult: LRESULT; const riid: TGUID; wParam: WPARAM; out ppvObject): LRESULT; stdcall;
 (*  function WindowFromAccessibleObject(IAccessible*, HWND* phwnd);*)
   {$EXTERNALSYM AccessibleObjectFromWindow}
-  AccessibleObjectFromWindow: function: (hwnd: THandle; dwId: DWORD; const riid: TGUID; out ppvObject): HRESULT; stdcall;
+  AccessibleObjectFromWindow: function (hwnd: THandle; dwId: DWORD; const riid: TGUID; out ppvObject): HRESULT; stdcall;
 (*  function AccessibleObjectFromEvent(HWND hwnd, DWORD dwId, DWORD dwChildId, IAccessible** ppacc, VARIANT* pvarChild);")
   AccessibleObjectFromPoint: function (POINT ptScreen, IAccessible ** ppacc, VARIANT* pvarChild);")
   AccessibleChildren : function (IAccessible* paccContainer, LONG iChildStart,LONG cChildren, VARIANT* rgvarChildren,LONG* pcObtained);")
@@ -658,11 +658,11 @@ procedure FreeAccLibrary;
 
 implementation
 
-uses ComObj;
+uses ComObj, SyncObjs;
 
 const
   OleAccLib = 'oleacc.dll';
- 
+
 var
   AccLibrary: THandle;
   Lock: TCriticalSection;
@@ -679,11 +679,11 @@ begin
       AccLibrary := LoadLibrary(OleAccLib);
       if AccLibrary > 0 then
       begin
-        LresultFromObject := GetProcAddress(OleAccLib, 'LresultFromObject');
-        ObjectFromLresult := GetProcAddress(OleAccLib, 'ObjectFromLresult');
-        AccessibleObjectFromWindow := GetProcAddress(OleAccLib, 'AccessibleObjectFromWindow');
-        CreateStdAccessibleObject := GetProcAddress(OleAccLib, 'CreateStdAccessibleObject');
-        CreateStdAccessibleProxy := GetProcAddress(OleAccLib, 'CreateStdAccessibleProxyA');
+        LresultFromObject := GetProcAddress(AccLibrary, 'LresultFromObject');
+        ObjectFromLresult := GetProcAddress(AccLibrary, 'ObjectFromLresult');
+        AccessibleObjectFromWindow := GetProcAddress(AccLibrary, 'AccessibleObjectFromWindow');
+        CreateStdAccessibleObject := GetProcAddress(AccLibrary, 'CreateStdAccessibleObject');
+        CreateStdAccessibleProxy := GetProcAddress(AccLibrary, 'CreateStdAccessibleProxyA');
       end;
     end;
     Result := AccLibrary > 0;
