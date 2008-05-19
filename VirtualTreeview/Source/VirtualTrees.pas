@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.5
+// Version 4.5.6
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,11 +24,12 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// May 2008
+//   - Bug fix: FDropTargetNode is considered in TBaseVirtualTree.DoFreeNode
 // August 2007
 //   - for accessibility, added an OnGetImageText event that can be used to give accessible text to images used in nodes.
 //   - Implemented an ImageText property used by the VTAccessibility unit to retrieve text for a given node and its column.
 //   - Switched loading of accessibility libraries to dynamic from static to avoid problems in Win95
-//
 // June 2007
 //   - Bug fix: Fixed a problem with potentially large amount of nodes (larger than 2 billion) in
 //              TBaseVirtualTree.SetChildCount.
@@ -137,7 +138,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.5';
+  VTVersion = '4.5.6';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -18814,6 +18815,8 @@ begin
     FLastChangedNode := nil;
   if Node = FCurrentHotNode then
     FCurrentHotNode := nil;
+  if Node = FDropTargetNode then
+    FDropTargetNode := nil;
   if Assigned(FOnFreeNode) and ([vsInitialized, vsInitialUserData] * Node.States <> []) then
     FOnFreeNode(Self, Node);
   {$ifdef UseLocalMemoryManager}
