@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.6
+// Version 4.5.7
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // May 2008
+//   - Improvement: new properties: FOnAfterAutoFitColumns, FOnBeforeAutoFitColumns,
+//     FOnAfterGetMaxColumnWidth, FOnBeforeGetMaxColumnWidth
 //   - Bug fix: FDropTargetNode is considered in TBaseVirtualTree.DoFreeNode
 // August 2007
 //   - for accessibility, added an OnGetImageText event that can be used to give accessible text to images used in nodes.
@@ -138,7 +140,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.6';
+  VTVersion = '4.5.7';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1645,6 +1647,7 @@ type
     var Elements: THeaderPaintElements) of object;
   TVTAdvancedHeaderPaintEvent = procedure(Sender: TVTHeader; var PaintInfo: THeaderPaintInfo;
     const Elements: THeaderPaintElements) of object;
+  TVTAutoFitColumnsEvent = procedure(Sender: TVTHeader) of object;
   TVTColumnClickEvent = procedure (Sender: TBaseVirtualTree; Column: TColumnIndex; Shift: TShiftState) of object;
   TVTColumnDblClickEvent = procedure (Sender: TBaseVirtualTree; Column: TColumnIndex; Shift: TShiftState) of object;
   TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: HCURSOR) of object;
@@ -1907,11 +1910,15 @@ type
                                                  // references)
 
     // header/column mouse events
+    FOnAfterAutoFitColumns: TVTAutoFitColumnsEvent;
+    FOnBeforeAutoFitColumns: TVTAutoFitColumnsEvent;
     FOnHeaderClick,                              // mouse events for the header, just like those for a control
     FOnHeaderDblClick: TVTHeaderClickEvent;
     FOnHeaderMouseDown,
     FOnHeaderMouseUp: TVTHeaderMouseEvent;
     FOnHeaderMouseMove: TVTHeaderMouseMoveEvent;
+    FOnAfterGetMaxColumnWidth: TVTHeaderNotifyEvent;
+    FOnBeforeGetMaxColumnWidth: TVTHeaderNotifyEvent;
     FOnColumnClick: TVTColumnClickEvent;
     FOnColumnDblClick: TVTColumnDblClickEvent;
     FOnColumnResize: TVTHeaderNotifyEvent;
@@ -2407,11 +2414,15 @@ type
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
 
     property OnAdvancedHeaderDraw: TVTAdvancedHeaderPaintEvent read FOnAdvancedHeaderDraw write FOnAdvancedHeaderDraw;
+    property OnAfterAutoFitColumns: TVTAutoFitColumnsEvent read FOnAfterAutoFitColumns write FOnAfterAutoFitColumns;
     property OnAfterCellPaint: TVTAfterCellPaintEvent read FOnAfterCellPaint write FOnAfterCellPaint;
+    property OnAfterGetMaxColumnWidth: TVTHeaderNotifyEvent read FOnAfterGetMaxColumnWidth write FOnAfterGetMaxColumnWidth;
     property OnAfterItemErase: TVTAfterItemEraseEvent read FOnAfterItemErase write FOnAfterItemErase;
     property OnAfterItemPaint: TVTAfterItemPaintEvent read FOnAfterItemPaint write FOnAfterItemPaint;
     property OnAfterPaint: TVTPaintEvent read FOnAfterPaint write FOnAfterPaint;
+    property OnBeforeAutoFitColumns: TVTAutoFitColumnsEvent read FOnBeforeAutoFitColumns write FOnBeforeAutoFitColumns;
     property OnBeforeCellPaint: TVTBeforeCellPaintEvent read FOnBeforeCellPaint write FOnBeforeCellPaint;
+    property OnBeforeGetMaxColumnWidth: TVTHeaderNotifyEvent read FOnBeforeGetMaxColumnWidth write FOnBeforeGetMaxColumnWidth;
     property OnBeforeItemErase: TVTBeforeItemEraseEvent read FOnBeforeItemErase write FOnBeforeItemErase;
     property OnBeforeItemPaint: TVTBeforeItemPaintEvent read FOnBeforeItemPaint write FOnBeforeItemPaint;
     property OnBeforePaint: TVTPaintEvent read FOnBeforePaint write FOnBeforePaint;
@@ -2975,11 +2986,15 @@ type
     property WantTabs;
 
     property OnAdvancedHeaderDraw;
+    property OnAfterAutoFitColumns;
     property OnAfterCellPaint;
+    property OnAfterGetMaxColumnWidth;
     property OnAfterItemErase;
     property OnAfterItemPaint;
     property OnAfterPaint;
+    property OnBeforeAutoFitColumns;
     property OnBeforeCellPaint;
+    property OnBeforeGetMaxColumnWidth;
     property OnBeforeItemErase;
     property OnBeforeItemPaint;
     property OnBeforePaint;
@@ -3188,11 +3203,15 @@ type
     property WantTabs;
 
     property OnAdvancedHeaderDraw;
+    property OnAfterAutoFitColumns;
     property OnAfterCellPaint;
+    property OnAfterGetMaxColumnWidth;
     property OnAfterItemErase;
     property OnAfterItemPaint;
     property OnAfterPaint;
+    property OnBeforeAutoFitColumns;
     property OnBeforeCellPaint;
+    property OnBeforeGetMaxColumnWidth;
     property OnBeforeItemErase;
     property OnBeforeItemPaint;
     property OnBeforePaint;
@@ -11120,6 +11139,9 @@ var
   I: Integer;
 
 begin
+  if Assigned(TreeView.FOnBeforeAutoFitColumns) then
+    TreeView.FOnBeforeAutoFitColumns(Self);
+
   if Animated then
   begin
     with FColumns do
@@ -11134,6 +11156,9 @@ begin
         if [coResizable, coVisible] * Items[FPositionToIndex[I]].FOptions = [coResizable, coVisible] then
           FColumns[FPositionToIndex[I]].Width := Treeview.GetMaxColumnWidth(FPositionToIndex[I]);
   end;
+
+  if Assigned(TreeView.FOnAfterAutoFitColumns) then
+    TreeView.FOnAfterAutoFitColumns(Self);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25499,6 +25524,9 @@ var
 begin
   Result := 0;
 
+  if Assigned(FOnBeforeGetMaxColumnWidth) then
+    FOnBeforeGetMaxColumnWidth(FHeader, Column);
+
   // Don't check the event here as descendant trees might have overriden the DoGetImageIndex method.
   WithImages := Assigned(FImages);
   if WithImages then
@@ -25558,7 +25586,10 @@ begin
     Run := NextNode;
   end;
   if toShowVertGridLines in FOptions.FPaintOptions then
-    Inc(Result)
+    Inc(Result);
+
+  if Assigned(FOnAfterGetMaxColumnWidth) then
+    FOnAfterGetMaxColumnWidth(FHeader, Column);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
