@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.7
+// Version 4.5.8
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,9 +24,19 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// June 2008
+//   - Bug fix: horizontal page scrolling via mouse wheel now works correctly, i.e. in TBaseVirtualTree.CMMouseWheel
+//              ScrollCount includes GetVisibleFixedWidth and FIndent
+//   - Improvement: horizontal scrolling via mouse wheel can be forced by holding the shift key
+//   - Improvement: new parameter for function TBaseVirtualTree.GetMaxColumnWidth added: UseSmartColumnWidth (to
+//                  leave nodes out of consideration which are not in view)
+//   - Improvement: new parameters for TVTHeader.AutoFitColumns added: SmartAutoFitType, RangeStartCol and
+//                  RangeEndCol
+//   - Improvement: new parameters for events FOnAfterAutoFitColumns, FOnBeforeAutoFitColumns, FOnAfterGetMaxColumnWidth
+//                  and FOnBeforeGetMaxColumnWidth added
 // May 2008
-//   - Improvement: new properties: FOnAfterAutoFitColumns, FOnBeforeAutoFitColumns,
-//     FOnAfterGetMaxColumnWidth, FOnBeforeGetMaxColumnWidth
+//   - Improvement: new properties: FOnAfterAutoFitColumns, FOnBeforeAutoFitColumns, FOnAfterGetMaxColumnWidth and
+//                  FOnBeforeGetMaxColumnWidth
 //   - Bug fix: FDropTargetNode is considered in TBaseVirtualTree.DoFreeNode
 // August 2007
 //   - for accessibility, added an OnGetImageText event that can be used to give accessible text to images used in nodes.
@@ -140,7 +150,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.7';
+  VTVersion = '4.5.8';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -339,7 +349,9 @@ type
     coShowDropMark,     // Column shows the drop mark if it is currently the drop target.
     coVisible,          // Column is shown.
     coAutoSpring,       // Column takes part in the auto spring feature of the header (must be resizable too).
-    coFixed             // Column is fixed and can not be selected or scrolled etc.
+    coFixed,            // Column is fixed and can not be selected or scrolled etc.
+    coSmartResize       // Column is resized to its largest entry which is in view (instead of its largest
+                        // visible entry).
   );
   TVTColumnOptions = set of TVTColumnOption;
 
@@ -1153,6 +1165,13 @@ type
     sdDescending
   );
 
+  // describes the used column resize behaviour for AutoFitColumns
+  TSmartAutoFitType = (
+    smaAllColumns,      // consider nodes in view only for all columns
+    smaNoColumn,        // consider nodes in view only for no column
+    smaUseColumnOption  // use coSmartResize of the corresponding column
+  );
+
   // desribes what made a structure change event happen
   TChangeReason = (
     crIgnore,       // used as placeholder
@@ -1226,7 +1245,8 @@ type
     destructor Destroy; override;
 
     procedure Assign(Source: TPersistent); override;
-    procedure AutoFitColumns(Animated: Boolean = True);
+    procedure AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
+      RangeStartCol: Integer = -1; RangeEndCol: Integer = -1);
     function InHeader(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
@@ -1647,10 +1667,13 @@ type
     var Elements: THeaderPaintElements) of object;
   TVTAdvancedHeaderPaintEvent = procedure(Sender: TVTHeader; var PaintInfo: THeaderPaintInfo;
     const Elements: THeaderPaintElements) of object;
-  TVTAutoFitColumnsEvent = procedure(Sender: TVTHeader) of object;
+  TVTBeforeAutoFitColumnsEvent = procedure(Sender: TVTHeader; var SmartAutoFitType: TSmartAutoFitType) of object;
+  TVTAfterAutoFitColumnsEvent = procedure(Sender: TVTHeader) of object;
   TVTColumnClickEvent = procedure (Sender: TBaseVirtualTree; Column: TColumnIndex; Shift: TShiftState) of object;
   TVTColumnDblClickEvent = procedure (Sender: TBaseVirtualTree; Column: TColumnIndex; Shift: TShiftState) of object;
   TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: HCURSOR) of object;
+  TVTBeforeGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var UseSmartColumnWidth: Boolean) of object;
+  TVTAfterGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex) of object;
 
   // move and copy events
   TVTNodeMovedEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
@@ -1910,15 +1933,15 @@ type
                                                  // references)
 
     // header/column mouse events
-    FOnAfterAutoFitColumns: TVTAutoFitColumnsEvent;
-    FOnBeforeAutoFitColumns: TVTAutoFitColumnsEvent;
+    FOnAfterAutoFitColumns: TVTAfterAutoFitColumnsEvent;
+    FOnBeforeAutoFitColumns: TVTBeforeAutoFitColumnsEvent;
     FOnHeaderClick,                              // mouse events for the header, just like those for a control
     FOnHeaderDblClick: TVTHeaderClickEvent;
     FOnHeaderMouseDown,
     FOnHeaderMouseUp: TVTHeaderMouseEvent;
     FOnHeaderMouseMove: TVTHeaderMouseMoveEvent;
-    FOnAfterGetMaxColumnWidth: TVTHeaderNotifyEvent;
-    FOnBeforeGetMaxColumnWidth: TVTHeaderNotifyEvent;
+    FOnAfterGetMaxColumnWidth: TVTAfterGetMaxColumnWidthEvent;
+    FOnBeforeGetMaxColumnWidth: TVTBeforeGetMaxColumnWidthEvent;
     FOnColumnClick: TVTColumnClickEvent;
     FOnColumnDblClick: TVTColumnDblClickEvent;
     FOnColumnResize: TVTHeaderNotifyEvent;
@@ -2414,15 +2437,15 @@ type
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
 
     property OnAdvancedHeaderDraw: TVTAdvancedHeaderPaintEvent read FOnAdvancedHeaderDraw write FOnAdvancedHeaderDraw;
-    property OnAfterAutoFitColumns: TVTAutoFitColumnsEvent read FOnAfterAutoFitColumns write FOnAfterAutoFitColumns;
+    property OnAfterAutoFitColumns: TVTAfterAutoFitColumnsEvent read FOnAfterAutoFitColumns write FOnAfterAutoFitColumns;
     property OnAfterCellPaint: TVTAfterCellPaintEvent read FOnAfterCellPaint write FOnAfterCellPaint;
-    property OnAfterGetMaxColumnWidth: TVTHeaderNotifyEvent read FOnAfterGetMaxColumnWidth write FOnAfterGetMaxColumnWidth;
+    property OnAfterGetMaxColumnWidth: TVTAfterGetMaxColumnWidthEvent read FOnAfterGetMaxColumnWidth write FOnAfterGetMaxColumnWidth;
     property OnAfterItemErase: TVTAfterItemEraseEvent read FOnAfterItemErase write FOnAfterItemErase;
     property OnAfterItemPaint: TVTAfterItemPaintEvent read FOnAfterItemPaint write FOnAfterItemPaint;
     property OnAfterPaint: TVTPaintEvent read FOnAfterPaint write FOnAfterPaint;
-    property OnBeforeAutoFitColumns: TVTAutoFitColumnsEvent read FOnBeforeAutoFitColumns write FOnBeforeAutoFitColumns;
+    property OnBeforeAutoFitColumns: TVTBeforeAutoFitColumnsEvent read FOnBeforeAutoFitColumns write FOnBeforeAutoFitColumns;
     property OnBeforeCellPaint: TVTBeforeCellPaintEvent read FOnBeforeCellPaint write FOnBeforeCellPaint;
-    property OnBeforeGetMaxColumnWidth: TVTHeaderNotifyEvent read FOnBeforeGetMaxColumnWidth write FOnBeforeGetMaxColumnWidth;
+    property OnBeforeGetMaxColumnWidth: TVTBeforeGetMaxColumnWidthEvent read FOnBeforeGetMaxColumnWidth write FOnBeforeGetMaxColumnWidth;
     property OnBeforeItemErase: TVTBeforeItemEraseEvent read FOnBeforeItemErase write FOnBeforeItemErase;
     property OnBeforeItemPaint: TVTBeforeItemPaintEvent read FOnBeforeItemPaint write FOnBeforeItemPaint;
     property OnBeforePaint: TVTPaintEvent read FOnBeforePaint write FOnBeforePaint;
@@ -2554,7 +2577,7 @@ type
     function GetLastVisibleChild(Node: PVirtualNode): PVirtualNode;
     function GetLastVisibleChildNoInit(Node: PVirtualNode): PVirtualNode;
     function GetLastVisibleNoInit(Node: PVirtualNode = nil): PVirtualNode;
-    function GetMaxColumnWidth(Column: TColumnIndex): Integer;
+    function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer;
     function GetNext(Node: PVirtualNode): PVirtualNode;
     function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal): PVirtualNode;
     function GetNextCutCopy(Node: PVirtualNode): PVirtualNode;
@@ -10623,7 +10646,7 @@ begin
           if (hoDblClickResize in FOptions) and (FColumns.FTrackIndex > NoColumn) then
           begin
             with FColumns do
-              AnimatedResize(FTrackIndex, Max(FColumns[FTrackIndex].MinWidth, Treeview.GetMaxColumnWidth(FTrackIndex)));
+              AnimatedResize(FTrackIndex, Max(FColumns[FTrackIndex].MinWidth, Treeview.GetMaxColumnWidth(FTrackIndex, coSmartResize in FColumns[FTrackIndex].Options)));
           end
           else
             FColumns.HandleClick(P, Button, True, True);
@@ -11133,28 +11156,52 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.AutoFitColumns(Animated: Boolean = True);
+procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
+  RangeStartCol: Integer = -1; RangeEndCol: Integer = -1);
+
+  function GetUseSmartColumnWidth(ColumnIndex: Integer): Boolean;
+  begin
+    case SmartAutoFitType of
+      smaAllColumns:
+        Result := True;
+      smaNoColumn:
+        Result := False;
+      smaUseColumnOption:
+        Result := coSmartResize in FColumns.Items[ColumnIndex].FOptions;
+    end;
+  end;
 
 var
   I: Integer;
+  StartCol,
+  EndCol: Integer;
 
 begin
+  StartCol := Max(0, RangeStartCol);
+
+  if RangeEndCol < 0 then
+    EndCol := FColumns.Count - 1
+  else
+    EndCol := Min(RangeEndCol, FColumns.Count - 1);
+
+  if StartCol > EndCol then exit; // nothing to do
+
   if Assigned(TreeView.FOnBeforeAutoFitColumns) then
-    TreeView.FOnBeforeAutoFitColumns(Self);
+    TreeView.FOnBeforeAutoFitColumns(Self, SmartAutoFitType);
 
   if Animated then
   begin
     with FColumns do
-      for I := 0 to Count - 1 do
+      for I := StartCol to EndCol do
         if [coResizable, coVisible] * Items[FPositionToIndex[I]].FOptions = [coResizable, coVisible] then
-          AnimatedResize(FPositionToIndex[I], Treeview.GetMaxColumnWidth(FPositionToIndex[I]))
+          AnimatedResize(FPositionToIndex[I], Treeview.GetMaxColumnWidth(FPositionToIndex[I], GetUseSmartColumnWidth(FPositionToIndex[I])))
   end
   else
   begin
     with FColumns do
-      for I := 0 to Count - 1 do
+      for I := StartCol to EndCol do
         if [coResizable, coVisible] * Items[FPositionToIndex[I]].FOptions = [coResizable, coVisible] then
-          FColumns[FPositionToIndex[I]].Width := Treeview.GetMaxColumnWidth(FPositionToIndex[I]);
+          FColumns[FPositionToIndex[I]].Width := Treeview.GetMaxColumnWidth(FPositionToIndex[I], GetUseSmartColumnWidth(FPositionToIndex[I]));
   end;
 
   if Assigned(TreeView.FOnAfterAutoFitColumns) then
@@ -15459,7 +15506,7 @@ begin
     with Message do
     begin
       Result := 1;
-      if FRangeY > Cardinal(ClientHeight) then
+      if (FRangeY > Cardinal(ClientHeight)) and (not (ssShift in ShiftState)) then
       begin
         // Scroll vertically if there's something to scroll...
         if ssCtrl in ShiftState then
@@ -15476,14 +15523,14 @@ begin
       end
       else
       begin
-        // ...else scroll horizontally.
+        // ...else scroll horizontally if there's something to scroll.
         if UseRightToLeftAlignment then
           RTLFactor := -1
         else
           RTLFactor := 1;
 
         if ssCtrl in ShiftState then
-          ScrollCount := WheelDelta div WHEEL_DELTA * ClientWidth
+          ScrollCount := WheelDelta div WHEEL_DELTA * ((ClientWidth - FHeader.Columns.GetVisibleFixedWidth) div Integer(FIndent))
         else
           ScrollCount := WheelDelta div WHEEL_DELTA;
         SetOffsetX(FOffsetX + RTLFactor * ScrollCount * Integer(FIndent));
@@ -25503,10 +25550,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex): Integer;
+function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer;
 
 // This method determines the width of the largest node in the given column.
-// Note: Every visible node in the tree will be initialized contradicting so the virtual paradigm.
+// If UseSmartColumnWidth is True then only the visible nodes which are in view will be considered
+// Note: If UseSmartColumnWidth is False then every visible node in the tree will be initialized contradicting so
+//       the virtual paradigm.
 
 var
   Run,
@@ -25520,12 +25569,13 @@ var
   CheckOffset,
   ImageOffset,
   StateImageOffset: Integer;
+  Rect: TRect;
 
 begin
   Result := 0;
 
   if Assigned(FOnBeforeGetMaxColumnWidth) then
-    FOnBeforeGetMaxColumnWidth(FHeader, Column);
+    FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
 
   // Don't check the event here as descendant trees might have overriden the DoGetImageIndex method.
   WithImages := Assigned(FImages);
@@ -25543,7 +25593,11 @@ begin
   else
     CheckOffset := 0;
 
-  Run := GetFirstVisible;
+  if UseSmartColumnWidth then // Get first visible node which is in view.
+    Run := GetTopNode
+  else
+    Run := GetFirstVisible;
+
   if Column = FHeader.MainColumn then
   begin
     if toShowRoot in FOptions.FPaintOptions then
@@ -25581,6 +25635,12 @@ begin
     NextNode := GetNextVisible(Run);
     if NextNode = nil then
       Break;
+    if UseSmartColumnWidth then // Check if NextNode is in view.
+    begin
+      Rect := GetDisplayRect(NextNode, Column, True);
+      if Rect.Top > ClientHeight then // NextNode is not in view.
+        Break;
+    end;
     if Column = Header.MainColumn then
       Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
     Run := NextNode;
