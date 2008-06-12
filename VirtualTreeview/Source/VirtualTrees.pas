@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.8
+// Version 4.5.9
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,11 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // June 2008
+//   - Bug fix: for multiline tooltips also the column width is checked to determine the tooltip is needed or
+//              unnecessary
+//   - Improvement: the result value of GetUseSmartColumnWidth is initialized correctly
+//   - Improvement: added hoFullRepaintOnResize to TVTHeaderOption to enable full header repainting (instead of
+//                  repainting all subsequent columns only) on resizing a column
 //   - Bug fix: horizontal page scrolling via mouse wheel now works correctly, i.e. in TBaseVirtualTree.CMMouseWheel
 //              ScrollCount includes GetVisibleFixedWidth and FIndent
 //   - Improvement: horizontal scrolling via mouse wheel can be forced by holding the shift key
@@ -150,7 +155,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.8';
+  VTVersion = '4.5.9';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1134,19 +1139,20 @@ type
   );
 
   TVTHeaderOption = (
-    hoAutoResize,      // Adjust a column so that the header never exceeds the client width of the owner control.
-    hoColumnResize,    // Resizing columns with the mouse is allowed.
-    hoDblClickResize,  // Allows a column to resize itself to its largest entry.
-    hoDrag,            // Dragging columns is allowed.
-    hoHotTrack,        // Header captions are highlighted when mouse is over a particular column.
-    hoOwnerDraw,       // Header items with the owner draw style can be drawn by the application via event.
-    hoRestrictDrag,    // Header can only be dragged horizontally.
-    hoShowHint,        // Show application defined header hint.
-    hoShowImages,      // Show header images.
-    hoShowSortGlyphs,  // Allow visible sort glyphs.
-    hoVisible,         // Header is visible.
-    hoAutoSpring       // Distribute size changes of the header to all columns, which are sizable and have the
-                       // coAutoSpring option enabled. hoAutoResize must be enabled too.
+    hoAutoResize,         // Adjust a column so that the header never exceeds the client width of the owner control.
+    hoColumnResize,       // Resizing columns with the mouse is allowed.
+    hoDblClickResize,     // Allows a column to resize itself to its largest entry.
+    hoDrag,               // Dragging columns is allowed.
+    hoHotTrack,           // Header captions are highlighted when mouse is over a particular column.
+    hoOwnerDraw,          // Header items with the owner draw style can be drawn by the application via event.
+    hoRestrictDrag,       // Header can only be dragged horizontally.
+    hoShowHint,           // Show application defined header hint.
+    hoShowImages,         // Show header images.
+    hoShowSortGlyphs,     // Allow visible sort glyphs.
+    hoVisible,            // Header is visible.
+    hoAutoSpring,         // Distribute size changes of the header to all columns, which are sizable and have the
+                          // coAutoSpring option enabled. hoAutoResize must be enabled too.
+    hoFullRepaintOnResize // Fully invalidate the header (instead of subsequent columns only) when a column is resized
   );
   TVTHeaderOptions = set of TVTHeaderOption;
 
@@ -6972,11 +6978,13 @@ begin
 
               Inc(Result.Right);
 
-              // If the node height is already large enough to cover the entire text, then we don't need the hint, though.
+              // If the node height and the column width are both already large enough to cover the entire text,
+              // then we don't need the hint, though.
               // However if the text is partially scrolled out of the client area then a hint is useful as well.
-              if ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and not
-                ((Result.Left < 0) or (Result.Right > Tree.ClientWidth + 3) or
-                 (Result.Top < 0) or (Result.Bottom > Tree.ClientHeight + 3)) then
+              if ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and
+                 ((Tree.Header.Columns[Column].Width + 2) >= (Result.Right - Result.Left)) and not
+                 ((Result.Left < 0) or (Result.Right > Tree.ClientWidth + 3) or
+                  (Result.Top < 0) or (Result.Bottom > Tree.ClientHeight + 3)) then
               begin
                 Result := Rect(0, 0, 0, 0);
                 Exit;
@@ -11161,6 +11169,7 @@ procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: T
 
   function GetUseSmartColumnWidth(ColumnIndex: Integer): Boolean;
   begin
+    Result := False;
     case SmartAutoFitType of
       smaAllColumns:
         Result := True;
@@ -11237,8 +11246,9 @@ procedure TVTHeader.Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boole
 
 // Because the header is in the non-client area of the tree it needs some special handling in order to initiate its
 // repainting.
-// If ExpandToBorder is True then not only the given column but everything to its right (or left, in RTL mode) will be
-// invalidated (useful for resizing). This makes only sense when a column is given.
+// If ExpandToBorder is True then not only the given column but everything or (depending on hoFullRepaintOnResize) just
+// everything to its right (or left, in RTL mode) will be invalidated (useful for resizing). This makes only sense when
+// a column is given.
 
 var
   R, RW: TRect;
@@ -11257,10 +11267,19 @@ begin
         if UseRightToLeftAlignment then
           OffsetRect(R, ComputeRTLOffset, 0);
         if ExpandToBorder then
-          if UseRightToLeftAlignment then
-            R.Left := FHeaderRect.Left
-          else
+        begin
+          if (hoFullRepaintOnResize in FHeader.FOptions) then
+          begin
+            R.Left := FHeaderRect.Left;
             R.Right := FHeaderRect.Right;
+          end else
+          begin
+            if UseRightToLeftAlignment then
+              R.Left := FHeaderRect.Left
+            else
+              R.Right := FHeaderRect.Right;
+          end;
+        end;
       end;
 
       // Current position of the owner in screen coordinates.
