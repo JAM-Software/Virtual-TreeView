@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.5.9
+// Version 4.6.0
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,13 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // June 2008
+//   - Improvement: new property added: TBaseVirtualTree.OnCanSplitterResizeColumn,
+//                  new function added: TVirtualTreeColumns.GetScrollWidth
+//   - Improvement: horizontal page scrolling now uses the average column width (of all visible, non-fixed columns) as
+//                  scroll amount
+//   - Improvement: procedure TBaseVirtualTree.CMMouseWheel redesigned
+//   - Bug fix: TVTHeader.DetermineSplitterIndex works correctly even when using fixed columns
+//   - Bug fix: on right-to-left BiDiMode TVirtualTreeColumns.PaintHeader respects (left) scroll bar correctly
 //   - Bug fix: for multiline tooltips also the column width is checked to determine the tooltip is needed or
 //              unnecessary
 //   - Improvement: the result value of GetUseSmartColumnWidth is initialized correctly
@@ -102,7 +109,7 @@ unit VirtualTrees;
 //   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Bedürftig (BCB)
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
-//   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic
+//   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten
 // Beta testers:
 //   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
@@ -155,7 +162,7 @@ uses
   ;
 
 const
-  VTVersion = '4.5.9';
+  VTVersion = '4.6.0';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1083,6 +1090,8 @@ type
     function AdjustDownColumn(P: TPoint): TColumnIndex;
     function AdjustHoverColumn(P: TPoint): Boolean;
     procedure AdjustPosition(Column: TVirtualTreeColumn; Position: Cardinal);
+    function CanSplitterResize(P: TPoint; Column: TColumnIndex): Boolean;
+    procedure DoCanSplitterResize(P: TPoint; Column: TColumnIndex; var Allow: Boolean);
     procedure DrawButtonText(DC: HDC; Caption: WideString; Bounds: TRect; Enabled, Hot: Boolean; DrawFormat: Cardinal);
     procedure DrawXPButton(DC: HDC; ButtonR: TRect; DrawSplitter, Down, Hover: Boolean);
     procedure FixPositions;
@@ -1115,6 +1124,7 @@ type
     function GetNextVisibleColumn(Column: TColumnIndex): TColumnIndex;
     function GetPreviousColumn(Column: TColumnIndex): TColumnIndex;
     function GetPreviousVisibleColumn(Column: TColumnIndex): TColumnIndex;
+    function GetScrollWidth: Integer;
     function GetVisibleColumns: TColumnsArray;
     function GetVisibleFixedWidth: Integer;
     function IsValidColumn(Column: TColumnIndex): Boolean;
@@ -1252,7 +1262,7 @@ type
 
     procedure Assign(Source: TPersistent); override;
     procedure AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
-      RangeStartCol: Integer = -1; RangeEndCol: Integer = -1);
+      RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn);
     function InHeader(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
@@ -1680,6 +1690,7 @@ type
   TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: HCURSOR) of object;
   TVTBeforeGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var UseSmartColumnWidth: Boolean) of object;
   TVTAfterGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex) of object;
+  TVTCanSplitterResizeColumnEvent = procedure(Sender: TVTHeader; P: TPoint; Column: TColumnIndex; var Allow: Boolean) of object;
 
   // move and copy events
   TVTNodeMovedEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
@@ -1861,7 +1872,7 @@ type
                                                  // drop target
     FOffsetX: Integer;
     FOffsetY: Integer;                           // Determines left and top scroll offset.
-    FEffectiveOffsetX: Integer;                     // Actual position of the horizontal scroll bar (varies depending on bidi mode).
+    FEffectiveOffsetX: Integer;                  // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
     FRangeY: Cardinal;                           // current virtual width and height of the tree
     FBottomSpace: Cardinal;                      // Extra space below the last node.
@@ -1952,6 +1963,7 @@ type
     FOnColumnDblClick: TVTColumnDblClickEvent;
     FOnColumnResize: TVTHeaderNotifyEvent;
     FOnGetHeaderCursor: TVTGetHeaderCursorEvent; // triggered to allow the app. to use customized cursors for the header
+    FOnCanSplitterResizeColumn: TVTCanSplitterResizeColumnEvent;
 
     // paint events
     FOnAfterPaint,                               // triggered when the tree has entirely been painted
@@ -2455,6 +2467,7 @@ type
     property OnBeforeItemErase: TVTBeforeItemEraseEvent read FOnBeforeItemErase write FOnBeforeItemErase;
     property OnBeforeItemPaint: TVTBeforeItemPaintEvent read FOnBeforeItemPaint write FOnBeforeItemPaint;
     property OnBeforePaint: TVTPaintEvent read FOnBeforePaint write FOnBeforePaint;
+    property OnCanSplitterResizeColumn: TVTCanSplitterResizeColumnEvent read FOnCanSplitterResizeColumn write FOnCanSplitterResizeColumn;
     property OnChange: TVTChangeEvent read FOnChange write FOnChange;
     property OnChecked: TVTChangeEvent read FOnChecked write FOnChecked;
     property OnChecking: TVTCheckChangingEvent read FOnChecking write FOnChecking;
@@ -3027,6 +3040,7 @@ type
     property OnBeforeItemErase;
     property OnBeforeItemPaint;
     property OnBeforePaint;
+    property OnCanSplitterResizeColumn;
     property OnChange;
     property OnChecked;
     property OnChecking;
@@ -3244,6 +3258,7 @@ type
     property OnBeforeItemErase;
     property OnBeforeItemPaint;
     property OnBeforePaint;
+    property OnCanSplitterResizeColumn;
     property OnChange;
     property OnChecked;
     property OnChecking;
@@ -8802,6 +8817,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVirtualTreeColumns.CanSplitterResize(P: TPoint; Column: TColumnIndex): Boolean;
+begin
+  Result := (Column > NoColumn) and ([coResizable, coVisible] * Items[Column].FOptions = [coResizable, coVisible]);
+  DoCanSplitterResize(P, Column, Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVirtualTreeColumns.DoCanSplitterResize(P: TPoint; Column: TColumnIndex; var Allow: Boolean);
+begin
+  if Assigned(FHeader.Treeview.FOnCanSplitterResizeColumn) then
+    FHeader.Treeview.FOnCanSplitterResizeColumn(FHeader, P, Column, Allow);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVirtualTreeColumns.DrawButtonText(DC: HDC; Caption: WideString; Bounds: TRect; Enabled, Hot: Boolean;
   DrawFormat: Cardinal);
 
@@ -9510,6 +9541,37 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVirtualTreeColumns.GetScrollWidth: Integer;
+
+// Returns the average width of all visible, non-fixed columns. If there is no such column the indent is returned.
+
+var
+  I: Integer;
+  ScrollColumnCount: Integer;
+
+begin
+
+  Result := 0;
+
+  ScrollColumnCount := 0;
+  for I := 0 to FHeader.Columns.Count - 1 do
+  begin
+    if ([coVisible, coFixed] * FHeader.Columns[I].Options = [coVisible]) then
+    begin
+      Inc(Result, FHeader.Columns[I].Width);
+      Inc(ScrollColumnCount);
+    end;
+  end;
+
+  if ScrollColumnCount > 0 then // use average width
+    Result := Round(Result / ScrollColumnCount)
+  else // use indent
+    Result := Integer(FHeader.Treeview.FIndent);
+
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualTreeColumns.GetFirstVisibleColumn: TColumnIndex;
 
 // Returns the index of the first visible column or "InvalidColumn" if either no columns are defined or
@@ -9785,11 +9847,6 @@ begin
     // Use shortcut for the images.
     Images := FHeader.FImages;
 
-    // Consider right-to-left directionality.
-    with FHeader.Treeview do
-      if UseRightToLeftAlignment then
-        Inc(HOffset, ComputeRTLOffset);
-
     // Erase background of the header.
     // See if the application wants to do that on its own.
     RequestedElements := [];
@@ -9827,6 +9884,11 @@ begin
     Run.Right := R.Left;
     Run.Bottom := R.Bottom;
     // Run.Left is set in the loop
+
+    // Consider right-to-left directionality.
+    with FHeader.Treeview do
+      if UseRightToLeftAlignment then
+        Inc(Run.Right, ComputeRTLOffset);
 
     Temp := Run;
 
@@ -10345,11 +10407,22 @@ function TVTHeader.DetermineSplitterIndex(P: TPoint): Boolean;
 
 var
   I,
+  VisibleFixedWidth: Integer;
   SplitPoint: Integer;
 
+  function IsNearBy(IsFixedCol: Boolean; LeftTolerance, RightTolerance: Integer): Boolean;
+  begin
+    if IsFixedCol then
+      Result := (P.X < SplitPoint + Treeview.FEffectiveOffsetX + RightTolerance) and (P.X > SplitPoint + Treeview.FEffectiveOffsetX - LeftTolerance)
+    else
+      Result := (P.X > VisibleFixedWidth) and (P.X < SplitPoint + RightTolerance) and (P.X > SplitPoint - LeftTolerance);
+  end;
+  
 begin
   Result := False;
   FColumns.FTrackIndex := NoColumn;
+
+  VisibleFixedWidth := FColumns.GetVisibleFixedWidth;
 
   if FColumns.Count > 0 then
   begin
@@ -10363,16 +10436,16 @@ begin
         with FColumns, Items[FPositionToIndex[I]] do
           if coVisible in FOptions then
           begin
-            if (P.X < SplitPoint + 3) and (P.X > SplitPoint - 5) then
+            if IsNearBy(coFixed in FOptions, 5, 3) then
             begin
-              if coResizable in FOptions then
+              if CanSplitterResize(P, FPositionToIndex[I]) then
               begin
                 Result := True;
                 FTrackIndex := FPositionToIndex[I];
 
                 // Keep the right border of this column. This and the current mouse position
                 // directly determine the current column width.
-                FTrackPos := SplitPoint + FWidth;
+                FTrackPos := SplitPoint + IfThen(coFixed in FOptions, Treeview.FEffectiveOffsetX) + FWidth;
               end;
               Break;
             end;
@@ -10387,16 +10460,16 @@ begin
         with FColumns, Items[FPositionToIndex[I]] do
           if coVisible in FOptions then
           begin
-            if (P.X < SplitPoint + 5) and (P.X > SplitPoint - 3) then
+            if IsNearBy(coFixed in FOptions, 3, 5) then
             begin
-              if coResizable in FOptions then
+              if CanSplitterResize(P, FPositionToIndex[I]) then
               begin
                 Result := True;
                 FTrackIndex := FPositionToIndex[I];
 
                 // Keep the left border of this column. This and the current mouse position
                 // directly determine the current column width.
-                FTrackPos := SplitPoint - FWidth;
+                FTrackPos := SplitPoint + IfThen(coFixed in FOptions, Treeview.FEffectiveOffsetX) - FWidth;
               end;
               Break;
             end;
@@ -11165,7 +11238,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
-  RangeStartCol: Integer = -1; RangeEndCol: Integer = -1);
+  RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn);
 
   function GetUseSmartColumnWidth(ColumnIndex: Integer): Boolean;
   begin
@@ -11186,9 +11259,9 @@ var
   EndCol: Integer;
 
 begin
-  StartCol := Max(0, RangeStartCol);
+  StartCol := Max(NoColumn + 1, RangeStartCol);
 
-  if RangeEndCol < 0 then
+  if RangeEndCol <= NoColumn then
     EndCol := FColumns.Count - 1
   else
     EndCol := Min(RangeEndCol, FColumns.Count - 1);
@@ -15511,7 +15584,8 @@ end;
 procedure TBaseVirtualTree.CMMouseWheel(var Message: TCMMouseWheel);
 
 var
-  ScrollCount: Integer;
+  I: Integer;
+  ScrollAmount: Integer;
   ScrollLines: DWORD;
   RTLFactor: Integer;
 
@@ -15529,16 +15603,16 @@ begin
       begin
         // Scroll vertically if there's something to scroll...
         if ssCtrl in ShiftState then
-          ScrollCount := WheelDelta div WHEEL_DELTA * (ClientHeight div Integer(FDefaultNodeHeight))
+          ScrollAmount := WheelDelta div WHEEL_DELTA * ClientHeight
         else
         begin
           SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @ScrollLines, 0);
           if ScrollLines = WHEEL_PAGESCROLL then
-            ScrollCount := WheelDelta div WHEEL_DELTA * (ClientHeight div Integer(FDefaultNodeHeight))
+            ScrollAmount := WheelDelta div WHEEL_DELTA * ClientHeight
           else
-            ScrollCount := Integer(ScrollLines) * WheelDelta div WHEEL_DELTA;
+            ScrollAmount := WheelDelta div WHEEL_DELTA * Integer(ScrollLines) * Integer(FDefaultNodeHeight);
         end;
-        SetOffsetY(FOffsetY + ScrollCount * Integer(FDefaultNodeHeight));
+        SetOffsetY(FOffsetY + ScrollAmount);
       end
       else
       begin
@@ -15549,10 +15623,13 @@ begin
           RTLFactor := 1;
 
         if ssCtrl in ShiftState then
-          ScrollCount := WheelDelta div WHEEL_DELTA * ((ClientWidth - FHeader.Columns.GetVisibleFixedWidth) div Integer(FIndent))
+          ScrollAmount := WheelDelta div WHEEL_DELTA * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth)
         else
-          ScrollCount := WheelDelta div WHEEL_DELTA;
-        SetOffsetX(FOffsetX + RTLFactor * ScrollCount * Integer(FIndent));
+        begin
+          SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @ScrollLines, 0);
+          ScrollAmount := WheelDelta div WHEEL_DELTA * Integer(ScrollLines) * FHeader.Columns.GetScrollWidth;
+        end;
+        SetOffsetX(FOffsetX + RTLFactor * ScrollAmount);
       end;
     end;
   end;
@@ -16173,7 +16250,7 @@ begin
             begin
               // special handling
               if ssCtrl in Shift then
-                SetOffsetX(FOffsetX + RTLFactor * Integer(FIndent))
+                SetOffsetX(FOffsetX + RTLFactor * FHeader.Columns.GetScrollWidth)
               else
               begin
                 // other special cases
@@ -16219,7 +16296,7 @@ begin
             begin
               // special handling
               if ssCtrl in Shift then
-                SetOffsetX(FOffsetX - RTLFactor * Integer(FIndent))
+                SetOffsetX(FOffsetX - RTLFactor * FHeader.Columns.GetScrollWidth)
               else
               begin
                 // other special cases
