@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.6.0
+// Version 4.6.1
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,16 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // June 2008
+//   - Improvement: the content retangle of the cell can be modified via the OnBeforeCellPaint event, the cell paint
+//                  mode indicates wether OnBeforeCellPaint is called for painting the cell or just for getting the
+//                  cell content margin
+//   - Improvement: new functions added: TBaseVirtualTree.DoGetCellContentMargins,
+//                  TCustomVirtualDrawTree.DoGetCellContentMargin
+//   - Improvement: new property: TCustomVirtualDrawTree.OnGetCellContentMargin
+//   - Improvement: in TBaseVirtualTree.GetMaxColumnWidth the cell content margin is considered
+//   - Improvement: in TBaseVirtualTree.CMHintShow the cell content margin is considered for singleline tooltips
+//   - Improvement: new function added: TVTHeader.DoGetPopupMenu (to query the application via TreeView.FOnGetPopupMenu
+//                  for a column specific header popup menu)
 //   - Improvement: new property added: TBaseVirtualTree.OnCanSplitterResizeColumn,
 //                  new function added: TVirtualTreeColumns.GetScrollWidth
 //   - Improvement: horizontal page scrolling now uses the average column width (of all visible, non-fixed columns) as
@@ -162,7 +172,7 @@ uses
   ;
 
 const
-  VTVersion = '4.6.0';
+  VTVersion = '4.6.1';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 3;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -1242,6 +1252,7 @@ type
     function CanWriteColumns: Boolean; virtual;
     procedure ChangeScale(M, D: Integer); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
+    function DoGetPopupMenu(Column: TColumnIndex; Position: TPoint): TPopupMenu; virtual;
     procedure DoSetSortColumn(Value: TColumnIndex); virtual;
     procedure DragTo(P: TPoint);
     function GetColumnsClass: TVirtualTreeColumnsClass; virtual;
@@ -1620,6 +1631,19 @@ type
     smBlendedRectangle       // alpha blending, uses special colors (see TVTColors)
   );
 
+  // Determines for which purpose the cell paint event is called.
+  TVTCellPaintMode = (
+    cpmPaint,                // painting the cell
+    cpmGetContentMargin      // getting cell content margin
+  );
+
+  // Determines which sides of the cell content margin should be considered.
+  TVTCellContentMarginType = (
+    ccmtAllSides,            // consider all sides
+    ccmtTopLeftOnly,         // consider top margin and left margin only
+    ccmtBottomRightOnly      // consider bottom margin and right margin only
+  );
+
   TClipboardFormats = class(TStringList)
   private
     FOwner: TBaseVirtualTree;
@@ -1723,7 +1747,7 @@ type
   TVTAfterItemPaintEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     ItemRect: TRect) of object;
   TVTBeforeCellPaintEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
-    Column: TColumnIndex; CellRect: TRect) of object;
+    Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect) of object;
   TVTAfterCellPaintEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; CellRect: TRect) of object;
   TVTPaintEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas) of object;
@@ -1937,7 +1961,7 @@ type
     FOnFocusChanging: TVTFocusChangingEvent;     // called when the focus is about to go to a new node and/or column
                                                  // (can be cancelled)
     FOnFocusChanged: TVTFocusChangeEvent;        // called when the focus goes to a new node and/or column
-    FOnGetPopupMenu: TVTPopupEvent;              // called when the popup for a node needs to be shown
+    FOnGetPopupMenu: TVTPopupEvent;              // called when the popup for a node or the header needs to be shown
     FOnGetHelpContext: TVTHelpContextEvent;      // called when a node specific help theme should be called
     FOnCreateEditor: TVTCreateEditorEvent;       // called when a node goes into edit mode, this allows applications
                                                  // to supply their own editor
@@ -2219,7 +2243,8 @@ type
     procedure DoAfterPaint(Canvas: TCanvas); virtual;
     procedure DoAutoScroll(X, Y: Integer); virtual;
     function DoBeforeDrag(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
-    procedure DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellRect: TRect); virtual;
+    procedure DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+      CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect); virtual;
     procedure DoBeforeItemErase(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect; var Color: TColor;
       var EraseAction: TItemEraseAction); virtual;
     function DoBeforeItemPaint(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect): Boolean; virtual;
@@ -2255,6 +2280,8 @@ type
     procedure DoFocusNode(Node: PVirtualNode; Ask: Boolean); virtual;
     procedure DoFreeNode(Node: PVirtualNode); virtual;
     function DoGetAnimationType: THintAnimationType; virtual;
+    function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
+      CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; virtual;
     procedure DoGetCursor(var Cursor: TCursor); virtual;
     procedure DoGetHeaderCursor(var Cursor: HCURSOR); virtual;
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
@@ -2572,7 +2599,8 @@ type
     procedure FullCollapse(Node: PVirtualNode = nil);  virtual;
     procedure FullExpand(Node: PVirtualNode = nil); virtual;
     function GetControlsAlignment: TAlignment; override;
-    function GetDisplayRect(Node: PVirtualNode; Column: TColumnIndex; TextOnly: Boolean; Unclipped: Boolean = False): TRect;
+    function GetDisplayRect(Node: PVirtualNode; Column: TColumnIndex; TextOnly: Boolean; Unclipped: Boolean = False;
+      ApplyCellContentMargin: Boolean = False): TRect;
     function GetFirst: PVirtualNode;
     function GetFirstChecked(State: TCheckState = csCheckedNormal): PVirtualNode;
     function GetFirstChild(Node: PVirtualNode): PVirtualNode;
@@ -3134,6 +3162,8 @@ type
   TVTDrawHintEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode; R: TRect;
     Column: TColumnIndex) of object;
   TVTDrawNodeEvent = procedure(Sender: TBaseVirtualTree; const PaintInfo: TVTPaintInfo) of object;
+  TVTGetCellContentMarginEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode;
+    Column: TColumnIndex; CellContentMarginType: TVTCellContentMarginType; var CellContentMargin: TPoint) of object;
   TVTGetNodeWidthEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; var NodeWidth: Integer) of object;
   TVTGetHintSizeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
@@ -3143,17 +3173,21 @@ type
   TCustomVirtualDrawTree = class(TBaseVirtualTree)
   private
     FOnDrawNode: TVTDrawNodeEvent;
+    FOnGetCellContentMargin: TVTGetCellContentMarginEvent;
     FOnGetNodeWidth: TVTGetNodeWidthEvent;
     FOnGetHintSize: TVTGetHintSizeEvent;
     FOnDrawHint: TVTDrawHintEvent;
   protected
     procedure DoDrawHint(Canvas: TCanvas; Node: PVirtualNode; R: TRect; Column: TColumnIndex);
+    function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
+      CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; override;
     procedure DoGetHintSize(Node: PVirtualNode; Column: TColumnIndex; var R: TRect); virtual;
     function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
 
     property OnDrawHint: TVTDrawHintEvent read FOnDrawHint write FOnDrawHint;
     property OnDrawNode: TVTDrawNodeEvent read FOnDrawNode write FOnDrawNode;
+    property OnGetCellContentMargin: TVTGetCellContentMarginEvent read FOnGetCellContentMargin write FOnGetCellContentMargin;
     property OnGetHintSize: TVTGetHintSizeEvent read FOnGetHintSize write FOnGetHintSize;
     property OnGetNodeWidth: TVTGetNodeWidthEvent read FOnGetNodeWidth write FOnGetNodeWidth;
   end;
@@ -7007,7 +7041,7 @@ begin
             end
             else
             begin
-              Result := Tree.GetDisplayRect(Node, Column, True, True);
+              Result := Tree.FLastHintRect; // = Tree.GetDisplayRect(Node, Column, True, True, True); see TBaseVirtualTree.CMHintShow
               if toShowHorzGridLines in Tree.TreeOptions.PaintOptions then
                 Dec(Result.Bottom);
             end;
@@ -7908,7 +7942,7 @@ begin
       // If the moved column is now within the fixed columns then we make it fixed as well. If it's not
       // we clear the fixed state (in case that fixed column is moved outside fixed area).
       if (coFixed in FOptions) and (FPosition > 0) then
-        Temp :=  Owner.ColumnFromPosition(FPosition - 1)
+        Temp := Owner.ColumnFromPosition(FPosition - 1)
       else
         Temp := Owner.ColumnFromPosition(FPosition + 1);
 
@@ -10410,13 +10444,18 @@ var
   VisibleFixedWidth: Integer;
   SplitPoint: Integer;
 
+  //--------------- local function --------------------------------------------
+
   function IsNearBy(IsFixedCol: Boolean; LeftTolerance, RightTolerance: Integer): Boolean;
+
   begin
     if IsFixedCol then
       Result := (P.X < SplitPoint + Treeview.FEffectiveOffsetX + RightTolerance) and (P.X > SplitPoint + Treeview.FEffectiveOffsetX - LeftTolerance)
     else
       Result := (P.X > VisibleFixedWidth) and (P.X < SplitPoint + RightTolerance) and (P.X > SplitPoint - LeftTolerance);
   end;
+
+  //--------------- end local function ----------------------------------------
   
 begin
   Result := False;
@@ -10477,6 +10516,21 @@ begin
           end;
     end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTHeader.DoGetPopupMenu(Column: TColumnIndex; Position: TPoint): TPopupMenu; 
+
+// Queries the application whether there is a column specific header popup menu.
+
+var
+  AskParent: Boolean;
+
+begin
+  Result := nil;
+  if Assigned(TreeView.FOnGetPopupMenu) then
+    TreeView.FOnGetPopupMenu(TreeView, nil, Column, Position, AskParent, Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10668,6 +10722,7 @@ var
   HitIndex: TColumnIndex;
   NewCursor: HCURSOR;
   Button: TMouseButton;
+  Menu: TPopupMenu;
 
 begin
   Result := False;
@@ -10804,15 +10859,19 @@ begin
             FColumns.FDownIndex := NoColumn;
             FColumns.FTrackIndex := NoColumn;
 
+            Menu := FPopupMenu;
+            if not Assigned(Menu) then
+              Menu := DoGetPopupMenu(FColumns.ColumnFromPosition(Point(P.X, P.Y + Integer(FHeight))), P);
+
             // Trigger header popup if there's one.
-            if Assigned(FPopupMenu) then
+            if Assigned(Menu) then
             begin
               Treeview.StopTimer(ScrollTimer);
               Treeview.StopTimer(HeaderTimer);
               FColumns.FHoverIndex := NoColumn;
               Treeview.DoStateChange([], [tsScrollPending, tsScrolling]);
-              FPopupMenu.PopupComponent := Treeview;
-              FPopupMenu.Popup(XCursor, YCursor);
+              Menu.PopupComponent := Treeview;
+              Menu.Popup(XCursor, YCursor);
               HandleMessage := True;
             end;
           end;
@@ -11240,7 +11299,10 @@ end;
 procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
   RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn);
 
+  //--------------- local function --------------------------------------------
+
   function GetUseSmartColumnWidth(ColumnIndex: Integer): Boolean;
+
   begin
     Result := False;
     case SmartAutoFitType of
@@ -11253,6 +11315,8 @@ procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: T
     end;
   end;
 
+  //--------------- end local function -----------------------------------------
+  
 var
   I: Integer;
   StartCol,
@@ -13789,7 +13853,7 @@ var
   BackColorBackup: COLORREF;
   InnerRect: TRect;
 
-  //----------------------------------------------------------------------------
+  //--------------- local function --------------------------------------------
 
   procedure AlphaBlendSelection(Color: TColor);
 
@@ -13811,12 +13875,11 @@ var
       FSelectionBlendFactor, ColorToRGB(Color));
   end;
 
-  //----------------------------------------------------------------------------
+  //--------------- end local function ----------------------------------------
 
 begin
   with PaintInfo, Canvas do
   begin
-    InnerRect := ContentRect;
 
     // Fill cell background if its color differs from tree background.
     with FHeader.FColumns do
@@ -13826,8 +13889,10 @@ begin
         FillRect(CellRect);
       end;
 
-    // Let the application customize the cell background.
-    DoBeforeCellPaint(Canvas, Node, Column, CellRect);
+    // Let the application customize the cell background and the content rectangle.
+    DoBeforeCellPaint(Canvas, Node, Column, cpmPaint, CellRect, ContentRect);
+
+    InnerRect := ContentRect;
 
     if (Column = FFocusedColumn) or (toFullRowSelect in FOptions.FSelectionOptions) then
     begin
@@ -15319,6 +15384,7 @@ var
   ShowOwnHint: Boolean;
   IsFocusedOrEditing: Boolean;
   ParentForm: TCustomForm;
+  BottomRightCellContentMargin: TPoint;
 
 begin
   with Message do
@@ -15450,13 +15516,18 @@ begin
                   end
                   else
                   begin
-                    NodeRect := GetDisplayRect(HitInfo.HitNode, HitInfo.HitColumn, True, True);
+                    NodeRect := GetDisplayRect(HitInfo.HitNode, HitInfo.HitColumn, True, True, True);
+                    BottomRightCellContentMargin := DoGetCellContentMargin(HitInfo.HitNode, HitInfo.HitColumn, ccmtBottomRightOnly);
+
                     ShowOwnHint := (HitInfo.HitColumn > InvalidColumn) and PtInRect(NodeRect, CursorPos) and
                       (CursorPos.X <= ColRight) and (CursorPos.X >= ColLeft) and
                       (
                         // Show hint also if the node text is partially out of the client area.
-                        (NodeRect.Right > Min(ColRight, ClientWidth)) or (NodeRect.Left < Max(ColLeft, 0)) or
-                        (NodeRect.Bottom > ClientHeight) or (NodeRect.Top < 0)
+                        // "ColRight - 1", since the right column border is not part of this cell.
+                        ( (NodeRect.Right + BottomRightCellContentMargin.X) > Min(ColRight - 1, ClientWidth) ) or
+                        (NodeRect.Left < Max(ColLeft, 0)) or
+                        ( (NodeRect.Bottom + BottomRightCellContentMargin.Y) > ClientHeight ) or
+                        (NodeRect.Top < 0)
                       );
                   end;
 
@@ -15584,7 +15655,6 @@ end;
 procedure TBaseVirtualTree.CMMouseWheel(var Message: TCMMouseWheel);
 
 var
-  I: Integer;
   ScrollAmount: Integer;
   ScrollLines: DWORD;
   RTLFactor: Integer;
@@ -18412,11 +18482,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellRect: TRect);
+procedure TBaseVirtualTree.DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
 
 begin
   if Assigned(FOnBeforeCellPaint) then
-    FOnBeforeCellPaint(Self, Canvas, Node, Column, CellRect);
+  begin
+    if CellPaintMode = cpmGetContentMargin then
+      SetUpdateState(True); // Do not allow painting on canvas while getting cell content margin.
+
+    FOnBeforeCellPaint(Self, Canvas, Node, Column, CellPaintMode, CellRect, ContentRect);
+
+    if CellPaintMode = cpmGetContentMargin then
+      SetUpdateState(False);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19038,6 +19117,48 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
+  CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint;
+
+// Determines the margins of the content rectangle caused by DoBeforeCellPaint.
+// Note that shrinking the content rectangle results in positive margins whereas enlarging the content rectangle results
+// in negative margins.
+
+var
+  CellRect,
+  ContentRect: TRect;
+
+begin
+  Result := Point(0, 0);
+
+  if Assigned(FOnBeforeCellPaint) then // Otherwise DoBeforeCellPaint has no effect.
+  begin
+    if Canvas = nil then
+      Canvas := Self.Canvas;
+
+    // Determine then node's cell rectangle and content rectangle before calling DoBeforeCellPaint.
+    CellRect := GetDisplayRect(Node, Column, True);
+    ContentRect := CellRect;
+    DoBeforeCellPaint(Canvas, Node, Column, cpmGetContentMargin, CellRect, ContentRect);
+
+    // Calculate the changes caused by DoBeforeCellPaint.
+    case CellContentMarginType of
+      ccmtAllSides:
+        // Calculate the width difference and high difference.
+        Result := Point((CellRect.Right - CellRect.Left) - (ContentRect.Right - ContentRect.Left),
+                        (CellRect.Bottom - CellRect.Top) - (ContentRect.Bottom - ContentRect.Top));
+      ccmtTopLeftOnly:
+        // Calculate the left margin and top margin only.
+        Result := Point(ContentRect.Left - CellRect.Left, ContentRect.Top - CellRect.Top);
+      ccmtBottomRightOnly:
+        // Calculate the right margin and bottom margin only.
+        Result := Point(CellRect.Right - ContentRect.Right, CellRect.Bottom - ContentRect.Bottom);
+    end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DoGetCursor(var Cursor: TCursor);
 
 begin
@@ -19077,7 +19198,9 @@ end;
 
 procedure TBaseVirtualTree.DoGetImageText(Node: PVirtualNode; Kind: TVTImageKind;
   Column: TColumnIndex; var ImageText: WideString);
+
 // Queries the application/descendant about alternative image text for a node.
+
 begin
   if Assigned(FOnGetImageText) then
      FOnGetImageText(Self, Node, Kind, Column, ImageText);
@@ -21381,7 +21504,7 @@ end;
 function TBaseVirtualTree.HasPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Pos: TPoint): Boolean;
 
 // Determines whether the tree got a popup menu, either in its PopupMenu property, via the OnGetPopupMenu event or
-// through inheritannce. The latter case must be checked by the descendant which must override this method.
+// through inheritance. The latter case must be checked by the descendant which must override this method.
 
 begin
   Result := Assigned(PopupMenu) or Assigned(DoGetPopupMenu(Node, Column, Pos));
@@ -24921,7 +25044,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnIndex; TextOnly: Boolean;
-  Unclipped: Boolean = False): TRect;
+  Unclipped: Boolean = False; ApplyCellContentMargin: Boolean = False): TRect;
 
 // Determines the client coordinates the given node covers, depending on scrolling, expand state etc.
 // If the given node cannot be found (because one of its parents is collapsed or it is invisible) then an empty
@@ -24930,6 +25053,8 @@ function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnInde
 // are updated according to bidi mode, alignment and text width of the node.
 // If Unclipped is True (which only makes sense if also TextOnly is True) then the calculated text rectangle is
 // not clipped if the text does not entirely fit into the text space. This is special handling needed for hints.
+// If ApplyCellContentMargin is True (which only makes sense if also TextOnly is True) then the calculated text
+// rectangle respects the cell content margin.
 // If Column is -1 then the entire client width is used before determining the node's width otherwise the bounds of the
 // particular column are used.
 // Note: Column must be a valid column and is used independent of whether the header is visible or not.
@@ -24942,6 +25067,9 @@ var
   MainColumnHit: Boolean;
   CurrentBidiMode: TBidiMode;
   CurrentAlignment: TAlignment;
+  MaxUnclippedHeight: Integer;
+  TM: TTextMetric;
+  ExtraVerticalMargin: Integer;
 
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
@@ -25020,8 +25148,6 @@ begin
       CurrentAlignment := FHeader.FColumns[Column].Alignment;
     end;
 
-    TextWidth := DoGetNodeWidth(Node, Column);
-
     if MainColumnHit then
     begin
       if toShowRoot in FOptions.FPaintOptions then
@@ -25050,6 +25176,15 @@ begin
       ChangeBiDiModeAlignment(CurrentAlignment);
     end;
 
+    TextWidth := DoGetNodeWidth(Node, Column);
+
+    // Keep cell height before applying cell content margin in order to increase cell height if text does not fit
+    // and Unclipped it true (see below).
+    MaxUnclippedHeight := Result.Bottom - Result.Top;
+
+    if ApplyCellContentMargin then
+      DoBeforeCellPaint(Self.Canvas, Node, Column, cpmGetContentMargin, Result, Result);
+
     if Unclipped then
     begin
       // The caller requested the text coordinates unclipped. This means they must be calculated so as would
@@ -25061,6 +25196,12 @@ begin
           CurrentAlignment := taLeftJustify
         else
           CurrentAlignment := taRightJustify;
+
+      // Increase cell height (up to MaxUnclippedHeight determined above) if text does not fit.
+      GetTextMetrics(Self.Canvas.Handle, TM);
+      ExtraVerticalMargin := Math.Min(TM.tmHeight, MaxUnclippedHeight) - (Result.Bottom - Result.Top);
+      if ExtraVerticalMargin > 0 then
+        InflateRect(Result, 0, (ExtraVerticalMargin + 1) div 2);
 
       case CurrentAlignment of
         taCenter:
@@ -25723,6 +25864,7 @@ begin
       Inc(TextLeft, StateImageOffset);
 
     CurrentWidth := DoGetNodeWidth(Run, Column);
+    Inc(CurrentWidth, DoGetCellContentMargin(Run, Column).X);
 
     if Result < (TextLeft + CurrentWidth) then
       Result := TextLeft + CurrentWidth;
@@ -32188,6 +32330,20 @@ procedure TCustomVirtualDrawTree.DoDrawHint(Canvas: TCanvas; Node: PVirtualNode;
 begin
   if Assigned(FOnDrawHint) then
     FOnDrawHint(Self, Canvas, Node, R, Column);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCustomVirtualDrawTree.DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
+  CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint;
+
+begin
+  Result := Point(0, 0);
+  if Canvas = nil then
+    Canvas := Self.Canvas;
+
+  if Assigned(FOnGetCellContentMargin) then
+    FOnGetCellContentMargin(Self, Canvas, Node, Column, CellContentMarginType, Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
