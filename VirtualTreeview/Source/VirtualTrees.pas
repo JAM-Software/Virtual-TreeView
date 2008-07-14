@@ -3642,6 +3642,14 @@ var
     RaiseLastWin32Error;
   end;
 
+  function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer;
+  begin
+    if AValue then
+      Result := ATrue
+    else
+      Result := AFalse;
+  end;
+
 {$endif COMPILER_6_UP}
 
 //----------------- TClipboardFormats ----------------------------------------------------------------------------------
