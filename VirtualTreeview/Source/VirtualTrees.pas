@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.0
+// Version 4.7.1
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,8 +25,17 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // July 2008
+//   - Improvement: in TBaseVirtualTree.ScrollIntoView the case of FFocusedColumn being invalid is considered
+//   - Improvement: in TBaseVirtualTree.HandleMouseDown DoFocusNode is not called if node focus did not change
+//   - Improvement: in TBaseVirtualTree.SetFocusedColumn the focused node will only be invalidate if it was actually
+//                  scrolled into view
+//   - Improvement: new TVTColumnOption coAllowFocus to affect column focus behaviour
+//   - Improvement: new function TVTHeader.AllowFocus to check wether a column can be focused
+//   - Improvement: in TBaseVirtualTree.SetFocusedColumn the old colunm and the new column are both invalidated
 //   - Improvement: merged latest changes from Jim into current code base.
 // June 2008
+//   - Improvement: new property TVirtualTreeColumns.Count
+//   - Bug fix: in TVirtualTreeColumns.AnimatedResize the column is validated (to avoid "List index out of bounds")
 //   - Improvement: the content retangle of the cell can be modified via the OnBeforeCellPaint event, the cell paint
 //                  mode indicates wether OnBeforeCellPaint is called for painting the cell or just for getting the
 //                  cell content margin
@@ -51,9 +60,11 @@ unit VirtualTrees;
 //                  repainting all subsequent columns only) on resizing a column
 //   - Bug fix: horizontal page scrolling via mouse wheel now works correctly, i.e. in TBaseVirtualTree.CMMouseWheel
 //              ScrollCount includes GetVisibleFixedWidth and FIndent
+//   - Improvement: new TVTColumnOption coSmartResize to avoid contradicting the virtual paradigm
 //   - Improvement: horizontal scrolling via mouse wheel can be forced by holding the shift key
 //   - Improvement: new parameter for function TBaseVirtualTree.GetMaxColumnWidth added: UseSmartColumnWidth (to
-//                  leave nodes out of consideration which are not in view)
+//                  avoid contradicting the virtual paradigm, i.e. leave nodes out of consideration which are not in
+//                  view)
 //   - Improvement: new parameters for TVTHeader.AutoFitColumns added: SmartAutoFitType, RangeStartCol and
 //                  RangeEndCol
 //   - Improvement: new parameters for events FOnAfterAutoFitColumns, FOnBeforeAutoFitColumns, FOnAfterGetMaxColumnWidth
@@ -185,7 +196,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.6.2';
+  VTVersion = '4.7.1';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -385,8 +396,9 @@ type
     coVisible,          // Column is shown.
     coAutoSpring,       // Column takes part in the auto spring feature of the header (must be resizable too).
     coFixed,            // Column is fixed and can not be selected or scrolled etc.
-    coSmartResize       // Column is resized to its largest entry which is in view (instead of its largest
+    coSmartResize,      // Column is resized to its largest entry which is in view (instead of its largest
                         // visible entry).
+    coAllowFocus        // Column can be focused.
   );
   TVTColumnOptions = set of TVTColumnOption;
 
@@ -598,7 +610,7 @@ const
   DefaultSelectionOptions = [];
   DefaultMiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning];
   DefaultColumnOptions = [coAllowClick, coDraggable, coEnabled, coParentColor, coParentBidiMode, coResizable,
-    coShowDropmark, coVisible];
+    coShowDropmark, coVisible, coAllowFocus];
 
 type
   TBaseVirtualTree = class;
@@ -1109,6 +1121,7 @@ type
     FDropTarget: TColumnIndex;            // current target column (index) while dragging
     FDropBefore: Boolean;                 // True if drop position is in the left half of a column, False for the right
                                           // side to drop the dragged column to
+    function GetCount: Integer;
     function GetItem(Index: TColumnIndex): TVirtualTreeColumn;
     function GetNewIndex(P: TPoint; var OldIndex: TColumnIndex): Boolean;
     procedure SetItem(Index: TColumnIndex; Value: TVirtualTreeColumn);
@@ -1149,12 +1162,12 @@ type
    function Equals(OtherColumnsObj: TObject): Boolean;
 {$endif}
     procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: Integer);
-    function GetFirstVisibleColumn: TColumnIndex;
-    function GetLastVisibleColumn: TColumnIndex;
+    function GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
+    function GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetNextColumn(Column: TColumnIndex): TColumnIndex;
-    function GetNextVisibleColumn(Column: TColumnIndex): TColumnIndex;
+    function GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetPreviousColumn(Column: TColumnIndex): TColumnIndex;
-    function GetPreviousVisibleColumn(Column: TColumnIndex): TColumnIndex;
+    function GetPreviousVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetScrollWidth: Integer;
     function GetVisibleColumns: TColumnsArray;
     function GetVisibleFixedWidth: Integer;
@@ -1164,6 +1177,7 @@ type
     procedure SaveToStream(const Stream: TStream);
     function TotalWidth: Integer;
 
+    property Count: Integer read GetCount;
     property ClickIndex: TColumnIndex read FClickIndex;
     property Items[Index: TColumnIndex]: TVirtualTreeColumn read GetItem write SetItem; default;
     property Header: TVTHeader read FHeader;
@@ -1292,6 +1306,7 @@ type
     constructor Create(AOwner: TBaseVirtualTree); virtual;
     destructor Destroy; override;
 
+    function AllowFocus(ColumnIndex: TColumnIndex): Boolean;
     procedure Assign(Source: TPersistent); override;
     procedure AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
       RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn);
@@ -8737,6 +8752,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVirtualTreeColumns.GetCount: Integer;
+
+begin
+  Result := inherited Count;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualTreeColumns.GetItem(Index: TColumnIndex): TVirtualTreeColumn;
 
 begin
@@ -9397,6 +9420,8 @@ var
   LastBrush: HBRUSH;
 
 begin
+  if not IsValidColumn(Column) then exit; // Just in case.
+
   // Make sure the width constrains are considered.
   if NewWidth < Items[Column].FMinWidth then
      NewWidth := Items[Column].FMinWidth;
@@ -9601,7 +9626,7 @@ procedure TVirtualTreeColumns.GetColumnBounds(Column: TColumnIndex; var Left, Ri
 // Returns the left and right bound of the given column. If Column is NoColumn then the entire client width is returned.
 
 begin
-  if Column = NoColumn then
+  if Column <= NoColumn then
   begin
     Left := 0;
     Right := FHeader.Treeview.ClientWidth;
@@ -9651,10 +9676,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetFirstVisibleColumn: TColumnIndex;
+function TVirtualTreeColumns.GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
 
 // Returns the index of the first visible column or "InvalidColumn" if either no columns are defined or
 // all columns are hidden.
+// If ConsiderAllowFocus is True then the column has not only to be visible but also focus has to be allowed.
 
 var
   I: Integer;
@@ -9662,7 +9688,10 @@ var
 begin
   Result := InvalidColumn;
   for I := 0 to Count - 1 do
-    if coVisible in Items[FPositionToIndex[I]].FOptions then
+    if (coVisible in Items[FPositionToIndex[I]].FOptions) and
+       ( (not ConsiderAllowFocus) or
+         (coAllowFocus in Items[FPositionToIndex[I]].FOptions)
+       ) then
     begin
       Result := FPositionToIndex[I];
       Break;
@@ -9671,10 +9700,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetLastVisibleColumn: TColumnIndex;
+function TVirtualTreeColumns.GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
 
 // Returns the index of the last visible column or "InvalidColumn" if either no columns are defined or
 // all columns are hidden.
+// If ConsiderAllowFocus is True then the column has not only to be visible but also focus has to be allowed.
 
 var
   I: Integer;
@@ -9682,7 +9712,10 @@ var
 begin
   Result := InvalidColumn;
   for I := Count - 1 downto 0 do
-    if coVisible in Items[FPositionToIndex[I]].FOptions then
+    if (coVisible in Items[FPositionToIndex[I]].FOptions) and
+       ( (not ConsiderAllowFocus) or
+         (coAllowFocus in Items[FPositionToIndex[I]].FOptions)
+       ) then
     begin
       Result := FPositionToIndex[I];
       Break;
@@ -9713,15 +9746,21 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetNextVisibleColumn(Column: TColumnIndex): TColumnIndex;
+function TVirtualTreeColumns.GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
 
 // Returns the next visible column in display order, Column is an index into the columns list.
+// If ConsiderAllowFocus is True then the column has not only to be visible but also focus has to be allowed.
 
 begin
   Result := Column;
   repeat
     Result := GetNextColumn(Result);
-  until (Result = InvalidColumn) or (coVisible in Items[Result].FOptions);
+  until (Result = InvalidColumn) or
+        ( (coVisible in Items[Result].FOptions) and
+          ( (not ConsiderAllowFocus) or
+            (coAllowFocus in Items[Result].FOptions)
+          )
+        );
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -9748,15 +9787,21 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetPreviousVisibleColumn(Column: TColumnIndex): TColumnIndex;
+function TVirtualTreeColumns.GetPreviousVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
 
-// Returns the previous column in display order, Column is an index into the columns list.
+// Returns the previous visible column in display order, Column is an index into the columns list.
+// If ConsiderAllowFocus is True then the column has not only to be visible but also focus has to be allowed.
 
 begin
   Result := Column;
   repeat
     Result := GetPreviousColumn(Result);
-  until (Result = InvalidColumn) or (coVisible in Items[Result].FOptions);
+  until (Result = InvalidColumn) or
+        ( (coVisible in Items[Result].FOptions) and
+          ( (not ConsiderAllowFocus) or
+            (coAllowFocus in Items[Result].FOptions)
+          )
+        );
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11312,6 +11357,16 @@ begin
   finally
     TWriterHack(Writer).FPropPath := LastPropPath;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTHeader.AllowFocus(ColumnIndex: TColumnIndex): Boolean;
+begin
+  Result := False;
+  if not FColumns.IsValidColumn(ColumnIndex) then exit; // Just in case.
+
+  Result := (coAllowFocus in FColumns[ColumnIndex].Options);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -13359,7 +13414,7 @@ begin
     MainColumn := FHeader.MainColumn;
 
     // Alignment and bidi mode determine where the node text is located within a node.
-    if MainColumn = NoColumn then
+    if MainColumn <= NoColumn then
     begin
       CurrentBidiMode := BidiMode;
       CurrentAlignment := Alignment;
@@ -14495,12 +14550,14 @@ begin
      DoFocusChanging(FFocusedNode, FFocusedNode, FFocusedColumn, Value) then
   begin
     CancelEditNode;
+    InvalidateColumn(FFocusedColumn);
+    InvalidateColumn(Value);
     FFocusedColumn := Value;
     if Assigned(FFocusedNode) then
     begin
-      ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
-        not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions));
-      InvalidateNode(FFocusedNode);
+      if ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
+        not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions)) then
+        InvalidateNode(FFocusedNode);
     end;
 
     if Assigned(FDropTargetNode) then
@@ -14851,10 +14908,10 @@ begin
       // Make sure there is a valid column selected (if there are columns at all).
       if ((FFocusedColumn < 0) or not (coVisible in FHeader.Columns[FFocusedColumn].Options)) and
         (FHeader.MainColumn > NoColumn) then
-        if coVisible in FHeader.Columns[FHeader.MainColumn].Options then
+        if ([coVisible, coAllowFocus] *  FHeader.Columns[FHeader.MainColumn].Options = [coVisible, coAllowFocus]) then
           FFocusedColumn := FHeader.MainColumn
         else
-          FFocusedColumn := FHeader.Columns.GetFirstVisibleColumn;
+          FFocusedColumn := FHeader.Columns.GetFirstVisibleColumn(True);
       if FRangeAnchor = nil then
         FRangeAnchor := Node;
     end
@@ -16172,8 +16229,8 @@ var
   RTLFactor: Integer;
 
   // for tabulator handling
-  GetStartColumn: function: TColumnIndex of object;
-  GetNextColumn: function(Column: TColumnIndex): TColumnIndex of object;
+  GetStartColumn: function(ConsiderAllowFocus: Boolean = False): TColumnIndex of object;
+  GetNextColumn: function(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex of object;
   GetNextNode: TGetNextNodeProc;
 
   KeyState: TKeyboardState;
@@ -16343,7 +16400,7 @@ begin
                   if HandleMultiSelect and (CompareNodePositions(LastFocused, FRangeAnchor) > 0) and
                     Assigned(FFocusedNode) then
                     RemoveFromSelection(FFocusedNode);
-                  if FFocusedColumn = NoColumn then
+                  if FFocusedColumn <= NoColumn then
                     FFocusedColumn := FHeader.MainColumn;
                   FocusedNode := Node;
                 end
@@ -16370,7 +16427,7 @@ begin
                   if HandleMultiSelect and (CompareNodePositions(LastFocused, FRangeAnchor) < 0) and
                     Assigned(FFocusedNode) then
                     RemoveFromSelection(FFocusedNode);
-                  if FFocusedColumn = NoColumn then
+                  if FFocusedColumn <= NoColumn then
                     FFocusedColumn := FHeader.MainColumn;
                   FocusedNode := Node;
                 end
@@ -16390,7 +16447,7 @@ begin
                 Context := NoColumn;
                 if (toExtendedFocus in FOptions.FSelectionOptions) and (toGridExtensions in FOptions.FMiscOptions) then
                 begin
-                  Context := FHeader.Columns.GetPreviousVisibleColumn(FFocusedColumn);
+                  Context := FHeader.Columns.GetPreviousVisibleColumn(FFocusedColumn, True);
                   if Context > -1 then
                     FocusedColumn := Context
                 end
@@ -16436,7 +16493,7 @@ begin
                 Context := NoColumn;
                 if (toExtendedFocus in FOptions.FSelectionOptions) and (toGridExtensions in FOptions.FMiscOptions) then
                 begin
-                  Context := FHeader.Columns.GetNextVisibleColumn(FFocusedColumn);
+                  Context := FHeader.Columns.GetNextVisibleColumn(FFocusedColumn, True);
                   if Context > -1 then
                     FocusedColumn := Context;
                 end
@@ -16487,11 +16544,11 @@ begin
 
               // Advance to next/previous visible column/node.
               Node := FFocusedNode;
-              NewColumn := GetNextColumn(FFocusedColumn);
+              NewColumn := GetNextColumn(FFocusedColumn, True);
               repeat
                 // Find a column for the current node which can be focused.
                 while (NewColumn > NoColumn) and not DoFocusChanging(FFocusedNode, Node, FFocusedColumn, NewColumn) do
-                  NewColumn := GetNextColumn(NewColumn);
+                  NewColumn := GetNextColumn(NewColumn, True);
 
                 if NewColumn > NoColumn then
                 begin
@@ -19066,7 +19123,7 @@ end;
 function TBaseVirtualTree.DoFocusChanging(OldNode, NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex): Boolean;
 
 begin
-  Result := True;
+  Result := (OldColumn = NewColumn) or FHeader.AllowFocus(NewColumn);
   if Assigned(FOnFocusChanging) then
     FOnFocusChanging(Self, OldNode, NewNode, OldColumn, NewColumn, Result);
 end;
@@ -19099,8 +19156,8 @@ begin
     if Assigned(FFocusedNode) then
     begin
       // Make sure a valid column is set if columns are used and no column has currently the focus.
-      if FHeader.UseColumns and ((FFocusedColumn < 0) or (FFocusedColumn >= FHeader.FColumns.Count)) then
-        FFocusedColumn := 0;
+      if FHeader.UseColumns and (not FHeader.FColumns.IsValidColumn(FFocusedColumn)) then
+        FFocusedColumn := FHeader.MainColumn;
       // Do automatic expansion of the newly focused node if enabled.
       if (toAutoExpand in FOptions.FAutoOptions) and not (vsExpanded in FFocusedNode.States) then
         ToggleNode(FFocusedNode);
@@ -20393,7 +20450,7 @@ begin
         LastNode := FDropTargetNode;
         FDropTargetNode := HitInfo.HitNode;
         // In order to show a selection rectangle a column must be focused.
-        if FFocusedColumn = NoColumn then
+        if FFocusedColumn <= NoColumn then
           FFocusedColumn := FHeader.MainColumn;
 
         if Assigned(LastNode) and Assigned(FDropTargetNode) then
@@ -21304,6 +21361,13 @@ begin
       Column := FFocusedColumn;
     end;
 
+    if NewColumn and
+       (not FHeader.AllowFocus(Column)) then
+    begin
+      NewColumn := False;
+      Column := FFocusedColumn;
+    end;
+
     NewNode := FFocusedNode <> HitInfo.HitNode;
 
     // Translate keys and filter out shift and control key.
@@ -21445,7 +21509,7 @@ begin
       end;
       // Get the currently focused node to make multiple multi-selection blocks possible.
       LastFocused := FFocusedNode;
-      if NewNode or NewColumn then
+      if NewNode then
         DoFocusNode(HitInfo.HitNode, False);
 
       if MultiSelect and not ShiftEmpty then
@@ -23166,6 +23230,9 @@ var
   WasDifferent: Boolean;
 
 begin
+  if not FHeader.AllowFocus(Column) then
+    Column := FFocusedColumn;
+
   WasDifferent := (Node <> FFocusedNode) or (Column <> FFocusedColumn);
 
   OldColumn := FFocusedColumn;
@@ -23668,7 +23735,7 @@ begin
     if (toGridExtensions in FOptions.FMiscOptions) then
     begin
       // Adjust edit bounds depending on alignment and bidi mode.
-      if FEditColumn = NoColumn then
+      if FEditColumn <= NoColumn then
       begin
         CurrentAlignment := Alignment;
         CurrentBidiMode := BiDiMode;
@@ -25200,7 +25267,7 @@ begin
     // Start with the offset of the text in the column and consider the indentation level too.
     Offset := FMargin + Indent;
     // If the text of a node is involved then we have to consider directionality and alignment too.
-    if Column = NoColumn then
+    if Column <= NoColumn then
     begin
       CurrentBidiMode := BidiMode;
       CurrentAlignment := Alignment;
@@ -25641,7 +25708,7 @@ begin
       begin
         // From now on X is in "column" coordinates (relative to the left column border).
         HitInfo.HitPositions := [hiOnItem];
-        if HitInfo.HitColumn = NoColumn then
+        if HitInfo.HitColumn <= NoColumn then
         begin
           CurrentBidiMode := BidiMode;
           CurrentAlignment := Alignment;
@@ -27223,7 +27290,7 @@ var
   R: TRect;
 
 begin
-  if (FUpdateCount = 0) and FHeader.Columns.IsValidColumn(Column) then
+  if (FUpdateCount = 0) and FHeader.FColumns.IsValidColumn(Column) then
   begin
     R := ClientRect;
     FHeader.Columns.GetColumnBounds(Column, R.Left, R.Right);
@@ -28975,7 +29042,7 @@ begin
       Run := Run.Parent;
     end;
     UseColumns := FHeader.UseColumns;
-    if UseColumns then
+    if UseColumns and FHeader.FColumns.IsValidColumn(FFocusedColumn) then
       R := GetDisplayRect(Node, FFocusedColumn, not (toGridExtensions in FOptions.FMiscOptions))
     else
       R := GetDisplayRect(Node, NoColumn, not (toGridExtensions in FOptions.FMiscOptions));
