@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.1
+// Version 4.7.2
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // July 2008
+//   - Improvement: in TBaseVirtualTree.WMHScroll the horizontal page scrolling now considers fixed columns
 //   - Improvement: in TBaseVirtualTree.ScrollIntoView the case of FFocusedColumn being invalid is considered
 //   - Improvement: in TBaseVirtualTree.HandleMouseDown DoFocusNode is not called if node focus did not change
 //   - Improvement: in TBaseVirtualTree.SetFocusedColumn the focused node will only be invalidate if it was actually
@@ -196,7 +197,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.1';
+  VTVersion = '4.7.2';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -16183,9 +16184,9 @@ begin
     SB_LINERIGHT:
       SetOffsetX(FOffsetX - RTLFactor * FScrollBarOptions.FIncrementX);
     SB_PAGELEFT:
-      SetOffsetX(FOffsetX + RTLFactor * ClientWidth);
+      SetOffsetX(FOffsetX + RTLFactor * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth));
     SB_PAGERIGHT:
-      SetOffsetX(FOffsetX - RTLFactor * ClientWidth);
+      SetOffsetX(FOffsetX - RTLFactor * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth));
     SB_THUMBPOSITION,
     SB_THUMBTRACK:
       begin
