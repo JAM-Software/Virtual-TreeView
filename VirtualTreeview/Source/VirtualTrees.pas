@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.2
+// Version 4.7.3
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,14 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// August 2008
+//   - Improvement: optimized ScrollIntoView for horizontal scrolling  
+//   - Improvement: in TBaseVirtualTree.WMKeyDown column navigation for VK_PRIOR and VK_NEXT is now handled in same way
+//                  as row navigation
+//   - Improvement: new TVTHeaderOption hoDisableAnimatedResize to disable animated resize for all columns
+//   - Improvement: new TVTColumnOption coDisableAnimatedResize to disable animated resize for a specific column
+//   - Improvement: in TBaseVirtualTree.UpdateHorizontalScrollBar and TBaseVirtualTree.UpdateVerticalScrollBar scrollbar
+//                  updates now avoided for tsUpdating in FStates
 // July 2008
 //   - Improvement: in TBaseVirtualTree.WMHScroll the horizontal page scrolling now considers fixed columns
 //   - Improvement: in TBaseVirtualTree.ScrollIntoView the case of FFocusedColumn being invalid is considered
@@ -134,7 +142,7 @@ unit VirtualTrees;
 //   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Bedürftig (BCB)
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
-//   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten
+//   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier
 // Beta testers:
 //   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
@@ -197,7 +205,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.2';
+  VTVersion = '4.7.3';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -387,19 +395,20 @@ type
 
   // Options per column.
   TVTColumnOption = (
-    coAllowClick,       // Column can be clicked (must be enabled too).
-    coDraggable,        // Column can be dragged.
-    coEnabled,          // Column is enabled.
-    coParentBidiMode,   // Column uses the parent's bidi mode.
-    coParentColor,      // Column uses the parent's background color.
-    coResizable,        // Column can be resized.
-    coShowDropMark,     // Column shows the drop mark if it is currently the drop target.
-    coVisible,          // Column is shown.
-    coAutoSpring,       // Column takes part in the auto spring feature of the header (must be resizable too).
-    coFixed,            // Column is fixed and can not be selected or scrolled etc.
-    coSmartResize,      // Column is resized to its largest entry which is in view (instead of its largest
-                        // visible entry).
-    coAllowFocus        // Column can be focused.
+    coAllowClick,            // Column can be clicked (must be enabled too).
+    coDraggable,             // Column can be dragged.
+    coEnabled,               // Column is enabled.
+    coParentBidiMode,        // Column uses the parent's bidi mode.
+    coParentColor,           // Column uses the parent's background color.
+    coResizable,             // Column can be resized.
+    coShowDropMark,          // Column shows the drop mark if it is currently the drop target.
+    coVisible,               // Column is shown.
+    coAutoSpring,            // Column takes part in the auto spring feature of the header (must be resizable too).
+    coFixed,                 // Column is fixed and can not be selected or scrolled etc.
+    coSmartResize,           // Column is resized to its largest entry which is in view (instead of its largest
+                             // visible entry).
+    coAllowFocus,            // Column can be focused.
+    coDisableAnimatedResize  // Column resizing is not animated.
   );
   TVTColumnOptions = set of TVTColumnOption;
 
@@ -1195,20 +1204,21 @@ type
   );
 
   TVTHeaderOption = (
-    hoAutoResize,         // Adjust a column so that the header never exceeds the client width of the owner control.
-    hoColumnResize,       // Resizing columns with the mouse is allowed.
-    hoDblClickResize,     // Allows a column to resize itself to its largest entry.
-    hoDrag,               // Dragging columns is allowed.
-    hoHotTrack,           // Header captions are highlighted when mouse is over a particular column.
-    hoOwnerDraw,          // Header items with the owner draw style can be drawn by the application via event.
-    hoRestrictDrag,       // Header can only be dragged horizontally.
-    hoShowHint,           // Show application defined header hint.
-    hoShowImages,         // Show header images.
-    hoShowSortGlyphs,     // Allow visible sort glyphs.
-    hoVisible,            // Header is visible.
-    hoAutoSpring,         // Distribute size changes of the header to all columns, which are sizable and have the
-                          // coAutoSpring option enabled. hoAutoResize must be enabled too.
-    hoFullRepaintOnResize // Fully invalidate the header (instead of subsequent columns only) when a column is resized
+    hoAutoResize,            // Adjust a column so that the header never exceeds the client width of the owner control.
+    hoColumnResize,          // Resizing columns with the mouse is allowed.
+    hoDblClickResize,        // Allows a column to resize itself to its largest entry.
+    hoDrag,                  // Dragging columns is allowed.
+    hoHotTrack,              // Header captions are highlighted when mouse is over a particular column.
+    hoOwnerDraw,             // Header items with the owner draw style can be drawn by the application via event.
+    hoRestrictDrag,          // Header can only be dragged horizontally.
+    hoShowHint,              // Show application defined header hint.
+    hoShowImages,            // Show header images.
+    hoShowSortGlyphs,        // Allow visible sort glyphs.
+    hoVisible,               // Header is visible.
+    hoAutoSpring,            // Distribute size changes of the header to all columns, which are sizable and have the
+                             // coAutoSpring option enabled. hoAutoResize must be enabled too.
+    hoFullRepaintOnResize,   // Fully invalidate the header (instead of subsequent columns only) when a column is resized.
+    hoDisableAnimatedResize  // Disable animated resize for all columns.
   );
   TVTHeaderOptions = set of TVTHeaderOption;
 
@@ -9433,53 +9443,57 @@ begin
   // Nothing to do if the width is the same.
   if OldWidth <> NewWidth then
   begin
-    DC := GetWindowDC(FHeader.Treeview.Handle);
-    with FHeader.Treeview do
-    try
-      Steps := 32;
-      DX := (NewWidth - OldWidth) div Steps;
+    if not ( (hoDisableAnimatedResize in FHeader.Options) or
+             (coDisableAnimatedResize in Items[Column].Options) ) then
+    begin
+      DC := GetWindowDC(FHeader.Treeview.Handle);
+      with FHeader.Treeview do
+      try
+        Steps := 32;
+        DX := (NewWidth - OldWidth) div Steps;
 
-      // Determination of the scroll rectangle is a bit complicated since we neither want
-      // to scroll the scrollbars nor the border of the treeview window.
-      HeaderScrollRect := FHeaderRect;
-      ScrollRect := HeaderScrollRect;
-      // Exclude the header itself from scrolling.
-      ScrollRect.Top := ScrollRect.Bottom;
-      ScrollRect.Bottom := ScrollRect.Top + ClientHeight;
-      ScrollRect.Right := ScrollRect.Left + ClientWidth;
-      with Items[Column] do
-        Inc(ScrollRect.Left, FLeft + FWidth);
-      HeaderScrollRect.Left := ScrollRect.Left;
-      HeaderScrollRect.Right := ScrollRect.Right;
+        // Determination of the scroll rectangle is a bit complicated since we neither want
+        // to scroll the scrollbars nor the border of the treeview window.
+        HeaderScrollRect := FHeaderRect;
+        ScrollRect := HeaderScrollRect;
+        // Exclude the header itself from scrolling.
+        ScrollRect.Top := ScrollRect.Bottom;
+        ScrollRect.Bottom := ScrollRect.Top + ClientHeight;
+        ScrollRect.Right := ScrollRect.Left + ClientWidth;
+        with Items[Column] do
+          Inc(ScrollRect.Left, FLeft + FWidth);
+        HeaderScrollRect.Left := ScrollRect.Left;
+        HeaderScrollRect.Right := ScrollRect.Right;
 
-      // When the new width is larger then avoid artefacts on the left hand side
-      // by deleting a small stripe
-      if NewWidth > OldWidth then
-      begin
-        R := ScrollRect;
-        NewBrush := CreateSolidBrush(ColorToRGB(Color));
-        LastBrush := SelectObject(DC, NewBrush);
-        R.Right := R.Left + DX;
-        FillRect(DC, R, NewBrush);
-        SelectObject(DC, LastBrush);
-        DeleteObject(NewBrush);
-      end
-      else
-      begin
-        Inc(HeaderScrollRect.Left, DX);
-        Inc(ScrollRect.Left, DX);
+        // When the new width is larger then avoid artefacts on the left hand side
+        // by deleting a small stripe
+        if NewWidth > OldWidth then
+        begin
+          R := ScrollRect;
+          NewBrush := CreateSolidBrush(ColorToRGB(Color));
+          LastBrush := SelectObject(DC, NewBrush);
+          R.Right := R.Left + DX;
+          FillRect(DC, R, NewBrush);
+          SelectObject(DC, LastBrush);
+          DeleteObject(NewBrush);
+        end
+        else
+        begin
+          Inc(HeaderScrollRect.Left, DX);
+          Inc(ScrollRect.Left, DX);
+        end;
+
+        for I := 0 to Steps - 1 do
+        begin
+          ScrollDC(DC, DX, 0, HeaderScrollRect, HeaderScrollRect, 0, nil);
+          Inc(HeaderScrollRect.Left, DX);
+          ScrollDC(DC, DX, 0, ScrollRect, ScrollRect, 0, nil);
+          Inc(ScrollRect.Left, DX);
+          Sleep(1);
+        end;
+      finally
+        ReleaseDC(Handle, DC);
       end;
-
-      for I := 0 to Steps - 1 do
-      begin
-        ScrollDC(DC, DX, 0, HeaderScrollRect, HeaderScrollRect, 0, nil);
-        Inc(HeaderScrollRect.Left, DX);
-        ScrollDC(DC, DX, 0, ScrollRect, ScrollRect, 0, nil);
-        Inc(ScrollRect.Left, DX);
-        Sleep(1);
-      end;
-    finally
-      ReleaseDC(Handle, DC);
     end;
     Items[Column].Width := NewWidth;
   end;
@@ -15009,7 +15023,7 @@ procedure TBaseVirtualTree.SetUpdateState(Updating: Boolean);
 begin
   // The check for visibility is necessary otherwise the tree is automatically shown when
   // updating is allowed. As this happens internally the VCL does not get notified and
-  // still assumes the control is hidden. This results in weird "cannot focus invisble control" errors.
+  // still assumes the control is hidden. This results in weird "cannot focus invisible control" errors.
   if Visible and HandleAllocated then
     SendMessage(Handle, WM_SETREDRAW, Ord(not Updating), 0);
 end;
@@ -16223,9 +16237,11 @@ var
   ParentControl: TWinControl;
   R: TRect;
   NewCheckState: TCheckState;
+  TempColumn,
   NewColumn: TColumnIndex;
   ActAsGrid: Boolean;
   ForceSelection: Boolean;
+  NewWidth,
   NewHeight: Integer;
   RTLFactor: Integer;
 
@@ -16334,7 +16350,31 @@ begin
               end;
             end;
           VK_PRIOR:
-            if ssCtrl in Shift then
+            if Shift = [ssCtrl, ssShift] then
+              SetOffsetX(FOffsetX + ClientWidth)
+            else if [ssShift] = Shift then
+            begin
+              if FFocusedColumn = InvalidColumn then
+                NewColumn := FHeader.FColumns.GetFirstVisibleColumn
+              else
+              begin
+                Offset := FHeader.FColumns.GetVisibleFixedWidth;
+                NewColumn := FFocusedColumn;
+                while True do
+                begin
+                  TempColumn := FHeader.FColumns.GetPreviousVisibleColumn(NewColumn);
+                  NewWidth := FHeader.FColumns[NewColumn].Width;
+                  if (TempColumn <= NoColumn) or
+                     (Offset + NewWidth >= ClientWidth) or
+                     (coFixed in FHeader.FColumns[TempColumn].FOptions) then
+                    Break;
+                  NewColumn := TempColumn;
+                  Inc(Offset, NewWidth);
+                end;
+              end;
+              SetFocusedColumn(NewColumn);
+            end
+            else if ssCtrl in Shift then
               SetOffsetY(FOffsetY + ClientHeight)
             else
             begin
@@ -16359,7 +16399,31 @@ begin
               FocusedNode := Node;
             end;
           VK_NEXT:
-            if ssCtrl in Shift then
+            if Shift = [ssCtrl, ssShift] then
+              SetOffsetX(FOffsetX - ClientWidth)
+            else if [ssShift] = Shift then
+            begin
+              if FFocusedColumn = InvalidColumn then
+                NewColumn := FHeader.FColumns.GetFirstVisibleColumn
+              else
+              begin
+                Offset := FHeader.FColumns.GetVisibleFixedWidth;
+                NewColumn := FFocusedColumn;
+                while True do
+                begin
+                  TempColumn := FHeader.FColumns.GetNextVisibleColumn(NewColumn);
+                  NewWidth := FHeader.FColumns[NewColumn].Width;
+                  if (TempColumn <= NoColumn) or
+                     (Offset + NewWidth >= ClientWidth) or
+                     (coFixed in FHeader.FColumns[TempColumn].FOptions) then
+                    Break;
+                  NewColumn := TempColumn;
+                  Inc(Offset, NewWidth);
+                end;
+              end;
+              SetFocusedColumn(NewColumn);
+            end
+            else if ssCtrl in Shift then
               SetOffsetY(FOffsetY - ClientHeight)
             else
             begin
@@ -21526,7 +21590,11 @@ begin
       end;
 
       if NewNode or NewColumn then
+      begin
+        ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
+                       not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions));
         DoFocusChange(FFocusedNode, FFocusedColumn);
+      end;
     end;
 
     // Drag'n drop initiation
@@ -22923,7 +22991,7 @@ begin
 
         with Node^ do
         begin
-          // Set states first, in case the node is invisble.
+          // Set states first, in case the node is invisible.
           States := ChunkBody.States;
           NodeHeight := ChunkBody.NodeHeight;
           TotalHeight := NodeHeight;
@@ -29078,28 +29146,39 @@ begin
     if Horizontally then
     begin
       // 2) scroll horizontally
-      if Header.Columns.GetVisibleFixedWidth > 0 then
+      R.Left := Header.Columns.Items[FFocusedColumn].Left;
+      R.Right := R.Left + Header.Columns.Items[FFocusedColumn].Width;
+
+      NewOffset := FEffectiveOffsetX;
+      if (Header.Columns.GetVisibleFixedWidth > 0) and (not Center) then
       begin
-        if (Abs(R.Left - Header.Columns.GetVisibleFixedWidth) > 1) then
+        if R.Right > ClientWidth then
+          NewOffset := FEffectiveOffsetX + (R.Right - ClientWidth)
+        else if R.Left < Header.Columns.GetVisibleFixedWidth then
+          NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - R.Left);
+
+        if NewOffset <> FEffectiveOffsetX then
         begin
-          NewOffset := FEffectiveOffsetX - (R.Left - Header.Columns.GetVisibleFixedWidth);
           if UseRightToLeftAlignment then
             SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
           else
             SetOffsetX(-NewOffset);
-          Result := True;
         end;
+
+        Result := True;
       end
       else
-        if (R.Right > ClientWidth) or (R.Left < 0) then
+      begin
+        NewOffset := FEffectiveOffsetX + R.Left - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((R.Right - R.Left) div 2);
+        if NewOffset <> FEffectiveOffsetX then
         begin
-          NewOffset := FEffectiveOffsetX + ((R.Left + R.Right) div 2) - (ClientWidth div 2);
           if UseRightToLeftAlignment then
             SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
           else
             SetOffsetX(-NewOffset);
-          Result := True;
         end;
+        Result := True;
+      end;
     end;
   end;
 end;
@@ -29601,6 +29680,9 @@ var
   ScrollInfo: TScrollInfo;
 
 begin
+  if tsUpdating in FStates then
+    exit;
+
   if FHeader.UseColumns then
     FRangeX := FHeader.FColumns.TotalWidth
   else
@@ -29696,7 +29778,10 @@ var
   ScrollInfo: TScrollInfo;
 
 begin
-  // Total node height includes the height of the invisble root node.
+  if tsUpdating in FStates then
+    exit;
+
+  // Total node height includes the height of the invisible root node.
   if FRoot.TotalHeight < FDefaultNodeHeight then
     FRoot.TotalHeight := FDefaultNodeHeight;
   FRangeY := FRoot.TotalHeight - FRoot.NodeHeight + FBottomSpace;
