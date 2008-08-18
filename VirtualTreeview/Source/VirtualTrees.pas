@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.3
+// Version 4.7.4
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,7 +25,9 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // August 2008
-//   - Improvement: optimized ScrollIntoView for horizontal scrolling  
+//   - Improvement: redesigned and overloaded TBaseVirtualTree.ScrollIntoView in order to use vertical scrolling
+//                  separately
+//   - Improvement: optimized TBaseVirtualTree.ScrollIntoView for horizontal scrolling
 //   - Improvement: in TBaseVirtualTree.WMKeyDown column navigation for VK_PRIOR and VK_NEXT is now handled in same way
 //                  as row navigation
 //   - Improvement: new TVTHeaderOption hoDisableAnimatedResize to disable animated resize for all columns
@@ -205,7 +207,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.3';
+  VTVersion = '4.7.4';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -2740,7 +2742,8 @@ type
     procedure ResetNode(Node: PVirtualNode); virtual;
     procedure SaveToFile(const FileName: TFileName);
     procedure SaveToStream(Stream: TStream; Node: PVirtualNode = nil); virtual;
-    function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean;
+    function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
+    function ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True);
@@ -29096,10 +29099,13 @@ var
   Run: PVirtualNode;
   UseColumns,
   HScrollBarVisible: Boolean;
-  NewOffset: Integer;
+  ScrolledVertically,
+  ScrolledHorizontally: Boolean;
 
 begin
-  Result := False;
+  ScrolledVertically   := False;
+  ScrolledHorizontally := False;
+
   if Assigned(Node) and (Node <> FRoot) then
   begin
     // Make sure all parents of the node are expanded.
@@ -29124,7 +29130,7 @@ begin
         SetOffsetY(FOffsetY - R.Top + ClientHeight div 2)
       else
         SetOffsetY(FOffsetY - R.Top);
-      Result := True;
+      ScrolledVertically := True;
     end
     else
       if (R.Bottom > ClientHeight) or Center then
@@ -29140,46 +29146,66 @@ begin
         // in order to avoid that the scroll bar hides the node which we wanted to have in view.
         if not UseColumns and not HScrollBarVisible and (Integer(FRangeX) > ClientWidth) then
           SetOffsetY(FOffsetY - GetSystemMetrics(SM_CYHSCROLL));
-        Result := True;
+        ScrolledVertically := True;
       end;
 
     if Horizontally then
-    begin
       // 2) scroll horizontally
-      R.Left := Header.Columns.Items[FFocusedColumn].Left;
-      R.Right := R.Left + Header.Columns.Items[FFocusedColumn].Width;
+      ScrolledHorizontally := ScrollIntoView(FFocusedColumn, Center);
 
-      NewOffset := FEffectiveOffsetX;
-      if (Header.Columns.GetVisibleFixedWidth > 0) and (not Center) then
-      begin
-        if R.Right > ClientWidth then
-          NewOffset := FEffectiveOffsetX + (R.Right - ClientWidth)
-        else if R.Left < Header.Columns.GetVisibleFixedWidth then
-          NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - R.Left);
+  end;
 
-        if NewOffset <> FEffectiveOffsetX then
-        begin
-          if UseRightToLeftAlignment then
-            SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
-          else
-            SetOffsetX(-NewOffset);
-        end;
+  Result := ScrolledVertically or ScrolledHorizontally;
+end;
 
-        Result := True;
-      end
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean;
+
+// Scrolls the columns so that the given column is in the client area and returns True if the columns really have been
+// scrolled (e.g. to avoid further updates) else returns False
+
+var
+  ColumnLeft,
+  ColumnRight: Integer;
+  NewOffset: Integer;
+
+begin
+  Result := False;
+
+  if not FHeader.UseColumns then exit;
+  if not FHeader.Columns.IsValidColumn(Column) then exit; // Just in case.
+
+  ColumnLeft := Header.Columns.Items[Column].Left;
+  ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
+
+  NewOffset := FEffectiveOffsetX;
+  if (Header.Columns.GetVisibleFixedWidth > 0) and (not Center) then
+  begin
+    if ColumnRight > ClientWidth then
+      NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
+    else if ColumnLeft < Header.Columns.GetVisibleFixedWidth then
+      NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft);
+    if NewOffset <> FEffectiveOffsetX then
+    begin
+      if UseRightToLeftAlignment then
+        SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
       else
-      begin
-        NewOffset := FEffectiveOffsetX + R.Left - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((R.Right - R.Left) div 2);
-        if NewOffset <> FEffectiveOffsetX then
-        begin
-          if UseRightToLeftAlignment then
-            SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
-          else
-            SetOffsetX(-NewOffset);
-        end;
-        Result := True;
-      end;
+        SetOffsetX(-NewOffset);
     end;
+    Result := True;
+  end
+  else
+  begin
+    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
+    if NewOffset <> FEffectiveOffsetX then
+    begin
+      if UseRightToLeftAlignment then
+        SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
+      else
+        SetOffsetX(-NewOffset);
+    end;
+    Result := True;
   end;
 end;
 
