@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.4
+// Version 4.7.0
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -175,6 +175,11 @@ interface
   {$warn UNSAFE_CODE off}
 {$endif COMPILER_7_UP}
 
+{$ifdef COMPILER_12_UP}
+  {$WARN IMPLICIT_STRING_CAST       OFF}
+ {$WARN IMPLICIT_STRING_CAST_LOSS  OFF}
+{$endif COMPILER_12_UP}
+
 {$HPPEMIT '#include <objidl.h>'}
 {$HPPEMIT '#include <oleidl.h>'} // Necessary for BCB 6 SP 2.
 {$HPPEMIT '#include <oleacc.h>'}
@@ -207,7 +212,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.4';
+  VTVersion = '4.7.0';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
