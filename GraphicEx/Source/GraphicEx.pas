@@ -13,7 +13,7 @@ unit GraphicEx;
 // The initial developer of the original code is Mike Lischke (www.soft-gems.net),
 //
 // Portions created by Mike Lischke are
-// Copyright (C) 1999-2005 Mike Lischke. All Rights Reserved.
+// Copyright (C) 1999, 2008 Mike Lischke. All Rights Reserved.
 //
 // Credits:
 //   Haukur K. Bragason, Ingo Neumann, Craig Peterson
@@ -21,12 +21,14 @@ unit GraphicEx;
 //
 // See help file for a description of supported image formats.
 //
-// Version II.1.16
+// Version II.1.17
 //
 // Note: This library can be compiled with Delphi 5 or newer versions.
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// September 2008
+//   - Bug fix: size computations in component retrieval for SGI images.
 // October 2006
 //   - Bug fix: 16 bpp SGI images loading failed
 // August 2005
@@ -68,7 +70,7 @@ uses
   GraphicCompression, GraphicStrings, GraphicColor;
 
 const
-  GraphicExVersion = 'II.1.16';
+  GraphicExVersion = 'II.1.17';
 
 type
   TCardinalArray = array of Cardinal;
@@ -2440,17 +2442,17 @@ type
 procedure TSGIGraphic.GetComponents(const Memory: Pointer; var Red, Green, Blue, Alpha: Pointer; Row: Integer);
 
 var
-  RowWidth: Integer;
-  PlaneSize: Integer;
+ RowWidth: Integer;
+ PlaneSize: Integer;
 
 begin
-  RowWidth := Row * Width;
-  PlaneSize := Width * Height;
+ RowWidth := Row * Width * FImageProperties.BitsPerSample div 8;
+ PlaneSize := Width * Height * FImageProperties.BitsPerSample div 8;
 
-  Red := PChar(Memory) + 512 + RowWidth;
-  Green := PChar(Memory) + 512 + RowWidth + PlaneSize;
-  Blue := PChar(Memory) + 512 + RowWidth + 2 * PlaneSize;
-  Alpha := PChar(Memory) + 512 + RowWidth + 3 * PlaneSize;
+ Red := PChar(Memory) + 512 + RowWidth;
+ Green := PChar(Memory) + 512 + RowWidth + PlaneSize;
+ Blue := PChar(Memory) + 512 + RowWidth + 2 * PlaneSize;
+ Alpha := PChar(Memory) + 512 + RowWidth + 3 * PlaneSize;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
