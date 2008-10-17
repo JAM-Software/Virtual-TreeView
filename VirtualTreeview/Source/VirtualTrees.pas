@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.0
+// Version 4.7.1
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+// October 2008
+//   - Improvement: new TVTPaintOption toChildrenAbove to draw children nodes above their parent
 // August 2008
 //   - Improvement: redesigned and overloaded TBaseVirtualTree.ScrollIntoView in order to use vertical scrolling
 //                  separately
@@ -212,7 +214,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.0';
+  VTVersion = '4.7.1';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -551,7 +553,8 @@ type
                                // This option only has an effect if toShowVertGridLines is enabled too.
     toAlwaysHideSelection,     // Do not draw node selection, regardless of focused state.
     toUseBlendedSelection,     // Enable alpha blending for node selections.
-    toStaticBackground         // Show simple static background instead of a tiled one.
+    toStaticBackground,        // Show simple static background instead of a tiled one.
+    toChildrenAbove            // Display child nodes above their parent.
   );
   TVTPaintOptions = set of TVTPaintOption;
 
@@ -592,7 +595,7 @@ type
                                // are mutual exclusive.
     toMultiSelect,             // Allow more than one node to be selected.
     toRightClickSelect,        // Allow selection, dragging etc. with the right mouse button.
-    toSiblingSelectConstraint, // constrain selection to nodes with same parent
+    toSiblingSelectConstraint, // Constrain selection to nodes with same parent.
     toCenterScrollIntoView,    // Center nodes vertically in the client area when scrolling into view.
     toSimpleDrawSelection      // Simplifies draw selection, so a node's caption does not need to intersect with the
                                // selection rectangle.
@@ -2140,6 +2143,7 @@ type
     procedure HandleClickSelection(LastFocused, NewNode: PVirtualNode; Shift: TShiftState; DragPending: Boolean);
     function HandleDrawSelection(X, Y: Integer): Boolean;
     function HasVisibleNextSibling(Node: PVirtualNode): Boolean;
+    function HasVisiblePreviousSibling(Node: PVirtualNode): Boolean;
     procedure ImageListChange(Sender: TObject);
     procedure InitializeFirstColumnValues(var PaintInfo: TVTPaintInfo);
     function InitializeLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer;
@@ -2679,7 +2683,8 @@ type
     function GetLastVisibleChildNoInit(Node: PVirtualNode): PVirtualNode;
     function GetLastVisibleNoInit(Node: PVirtualNode = nil): PVirtualNode;
     function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer;
-    function GetNext(Node: PVirtualNode): PVirtualNode;
+    function GetNext(Node: PVirtualNode): PVirtualNode; overload;
+    function GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode; overload;
     function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal): PVirtualNode;
     function GetNextCutCopy(Node: PVirtualNode): PVirtualNode;
     function GetNextInitialized(Node: PVirtualNode): PVirtualNode;
@@ -2696,7 +2701,8 @@ type
     function GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode; overload;
     function GetNodeData(Node: PVirtualNode): Pointer;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
-    function GetPrevious(Node: PVirtualNode): PVirtualNode;
+    function GetPrevious(Node: PVirtualNode): PVirtualNode; overload;
+    function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode; overload;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal): PVirtualNode;
     function GetPreviousCutCopy(Node: PVirtualNode): PVirtualNode;
     function GetPreviousInitialized(Node: PVirtualNode): PVirtualNode;
@@ -13490,7 +13496,7 @@ end;
 
 function TBaseVirtualTree.HasVisibleNextSibling(Node: PVirtualNode): Boolean;
 
-// Helper method to determine if the given node has a visible sibling. This is needed to
+// Helper method to determine if the given node has a visible next sibling. This is needed to
 // draw correct tree lines.
 
 begin
@@ -13503,6 +13509,26 @@ begin
       Node := Node.NextSibling;
       Result := vsVisible in Node.States;
     until Result or (Node.NextSibling = nil);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.HasVisiblePreviousSibling(Node: PVirtualNode): Boolean;
+
+// Helper method to determine if the given node has a visible previous sibling. This is needed to
+// draw correct tree lines.
+
+begin
+  // Check if there is a sibling at all.
+  Result := Assigned(Node.PrevSibling);
+
+  if Result then
+  begin
+    repeat
+      Node := Node.PrevSibling;
+      Result := vsVisible in Node.States;
+    until Result or (Node.PrevSibling = nil);
   end;
 end;
 
@@ -13572,55 +13598,67 @@ begin
   begin
     // Start over parent traversal if necessary.
     Run := Node;
-    if Run.Parent <> FRoot then
-    begin
-      // The very last image (the one immediately before the item label) is different.
-      if HasVisibleNextSibling(Run) then
-        LineImage[X - 1] := ltTopDownRight
-      else
-        LineImage[X - 1] := ltTopRight;
-      Run := Run.Parent;
 
-      // Now go up all parents.
-      repeat
-        if Run.Parent = FRoot then
-          Break;
-        Dec(X);
+    if toChildrenAbove in FOptions.FPaintOptions then
+    begin
+      // As heritage of lines is relatively complex when toChildrenAbove
+      // is enabled, the real work will be done in PaintTree.
+      LineImage[X - 1] := ltBottomRight;
+      for X := X - 2 downto 0 do
+        LineImage[X] := ltNone;
+    end
+    else
+    begin
+      if Run.Parent <> FRoot then
+      begin
+        // The very last image (the one immediately before the item label) is different.
         if HasVisibleNextSibling(Run) then
-          LineImage[X - 1] := ltTopDown
+          LineImage[X - 1] := ltTopDownRight
         else
-          LineImage[X - 1] := ltNone;
+          LineImage[X - 1] := ltTopRight;
         Run := Run.Parent;
-      until False;
-    end;
 
-    // Prepare root level. Run points at this stage to a top level node.
-    if (toShowRoot in FOptions.FPaintOptions) and (toShowTreeLines in FOptions.FPaintOptions) then
-    begin
-      // Is the top node a root node?
-      if Run = Node then
-      begin
-        // First child gets the bottom-right bitmap if it isn't also the only child.
-        if IsFirstVisibleChild(FRoot, Run) then
-          // Is it the only child?
-          if IsLastVisibleChild(FRoot, Run) then
-            LineImage[0] := ltRight
+        // Now go up all parents.
+        repeat
+          if Run.Parent = FRoot then
+            Break;
+          Dec(X);
+          if HasVisibleNextSibling(Run) then
+            LineImage[X - 1] := ltTopDown
           else
-            LineImage[0] := ltBottomRight
-        else
-          // real last child
-          if IsLastVisibleChild(FRoot, Run) then
-            LineImage[0] := ltTopRight
-          else
-            LineImage[0] := ltTopDownRight;
-      end
-      else
+            LineImage[X - 1] := ltNone;
+          Run := Run.Parent;
+        until False;
+      end;
+
+      // Prepare root level. Run points at this stage to a top level node.
+      if (toShowRoot in FOptions.FPaintOptions) and (toShowTreeLines in FOptions.FPaintOptions) then
       begin
-        // No, top node is not a top level node. So we need different painting.
-        if HasVisibleNextSibling(Run) then
-          LineImage[0] := ltTopDown
+        // Is the top node a root node?
+        if Run = Node then
+        begin
+          // First child gets the bottom-right bitmap if it isn't also the only child.
+          if IsFirstVisibleChild(FRoot, Run) then
+            // Is it the only child?
+            if IsLastVisibleChild(FRoot, Run) then
+              LineImage[0] := ltRight
+            else
+              LineImage[0] := ltBottomRight
+          else
+            // real last child
+            if IsLastVisibleChild(FRoot, Run) then
+              LineImage[0] := ltTopRight
+            else
+              LineImage[0] := ltTopDownRight;
+        end
         else
-          LineImage[0] := ltNone;
+        begin
+          // No, top node is not a top level node. So we need different painting.
+          if HasVisibleNextSibling(Run) then
+            LineImage[0] := ltTopDown
+          else
+            LineImage[0] := ltNone;
+        end;
       end;
     end;
   end;
@@ -25578,33 +25616,65 @@ begin
     begin
       Result := GetFirstChild(Result);
 
-      // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
-      if not (vsVisible in Result.States) then
+      if toChildrenAbove in FOptions.FPaintOptions then
       begin
         repeat
-          // Is there a next sibling?
-          if Assigned(Result.NextSibling) then
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
+
+          // Search the first visible sibling.
+          while Assigned(Result.NextSibling) and not (vsVisible in Result.States) do
           begin
             Result := Result.NextSibling;
-            // The visible state can be removed during initialization so init the node first.
+            // Init node on demand as this might change the visibility.
             if not (vsInitialized in Result.States) then
               InitNode(Result);
-            if vsVisible in Result.States then
-              Break;
-          end
-          else
+          end;
+
+          // If there a no visible siblings take the parent.
+          if not (vsVisible in Result.States) then
           begin
-            // No sibling anymore, so use the parent's next sibling.
-            if Result.Parent <> FRoot then
-              Result := Result.Parent
+            Result := Result.Parent;
+            if Result = FRoot then
+              Result := nil;
+            Break;
+          end
+          else if (not Assigned(Result.FirstChild)) or (not (vsExpanded in Result.States)) then
+            Break;
+
+          Result := Result.FirstChild;
+        until False;
+      end
+      else
+      begin
+        // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
+        if not (vsVisible in Result.States) then
+        begin
+          repeat
+            // Is there a next sibling?
+            if Assigned(Result.NextSibling) then
+            begin
+              Result := Result.NextSibling;
+              // The visible state can be removed during initialization so init the node first.
+              if not (vsInitialized in Result.States) then
+                InitNode(Result);
+              if vsVisible in Result.States then
+                Break;
+            end
             else
             begin
-              // There are no further nodes to examine, hence there is no further visible node.
-              Result := nil;
-              Break;
+              // No sibling anymore, so use the parent's next sibling.
+              if Result.Parent <> FRoot then
+                Result := Result.Parent
+              else
+              begin
+                // There are no further nodes to examine, hence there is no further visible node.
+                Result := nil;
+                Break;
+              end;
             end;
-          end;
-        until False;
+          until False;
+        end;
       end;
     end
     else
@@ -25656,30 +25726,57 @@ begin
     begin
       Result := Result.FirstChild;
 
-      // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
-      if not (vsVisible in Result.States) then
+      if toChildrenAbove in FOptions.FPaintOptions then
       begin
         repeat
-          // Is there a next sibling?
-          if Assigned(Result.NextSibling) then
+          // Search the first visible sibling.
+          while Assigned(Result.NextSibling) and not (vsVisible in Result.States) do
           begin
             Result := Result.NextSibling;
-            if vsVisible in Result.States then
-              Break;
-          end
-          else
+            // Init node on demand as this might change the visibility.
+          end;
+
+          // If there a no visible siblings take the parent.
+          if not (vsVisible in Result.States) then
           begin
-            // No sibling anymore, so use the parent's next sibling.
-            if Result.Parent <> FRoot then
-              Result := Result.Parent
+            Result := Result.Parent;
+            if Result = FRoot then
+              Result := nil;
+            Break;
+          end
+          else if (not Assigned(Result.FirstChild)) or (not (vsExpanded in Result.States))then
+            Break;
+
+          Result := Result.FirstChild;
+        until False;
+      end
+      else
+      begin
+        // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
+        if not (vsVisible in Result.States) then
+        begin
+          repeat
+            // Is there a next sibling?
+            if Assigned(Result.NextSibling) then
+            begin
+              Result := Result.NextSibling;
+              if vsVisible in Result.States then
+                Break;
+            end
             else
             begin
-              // There are no further nodes to examine, hence there is no further visible node.
-              Result := nil;
-              Break;
+              // No sibling anymore, so use the parent's next sibling.
+              if Result.Parent <> FRoot then
+                Result := Result.Parent
+              else
+              begin
+                // There are no further nodes to examine, hence there is no further visible node.
+                Result := nil;
+                Break;
+              end;
             end;
-          end;
-        until False;
+          until False;
+        end;
       end;
     end
     else
@@ -25918,14 +26015,17 @@ var
 
 begin
   Result := GetLastVisibleChild(Node);
-  while Assigned(Result) do
+  if not (toChildrenAbove in FOptions.FPaintOptions) then
   begin
-    // Test if there is a next last visible child. If not keep the node from the last run.
-    // Otherwise use the next last visible child.
-    Next := GetLastVisibleChild(Result);
-    if Next = nil then
-      Break;
-    Result := Next;
+    while Assigned(Result) do
+    begin
+      // Test if there is a next last visible child. If not keep the node from the last run.
+      // Otherwise use the next last visible child.
+      Next := GetLastVisibleChild(Result);
+      if Next = nil then
+        Break;
+      Result := Next;
+    end;
   end;
 end;
 
@@ -25981,15 +26081,16 @@ var
 
 begin
   Result := GetLastVisibleChildNoInit(Node);
-  while Assigned(Result) do
-  begin
-    // Test if there is a next last visible child. If not keep the node from the last run.
-    // Otherwise use the next last visible child.
-    Next := GetLastVisibleChildNoInit(Result);
-    if Next = nil then
-      Break;
-    Result := Next;
-  end;
+  if not (toChildrenAbove in FOptions.FPaintOptions) then
+    while Assigned(Result) do
+    begin
+      // Test if there is a next last visible child. If not keep the node from the last run.
+      // Otherwise use the next last visible child.
+      Next := GetLastVisibleChildNoInit(Result);
+      if Next = nil then
+        Break;
+      Result := Next;
+    end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26101,7 +26202,20 @@ end;
 
 function TBaseVirtualTree.GetNext(Node: PVirtualNode): PVirtualNode;
 
-// Returns next node in tree (advances to next sibling of the node's parent or its parent, if necessary).
+// Overloaded version of GetNext to maintain compatibility with existing software.
+
+begin
+  Result := GetNext(Node, False);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
+
+// Returns next node in tree. If ConsiderChildrenAbove the function considers wether
+// toChildrenAbove is currently set, otherwise the result will always be the next node
+// in top-down order regardless of the current PaintOptions.
+// The Result will be initialized if needed.
 
 begin
   Result := Node;
@@ -26109,39 +26223,65 @@ begin
   begin
     Assert(Result <> FRoot, 'Node must not be the hidden root node.');
 
-    // Has this node got children?
-    if vsHasChildren in Result.States then
+    if (toChildrenAbove in FOptions.FPaintOptions) and ConsiderChildrenAbove then
     begin
-      // Yes, there are child nodes. Initialize them if necessary.
-      if Result.ChildCount = 0 then
-        InitChildren(Result);
-    end;
+      // If this node has no siblings use the parent.
+      if not Assigned(Result.NextSibling) then
+      begin
+        Result := Result.Parent;
+        if Result = FRoot then
+        begin
+          Result := nil;
+        end;
+      end
+      else
+      begin
+        // There is at least one sibling so take it.
+        Result := Result.NextSibling;
 
-    // if there is no child node try siblings
-    if Assigned(Result.FirstChild) then
-      Result := Result.FirstChild
+        // Now take a look at the children.
+        while Assigned(Result.FirstChild) do
+        begin
+          Result := Result.FirstChild;
+        end;
+      end;
+    end
     else
     begin
-      repeat
-        // Is there a next sibling?
-        if Assigned(Result.NextSibling) then
-        begin
-          Result := Result.NextSibling;
-          Break;
-        end
-        else
-        begin
-          // No sibling anymore, so use the parent's next sibling.
-          if Result.Parent <> FRoot then
-            Result := Result.Parent
+      // Has this node got children?
+      if vsHasChildren in Result.States then
+      begin
+        // Yes, there are child nodes. Initialize them if necessary.
+        if Result.ChildCount = 0 then
+          InitChildren(Result);
+      end;
+
+      // if there is no child node try siblings
+      if Assigned(Result.FirstChild) then
+        Result := Result.FirstChild
+      else
+      begin
+        repeat
+          // Is there a next sibling?
+          if Assigned(Result.NextSibling) then
+          begin
+            Result := Result.NextSibling;
+            Break;
+          end
           else
           begin
-            // There are no further nodes to examine, hence there is no further visible node.
-            Result := nil;
-            Break;
+            // No sibling anymore, so use the parent's next sibling.
+            if Result.Parent <> FRoot then
+              Result := Result.Parent
+            else
+            begin
+              // There are no further nodes to examine, hence there is no further visible node.
+              Result := nil;
+              Break;
+            end;
           end;
-        end;
-      until False;
+        until False;
+      end;
     end;
 
     if Assigned(Result) and not (vsInitialized in Result.States) then
@@ -26371,31 +26511,19 @@ begin
     if not FullyVisible[Result] then
       Result := GetVisibleParent(Result);
 
-    // Has this node got children?
-    if [vsHasChildren, vsExpanded] * Result.States = [vsHasChildren, vsExpanded] then
-    begin
-      // Yes, there are child nodes. Initialize them if necessary.
-      if Result.ChildCount = 0 then
-        InitChildren(Result);
-    end;
-
-    // Child nodes are the first choice if possible.
-    if (vsExpanded in Result.States) and Assigned(Result.FirstChild) then
-    begin
-      Result := GetFirstChild(Result);
-      ForceSearch := False;
-    end
-    else
-      ForceSearch := True;
-
-    // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
-    if Assigned(Result) and (ForceSearch or not (vsVisible in Result.States)) then
+    if toChildrenAbove in FOptions.FPaintOptions then
     begin
       repeat
-        // Is there a next sibling?
-        if Assigned(Result.NextSibling) then
+        // If there a no siblings anymore, go up one level.
+        if not Assigned(Result.NextSibling) then
         begin
-          Result := Result.NextSibling;
+          Result := Result.Parent;
+          if Result = FRoot then
+          begin
+            Result := nil;
+            Break;
+          end;
+
           if not (vsInitialized in Result.States) then
             InitNode(Result);
           if vsVisible in Result.States then
@@ -26403,22 +26531,81 @@ begin
         end
         else
         begin
-          // No sibling anymore, so use the parent's next sibling.
-          if Result.Parent <> FRoot then
-            Result := Result.Parent
-          else
+          // There is at least one sibling so take it.
+          Result := Result.NextSibling;
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
+          if not (vsVisible in Result.States) then
+            Continue;
+
+          // Now take a look at the children.
+          while (vsExpanded in Result.States) and Assigned(Result.FirstChild) do
           begin
-            // There are no further nodes to examine, hence there is no further visible node.
-            Result := nil;
-            Break;
+            Result := Result.FirstChild;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            if not (vsVisible in Result.States) then
+              Break;
           end;
+
+          // If we found a visible node we don't need to search any longer.
+          if vsVisible in Result.States then
+            Break;
         end;
       until False;
+    end
+    else
+    begin
+      // Has this node got children?
+      if [vsHasChildren, vsExpanded] * Result.States = [vsHasChildren, vsExpanded] then
+      begin
+        // Yes, there are child nodes. Initialize them if necessary.
+        if Result.ChildCount = 0 then
+          InitChildren(Result);
+      end;
+
+      // Child nodes are the first choice if possible.
+      if (vsExpanded in Result.States) and Assigned(Result.FirstChild) then
+      begin
+        Result := GetFirstChild(Result);
+        ForceSearch := False;
+      end
+      else
+        ForceSearch := True;
+
+      // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
+      if Assigned(Result) and (ForceSearch or not (vsVisible in Result.States)) then
+      begin
+        repeat
+          // Is there a next sibling?
+          if Assigned(Result.NextSibling) then
+          begin
+            Result := Result.NextSibling;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            if vsVisible in Result.States then
+              Break;
+          end
+          else
+          begin
+            // No sibling anymore, so use the parent's next sibling.
+            if Result.Parent <> FRoot then
+              Result := Result.Parent
+            else
+            begin
+              // There are no further nodes to examine, hence there is no further visible node.
+              Result := nil;
+              Break;
+            end;
+          end;
+        until False;
+      end;
     end;
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
 
 function TBaseVirtualTree.GetNextVisibleNoInit(Node: PVirtualNode): PVirtualNode;
 
@@ -26434,44 +26621,83 @@ begin
   begin
     Assert(Result <> FRoot, 'Node must not be the hidden root node.');
 
-    // If the given node is not visible then look for a parent node which is visible, otherwise we will
-    // likely go unnecessarily through a whole bunch of invisible nodes.
-    if not FullyVisible[Result] then
-      Result := GetVisibleParent(Result);
-
-    // Child nodes are the first choice if possible.
-    if (vsExpanded in Result.States) and Assigned(Result.FirstChild) then
-    begin
-      Result := Result.FirstChild;
-      ForceSearch := False;
-    end
-    else
-      ForceSearch := True;
-
-    // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
-    if ForceSearch or not (vsVisible in Result.States) then
+    if toChildrenAbove in FOptions.FPaintOptions then
     begin
       repeat
-        // Is there a next sibling?
-        if Assigned(Result.NextSibling) then
+        // If there a no siblings anymore, go up one level.
+        if not Assigned(Result.NextSibling) then
         begin
-          Result := Result.NextSibling;
+          Result := Result.Parent;
+          if Result = FRoot then
+          begin
+            Result := nil;
+            Break;
+          end;
           if vsVisible in Result.States then
             Break;
         end
         else
         begin
-          // No sibling anymore, so use the parent's next sibling.
-          if Result.Parent <> FRoot then
-            Result := Result.Parent
-          else
+          // There is at least one sibling so take it.
+          Result := Result.NextSibling;
+          if not (vsVisible in Result.States) then
+            Continue;
+
+          // Now take a look at the children.
+          while (vsExpanded in Result.States) and Assigned(Result.FirstChild) do
           begin
-            // There are no further nodes to examine, hence there is no further visible node.
-            Result := nil;
-            Break;
+            Result := Result.FirstChild;
+            if not (vsVisible in Result.States) then
+              Break;
           end;
+
+          // If we found a visible node we don't need to search any longer.
+          if vsVisible in Result.States then
+            Break;
         end;
       until False;
+    end
+    else
+    begin
+      // If the given node is not visible then look for a parent node which is visible, otherwise we will
+      // likely go unnecessarily through a whole bunch of invisible nodes.
+      if not FullyVisible[Result] then
+        Result := GetVisibleParent(Result);
+
+      // Child nodes are the first choice if possible.
+      if (vsExpanded in Result.States) and Assigned(Result.FirstChild) then
+      begin
+        Result := Result.FirstChild;
+        ForceSearch := False;
+      end
+      else
+        ForceSearch := True;
+
+      // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
+      if ForceSearch or not (vsVisible in Result.States) then
+      begin
+        repeat
+          // Is there a next sibling?
+          if Assigned(Result.NextSibling) then
+          begin
+            Result := Result.NextSibling;
+            if vsVisible in Result.States then
+              Break;
+          end
+          else
+          begin
+            // No sibling anymore, so use the parent's next sibling.
+            if Result.Parent <> FRoot then
+              Result := Result.Parent
+            else
+            begin
+              // There are no further nodes to examine, hence there is no further visible node.
+              Result := nil;
+              Break;
+            end;
+          end;
+        until False;
+      end;
     end;
   end;
 end;
@@ -26555,48 +26781,10 @@ begin
   // Determine node, of which position and height corresponds to the scroll position most closely.
   while Assigned(Result) and (Result <> FRoot) do
   begin
-    if (vsVisible in Result.States) and (AbsolutePos < (CurrentPos + Result.TotalHeight)) then
-    begin
-      // Found a node which covers the given position. Now go down one level
-      // and search its children (if any, otherwise stop looking).
-      if (AbsolutePos >= CurrentPos + NodeHeight[Result]) and Assigned(Result.FirstChild) and
-         (vsExpanded in Result.States) then
-      begin
-        Inc(CurrentPos, NodeHeight[Result]);
-        Result := Result.FirstChild;
-        Continue;
-      end
-      else
-        Break;
-    end
-    else
-    begin
-      // Advance current position to after the current node, if the node is visible.
-      if vsVisible in Result.States then
-        Inc(CurrentPos, Result.TotalHeight);
-      // Find following node not being a child of the currently considered node (e.g. a sibling or parent).
-      repeat
-        // Is there a next sibling?
-        if Assigned(Result.NextSibling) then
-        begin
-          Result := Result.NextSibling;
-          if vsVisible in Result.States then
-            Break;
-        end
-        else
-        begin
-          // No sibling anymore, so use the parent's next sibling.
-          if Result.Parent <> FRoot then
-            Result := Result.Parent
-          else
-          begin
-            // There are no further nodes to examine, hence there is no further visible node.
-            Result := nil;
-            Break;
-          end;
-        end;
-      until False;
-    end;
+    if AbsolutePos <= (CurrentPos + NodeHeight[Result]) then
+      Break;
+    Inc(CurrentPos, NodeHeight[Result]);
+    Result := GetNextVisibleNoInit(Result);
   end;
 
   if Result = FRoot then
@@ -26653,7 +26841,23 @@ end;
 
 function TBaseVirtualTree.GetPrevious(Node: PVirtualNode): PVirtualNode;
 
-// Resturns previous node in tree with regard to Node. The result node is initialized if necessary.
+// Overloaded version of GetPrevious to maintain compatiblity with existing software.
+
+begin
+  Result := GetPrevious(Node, False);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
+
+// Returns previous node in tree. If ConsiderChildrenAbove is True the function considers
+// wether toChildrenAbove is currently set, otherwise the result will always be the previous
+// node in top-down order regardless of the current PaintOptions.
+// The Result will be initialized if needed.
+
+var
+  Run: PVirtualNode;
 
 begin
   Result := Node;
@@ -26661,20 +26865,48 @@ begin
   begin
     Assert(Result <> FRoot, 'Node must not be the hidden root node.');
 
-    // Is there a previous sibling?
-    if Assigned(Node.PrevSibling) then
+    if (toChildrenAbove in FOptions.FPaintOptions) and ConsiderChildrenAbove then
     begin
-      // Go down and find the last child node.
-      Result := GetLast(Node.PrevSibling);
-      if Result = nil then
-        Result := Node.PrevSibling;
+      // If there is a last child, take it; if not try the previous sibling.
+      if Assigned(Result.LastChild) then
+        Result := Result.LastChild
+      else if Assigned(Result.PrevSibling) then
+         Result := Result.PrevSibling
+      else
+      begin
+        // If neither a last child nor a previous sibling exist, go the tree upwards and
+        // look, wether one of the parent nodes have a previous sibling. If not the result
+        // will ne nil.
+        repeat
+          Result := Result.Parent;
+          Run    := nil;
+          if Result <> FRoot then
+            Run := Result.PrevSibling
+          else
+            Result := nil;
+        until Assigned(Run) or (Result = nil);
+
+        if Assigned(Run) then
+          Result := Run;
+      end;
     end
     else
-      // no previous sibling so the parent of the node is the previous visible node
-      if Node.Parent <> FRoot then
-        Result := Node.Parent
+    begin
+      // Is there a previous sibling?
+      if Assigned(Node.PrevSibling) then
+      begin
+        // Go down and find the last child node.
+        Result := GetLast(Node.PrevSibling);
+        if Result = nil then
+          Result := Node.PrevSibling;
+      end
       else
-        Result := nil;
+        // no previous sibling so the parent of the node is the previous visible node
+        if Node.Parent <> FRoot then
+          Result := Node.Parent
+        else
+          Result := nil;
+    end;
 
     if Assigned(Result) and not (vsInitialized in Result.States) then
       InitNode(Result);
@@ -26902,32 +27134,75 @@ begin
     end
     else
     begin
-      repeat
-        // Is there a previous sibling node?
-        if Assigned(Result.PrevSibling) then
-        begin
-          Result := Result.PrevSibling;
-          // Initialize the new node and check its visibility.
-          if not (vsInitialized in Result.States) then
-            InitNode(Result);
-          if vsVisible in Result.States then
+      if toChildrenAbove in FOptions.FPaintOptions then
+      begin
+        repeat
+          if Assigned(Result.LastChild) and (vsExpanded in Result.States) then
           begin
-            // If there are visible child nodes then use the last one.
-            Marker := GetLastVisible(Result);
+            Result := Result.LastChild;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+
+            if vsVisible in Result.States then
+              Break;
+          end
+          else if Assigned(Result.PrevSibling) then
+          begin
+            if not (vsInitialized in Result.PrevSibling.States) then
+              InitNode(Result.PrevSibling);
+
+            if vsVisible in Result.PrevSibling.States then
+            begin
+              Result := Result.PrevSibling;
+              Break;
+            end;
+          end
+          else
+          begin
+            Marker := nil;
+            repeat
+              Result := Result.Parent;
+              if Result <> FRoot then
+                Marker := GetPreviousVisibleSibling(Result)
+              else
+                Result := nil;
+            until Assigned(Marker) or (Result = nil);
             if Assigned(Marker) then
               Result := Marker;
+
             Break;
           end;
-        end
-        else
-        begin
-          // No previous sibling there so the parent node is the nearest previous node.
-          Result := Result.Parent;
-          if Result = FRoot then
-            Result := nil;
-          Break;
-        end;
-      until False;
+        until False;
+      end
+      else
+      begin
+        repeat
+          // Is there a previous sibling node?
+          if Assigned(Result.PrevSibling) then
+          begin
+            Result := Result.PrevSibling;
+            // Initialize the new node and check its visibility.
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            if vsVisible in Result.States then
+            begin
+              // If there are visible child nodes then use the last one.
+              Marker := GetLastVisible(Result);
+              if Assigned(Marker) then
+                Result := Marker;
+              Break;
+            end;
+          end
+          else
+          begin
+            // No previous sibling there so the parent node is the nearest previous node.
+            Result := Result.Parent;
+            if Result = FRoot then
+              Result := nil;
+            Break;
+          end;
+        until False;
+      end;
 
       if Assigned(Result) and not (vsInitialized in Result.States) then
         InitNode(Result);
@@ -26963,29 +27238,71 @@ begin
     end
     else
     begin
-      repeat
-        // Is there a previous sibling node?
-        if Assigned(Result.PrevSibling) then
-        begin
-          Result := Result.PrevSibling;
-          if vsVisible in Result.States then
+      if toChildrenAbove in FOptions.FPaintOptions then
+      begin
+        repeat
+          // Is the current node expanded and has children?
+          if (vsExpanded in Result.States) and Assigned(Result.LastChild) then
           begin
-            // If there are visible child nodes then use the last one.
-            Marker := GetLastVisibleNoInit(Result);
+            Result := Result.LastChild;
+            if vsVisible in Result.States then
+              Break;
+          end
+          else if Assigned(Result.PrevSibling) then
+          begin
+            // No children anymore, so take the previous sibling.
+            if vsVisible in Result.PrevSibling.States then
+            begin
+              Result := Result.PrevSibling;
+              Break;
+            end;
+          end
+          else
+          begin
+            // No children and no previous siblings, so walk up the tree and look wether
+            // a parent has a previous visible sibling. If that is the case take it,
+            // otherwise there is no previous visible node.
+            Marker := nil;
+            repeat
+              Result := Result.Parent;
+              if Result <> FRoot then
+                Marker := GetPreviousVisibleSiblingNoInit(Result)
+              else
+                Result := nil;
+            until Assigned(Marker) or (Result = nil);
             if Assigned(Marker) then
               Result := Marker;
+
             Break;
           end;
-        end
-        else
-        begin
-          // No previous sibling there so the parent node is the nearest previous node.
-          Result := Result.Parent;
-          if Result = FRoot then
-            Result := nil;
-          Break;
-        end;
-      until False;
+        until False;
+      end
+      else
+      begin
+        repeat
+          // Is there a previous sibling node?
+          if Assigned(Result.PrevSibling) then
+          begin
+            Result := Result.PrevSibling;
+            if vsVisible in Result.States then
+            begin
+              // If there are visible child nodes then use the last one.
+              Marker := GetLastVisibleNoInit(Result);
+              if Assigned(Marker) then
+                Result := Marker;
+              Break;
+            end;
+          end
+          else
+          begin
+            // No previous sibling there so the parent node is the nearest previous node.
+            Result := Result.Parent;
+            if Result = FRoot then
+              Result := nil;
+            Break;
+          end;
+        until False;
+      end;
     end;
   end;
 end;
@@ -27410,6 +27727,8 @@ begin
         R := GetDisplayRect(Node, -1, False);
         if R.Top < ClientHeight then
         begin
+          if (toChildrenAbove in FOptions.FPaintOptions) and (vsExpanded in Node.States) then
+            Dec(R.Top, Node.TotalHeight + NodeHeight[Node]);
           R.Bottom := ClientHeight;
           InvalidateRect(Handle, @R, False);
         end;
@@ -27901,9 +28220,11 @@ var
 
   VAlign,
   IndentSize,
+  NodeLevel,
   ButtonX,
   ButtonY: Integer;
-  Temp: PVirtualNode;
+  Temp,
+  Run: PVirtualNode;
   LineImage: TLineImage;
   PaintInfo: TVTPaintInfo;     // all necessary information about a node to pass to the paint routines
 
@@ -28008,7 +28329,7 @@ begin
             // Initialize node if not already done.
             if not (vsInitialized in PaintInfo.Node.States) then
               InitNode(PaintInfo.Node);
-            if vsSelected in PaintInfo.Node.States then
+            if (vsSelected in PaintInfo.Node.States) and not (toChildrenAbove in FOptions.FPaintOptions) then
               Inc(SelectLevel);
 
             // Ensure the node's height is determined.
@@ -28290,50 +28611,97 @@ begin
 
             // Advance to next visible node.
             Temp := GetNextVisible(PaintInfo.Node);
-            if Assigned(Temp) then
+
+            if toChildrenAbove in FOptions.FPaintOptions then
             begin
-              // Adjust line bitmap (and so also indentation level).
-              if Temp.Parent = PaintInfo.Node then
+              if Assigned(Temp) then
               begin
-                // New node is a child node. Need to adjust previous bitmap level.
-                if IndentSize > 0 then
-                  if HasVisibleNextSibling(PaintInfo.Node) then
-                    LineImage[IndentSize - 1] := ltTopDown
-                  else
-                    LineImage[IndentSize - 1] := ltNone;
-                // Enhance line type array if necessary.
-                Inc(IndentSize);
+                // Determine IndentSize is here, because we eventually need to change the length of
+                // LineImage.
+                IndentSize := GetNodeLevel(Temp) + 1;
                 if Length(LineImage) <= IndentSize then
-                  SetLength(LineImage, IndentSize + 8);
-                Inc(ButtonX, FIndent);
-              end
-              else
-              begin
-                // New node is at the same or higher tree level.
-                // Take back select level increase if the node was selected
-                if vsSelected in PaintInfo.Node.States then
-                  Dec(SelectLevel);
-                if PaintInfo.Node.Parent <> Temp.Parent then
+                  SetLength(LineImage, IndentSize);
+                Dec(ButtonX, (Integer(GetNodeLevel(PaintInfo.Node)) - IndentSize + 1) * Integer(FIndent));
+
+                // Determine the correct line for the node.
+                if not HasVisiblePreviousSibling(Temp) then
+                  LineImage[IndentSize - 1] := ltBottomRight
+                else if (Temp.Parent = FRoot) and (not HasVisibleNextSibling(Temp)) then
+                  LineImage[IndentSize - 1] := ltTopRight
+                else
+                  LineImage[IndentSize - 1] := ltTopDownRight;
+
+                // Now go up to the root to determine the rest.
+                Run := Temp.Parent;
+                NodeLevel := IndentSize - 2;
+                while Run <> FRoot do
                 begin
-                  // We went up one or more levels. Determine how many levels it was actually.
-                  while PaintInfo.Node.Parent <> Temp.Parent do
-                  begin
-                    Dec(IndentSize);
-                    Dec(ButtonX, FIndent);
-                    PaintInfo.Node := PaintInfo.Node.Parent;
-                    // Take back one selection level increase for every step up.
-                    if vsSelected in PaintInfo.Node.States then
-                      Dec(SelectLevel);
-                  end;
+                  if HasVisiblePreviousSibling(Run) then
+                    LineImage[NodeLevel] := ltTopDown
+                  else
+                    LineImage[NodeLevel] := ltNone;
+                  Run := Run.Parent;
+                  Dec(NodeLevel);
+                end;
+
+                // Determine the select level of the node. For toChildrenAbove this is solely done here.
+                SelectLevel := 0;
+                Run := Temp;
+                while Run <> FRoot do
+                begin
+                  if vsSelected in Run.States then
+                    Inc(SelectLevel);
+                  Run := Run.Parent;
                 end;
               end;
-
-              // Set new image in front of the new node.
-              if IndentSize > 0 then
-                if HasVisibleNextSibling(Temp) then
-                  LineImage[IndentSize - 1] := ltTopDownRight
+            end
+            else
+            begin
+              if Assigned(Temp) then
+              begin
+                // Adjust line bitmap (and so also indentation level).
+                if Temp.Parent = PaintInfo.Node then
+                begin
+                  // New node is a child node. Need to adjust previous bitmap level.
+                  if IndentSize > 0 then
+                    if HasVisibleNextSibling(PaintInfo.Node) then
+                      LineImage[IndentSize - 1] := ltTopDown
+                    else
+                      LineImage[IndentSize - 1] := ltNone;
+                  // Enhance line type array if necessary.
+                  Inc(IndentSize);
+                  if Length(LineImage) <= IndentSize then
+                    SetLength(LineImage, IndentSize + 8);
+                  Inc(ButtonX, FIndent);
+                end
                 else
-                  LineImage[IndentSize - 1] := ltTopRight;
+                begin
+                  // New node is at the same or higher tree level.
+                  // Take back select level increase if the node was selected
+                  if vsSelected in PaintInfo.Node.States then
+                    Dec(SelectLevel);
+                  if PaintInfo.Node.Parent <> Temp.Parent then
+                  begin
+                    // We went up one or more levels. Determine how many levels it was actually.
+                    while PaintInfo.Node.Parent <> Temp.Parent do
+                    begin
+                      Dec(IndentSize);
+                      Dec(ButtonX, FIndent);
+                      PaintInfo.Node := PaintInfo.Node.Parent;
+                      // Take back one selection level increase for every step up.
+                      if vsSelected in PaintInfo.Node.States then
+                        Dec(SelectLevel);
+                    end;
+                  end;
+                end;
+
+                // Set new image in front of the new node.
+                if IndentSize > 0 then
+                  if HasVisibleNextSibling(Temp) then
+                    LineImage[IndentSize - 1] := ltTopDownRight
+                  else
+                    LineImage[IndentSize - 1] := ltTopRight;
+              end;
             end;
 
             PaintInfo.Node := Temp;
