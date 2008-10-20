@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.2
+// Version 4.7.3
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,8 +25,13 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // October 2008
+//   - Bug fix: corrected ScrollIntoView to behave as expected when no fixed columns exist 
+//   - Bug fix: extended InitializeLineImageAndSelectLevel to eliminate artifacts while scrolling with toChildrenAbove
+//              set
+//   - Bug fix: corrected CompareNodePositions to consider toChildrenAbove
+//   - Bug fix: corrected ToggleNode to scroll correctly if toChildrenAbove and toAnimatedToggle are set
 //   - Improvement: new TVTPaintOption toFixedIndent to draw the tree with a fixed ident (instead of node level
-                    dependent indents)
+//                  dependent indents)
 //   - Improvement: new TVTPaintOption toChildrenAbove to draw children nodes above their parent
 // August 2008
 //   - Improvement: redesigned and overloaded TBaseVirtualTree.ScrollIntoView in order to use vertical scrolling
@@ -216,7 +221,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.2';
+  VTVersion = '4.7.3';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -2115,7 +2120,7 @@ type
     function CollectSelectedNodesRTL(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment; OldRect,
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
-    function CompareNodePositions(Node1, Node2: PVirtualNode): Integer;
+    function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode; overload;
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
@@ -12859,9 +12864,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CompareNodePositions(Node1, Node2: PVirtualNode): Integer;
+function TBaseVirtualTree.CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
 
-// Tries hard and smart to quickly determine whether Node1's structural position is before Node2's position
+// Tries hard and smart to quickly determine whether Node1's structural position is before Node2's position.
+// If ConsiderChildrenAbove is True, the nodes will be compared with their visual order in mind.
 // Returns 0 if Node1 = Node2, < 0 if Node1 is located before Node2 else > 0.
 
 var
@@ -12878,10 +12884,10 @@ begin
   else
   begin
     if HasAsParent(Node1, Node2) then
-      Result := 1
+      Result := IfThen(ConsiderChildrenAbove and (toChildrenAbove in FOptions.FPaintOptions), -1, 1)
     else
       if HasAsParent(Node2, Node1) then
-        Result := -1
+        Result := IfThen(ConsiderChildrenAbove and (toChildrenAbove in FOptions.FPaintOptions), 1, -1)
       else
       begin
         // the given nodes are neither equal nor are they parents of each other, so go up to FRoot
@@ -13599,19 +13605,37 @@ begin
   // Only use lines if requested.
   if toShowTreeLines in FOptions.FPaintOptions then
   begin
-    // Start over parent traversal if necessary.
-    Run := Node;
-
     if toChildrenAbove in FOptions.FPaintOptions then
     begin
-      // As heritage of lines is relatively complex when toChildrenAbove
-      // is enabled, the real work will be done in PaintTree.
-      LineImage[X - 1] := ltBottomRight;
-      for X := X - 2 downto 0 do
-        LineImage[X] := ltNone;
+      Dec(X);
+      if not HasVisiblePreviousSibling(Node) then
+      begin
+        if Node.Parent <> FRoot then
+          LineImage[X] := ltBottomRight
+        else if (not HasVisibleNextSibling(Node)) then
+          LineImage[X] := ltRight;
+      end
+      else if (Node.Parent = FRoot) and (not HasVisibleNextSibling(Node)) then
+        LineImage[X] := ltTopRight
+      else
+        LineImage[X] := ltTopDownRight;
+
+      // Now go up to the root to determine the rest.
+      Run := Node.Parent;
+      while Run <> FRoot do
+      begin
+        Dec(X);
+        if HasVisiblePreviousSibling(Run) then
+          LineImage[X] := ltTopDown;
+
+        Run := Run.Parent;
+      end;
     end
     else
     begin
+      // Start over parent traversal if necessary.
+      Run := Node;
+
       if Run.Parent <> FRoot then
       begin
         // The very last image (the one immediately before the item label) is different.
@@ -23300,16 +23324,16 @@ begin
   Assert(Assigned(EndNode), 'EndNode must not be nil!');
   ClearTempCache;
   if StartNode = nil then
-    StartNode := FRoot.FirstChild
+    StartNode := GetFirstVisibleNoInit
   else
     if not FullyVisible[StartNode] then
     begin
       StartNode := GetPreviousVisible(StartNode);
       if StartNode = nil then
-        StartNode := FRoot.FirstChild
+        StartNode := GetFirstVisibleNoInit
     end;
 
-  if CompareNodePositions(StartNode, EndNode) < 0 then
+  if CompareNodePositions(StartNode, EndNode, True) < 0 then
   begin
     NodeFrom := StartNode;
     NodeTo := EndNode;
@@ -28615,9 +28639,9 @@ begin
             // Advance to next visible node.
             Temp := GetNextVisible(PaintInfo.Node);
 
-            if toChildrenAbove in FOptions.FPaintOptions then
+            if Assigned(Temp) then
             begin
-              if Assigned(Temp) then
+              if toChildrenAbove in FOptions.FPaintOptions then
               begin
                 // Determine IndentSize is here, because we eventually need to change the length of
                 // LineImage.
@@ -28629,7 +28653,12 @@ begin
 
                 // Determine the correct line for the node.
                 if not HasVisiblePreviousSibling(Temp) then
-                  LineImage[IndentSize - 1] := ltBottomRight
+                begin
+                  if Temp.Parent <> FRoot then
+                    LineImage[IndentSize - 1] := ltBottomRight
+                  else if (not HasVisibleNextSibling(Temp)) then
+                    LineImage[IndentSize - 1] := ltRight;
+                end
                 else if (Temp.Parent = FRoot) and (not HasVisibleNextSibling(Temp)) then
                   LineImage[IndentSize - 1] := ltTopRight
                 else
@@ -28657,11 +28686,8 @@ begin
                     Inc(SelectLevel);
                   Run := Run.Parent;
                 end;
-              end;
-            end
-            else
-            begin
-              if Assigned(Temp) then
+              end
+              else
               begin
                 // Adjust line bitmap (and so also indentation level).
                 if Temp.Parent = PaintInfo.Node then
@@ -29542,7 +29568,7 @@ end;
 function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean;
 
 // Scrolls the columns so that the given column is in the client area and returns True if the columns really have been
-// scrolled (e.g. to avoid further updates) else returns False
+// scrolled (e.g. to avoid further updates) else returns False.
 
 var
   ColumnLeft,
@@ -29559,12 +29585,9 @@ begin
   ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
 
   NewOffset := FEffectiveOffsetX;
-  if (Header.Columns.GetVisibleFixedWidth > 0) and (not Center) then
+  if Center then
   begin
-    if ColumnRight > ClientWidth then
-      NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
-    else if ColumnLeft < Header.Columns.GetVisibleFixedWidth then
-      NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft);
+    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
@@ -29576,7 +29599,10 @@ begin
   end
   else
   begin
-    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
+    if ColumnRight > ClientWidth then
+      NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
+    else if ColumnLeft < Header.Columns.GetVisibleFixedWidth then
+      NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft);
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
@@ -29912,6 +29938,8 @@ begin
             R := GetDisplayRect(Node, NoColumn, False);
             R.Bottom := ClientHeight;
             Inc(R.Top, NodeHeight[Node]);
+            if toChildrenAbove in FOptions.FPaintOptions then
+              Dec(R.Top, Node.TotalHeight);
 
             // No animation necessary if the node is below the current client height.
             if R.Top < R.Bottom then
@@ -29980,7 +30008,8 @@ begin
               // animated expanding
               with ToggleData do
               begin
-                Inc(R.Top, NodeHeight[Node]);
+                if not (toChildrenAbove in FOptions.FPaintOptions) then
+                  Inc(R.Top, NodeHeight[Node]);
                 R.Bottom := ClientHeight;
                 if R.Bottom > R.Top then
                 begin
