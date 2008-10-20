@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.1
+// Version 4.7.2
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // October 2008
+//   - Improvement: new TVTPaintOption toFixedIndent to draw the tree with a fixed ident (instead of node level
+                    dependent indents)
 //   - Improvement: new TVTPaintOption toChildrenAbove to draw children nodes above their parent
 // August 2008
 //   - Improvement: redesigned and overloaded TBaseVirtualTree.ScrollIntoView in order to use vertical scrolling
@@ -214,7 +216,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.1';
+  VTVersion = '4.7.2';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -554,7 +556,8 @@ type
     toAlwaysHideSelection,     // Do not draw node selection, regardless of focused state.
     toUseBlendedSelection,     // Enable alpha blending for node selections.
     toStaticBackground,        // Show simple static background instead of a tiled one.
-    toChildrenAbove            // Display child nodes above their parent.
+    toChildrenAbove,           // Display child nodes above their parent.
+    toFixedIndent              // Draw the tree with a fixed indent.
   );
   TVTPaintOptions = set of TVTPaintOption;
 
@@ -28321,7 +28324,7 @@ begin
           IndentSize := Length(LineImage);
 
           // Precalculate horizontal position of buttons relative to the column start.
-          ButtonX := (Length(LineImage) * Integer(FIndent)) + Round((Integer(FIndent) - FPlusBM.Width) / 2) - FIndent;
+          ButtonX := (IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * Integer(FIndent)) + Round((Integer(FIndent) - FPlusBM.Width) / 2) - FIndent;
 
           // ----- main node paint loop
           while Assigned(PaintInfo.Node) do
@@ -28469,7 +28472,7 @@ begin
 
                           // Take the space for the tree lines into account.
                           if IsMainColumn then
-                            AdjustCoordinatesByIndent(PaintInfo, IndentSize);
+                            AdjustCoordinatesByIndent(PaintInfo, IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize));
 
                           if UseColumns then
                             LimitPaintingToArea(Canvas, CellRect);
@@ -28482,12 +28485,12 @@ begin
                             begin
                               if BidiMode = bdLeftToRight then
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left + IndentSize * Integer(FIndent), CellRect.Right - 1,
+                                DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * Integer(FIndent), CellRect.Right - 1,
                                   CellRect.Bottom - 1);
                               end
                               else
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IndentSize * Integer(FIndent) - 1,
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * Integer(FIndent) - 1,
                                   CellRect.Bottom - 1);
                               end;
                             end
@@ -28521,7 +28524,7 @@ begin
                           if IsMainColumn then
                           begin
                             if toShowTreeLines in FOptions.FPaintOptions then
-                              PaintTreeLines(PaintInfo, VAlign, IndentSize, LineImage);
+                              PaintTreeLines(PaintInfo, VAlign, IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize), LineImage);
                             // Show node button if allowed, if there child nodes and at least one of the child
                             // nodes is visible or auto button hiding is disabled.
                             if (toShowButtons in FOptions.FPaintOptions) and (vsHasChildren in Node.States) and
@@ -28621,7 +28624,8 @@ begin
                 IndentSize := GetNodeLevel(Temp) + 1;
                 if Length(LineImage) <= IndentSize then
                   SetLength(LineImage, IndentSize);
-                Dec(ButtonX, (Integer(GetNodeLevel(PaintInfo.Node)) - IndentSize + 1) * Integer(FIndent));
+                if not (toFixedIndent in FOptions.FPaintOptions) then
+                  Dec(ButtonX, (Integer(GetNodeLevel(PaintInfo.Node)) - IndentSize + 1) * Integer(FIndent));
 
                 // Determine the correct line for the node.
                 if not HasVisiblePreviousSibling(Temp) then
@@ -28672,7 +28676,8 @@ begin
                   Inc(IndentSize);
                   if Length(LineImage) <= IndentSize then
                     SetLength(LineImage, IndentSize + 8);
-                  Inc(ButtonX, FIndent);
+                  if not (toFixedIndent in FOptions.FPaintOptions) then
+                    Inc(ButtonX, FIndent);
                 end
                 else
                 begin
@@ -28686,7 +28691,8 @@ begin
                     while PaintInfo.Node.Parent <> Temp.Parent do
                     begin
                       Dec(IndentSize);
-                      Dec(ButtonX, FIndent);
+                      if not (toFixedIndent in FOptions.FPaintOptions) then
+                        Dec(ButtonX, FIndent);
                       PaintInfo.Node := PaintInfo.Node.Parent;
                       // Take back one selection level increase for every step up.
                       if vsSelected in PaintInfo.Node.States then
