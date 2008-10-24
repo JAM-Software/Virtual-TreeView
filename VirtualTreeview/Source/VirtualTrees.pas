@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.7.3
+// Version 4.7.4
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,9 +25,17 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 // October 2008
-//   - Bug fix: corrected ScrollIntoView to behave as expected when no fixed columns exist 
-//   - Bug fix: extended InitializeLineImageAndSelectLevel to eliminate artifacts while scrolling with toChildrenAbove
-//              set
+//   - Bugfix: removed 'FVisibleCount := 0' from TBaseVirtualTree.Clear as this would lead to incorrect VisibleCount in
+//             read-only mode
+//   - Bugfix: fixed a condition in TBaseVirtualTree.ToggleCallback that could lead to artefacts
+//   - Improvement: changed the implementation of TBaseVirtualTree.GetNext/GetPrevious so that no penalties occur if
+//                  toChildrenAbove is not set
+//   - Improvement: TBaseVirtualTree.ToggleNode will no longer leave nodes with state vsToggeling if an exception
+//                  occurs
+//   - Improvement: improved behaviour of TBaseVirtualTree.ToggleNode in case toChildrenAbove is set
+//   - Bug fix: corrected TBaseVirtualTree.ScrollIntoView to behave as expected when no fixed columns exist
+//   - Bug fix: extended TBaseVirtualTree.InitializeLineImageAndSelectLevel to eliminate artifacts while scrolling with
+//              toChildrenAbove set
 //   - Bug fix: corrected CompareNodePositions to consider toChildrenAbove
 //   - Bug fix: corrected ToggleNode to scroll correctly if toChildrenAbove and toAnimatedToggle are set
 //   - Improvement: new TVTPaintOption toFixedIndent to draw the tree with a fixed ident (instead of node level
@@ -221,7 +229,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.7.3';
+  VTVersion = '4.7.4';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 4;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -2126,6 +2134,7 @@ type
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
+    function GetBottomNode: PVirtualNode;
     function GetCheckedCount: Integer;
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
@@ -2170,6 +2179,7 @@ type
     procedure SetBackground(const Value: TPicture);
     procedure SetBackgroundOffset(const Index, Value: Integer);
     procedure SetBorderStyle(Value: TBorderStyle);
+    procedure SetBottomNode(Node: PVirtualNode);
     procedure SetBottomSpace(const Value: Cardinal);
     procedure SetButtonFillMode(const Value: TVTButtonFillMode);
     procedure SetButtonStyle(const Value: TVTButtonStyle);
@@ -2698,7 +2708,8 @@ type
     function GetNextInitialized(Node: PVirtualNode): PVirtualNode;
     function GetNextLeaf(Node: PVirtualNode): PVirtualNode;
     function GetNextLevel(Node: PVirtualNode; NodeLevel: Cardinal): PVirtualNode;
-    function GetNextNoInit(Node: PVirtualNode): PVirtualNode;
+    function GetNextNoInit(Node: PVirtualNode): PVirtualNode; overload;
+    function GetNextNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode; overload;
     function GetNextSelected(Node: PVirtualNode): PVirtualNode;
     function GetNextSibling(Node: PVirtualNode): PVirtualNode;
     function GetNextVisible(Node: PVirtualNode): PVirtualNode;
@@ -2716,7 +2727,8 @@ type
     function GetPreviousInitialized(Node: PVirtualNode): PVirtualNode;
     function GetPreviousLeaf(Node: PVirtualNode): PVirtualNode;
     function GetPreviousLevel(Node: PVirtualNode; NodeLevel: Cardinal): PVirtualNode;
-    function GetPreviousNoInit(Node: PVirtualNode): PVirtualNode;
+    function GetPreviousNoInit(Node: PVirtualNode): PVirtualNode; overload;
+    function GetPreviousNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode; overload;
     function GetPreviousSelected(Node: PVirtualNode): PVirtualNode;
     function GetPreviousSibling(Node: PVirtualNode): PVirtualNode;
     function GetPreviousVisible(Node: PVirtualNode): PVirtualNode;
@@ -2778,6 +2790,7 @@ type
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
     property AccessibleName: string read FAccessibleName write FAccessibleName;
+    property BottomNode: PVirtualNode read GetBottomNode write SetBottomNode;
     property CheckedCount: Integer read GetCheckedCount;
     property CheckImages: TCustomImageList read FCheckImages;
     property CheckState[Node: PVirtualNode]: TCheckState read GetCheckState write SetCheckState;
@@ -3563,13 +3576,23 @@ type // streaming support
     Body: TBaseChunkBody;
   end;
 
+  // Toggle animation modes.
+  TToggleAnimationMode = (
+    tamScrollUp,
+    tamScrollDown,
+    tamScrollBoth
+  );
+
   // Internally used data for animations.
   TToggleAnimationData = record
-    Expand: Boolean;    // if true then expanding is in progress
-    Window: HWND;       // copy of the tree's window handle
-    DC: HDC;            // the DC of the window to erase unconvered parts
-    Brush: HBRUSH;      // the brush to be used to erase uncovered parts
-    R: TRect;           // the scroll rectangle
+    Mode: TToggleAnimationMode; // animation mode (upwards, downwards, both)
+    Window: HWND;               // copy of the tree's window handle
+    DC: HDC;                    // the DC of the window to erase uncovered parts
+    Brush: HBRUSH;              // the brush to be used to erase uncovered parts
+    Up,
+    Down: TRect;                // animation rectangles
+    UpDownFactor,               // the factor between up and down step sizes
+    RoundingError: Double;      // the totalized rounding error when using tamScrollBoth
   end;
 
 const
@@ -13102,6 +13125,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetBottomNode: PVirtualNode;
+
+begin
+  Result := GetNodeAt(0, ClientHeight);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetCheckedCount: Integer;
 
 var
@@ -13610,9 +13641,9 @@ begin
       Dec(X);
       if not HasVisiblePreviousSibling(Node) then
       begin
-        if Node.Parent <> FRoot then
+        if (Node.Parent <> FRoot) or HasVisibleNextSibling(Node) then
           LineImage[X] := ltBottomRight
-        else if (not HasVisibleNextSibling(Node)) then
+        else
           LineImage[X] := ltRight;
       end
       else if (Node.Parent = FRoot) and (not HasVisibleNextSibling(Node)) then
@@ -14321,6 +14352,31 @@ begin
   begin
     FBorderStyle := Value;
     RecreateWnd;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBottomNode(Node: PVirtualNode);
+
+var
+  Run: PVirtualNode;
+  R: TRect;
+
+begin
+  if Assigned(Node) then
+  begin
+    // make sure all parents of the node are expanded
+    Run := Node.Parent;
+    while Run <> FRoot do
+    begin
+      if not (vsExpanded in Run.States) then
+        ToggleNode(Run);
+      Run := Run.Parent;
+    end;
+    R := GetDisplayRect(Node, FHeader.MainColumn, True);
+    DoSetOffsetXY(Point(FOffsetX, FOffsetY + ClientHeight - R.Top - Integer(NodeHeight[Node])),
+      [suoRepaintScrollbars, suoUpdateNCArea]);
   end;
 end;
 
@@ -15308,9 +15364,10 @@ end;
 function TBaseVirtualTree.ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
 var
-  ScrollRect: TRect;
   Column: TColumnIndex;
   Run: TRect;
+  StepSizeUp,
+  StepSizeDown: Integer;
 
   //--------------- local function --------------------------------------------
 
@@ -15324,7 +15381,7 @@ var
     begin
       // Iterate through all columns and erase background in their local color.
       // LocalBrush is a brush in the color of the particular column.
-      Column := ColumnFromPosition(Run.TopLeft);
+      Column := GetFirstVisibleColumn;
       while (Column > InvalidColumn) and (Run.Left < ClientWidth) do
       begin
         GetColumnBounds(Column, Run.Left, Run.Right);
@@ -15349,32 +15406,48 @@ begin
   begin
     with TToggleAnimationData(Data^) do
     begin
-      ScrollRect := R;
-      if Expand then
+      if Mode in [tamScrollBoth] then
       begin
-        ScrollDC(DC, 0, StepSize, ScrollRect, ScrollRect, 0, nil);
+        if Step = 0 then
+          RoundingError := 0;
+
+        // As this routine is able to scroll horizontally and vertically at once, the missing step size needs to be
+        // computed in that case. To ensure the maximal accuracy the rounding error is accumulated.
+        StepSizeDown := StepSize;
+        StepSizeUp := Round((StepSize + RoundingError) * UpDownFactor);
+        RoundingError := (StepSize + RoundingError) * UpDownFactor - StepSizeUp;
+      end
+      else
+      begin
+        StepSizeDown := StepSize;
+        StepSizeUp := StepSize;
+      end;
+
+      if Mode in [tamScrollDown, tamScrollBoth] then
+      begin
+        ScrollDC(DC, 0, StepSizeDown, Down, Down, 0, nil);
 
         // In the first step the background must be cleared (only a small stripe) to avoid artefacts.
         if Step = 0 then
           if not FHeader.UseColumns then
-            FillRect(DC, Rect(R.Left, R.Top, R.Right, R.Top + StepSize + 1), Brush)
+            FillRect(DC, Rect(Down.Left, Down.Top, Down.Right, Down.Top + StepSizeDown + 1), Brush)
           else
           begin
-            Run := Rect(R.Left, R.Top, R.Right, R.Top + StepSize + 1);
+            Run := Rect(Down.Left, Down.Top, Down.Right, Down.Top + StepSizeDown + 1);
             EraseLine;
           end;
-      end
-      else
+      end;
+
+      if Mode in [tamScrollUp, tamScrollBoth] then
       begin
-        // Collapse branch.
-        ScrollDC(DC, 0, -StepSize, ScrollRect, ScrollRect, 0, nil);
+        ScrollDC(DC, 0, -StepSizeUp, Up, Up, 0, nil);
 
         if Step = 0 then
           if not FHeader.UseColumns then
-            FillRect(DC, Rect(R.Left, R.Bottom - StepSize - 1, R.Right, R.Bottom), Brush)
+            FillRect(DC, Rect(Up.Left, Up.Bottom - StepSizeUp - 1, Up.Right, Up.Bottom), Brush)
           else
           begin
-            Run := Rect(R.Left, R.Bottom - StepSize - 1, R.Right, R.Bottom);
+            Run := Rect(Up.Left, Up.Bottom - StepSizeUp - 1, Up.Right, Up.Bottom);
             EraseLine;
           end;
       end;
@@ -24569,7 +24642,6 @@ begin
       FLastVCLDragTarget := nil;
       FLastSearchNode := nil;
       DeleteChildren(FRoot, True);
-      FVisibleCount := 0;
       FOffsetX := 0;
       FOffsetY := 0;
 
@@ -25646,9 +25718,6 @@ begin
       if toChildrenAbove in FOptions.FPaintOptions then
       begin
         repeat
-          if not (vsInitialized in Result.States) then
-            InitNode(Result);
-
           // Search the first visible sibling.
           while Assigned(Result.NextSibling) and not (vsVisible in Result.States) do
           begin
@@ -25670,6 +25739,8 @@ begin
             Break;
 
           Result := Result.FirstChild;
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
         until False;
       end
       else
@@ -26229,20 +26300,7 @@ end;
 
 function TBaseVirtualTree.GetNext(Node: PVirtualNode): PVirtualNode;
 
-// Overloaded version of GetNext to maintain compatibility with existing software.
-
-begin
-  Result := GetNext(Node, False);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
-
-// Returns next node in tree. If ConsiderChildrenAbove the function considers wether
-// toChildrenAbove is currently set, otherwise the result will always be the next node
-// in top-down order regardless of the current PaintOptions.
-// The Result will be initialized if needed.
+// Returns next node in tree. The Result will be initialized if needed.
 
 begin
   Result := Node;
@@ -26250,8 +26308,60 @@ begin
   begin
     Assert(Result <> FRoot, 'Node must not be the hidden root node.');
 
-    if (toChildrenAbove in FOptions.FPaintOptions) and ConsiderChildrenAbove then
+    // Has this node got children?
+    if vsHasChildren in Result.States then
     begin
+      // Yes, there are child nodes. Initialize them if necessary.
+      if Result.ChildCount = 0 then
+        InitChildren(Result);
+    end;
+
+    // if there is no child node try siblings
+    if Assigned(Result.FirstChild) then
+      Result := Result.FirstChild
+    else
+    begin
+      repeat
+        // Is there a next sibling?
+        if Assigned(Result.NextSibling) then
+        begin
+          Result := Result.NextSibling;
+          Break;
+        end
+        else
+        begin
+          // No sibling anymore, so use the parent's next sibling.
+          if Result.Parent <> FRoot then
+            Result := Result.Parent
+          else
+          begin
+            // There are no further nodes to examine, hence there is no further visible node.
+            Result := nil;
+            Break;
+          end;
+        end;
+      until False;
+    end;
+  end;
+
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
+
+// Returns the next node while optionally considering toChildrenAbove. The Result will be initialized if needed. 
+
+begin
+  if ConsiderChildrenAbove and (toChildrenAbove in FOptions.FPaintOptions) then
+  begin
+    Result := Node;
+    if Assigned(Result) then
+    begin
+      Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
       // If this node has no siblings use the parent.
       if not Assigned(Result.NextSibling) then
       begin
@@ -26272,48 +26382,13 @@ begin
           Result := Result.FirstChild;
         end;
       end;
-    end
-    else
-    begin
-      // Has this node got children?
-      if vsHasChildren in Result.States then
-      begin
-        // Yes, there are child nodes. Initialize them if necessary.
-        if Result.ChildCount = 0 then
-          InitChildren(Result);
-      end;
-
-      // if there is no child node try siblings
-      if Assigned(Result.FirstChild) then
-        Result := Result.FirstChild
-      else
-      begin
-        repeat
-          // Is there a next sibling?
-          if Assigned(Result.NextSibling) then
-          begin
-            Result := Result.NextSibling;
-            Break;
-          end
-          else
-          begin
-            // No sibling anymore, so use the parent's next sibling.
-            if Result.Parent <> FRoot then
-              Result := Result.Parent
-            else
-            begin
-              // There are no further nodes to examine, hence there is no further visible node.
-              Result := nil;
-              Break;
-            end;
-          end;
-        until False;
-      end;
     end;
 
     if Assigned(Result) and not (vsInitialized in Result.States) then
       InitNode(Result);
-  end;
+  end
+  else
+    Result := GetNext(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26473,6 +26548,46 @@ begin
       until False;
     end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNextNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
+
+// Optimized version of GetNext performing no initialization, but optionally considering toChildrenAbove.
+
+begin
+  if ConsiderChildrenAbove and (toChildrenAbove in FOptions.FPaintOptions) then
+  begin
+    Result := Node;
+    if Assigned(Result) then
+    begin
+      Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
+      // If this node has no siblings use the parent.
+      if not Assigned(Result.NextSibling) then
+      begin
+        Result := Result.Parent;
+        if Result = FRoot then
+        begin
+          Result := nil;
+        end;
+      end
+      else
+      begin
+        // There is at least one sibling so take it.
+        Result := Result.NextSibling;
+
+        // Now take a look at the children.
+        while Assigned(Result.FirstChild) do
+        begin
+          Result := Result.FirstChild;
+        end;
+      end;
+    end;
+  end
+  else
+    Result := GetNextNoInit(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26868,10 +26983,32 @@ end;
 
 function TBaseVirtualTree.GetPrevious(Node: PVirtualNode): PVirtualNode;
 
-// Overloaded version of GetPrevious to maintain compatiblity with existing software.
+// Returns previous node in tree. The Result will be initialized if needed.
 
 begin
-  Result := GetPrevious(Node, False);
+  Result := Node;
+  if Assigned(Result) then
+  begin
+    Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
+    // Is there a previous sibling?
+    if Assigned(Node.PrevSibling) then
+    begin
+      // Go down and find the last child node.
+      Result := GetLast(Node.PrevSibling);
+      if Result = nil then
+        Result := Node.PrevSibling;
+    end
+    else
+      // no previous sibling so the parent of the node is the previous visible node
+      if Node.Parent <> FRoot then
+        Result := Node.Parent
+      else
+        Result := nil;
+  end;
+
+  if Assigned(Result) and not (vsInitialized in Result.States) then
+    InitNode(Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26887,57 +27024,42 @@ var
   Run: PVirtualNode;
 
 begin
-  Result := Node;
-  if Assigned(Result) then
+  if ConsiderChildrenAbove and (toChildrenAbove in FOptions.FPaintOptions) then
   begin
-    Assert(Result <> FRoot, 'Node must not be the hidden root node.');
-
-    if (toChildrenAbove in FOptions.FPaintOptions) and ConsiderChildrenAbove then
+    Result := Node;
+    if Assigned(Result) then
     begin
-      // If there is a last child, take it; if not try the previous sibling.
-      if Assigned(Result.LastChild) then
-        Result := Result.LastChild
-      else if Assigned(Result.PrevSibling) then
-         Result := Result.PrevSibling
-      else
-      begin
-        // If neither a last child nor a previous sibling exist, go the tree upwards and
-        // look, wether one of the parent nodes have a previous sibling. If not the result
-        // will ne nil.
-        repeat
-          Result := Result.Parent;
-          Run    := nil;
-          if Result <> FRoot then
-            Run := Result.PrevSibling
-          else
-            Result := nil;
-        until Assigned(Run) or (Result = nil);
+      Assert(Result <> FRoot, 'Node must not be the hidden root node.');
 
-        if Assigned(Run) then
-          Result := Run;
-      end;
-    end
-    else
-    begin
-      // Is there a previous sibling?
-      if Assigned(Node.PrevSibling) then
-      begin
-        // Go down and find the last child node.
-        Result := GetLast(Node.PrevSibling);
-        if Result = nil then
-          Result := Node.PrevSibling;
-      end
-      else
-        // no previous sibling so the parent of the node is the previous visible node
-        if Node.Parent <> FRoot then
-          Result := Node.Parent
+        // If there is a last child, take it; if not try the previous sibling.
+        if Assigned(Result.LastChild) then
+          Result := Result.LastChild
+        else if Assigned(Result.PrevSibling) then
+           Result := Result.PrevSibling
         else
-          Result := nil;
-    end;
+        begin
+          // If neither a last child nor a previous sibling exist, go the tree upwards and
+          // look, wether one of the parent nodes have a previous sibling. If not the result
+          // will ne nil.
+          repeat
+            Result := Result.Parent;
+            Run    := nil;
+            if Result <> FRoot then
+              Run := Result.PrevSibling
+            else
+              Result := nil;
+          until Assigned(Run) or (Result = nil);
 
-    if Assigned(Result) and not (vsInitialized in Result.States) then
-      InitNode(Result);
-  end;
+          if Assigned(Run) then
+            Result := Run;
+        end;
+
+      if Assigned(Result) and not (vsInitialized in Result.States) then
+        InitNode(Result);
+    end;
+  end
+  else
+    Result := GetPrevious(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -27088,6 +27210,51 @@ begin
       else
         Result := nil
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetPreviousNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
+
+// Returns previous node in tree, optionally considering toChildrenAbove. No initialization is performed.
+
+var
+  Run: PVirtualNode;
+
+begin
+  if ConsiderChildrenAbove and (toChildrenAbove in FOptions.FPaintOptions) then
+  begin
+    Result := Node;
+    if Assigned(Result) then
+    begin
+      Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
+      // If there is a last child, take it; if not try the previous sibling.
+      if Assigned(Result.LastChild) then
+        Result := Result.LastChild
+      else if Assigned(Result.PrevSibling) then
+         Result := Result.PrevSibling
+      else
+      begin
+        // If neither a last child nor a previous sibling exist, go the tree upwards and
+        // look, wether one of the parent nodes have a previous sibling. If not the result
+        // will ne nil.
+        repeat
+          Result := Result.Parent;
+          Run    := nil;
+          if Result <> FRoot then
+            Run := Result.PrevSibling
+          else
+            Result := nil;
+        until Assigned(Run) or (Result = nil);
+
+        if Assigned(Run) then
+          Result := Run;
+      end;
+    end;
+  end
+  else
+    Result := GetPrevious(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28654,9 +28821,9 @@ begin
                 // Determine the correct line for the node.
                 if not HasVisiblePreviousSibling(Temp) then
                 begin
-                  if Temp.Parent <> FRoot then
+                  if (Temp.Parent <> FRoot) or HasVisibleNextSibling(Temp) then
                     LineImage[IndentSize - 1] := ltBottomRight
-                  else if (not HasVisibleNextSibling(Temp)) then
+                  else
                     LineImage[IndentSize - 1] := ltRight;
                 end
                 else if (Temp.Parent = FRoot) and (not HasVisibleNextSibling(Temp)) then
@@ -29896,177 +30063,347 @@ procedure TBaseVirtualTree.ToggleNode(Node: PVirtualNode);
 
 // Changes a node's expand state to the opposite state.
 
+  //--------------- local function --------------------------------------------
+
+  procedure UpdateRanges;
+
+  // This function is used to adjust FRangeX/FRangeY in order to correctly
+  // reflect the current state. As we cannot call UpdateScrollBars if
+  // FUpdateCount <> 0, we do it this way.
+
+  begin
+    if FRoot.TotalHeight < FDefaultNodeHeight then
+      FRoot.TotalHeight := FDefaultNodeHeight;
+    FRangeY := FRoot.TotalHeight - FRoot.NodeHeight + FBottomSpace;
+
+    if FHeader.UseColumns then
+      FRangeX := FHeader.FColumns.TotalWidth
+    else
+      FRangeX := GetMaxRightExtend;
+  end;
+
+  //--------------- end local function ----------------------------------------
+
 var
   LastTopNode,
   Child: PVirtualNode;
+  Steps,
+  OldHeight,
   NewHeight: Integer;
+  PosHoldable,
+  TotalFit,
+  NodeInView,
+  ChildrenInView,
+  LockPosition,
   NeedUpdate: Boolean;
   ToggleData: TToggleAnimationData;
 
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
   NeedUpdate := False;
+  LockPosition := False;
+  TotalFit := False;
+  PosHoldable := False;
+  ChildrenInView := False;
+  NodeInView := False;
 
   // We don't need to switch the expand state if the node is being deleted otherwise some
   // updates (e.g. visible node count) are done twice with disasterous results).
   if [vsDeleting, vsToggling] * Node.States = [] then
   begin
-    Include(Node.States, vsToggling);
+    try
+      Include(Node.States, vsToggling);
 
-    // LastTopNode is needed to know when the entire tree scrolled during toggling.
-    // It is of course only needed when we also update the display here.
-    if FUpdateCount = 0 then
-      LastTopNode := GetTopNode
-    else
-      LastTopNode := nil;
+      // LastTopNode is needed to know when the entire tree scrolled during toggling.
+      // It is of course only needed when we also update the display here.
+      if FUpdateCount = 0 then
+        LastTopNode := GetTopNode
+      else
+        LastTopNode := nil;
 
-    if vsExpanded in Node.States then
-    begin
-      if DoCollapsing(Node) then
+      if vsExpanded in Node.States then
       begin
-        NeedUpdate := True;
-
-        if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not (tsCollapsing in FStates) then
+        if DoCollapsing(Node) then
         begin
-          Application.CancelHint;
-          UpdateWindow(Handle);
+          NeedUpdate := True;
 
-          // animated collapsing
-          with ToggleData do
+          if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not (tsCollapsing in FStates) then
           begin
-            Expand := False;
-            R := GetDisplayRect(Node, NoColumn, False);
-            R.Bottom := ClientHeight;
-            Inc(R.Top, NodeHeight[Node]);
-            if toChildrenAbove in FOptions.FPaintOptions then
-              Dec(R.Top, Node.TotalHeight);
+            Application.CancelHint;
+            UpdateWindow(Handle);
 
-            // No animation necessary if the node is below the current client height.
-            if R.Top < R.Bottom then
+            // animated collapsing
+            with ToggleData do
             begin
-              Window := Handle;
-              DC := GetDC(Handle);
-              Self.Brush.Color := Color;
-              Brush := Self.Brush.Handle;
-              try
-                Animate(Min(R.Bottom - R.Top + 1, Node.TotalHeight - NodeHeight[Node]), FAnimationDuration, ToggleCallback,
-                  @ToggleData);
-              finally
-                ReleaseDC(Window, DC);
-              end;
-            end;
-          end;
-        end;
-
-        // collapse the node
-        AdjustTotalHeight(Node, NodeHeight[Node]);
-        if FullyVisible[Node] then
-          Dec(FVisibleCount, CountVisibleChildren(Node));
-        Exclude(Node.States, vsExpanded);
-        DoCollapsed(Node);
-
-        // Remove child nodes now, if enabled.
-        if (toAutoFreeOnCollapse in FOptions.FAutoOptions) and (Node.ChildCount > 0) then
-        begin
-          DeleteChildren(Node);
-          Include(Node.States, vsHasChildren);
-        end;
-      end;
-    end
-    else
-      if DoExpanding(Node) then
-      begin
-        NeedUpdate := True;
-        // expand the node, need to adjust the height
-        if not (vsInitialized in Node.States) then
-          InitNode(Node);
-        if (vsHasChildren in Node.States) and (Node.ChildCount = 0) then
-          InitChildren(Node);
-
-        // Avoid setting the vsExpanded style if there are no child nodes.
-        if Node.ChildCount > 0 then
-        begin
-          // Iterate through the child nodes without initializing them. We have to determine the entire height.
-          NewHeight := 0;
-          Child := Node.FirstChild;
-          repeat
-            if vsVisible in Child.States then
-              Inc(NewHeight, Child.TotalHeight);
-            Child := Child.NextSibling;
-          until Child = nil;
-
-          if FUpdateCount = 0 then
-          begin
-            ToggleData.R := GetDisplayRect(Node, NoColumn, False);
-
-            // Do animated expanding if enabled and it is not the last visible node to be expanded.
-            if (ToggleData.R.Top < ClientHeight) and ([tsPainting, tsExpanding] * FStates = []) and
-              (toAnimatedToggle in FOptions.FAnimationOptions) and (GetNextVisibleNoInit(Node) <> nil) then
-            begin
-              Application.CancelHint;
-              UpdateWindow(Handle);
-              // animated expanding
-              with ToggleData do
+              // Determine the animation behaviour and rectangle. If toChildrenAbove is set, the behaviour is depending
+              // on the position of the node to be collapsed.
+              Up := GetDisplayRect(Node, NoColumn, False);
+              if toChildrenAbove in FOptions.FPaintOptions then
               begin
-                if not (toChildrenAbove in FOptions.FPaintOptions) then
-                  Inc(R.Top, NodeHeight[Node]);
-                R.Bottom := ClientHeight;
-                if R.Bottom > R.Top then
+                PosHoldable := (FOffsetY + (Integer(Node.TotalHeight - NodeHeight[Node]))) <= 0;
+                NodeInView  := Up.Top < ClientHeight;
+                Steps := 0;
+                if NodeInView then
                 begin
-                  Expand := True;
-                  Window := Handle;
-                  DC := GetDC(Handle);
-
-                  Self.Brush.Color := Color;
-                  Brush := Self.Brush.Handle;
-                  try
-                    Animate(Min(R.Bottom - R.Top + 1, NewHeight), FAnimationDuration, ToggleCallback, @ToggleData);
-                  finally
-                    ReleaseDC(Window, DC);
+                  if PosHoldable then
+                  begin
+                    Mode := tamScrollDown;
+                    Down := Rect(Up.Left, 0, Up.Right, Up.Top);
+                    Steps := Min(Down.Bottom - Down.Top + 1, Node.TotalHeight - NodeHeight[Node]);
+                  end
+                  else
+                  begin
+                    Mode := tamScrollUp;
+                    Steps := Up.Top - Max(Up.Bottom - Integer(Node.TotalHeight),
+                      FOffsetY + (Up.Bottom - Integer(Node.TotalHeight)));
+                    Up.Top := Max(Up.Bottom - Integer(Node.TotalHeight),
+                      FOffsetY + (Up.Bottom - Integer(Node.TotalHeight)));
+                    Up.Bottom := ClientHeight;
                   end;
+                end;
+              end
+              else
+              begin
+                Mode := tamScrollUp;
+                Inc(Up.Top, NodeHeight[Node]);
+                Up.Bottom := ClientHeight;
+                Steps := Min(Up.Bottom - Up.Top + 1, Node.TotalHeight - NodeHeight[Node]);
+              end;;
+
+              // No animation necessary if the node is below the current client height.
+              if Up.Top < ClientHeight then
+              begin
+                Window := Handle;
+                DC := GetDC(Handle);
+                Self.Brush.Color := Color;
+                Brush := Self.Brush.Handle;
+                try
+                  Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
+                finally
+                  ReleaseDC(Window, DC);
                 end;
               end;
             end;
           end;
 
-          Include(Node.States, vsExpanded);
-          AdjustTotalHeight(Node, NewHeight, True);
+          // Remind old height to keep the nodes position if toChildrenAbove is set.
+          OldHeight := Node.TotalHeight;
+
+          // collapse the node
+          AdjustTotalHeight(Node, NodeHeight[Node]);
           if FullyVisible[Node] then
-            Inc(FVisibleCount, CountVisibleChildren(Node));
+            Dec(FVisibleCount, CountVisibleChildren(Node));
+          Exclude(Node.States, vsExpanded);
+          DoCollapsed(Node);
 
-          DoExpanded(Node);
-        end;
-      end;
-
-    if NeedUpdate then
-    begin
-      InvalidateCache;
-      if FUpdateCount = 0 then
-      begin
-        ValidateCache;
-        if Node.ChildCount > 0 then
-        begin
-          UpdateScrollbars(True);
-          // Scroll as much child nodes into view as possible if the node has been expanded.
-          if (toAutoScrollOnExpand in FOptions.FAutoOptions) and (vsExpanded in Node.States) then
+          // Keep node position if possible when toChildrenAbove is set.
+          if (toChildrenAbove in FOptions.FPaintOptions) and ([tsPainting, tsExpanding] * FStates = [])
+            and NodeInView then
           begin
-            if Integer(Node.TotalHeight) <= ClientHeight then
-              ScrollIntoView(GetLastChild(Node), toCenterScrollIntoView in FOptions.SelectionOptions)
-            else
-              TopNode := Node;
+            DoSetOffsetXY(Point(FOffsetX, FOffsetY + OldHeight - Integer(NodeHeight[Node])),
+              [suoRepaintScrollbars, suoUpdateNCArea]);
           end;
 
-          // Check for automatically scrolled tree.
-          if LastTopNode <> GetTopNode then
-            Invalidate
+          // Remove child nodes now, if enabled.
+          if (toAutoFreeOnCollapse in FOptions.FAutoOptions) and (Node.ChildCount > 0) then
+          begin
+            DeleteChildren(Node);
+            Include(Node.States, vsHasChildren);
+          end;
+        end;
+      end
+      else
+        if DoExpanding(Node) then
+        begin
+          NeedUpdate := True;
+          // expand the node, need to adjust the height
+          if not (vsInitialized in Node.States) then
+            InitNode(Node);
+          if (vsHasChildren in Node.States) and (Node.ChildCount = 0) then
+            InitChildren(Node);
+
+          // Avoid setting the vsExpanded style if there are no child nodes.
+          if Node.ChildCount > 0 then
+          begin
+            // Iterate through the child nodes without initializing them. We have to determine the entire height.
+            NewHeight := 0;
+            Child := Node.FirstChild;
+            repeat
+              if vsVisible in Child.States then
+                Inc(NewHeight, Child.TotalHeight);
+              Child := Child.NextSibling;
+            until Child = nil;
+
+            // Getting the display rectangle is already done here as it is needed for toChildrenAbove in any case.
+            if (toChildrenAbove in FOptions.FPaintOptions) or (FUpdateCount = 0) then
+            begin
+              with ToggleData do
+              begin
+                Down := GetDisplayRect(Node, NoColumn, False);
+
+                // A visual appealing toggeling with toChildrenAbove is far more complex than without. The main goal
+                // is to keep the nodes visual position so the user does not get confused. As a result we need to
+                // scroll the view when the expanding is done. To determine what to do after expanding we need to check
+                // the cases below.
+                TotalFit := NewHeight + Integer(NodeHeight[Node]) <= ClientHeight;
+                PosHoldable := TotalFit and ((FOffsetY - NewHeight) >= -(Integer(FRangeY) - ClientHeight));
+                ChildrenInView := (Down.Top - NewHeight) >= 0;
+                NodeInView := (PosHoldable or ((Down.Bottom + NewHeight) <= ClientHeight))
+                  and (Down.Bottom < ClientHeight - 1);
+                Down.Bottom := ClientHeight;
+              end;
+            end;
+
+            if FUpdateCount = 0 then
+            begin
+              // Do animated expanding if enabled.
+              if (ToggleData.Down.Top < ClientHeight) and ([tsPainting, tsExpanding] * FStates = []) and
+                (toAnimatedToggle in FOptions.FAnimationOptions)then
+              begin
+                Application.CancelHint;
+                UpdateWindow(Handle);
+                // animated expanding
+                with ToggleData do
+                begin
+                  if toChildrenAbove in FOptions.FPaintOptions then
+                  begin
+                    if PosHoldable and ChildrenInView and NodeInView then
+                    begin
+                      // We are able and willing to keep the nodes position.
+                      Mode := tamScrollUp;
+                      Up := Rect(Down.Left, 0, Down.Right, Down.Top);
+                      Steps := NewHeight;
+                    end
+                    else
+                    begin
+                      // We are unable to keep the nodes position or some children would be invisible.
+                      if TotalFit and NodeInView // and ((Down.Top - NewHeight) < 0))
+                        or not (toAutoScrollOnExpand in FOptions.FAutoOptions) then
+                      begin
+                        // The whole subtree will fit into the client area or toAutoScrollOnExpand is not set, so we will
+                        // perform a simple scrolling.
+                        Mode := tamScrollDown;
+                        Steps := Min(Down.Bottom - Down.Top + 1, NewHeight);
+                      end
+                      else
+                      begin
+                        // The subtree does not completly fit into the client area. Therefore the expanded node will be
+                        // positioned at the bottom and therefore as many children as possible will be visible.
+                        Up := Rect(Down.Left, 0, Down.Right, Down.Top + 1);
+
+                        if BottomNode = Node then
+                        begin
+                          // The node is already at the bottom, so it is not necessary to scroll it down.
+                          Mode := tamScrollUp;
+                          Steps := Min(Up.Bottom - Up.Top, NewHeight);
+                        end
+                        else
+                        begin
+                          // This is the most interesting case. We will scroll horizontally and vertically at once so the
+                          // expanded node will become the bottom node and everything else is scrolled out to the top.
+                          // As we already checked that the node is not already at the bottom Steps cannot become 0.
+                          Mode := tamScrollBoth;
+                          Steps := Down.Bottom - Down.Top - Integer(NodeHeight[Node]);
+                          UpDownFactor := (Min(NewHeight - ClientHeight + Down.Top + Integer(NodeHeight[Node]),
+                            Up.Bottom - Up.Top))/Steps;
+                        end;
+                      end;
+                    end;
+                  end
+                  else
+                  begin
+                    Mode := tamScrollDown;
+                    Inc(Down.Top, NodeHeight[Node]);
+                    Steps := Min(Down.Bottom - Down.Top + 1, NewHeight);
+                  end;
+
+                  if Down.Bottom >= Down.Top then
+                  begin
+                    Window := Handle;
+                    DC := GetDC(Handle);
+
+                    Self.Brush.Color := Color;
+                    Brush := Self.Brush.Handle;
+                    try
+                      Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
+                    finally
+                      ReleaseDC(Window, DC);
+                    end;
+                  end;
+                end;
+              end;
+            end;
+
+            Include(Node.States, vsExpanded);
+            AdjustTotalHeight(Node, NewHeight, True);
+            if FullyVisible[Node] then
+              Inc(FVisibleCount, CountVisibleChildren(Node));
+
+            // Try to keep the node at the old position. This is done regardless of possibly set options as not doing so
+            // will almost surely confuse the user.
+            if (toChildrenAbove in FOptions.FPaintOptions) and ([tsPainting, tsExpanding] * FStates = []) then
+            begin
+              if (PosHoldable and ChildrenInView) and (ToggleData.Down.Top < ClientHeight) then
+              begin
+                UpdateRanges;
+                DoSetOffsetXY(Point(FOffsetX, FOffsetY - Integer(NewHeight) -
+                  Max(0, ToggleData.Down.Bottom - ClientHeight)), [suoRepaintScrollbars, suoUpdateNCArea]);
+                LockPosition := True;
+              end
+              else if TotalFit and NodeInView then
+                LockPosition := True;
+            end;
+
+            DoExpanded(Node);
+          end;
+        end;
+
+      if NeedUpdate then
+      begin
+        InvalidateCache;
+        if FUpdateCount = 0 then
+        begin
+          ValidateCache;
+          if Node.ChildCount > 0 then
+          begin
+            UpdateScrollbars(True);
+            // Scroll as much child nodes into view as possible if the node has been expanded.
+            // Additional check FStates as otherwise the the tree might get shifted while it is being drawn.
+            if (toAutoScrollOnExpand in FOptions.FAutoOptions) and (vsExpanded in Node.States)
+              and ([tsPainting, tsExpanding] * FStates = []) and (not LockPosition) then
+            begin
+              begin
+                if toChildrenAbove in FOptions.FPaintOptions then
+                begin
+                  if (not TotalFit) or (not NodeInView) then
+                    BottomNode := Node;
+                end
+                else
+                begin
+                  if Integer(Node.TotalHeight) <= ClientHeight then
+                      ScrollIntoView(GetLastChild(Node), toCenterScrollIntoView in FOptions.SelectionOptions)
+                  else
+                    TopNode := Node;
+                end;
+              end;
+            end;
+
+            // Check for automatically scrolled tree.
+            if (toChildrenAbove in FOptions.FPaintOptions) or (LastTopNode <> GetTopNode) then
+              Invalidate
+            else
+              InvalidateToBottom(Node);
+          end
           else
-            InvalidateToBottom(Node);
+            InvalidateNode(Node);
         end
         else
-          InvalidateNode(Node);
+          UpdateRanges;
       end;
+
+    finally
+      Exclude(Node.States, vsToggling);
     end;
-    Exclude(Node.States, vsToggling);
   end;
 end;
 
