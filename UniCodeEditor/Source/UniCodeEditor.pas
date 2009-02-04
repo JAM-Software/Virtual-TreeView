@@ -1,6 +1,6 @@
 unit UniCodeEditor;
 
-// Version 2.2.18
+// Version 2.2.20
 //
 // UniCodeEditor, a Unicode Source Code Editor for Delphi.
 //
@@ -25,9 +25,12 @@ unit UniCodeEditor;
 //
 //----------------------------------------------------------------------------------------------------------------------
 //
+// February 2009
+//   - Bug fix: inserting letters in overwrite mode unexpectedly deletes other characters.
 // April 2007
 //   - Bug fix: pressing Delete on the last line with the cursor at the end of the line removed the entire line.
 //   - Bug fix: SetBlockBegin assumed a char index instead column value for computation of the max X coordinate.
+//   - Change: ColumnToCharIndex and CharIndexToColumn are now public.
 // March 2007
 //   - Improvement: removal of line styles now removes all occurences of this style.
 // January 2007
@@ -113,10 +116,10 @@ unit UniCodeEditor;
 // Open issues:
 //   - Because the the control depends on Unicode.pas, which is still beta, also the syntax editor must be considered
 //     as being beta. In particular not all search (and replace) functionality is fully implemented and tested.
-//   - Although the edit works with wide strings, the highlighter do not yet, because new tools must to be created
+//   - Although the edit works with wide strings, the highlighter does not yet, because new tools must to be created
 //     to build new highlighter classes which fully support wide strings (see also my homepage for DCG, the
-//     Delphi Compiler Generator, which will soon be extended to create Unicode highlighters). The impact on the current
-//     implementation can be seen where the edit needs to act on the text like looking for word boundaries etc.
+//     Delphi Compiler Generator). The impact on the current implementation can be seen where the edit needs to act
+//     on the text like looking for word boundaries etc.
 //
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -139,7 +142,7 @@ uses
   UCEEditorKeyCommands, UCEHighlighter, UCEShared;
 
 const
-  UCEVersion = '2.2.18';
+  UCEVersion = '2.2.20';
 
   // Self defined cursors for drag'n'drop.
   crDragMove = 2910;
@@ -371,8 +374,6 @@ type
     procedure SetText(const Value: WideString);
   protected
     procedure Changed; virtual;
-    function CharIndexToColumn(Index: Integer): Integer;
-    function ColumnToCharIndex(Column: Integer): Integer;
     procedure ComputeCharacterWidths(TabSize, DefaultWidth: Integer);
     procedure DrawMarkers(Index: Integer; Canvas: TCanvas; X, Y: Integer); virtual;
     function GetLineEnd(IgnoreWhiteSpace: Boolean): Integer;
@@ -386,8 +387,10 @@ type
 
     procedure Assign(Source: TUCELine);
     function AddMarker(Marker: IUCELineMarker): Integer;
+    function CharIndexToColumn(Index: Integer): Integer;
     procedure ClearMarkers;
     procedure ClearStyles;
+    function ColumnToCharIndex(Column: Integer): Integer;
     function HasMarker(Marker: IUCELineMarker): Boolean;
     procedure Invalidate; virtual;
     procedure RemoveMarker(Marker: IUCELineMarker);
@@ -1626,67 +1629,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TUCELine.CharIndexToColumn(Index: Integer): Integer;
-
-// Computes the corresponding column from the given character position.
-
-var
-  I: Integer;
-  CharWidth: Integer;
-
-begin
-  InternalValidate;
-
-  I := 0;
-  Result := 0;
-  CharWidth := FOwner.FOwner.CharWidth;
-  while I < Index do
-  begin
-    if I < Length(FCharWidthArray) then
-      Inc(Result, FCharWidthArray[I])
-    else
-      Inc(Result, CharWidth);
-    Inc(I);
-  end;
-  Result := Result div CharWidth;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TUCELine.ColumnToCharIndex(Column: Integer): Integer;
-
-// Calculates the character index into the line given by Y. Column is usually a
-// caret position. Because of non-default width characters (like tabulators) the
-// CaretX position is merely a column value and does not directly correspond to a
-// particular character. The result can be used to address a character in the line
-// given by Y or is a generic char index if X is beyond any char in Y.
-
-var
-  Run: Integer;
-  CharWidth: Integer;
-
-begin
-  InternalValidate;
-
-  CharWidth := FOwner.FOwner.CharWidth;
-  Column := Column * CharWidth;
-  Run := 0;
-  Result := 0;
-  while Result < Length(FCharWidthArray) do
-  begin
-    Inc(Run, FCharWidthArray[Result]);
-    if Run > Column then
-      Break;
-    Inc(Result);
-  end;
-  // If the run is still smaller than the given column then add "virtual" chars
-  // to be able to add a character (far) beyond the current end of the line.
-  if Run < Column then
-    Inc(Result, (Column - Run) div CharWidth);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TUCELine.ComputeCharacterWidths(TabSize, DefaultWidth: Integer);
 
 // Creates an array of integer values describing the width of each character
@@ -1915,6 +1857,33 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TUCELine.CharIndexToColumn(Index: Integer): Integer;
+
+// Computes the corresponding column from the given character position.
+
+var
+  I: Integer;
+  CharWidth: Integer;
+
+begin
+  InternalValidate;
+
+  I := 0;
+  Result := 0;
+  CharWidth := FOwner.FOwner.CharWidth;
+  while I < Index do
+  begin
+    if I < Length(FCharWidthArray) then
+      Inc(Result, FCharWidthArray[I])
+    else
+      Inc(Result, CharWidth);
+    Inc(I);
+  end;
+  Result := Result div CharWidth;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TUCELine.ClearMarkers;
 
 // Removes all markers for that line.
@@ -1943,6 +1912,40 @@ begin
       IUCELineStyle(FStyles.List[I])._Release;
     FreeAndNil(FStyles);
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TUCELine.ColumnToCharIndex(Column: Integer): Integer;
+
+// Calculates the character index into the line given by Y. Column is usually a
+// caret position. Because of non-default width characters (like tabulators) the
+// CaretX position is merely a column value and does not directly correspond to a
+// particular character. The result can be used to address a character in the line
+// given by Y or is a generic char index if X is beyond any char in Y.
+
+var
+  Run: Integer;
+  CharWidth: Integer;
+
+begin
+  InternalValidate;
+
+  CharWidth := FOwner.FOwner.CharWidth;
+  Column := Column * CharWidth;
+  Run := 0;
+  Result := 0;
+  while Result < Length(FCharWidthArray) do
+  begin
+    Inc(Run, FCharWidthArray[Result]);
+    if Run > Column then
+      Break;
+    Inc(Result);
+  end;
+  // If the run is still smaller than the given column then add "virtual" chars
+  // to be able to add a character (far) beyond the current end of the line.
+  if Run < Column then
+    Inc(Result, (Column - Run) div CharWidth);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4957,8 +4960,8 @@ begin
         end
         else
         begin
+          BlockEnd := Point(FContent[FCaretY].NextCharPos(BlockBegin.X), FCaretY);
           FUndoList.PrepareReplaceChange(BlockBegin, BlockEnd, BlockBegin, NewText);
-          BlockEnd := Point(BlockBegin.X + FContent[FCaretY].NextCharPos(BlockBegin.X), FCaretY);
           SetSelText(NewText);
         end;
       end;
