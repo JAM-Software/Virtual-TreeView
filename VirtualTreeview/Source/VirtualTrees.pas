@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.8.1
+// Version 4.8.2
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,9 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  February 2009
+//   - Bug fix: reverted the implementation of DrawTextW back to the one prior to 4.8.1 as the line end detection
+//              lead to a compiler warning under Delphi 2009
+//   - Bug fix: corrected implementation of GetStringDrawRect to match its declaration (UnicodeString vs WideString)
 //   - Bug fix: the node focus will no longer change if a TVTMiscOption.toGridExtensions is set and one clicks right of
 //              (or left of, if right-to-left reading) the last column
 //   - Bug fix: fixed an issue with TVTHeader.Assign that could lead to an access violation if the header is created at
@@ -304,7 +307,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.8.1';
+  VTVersion = '4.8.2 ';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -4074,7 +4077,10 @@ var
     RaiseLastWin32Error;
   end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
   function IfThen(AValue: Boolean; const ATrue: Integer; const AFalse: Integer = 0): Integer;
+
   begin
     if AValue then
       Result := ATrue
@@ -4642,7 +4648,8 @@ begin
     begin
       Tail := Head;
       // Look for the end of the current line. A line is finished either by the string end or a line break.
-      while (nCount > 0) and not (Tail^ in [WideNull, WideCR, WideLF]) and (Tail^ <> WideLineSeparator) do
+      while (nCount > 0) and (Tail^ <> WideNull) and (Tail^ <> WideCR) and (Tail^ <> WideLF) and
+            (Tail^ <> WideLineSeparator) do
       begin
         Inc(Tail);
         Dec(nCount);
@@ -4894,7 +4901,7 @@ end;
 
 // Calculates bounds of a drawing rectangle for the given string
 
-procedure GetStringDrawRect(DC: HDC; const S: WideString; var Bounds: TRect; DrawFormat: Cardinal);
+procedure GetStringDrawRect(DC: HDC; const S: UnicodeString; var Bounds: TRect; DrawFormat: Cardinal);
 begin
   Bounds.Right := Bounds.Left + 1;
   Bounds.Bottom := Bounds.Top + 1;
