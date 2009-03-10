@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.8.2
+// Version 4.8.3
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,12 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  March 2009
+//   - Improvement: extended hot node tracking to track the hot column too
+//   - Improvement: new THitPosition hiOnItemButtonExact used to draw hot buttons when using Windows Vista's Explorer
+//                  theme
+//   - Improvement: new TVTPaintOption toHideTreeLinesIfThemed to consider toShowTreeLines only if running unthemed
+//   - Improvement: new TVTPaintOption toUseExplorerTheme to draw the tree like Windows Vista's Explorer treeview
 //  February 2009
 //   - Bug fix: reverted the implementation of DrawTextW back to the one prior to 4.8.1 as the line end detection
 //              lead to a compiler warning under Delphi 2009
@@ -35,7 +41,7 @@ unit VirtualTrees;
 //   - Bug fix: one can no longer change a node's height with the right mouse button even if toNodeHeightResize and
 //              toRightClickSelect are set
 //   - Improvement: TVTAutoOption.toDisableAutoScrollOnFocus now works for nodes too
-//   - Improvement: new property TBaseVirtualTree.SelectionLocked to disable changing the selection 
+//   - Improvement: new property TBaseVirtualTree.SelectionLocked to disable changing the selection
 //   - Improvement: made the dual-scroll effect in TBaseVirtualTree.ToggleNode much smoother
 //   - Bug fix: removed off-by-1 errors in TBaseVirtualTree.ToggleNode
 //   - Bug fix: added a check for FUpdateCount to TBaseVirtualTree.SetUpdateState as otherwise every call to
@@ -307,7 +313,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.8.2 ';
+  VTVersion = '4.8.3';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -425,6 +431,7 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
                          // and to allow for check of system dependent hint animation.
   IsWin2K: Boolean;      // Nessary to provide correct string shortage
   IsWinXP: Boolean;
+  IsWinVistaOrAbove: Boolean;
 
   {$MinEnumSize 1, make enumerations as small as possible}
 
@@ -521,22 +528,23 @@ type
 
   // These flags are returned by the hit test method.
   THitPosition = (
-    hiAbove,          // above the client area (if relative) or the absolute tree area
-    hiBelow,          // below the client area (if relative) or the absolute tree area
-    hiNowhere,        // no node is involved (possible only if the tree is not as tall as the client area)
-    hiOnItem,         // on the bitmaps/buttons or label associated with an item
-    hiOnItemButton,   // on the button associated with an item
-    hiOnItemCheckbox, // on the checkbox if enabled
-    hiOnItemIndent,   // in the indentation area in front of a node
-    hiOnItemLabel,    // on the normal text area associated with an item
-    hiOnItemLeft,     // in the area to the left of a node's text area (e.g. when right aligned or centered)
-    hiOnItemRight,    // in the area to the right of a node's text area (e.g. if left aligned or centered)
-    hiOnNormalIcon,   // on the "normal" image
-    hiOnStateIcon,    // on the state image
-    hiToLeft,         // to the left of the client area (if relative) or the absolute tree area
-    hiToRight,        // to the right of the client area (if relative) or the absolute tree area
-    hiUpperSplitter,  // in the upper splitter area of a node
-    hiLowerSplitter   // in the lower splitter area of a node
+    hiAbove,             // above the client area (if relative) or the absolute tree area
+    hiBelow,             // below the client area (if relative) or the absolute tree area
+    hiNowhere,           // no node is involved (possible only if the tree is not as tall as the client area)
+    hiOnItem,            // on the bitmaps/buttons or label associated with an item
+    hiOnItemButton,      // on the button associated with an item
+    hiOnItemButtonExact, // exactly on the button associated with an item
+    hiOnItemCheckbox,    // on the checkbox if enabled
+    hiOnItemIndent,      // in the indentation area in front of a node
+    hiOnItemLabel,       // on the normal text area associated with an item
+    hiOnItemLeft,        // in the area to the left of a node's text area (e.g. when right aligned or centered)
+    hiOnItemRight,       // in the area to the right of a node's text area (e.g. if left aligned or centered)
+    hiOnNormalIcon,      // on the "normal" image
+    hiOnStateIcon,       // on the state image
+    hiToLeft,            // to the left of the client area (if relative) or the absolute tree area
+    hiToRight,           // to the right of the client area (if relative) or the absolute tree area
+    hiUpperSplitter,     // in the upper splitter area of a node
+    hiLowerSplitter      // in the lower splitter area of a node
   );
   THitPositions = set of THitPosition;
 
@@ -656,7 +664,9 @@ type
     toUseBlendedSelection,     // Enable alpha blending for node selections.
     toStaticBackground,        // Show simple static background instead of a tiled one.
     toChildrenAbove,           // Display child nodes above their parent.
-    toFixedIndent              // Draw the tree with a fixed indent.
+    toFixedIndent,             // Draw the tree with a fixed indent.
+    toUseExplorerTheme,        // Use the explorer theme if run under Windows Vista (or above)
+    toHideTreeLinesIfThemed    // Do not show tree lines if theming is used 
   );
   TVTPaintOptions = set of TVTPaintOption;
 
@@ -2100,6 +2110,8 @@ type
     FLastStructureChangeNode,                    // dito
     FLastChangedNode,                            // used for delayed change event
     FCurrentHotNode: PVirtualNode;               // Node over which the mouse is hovering.
+    FCurrentHotColumn: TColumnIndex;             // Column over which the mouse is hovering.
+    FHotNodeButtonHit: Boolean;                  // Indicates wether the mouse is hovering over the hot node's button.
     FLastSelRect,
     FNewSelRect: TRect;                          // used while doing draw selection
     FHotCursor: TCursor;                         // can be set to additionally indicate the current hot node
@@ -2723,8 +2735,8 @@ type
     procedure Paint; override;
     procedure PaintCheckImage(const PaintInfo: TVTPaintInfo); virtual;
     procedure PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean); virtual;
-    procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; const R: TRect; ButtonX, ButtonY: Integer;
-      BidiMode: TBiDiMode); virtual;
+    procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect; ButtonX,
+      ButtonY: Integer; BidiMode: TBiDiMode); virtual;
     procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer;
       LineImage: TLineImage); virtual;
     procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: Integer; const SelectionRect: TRect;
@@ -5715,6 +5727,7 @@ begin
   IsWinNT := (Win32Platform and VER_PLATFORM_WIN32_NT) <> 0;
   IsWin2K := (Win32MajorVersion = 5) and (Win32MinorVersion = 0);
   IsWinXP := (Win32MajorVersion = 5) and (Win32MinorVersion = 1);
+  IsWinVistaOrAbove := (Win32MajorVersion >= 6);
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
   NeedToUnitialize := Succeeded(OleInitialize(nil));
@@ -6283,12 +6296,16 @@ begin
       if not (csLoading in ComponentState) and HandleAllocated then
       begin
         {$ifdef ThemeSupport}
-          if toThemeAware in ToBeSet + ToBeCleared then
+          if (toThemeAware in ToBeSet + ToBeCleared) or (toUseExplorerTheme in ToBeSet + ToBeCleared) then
           begin
             if (toThemeAware in ToBeSet) and ThemeServices.ThemesEnabled then
               DoStateChange([tsUseThemes])
-            else
+            else if (toThemeAware in ToBeCleared) then
               DoStateChange([], [tsUseThemes]);
+
+            if (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) and IsWinVistaOrAbove then
+              SetWindowTheme(Handle, 'explorer', nil);
+
             PrepareBitmaps(True, False);
             RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME);
           end
@@ -14344,7 +14361,8 @@ begin
         else
         begin
           if (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
-            (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) then
+             (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) and not
+             ((tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) and IsWinVistaOrAbove) then
           begin
             if toShowHorzGridLines in FOptions.PaintOptions then
               Dec(R.Bottom);
@@ -15139,7 +15157,8 @@ begin
   SetLength(LineImage, X);
 
   // Only use lines if requested.
-  if toShowTreeLines in FOptions.FPaintOptions then
+  if (toShowTreeLines in FOptions.FPaintOptions) and
+     (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or not (tsUseThemes in FStates)) then
   begin
     if toChildrenAbove in FOptions.FPaintOptions then
     begin
@@ -15195,7 +15214,8 @@ begin
       end;
 
       // Prepare root level. Run points at this stage to a top level node.
-      if (toShowRoot in FOptions.FPaintOptions) and (toShowTreeLines in FOptions.FPaintOptions) then
+      if (toShowRoot in FOptions.FPaintOptions) and ((toShowTreeLines in FOptions.FPaintOptions) and
+         (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or not (tsUseThemes in FStates))) then
       begin
         // Is the top node a root node?
         if Run = Node then
@@ -15461,18 +15481,37 @@ const
 var
   PatternBitmap: HBITMAP;
   Bits: Pointer;
+  Size: TSize;
   {$ifdef ThemeSupport}
     Details: TThemedElementDetails;
+    Theme: HTHEME;
+    R: TRect;
   {$endif ThemeSupport}
 
 begin
+  Size.cx := 9;
+  Size.cy := 9;
+
+  {$ifdef ThemeSupport}
+    // Under Windows Vista the size of the glyphs differ from 9x9 when the explorer theme is used. Since the
+    // glyphs are also partly transparent FPlusBM and FMinusBM are not used in that case, but for the sake of
+    // simplicity we set their size so that the positioning code for the glyps remains the same.
+    if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
+    begin
+      Theme := OpenThemeData(Handle, 'TREEVIEW');
+      R := Rect(0, 0, 100, 100);
+      GetThemePartSize(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, @R, TS_TRUE, Size);
+      CloseThemeData(Theme);
+    end;
+  {$endif ThemeSupport}
+
   if NeedButtons then
   begin
     with FMinusBM, Canvas do
     begin
       // box is always of odd size
-      Width := 9;
-      Height := Width;
+      Width := Size.cx;
+      Height := Size.cy;
       Transparent := True;
       TransparentColor := clFuchsia;
       Brush.Color := clFuchsia;
@@ -15507,8 +15546,8 @@ begin
 
     with FPlusBM, Canvas do
     begin
-      Width := 9;
-      Height := Width;
+      Width := Size.cx;
+      Height := Size.cy;
       Transparent := True;
       TransparentColor := clFuchsia;
       Brush.Color := clFuchsia;
@@ -15585,9 +15624,19 @@ procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, 
 var
   TextColorBackup,
   BackColorBackup: COLORREF;
+  FocusRect,
   InnerRect: TRect;
+  {$ifdef ThemeSupport}
+    RowRect: TRect;
+    Theme: HTHEME;
 
-  //--------------- local function --------------------------------------------
+    {$ifndef COMPILER_11_UP}
+      const
+        TREIS_HOTSELECTED = 6;
+    {$endif COMPILER_11_UP}
+  {$endif ThemeSupport}
+
+  //--------------- local functions -------------------------------------------
 
   procedure AlphaBlendSelection(Color: TColor);
 
@@ -15609,12 +15658,36 @@ var
       FSelectionBlendFactor, ColorToRGB(Color));
   end;
 
-  //--------------- end local function ----------------------------------------
+  //---------------------------------------------------------------------------
+
+  {$ifdef ThemeSupport}
+    procedure DrawBackground(State: Integer);
+    begin
+      with PaintInfo do
+        if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
+          DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, RowRect, @CellRect)
+        else
+          DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
+    end;
+  {$endif ThemeSupport}
+
+  //--------------- end local functions ---------------------------------------
 
 begin
+  {$ifdef ThemeSupport}
+    if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
+    begin
+      RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
+      if toShowVertGridLines in FOptions.PaintOptions then
+        Dec(RowRect.Right);
+      Theme := OpenThemeData(Handle, 'TREEVIEW');
+    end
+    else
+      Theme := 0;
+  {$endif ThemeSupport}
+
   with PaintInfo, Canvas do
   begin
-
     // Fill cell background if its color differs from tree background.
     with FHeader.FColumns do
       if poColumnColor in PaintOptions then
@@ -15628,30 +15701,30 @@ begin
 
     InnerRect := ContentRect;
 
+    // The selection rectangle depends on alignment.
+    if not (toGridExtensions in FOptions.FMiscOptions) then
+    begin
+      case Alignment of
+        taLeftJustify:
+          with InnerRect do
+            if Left + NodeWidth < Right then
+              Right := Left + NodeWidth;
+        taCenter:
+          with InnerRect do
+            if (Right - Left) > NodeWidth then
+            begin
+              Left := (Left + Right - NodeWidth) div 2;
+              Right := Left + NodeWidth;
+            end;
+        taRightJustify:
+          with InnerRect do
+            if (Right - Left) > NodeWidth then
+              Left := Right - NodeWidth;
+      end;
+    end;
+
     if (Column = FFocusedColumn) or (toFullRowSelect in FOptions.FSelectionOptions) then
     begin
-      // The selection rectangle depends on alignment.
-      if not (toGridExtensions in FOptions.FMiscOptions) then
-      begin
-        case Alignment of
-          taLeftJustify:
-            with InnerRect do
-              if Left + NodeWidth < Right then
-                Right := Left + NodeWidth;
-          taCenter:
-            with InnerRect do
-              if (Right - Left) > NodeWidth then
-              begin
-                Left := (Left + Right - NodeWidth) div 2;
-                Right := Left + NodeWidth;
-              end;
-          taRightJustify:
-            with InnerRect do
-              if (Right - Left) > NodeWidth then
-                Left := Right - NodeWidth;
-        end;
-      end;
-
       // Fill the selection rectangle.
       if poDrawSelection in PaintOptions then
       begin
@@ -15694,6 +15767,16 @@ begin
             if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
+              {$ifdef ThemeSupport}
+                if Theme <> 0 then
+                begin
+                  // If the node is also hot, its background will be drawn later.
+                  if not (toHotTrack in FOptions.FPaintOptions) or (Node <> FCurrentHotNode) or
+                     ((Column <> FCurrentHotColumn) and not (toFullRowSelect in FOptions.FSelectionOptions)) then
+                    DrawBackground(IfThen(Self.Focused, TREIS_SELECTED, TREIS_SELECTEDNOTFOCUS));
+                end
+                else
+              {$endif ThemeSupport}
               if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
                 AlphaBlendSelection(Brush.Color)
               else
@@ -15701,26 +15784,58 @@ begin
                   RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end;
       end;
+    end;
 
+    {$ifdef ThemeSupport}
+      if (Theme <> 0) and (toHotTrack in FOptions.FPaintOptions) and (Node = FCurrentHotNode) and
+         ((Column = FCurrentHotColumn) or (toFullRowSelect in FOptions.FSelectionOptions)) then
+        DrawBackground(IfThen((vsSelected in Node.States) and not (toAlwaysHideSelection in FOptions.FPaintOptions),
+                              TREIS_HOTSELECTED, TREIS_HOT));
+    {$endif ThemeSupport}
+
+    if (Column = FFocusedColumn) or (toFullRowSelect in FOptions.FSelectionOptions) then
+    begin
       // draw focus rect
-      if (poDrawFocusRect in PaintOptions) and (Column = FFocusedColumn) and
-        (Focused or (toPopupMode in FOptions.FPaintOptions)) and (FFocusedNode = Node) then
+      if (poDrawFocusRect in PaintOptions) and
+         (Focused or (toPopupMode in FOptions.FPaintOptions)) and (FFocusedNode = Node) and
+         ( (Column = FFocusedColumn)
+           {$ifdef ThemeSupport} or
+             (not (toExtendedFocus in FOptions.FSelectionOptions) and
+             (toFullRowSelect in FOptions.FSelectionOptions) and
+             (Theme <> 0) )
+          {$endif ThemeSupport}
+         ) then
       begin
         TextColorBackup := GetTextColor(Handle);
         SetTextColor(Handle, $FFFFFF);
         BackColorBackup := GetBkColor(Handle);
         SetBkColor(Handle, 0);
 
+        {$ifdef ThemeSupport}
+          if not (toExtendedFocus in FOptions.FSelectionOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
+            (Theme <> 0) then
+            FocusRect := RowRect
+          else
+        {$endif ThemeSupport}
         if toGridExtensions in FOptions.FMiscOptions then
-          Windows.DrawFocusRect(Handle, CellRect)
+          FocusRect := CellRect
         else
-          Windows.DrawFocusRect(Handle, InnerRect);
+          FocusRect := InnerRect;
 
+        {$ifdef ThemeSupport}
+          if Theme <> 0 then
+            InflateRect(FocusRect, -1, -1);
+        {$endif ThemeSupport}
+
+        Windows.DrawFocusRect(Handle, FocusRect);
         SetTextColor(Handle, TextColorBackup);
         SetBkColor(Handle, BackColorBackup);
       end;
     end;
   end;
+
+  if Theme <> 0 then
+    CloseThemeData(Theme);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19824,7 +19939,11 @@ begin
 
   {$ifdef ThemeSupport}
     if ThemeServices.ThemesEnabled and (toThemeAware in TreeOptions.PaintOptions) then
-      DoStateChange([tsUseThemes])
+    begin
+      DoStateChange([tsUseThemes]);
+      if (toUseExplorerTheme in FOptions.FPaintOptions) and IsWinVistaOrAbove then
+        SetWindowTheme(Handle, 'explorer', nil);
+    end
     else
   {$endif ThemeSupport}
     DoStateChange([], [tsUseThemes]);
@@ -19981,6 +20100,8 @@ begin
       // indentation level is accepted as button hit.
       if Offset >= Indent - Integer(FIndent) then
         Include(HitInfo.HitPositions, hiOnItemButton);
+      if Offset >= Indent - FPlusBM.Width then
+        Include(HitInfo.HitPositions, hiOnItemButtonExact);
     end;
     // no button hit so position is on indent
     if HitInfo.HitPositions = [] then
@@ -20116,6 +20237,8 @@ begin
       // indentation level is accepted as button hit.
       if Offset <= Right + Integer(FIndent) then
         Include(HitInfo.HitPositions, hiOnItemButton);
+      if Offset <= Right + FPlusBM.Width then
+        Include(HitInfo.HitPositions, hiOnItemButtonExact);
     end;
     // no button hit so position is on indent
     if HitInfo.HitPositions = [] then
@@ -22798,25 +22921,43 @@ procedure TBaseVirtualTree.HandleHotTrack(X, Y: Integer);
 
 var
   HitInfo: THitInfo;
+  CheckPositions: THitPositions;
+  ButtonIsHit,
   DoInvalidate: Boolean;
 
 begin
+  DoInvalidate := False;
   // Get information about the hit.
   GetHitTestInfoAt(X, Y, True, HitInfo);
+
   // Only make the new node being "hot" if its label is hit or full row selection is enabled.
-  if ([hiOnItemLabel, hiOnItemCheckbox] * HitInfo.HitPositions = []) and
-    not (toFullRowSelect in FOptions.FSelectionOptions) then
+  CheckPositions := [hiOnItemLabel, hiOnItemCheckbox];
+
+  // If running under Windows Vista using the explorer theme hitting the buttons makes the node hot, too.
+  if (IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions)) then
+    Include(CheckPositions, hiOnItemButtonExact);
+
+  if (CheckPositions * HitInfo.HitPositions = []) and not (toFullRowSelect in FOptions.FSelectionOptions) then
     HitInfo.HitNode := nil;
-  if HitInfo.HitNode <> FCurrentHotNode then
+  if (HitInfo.HitNode <> FCurrentHotNode) or (HitInfo.HitColumn <> FCurrentHotColumn) then
   begin
     DoInvalidate := (toHotTrack in FOptions.PaintOptions) or (toCheckSupport in FOptions.FMiscOptions);
     DoHotChange(FCurrentHotNode, HitInfo.HitNode);
     if Assigned(FCurrentHotNode) and DoInvalidate then
       InvalidateNode(FCurrentHotNode);
     FCurrentHotNode := HitInfo.HitNode;
-    if Assigned(FCurrentHotNode) and DoInvalidate then
-      InvalidateNode(FCurrentHotNode);
+    FCurrentHotColumn := HitInfo.HitColumn;
   end;
+
+  ButtonIsHit := hiOnItemButtonExact in HitInfo.HitPositions;
+  if Assigned(FCurrentHotNode) and ((FHotNodeButtonHit <> ButtonIsHit) or DoInvalidate) then
+  begin
+    FHotNodeButtonHit := ButtonIsHit and (toHotTrack in FOptions.FPaintOptions);
+    InvalidateNode(FCurrentHotNode);
+  end
+  else
+    if not Assigned(FCurrentHotNode) then
+      FHotNodeButtonHit := False;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24632,12 +24773,23 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; const R: TRect; ButtonX,
-  ButtonY: Integer; BidiMode: TBiDiMode);
+procedure TBaseVirtualTree.PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect;
+  ButtonX, ButtonY: Integer; BidiMode: TBiDiMode);
 
 var
   Bitmap: TBitmap;
   XPos: Integer;
+  {$ifdef ThemeSupport}
+    Theme: HTHEME;
+    Part,
+    State: Integer;
+    ButtonRect: TRect;
+
+    {$ifndef COMPILER_11_UP}
+      const
+        TVP_HOTGLYPH = 4;
+    {$endif COMPILER_11_UP}
+  {$endif ThemeSupport}
 
 begin
   if vsExpanded in Node.States then
@@ -24651,6 +24803,18 @@ begin
   else
     XPos := R.Right - ButtonX - Bitmap.Width;
 
+  {$ifdef ThemeSupport}
+    if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
+    begin
+      Theme := OpenThemeData(Handle, 'TREEVIEW');
+      Part  := IfThen((Node = FCurrentHotNode)and FHotNodeButtonHit, TVP_HOTGLYPH, TVP_GLYPH);
+      State := IfThen(vsExpanded in Node.States, GLPS_OPENED, GLPS_CLOSED);
+      ButtonRect := Rect(XPos, R.Top + ButtonY, XPos + FPlusBM.Width, R.Top + ButtonY + FPlusBM.Height);
+      DrawThemeBackground(Theme, Canvas.Handle, Part, State, ButtonRect, nil);
+      CloseThemeData(Theme);
+    end
+    else
+  {$endif ThemeSupport}
   // Need to draw this masked.
   Canvas.Draw(XPos, R.Top + ButtonY, Bitmap);
 end;
@@ -30531,14 +30695,16 @@ begin
                           // Some parts are only drawn for the main column.
                           if IsMainColumn then
                           begin
-                            if toShowTreeLines in FOptions.FPaintOptions then
+                            if (toShowTreeLines in FOptions.FPaintOptions) and
+                               (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or
+                                not (tsUseThemes in FStates)) then
                               PaintTreeLines(PaintInfo, VAlign, IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize), LineImage);
                             // Show node button if allowed, if there child nodes and at least one of the child
                             // nodes is visible or auto button hiding is disabled.
                             if (toShowButtons in FOptions.FPaintOptions) and (vsHasChildren in Node.States) and
                               not ((vsAllChildrenHidden in Node.States) and
                               (toAutoHideButtons in TreeOptions.FAutoOptions)) then
-                              PaintNodeButton(Canvas, Node, CellRect, ButtonX, ButtonY, BidiMode);
+                              PaintNodeButton(Canvas, Node, Column, CellRect, ButtonX, ButtonY, BidiMode);
 
                             if ImageInfo[iiCheck].Index > -1 then
                               PaintCheckImage(PaintInfo);
@@ -33160,7 +33326,9 @@ begin
 
     if (toHotTrack in FOptions.FPaintOptions) and (Node = FCurrentHotNode) then
     begin
-      Canvas.Font.Style := Canvas.Font.Style + [fsUnderline];
+      if not IsWinVistaOrAbove or not (tsUseThemes in FStates) or
+         not (toUseExplorerTheme in FOptions.FPaintOptions) then
+        Canvas.Font.Style := Canvas.Font.Style + [fsUnderline];
       Canvas.Font.Color := FColors.HotColor;
     end;
 
@@ -33171,13 +33339,17 @@ begin
       begin
         if Node = FDropTargetNode then
         begin
-          if (FLastDropMode = dmOnNode) or (vsSelected in Node.States)then
+          if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) and
+             (not IsWinVistaOrAbove or not (tsUseThemes in FStates) or
+              not (toUseExplorerTheme in FOptions.FPaintOptions)) then
             Canvas.Font.Color := clHighlightText;
         end
         else
           if vsSelected in Node.States then
           begin
-            if Focused or (toPopupMode in FOptions.FPaintOptions) then
+            if (Focused or (toPopupMode in FOptions.FPaintOptions)) and
+               (not IsWinVistaOrAbove or not (tsUseThemes in FStates) or
+                not (toUseExplorerTheme in FOptions.FPaintOptions)) then
               Canvas.Font.Color := clHighlightText;
           end;
       end;
@@ -33190,7 +33362,7 @@ end;
 procedure TCustomVirtualStringTree.PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer;
   Text: UnicodeString);
 
-// This method is responsible for painting the given test to target canvas (under consideration of the given rectangles).
+// This method is responsible for painting the given text to target canvas (under consideration of the given rectangles).
 // The text drawn here is considered as the normal text in a node.
 // Note: NodeWidth is the actual width of the text to be drawn. This does not necessarily correspond to the width of
 //       the node rectangle. The clipping rectangle comprises the entire node (including tree lines, buttons etc.).
