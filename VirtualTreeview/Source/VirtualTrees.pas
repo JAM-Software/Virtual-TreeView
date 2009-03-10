@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.8.3
+// Version 4.8.4
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  March 2009
+//   - Bug fix: corrected TBaseVirtualTree.GetVisibleParent
 //   - Improvement: extended hot node tracking to track the hot column too
 //   - Improvement: new THitPosition hiOnItemButtonExact used to draw hot buttons when using Windows Vista's Explorer
 //                  theme
@@ -313,7 +314,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.8.3';
+  VTVersion = '4.8.4';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -29701,20 +29702,8 @@ begin
   Assert(Assigned(Node), 'Node must not be nil.');
 
   Result := Node;
-  while Result <> FRoot do
-  begin
-    // FRoot is always expanded hence the loop will safely stop there if no other node is expanded
-    repeat
-      Result := Result.Parent;
-    until vsExpanded in Result.States;
-
-    if (Result = FRoot) or FullyVisible[Result] then
-      Break;
-
-    // if there is still a collapsed parent node then advance to it and repeat the entire loop
-    while (Result <> FRoot) and (vsExpanded in Result.Parent.States) do
-      Result := Result.Parent;
-  end;
+  while (Result <> FRoot) and not FullyVisible[Result] do
+    Result := Result.Parent;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
