@@ -121,8 +121,8 @@
 		<Directories>
 			<Directories Name="OutputDir"></Directories>
 			<Directories Name="UnitOutputDir">..\..\intermediate</Directories>
-			<Directories Name="PackageDLLOutputDir">D:\Work\MySQL\Output</Directories>
-			<Directories Name="PackageDCPOutputDir">D:\Work\MySQL\Output</Directories>
+			<Directories Name="PackageDLLOutputDir">..\..\..\..\..\Output</Directories>
+			<Directories Name="PackageDCPOutputDir">..\..\..\..\..\Output</Directories>
 			<Directories Name="SearchPath">..\..\Source;..\..\..\Common</Directories>
 			<Directories Name="Packages"></Directories>
 			<Directories Name="Conditionals"></Directories>
@@ -165,7 +165,12 @@
 			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
 			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
-		</VersionInfoKeys>  <Excluded_Packages>
+		</VersionInfoKeys>
+		<Language>
+			<Language Name="ActiveLang"></Language>
+			<Language Name="ProjectLang">$00000000</Language>
+			<Language Name="RootDir"></Language>
+		</Language>  <Excluded_Packages>
       <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dclIndyCore100.bpl">Indy 10 Core Design Time</Excluded_Packages>
       <Excluded_Packages Name="D:\Work\MySQL\output\TntUnicodeVcl_Design100.bpl">TntWare Unicode Controls</Excluded_Packages>
       <Excluded_Packages Name="C:\Programme\Borland\BDS\4.0\Bin\dcltee100.bpl">TeeChart Components</Excluded_Packages>

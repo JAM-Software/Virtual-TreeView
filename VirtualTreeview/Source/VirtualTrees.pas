@@ -1,4 +1,4 @@
-unit VirtualTrees;
+﻿unit VirtualTrees;
 
 // Version 4.8.6
 //
@@ -611,9 +611,8 @@ type
     ckFlat,           // flat images (no 3D border)
     ckXP,             // Windows XP style
     ckCustom,         // application defined check images
-    ckSystem,         // System defined check images.
     ckSystemFlat,     // Flat system defined check images.
-    ckSystemDefault   // Uses the system check images, theme aware
+    ckSystemDefault   // Uses the system check images, theme aware.
   );
 
   // mode to describe a move action
@@ -12157,19 +12156,20 @@ begin
           Message.Result := 0;
           Result := True;
         end
-        else if InHeader(P) and (Message.Msg <> WM_LBUTTONDBLCLK) then
-        begin
-          case Message.Msg of
-            WM_NCMBUTTONDBLCLK:
-              Button := mbMiddle;
-            WM_NCRBUTTONDBLCLK:
-              Button := mbRight;
-          else
-            // WM_NCLBUTTONDBLCLK
-            Button := mbLeft;
+        else
+          if InHeader(P) and (Message.Msg <> WM_LBUTTONDBLCLK) then
+          begin
+            case Message.Msg of
+              WM_NCMBUTTONDBLCLK:
+                Button := mbMiddle;
+              WM_NCRBUTTONDBLCLK:
+                Button := mbRight;
+            else
+              // WM_NCLBUTTONDBLCLK
+              Button := mbLeft;
+            end;
+            FColumns.HandleClick(P, Button, True, True);
           end;
-          FColumns.HandleClick(P, Button, True, True);
-        end;
       end;
     // The "hot" area of the headers horizontal splitter is partly within the client area of the the tree, so we need
     // to handle WM_LBUTTONDOWN here, too.
@@ -14056,158 +14056,150 @@ begin
   // A priori nothing changes.
   Result := False;
 
-  // If the old rectangle is empty then we just started the drag selection.
-  // So we just copy the new rectangle to the old and get out of here.
-  if (OldRect.Top < OldRect.Bottom) or (OldRect.Right < OldRect.Left) and
-     ((OldRect.Left <> OldRect.Right) or (OldRect.Top <> OldRect.Bottom)) then
-    OldRect := NewRect
+  // Determine minimum and maximum vertical coordinates to limit iteration to.
+  MinY := Min(OldRect.Top, NewRect.Top);
+  MaxY := Max(OldRect.Bottom, NewRect.Bottom);
+
+  // Initialize short hand variables to speed up tests below.
+  DoSwitch := ssCtrl in FDrawSelShiftState;
+  WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
+  // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
+  WithImages := Assigned(FImages);
+  if WithImages then
+    ImageOffset := FImages.Width + 2
   else
+    ImageOffset := 0;
+  WithStateImages := Assigned(FStateImages);
+  if WithStateImages then
+    StateImageOffset := FStateImages.Width + 2
+  else
+    StateImageOffset := 0;
+  if WithCheck then
+    CheckOffset := FCheckImages.Width + 2
+  else
+    CheckOffset := 0;
+  AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
+  SimpleSelection := toSimpleDrawSelection in FOptions.FSelectionOptions;
+
+  // This is the node to start with.
+  Run := GetNodeAt(0, MinY, False, CurrentTop);
+
+  if Assigned(Run) then
   begin
-    // Determine minimum and maximum vertical coordinates to limit iteration to.
-    MinY := Min(OldRect.Top, NewRect.Top);
-    MaxY := Max(OldRect.Bottom, NewRect.Bottom);
-
-    // Initialize short hand variables to speed up tests below.
-    DoSwitch := ssCtrl in FDrawSelShiftState;
-    WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
-    // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
-    WithImages := Assigned(FImages);
-    if WithImages then
-      ImageOffset := FImages.Width + 2
+    // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
+    if toShowRoot in FOptions.FPaintOptions then
+      Inc(NodeLeft, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
     else
-      ImageOffset := 0;
-    WithStateImages := Assigned(FStateImages);
-    if WithStateImages then
-      StateImageOffset := FStateImages.Width + 2
-    else
-      StateImageOffset := 0;
-    if WithCheck then
-      CheckOffset := FCheckImages.Width + 2
-    else
-      CheckOffset := 0;
-    AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
-    SimpleSelection := toSimpleDrawSelection in FOptions.FSelectionOptions;
+      Inc(NodeLeft, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
 
-    // This is the node to start with.
-    Run := GetNodeAt(0, MinY, False, CurrentTop);
+    // ----- main loop
+    // Change selection depending on the node's rectangle being in the selection rectangle or not, but
+    // touch only those nodes which overlap either the old selection rectangle or the new one but not both.
+    repeat
+      // Collect offsets for check, normal and state images.
+      TextLeft := NodeLeft;
+      if WithCheck and (Run.CheckType <> ctNone) then
+        Inc(TextLeft, CheckOffset);
+      if WithImages and HasImage(Run, ikNormal, MainColumn) then
+        Inc(TextLeft, ImageOffset);
+      if WithStateImages and HasImage(Run, ikState, MainColumn) then
+        Inc(TextLeft, StateImageOffset);
 
-    if Assigned(Run) then
-    begin
-      // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
-      if toShowRoot in FOptions.FPaintOptions then
-        Inc(NodeLeft, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+      // Ensure the node's height is determined.
+      MeasureItemHeight(Canvas, Run);
+
+      NextTop := CurrentTop + Integer(NodeHeight[Run]);
+
+      // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
+      // required. Only top and bottom bounds of the rectangle matter.
+      if SimpleSelection then
+      begin
+        IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
+        IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+      end
       else
-        Inc(NodeLeft, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
-
-      // ----- main loop
-      // Change selection depending on the node's rectangle being in the selection rectangle or not, but
-      // touch only those nodes which overlap either the old selection rectangle or the new one but not both.
-      repeat
-        // Collect offsets for check, normal and state images.
-        TextLeft := NodeLeft;
-        if WithCheck and (Run.CheckType <> ctNone) then
-          Inc(TextLeft, CheckOffset);
-        if WithImages and HasImage(Run, ikNormal, MainColumn) then
-          Inc(TextLeft, ImageOffset);
-        if WithStateImages and HasImage(Run, ikState, MainColumn) then
-          Inc(TextLeft, StateImageOffset);
-
-        // Ensure the node's height is determined.
-        MeasureItemHeight(Canvas, Run);
-
-        NextTop := CurrentTop + Integer(NodeHeight[Run]);
-
-        // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
-        // required. Only top and bottom bounds of the rectangle matter.
-        if SimpleSelection then
+      begin
+        // The right column border might be extended if column spanning is enabled.
+        if AutoSpan then
         begin
-          IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
-          IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+          with FHeader.FColumns do
+          begin
+            NextColumn := MainColumn;
+            repeat
+              Dummy := GetNextVisibleColumn(NextColumn);
+              if (Dummy = InvalidColumn) or not ColumnIsEmpty(Run, Dummy) or
+                (Items[Dummy].BidiMode <> bdLeftToRight) then
+                Break;
+              NextColumn := Dummy;
+            until False;
+            if NextColumn = MainColumn then
+              CurrentRight := NodeRight
+            else
+              GetColumnBounds(NextColumn, Dummy, CurrentRight);
+          end;
+        end
+        else
+          CurrentRight := NodeRight;
+
+        // Check if we need the node's width. This is the case when the node is not left aligned or the
+        // left border of the selection rectangle is to the right of the left node border.
+        if (TextLeft < OldRect.Left) or (TextLeft < NewRect.Left) or (Alignment <> taLeftJustify) then
+        begin
+          NodeWidth := DoGetNodeWidth(Run, MainColumn);
+          if NodeWidth >= (CurrentRight - TextLeft) then
+            TextRight := CurrentRight
+          else
+            case Alignment of
+              taLeftJustify:
+                TextRight := TextLeft + NodeWidth;
+              taCenter:
+                begin
+                  TextLeft := (TextLeft + CurrentRight - NodeWidth) div 2;
+                  TextRight := TextLeft + NodeWidth;
+                end;
+            else
+              // taRightJustify
+              TextRight := CurrentRight;
+              TextLeft := TextRight - NodeWidth;
+            end;
+        end
+        else
+          TextRight := CurrentRight;
+
+        // Now determine whether we need to change the state.
+        IsInOldRect := (OldRect.Left <= TextRight) and (OldRect.Right >= TextLeft) and
+          (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
+        IsInNewRect := (NewRect.Left <= TextRight) and (NewRect.Right >= TextLeft) and
+          (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+      end;
+
+      if IsInOldRect xor IsInNewRect then
+      begin
+        Result := True;
+        if DoSwitch then
+        begin
+          if vsSelected in Run.States then
+            InternalRemoveFromSelection(Run)
+          else
+            InternalCacheNode(Run);
         end
         else
         begin
-          // The right column border might be extended if column spanning is enabled.
-          if AutoSpan then
-          begin
-            with FHeader.FColumns do
-            begin
-              NextColumn := MainColumn;
-              repeat
-                Dummy := GetNextVisibleColumn(NextColumn);
-                if (Dummy = InvalidColumn) or not ColumnIsEmpty(Run, Dummy) or
-                  (Items[Dummy].BidiMode <> bdLeftToRight) then
-                  Break;
-                NextColumn := Dummy;
-              until False;
-              if NextColumn = MainColumn then
-                CurrentRight := NodeRight
-              else
-                GetColumnBounds(NextColumn, Dummy, CurrentRight);
-            end;
-          end
+          if IsInNewRect then
+            InternalCacheNode(Run)
           else
-            CurrentRight := NodeRight;
-
-          // Check if we need the node's width. This is the case when the node is not left aligned or the
-          // left border of the selection rectangle is to the right of the left node border.
-          if (TextLeft < OldRect.Left) or (TextLeft < NewRect.Left) or (Alignment <> taLeftJustify) then
-          begin
-            NodeWidth := DoGetNodeWidth(Run, MainColumn);
-            if NodeWidth >= (CurrentRight - TextLeft) then
-              TextRight := CurrentRight
-            else
-              case Alignment of
-                taLeftJustify:
-                  TextRight := TextLeft + NodeWidth;
-                taCenter:
-                  begin
-                    TextLeft := (TextLeft + CurrentRight - NodeWidth) div 2;
-                    TextRight := TextLeft + NodeWidth;
-                  end;
-              else
-                // taRightJustify
-                TextRight := CurrentRight;
-                TextLeft := TextRight - NodeWidth;
-              end;
-          end
-          else
-            TextRight := CurrentRight;
-
-          // Now determine whether we need to change the state.
-          IsInOldRect := (OldRect.Left <= TextRight) and (OldRect.Right >= TextLeft) and
-            (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
-          IsInNewRect := (NewRect.Left <= TextRight) and (NewRect.Right >= TextLeft) and
-            (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+            InternalRemoveFromSelection(Run);
         end;
+      end;
 
-        if IsInOldRect xor IsInNewRect then
-        begin
-          Result := True;
-          if DoSwitch then
-          begin
-            if vsSelected in Run.States then
-              InternalRemoveFromSelection(Run)
-            else
-              InternalCacheNode(Run);
-          end
-          else
-          begin
-            if IsInNewRect then
-              InternalCacheNode(Run)
-            else
-              InternalRemoveFromSelection(Run);
-          end;
-        end;
-
-        CurrentTop := NextTop;
-        // Get next visible node and update left node position.
-        NextNode := GetNextVisibleNoInit(Run, True);
-        if NextNode = nil then
-          Break;
-        Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
-        Run := NextNode;
-      until CurrentTop > MaxY;
-    end;
+      CurrentTop := NextTop;
+      // Get next visible node and update left node position.
+      NextNode := GetNextVisibleNoInit(Run, True);
+      if NextNode = nil then
+        Break;
+      Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
+      Run := NextNode;
+    until CurrentTop > MaxY;
   end;
 end;
 
@@ -14251,158 +14243,150 @@ begin
   // Switch the alignment to the opposite value in RTL context.
   ChangeBiDiModeAlignment(Alignment);
 
-  // If the old rectangle is empty then we just started the drag selection.
-  // So we just copy the new rectangle to the old and get out of here.
-  if (OldRect.Top < OldRect.Bottom) or (OldRect.Right < OldRect.Left) and
-     ((OldRect.Left <> OldRect.Right) or (OldRect.Top <> OldRect.Bottom)) then
-    OldRect := NewRect
+  // Determine minimum and maximum vertical coordinates to limit iteration to.
+  MinY := Min(OldRect.Top, NewRect.Top);
+  MaxY := Max(OldRect.Bottom, NewRect.Bottom);
+
+  // Initialize short hand variables to speed up tests below.
+  DoSwitch := ssCtrl in FDrawSelShiftState;
+  WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
+  // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
+  WithImages := Assigned(FImages);
+  if WithImages then
+    ImageOffset := FImages.Width + 2
   else
+    ImageOffset := 0;
+  WithStateImages := Assigned(FStateImages);
+  if WithStateImages then
+    StateImageOffset := FStateImages.Width + 2
+  else
+    StateImageOffset := 0;
+  if WithCheck then
+    CheckOffset := FCheckImages.Width + 2
+  else
+    CheckOffset := 0;
+  AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
+  SimpleSelection := toSimpleDrawSelection in FOptions.FSelectionOptions;
+
+  // This is the node to start with.
+  Run := GetNodeAt(0, MinY, False, CurrentTop);
+
+  if Assigned(Run) then
   begin
-    // Determine minimum and maximum vertical coordinates to limit iteration to.
-    MinY := Min(OldRect.Top, NewRect.Top);
-    MaxY := Max(OldRect.Bottom, NewRect.Bottom);
-
-    // Initialize short hand variables to speed up tests below.
-    DoSwitch := ssCtrl in FDrawSelShiftState;
-    WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
-    // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
-    WithImages := Assigned(FImages);
-    if WithImages then
-      ImageOffset := FImages.Width + 2
+    // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
+    if toShowRoot in FOptions.FPaintOptions then
+      Dec(NodeRight, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
     else
-      ImageOffset := 0;
-    WithStateImages := Assigned(FStateImages);
-    if WithStateImages then
-      StateImageOffset := FStateImages.Width + 2
-    else
-      StateImageOffset := 0;
-    if WithCheck then
-      CheckOffset := FCheckImages.Width + 2
-    else
-      CheckOffset := 0;
-    AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
-    SimpleSelection := toSimpleDrawSelection in FOptions.FSelectionOptions;
+      Dec(NodeRight, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
 
-    // This is the node to start with.
-    Run := GetNodeAt(0, MinY, False, CurrentTop);
+    // ----- main loop
+    // Change selection depending on the node's rectangle being in the selection rectangle or not, but
+    // touch only those nodes which overlap either the old selection rectangle or the new one but not both.
+    repeat
+      // Collect offsets for check, normal and state images.
+      TextRight := NodeRight;
+      if WithCheck and (Run.CheckType <> ctNone) then
+        Dec(TextRight, CheckOffset);
+      if WithImages and HasImage(Run, ikNormal, MainColumn) then
+        Dec(TextRight, ImageOffset);
+      if WithStateImages and HasImage(Run, ikState, MainColumn) then
+        Dec(TextRight, StateImageOffset);
 
-    if Assigned(Run) then
-    begin
-      // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
-      if toShowRoot in FOptions.FPaintOptions then
-        Dec(NodeRight, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+      // Ensure the node's height is determined.
+      MeasureItemHeight(Canvas, Run);
+
+      NextTop := CurrentTop + Integer(NodeHeight[Run]);
+
+      // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
+      // required. Only top and bottom bounds of the rectangle matter.
+      if SimpleSelection then
+      begin
+        IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
+        IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+      end
       else
-        Dec(NodeRight, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
-
-      // ----- main loop
-      // Change selection depending on the node's rectangle being in the selection rectangle or not, but
-      // touch only those nodes which overlap either the old selection rectangle or the new one but not both.
-      repeat
-        // Collect offsets for check, normal and state images.
-        TextRight := NodeRight;
-        if WithCheck and (Run.CheckType <> ctNone) then
-          Dec(TextRight, CheckOffset);
-        if WithImages and HasImage(Run, ikNormal, MainColumn) then
-          Dec(TextRight, ImageOffset);
-        if WithStateImages and HasImage(Run, ikState, MainColumn) then
-          Dec(TextRight, StateImageOffset);
-
-        // Ensure the node's height is determined.
-        MeasureItemHeight(Canvas, Run);
-
-        NextTop := CurrentTop + Integer(NodeHeight[Run]);
-
-        // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
-        // required. Only top and bottom bounds of the rectangle matter.
-        if SimpleSelection then
+      begin
+        // The left column border might be extended if column spanning is enabled.
+        if AutoSpan then
         begin
-          IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
-          IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+          NextColumn := MainColumn;
+          repeat
+            Dummy := FHeader.FColumns.GetPreviousVisibleColumn(NextColumn);
+            if (Dummy = InvalidColumn) or not ColumnIsEmpty(Run, Dummy) or
+              (FHeader.FColumns[Dummy].BiDiMode = bdLeftToRight) then
+              Break;
+            NextColumn := Dummy;
+          until False;
+          if NextColumn = MainColumn then
+            CurrentLeft := NodeLeft
+          else
+            FHeader.FColumns.GetColumnBounds(NextColumn, CurrentLeft, Dummy);
+        end
+        else
+          CurrentLeft := NodeLeft;
+
+        // Check if we need the node's width. This is the case when the node is not left aligned (in RTL context this
+        // means actually right aligned) or the right border of the selection rectangle is to the left
+        // of the right node border.
+        if (TextRight > OldRect.Right) or (TextRight > NewRect.Right) or (Alignment <> taRightJustify) then
+        begin
+          NodeWidth := DoGetNodeWidth(Run, MainColumn);
+          if NodeWidth >= (TextRight - CurrentLeft) then
+            TextLeft := CurrentLeft
+          else
+            case Alignment of
+              taLeftJustify:
+                begin
+                  TextLeft := CurrentLeft;
+                  TextRight := TextLeft + NodeWidth;
+                end;
+              taCenter:
+                begin
+                  TextLeft := (TextRight + CurrentLeft - NodeWidth) div 2;
+                  TextRight := TextLeft + NodeWidth;
+                end;
+            else
+              // taRightJustify
+              TextLeft := TextRight - NodeWidth;
+            end;
+        end
+        else
+          TextLeft := CurrentLeft;
+
+        // Now determine whether we need to change the state.
+        IsInOldRect := (OldRect.Right >= TextLeft) and (OldRect.Left <= TextRight) and
+          (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
+        IsInNewRect := (NewRect.Right >= TextLeft) and (NewRect.Left <= TextRight) and
+          (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+      end;
+
+      if IsInOldRect xor IsInNewRect then
+      begin
+        Result := True;
+        if DoSwitch then
+        begin
+          if vsSelected in Run.States then
+            InternalRemoveFromSelection(Run)
+          else
+            InternalCacheNode(Run);
         end
         else
         begin
-          // The left column border might be extended if column spanning is enabled.
-          if AutoSpan then
-          begin
-            NextColumn := MainColumn;
-            repeat
-              Dummy := FHeader.FColumns.GetPreviousVisibleColumn(NextColumn);
-              if (Dummy = InvalidColumn) or not ColumnIsEmpty(Run, Dummy) or
-                (FHeader.FColumns[Dummy].BiDiMode = bdLeftToRight) then
-                Break;
-              NextColumn := Dummy;
-            until False;
-            if NextColumn = MainColumn then
-              CurrentLeft := NodeLeft
-            else
-              FHeader.FColumns.GetColumnBounds(NextColumn, CurrentLeft, Dummy);
-          end
+          if IsInNewRect then
+            InternalCacheNode(Run)
           else
-            CurrentLeft := NodeLeft;
-
-          // Check if we need the node's width. This is the case when the node is not left aligned (in RTL context this
-          // means actually right aligned) or the right border of the selection rectangle is to the left
-          // of the right node border.
-          if (TextRight > OldRect.Right) or (TextRight > NewRect.Right) or (Alignment <> taRightJustify) then
-          begin
-            NodeWidth := DoGetNodeWidth(Run, MainColumn);
-            if NodeWidth >= (TextRight - CurrentLeft) then
-              TextLeft := CurrentLeft
-            else
-              case Alignment of
-                taLeftJustify:
-                  begin
-                    TextLeft := CurrentLeft;
-                    TextRight := TextLeft + NodeWidth;
-                  end;
-                taCenter:
-                  begin
-                    TextLeft := (TextRight + CurrentLeft - NodeWidth) div 2;
-                    TextRight := TextLeft + NodeWidth;
-                  end;
-              else
-                // taRightJustify
-                TextLeft := TextRight - NodeWidth;
-              end;
-          end
-          else
-            TextLeft := CurrentLeft;
-
-          // Now determine whether we need to change the state.
-          IsInOldRect := (OldRect.Right >= TextLeft) and (OldRect.Left <= TextRight) and
-            (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
-          IsInNewRect := (NewRect.Right >= TextLeft) and (NewRect.Left <= TextRight) and
-            (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+            InternalRemoveFromSelection(Run);
         end;
+      end;
 
-        if IsInOldRect xor IsInNewRect then
-        begin
-          Result := True;
-          if DoSwitch then
-          begin
-            if vsSelected in Run.States then
-              InternalRemoveFromSelection(Run)
-            else
-              InternalCacheNode(Run);
-          end
-          else
-          begin
-            if IsInNewRect then
-              InternalCacheNode(Run)
-            else
-              InternalRemoveFromSelection(Run);
-          end;
-        end;
-
-        CurrentTop := NextTop;
-        // Get next visible node and update left node position.
-        NextNode := GetNextVisibleNoInit(Run, True);
-        if NextNode = nil then
-          Break;
-        Dec(NodeRight, CountLevelDifference(Run, NextNode) * Integer(FIndent));
-        Run := NextNode;
-      until CurrentTop > MaxY;
-    end;
+      CurrentTop := NextTop;
+      // Get next visible node and update left node position.
+      NextNode := GetNextVisibleNoInit(Run, True);
+      if NextNode = nil then
+        Break;
+      Dec(NodeRight, CountLevelDifference(Run, NextNode) * Integer(FIndent));
+      Run := NextNode;
+    until CurrentTop > MaxY;
   end;
 end;
 
@@ -22705,10 +22689,9 @@ begin
       Result := FlatImages;
     ckXP:
       Result := XPImages;
-    ckSystem:
-      Result := SystemCheckImages;
-    ckSystemFlat,
     ckSystemDefault:
+      Result := SystemCheckImages;
+    ckSystemFlat:
       Result := SystemFlatCheckImages;
     else
       Result := nil;
@@ -24377,7 +24360,8 @@ begin
           ClearSelection;
         end;
         DoStateChange([tsDrawSelecting], [tsDrawSelPending]);
-        // reset to main column for multiselection
+
+        // Reset to main column for multiselection.
         FocusedColumn := FHeader.MainColumn;
 
         // The current rectangle may already include some node captions. Handle this.
@@ -30630,10 +30614,8 @@ var
 
   VAlign,
   IndentSize,
-  NodeLevel,
   ButtonX,
   ButtonY: Integer;
-  Run: PVirtualNode;
   LineImage: TLineImage;
   PaintInfo: TVTPaintInfo;     // all necessary information about a node to pass to the paint routines
 
@@ -34260,8 +34242,8 @@ begin
 	    if toFixedIndent in FOptions.FPaintOptions then
 	      SetLength(LineImage, 1)
 	    else
-	      InitializeLineImageAndSelectLevel(Node, LineImage);
-	    Inc(PaintInfo.CellRect.Left, Length(LineImage) * Indent);
+	      DetermineLineImageAndSelectLevel(Node, LineImage);
+	    Inc(PaintInfo.CellRect.Left, Length(LineImage) * Integer(Indent));
 	  end;
 	end
   else
