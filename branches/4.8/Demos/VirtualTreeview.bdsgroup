@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality" Type="String">Default.Personality</Option>
+			<Option Name="ProjectType" Type="String"></Option>
+			<Option Name="Version" Type="String">1.0</Option>
+			<Option Name="GUID" Type="String">{302F8200-8045-4FBD-9251-5554D861EBE8}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Default.Personality>  <Projects>
+      <Projects Name="VirtualTreesR.bpl">..\..\Library\VirtualTreeview\Packages\BDS 2006\VirtualTreesR.bdsproj</Projects>
+      <Projects Name="VirtualTreesD.bpl">..\..\Library\VirtualTreeview\Packages\BDS 2006\VirtualTreesD.bdsproj</Projects>
+      <Projects Name="Advanced.exe">Advanced\Advanced.bdsproj</Projects>
+      <Projects Name="Targets">VirtualTreesR.bpl VirtualTreesD.bpl Advanced.exe</Projects>
+    </Projects>
+    <Dependencies/>
+  </Default.Personality>
+	<StarTeamAssociation></StarTeamAssociation>
+	<StarTeamNonRelativeFiles></StarTeamNonRelativeFiles>
+</BorlandProject>

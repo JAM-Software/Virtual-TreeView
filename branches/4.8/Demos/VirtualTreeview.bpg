@@ -1,0 +1,35 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = VirtualTreesD7.bpl VirtualTreesD7D.bpl Minimal.exe MVCDemo.exe OLE.exe Advanced.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+Advanced.exe: Advanced\Advanced.dpr
+  $(DCC)
+
+Minimal.exe: Minimal\Minimal.dpr
+  $(DCC)
+
+MVCDemo.exe: Objects\MVCDemo.dpr
+  $(DCC)
+
+VirtualTreesD7.bpl: ..\..\Library\VirtualTreeview\Delphi\VirtualTreesD7.dpk
+  $(DCC)
+
+VirtualTreesD7D.bpl: ..\..\Library\VirtualTreeview\Delphi\VirtualTreesD7D.dpk
+  $(DCC)
+
+OLE.exe: OLE\OLE.dpr
+  $(DCC)
+
+
