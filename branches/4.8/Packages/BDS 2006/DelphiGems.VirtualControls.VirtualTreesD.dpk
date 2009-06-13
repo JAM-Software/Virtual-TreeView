@@ -1,0 +1,40 @@
+package DelphiGems.VirtualControls.VirtualTreesD;
+
+{$R '..\..\Design\VirtualTrees.dcr'}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $30400000}
+{$DESCRIPTION 'Virtual Treeview design time package'}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  System.Drawing,
+  System.Design,
+  Borland.Studio.Vcl.Design,
+  DelphiGems.VirtualControls.VirtualTrees,
+  Borland.Vcl.Design.Standard;
+
+contains
+  DelphiGems.VirtualControls.VirtualTreesReg in '..\..\Design\DelphiGems.VirtualControls.VirtualTreesReg.pas';
+
+end.
+

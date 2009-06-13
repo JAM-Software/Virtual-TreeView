@@ -1,0 +1,42 @@
+package DelphiGems.VirtualControls.VirtualTrees;
+
+{$ALIGN 4}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $30400000}
+{$DESCRIPTION 'Virtual Treeview runtime package'}
+{$RUNONLY}
+{$IMPLICITBUILD ON}
+{$R '..\..\Source\VirtualTrees.NET.resources' '..\..\Source\VirtualTrees.NET.resx'}
+
+requires
+  System.Drawing,
+  Borland.Vcl,
+  System.Windows.Forms,
+  System,
+  System.Data,
+  System.XML;
+
+contains
+  VTHeaderPopup.NET in '..\..\Source\VTHeaderPopup.NET.pas',
+  VirtualTrees.NET in '..\..\Source\VirtualTrees.NET.pas';
+
+end.
+
