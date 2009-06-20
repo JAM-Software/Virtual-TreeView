@@ -49,7 +49,8 @@ type
     procedure XPTreeInitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure XPTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType; var CellText: WideString);
-    procedure XPTreeHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
+    procedure XPTreeHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure XPTreeCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
       var Result: Integer);
     procedure XPTreeGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
@@ -192,10 +193,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TWindowsXPForm.XPTreeHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
+procedure TWindowsXPForm.XPTreeHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 
 begin
-  if HitInfo.Button = mbLeft then
+  if Button = mbLeft then
   begin
     with Sender, Treeview do
     begin
@@ -203,13 +205,13 @@ begin
         Columns[SortColumn].Options := Columns[SortColumn].Options + [coParentColor];
 
       // Do not sort the last column, it contains nothing to sort.
-      if HitInfo.Column = 2 then
+      if Column = 2 then
         SortColumn := NoColumn
       else
       begin
-        if (SortColumn = NoColumn) or (SortColumn <> HitInfo.Column) then
+        if (SortColumn = NoColumn) or (SortColumn <> Column) then
         begin
-          SortColumn := HitInfo.Column;
+          SortColumn := Column;
           SortDirection := sdAscending;
         end
         else

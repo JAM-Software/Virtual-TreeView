@@ -62,7 +62,8 @@ type
     procedure IconPopupPopup(Sender: TObject);
     procedure AlignComboChange(Sender: TObject);
     procedure BidiGroupClick(Sender: TObject);
-    procedure AlignTreeHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
+    procedure AlignTreeHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure OptionBoxClick(Sender: TObject);
     procedure LayoutComboChange(Sender: TObject);
     procedure AlignTreeFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
@@ -489,19 +490,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TAlignForm.AlignTreeHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
+procedure TAlignForm.AlignTreeHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 
 // This method sets sort column and direction on a header click.
 // Note: this is only to show the header layout. There gets nothing really sorted.
 
 begin
-  if HitInfo.Button = mbLeft then
+  if Button = mbLeft then
   begin
     with Sender do
     begin
-      if SortColumn <> HitInfo.Column then
+      if SortColumn <> Column then
       begin
-        SortColumn := HitInfo.Column;
+        SortColumn := Column;
         SortDirection := sdAscending;
       end
       else
