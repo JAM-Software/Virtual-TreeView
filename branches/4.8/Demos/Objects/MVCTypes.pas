@@ -218,8 +218,8 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
          procedure DoInitNode(aParent,aNode:PVirtualNode;
                               var aInitStates:TVirtualNodeInitStates); override;
          procedure DoFreeNode(aNode:PVirtualNode); override;
-         procedure DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-           var Ghosted: Boolean; var Index: Integer); override;
+         function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+           var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
          procedure DoChecked(aNode:PVirtualNode); override;
          function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; override;
          function InternalData(Node: PVirtualNode): Pointer;
@@ -761,11 +761,12 @@ begin
     end;
 end;
 
-procedure TMVCTreeView.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-  var Ghosted: Boolean; var Index: Integer); 
+function TMVCTreeView.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+  var Ghosted: Boolean; var Index: Integer): TCustomImageList;
 { The tree requests the image-index for a Node and column. }
 var N:TMVCNode;
 begin
+  Result := nil;
   case Column of
     -1,0:begin
            { We only want Icons in the first column. Ask the node which
