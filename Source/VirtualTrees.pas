@@ -4055,6 +4055,7 @@ type
     FWaiterList: TThreadList;
     FRefCount: Cardinal;
   protected
+    procedure CancelValidation(Tree: TBaseVirtualTree);
     procedure ChangeTreeStates(EnterStates, LeaveStates: TChangeStates);
     procedure Execute; override;
   public
@@ -5920,6 +5921,9 @@ begin
     // Make sure there is no reference remaining to the releasing tree.
     Tree.InterruptValidation;
 
+    // Borland change (used to debug shutdown issue with dangling FCurrentTree reference)
+    Assert(WorkerThread.FCurrentTree <> Tree, 'WorkerThread.FCurrentTree dangling reference!');
+
     if WorkerThread.FRefCount = 0 then
     begin
       with WorkerThread do
@@ -5953,6 +5957,26 @@ begin
   inherited;
 
   FWaiterList.Free;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TWorkerThread.CancelValidation(Tree: TBaseVirtualTree);
+
+var
+  Msg: TMsg;
+
+begin
+  // Wait for any references to this tree to be released.
+  // Pump WM_CHANGESTATE messages so the thread doesn't block on SendMessage calls.
+  while FCurrentTree = Tree do
+  begin
+    if Tree.HandleAllocated and PeekMessage(Msg, Tree.Handle, WM_CHANGESTATE, WM_CHANGESTATE, PM_REMOVE) then
+    begin
+      TranslateMessage(Msg);
+      DispatchMessage(Msg);
+    end;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5999,20 +6023,21 @@ begin
       end;
 
       // Something to do?
-      try
-        if Assigned(FCurrentTree) then
-        begin
+      if Assigned(FCurrentTree) then
+      begin
+        try
           ChangeTreeStates([csValidating], [csUseCache]);
           EnterStates := [];
           if not (tsStopValidation in FCurrentTree.FStates) and FCurrentTree.DoValidateCache then
             EnterStates := [csUseCache];
+
+        finally
+          LeaveStates := [csValidating, csStopValidation];
+          if csUseCache in EnterStates then
+            Include(LeaveStates, csValidationNeeded);
+          ChangeTreeStates(EnterStates, LeaveStates);
+          FCurrentTree := nil;
         end;
-      finally
-        LeaveStates := [csValidating, csStopValidation];
-        if csUseCache in EnterStates then
-          Include(LeaveStates, csValidationNeeded);
-        ChangeTreeStates(EnterStates, LeaveStates);
-        FCurrentTree := nil;
       end;
     end;
   end;
@@ -6034,6 +6059,7 @@ begin
   finally
     FWaiterList.UnlockList;
   end;
+  CancelValidation(Tree);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15185,10 +15211,8 @@ end;
 
 procedure TBaseVirtualTree.InterruptValidation;
 
-// Waits until the worker thread has stopped validating the caches of this tree.
-
 var
-  Msg: TMsg;
+  WasValidating: Boolean;
 
 begin
   DoStateChange([tsStopValidation], [tsUseCache]);
@@ -15196,27 +15220,10 @@ begin
   // Check the worker thread existance. It might already be gone (usually on destruction of the last tree).
   if Assigned(WorkerThread) then
   begin
-    if tsValidating in FStates then
-    begin
-      // Do a hard break until the worker thread has stopped validation.
-      while (tsValidating in FStates) and (WorkerThread.CurrentTree = Self) and not Application.Terminated do
-      begin
-        // Pump our own messages to avoid a deadlock.
-        if PeekMessage(Msg, Handle, 0, 0, PM_REMOVE) then
-        begin
-          if Msg.message = WM_QUIT then
-          begin
-            PostQuitMessage(Msg.WParam);
-            Break;
-          end;
-          TranslateMessage(Msg);
-          DispatchMessage(Msg);
-        end;
-      end;
+    WasValidating := (tsValidating in FStates);
+    WorkerThread.RemoveTree(Self);
+    if WasValidating then
       DoStateChange([tsValidationNeeded]);
-    end
-    else // Remove any pending validation.
-      WorkerThread.RemoveTree(Self);
   end;
 end;
 
