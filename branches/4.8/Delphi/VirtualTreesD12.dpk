@@ -34,7 +34,7 @@ contains
   VirtualTrees in '..\Source\VirtualTrees.pas',
   VTHeaderPopup in '..\Source\VTHeaderPopup.pas',
   VTAccessibilityFactory in '..\Source\VTAccessibilityFactory.pas',
-  VTAccessibility in '..\Source\VTAccessibility.pas';
+  VTAccessibility in '..\Common\VTAccessibility.pas';
 
 end.
 
