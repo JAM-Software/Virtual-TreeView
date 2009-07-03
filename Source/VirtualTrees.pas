@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  July 2009
+//   - Bug fix: TWorkerThread will no longer reference the tree after it has been destroyed (Mantis issue #384)
 //   - Improvement: removed support for Delphi versions older than Delphi 7
 //   - Improvement: removed local memory manager
 //  June 2009
@@ -5921,9 +5922,6 @@ begin
     // Make sure there is no reference remaining to the releasing tree.
     Tree.InterruptValidation;
 
-    // Borland change (used to debug shutdown issue with dangling FCurrentTree reference)
-    Assert(WorkerThread.FCurrentTree <> Tree, 'WorkerThread.FCurrentTree dangling reference!');
-
     if WorkerThread.FRefCount = 0 then
     begin
       with WorkerThread do
@@ -6059,7 +6057,6 @@ begin
   finally
     FWaiterList.UnlockList;
   end;
-  CancelValidation(Tree);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6075,6 +6072,7 @@ begin
   finally
     FWaiterList.UnlockList;
   end;
+  CancelValidation(Tree);
 end;
 
 //----------------- TBufferedAnsiString ------------------------------------------------------------------------------------
