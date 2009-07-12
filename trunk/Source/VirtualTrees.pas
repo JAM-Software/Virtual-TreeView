@@ -26902,7 +26902,7 @@ begin
     DoFreeNode(Node);
 
     if not ParentClearing then
-
+    begin
       DetermineHiddenChildrenFlag(LastParent);
       InvalidateCache;
       if FUpdateCount = 0 then
