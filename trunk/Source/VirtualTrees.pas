@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  July 2009
+//   - Bug fix: avoided race condition between TBaseVirtualTree.DeleteNode and the worker thread 
 //   - Bug fix: TBaseVirtualTree.ToggleNode could produce an overflow if range checking was enabled 
 //   - Bug fix: TWorkerThread will no longer reference the tree after it has been destroyed (Mantis issue #384)
 //   - Improvement: removed support for Delphi versions older than Delphi 7
@@ -26893,12 +26894,15 @@ begin
       DoStateChange([], [tsHint]);
     end;
 
+    if not ParentClearing then
+      InterruptValidation;
+
     DeleteChildren(Node);
     InternalDisconnectNode(Node, False, Reindex);
     DoFreeNode(Node);
 
     if not ParentClearing then
-    begin
+
       DetermineHiddenChildrenFlag(LastParent);
       InvalidateCache;
       if FUpdateCount = 0 then
