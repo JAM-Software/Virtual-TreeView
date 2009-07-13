@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  July 2009
+//   - Bug fix: pressing CTRL + PgUp/PgDown no longer leads to an index-out-of-bounds exception if no columns are used
 //   - Bug fix: avoided race condition between TBaseVirtualTree.DeleteNode and the worker thread 
 //   - Bug fix: TBaseVirtualTree.ToggleNode could produce an overflow if range checking was enabled 
 //   - Bug fix: TWorkerThread will no longer reference the tree after it has been destroyed (Mantis issue #384)
@@ -17905,7 +17906,7 @@ begin
             else
               if [ssShift] = Shift then
               begin
-                if FFocusedColumn = InvalidColumn then
+                if FFocusedColumn <= NoColumn then
                   NewColumn := FHeader.FColumns.GetFirstVisibleColumn
                 else
                 begin
@@ -17956,7 +17957,7 @@ begin
             else
               if [ssShift] = Shift then
               begin
-                if FFocusedColumn = InvalidColumn then
+                if FFocusedColumn <= NoColumn then
                   NewColumn := FHeader.FColumns.GetFirstVisibleColumn
                 else
                 begin
