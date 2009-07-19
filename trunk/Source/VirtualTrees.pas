@@ -25,6 +25,10 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  July 2009
+//   - Improvement: modified TVTHeader.HandleHeaderMouseMove to make resizing the autosize column with the
+//                  mouse possible
+//   - Improvement: modified TBaseVirtualTree.DoCreateEditor so that applications can now return NIL in OnCreateEditor
+//                  to use the standard editor of the tree
 //   - Bug fix: pressing CTRL + PgUp/PgDown no longer leads to an index-out-of-bounds exception if no columns are used
 //   - Bug fix: avoided race condition between TBaseVirtualTree.DeleteNode and the worker thread 
 //   - Bug fix: TBaseVirtualTree.ToggleNode could produce an overflow if range checking was enabled 
@@ -11826,7 +11830,9 @@ function TVTHeader.HandleHeaderMouseMove(var Message: TWMMouseMove): Boolean;
 
 var
   P: TPoint;
+  NextColumn,
   I: TColumnIndex;
+  NewWidth: Integer;
 
 begin
   Result := False;
@@ -11852,10 +11858,29 @@ begin
         if hsColumnWidthTracking in FStates then
         begin
           if DoColumnWidthTracking(FColumns.FTrackIndex, GetShiftState, FTrackPoint, P) then
+          begin
             if Treeview.UseRightToLeftAlignment then
-              FColumns[FColumns.FTrackIndex].Width := FTrackPoint.X - XPos
+            begin
+              NewWidth := FTrackPoint.X - XPos;
+              NextColumn := FColumns.GetPreviousVisibleColumn(FColumns.FTrackIndex);
+          end
             else
-              FColumns[FColumns.FTrackIndex].Width := XPos - FTrackPoint.X;
+            begin
+              NewWidth := XPos - FTrackPoint.X;
+              NextColumn := FColumns.GetNextVisibleColumn(FColumns.FTrackIndex);
+            end;
+
+            // The autosized column cannot be resized using the mouse normally. Instead we resize the next
+            // visible column, so it look as we directly resize the autosized column.
+            if (hoAutoResize in FOptions) and (FColumns.FTrackIndex = FAutoSizeIndex) and
+               (NextColumn > NoColumn) and (coResizable in FColumns[NextColumn].FOptions) and
+               (FColumns[FColumns.FTrackIndex].FMinWidth < NewWidth) and
+               (FColumns[FColumns.FTrackIndex].FMaxWidth > NewWidth) then
+              FColumns[NextColumn].Width := FColumns[NextColumn].Width - NewWidth
+                                            + FColumns[FColumns.FTrackIndex].Width
+            else
+              FColumns[FColumns.FTrackIndex].Width := NewWidth;
+          end;
           HandleHeaderMouseMove := True;
           Result := 0;
         end
@@ -20538,11 +20563,7 @@ function TBaseVirtualTree.DoCreateEditor(Node: PVirtualNode; Column: TColumnInde
 begin
   Result := nil;
   if Assigned(FOnCreateEditor) then
-  begin
     FOnCreateEditor(Self, Node, Column, Result);
-    if Result = nil then
-      ShowError(SEditLinkIsNil, hcTFEditLinkIsNil);
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
