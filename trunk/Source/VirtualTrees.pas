@@ -1,4 +1,4 @@
-unit VirtualTrees;
+﻿unit VirtualTrees;
 
 // Version 5.0.0
 //
@@ -24,6 +24,10 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  August 2009
+//   - Bug fix: TBaseVirtualTree.MoveTo now initializes the target node using the target tree
+//   - Bug fix: TBaseVirtualTree.FVisibleCount is now calculated correctly when using filtered nodes
+//   - Improvement: introduced new initial node state ivsFiltered
 //  July 2009
 //   - Improvement: modified TVTHeader.HandleHeaderMouseMove to make resizing the autosize column with the
 //                  mouse possible
@@ -531,7 +535,8 @@ type
     ivsExpanded,
     ivsHasChildren,
     ivsMultiline,
-    ivsSelected
+    ivsSelected,
+    ivsFiltered
   );
   TVirtualNodeInitStates = set of TVirtualNodeInitState;
 
@@ -6342,7 +6347,7 @@ begin
             Run := GetFirst;
             while Assigned(Run) do
             begin
-              if vsFiltered in Run.States then
+              if (vsFiltered in Run.States) and FullyVisible[Run] then
                 if toShowFilteredNodes in ToBeSet then
                 begin
                   Inc(FVisibleCount);
@@ -23535,6 +23540,8 @@ begin
     end;
     if ivsMultiline in InitStates then
       Include(States, vsMultiline);
+    if ivsFiltered in InitStates then
+      Include(States, vsFiltered);
 
     // Expanded may already be set (when called from ReinitNode) or be set in DoInitNode, allow both.
     if (vsExpanded in Node.States) xor (ivsExpanded in InitStates) then
@@ -23826,8 +23833,12 @@ begin
           // Add the new node's height only if its parent is expanded.
           if (vsExpanded in Destination.Parent.States) and IsEffectivelyVisible[Node] then
             AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
-          if FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
-            Inc(FVisibleCount, CountVisibleChildren(Node) + 1);
+          if FullyVisible[Node] then
+          begin
+            Inc(FVisibleCount, CountVisibleChildren(Node));
+            if not IsEffectivelyFiltered[Node] then
+              Inc(FVisibleCount);
+          end;
         end;
       amInsertAfter:
         begin
@@ -23856,8 +23867,12 @@ begin
           // Add the new node's height only if its parent is expanded.
           if (vsExpanded in Destination.Parent.States) and IsEffectivelyVisible[Node] then
             AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
-          if FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
-            Inc(FVisibleCount, CountVisibleChildren(Node) + 1);
+          if FullyVisible[Node] then
+          begin
+            Inc(FVisibleCount, CountVisibleChildren(Node));
+            if not IsEffectivelyFiltered[Node] then
+              Inc(FVisibleCount);
+          end;
         end;
       amAddChildFirst:
         begin
@@ -23892,8 +23907,12 @@ begin
           // Add the new node's height only if its parent is expanded.
           if (vsExpanded in Destination.States) and IsEffectivelyVisible[Node] then
             AdjustTotalHeight(Destination, Node.TotalHeight, True);
-          if FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
-            Inc(FVisibleCount, CountVisibleChildren(Node) + 1);
+          if FullyVisible[Node] then
+          begin
+            Inc(FVisibleCount, CountVisibleChildren(Node));
+            if not IsEffectivelyFiltered[Node] then
+              Inc(FVisibleCount);
+          end;
         end;
       amAddChildLast:
         begin
@@ -23923,8 +23942,12 @@ begin
           // Add the new node's height only if its parent is expanded.
           if (vsExpanded in Destination.States) and IsEffectivelyVisible[Node] then
             AdjustTotalHeight(Destination, Node.TotalHeight, True);
-          if FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
-            Inc(FVisibleCount, CountVisibleChildren(Node) + 1);
+          if FullyVisible[Node] then
+          begin
+            Inc(FVisibleCount, CountVisibleChildren(Node));
+            if not IsEffectivelyFiltered[Node] then
+              Inc(FVisibleCount);
+          end;
         end;
     else
       // amNoWhere: do nothing
@@ -24009,7 +24032,12 @@ begin
     if AdjustHeight then
       AdjustTotalHeight(Parent, -Integer(Node.TotalHeight), True);
     if FullyVisible[Node] then
-      Dec(FVisibleCount, CountVisibleChildren(Node) + 1);
+    begin
+      Dec(FVisibleCount, CountVisibleChildren(Node));
+      if not IsEffectivelyFiltered[Node] then
+        Dec(FVisibleCount);
+    end;
+
     if Assigned(Node.PrevSibling) then
       Node.PrevSibling.NextSibling := Node.NextSibling
     else
@@ -30262,10 +30290,10 @@ begin
 
     // Make sure the target node is initialized.
     if not (vsInitialized in Target.States) then
-      InitNode(Target)
+      TargetTree.InitNode(Target)
     else
       if (vsHasChildren in Target.States) and (Target.ChildCount = 0) then
-        InitChildren(Target);
+        TargetTree.InitChildren(Target);
 
     if TargetTree = Self then
     begin
