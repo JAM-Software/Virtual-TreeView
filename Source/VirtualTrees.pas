@@ -24,6 +24,9 @@
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  September 2009
+//   - Bug fix: TCustomVirtualStringTree.TContentToHTML.WriteStyle will no longer produce invalid CSS
+//   - Bug fix: the parameter DragEffect of TBaseVirtualTree.DragAndDrop is now var as it should be
 //  August 2009
 //   - Bug fix: TBaseVirtualTree.MoveTo now initializes the target node using the target tree
 //   - Bug fix: TBaseVirtualTree.FVisibleCount is now calculated correctly when using filtered nodes
@@ -2719,7 +2722,7 @@ type
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
     procedure DragAndDrop(AllowedEffects: Integer; DataObject: IDataObject;
-      DragEffect: Integer); virtual;
+      var DragEffect: Integer); virtual;
     procedure DragCanceled; override;
     function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
@@ -21870,7 +21873,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Integer;
-  DataObject: IDataObject; DragEffect: Integer);
+  DataObject: IDataObject; var DragEffect: Integer);
 
 begin
   ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
@@ -34355,24 +34358,25 @@ var
 
   begin
     if Length(Name) = 0 then
-      Buffer.Add(' style="{font:')
+      Buffer.Add(' style="{')
     else
     begin
       Buffer.Add('.');
       Buffer.Add(Name);
-      Buffer.Add('{font:');
+      Buffer.Add('{');
     end;
-    if fsUnderline in Font.Style then
-      Buffer.Add(' underline');
-    if fsItalic in Font.Style then
-      Buffer.Add(' italic');
-    if fsBold in Font.Style then
-      Buffer.Add(' bold');
+
+    Buffer.Add(Format('font-family: ''%s''; ', [Font.Name]));
     if Font.Size < 0 then
-      Buffer.Add(Format(' %dpx "%s";', [Font.Height, Font.Name]))
+      Buffer.Add(Format('font-size: %dpx; ', [Font.Height]))
     else
-      Buffer.Add(Format(' %dpt "%s";', [Font.Size, Font.Name]));
-    Buffer.Add('color:');
+      Buffer.Add(Format('font-size: %dpt; ', [Font.Size]));
+
+    Buffer.Add(Format('font-style: %s; ', [IfThen(fsItalic in Font.Style, 'italic', 'normal')]));
+    Buffer.Add(Format('font-weight: %s; ', [IfThen(fsBold in Font.Style, 'bold', 'normal')]));
+    Buffer.Add(Format('text-decoration: %s; ', [IfThen(fsUnderline in Font.Style, 'underline', 'none')]));
+
+    Buffer.Add('color: ');
     WriteColorAsHex(Font.Color);
     Buffer.Add(';}');
     if Length(Name) = 0 then
