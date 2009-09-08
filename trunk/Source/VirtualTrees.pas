@@ -8802,6 +8802,7 @@ begin
         R := Rect(0, 0, 100, 100);
         Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
         GetThemePartSize(Theme, DC, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, SortGlyphSize);
+        CloseThemeData(Theme);
       end
       else
       begin
@@ -15629,6 +15630,9 @@ begin
     FDottedBrush := CreatePatternBrush(PatternBitmap);
     DeleteObject(PatternBitmap);
   end;
+
+  if tsUseThemes in FStates then
+    CloseThemeData(Theme);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24697,6 +24701,7 @@ begin
     Pos := Rect(XPos, R.Top + ButtonY, XPos + Bitmap.Width, R.Top + ButtonY + Bitmap.Height);
     Theme := OpenThemeData(Handle, 'TREEVIEW');
     DrawThemeBackground(Theme, Canvas.Handle, Glyph, State, Pos, nil);
+    CloseThemeData(Theme);
   end
   else
     // Need to draw this masked.
@@ -24907,16 +24912,14 @@ var
   //--------------- end local functions ---------------------------------------
 
 begin
-  if tsUseThemes in FStates then
-    Theme := OpenThemeData(Handle, 'TREEVIEW');
-
   if tsUseExplorerTheme in FStates then
   begin
+    Theme := OpenThemeData(Handle, 'TREEVIEW');
     RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
     if toShowVertGridLines in FOptions.PaintOptions then
       Dec(RowRect.Right);
   end;
-
+  
   with PaintInfo, Canvas do
   begin
     // Fill cell background if its color differs from tree background.
@@ -24998,7 +25001,7 @@ begin
             if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
-              if Theme <> 0 then
+              if tsUseExplorerTheme in FStates then
               begin
                 // If the node is also hot, its background will be drawn later.
                 if not (toHotTrack in FOptions.FPaintOptions) or (Node <> FCurrentHotNode) or
@@ -25028,7 +25031,7 @@ begin
          ( (Column = FFocusedColumn) or
              (not (toExtendedFocus in FOptions.FSelectionOptions) and
              (toFullRowSelect in FOptions.FSelectionOptions) and
-             (Theme <> 0) ) ) then
+             (tsUseExplorerTheme in FStates) ) ) then
       begin
         TextColorBackup := GetTextColor(Handle);
         SetTextColor(Handle, $FFFFFF);
@@ -25036,7 +25039,7 @@ begin
         SetBkColor(Handle, 0);
 
         if not (toExtendedFocus in FOptions.FSelectionOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
-          (Theme <> 0) then
+          (tsUseExplorerTheme in FStates) then
           FocusRect := RowRect
         else
           if toGridExtensions in FOptions.FMiscOptions then
@@ -25054,7 +25057,7 @@ begin
     end;
   end;
 
-  if Theme <> 0 then
+  if tsUseExplorerTheme in FStates then
     CloseThemeData(Theme);
 end;
 
