@@ -1,4 +1,4 @@
-﻿unit VirtualTrees;
+unit VirtualTrees;
 
 // Version 5.0.0
 //
@@ -25,6 +25,7 @@
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2009
+//   - Bug fix: clearing the columns now correctly reset TBaseVirtualTree.FFocusedColumn
 //   - Improvement: explorer style painting is now more close to the real explorer
 //   - Bug fix: TCustomVirtualStringTree.TContentToHTML.WriteStyle will no longer produce invalid CSS
 //   - Bug fix: the parameter DragEffect of TBaseVirtualTree.DragAndDrop is now var as it should be
@@ -10315,6 +10316,10 @@ begin
         FMainColumn := NoColumn;
         FSortColumn := NoColumn;
       end;
+
+    with Header.Treeview do
+      if not (csLoading in ComponentState) then
+        FFocusedColumn := NoColumn;
 
     inherited Clear;
   finally
