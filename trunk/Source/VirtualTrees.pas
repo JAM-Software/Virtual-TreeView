@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2009
+//   - Bug fix: TBaseVirtualTree.DetermineLineImageAndSelectLevel will no longer access LineImage[-1]
 //   - Bug fix: clearing the columns now correctly reset TBaseVirtualTree.FFocusedColumn
 //   - Improvement: explorer style painting is now more close to the real explorer
 //   - Bug fix: TCustomVirtualStringTree.TContentToHTML.WriteStyle will no longer produce invalid CSS
@@ -14587,7 +14588,7 @@ begin
     end;
   end;
 
-  if (tsUseExplorerTheme in FStates) and HasChildren[Node] then
+  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) then
     LineImage[Indent] := ltNone;
 end;
 
