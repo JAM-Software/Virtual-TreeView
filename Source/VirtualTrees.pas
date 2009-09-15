@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2009
+//   - Bug fix: TCustomVirtualStringTree.DoTextMeasuring now makes use of the parameter Width of the
+//              OnMeasureTextWidth event
 //   - Bug fix: TBaseVirtualTree.DetermineLineImageAndSelectLevel will no longer access LineImage[-1]
 //   - Bug fix: clearing the columns now correctly reset TBaseVirtualTree.FFocusedColumn
 //   - Improvement: explorer style painting is now more close to the real explorer
@@ -33909,9 +33911,9 @@ begin
       DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat, False);
     Size.cx := R.Right - R.Left;
   end;
+  Result := Size.cx;
   if Assigned(FOnMeasureTextWidth) then
     FOnMeasureTextWidth(Self, Canvas, Node, Column, Text, Result);
-  Result := Size.cx;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
