@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2009
+//   - Improvement: new TVirtualNodeInitState ivsReInit to indicate that a node is about to be re-initialized
 //   - Bug fix: TCustomVirtualStringTree.DoTextMeasuring now makes use of the parameter Width of the
 //              OnMeasureTextWidth event
 //   - Bug fix: TBaseVirtualTree.DetermineLineImageAndSelectLevel will no longer access LineImage[-1]
@@ -544,7 +545,8 @@ type
     ivsHasChildren,
     ivsMultiline,
     ivsSelected,
-    ivsFiltered
+    ivsFiltered,
+    ivsReInit
   );
   TVirtualNodeInitStates = set of TVirtualNodeInitState;
 
@@ -23585,8 +23587,10 @@ var
 begin
   with Node^ do
   begin
-    Include(States, vsInitialized);
     InitStates := [];
+    if vsInitialized in States then
+      Include(InitStates, ivsReInit);
+    Include(States, vsInitialized);
     if Parent = FRoot then
       DoInitNode(nil, Node, InitStates)
     else
