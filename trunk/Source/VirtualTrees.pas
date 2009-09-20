@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2009
+//   - Bug fix: TBaseVirtualTree.OnColumnClick will no longer be triggered twice
 //   - Improvement: new TVirtualNodeInitState ivsReInit to indicate that a node is about to be re-initialized
 //   - Bug fix: TCustomVirtualStringTree.DoTextMeasuring now makes use of the parameter Width of the
 //              OnMeasureTextWidth event
@@ -1737,6 +1738,7 @@ type
     tsValidationNeeded,       // Something in the structure of the tree has changed. The cache needs validation.
     tsVCLDragging,            // VCL drag'n drop in progress.
     tsVCLDragPending,         // One-shot flag to avoid clearing the current selection on implicit mouse up for VCL drag.
+    tsVCLDragFinished,        // Flag to avoid triggering the OnColumnClick event twice
     tsWheelPanning,           // Wheel mouse panning is active or soon will be.
     tsWheelScrolling,         // Wheel mouse scrolling is active or soon will be.
     tsWindowCreating,         // Set during window handle creation to avoid frequent unnecessary updates.
@@ -17030,7 +17032,7 @@ begin
             if DragMessage = dmDragEnter then
               DoStateChange([tsVCLDragging]);
             if DragMessage = dmDragLeave then
-              DoStateChange([], [tsVCLDragging]);
+              DoStateChange([tsVCLDragFinished], [tsVCLDragging]);
 
             if DragMessage = dmDragMove then
               with ScreenToClient(Pos) do
@@ -22088,7 +22090,10 @@ var
   P: TPoint;
 
 begin
-  DoStateChange([], [tsVCLDragPending, tsVCLDragging, tsUserDragObject]);
+  if [tsVCLDragPending, tsVCLDragging, tsVCLDragFinished] * FStates = [] then
+    Exit;
+
+  DoStateChange([], [tsVCLDragPending, tsVCLDragging, tsUserDragObject, tsVCLDragFinished]);
 
   GetCursorPos(P);
   P := ScreenToClient(P);
@@ -25059,7 +25064,7 @@ begin
           else
             FocusRect := InnerRect;
 
-        if Theme <> 0 then
+        if tsUseExplorerTheme in FStates then
           InflateRect(FocusRect, -1, -1);
 
         Windows.DrawFocusRect(Handle, FocusRect);
