@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  October 2009
+//   - Bug fix: enabling checkbox support for a column is now possible without assigning a dummy imagelist  
 //   - Bug fix: checkboxes in the header are now correctly aligned
 //   - Improvement: changed TBaseVirtualTree.PaintCheckImage to be usable by TVirtualTreeColumns.PaintHeader to be
 //                  able to paint themed header checkboxes
@@ -10901,7 +10902,8 @@ begin
             else
               DropMark := dmmNone;
             IsEnabled := (coEnabled in FOptions) and (FHeader.Treeview.Enabled);
-            ShowHeaderGlyph := (hoShowImages in FHeader.FOptions) and Assigned(Images) and (FImageIndex > -1);
+            ShowHeaderGlyph := (hoShowImages in FHeader.FOptions) and
+              ((Assigned(Images) and (FImageIndex > -1)) or FCheckBox);
             ShowSortGlyph := (Integer(FPositionToIndex[I]) = FHeader.FSortColumn) and (hoShowSortGlyphs in FHeader.FOptions);
             WrapCaption := coWrapCaption in FOptions;
 
