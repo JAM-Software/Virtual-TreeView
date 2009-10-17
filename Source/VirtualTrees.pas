@@ -25,6 +25,9 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  October 2009
+//   - Bug fix: checkboxes in the header are now correctly aligned
+//   - Improvement: changed TBaseVirtualTree.PaintCheckImage to be usable by TVirtualTreeColumns.PaintHeader to be
+//                  able to paint themed header checkboxes
 //   - Bug fix: TBaseVirtualTree.GetCheckImage now correctly handles cases when Node is nil and ImgCheckType is either
 //              ctTriStateCheckBox or ctNone
 //   - Bug fix: TBaseVirtualTree.HasImage now implicitly initializes the given node if needed to avoid requesting the
@@ -2800,7 +2803,7 @@ type
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure OriginalWMNCPaint(DC: HDC); virtual;
     procedure Paint; override;
-    procedure PaintCheckImage(const PaintInfo: TVTPaintInfo); virtual;
+    procedure PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVTImageInfo; Selected: Boolean); virtual;
     procedure PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean); virtual;
     procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect; ButtonX,
       ButtonY: Integer; BidiMode: TBiDiMode); virtual;
@@ -8818,7 +8821,8 @@ begin
       if not FCheckBox then
         HeaderGlyphSize := Point(FImages.Width, FImages.Height)
       else
-        HeaderGlyphSize := Point(Treeview.CheckImages.Width, Treeview.CheckImages.Height)
+        with TBaseVirtualTree.GetCheckImageListFor(FHeader.Treeview.CheckImageKind) do
+          HeaderGlyphSize := Point(Width, Height)
     else
       HeaderGlyphSize := Point(0, 0);
     if UseSortGlyph then
@@ -9085,6 +9089,8 @@ begin
       HeaderGlyphPos.X := MinLeft;
     if Layout = blGlyphLeft then
       MinLeft := HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing;
+    if FCheckBox and (Owner.Header.MainColumn = Self.Index) then
+      Dec(HeaderGlyphPos.X, 2 + 2 * Integer(toShowRoot in Owner.FHeader.Treeview.TreeOptions.FPaintOptions));
     // Finally transform header glyph to its actual position.
     with HeaderGlyphPos do
     begin
@@ -10748,10 +10754,10 @@ var
   SavedDC: Integer;
   Temp: TRect;
   ColCaptionText: UnicodeString;
-  ColImages: TCustomImageList;
-  ColImageIndex: Integer;
+  ColImageInfo: TVTImageInfo;
 
 begin
+  ColImageInfo.Ghosted := False;
   Run := FHeader.Treeview.FHeaderRect;
   FHeaderBitmap.Width := Max(Run.Right, R.Right - R.Left);
   FHeaderBitmap.Height := Run.Bottom;
@@ -10988,27 +10994,28 @@ begin
               begin
                 if not FCheckBox then
                 begin
-                  ColImages := Images;
-                  ColImageIndex := FImageIndex;
+                  ColImageInfo.Images := Images;
+                  Images.Draw(FHeaderBitmap.Canvas, GlyphPos.X, GlyphPos.Y, FImageIndex, IsEnabled);
                 end
                 else
                 begin
                   with Header.Treeview do
                   begin
-                    ColImages := GetCheckImageListFor(CheckImageKind);
-                    ColImageIndex := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
+                    ColImageInfo.Images := GetCheckImageListFor(CheckImageKind);
+                    ColImageInfo.Index := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
+                    ColImageInfo.XPos := GlyphPos.X;
+                    ColImageInfo.YPos := GlyphPos.Y;
+                    PaintCheckImage(FHeaderBitmap.Canvas, ColImageInfo, False);
                   end;
                 end;
-
-                ColImages.Draw( FHeaderBitmap.Canvas, GlyphPos.X, GlyphPos.Y, ColImageIndex, IsEnabled );
 
                 FHasImage := True;
                 with FImageRect do
                 begin
                   Left := GlyphPos.X;
                   Top := GlyphPos.Y;
-                  Right := Left + ColImages.Width;
-                  Bottom := Top + ColImages.Height;
+                  Right := Left + ColImageInfo.Images.Width;
+                  Bottom := Top + ColImageInfo.Images.Height;
                 end;
               end;
 
@@ -22619,7 +22626,9 @@ begin
     ckXP:
       Result := XPImages;
     ckSystemDefault:
-      Result := SystemCheckImages;    ckSystemFlat:      Result := SystemFlatCheckImages;
+      Result := SystemCheckImages;
+    ckSystemFlat:
+      Result := SystemFlatCheckImages;
     else
       Result := nil;
   end;
@@ -24564,7 +24573,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintCheckImage(const PaintInfo: TVTPaintInfo);
+procedure TBaseVirtualTree.PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVTImageInfo; Selected: Boolean);
 
 var
   ForegroundColor: COLORREF;
@@ -24572,7 +24581,7 @@ var
   Details: TThemedElementDetails;
 
 begin
-  with PaintInfo, ImageInfo[iiCheck] do
+  with ImageInfo do
   begin
     if (tsUseThemes in FStates) and (FCheckImageKind = ckSystemDefault) then
     begin
@@ -24605,7 +24614,7 @@ begin
     else
       with FCheckImages do
       begin
-        if (vsSelected in Node.States) and not Ghosted then
+        if Selected and not Ghosted then
         begin
           if Focused or (toPopupMode in FOptions.FPaintOptions) then
             ForegroundColor := ColorToRGB(FColors.FocusedSelectionColor)
@@ -30873,7 +30882,7 @@ begin
                               PaintNodeButton(Canvas, Node, Column, CellRect, ButtonX, ButtonY, BidiMode);
 
                             if ImageInfo[iiCheck].Index > -1 then
-                              PaintCheckImage(PaintInfo);
+                              PaintCheckImage(Canvas, PaintInfo.ImageInfo[iiCheck], vsSelected in PaintInfo.Node.States);
                           end;
 
                           if ImageInfo[iiState].Index > -1 then
