@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  October 2009
+//   - Bug fix: TBaseVirtualTree.HasImage now implicitly initializes the given node if needed to avoid requesting the
+//              imageindex for nodes that are not initialized
 //   - Bug fix: fixed possible AV when setting toExplorerTheme with no columns defined
 //   - Improvement: new events TBaseVirtualTree.OnSaveTree and TBaseVirtualTree.OnLoadTree
 //  September 2009
@@ -23546,12 +23548,16 @@ function TBaseVirtualTree.HasImage(Node: PVirtualNode; Kind: TVTImageKind; Colum
 
 // Determines whether the given node has got an image of the given kind in the given column.
 // Returns True if so, otherwise False.
+// The given node will be implicitly initialized if needed.
 
 var
   Ghosted: Boolean;
   Index: Integer;
 
 begin
+  if not (vsInitialized in Node.States) then
+    InitNode(Node);
+
   Index := -1;
   Ghosted := False;
   DoGetImageIndex(Node, Kind, Column, Ghosted, Index);
