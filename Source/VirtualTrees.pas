@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  October 2009
+//   - Bug fix: TBaseVirtualTree.GetCheckImage now correctly handles cases when Node is nil and ImgCheckType is either
+//              ctTriStateCheckBox or ctNone
 //   - Bug fix: TBaseVirtualTree.HasImage now implicitly initializes the given node if needed to avoid requesting the
 //              imageindex for nodes that are not initialized
 //   - Bug fix: fixed possible AV when setting toExplorerTheme with no columns defined
