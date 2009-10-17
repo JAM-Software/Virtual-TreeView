@@ -22576,22 +22576,26 @@ const
   );
 
 var
-  AType: TCheckType;
+  IsHot: Boolean;
 
 begin
-  if not Assigned(Node) then
-    Result := CheckStateToCheckImage[ImgCheckType, ImgCheckState, ImgEnabled, False]
+  if Assigned(Node) then
+  begin
+    ImgCheckType := Node.CheckType;
+    ImgCheckState := Node.CheckState;
+    ImgEnabled := not (vsDisabled in Node.States) and Enabled;
+    IsHot := Node = FCurrentHotNode;
+  end
   else
-    if Node.CheckType = ctNone then
-      Result := -1
-    else
-    begin
-      AType := Node.CheckType;
-      if AType = ctTriStateCheckBox then
-        AType := ctCheckBox;
-      Result := CheckStateToCheckImage[AType, Node.CheckState, not (vsDisabled in Node.States) and Enabled,
-        Node = FCurrentHotNode];
-    end;
+    IsHot := False;
+
+  if ImgCheckType = ctTriStateCheckBox then
+    ImgCheckType := ctCheckBox;
+
+  if ImgCheckType = ctNone then
+    Result := -1
+  else
+    Result := CheckStateToCheckImage[ImgCheckType, ImgCheckState, ImgEnabled, IsHot];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
