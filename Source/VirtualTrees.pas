@@ -25,7 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  October 2009
-//   - Improvement: New events TBaseVirtualTree.OnSaveTree and TBaseVirtualTree.OnLoadTree
+//   - Bug fix: fixed possible AV when setting toExplorerTheme with no columns defined
+//   - Improvement: new events TBaseVirtualTree.OnSaveTree and TBaseVirtualTree.OnLoadTree
 //  September 2009
 //   - Bug fix: TBaseVirtualTree.OnColumnClick will no longer be triggered twice
 //   - Improvement: new TVirtualNodeInitState ivsReInit to indicate that a node is about to be re-initialized
@@ -15510,7 +15511,7 @@ var
 
       if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
       begin
-        if not (coParentColor in FHeader.FColumns[FHeader.FMainColumn].FOptions) then
+        if (FHeader.FMainColumn >= 0) and not (coParentColor in FHeader.FColumns[FHeader.FMainColumn].FOptions) then
           Brush.Color := FHeader.FColumns[FHeader.FMainColumn].Color
         else
           Brush.Color := Self.Color;
