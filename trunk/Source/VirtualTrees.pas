@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  October 2009
+//   - Improvement: New events TBaseVirtualTree.OnSaveTree and TBaseVirtualTree.OnLoadTree
 //  September 2009
 //   - Bug fix: TBaseVirtualTree.OnColumnClick will no longer be triggered twice
 //   - Improvement: new TVirtualNodeInitState ivsReInit to indicate that a node is about to be re-initialized
@@ -2027,6 +2029,7 @@ type
     var HelpContext: Integer) of object;
   TVTCreateEditorEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     out EditLink: IVTEditLink) of object;
+  TVTSaveTreeEvent = procedure(Sender: TBaseVirtualTree; Stream: TStream) of object;
   TVTSaveNodeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Stream: TStream) of object;
 
   // header/column events
@@ -2350,6 +2353,10 @@ type
                                                  // (see OnLoadNode) to give the application the opportunity to save
                                                  // their node specific, persistent data (note: never save memory
                                                  // references)
+    FOnLoadTree,                                 // called after the tree has been loaded from a stream to allow an
+                                                 // application to load their own data saved in OnSaveTree
+    FOnSaveTree: TVTSaveTreeEvent;               // called after the tree has been saved to a stream to allow an
+                                                 // application to save its own data
 
     // header/column mouse events
     FOnAfterAutoFitColumn: TVTAfterAutoFitColumnEvent;
@@ -2978,6 +2985,7 @@ type
     property OnInitNode: TVTInitNodeEvent read FOnInitNode write FOnInitNode;
     property OnKeyAction: TVTKeyActionEvent read FOnKeyAction write FOnKeyAction;
     property OnLoadNode: TVTSaveNodeEvent read FOnLoadNode write FOnLoadNode;
+    property OnLoadTree: TVTSaveTreeEvent read FOnLoadTree write FOnLoadTree;
     property OnMeasureItem: TVTMeasureItemEvent read FOnMeasureItem write FOnMeasureItem;
     property OnNodeCopied: TVTNodeCopiedEvent read FOnNodeCopied write FOnNodeCopied;
     property OnNodeCopying: TVTNodeCopyingEvent read FOnNodeCopying write FOnNodeCopying;
@@ -2991,6 +2999,7 @@ type
     property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
     property OnSaveNode: TVTSaveNodeEvent read FOnSaveNode write FOnSaveNode;
+    property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
     property OnScroll: TVTScrollEvent read FOnScroll write FOnScroll;
     property OnShowScrollbar: TVTScrollbarShowEvent read FOnShowScrollbar write FOnShowScrollbar;
     property OnStateChange: TVTStateChangeEvent read FOnStateChange write FOnStateChange;
@@ -3620,6 +3629,7 @@ type
     property OnKeyPress;
     property OnKeyUp;
     property OnLoadNode;
+    property OnLoadTree;
     property OnMeasureItem;
     property OnMeasureTextWidth;
     property OnMouseDown;
@@ -3639,6 +3649,7 @@ type
     property OnResetNode;
     property OnResize;
     property OnSaveNode;
+    property OnSaveTree;
     property OnScroll;
     property OnShortenString;
     property OnShowScrollbar;
@@ -3867,6 +3878,7 @@ type
     property OnKeyPress;
     property OnKeyUp;
     property OnLoadNode;
+    property OnLoadTree;
     property OnMeasureItem;
     property OnMouseDown;
     property OnMouseMove;
@@ -3884,6 +3896,7 @@ type
     property OnResetNode;
     property OnResize;
     property OnSaveNode;
+    property OnSaveTree;
     property OnScroll;
     property OnShowScrollbar;
     property OnStartDock;
@@ -30284,6 +30297,8 @@ begin
             InternalAddFromStream(Stream, Version, Node);
           end;
           DoNodeCopied(nil);
+          if Assigned(FOnLoadTree) then
+            FOnLoadTree(Self, Stream);
         finally
           EndUpdate;
         end;
@@ -31673,6 +31688,8 @@ begin
     Stream.WriteBuffer(Count, SizeOf(Count));
     WriteNode(Stream, Node);
   end;
+  if Assigned(FOnSaveTree) then
+    FOnSaveTree(Self, Stream);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
