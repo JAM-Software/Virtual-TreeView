@@ -1,4 +1,4 @@
-unit VirtualTrees;
+﻿unit VirtualTrees;
 
 // Version 5.0.0
 //
@@ -3386,6 +3386,7 @@ type
     procedure WriteText(Writer: TWriter);
 
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
+    procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean=True);
   protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
@@ -3445,6 +3446,7 @@ type
     function Path(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; Delimiter: WideChar): UnicodeString;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
 
+    function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     property ImageText[Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex]: UnicodeString read GetImageText;
     property Text[Node: PVirtualNode; Column: TColumnIndex]: UnicodeString read GetText write SetText;
   end;
@@ -33352,6 +33354,53 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TCustomVirtualStringTree.GetDataFromGrid(const AStrings: TStringList;
+  const IncludeHeading: Boolean);
+var
+  LColIndex   : Integer;
+  LStartIndex : Integer;
+  LAddString  : String;
+  LCellText   : String;
+  LChildNode  : PVirtualNode;
+begin
+  { Start from the First column. }
+  LStartIndex := 0;
+
+  { Do it for Header first }
+  if IncludeHeading then
+  begin
+    LAddString := EmptyStr;
+    for LColIndex := LStartIndex to Pred(Header.Columns.Count) do
+    begin
+      if (LColIndex > LStartIndex) then
+        LAddString  := LAddString + ',';
+      LAddString := LAddString + AnsiQuotedStr(Header.Columns.Items[LColIndex].Text, '"');
+    end;//for
+    AStrings.Add(LAddString);
+  end;//if
+
+  { Loop thru the virtual tree for Data }
+  LChildNode := GetFirst;
+  while Assigned(LChildNode) do
+  begin
+    LAddString := EmptyStr;
+
+    { Read for each column and then populate the text }
+    for LColIndex := LStartIndex to Pred(Header.Columns.Count) do
+    begin
+      LCellText     := Text[LChildNode, LColIndex];
+      if (LCellText = EmptyStr) then
+        LCellText   := ' ';
+      if (LColIndex > LStartIndex) then
+        LAddString  := LAddString + ',';
+      LAddString    := LAddString + AnsiQuotedStr(LCellText, '"');
+    end;//for - Header.Columns.Count
+
+    AStrings.Add(LAddString);
+    LChildNode := LChildNode.NextSibling;
+  end;//while Assigned(LChildNode);
+end;
+
 function TCustomVirtualStringTree.GetImageText(Node: PVirtualNode;
   Kind: TVTImageKind; Column: TColumnIndex): UnicodeString;
 begin
@@ -33587,6 +33636,26 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+function TCustomVirtualStringTree.SaveToCSVFile(
+  const FileNameWithPath: TFileName; const IncludeHeading: Boolean): Boolean;
+var
+  LResultList : TStringList;
+begin
+  Result := False;
+  if (FileNameWithPath = '') then Exit;
+
+  LResultList := TStringList.Create;
+  try
+    { Get the data from grid. }
+    GetDataFromGrid(LResultList, IncludeHeading);
+    { Save File to Disk }
+    LResultList.SaveToFile(FileNameWithPath);
+    Result := True;
+  finally
+    FreeAndNil(LResultList);
+  end;//try-finally
+end;
 
 procedure TCustomVirtualStringTree.SetDefaultText(const Value: UnicodeString);
 
