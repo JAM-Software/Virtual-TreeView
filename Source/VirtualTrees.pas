@@ -24,6 +24,8 @@
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  November 2009
+//   - Bug fix: Fixed a potential Integer overflow in TBaseVirtualTree.CalculateVerticalAlignments
 //  October 2009
 //   - Bug fix: enabling checkbox support for a column is now possible without assigning a dummy imagelist  
 //   - Bug fix: checkboxes in the header are now correctly aligned
@@ -13817,7 +13819,7 @@ begin
     naFromTop:
       VAlign := Node.Align;
     naFromBottom:
-      VAlign := NodeHeight[Node] - Node.Align;
+      VAlign := Integer(NodeHeight[Node]) - Node.Align;
   else // naProportional
     // Consider button and line alignment, but make sure neither the image nor the button (whichever is taller)
     // go out of the entire node height (100% means bottom alignment to the node's bounds).
@@ -13833,7 +13835,7 @@ begin
       if toShowButtons in FOptions.FPaintOptions then
         VAlign := MulDiv((Integer(NodeHeight[Node]) - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height div 2
       else
-        VAlign := MulDiv(Node.NodeHeight, Node.Align, 100);
+        VAlign := MulDiv(Integer(Node.NodeHeight), Node.Align, 100);
   end;
 
   VButtonAlign := VAlign - FPlusBM.Height div 2;
@@ -14641,7 +14643,7 @@ var
   TargetX: Integer;
 
 begin
-  HalfWidth := Integer(FIndent) div 2;
+  HalfWidth := Round(FIndent / 2);
   if Reverse then
     TargetX := 0
   else
