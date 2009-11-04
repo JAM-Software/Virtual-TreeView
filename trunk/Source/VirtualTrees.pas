@@ -1,4 +1,4 @@
-﻿unit VirtualTrees;
+unit VirtualTrees;
 
 // Version 5.0.0
 //
@@ -25,6 +25,7 @@
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  November 2009
+//   - Bug fix: TCustomVirtualTreeOptions.SetPaintOptions no longer accidentally removed the the explorer theme
 //   - Bug fix: Fixed a potential Integer overflow in TBaseVirtualTree.CalculateVerticalAlignments
 //  October 2009
 //   - Bug fix: enabling checkbox support for a column is now possible without assigning a dummy imagelist  
@@ -6364,17 +6365,20 @@ begin
     with FOwner do
       if HandleAllocated then
       begin
-        if (tsUseThemes in FStates) or ((toThemeAware in ToBeSet) and ThemeServices.ThemesEnabled) then
-          if (toUseExplorerTheme in ToBeSet) and IsWinVistaOrAbove then
+        if IsWinVistaOrAbove and ((tsUseThemes in FStates) or
+           ((toThemeAware in ToBeSet) and ThemeServices.ThemesEnabled)) and
+           (toUseExplorerTheme in (ToBeSet + ToBeCleared)) then
+          if toUseExplorerTheme in ToBeSet then
           begin
             SetWindowTheme(Handle, 'explorer', nil);
             DoStateChange([tsUseExplorerTheme]);
           end
           else
-          begin
-            SetWindowTheme(Handle, '', nil);
-            DoStateChange([], [tsUseExplorerTheme]);
-          end;
+            if toUseExplorerTheme in ToBeCleared then
+            begin
+              SetWindowTheme(Handle, '', nil);
+              DoStateChange([], [tsUseExplorerTheme]);
+            end;
 
         if not (csLoading in ComponentState) then
         begin
