@@ -25,6 +25,9 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  November 2009
+//   - Improvement: a column is no longer painted 'down' if its check box was clicked
+//   - Bug fix: one can no longer toggle the check state of a column with the right mouse button
+//   - Bug fix: one can no longer toggle the check state of a node with the right mouse button
 //   - Bug fix: TCustomVirtualTreeOptions.SetPaintOptions no longer accidentally removed the the explorer theme
 //   - Bug fix: Fixed a potential Integer overflow in TBaseVirtualTree.CalculateVerticalAlignments
 //  October 2009
@@ -1339,8 +1342,9 @@ type
     FHeaderBitmap: TBitmap;               // backbuffer for drawing
     FHoverIndex,                          // currently "hot" column
     FDownIndex,                           // Column on which a mouse button is held down.
-    FTrackIndex: TColumnIndex;            // Index of column which is currently being resized
-    FClickIndex: TColumnIndex;            // last clicked column
+    FTrackIndex: TColumnIndex;            // Index of column which is currently being resized.
+    FClickIndex: TColumnIndex;            // Index of the last clicked column.
+    FCheckBoxHit: Boolean;                // True if the last click was on a header checkbox.
     FPositionToIndex: TIndexArray;
     FDefaultWidth: Integer;               // the width columns are created with
     FNeedPositionsFix: Boolean;           // True if FixPositions must still be called after DFM loading or Bidi mode change.
@@ -9665,6 +9669,7 @@ begin
     if FDownIndex > NoColumn then
       FHeader.Invalidate(Items[FDownIndex]);
     FDownIndex := Result;
+    FCheckBoxHit := Items[Result].FHasImage and PtInRect(Items[Result].FImageRect, P) and Items[Result].CheckBox;
     FHeader.Invalidate(Items[FDownIndex]);
   end;
 end;
@@ -9709,6 +9714,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumns.CanSplitterResize(P: TPoint; Column: TColumnIndex): Boolean;
+
 begin
   Result := (Column > NoColumn) and ([coResizable, coVisible] * Items[Column].FOptions = [coResizable, coVisible]);
   DoCanSplitterResize(P, Column, Result);
@@ -9717,6 +9723,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumns.DoCanSplitterResize(P: TPoint; Column: TColumnIndex; var Allowed: Boolean);
+
 begin
   if Assigned(FHeader.Treeview.FOnCanSplitterResizeColumn) then
     FHeader.Treeview.FOnCanSplitterResizeColumn(FHeader, P, Column, Allowed);
@@ -10017,7 +10024,8 @@ begin
       Include(HitInfo.HitPosition, hhiOnIcon);
       if Items[NewClickIndex].CheckBox then
       begin
-        FHeader.Treeview.UpdateColumnCheckState(Items[NewClickIndex]);
+        if Button = mbLeft then
+          FHeader.Treeview.UpdateColumnCheckState(Items[NewClickIndex]);
         Include(HitInfo.HitPosition, hhiOnCheckbox);
       end;
     end;
@@ -10348,6 +10356,7 @@ begin
     FDownIndex := NoColumn;
     FTrackIndex := NoColumn;
     FClickIndex := NoColumn;
+    FCheckBoxHit := False;
 
     with Header do
       if not (hsLoading in FStates) then
@@ -10898,7 +10907,7 @@ begin
 
             IsHoverIndex := (Integer(FPositionToIndex[I]) = FHoverIndex) and (hoHotTrack in FHeader.FOptions) and
               (coEnabled in FOptions);
-            IsDownIndex := Integer(FPositionToIndex[I]) = FDownIndex;
+            IsDownIndex := (Integer(FPositionToIndex[I]) = FDownIndex) and not FCheckBoxHit;
             if (coShowDropMark in FOptions) and (Integer(FPositionToIndex[I]) = FDropTarget) and
               (Integer(FPositionToIndex[I]) <> FDragIndex) then
             begin
@@ -12113,6 +12122,7 @@ begin
           FColumns.HandleClick(P, mbMiddle, True, False);
           FOwner.DoHeaderMouseUp(mbMiddle, GetShiftState, P.X, P.Y + Integer(FHeight));
           FColumns.FDownIndex := NoColumn;
+          FColumns.FCheckBoxHit := False;
         end;
       end;
     WM_LBUTTONDBLCLK,
@@ -12249,6 +12259,7 @@ begin
             FOwner.DoHeaderMouseUp(mbRight, GetShiftState, P.X, P.Y + Integer(FHeight));
             FColumns.FDownIndex := NoColumn;
             FColumns.FTrackIndex := NoColumn;
+            FColumns.FCheckBoxHit := False;
 
             Menu := FPopupMenu;
             if not Assigned(Menu) then
@@ -12389,6 +12400,7 @@ begin
             FHoverIndex := NoColumn;
             FClickIndex := NoColumn;
             FDownIndex := NoColumn;
+            FCheckBoxHit := False;
             Result := True;
             Message.Result := 0;
             Invalidate(nil);
@@ -17448,6 +17460,7 @@ begin
 
   Header.FColumns.FDownIndex := NoColumn;
   Header.FColumns.FHoverIndex := NoColumn;
+  Header.FColumns.FCheckBoxHit := False;
 
   inherited;
 end;
@@ -23179,7 +23192,7 @@ begin
         begin
           with HitInfo.HitNode^ do
             NewCheckState := DetermineNextCheckState(CheckType, CheckState);
-          if DoChecking(HitInfo.HitNode, NewCheckState) then
+          if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
           begin
             DoStateChange([tsMouseCheckPending]);
             FCheckNode := HitInfo.HitNode;
@@ -23371,7 +23384,7 @@ begin
       begin
         with HitInfo.HitNode^ do
           NewCheckState := DetermineNextCheckState(CheckType, CheckState);
-        if DoChecking(HitInfo.HitNode, NewCheckState) then
+        if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
         begin
           DoStateChange([tsMouseCheckPending]);
           FCheckNode := HitInfo.HitNode;
