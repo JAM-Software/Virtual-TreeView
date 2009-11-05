@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  November 2009
+//   - Bug fix: TBaseVirtualTree.AdjustTotalHeight didn't change the height of invisible nodes which caused some trouble
+//              when making those nodes visible again
 //   - Improvement: a column is no longer painted 'down' if its check box was clicked
 //   - Bug fix: one can no longer toggle the check state of a column with the right mouse button
 //   - Bug fix: one can no longer toggle the check state of a node with the right mouse button
@@ -13795,8 +13797,7 @@ begin
   begin
     Run := Node;
     repeat
-      if vsVisible in Run.States then
-        Inc(Integer(Run.TotalHeight), Difference);
+      Inc(Integer(Run.TotalHeight), Difference);
       // If the node is not visible or the parent node is not expanded or we are already at the top
       // then nothing more remains to do.
       if not (vsVisible in Run.States) or (Run = FRoot) or
