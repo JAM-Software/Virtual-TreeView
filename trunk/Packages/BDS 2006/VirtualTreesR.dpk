@@ -4,16 +4,16 @@ package VirtualTreesR;
 {$ALIGN 8}
 {$ASSERTIONS OFF}
 {$BOOLEVAL OFF}
-{$DEBUGINFO ON}
+{$DEBUGINFO OFF}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
-{$IOCHECKS ON}
-{$LOCALSYMBOLS ON}
+{$IOCHECKS OFF}
+{$LOCALSYMBOLS OFF}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION OFF}
-{$OVERFLOWCHECKS ON}
-{$RANGECHECKS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
 {$REFERENCEINFO OFF}
 {$SAFEDIVIDE OFF}
 {$STACKFRAMES OFF}
@@ -35,6 +35,7 @@ contains
   VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
   VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
   VTAccessibility in '..\..\Source\VTAccessibility.pas';
+  MSAAIntf in '..\..\Common\MSAAIntf.pas';
 
 end.
 

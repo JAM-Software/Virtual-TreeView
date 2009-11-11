@@ -6,13 +6,13 @@
     <PROJECT value="&quot;$(BCB)\Projects\Bpl\VirtualTreesD.bpl&quot;"/>
     <OBJFILES value="&quot;$(BCB)\Projects\Intermed\VirtualTreesReg.obj&quot;
       &quot;$(BCB)\Projects\Intermed\VirtualTreesD.obj&quot;"/>
-    <RESFILES value="VirtualTreesD.res ..\Design\VirtualTrees.dcr"/>
+    <RESFILES value="VirtualTreesD.res ..\..\Design\VirtualTrees.dcr"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value="vcl50.bpi dsnide50.bpi VCLX50.bpi VirtualTrees.bpi"/>
+    <PACKAGES value="vcl50.bpi dsnide50.bpi VCLX50.bpi VirtualTreesR.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;..\Design"/>
     <PATHRC value=".;"/>

@@ -2,8 +2,11 @@
 #include <vcl.h>
 #pragma hdrstop
 USERES("VirtualTrees.res");
-USEUNIT("..\VirtualTrees.pas");
-USERES("..\VirtualTrees.dcr");
+USEUNIT("..\..\Source\VirtualTrees.pas");
+USEUNIT("..\..\Source\VTAccessibilityFactory.pas");
+USEUNIT("..\..\Source\VTAccessibility.pas");
+USEUNIT("..\..\Source\MSAAIntf.pas");
+USERES("..\..\Design\VirtualTrees.dcr");
 USEPACKAGE("vcl40.bpi");
 USEPACKAGE("VCLX40.bpi");
 USEPACKAGE("ThemeManager.bpi");
