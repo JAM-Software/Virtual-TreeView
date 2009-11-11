@@ -24351,7 +24351,8 @@ begin
         end;
         DoStateChange([tsDrawSelecting], [tsDrawSelPending]);
 
-        // Reset to main column for multiselection.        FocusedColumn := FHeader.MainColumn;
+        // Reset to main column for multiselection.
+        FocusedColumn := FHeader.MainColumn;
 
         // The current rectangle may already include some node captions. Handle this.
         if HandleDrawSelection(X, Y) then
