@@ -13,15 +13,15 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = $(BCB)\Projects\Bpl\VirtualTreesD.bpl
+PROJECT = $(BCB)\Projects\Bpl\VirtualTreesC4D.bpl
 OBJFILES = $(BCB)\Projects\Intermed\VirtualTreesReg.obj \
-  $(BCB)\Projects\Intermed\VirtualTreesD.obj
+  $(BCB)\Projects\Intermed\VirtualTreesC4D.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES =
 LIBRARIES =
 SPARELIBS = VCL40.lib vclx40.lib
-PACKAGES = vcl40.bpi vclx40.bpi dsnide40.bpi VirtualTrees.bpi
+PACKAGES = vcl40.bpi vclx40.bpi dsnide40.bpi VirtualTreesC4.bpi
 DEFFILE =
 # ---------------------------------------------------------------------------
 PATHCPP = .;

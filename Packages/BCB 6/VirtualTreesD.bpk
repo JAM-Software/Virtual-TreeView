@@ -6,7 +6,7 @@
     <PROJECT value="$(BCB)\Projects\Bpl\VirtualTreesD.bpl"/>
     <OBJFILES value="&quot;c:\program files\borland\cbuilder6\Projects\Intermed\VirtualTreesD.obj&quot; 
       &quot;c:\program files\borland\cbuilder6\Projects\Intermed\VirtualTreesReg.obj&quot;"/>
-    <RESFILES value="VirtualTreesD.res ..\Design\VirtualTrees.dcr"/>
+    <RESFILES value="VirtualTreesD.res ..\..\Design\VirtualTrees.dcr"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
@@ -14,7 +14,7 @@
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value="designide.bpi VirtualTrees.bpi rtl.bpi vcl.bpi vclx.bpi"/>
+    <PACKAGES value="designide.bpi VirtualTreesR.bpi rtl.bpi vcl.bpi vclx.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;..\Design"/>
     <PATHRC value=".;"/>
@@ -25,15 +25,15 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="VirtualTreesD.cpp"/>
-    <INCLUDEPATH value="..\Design;..\Source;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\Design;..\Source;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj"/>
+    <INCLUDEPATH value="..\..\Design;..\..\Source;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\Design;..\..\Source;$(BCB)\Projects\Intermed;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(BCB)\Lib;$(BCB)\Lib\Debug;$(BCB)\lib\obj"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
     <IDLCFLAGS value="-src_suffix cpp -D_DEBUG -I..\Design -I..\Source -I$(BCB)\include 
       -I$(BCB)\include\vcl -boa"/>
-    <CFLAG1 value="-Od -H=c:\PROGRA~1\borland\CBUILD~3\Projects\Intermed\VirtualTrees.csm 
+    <CFLAG1 value="-Od -H=c:\PROGRA~1\borland\CBUILD~3\Projects\Intermed\VirtualTreesD.csm 
       -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tWM"/>
     <PFLAGS value="-N2$(BCB)\Projects\Intermed -N0$(BCB)\Projects\Intermed -$YD -$W -$T -$R 
       -$Q -$O- -$A8 -v -JPHNE -M -LUdesignide"/>
@@ -50,12 +50,12 @@
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="VirtualTreesD.cpp" FORMNAME="" UNITNAME="VirtualTreesD" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="VirtualTreesD.res" FORMNAME="" UNITNAME="VirtualTreesD.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Design\VirtualTrees.dcr" FORMNAME="" UNITNAME="VirtualTreesReg" CONTAINERID="DcrTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Design\VirtualTreesReg.pas" FORMNAME="" UNITNAME="VirtualTreesReg" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="VirtualTreesD.cpp" FORMNAME="" UNITNAME="VirtualTreesC6D" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="VirtualTreesD.res" FORMNAME="" UNITNAME="VirtualTreesC6D.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Design\VirtualTrees.dcr" FORMNAME="" UNITNAME="VirtualTreesReg" CONTAINERID="DcrTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Design\VirtualTreesReg.pas" FORMNAME="" UNITNAME="VirtualTreesReg" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="designide.bpi" FORMNAME="" UNITNAME="designide" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="VirtualTrees.bpi" FORMNAME="" UNITNAME="VirtualTrees" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="VirtualTreesR.bpi" FORMNAME="" UNITNAME="VirtualTreesC6" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="rtl.bpi" FORMNAME="" UNITNAME="rtl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="vcl.bpi" FORMNAME="" UNITNAME="vcl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="vclx.bpi" FORMNAME="" UNITNAME="vclx" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>

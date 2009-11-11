@@ -76,7 +76,7 @@
     <DelphiCompile Include="VirtualTreesD.dpk">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
-    <DCCReference Include="..\Design\VirtualTreesReg.pas" />
+    <DCCReference Include="..\..\Design\VirtualTreesReg.pas" />
     <DCCReference Include="dclstd.dcp" />
     <DCCReference Include="VirtualTreesR.dcp" />
   </ItemGroup>

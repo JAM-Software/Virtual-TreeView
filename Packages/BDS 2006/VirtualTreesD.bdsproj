@@ -2,121 +2,121 @@
 <BorlandProject>
 	<PersonalityInfo>
 		<Option>
-			<Option Name="Personality">Delphi.Personality</Option>
-			<Option Name="ProjectType">VCLApplication</Option>
-			<Option Name="Version">1.0</Option>
-			<Option Name="GUID">{18AE07B5-DAD5-4FD8-AE9B-BCF191DEB213}</Option>
+			<Option Name="Personality" Type="String">Delphi.Personality</Option>
+			<Option Name="ProjectType" Type="String"></Option>
+			<Option Name="Version" Type="String">1.0</Option>
+			<Option Name="GUID" Type="String">{E9BD9FE0-2BEF-4E3C-B010-F8D0FAEDEE67}</Option>
 		</Option>
 	</PersonalityInfo>
 	<Delphi.Personality>
 		<Source>
-			<Source Name="MainSource">VirtualTreesD.dpk</Source>
+			<Source Name="MainSource" Type="String">VirtualTreesD.dpk</Source>
 		</Source>
 		<FileVersion>
-			<FileVersion Name="Version">7.0</FileVersion>
+			<FileVersion Name="Version" Type="String">7.0</FileVersion>
 		</FileVersion>
 		<Compiler>
-			<Compiler Name="A">8</Compiler>
-			<Compiler Name="B">0</Compiler>
-			<Compiler Name="C">1</Compiler>
-			<Compiler Name="D">1</Compiler>
-			<Compiler Name="E">0</Compiler>
-			<Compiler Name="F">0</Compiler>
-			<Compiler Name="G">1</Compiler>
-			<Compiler Name="H">1</Compiler>
-			<Compiler Name="I">1</Compiler>
-			<Compiler Name="J">0</Compiler>
-			<Compiler Name="K">0</Compiler>
-			<Compiler Name="L">1</Compiler>
-			<Compiler Name="M">0</Compiler>
-			<Compiler Name="N">1</Compiler>
-			<Compiler Name="O">0</Compiler>
-			<Compiler Name="P">1</Compiler>
-			<Compiler Name="Q">1</Compiler>
-			<Compiler Name="R">1</Compiler>
-			<Compiler Name="S">0</Compiler>
-			<Compiler Name="T">0</Compiler>
-			<Compiler Name="U">0</Compiler>
-			<Compiler Name="V">1</Compiler>
-			<Compiler Name="W">0</Compiler>
-			<Compiler Name="X">1</Compiler>
-			<Compiler Name="Y">0</Compiler>
-			<Compiler Name="Z">1</Compiler>
-			<Compiler Name="ShowHints">True</Compiler>
-			<Compiler Name="ShowWarnings">True</Compiler>
-			<Compiler Name="UnitAliases">WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</Compiler>
-			<Compiler Name="NamespacePrefix"></Compiler>
-			<Compiler Name="GenerateDocumentation">False</Compiler>
-			<Compiler Name="DefaultNamespace"></Compiler>
-			<Compiler Name="SymbolDeprecated">True</Compiler>
-			<Compiler Name="SymbolLibrary">True</Compiler>
-			<Compiler Name="SymbolPlatform">True</Compiler>
-			<Compiler Name="SymbolExperimental">True</Compiler>
-			<Compiler Name="UnitLibrary">True</Compiler>
-			<Compiler Name="UnitPlatform">True</Compiler>
-			<Compiler Name="UnitDeprecated">True</Compiler>
-			<Compiler Name="UnitExperimental">True</Compiler>
-			<Compiler Name="HResultCompat">True</Compiler>
-			<Compiler Name="HidingMember">True</Compiler>
-			<Compiler Name="HiddenVirtual">True</Compiler>
-			<Compiler Name="Garbage">True</Compiler>
-			<Compiler Name="BoundsError">True</Compiler>
-			<Compiler Name="ZeroNilCompat">True</Compiler>
-			<Compiler Name="StringConstTruncated">True</Compiler>
-			<Compiler Name="ForLoopVarVarPar">True</Compiler>
-			<Compiler Name="TypedConstVarPar">True</Compiler>
-			<Compiler Name="AsgToTypedConst">True</Compiler>
-			<Compiler Name="CaseLabelRange">True</Compiler>
-			<Compiler Name="ForVariable">True</Compiler>
-			<Compiler Name="ConstructingAbstract">True</Compiler>
-			<Compiler Name="ComparisonFalse">True</Compiler>
-			<Compiler Name="ComparisonTrue">True</Compiler>
-			<Compiler Name="ComparingSignedUnsigned">True</Compiler>
-			<Compiler Name="CombiningSignedUnsigned">True</Compiler>
-			<Compiler Name="UnsupportedConstruct">True</Compiler>
-			<Compiler Name="FileOpen">True</Compiler>
-			<Compiler Name="FileOpenUnitSrc">True</Compiler>
-			<Compiler Name="BadGlobalSymbol">True</Compiler>
-			<Compiler Name="DuplicateConstructorDestructor">True</Compiler>
-			<Compiler Name="InvalidDirective">True</Compiler>
-			<Compiler Name="PackageNoLink">True</Compiler>
-			<Compiler Name="PackageThreadVar">True</Compiler>
-			<Compiler Name="ImplicitImport">True</Compiler>
-			<Compiler Name="HPPEMITIgnored">True</Compiler>
-			<Compiler Name="NoRetVal">True</Compiler>
-			<Compiler Name="UseBeforeDef">True</Compiler>
-			<Compiler Name="ForLoopVarUndef">True</Compiler>
-			<Compiler Name="UnitNameMismatch">True</Compiler>
-			<Compiler Name="NoCFGFileFound">True</Compiler>
-			<Compiler Name="ImplicitVariants">True</Compiler>
-			<Compiler Name="UnicodeToLocale">True</Compiler>
-			<Compiler Name="LocaleToUnicode">True</Compiler>
-			<Compiler Name="ImagebaseMultiple">True</Compiler>
-			<Compiler Name="SuspiciousTypecast">True</Compiler>
-			<Compiler Name="PrivatePropAccessor">True</Compiler>
-			<Compiler Name="UnsafeType">False</Compiler>
-			<Compiler Name="UnsafeCode">False</Compiler>
-			<Compiler Name="UnsafeCast">False</Compiler>
-			<Compiler Name="OptionTruncated">True</Compiler>
-			<Compiler Name="WideCharReduced">True</Compiler>
-			<Compiler Name="DuplicatesIgnored">True</Compiler>
+			<Compiler Name="A" Type="Integer">8</Compiler>
+			<Compiler Name="B" Type="Integer">0</Compiler>
+			<Compiler Name="C" Type="Integer">1</Compiler>
+			<Compiler Name="D" Type="Integer">1</Compiler>
+			<Compiler Name="E" Type="Integer">0</Compiler>
+			<Compiler Name="F" Type="Integer">0</Compiler>
+			<Compiler Name="G" Type="Integer">1</Compiler>
+			<Compiler Name="H" Type="Integer">1</Compiler>
+			<Compiler Name="I" Type="Integer">1</Compiler>
+			<Compiler Name="J" Type="Integer">0</Compiler>
+			<Compiler Name="K" Type="Integer">0</Compiler>
+			<Compiler Name="L" Type="Integer">1</Compiler>
+			<Compiler Name="M" Type="Integer">0</Compiler>
+			<Compiler Name="N" Type="Integer">1</Compiler>
+			<Compiler Name="O" Type="Integer">1</Compiler>
+			<Compiler Name="P" Type="Integer">1</Compiler>
+			<Compiler Name="Q" Type="Integer">1</Compiler>
+			<Compiler Name="R" Type="Integer">1</Compiler>
+			<Compiler Name="S" Type="Integer">0</Compiler>
+			<Compiler Name="T" Type="Integer">0</Compiler>
+			<Compiler Name="U" Type="Integer">0</Compiler>
+			<Compiler Name="V" Type="Integer">1</Compiler>
+			<Compiler Name="W" Type="Integer">0</Compiler>
+			<Compiler Name="X" Type="Integer">1</Compiler>
+			<Compiler Name="Y" Type="Integer">0</Compiler>
+			<Compiler Name="Z" Type="Integer">1</Compiler>
+			<Compiler Name="ShowHints" Type="Boolean">True</Compiler>
+			<Compiler Name="ShowWarnings" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitAliases" Type="String">WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</Compiler>
+			<Compiler Name="NamespacePrefix" Type="String"></Compiler>
+			<Compiler Name="GenerateDocumentation" Type="Boolean">False</Compiler>
+			<Compiler Name="DefaultNamespace" Type="String"></Compiler>
+			<Compiler Name="SymbolDeprecated" Type="Boolean">True</Compiler>
+			<Compiler Name="SymbolLibrary" Type="Boolean">True</Compiler>
+			<Compiler Name="SymbolPlatform" Type="Boolean">True</Compiler>
+			<Compiler Name="SymbolExperimental" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitLibrary" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitPlatform" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitDeprecated" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitExperimental" Type="Boolean">True</Compiler>
+			<Compiler Name="HResultCompat" Type="Boolean">True</Compiler>
+			<Compiler Name="HidingMember" Type="Boolean">True</Compiler>
+			<Compiler Name="HiddenVirtual" Type="Boolean">True</Compiler>
+			<Compiler Name="Garbage" Type="Boolean">True</Compiler>
+			<Compiler Name="BoundsError" Type="Boolean">True</Compiler>
+			<Compiler Name="ZeroNilCompat" Type="Boolean">True</Compiler>
+			<Compiler Name="StringConstTruncated" Type="Boolean">True</Compiler>
+			<Compiler Name="ForLoopVarVarPar" Type="Boolean">True</Compiler>
+			<Compiler Name="TypedConstVarPar" Type="Boolean">True</Compiler>
+			<Compiler Name="AsgToTypedConst" Type="Boolean">True</Compiler>
+			<Compiler Name="CaseLabelRange" Type="Boolean">True</Compiler>
+			<Compiler Name="ForVariable" Type="Boolean">True</Compiler>
+			<Compiler Name="ConstructingAbstract" Type="Boolean">True</Compiler>
+			<Compiler Name="ComparisonFalse" Type="Boolean">True</Compiler>
+			<Compiler Name="ComparisonTrue" Type="Boolean">True</Compiler>
+			<Compiler Name="ComparingSignedUnsigned" Type="Boolean">True</Compiler>
+			<Compiler Name="CombiningSignedUnsigned" Type="Boolean">True</Compiler>
+			<Compiler Name="UnsupportedConstruct" Type="Boolean">True</Compiler>
+			<Compiler Name="FileOpen" Type="Boolean">True</Compiler>
+			<Compiler Name="FileOpenUnitSrc" Type="Boolean">True</Compiler>
+			<Compiler Name="BadGlobalSymbol" Type="Boolean">True</Compiler>
+			<Compiler Name="DuplicateConstructorDestructor" Type="Boolean">True</Compiler>
+			<Compiler Name="InvalidDirective" Type="Boolean">True</Compiler>
+			<Compiler Name="PackageNoLink" Type="Boolean">True</Compiler>
+			<Compiler Name="PackageThreadVar" Type="Boolean">True</Compiler>
+			<Compiler Name="ImplicitImport" Type="Boolean">True</Compiler>
+			<Compiler Name="HPPEMITIgnored" Type="Boolean">True</Compiler>
+			<Compiler Name="NoRetVal" Type="Boolean">True</Compiler>
+			<Compiler Name="UseBeforeDef" Type="Boolean">True</Compiler>
+			<Compiler Name="ForLoopVarUndef" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitNameMismatch" Type="Boolean">True</Compiler>
+			<Compiler Name="NoCFGFileFound" Type="Boolean">True</Compiler>
+			<Compiler Name="MessageDirective" Type="Boolean">True</Compiler>
+			<Compiler Name="ImplicitVariants" Type="Boolean">True</Compiler>
+			<Compiler Name="UnicodeToLocale" Type="Boolean">True</Compiler>
+			<Compiler Name="LocaleToUnicode" Type="Boolean">True</Compiler>
+			<Compiler Name="ImagebaseMultiple" Type="Boolean">True</Compiler>
+			<Compiler Name="SuspiciousTypecast" Type="Boolean">True</Compiler>
+			<Compiler Name="PrivatePropAccessor" Type="Boolean">True</Compiler>
+			<Compiler Name="UnsafeType" Type="Boolean">False</Compiler>
+			<Compiler Name="UnsafeCode" Type="Boolean">False</Compiler>
+			<Compiler Name="UnsafeCast" Type="Boolean">False</Compiler>
+			<Compiler Name="OptionTruncated" Type="Boolean">True</Compiler>
+			<Compiler Name="WideCharReduced" Type="Boolean">True</Compiler>
+			<Compiler Name="DuplicatesIgnored" Type="Boolean">True</Compiler>
 			<Compiler Name="UnitInitSeq">True</Compiler>
 			<Compiler Name="LocalPInvoke">True</Compiler>
-			<Compiler Name="MessageDirective">True</Compiler>
 			<Compiler Name="CodePage"></Compiler>
 		</Compiler>
 		<Linker>
-			<Linker Name="MapFile">0</Linker>
-			<Linker Name="OutputObjs">0</Linker>
+			<Linker Name="MapFile" Type="Integer">0</Linker>
+			<Linker Name="OutputObjs" Type="Integer">0</Linker>
+			<Linker Name="ConsoleApp" Type="Integer">1</Linker>
+			<Linker Name="DebugInfo" Type="Boolean">False</Linker>
+			<Linker Name="RemoteSymbols" Type="Boolean">False</Linker>
+			<Linker Name="GenerateDRC" Type="Boolean">False</Linker>
+			<Linker Name="MinStackSize" Type="Integer">4096</Linker>
+			<Linker Name="MaxStackSize" Type="Integer">1048576</Linker>
+			<Linker Name="ImageBase" Type="Integer">809500672</Linker>
+			<Linker Name="ExeDescription" Type="String">Virtual Treeview design time package</Linker>
 			<Linker Name="GenerateHpps">False</Linker>
-			<Linker Name="ConsoleApp">1</Linker>
-			<Linker Name="DebugInfo">False</Linker>
-			<Linker Name="RemoteSymbols">False</Linker>
-			<Linker Name="GenerateDRC">False</Linker>
-			<Linker Name="MinStackSize">16384</Linker>
-			<Linker Name="MaxStackSize">1048576</Linker>
-			<Linker Name="ImageBase">809500672</Linker>
-			<Linker Name="ExeDescription">Virtual Treeview design time package</Linker>
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir"></Directories>
@@ -130,46 +130,57 @@
 			<Directories Name="UsePackages">False</Directories>
 		</Directories>
 		<Parameters>
-			<Parameters Name="RunParams"></Parameters>
-			<Parameters Name="HostApplication"></Parameters>
-			<Parameters Name="Launcher"></Parameters>
-			<Parameters Name="UseLauncher">False</Parameters>
-			<Parameters Name="DebugCWD"></Parameters>
+			<Parameters Name="RunParams" Type="String"></Parameters>
+			<Parameters Name="HostApplication" Type="String"></Parameters>
+			<Parameters Name="Launcher" Type="String"></Parameters>
+			<Parameters Name="UseLauncher" Type="Boolean">False</Parameters>
+			<Parameters Name="DebugCWD" Type="String"></Parameters>
+			<Parameters Name="RemoteHost" Type="String"></Parameters>
+			<Parameters Name="RemotePath" Type="String"></Parameters>
+			<Parameters Name="RemoteLauncher" Type="String"></Parameters>
+			<Parameters Name="RemoteCWD" Type="String"></Parameters>
+			<Parameters Name="RemoteDebug" Type="Boolean">False</Parameters>
 			<Parameters Name="Debug Symbols Search Path"></Parameters>
 			<Parameters Name="LoadAllSymbols">True</Parameters>
 			<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
 		</Parameters>
+		<Language>
+			<Language Name="ActiveLang" Type="String"></Language>
+			<Language Name="ProjectLang" Type="String">$00000000</Language>
+			<Language Name="RootDir" Type="String"></Language>
+		</Language>
 		<VersionInfo>
-			<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
-			<VersionInfo Name="AutoIncBuild">False</VersionInfo>
-			<VersionInfo Name="MajorVer">1</VersionInfo>
-			<VersionInfo Name="MinorVer">0</VersionInfo>
-			<VersionInfo Name="Release">0</VersionInfo>
-			<VersionInfo Name="Build">0</VersionInfo>
-			<VersionInfo Name="Debug">False</VersionInfo>
-			<VersionInfo Name="PreRelease">False</VersionInfo>
-			<VersionInfo Name="Special">False</VersionInfo>
-			<VersionInfo Name="Private">False</VersionInfo>
-			<VersionInfo Name="DLL">False</VersionInfo>
-			<VersionInfo Name="Locale">1031</VersionInfo>
-			<VersionInfo Name="CodePage">1252</VersionInfo>
+			<VersionInfo Name="IncludeVerInfo" Type="Boolean">True</VersionInfo>
+			<VersionInfo Name="AutoIncBuild" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="MajorVer" Type="Integer">1</VersionInfo>
+			<VersionInfo Name="MinorVer" Type="Integer">0</VersionInfo>
+			<VersionInfo Name="Release" Type="Integer">0</VersionInfo>
+			<VersionInfo Name="Build" Type="Integer">0</VersionInfo>
+			<VersionInfo Name="Debug" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="PreRelease" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="Special" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="Private" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="DLL" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="Locale" Type="Integer">1031</VersionInfo>
+			<VersionInfo Name="CodePage" Type="Integer">1252</VersionInfo>
 		</VersionInfo>
 		<VersionInfoKeys>
-			<VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
-			<VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
-			<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
-			<VersionInfoKeys Name="InternalName"></VersionInfoKeys>
-			<VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
-			<VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
-			<VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
-			<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
-			<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
-		</VersionInfoKeys>
-		<Language>
-			<Language Name="ActiveLang"></Language>
-			<Language Name="ProjectLang">$00000000</Language>
-			<Language Name="RootDir"></Language>
-		</Language>
-	</Delphi.Personality>
+			<VersionInfoKeys Name="FileVersion" Type="String">1.0.0.0</VersionInfoKeys>
+			<VersionInfoKeys Name="CompanyName" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="FileDescription" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="InternalName" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalCopyright" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalTrademarks" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="OriginalFilename" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductName" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductVersion" Type="String">1.0.0.0</VersionInfoKeys>
+		</VersionInfoKeys>  <Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\dclmlwiz90.bpl">Borland Markup Language Wizards</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\applet90.bpl">Borland Control Panel Applet Package</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\dclsmp90.bpl">Borland Sample Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\ibevnt90.bpl">Borland Interbase Event Alerter Component</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\dclact90.bpl">Borland ActionBar Components</Excluded_Packages>
+      <Excluded_Packages Name="c:\programme\borland\bds\3.0\Bin\dclshlctrls90.bpl">Shell Control Property and Component Editors</Excluded_Packages>
+    </Excluded_Packages>
+  </Delphi.Personality>
 </BorlandProject>

@@ -3,12 +3,12 @@
 #include <vcl.h>
 #pragma hdrstop
 USERES("VirtualTreesD.res");
-USERES("..\Design\VirtualTrees.dcr");
-USEUNIT("..\Design\VirtualTreesReg.pas");
+USERES("..\..\Design\VirtualTreesReg.dcr");
+USEUNIT("..\..\Design\VirtualTreesReg.pas");
 USEPACKAGE("vcl50.bpi");
 USEPACKAGE("dsnide50.bpi");
 USEPACKAGE("VCLX50.bpi");
-USEPACKAGE("VirtualTrees.bpi");
+USEPACKAGE("VirtualTreesR.bpi");
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 //---------------------------------------------------------------------------

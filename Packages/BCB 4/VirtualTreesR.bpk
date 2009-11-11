@@ -15,10 +15,10 @@ VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
 PROJECT = VirtualTreesR.bpl
 OBJFILES = ..\VirtualTreesR.obj VirtualTreesR.obj
-RESFILES = VirtualTrees.res ..\Design\VirtualTrees.dcr
+RESFILES = VirtualTrees.res ..\..\Design\VirtualTrees.dcr
 RESDEPEN = $(RESFILES)
 LIBFILES =
-LIBRARIES =
+LIBRARIES = oleacc.lib
 SPARELIBS = VCL40.lib vclx40.lib ThemeManager.lib
 PACKAGES = vcl40.bpi VCLX40.bpi ThemeManager.bpi
 DEFFILE =
