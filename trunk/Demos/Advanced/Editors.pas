@@ -29,7 +29,7 @@ type
   PPropertyData = ^TPropertyData;
   TPropertyData = record
     ValueType: TValueType;
-    Value: WideString;      // This value can actually be a date or a number too.
+    Value: UnicodeString;      // This value can actually be a date or a number too.
     Changed: Boolean;
   end;
 
@@ -270,7 +270,7 @@ function TPropertyEditLink.EndEdit: Boolean;
 var
   Data: PPropertyData;
   Buffer: array[0..1024] of Char;
-  S: WideString;
+  S: UnicodeString;
 
 begin
   Result := True;
@@ -433,7 +433,7 @@ function TGridEditLink.EndEdit: Boolean;
 var
   Data: PGridData;
   Buffer: array[0..1024] of Char;
-  S: WideString;
+  S: UnicodeString;
   I: Integer;
   
 begin

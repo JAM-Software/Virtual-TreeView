@@ -18,7 +18,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, ToolWin, Buttons, ExtCtrls, StdCtrls, ImgList, ActnList,
-  StdActns;
+  StdActns, VirtualTrees;
 
 type
   TMainForm = class(TForm)
@@ -52,7 +52,7 @@ var
   MainForm: TMainForm;
 
 procedure ConvertToHighColor(ImageList: TImageList);
-procedure LoadUnicodeStrings(Name: string; var Strings: array of WideString);
+procedure LoadUnicodeStrings(Name: string; var Strings: array of UnicodeString);
 procedure SetStatusbarText(const S: string);
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure LoadUnicodeStrings(Name: string; var Strings: array of WideString);
+procedure LoadUnicodeStrings(Name: string; var Strings: array of UnicodeString);
 
 // Loads the Unicode strings from the resource.
 

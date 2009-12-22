@@ -48,12 +48,12 @@ type
       var InitialStates: TVirtualNodeInitStates);
     procedure XPTreeInitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure XPTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-      TextType: TVSTTextType; var CellText: WideString);
+      TextType: TVSTTextType; var CellText: UnicodeString);
     procedure XPTreeHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
     procedure XPTreeCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
       var Result: Integer);
     procedure XPTreeGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-      var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: WideString);
+      var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: UnicodeString);
     procedure Label4Click(Sender: TObject);
     procedure ToolButton9Click(Sender: TObject);
     procedure XPTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
@@ -74,7 +74,7 @@ uses
 type
   PEntry = ^TEntry;
   TEntry = record
-    Caption: WideString;
+    Caption: UnicodeString;
     Image: Integer;
     Size: Int64;
   end;
@@ -168,7 +168,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TWindowsXPForm.XPTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: WideString);
+  TextType: TVSTTextType; var CellText: UnicodeString);
 
 var
   Data: PEntry;
@@ -249,7 +249,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TWindowsXPForm.XPTreeGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: WideString);
+  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: UnicodeString);
 
 begin
   // Show only a dummy hint. It is just to demonstrate how to do it.
