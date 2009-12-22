@@ -47,14 +47,14 @@ type
     procedure CopyActionExecute(Sender: TObject);
     procedure PasteActionExecute(Sender: TObject);
     procedure Tree1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var Text: WideString);
+      var Text: UnicodeString);
     procedure FormCreate(Sender: TObject);
     procedure TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
       Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
     procedure Button2Click(Sender: TObject);
     procedure TreeInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
-    procedure Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: WideString);
+    procedure Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
     procedure Button3Click(Sender: TObject);
     procedure Tree2DragAllowed(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
     procedure TreeDragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState;
@@ -63,7 +63,7 @@ type
       var ItemColor: TColor; var EraseAction: TItemEraseAction);
   private
     procedure AddUnicodeText(DataObject: IDataObject; Target: TVirtualStringTree; Mode: TVTNodeAttachMode);
-    procedure AddVCLText(Target: TVirtualStringTree; const Text: WideString; Mode: TVTNodeAttachMode);
+    procedure AddVCLText(Target: TVirtualStringTree; const Text: UnicodeString; Mode: TVTNodeAttachMode);
     function FindCPFormatDescription(CPFormat: Word): string;
     procedure InsertData(Sender: TVirtualStringTree; DataObject: IDataObject; Formats: TFormatArray; Effect: Integer;
       Mode: TVTNodeAttachMode);
@@ -85,7 +85,7 @@ uses
 type
   PNodeData = ^TNodeData;
   TNodeData = record
-    Caption: WideString;
+    Caption: UnicodeString;
   end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TMainForm.Tree1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var Text: WideString);
+  var Text: UnicodeString);
 
 var
   Data: PNodeData;
@@ -303,7 +303,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TMainForm.AddVCLText(Target: TVirtualStringTree; const Text: WideString; Mode: TVTNodeAttachMode);
+procedure TMainForm.AddVCLText(Target: TVirtualStringTree; const Text: UnicodeString; Mode: TVTNodeAttachMode);
 
 // This method is called when the drop handler gets called with a VCL drag source.
 // The given text is retrieved and splitted in lines.
@@ -536,7 +536,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TMainForm.Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: WideString);
+procedure TMainForm.Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
 
 var
   Data: PNodeData;
