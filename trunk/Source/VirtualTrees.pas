@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  January 2010
+//   - Improvement: The sort operation can now be canceled
+//   - Improvement: all BeginOperation/EndOperation pairs are now enclosed in try..finally blocks
 //   - Bug fix: the combination of toUseExplorerTheme and toFullRowSelect now also works correct when no columns are
 //              defined
 //  December 2009
@@ -12867,15 +12869,19 @@ begin
     Exit; // nothing to do
 
   TreeView.BeginOperation;
-  if Assigned(TreeView.FOnBeforeAutoFitColumns) then
-    TreeView.FOnBeforeAutoFitColumns(Self, SmartAutoFitType);
+  try
+    if Assigned(TreeView.FOnBeforeAutoFitColumns) then
+      TreeView.FOnBeforeAutoFitColumns(Self, SmartAutoFitType);
 
-  for I := StartCol to EndCol do
-    DoAutoFitColumn(I);
+    for I := StartCol to EndCol do
+      DoAutoFitColumn(I);
 
-  if Assigned(TreeView.FOnAfterAutoFitColumns) then
-    TreeView.FOnAfterAutoFitColumns(Self);
-  Treeview.EndOperation;
+    if Assigned(TreeView.FOnAfterAutoFitColumns) then
+      TreeView.FOnAfterAutoFitColumns(Self);
+
+  finally
+    Treeview.EndOperation;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28419,89 +28425,93 @@ begin
     Result := 0;
 
   BeginOperation;
-  if Assigned(FOnBeforeGetMaxColumnWidth) then
-    FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
+  try
+    if Assigned(FOnBeforeGetMaxColumnWidth) then
+      FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
 
-  // Don't check the event here as descendant trees might have overriden the DoGetImageIndex method.
-  WithImages := Assigned(FImages);
-  if WithImages then
-    ImageOffset := FImages.Width + 2
-  else
-    ImageOffset := 0;
-  WithStateImages := Assigned(FStateImages);
-  if WithStateImages then
-    StateImageOffset := FStateImages.Width + 2
-  else
-    StateImageOffset := 0;
-  if Assigned(FCheckImages) then
-    CheckOffset := FCheckImages.Width + 2
-  else
-    CheckOffset := 0;
+    // Don't check the event here as descendant trees might have overriden the DoGetImageIndex method.
+    WithImages := Assigned(FImages);
+    if WithImages then
+      ImageOffset := FImages.Width + 2
+    else
+      ImageOffset := 0;
+    WithStateImages := Assigned(FStateImages);
+    if WithStateImages then
+      StateImageOffset := FStateImages.Width + 2
+    else
+      StateImageOffset := 0;
+    if Assigned(FCheckImages) then
+      CheckOffset := FCheckImages.Width + 2
+    else
+      CheckOffset := 0;
 
-  if UseSmartColumnWidth then // Get first visible node which is in view.
-    Run := GetTopNode
-  else
-    Run := GetFirstVisible(nil, True);
+    if UseSmartColumnWidth then // Get first visible node which is in view.
+      Run := GetTopNode
+    else
+      Run := GetFirstVisible(nil, True);
 
-  if Column = FHeader.MainColumn then
-  begin
-    if toFixedIndent in FOptions.FPaintOptions then
-      NodeLeft := FIndent
+    if Column = FHeader.MainColumn then
+    begin
+      if toFixedIndent in FOptions.FPaintOptions then
+        NodeLeft := FIndent
+      else
+      begin
+        if toShowRoot in FOptions.FPaintOptions then
+          NodeLeft := Integer((GetNodeLevel(Run) + 1) * FIndent)
+        else
+          NodeLeft := Integer(GetNodeLevel(Run) * FIndent);
+      end;
+
+      WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
+    end
     else
     begin
-      if toShowRoot in FOptions.FPaintOptions then
-        NodeLeft := Integer((GetNodeLevel(Run) + 1) * FIndent)
-      else
-        NodeLeft := Integer(GetNodeLevel(Run) * FIndent);
+      NodeLeft := 0;
+      WithCheck := False;
     end;
 
-    WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
-  end
-  else
-  begin
-    NodeLeft := 0;
-    WithCheck := False;
+    // Consider node margin at the left of the nodes.
+    Inc(NodeLeft, FMargin);
+
+    // Decide where to stop.
+    if UseSmartColumnWidth then
+      LastNode := GetNextVisible(BottomNode)
+    else
+      LastNode := nil;
+
+    while Assigned(Run) and not OperationCanceled do
+    begin
+      TextLeft := NodeLeft;
+      if WithCheck and (Run.CheckType <> ctNone) then
+        Inc(TextLeft, CheckOffset);
+      if WithImages and HasImage(Run, ikNormal, Column) then
+        Inc(TextLeft, ImageOffset);
+      if WithStateImages and HasImage(Run, ikState, Column) then
+        Inc(TextLeft, StateImageOffset);
+
+      CurrentWidth := DoGetNodeWidth(Run, Column);
+      Inc(CurrentWidth, DoGetCellContentMargin(Run, Column).X);
+
+      if Result < (TextLeft + CurrentWidth) then
+        Result := TextLeft + CurrentWidth;
+
+      // Get next visible node and update left node position if needed.
+      NextNode := GetNextVisible(Run, True);
+      if NextNode = LastNode then
+        Break;
+      if (Column = Header.MainColumn) and not (toFixedIndent in FOptions.FPaintOptions) then
+        Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
+      Run := NextNode;
+    end;
+    if toShowVertGridLines in FOptions.FPaintOptions then
+      Inc(Result);
+
+    if Assigned(FOnAfterGetMaxColumnWidth) then
+      FOnAfterGetMaxColumnWidth(FHeader, Column, Result);
+
+  finally
+    EndOperation;
   end;
-
-  // Consider node margin at the left of the nodes.
-  Inc(NodeLeft, FMargin);
-
-  // Decide where to stop.
-  if UseSmartColumnWidth then
-    LastNode := GetNextVisible(BottomNode)
-  else
-    LastNode := nil;
-
-  while Assigned(Run) and not OperationCanceled do
-  begin
-    TextLeft := NodeLeft;
-    if WithCheck and (Run.CheckType <> ctNone) then
-      Inc(TextLeft, CheckOffset);
-    if WithImages and HasImage(Run, ikNormal, Column) then
-      Inc(TextLeft, ImageOffset);
-    if WithStateImages and HasImage(Run, ikState, Column) then
-      Inc(TextLeft, StateImageOffset);
-
-    CurrentWidth := DoGetNodeWidth(Run, Column);
-    Inc(CurrentWidth, DoGetCellContentMargin(Run, Column).X);
-
-    if Result < (TextLeft + CurrentWidth) then
-      Result := TextLeft + CurrentWidth;
-
-    // Get next visible node and update left node position if needed.
-    NextNode := GetNextVisible(Run, True);
-    if NextNode = LastNode then
-      Break;
-    if (Column = Header.MainColumn) and not (toFixedIndent in FOptions.FPaintOptions) then
-      Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
-    Run := NextNode;
-  end;
-  if toShowVertGridLines in FOptions.FPaintOptions then
-    Inc(Result);
-
-  if Assigned(FOnAfterGetMaxColumnWidth) then
-    FOnAfterGetMaxColumnWidth(FHeader, Column, Result);
-  EndOperation;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32115,7 +32125,7 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
     Sort(Node, Column, Direction, DoInit);
 
     Run := Node.FirstChild;
-    while Assigned(Run) do
+    while Assigned(Run) and not FOperationCanceled do
     begin
       if DoInit and not (vsInitialized in Run.States) then
         InitNode(Run);
@@ -32131,6 +32141,7 @@ begin
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
   Inc(FUpdateCount);
+  BeginOperation;
   try
     if Column > InvalidColumn then
       DoSort(FRoot);
@@ -32143,6 +32154,7 @@ begin
       ValidateCache;
       Invalidate;
     end;
+    EndOperation;
   end;
 end;
 
