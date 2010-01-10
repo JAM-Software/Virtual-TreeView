@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  January 2010
+//   - Bug fix: TBaseVirtualTree.OnGetHelpContext now delivers the currently focused column instead of always 0
 //   - Improvement: The sort operation can now be canceled
 //   - Improvement: all BeginOperation/EndOperation pairs are now enclosed in try..finally blocks
 //   - Bug fix: the combination of toUseExplorerTheme and toFullRowSelect now also works correct when no columns are
@@ -18483,7 +18484,7 @@ begin
                 Node := FFocusedNode;
                 // Traverse the tree structure up to the root.
                 repeat
-                  FOnGetHelpContext(Self, Node, 0, Context);
+                  FOnGetHelpContext(Self, Node, IfThen(FFocusedColumn > NoColumn, FFocusedColumn, 0), Context);
                   Node := Node.Parent;
                 until (Node = FRoot) or (Context <> 0);
               end;
