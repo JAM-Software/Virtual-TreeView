@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  January 2010
+//   - Bug fix: Clearing the columns while editing no longer raises an exception
 //   - Improvement: refactored handling of long running operations
 //   - Bug fix: TBaseVirtualTree.OnGetHelpContext now delivers the currently focused column instead of always 0
 //   - Improvement: the sort operation can now be canceled
@@ -8393,6 +8394,7 @@ begin
     // then we don't need to check the various cached indices individually.
     if not FClearing then
     begin
+      Header.Treeview.CancelEditNode;
       IndexChanged(Index, -1);
 
       AdjustColumnIndex(FHoverIndex);
@@ -10388,6 +10390,8 @@ procedure TVirtualTreeColumns.Clear;
 begin
   FClearing := True;
   try
+    Header.Treeview.CancelEditNode;
+
     // Since we're freeing all columns, the following have to be true when we're done.
     FHoverIndex := NoColumn;
     FDownIndex := NoColumn;
