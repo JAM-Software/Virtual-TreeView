@@ -25,8 +25,9 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  January 2010
+//   - Improvement: refactored handling of long running operations
 //   - Bug fix: TBaseVirtualTree.OnGetHelpContext now delivers the currently focused column instead of always 0
-//   - Improvement: The sort operation can now be canceled
+//   - Improvement: the sort operation can now be canceled
 //   - Improvement: all BeginOperation/EndOperation pairs are now enclosed in try..finally blocks
 //   - Bug fix: the combination of toUseExplorerTheme and toFullRowSelect now also works correct when no columns are
 //              defined
@@ -834,6 +835,15 @@ type
     emChecked,    // export checked records only
     emUnchecked   // export unchecked records only
   );
+
+  // Kinds of operations
+  TVTOperationKind = (
+    okAutoFitColumns,
+    okGetMaxColumnWidth,
+    okSortNode,
+    okSortTree
+  );
+  TVTOperationKinds = set of TVTOperationKind;
 
 const
   DefaultPaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
@@ -2146,8 +2156,11 @@ type
   // search, sort
   TVTCompareEvent = procedure(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
     var Result: Integer) of object;
- TVTIncrementalSearchEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: UnicodeString;
+  TVTIncrementalSearchEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: UnicodeString;
     var Result: Integer) of object;
+
+  // operations
+  TVTOperationEvent = procedure(Sender: TBaseVirtualTree; OperationKind: TVTOperationKind) of object;
 
   // miscellaneous
   TVTGetNodeDataSizeEvent = procedure(Sender: TBaseVirtualTree; var NodeDataSize: Integer) of object;
@@ -2464,6 +2477,10 @@ type
     FOnCompareNodes: TVTCompareEvent;            // used during sort
     FOnIncrementalSearch: TVTIncrementalSearchEvent; // triggered on every key press (not key down)
 
+    // operations
+    FOnStartOperation: TVTOperationEvent;        // Called when an operation starts
+    FOnEndOperation: TVTOperationEvent;          // Called when an operation ends
+
     procedure AdjustCoordinatesByIndent(var PaintInfo: TVTPaintInfo; Indent: Integer);
     procedure AdjustImageBorder(Images: TCustomImageList; BidiMode: TBidiMode; VAlign: Integer; var R: TRect;
       var ImageInfo: TVTImageInfo);
@@ -2640,7 +2657,6 @@ type
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
     function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
-    procedure BeginOperation;
     function CalculateSelectionRect(X, Y: Integer): Boolean; virtual;
     function CanAutoScroll: Boolean; virtual;
     function CanShowDragImage: Boolean; virtual;
@@ -2701,6 +2717,7 @@ type
     procedure DoEdit; virtual;
     procedure DoEndDrag(Target: TObject; X, Y: Integer); override;
     function DoEndEdit: Boolean; virtual;
+    procedure DoEndOperation(OperationKind: TVTOperationKind); virtual;
     procedure DoExpanded(Node: PVirtualNode); virtual;
     function DoExpanding(Node: PVirtualNode): Boolean; virtual;
     procedure DoFocusChange(Node: PVirtualNode; Column: TColumnIndex); virtual;
@@ -2760,6 +2777,7 @@ type
     function DoSetOffsetXY(Value: TPoint; Options: TScrollUpdateOptions; ClipRect: PRect = nil): Boolean; virtual;
     procedure DoShowScrollbar(Bar: Integer; Show: Boolean); virtual;
     procedure DoStartDrag(var DragObject: TDragObject); override;
+    procedure DoStartOperation(OperationKind: TVTOperationKind); virtual;
     procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); virtual;
     procedure DoStructureChange(Node: PVirtualNode; Reason: TChangeReason); virtual;
     procedure DoTimerScroll; virtual;
@@ -2777,7 +2795,7 @@ type
       var Effect: Integer): HResult; reintroduce; virtual;
     procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: Integer); virtual;
     procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer); virtual;
-    procedure EndOperation;
+    procedure EndOperation(OperationKind: TVTOperationKind);
     function FindNodeInSelection(P: PVirtualNode; var Index: Integer; LowBound, HighBound: Integer): Boolean; virtual;
     procedure FinishChunkHeader(Stream: TStream; StartPos, EndPos: Integer); virtual;
     procedure FontChanged(AFont: TObject); virtual;
@@ -2843,6 +2861,7 @@ type
     procedure SelectNodes(StartNode, EndNode: PVirtualNode; AddOnly: Boolean); virtual;
     procedure SetFocusedNodeAndColumn(Node: PVirtualNode; Column: TColumnIndex); virtual;
     procedure SkipNode(Stream: TStream); virtual;
+    procedure StartOperation(OperationKind: TVTOperationKind);
     procedure StartWheelPanning(Position: TPoint); virtual;
     procedure StopWheelPanning; virtual;
     procedure StructureChange(Node: PVirtualNode; Reason: TChangeReason); virtual;
@@ -2974,6 +2993,7 @@ type
     property OnEditCancelled: TVTEditCancelEvent read FOnEditCancelled write FOnEditCancelled;
     property OnEditing: TVTEditChangingEvent read FOnEditing write FOnEditing;
     property OnEdited: TVTEditChangeEvent read FOnEdited write FOnEdited;
+    property OnEndOperation: TVTOperationEvent read FOnEndOperation write FOnEndOperation;
     property OnExpanded: TVTChangeEvent read FOnExpanded write FOnExpanded;
     property OnExpanding: TVTChangingEvent read FOnExpanding write FOnExpanding;
     property OnFocusChanged: TVTFocusChangeEvent read FOnFocusChanged write FOnFocusChanged;
@@ -3029,6 +3049,7 @@ type
     property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
     property OnScroll: TVTScrollEvent read FOnScroll write FOnScroll;
     property OnShowScrollbar: TVTScrollbarShowEvent read FOnShowScrollbar write FOnShowScrollbar;
+    property OnStartOperation: TVTOperationEvent read FOnStartOperation write FOnStartOperation;
     property OnStateChange: TVTStateChangeEvent read FOnStateChange write FOnStateChange;
     property OnStructureChange: TVTStructureChangeEvent read FOnStructureChange write FOnStructureChange;
     property OnUpdating: TVTUpdatingEvent read FOnUpdating write FOnUpdating;
@@ -3221,6 +3242,7 @@ type
     property OffsetX: Integer read FOffsetX write SetOffsetX;
     property OffsetXY: TPoint read GetOffsetXY write SetOffsetXY;
     property OffsetY: Integer read FOffsetY write SetOffsetY;
+    property OperationCount: Cardinal read FOperationCount;
     property RootNode: PVirtualNode read FRoot;
     property SearchBuffer: UnicodeString read FSearchBuffer;
     property Selected[Node: PVirtualNode]: Boolean read GetSelected write SetSelected;
@@ -3386,7 +3408,7 @@ type
     FOnNewText: TVSTNewTextEvent;                  // used to notify the application about an edited node caption
     FOnShortenString: TVSTShortenStringEvent;      // used to allow the application a customized string shortage
     FOnMeasureTextWidth: TVTMeasureTextWidthEvent; // used to adjust the width of the cells
-    FOnDrawText: TVTDrawTextEvent;                 // used to custom draw the node text 
+    FOnDrawText: TVTDrawTextEvent;                 // used to custom draw the node text
 
     function GetImageText(Node: PVirtualNode; Kind: TVTImageKind;
       Column: TColumnIndex): UnicodeString;
@@ -3616,6 +3638,7 @@ type
     property OnEditing;
     property OnEndDock;
     property OnEndDrag;
+    property OnEndOperation;
     property OnEnter;
     property OnExit;
     property OnExpanded;
@@ -3684,6 +3707,7 @@ type
     property OnShowScrollbar;
     property OnStartDock;
     property OnStartDrag;
+    property OnStartOperation;
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
@@ -3867,6 +3891,7 @@ type
     property OnEditing;
     property OnEndDock;
     property OnEndDrag;
+    property OnEndOperation;
     property OnEnter;
     property OnExit;
     property OnExpanded;
@@ -3930,6 +3955,7 @@ type
     property OnShowScrollbar;
     property OnStartDock;
     property OnStartDrag;
+    property OnStartOperation;
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
@@ -4095,7 +4121,7 @@ const
       FSB_ENCARTA_MODE
     );
   {$endif}
-  
+
   {$ifndef COMPILER_11_UP}
     const
       TVP_HOTGLYPH = 4;
@@ -9974,7 +10000,7 @@ begin
 
   if FHeader.Treeview.UseRightToLeftAlignment then
     Inc(ColumnLeft, FHeader.Treeview.ComputeRTLOffset(True));
-    
+
   for I := 0 to Count - 1 do
     with Items[FPositionToIndex[I]] do
       if coVisible in FOptions then
@@ -11634,7 +11660,7 @@ var
   end;
 
   //--------------- end local function ----------------------------------------
-  
+
 begin
   Result := False;
   FColumns.FTrackIndex := NoColumn;
@@ -11795,7 +11821,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTHeader.DoGetPopupMenu(Column: TColumnIndex; Position: TPoint): TPopupMenu; 
+function TVTHeader.DoGetPopupMenu(Column: TColumnIndex; Position: TPoint): TPopupMenu;
 
 // Queries the application whether there is a column specific header popup menu.
 
@@ -12869,7 +12895,7 @@ begin
   if StartCol > EndCol then
     Exit; // nothing to do
 
-  TreeView.BeginOperation;
+  TreeView.StartOperation(okAutoFitColumns);
   try
     if Assigned(TreeView.FOnBeforeAutoFitColumns) then
       TreeView.FOnBeforeAutoFitColumns(Self, SmartAutoFitType);
@@ -12881,7 +12907,7 @@ begin
       TreeView.FOnAfterAutoFitColumns(Self);
 
   finally
-    Treeview.EndOperation;
+    Treeview.EndOperation(okAutoFitColumns);
   end;
 end;
 
@@ -14800,7 +14826,7 @@ procedure TBaseVirtualTree.FixupTotalCount(Node: PVirtualNode);
 
 var
   Child: PVirtualNode;
-  
+
 begin
   // Initial total count is set to one on node creation.
   Child := Node.FirstChild;
@@ -14821,7 +14847,7 @@ procedure TBaseVirtualTree.FixupTotalHeight(Node: PVirtualNode);
 
 var
   Child: PVirtualNode;
-  
+
 begin
   // Initial total height is set to the node height on load.
   Child := Node.FirstChild;
@@ -16000,7 +16026,7 @@ begin
         begin
           Remaining := NewChildCount - Node.ChildCount;
           Count := Remaining;
-          
+
           // New nodes to add.
           if Assigned(Node.LastChild) then
             Index := Node.LastChild.Index + 1
@@ -17046,7 +17072,7 @@ begin
     FEffectiveOffsetX := -FOffsetX;
   if FEffectiveOffsetX < 0 then
     FEffectiveOffsetX := 0;
-    
+
   if toAutoBidiColumnOrdering in FOptions.FAutoOptions then
     FHeader.FColumns.ReorderColumns(UseRightToLeftAlignment);
   FHeader.Invalidate(nil);
@@ -17887,7 +17913,7 @@ begin
     RTLFactor := -1
   else
     RTLFactor := 1;
-    
+
   case Message.ScrollCode of
     SB_BOTTOM:
       SetOffsetX(-Integer(FRangeX));
@@ -18003,7 +18029,7 @@ begin
           RTLFactor := -1
         else
           RTLFactor := 1;
-          
+
         // Determine new focused node.
         case CharCode of
           VK_HOME, VK_END:
@@ -19521,12 +19547,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.BeginOperation;
+procedure TBaseVirtualTree.StartOperation(OperationKind: TVTOperationKind);
 
 // Called to indicate that a long-running operation has been started.
 
 begin
   Inc(FOperationCount);
+  DoStartOperation(OperationKind);
   if FOperationCount = 1 then
     FOperationCanceled := False;
 end;
@@ -20918,6 +20945,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DoEndOperation(OperationKind: TVTOperationKind);
+
+begin
+  if Assigned(FOnEndOperation) then
+    FOnEndOperation(Self, OperationKind);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DoExpanded(Node: PVirtualNode);
 
 begin
@@ -21725,6 +21761,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DoStartOperation(OperationKind: TVTOperationKind);
+
+begin
+  if Assigned(FOnStartOperation) then
+    FOnStartOperation(Self, OperationKind);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []);
 
 var
@@ -21840,7 +21885,7 @@ begin
 
     if UseRightToLeftAlignment then
       DeltaX := - DeltaX;
-      
+
     if IsMouseSelecting then
     begin
       // In order to avoid scrolling the area which needs a repaint due to the changed selection rectangle
@@ -22449,13 +22494,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.EndOperation;
+procedure TBaseVirtualTree.EndOperation(OperationKind: TVTOperationKind);
 
 // Called to indicate that a long-running operation has finished.
 
 begin
   Assert(FOperationCount > 0, 'EndOperation must not be called when no operation in progress.');
   Dec(FOperationCount);
+  DoEndOperation(OperationKind);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24298,13 +24344,13 @@ begin
     FHeader.UpdateMainColumn;
     FHeader.FColumns.FixPositions;
     if toAutoBidiColumnOrdering in FOptions.FAutoOptions then
-      FHeader.FColumns.ReorderColumns(UseRightToLeftAlignment);  
+      FHeader.FColumns.ReorderColumns(UseRightToLeftAlignment);
     FHeader.RecalculateHeader;
     if hoAutoResize in FHeader.FOptions then
       FHeader.FColumns.AdjustAutoSize(InvalidColumn, True);
   finally
     Updated;
-  end;                             
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24567,7 +24613,7 @@ begin
     RTLOffset := ComputeRTLOffset(True)
   else
     RTLOffset := 0;
-  
+
   // The update rect has already been filled in WMPaint, as it is the window's update rect, which gets
   // reset when BeginPaint is called (in the ancestor).
   // The difference to the DC's clipbox is that it is also valid with internal paint operations used
@@ -28425,7 +28471,7 @@ begin
   else
     Result := 0;
 
-  BeginOperation;
+  StartOperation(okGetMaxColumnWidth);
   try
     if Assigned(FOnBeforeGetMaxColumnWidth) then
       FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
@@ -28511,7 +28557,7 @@ begin
       FOnAfterGetMaxColumnWidth(FHeader, Column, Result);
 
   finally
-    EndOperation;
+    EndOperation(okGetMaxColumnWidth);
   end;
 end;
 
@@ -28519,7 +28565,7 @@ end;
 
 function TBaseVirtualTree.GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
 
-// Returns next node in tree while optionally considering toChildrenAbove. The Result will be initialized if needed. 
+// Returns next node in tree while optionally considering toChildrenAbove. The Result will be initialized if needed.
 
 begin
   Result := Node;
@@ -30716,7 +30762,7 @@ begin
             SelectLevel := DetermineLineImageAndSelectLevel(PaintInfo.Node, LineImage);
             IndentSize := Length(LineImage);
             if not (toFixedIndent in FOptions.FPaintOptions) then
-              ButtonX := (IndentSize - 1) * Integer(FIndent) + Round((Integer(FIndent) - FPlusBM.Width) / 2); 
+              ButtonX := (IndentSize - 1) * Integer(FIndent) + Round((Integer(FIndent) - FPlusBM.Width) / 2);
 
             // Initialize node if not already done.
             if not (vsInitialized in PaintInfo.Node.States) then
@@ -31937,13 +31983,18 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
 
   var
     Dummy: TVirtualNode;
-
+    CompareResult: Integer;
   begin
     // This avoids checking for Result = nil in the loops.
     Result := @Dummy;
     while Assigned(A) and Assigned(B) do
     begin
-      if DoCompare(A, B, Column) <= 0 then
+      if OperationCanceled then
+        CompareResult := 0
+      else
+        CompareResult := DoCompare(A, B, Column);
+
+      if CompareResult <= 0 then
       begin
         Result.NextSibling := A;
         Result := A;
@@ -31974,13 +32025,19 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
 
   var
     Dummy: TVirtualNode;
+    CompareResult: Integer;
 
   begin
     // this avoids checking for Result = nil in the loops
     Result := @Dummy;
     while Assigned(A) and Assigned(B) do
     begin
-      if DoCompare(A, B, Column) >= 0 then
+      if OperationCanceled then
+        CompareResult := 0
+      else
+        CompareResult := DoCompare(A, B, Column);
+
+      if CompareResult >= 0 then
       begin
         Result.NextSibling := A;
         Result := A;
@@ -32079,11 +32136,16 @@ begin
       // Child count might have changed.
       if Node.ChildCount > 1 then
       begin
-        // Sort the linked list, check direction flag only once.
-        if Direction = sdAscending then
-          Node.FirstChild := MergeSortAscending(Node.FirstChild, Node.ChildCount)
-        else
-          Node.FirstChild := MergeSortDescending(Node.FirstChild, Node.ChildCount);
+        StartOperation(okSortNode);
+        try
+          // Sort the linked list, check direction flag only once.
+          if Direction = sdAscending then
+            Node.FirstChild := MergeSortAscending(Node.FirstChild, Node.ChildCount)
+          else
+            Node.FirstChild := MergeSortDescending(Node.FirstChild, Node.ChildCount);
+        finally
+          EndOperation(okSortNode);
+        end;
         // Consolidate the child list finally.
         Run := Node.FirstChild;
         Run.PrevSibling := nil;
@@ -32142,10 +32204,16 @@ begin
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
   Inc(FUpdateCount);
-  BeginOperation;
   try
     if Column > InvalidColumn then
-      DoSort(FRoot);
+    begin
+      StartOperation(okSortTree);
+      try
+        DoSort(FRoot);
+      finally
+        EndOperation(okSortTree);
+      end; 
+    end;
     InvalidateCache;
   finally
     if FUpdateCount > 0 then
@@ -32155,7 +32223,6 @@ begin
       ValidateCache;
       Invalidate;
     end;
-    EndOperation;
   end;
 end;
 
