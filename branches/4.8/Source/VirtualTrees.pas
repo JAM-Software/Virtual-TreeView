@@ -24,6 +24,12 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  January 2010
+//   - Bug fix: TBaseVirtualTree.AdjustTotalHeight now longer calculates wrong total heights if nodes have been
+//              made invisible
+//   - Bug fix: TCustomVirtualStringTree.OnMeasureTextWidth now works as intended
+//   - Bug fix: Added missing $IFDEFs concerning theming support
+//   - Bug fix: Removed default from properties TVirtualTreeColumn.Color and TVirtualTreeColumn.BiDiMode
 //  July 2009
 //   - Bug fix: TWorkerThread will no longer reference the tree after it has been destroyed (Mantis issue #384)
 //   - Bug fix: TBaseVirtualTree.InternalConnectNode checked the expanded state of the wrong node if Mode was
@@ -275,14 +281,14 @@ unit VirtualTrees;
 // For full document history see help file.
 //
 // Credits for their valuable assistance and code donations go to:
-//   Freddy Ertl, Marian AldenhÃ¶vel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
-//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland BedÃ¼rftig (BCB)
+//   Freddy Ertl, Marian Aldenhövel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
+//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Bedürftig (BCB)
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
 //   Andreas Hausladen
 // Beta testers:
-//   Freddy Ertl, Hans-JÃ¼rgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
+//   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
 // Indirect contribution (via publicly accessible work of those persons):
 //   Alex Denissov, Hiroyuki Hori (MMXAsm expert)
@@ -1283,14 +1289,14 @@ type
     property Owner: TVirtualTreeColumns read GetOwner;
   published
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
-    property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode stored IsBiDiModeStored default bdLeftToRight;
+    property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode stored IsBiDiModeStored;
     property CaptionAlignment: TAlignment read GetCaptionAlignment write SetCaptionAlignment
       stored IsCaptionAlignmentStored default taLeftJustify;
     property CaptionText: UnicodeString read FCaptionText stored False;
     property CheckType: TCheckType read FCheckType write SetCheckType default ctCheckBox;
     property CheckState: TCheckState read FCheckState write SetCheckState default csUncheckedNormal;
     property CheckBox: Boolean read FCheckBox write SetCheckBox default False;
-    property Color: TColor read FColor write SetColor stored IsColorStored default clWindow;
+    property Color: TColor read FColor write SetColor stored IsColorStored;
     property Hint: UnicodeString read FHint write FHint stored False;
     property ImageIndex: TImageIndex read FImageIndex write SetImageIndex default -1;
     property Layout: TVTHeaderColumnLayout read FLayout write SetLayout default blGlyphLeft;
@@ -3959,7 +3965,7 @@ const
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
-  Copyright: string = 'Virtual Treeview Â© 1999, 2009 Mike Lischke';
+  Copyright: string = 'Virtual Treeview © 1999, 2010 Mike Lischke';
 
 var
   StandardOLEFormat: TFormatEtc = (
@@ -13789,8 +13795,7 @@ begin
   begin
     Run := Node;
     repeat
-      if vsVisible in Run.States then
-        Inc(Integer(Run.TotalHeight), Difference);
+      Inc(Integer(Run.TotalHeight), Difference);
       // If the node is not visible or the parent node is not expanded or we are already at the top
       // then nothing more remains to do.
       if not (vsVisible in Run.States) or (Run = FRoot) or
@@ -25074,8 +25079,10 @@ begin
     end;
   end;
 
-  if Theme <> 0 then
-    CloseThemeData(Theme);
+  {$ifdef ThemeSupport}
+    if Theme <> 0 then
+      CloseThemeData(Theme);
+  {$endif ThemeSupport}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33894,9 +33901,9 @@ begin
       DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat, False);
     Size.cx := R.Right - R.Left;
   end;
+  Result := Size.cx;
   if Assigned(FOnMeasureTextWidth) then
     FOnMeasureTextWidth(Self, Canvas, Node, Column, Text, Result);
-  Result := Size.cx;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34265,7 +34272,7 @@ function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; Capt
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
-// Based on ideas and code from Frank van den Bergh and Andreas HÃ¶rstemeier.
+// Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
 
 type
   UCS2 = Word;
@@ -34779,7 +34786,7 @@ end;
 function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): AnsiString;
 
 // Renders the current tree content (depending on Source) as RTF (rich text).
-// Based on ideas and code from Frank van den Bergh and Andreas HÃ¶rstemeier.
+// Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
 
 var
   Fonts: TStringList;
