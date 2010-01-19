@@ -30,7 +30,7 @@ type
     procedure HeaderCustomDrawTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure HeaderCustomDrawTreeGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: WideString);
+      var CellText: UnicodeString);
   private
     FBackBitmap1,
     FBackBitmap2,
@@ -295,7 +295,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure THeaderOwnerDrawForm.HeaderCustomDrawTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-  Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: UnicodeString);
 
 begin
   CellText := 'Some simple text.';

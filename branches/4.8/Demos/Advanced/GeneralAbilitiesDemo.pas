@@ -56,9 +56,9 @@ type
     procedure VST2InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure VST2InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
-    procedure VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: WideString);
+    procedure VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
     procedure VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: WideString);
+      var CellText: UnicodeString);
     procedure VST2PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure VST2GetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -107,7 +107,7 @@ type
   TNodeData2 = record
     Caption,
     StaticText,
-    ForeignText: WideString;
+    ForeignText: UnicodeString;
     ImageIndex,
     Level: Integer;
   end;
@@ -184,7 +184,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TGeneralForm.VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: WideString);
+  TextType: TVSTTextType; var CellText: UnicodeString);
 
 // Returns the text as it is stored in the nodes data record.
 
@@ -327,7 +327,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TGeneralForm.VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  Text: WideString);
+  Text: UnicodeString);
 
 // The caption of a node has been changed, keep this in the node record.
 
@@ -483,7 +483,7 @@ const
 
 var
   S: string;
-  WS: WideString;
+  WS: UnicodeString;
   Data: Pointer;
   DataSize: Cardinal;
   TargetName: string;
