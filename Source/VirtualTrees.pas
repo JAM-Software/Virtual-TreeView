@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  March 2010
+//   - Bug fix: Fixed TBaseVirtualTree.DragFinished to generate a button up event in case of using OLE drag & drop
 //   - Bug fix: TBaseVirtualTree.DeleteChildren no longer fails if the given node is nil
 //  January 2010
 //   - Bug fix: Removed defaults from TVirtualTreeColumn.BiDiMode and TVirtualTreeColumn.Color
@@ -22205,7 +22206,7 @@ var
   P: TPoint;
 
 begin
-  if [tsVCLDragPending, tsVCLDragging, tsVCLDragFinished] * FStates = [] then
+  if [tsOLEDragging, tsVCLDragPending, tsVCLDragging, tsVCLDragFinished] * FStates = [] then
     Exit;
 
   DoStateChange([], [tsVCLDragPending, tsVCLDragging, tsUserDragObject, tsVCLDragFinished]);
