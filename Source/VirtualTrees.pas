@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  March 2010
+//   - Bug fix: TBaseVirtualTree.DeleteChildren no longer fails if the given node is nil
 //  January 2010
 //   - Bug fix: Removed defaults from TVirtualTreeColumn.BiDiMode and TVirtualTreeColumn.Color
 //   - Bug fix: Clearing the columns while editing no longer raises an exception
@@ -27017,7 +27019,7 @@ var
   ParentVisible: Boolean;
 
 begin
-  if (Node.ChildCount > 0) and not (toReadOnly in FOptions.FMiscOptions) then
+  if Assigned(Node) and (Node.ChildCount > 0) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
     Assert(not (tsIterating in FStates), 'Deleting nodes during tree iteration leads to invalid pointers.');
 
