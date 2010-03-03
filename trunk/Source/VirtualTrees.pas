@@ -25,7 +25,9 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  March 2010
-//   - Bug fix: Fixed TBaseVirtualTree.DragFinished to generate a button up event in case of using OLE drag & drop
+//   - Improvement: new properties TBaseVirtualTree.OnAddToSelection and TBaseVirtualTree.OnRemoveFromSelection
+//   - Bug fix: fixed a whole bunch of painting issues regarding drag & drop
+//   - Bug fix: fixed TBaseVirtualTree.DragFinished to generate a button up event in case of using OLE drag & drop
 //   - Bug fix: TBaseVirtualTree.DeleteChildren no longer fails if the given node is nil
 //  January 2010
 //   - Bug fix: Removed defaults from TVirtualTreeColumn.BiDiMode and TVirtualTreeColumn.Color
@@ -2055,6 +2057,8 @@ type
   TVTFocusChangingEvent = procedure(Sender: TBaseVirtualTree; OldNode, NewNode: PVirtualNode; OldColumn,
     NewColumn: TColumnIndex; var Allowed: Boolean) of object;
   TVTFocusChangeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex) of object;
+  TVTAddToSelectionEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
+  TVTRemoveFromSelectionEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
   TVTGetImageEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
     var Ghosted: Boolean; var ImageIndex: Integer) of object;
   TVTGetImageExEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
@@ -2360,8 +2364,8 @@ type
     FOnGetImage: TVTGetImageEvent;               // Used to retrieve the image index of a given node.
     FOnGetImageEx: TVTGetImageExEvent;           // Used to retrieve the image index of a given node along with a custom
                                                  // image list.
-    FOnGetImageText: TVTGetImageTextEvent;               // Used to retrieve the image alternative text of a given node.
-                                                         // Used by the accessibility interface to provide useful text for status images.
+    FOnGetImageText: TVTGetImageTextEvent;       // Used to retrieve the image alternative text of a given node.
+                                                 // Used by the accessibility interface to provide useful text for status images.
     FOnHotChange: TVTHotNodeChangeEvent;         // called when the current "hot" node (that is, the node under the mouse)
                                                  // changes and hot tracking is enabled
     FOnExpanding,                                // called just before a node is expanded
@@ -2387,6 +2391,8 @@ type
     FOnFocusChanging: TVTFocusChangingEvent;     // called when the focus is about to go to a new node and/or column
                                                  // (can be cancelled)
     FOnFocusChanged: TVTFocusChangeEvent;        // called when the focus goes to a new node and/or column
+    FOnAddToSelection: TVTAddToSelectionEvent;           // called when a node is added to the selection
+    FOnRemoveFromSelection: TVTRemoveFromSelectionEvent; // called when a node is removed from the selection
     FOnGetPopupMenu: TVTPopupEvent;              // called when the popup for a node or the header needs to be shown
     FOnGetHelpContext: TVTHelpContextEvent;      // called when a node specific help theme should be called
     FOnCreateEditor: TVTCreateEditorEvent;       // called when a node goes into edit mode, this allows applications
@@ -2943,6 +2949,7 @@ type
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
 
+    property OnAddToSelection: TVTAddToSelectionEvent read FOnAddToSelection write FOnAddToSelection;
     property OnAdvancedHeaderDraw: TVTAdvancedHeaderPaintEvent read FOnAdvancedHeaderDraw write FOnAdvancedHeaderDraw;
     property OnAfterAutoFitColumn: TVTAfterAutoFitColumnEvent read FOnAfterAutoFitColumn write FOnAfterAutoFitColumn;
     property OnAfterAutoFitColumns: TVTAfterAutoFitColumnsEvent read FOnAfterAutoFitColumns write FOnAfterAutoFitColumns;
@@ -3048,6 +3055,7 @@ type
     property OnNodeMoved: TVTNodeMovedEvent read FOnNodeMoved write FOnNodeMoved;
     property OnNodeMoving: TVTNodeMovingEvent read FOnNodeMoving write FOnNodeMoving;
     property OnPaintBackground: TVTBackgroundPaintEvent read FOnPaintBackground write FOnPaintBackground;
+    property OnRemoveFromSelection: TVTRemoveFromSelectionEvent read FOnRemoveFromSelection write FOnRemoveFromSelection;
     property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
     property OnSaveNode: TVTSaveNodeEvent read FOnSaveNode write FOnSaveNode;
@@ -3586,6 +3594,7 @@ type
     property Visible;
     property WantTabs;
 
+    property OnAddToSelection;
     property OnAdvancedHeaderDraw;
     property OnAfterAutoFitColumn;
     property OnAfterAutoFitColumns;
@@ -3702,6 +3711,7 @@ type
     property OnNodeMoved;
     property OnNodeMoving;
     property OnPaintBackground;
+    property OnRemoveFromSelection;
     property OnRenderOLEData;
     property OnResetNode;
     property OnResize;
@@ -3839,6 +3849,7 @@ type
     property Visible;
     property WantTabs;
 
+    property OnAddToSelection;
     property OnAdvancedHeaderDraw;
     property OnAfterAutoFitColumn;
     property OnAfterAutoFitColumns;
@@ -3951,6 +3962,7 @@ type
     property OnNodeMoved;
     property OnNodeMoving;
     property OnPaintBackground;
+    property OnRemoveFromSelection;
     property OnRenderOLEData;
     property OnResetNode;
     property OnResize;
@@ -22172,7 +22184,8 @@ begin
       begin
         FDropTargetNode := HitInfo.HitNode;
         R := GetDisplayRect(HitInfo.HitNode, FHeader.MainColumn, False);
-        if hiOnItemLabel in HitInfo.HitPositions then
+        if (hiOnItemLabel in HitInfo.HitPositions) or ((hiOnItem in HitInfo.HitPositions) and
+          ((toFullRowDrag in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions)))then
           FLastDropMode := dmOnNode
         else
           if ((R.Top + R.Bottom) div 2) > Pt.Y then
@@ -22263,10 +22276,10 @@ var
   HitInfo: THitInfo;
   ImageHit: Boolean;
   LabelHit: Boolean;
+  ItemHit: Boolean;
   DragPos: TPoint;
   Tree: TBaseVirtualTree;
   LastNode: PVirtualNode;
-
   DeltaX,
   DeltaY: Integer;
   ScrollOptions: TScrollUpdateOptions;
@@ -22334,15 +22347,17 @@ begin
     GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo);
     ImageHit := HitInfo.HitPositions * [hiOnNormalIcon, hiOnStateIcon] <> [];
     LabelHit := hiOnItemLabel in HitInfo.HitPositions;
+    ItemHit := ((hiOnItem in HitInfo.HitPositions) and ((toFullRowDrag in FOptions.FMiscOptions) or
+               (toFullRowSelect in FOptions.FSelectionOptions)));
     // In report mode only direct hits of the node captions/images in the main column are accepted as hits.
-    if (toReportMode in FOptions.FMiscOptions) and not ((LabelHit or ImageHit) and
-      (HitInfo.HitColumn = FHeader.MainColumn)) then
+    if (toReportMode in FOptions.FMiscOptions) and not (ItemHit or ((LabelHit or ImageHit) and
+      (HitInfo.HitColumn = FHeader.MainColumn))) then
       HitInfo.HitNode := nil;
 
     if Assigned(HitInfo.HitNode) then
     begin
       R := GetDisplayRect(HitInfo.HitNode, NoColumn, False);
-      if LabelHit or ImageHit or not (toShowDropmark in FOptions.FPaintOptions) then
+      if ItemHit or LabelHit or ImageHit or not (toShowDropmark in FOptions.FPaintOptions) then
         NewDropMode := dmOnNode
       else
         if ((R.Top + R.Bottom) div 2) > Pt.Y then
@@ -23857,7 +23872,11 @@ begin
   if ForceInsert then
   begin
     for I := 0 to NewLength - 1 do
+    begin
       Include(NewItems[I].States, vsSelected);
+      if Assigned(FOnAddToSelection) then
+        FOnAddToSelection(Self, NewItems[I]);
+    end;
   end
   else
   begin
@@ -23874,7 +23893,11 @@ begin
          (SiblingConstrained and (FRangeAnchor.Parent <> NewItems[I].Parent)) then
         Inc(Cardinal(NewItems[I]))
       else
+      begin
         Include(NewItems[I].States, vsSelected);
+        if Assigned(FOnAddToSelection) then
+          FOnAddToSelection(Self, NewItems[I]);
+      end;
   end;
 
   I := PackArray(NewItems, NewLength);
@@ -23981,6 +24004,8 @@ begin
   begin
     Dec(FSelectionCount);
     Exclude(FSelection[FSelectionCount].States, vsSelected);
+    if Assigned(FOnRemoveFromSelection) then
+      FOnRemoveFromSelection(Self, FSelection[FSelectionCount]);
   end;
   ResetRangeAnchor;
   FSelection := nil;
@@ -24280,6 +24305,8 @@ begin
   begin
     Exclude(Node.States, vsSelected);
     Inc(Cardinal(FSelection[Index]));
+    if Assigned(FOnRemoveFromSelection) then
+      FOnRemoveFromSelection(Self, Node);
   end;
 end;
 
@@ -25118,11 +25145,14 @@ begin
               (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
-              if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
-                AlphaBlendSelection(Brush.Color)
+              if tsUseExplorerTheme in FStates then
+                DrawBackground(TREIS_SELECTED)
               else
-                with InnerRect do
-                  RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+                if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
+                  AlphaBlendSelection(Brush.Color)
+                else
+                  with InnerRect do
+                    RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end
           else
           begin
@@ -33566,8 +33596,10 @@ begin
     if (toHotTrack in FOptions.FPaintOptions) and (Node = FCurrentHotNode) then
     begin
       if not (tsUseExplorerTheme in FStates) then
+      begin
         Canvas.Font.Style := Canvas.Font.Style + [fsUnderline];
-      Canvas.Font.Color := FColors.HotColor;
+        Canvas.Font.Color := FColors.HotColor;
+      end;
     end;
 
     // Change the font color only if the node also is drawn in selected style.
@@ -33577,7 +33609,7 @@ begin
       begin
         if Node = FDropTargetNode then
         begin
-          if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) and not
+          if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) and not
              (tsUseExplorerTheme in FStates) then
             Canvas.Font.Color := clHighlightText;
         end
