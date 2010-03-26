@@ -25,6 +25,10 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  March 2010
+//   - Bug fix: TCustomVirtualTreeOptions.SetPaintOptions will now invalidate the node cache if toChildrenAbove is
+//              changed
+//   - Bug fix: TBaseVirtualTree.HandleMouseUp will no longer cause an AV if HitInfo.HitNode is not assigned and
+//              tsToggleFocusedSelection is set
 //   - Improvement: new properties TBaseVirtualTree.OnAddToSelection and TBaseVirtualTree.OnRemoveFromSelection
 //   - Bug fix: fixed a whole bunch of painting issues regarding drag & drop
 //   - Bug fix: fixed TBaseVirtualTree.DragFinished to generate a button up event in case of using OLE drag & drop
@@ -342,7 +346,7 @@ unit VirtualTrees;
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen
+//   Andreas Hausladen, Joachim Marder
 // Beta testers:
 //   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
@@ -6452,30 +6456,39 @@ begin
             RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME);
           end
           else
-          if toShowFilteredNodes in ToBeSet + ToBeCleared then
-          begin
-            BeginUpdate;
-            InterruptValidation;
-            Run := GetFirst;
-            while Assigned(Run) do
+            if toShowFilteredNodes in ToBeSet + ToBeCleared then
             begin
-              if (vsFiltered in Run.States) and FullyVisible[Run] then
-                if toShowFilteredNodes in ToBeSet then
+              BeginUpdate;
+              InterruptValidation;
+              Run := GetFirst;
+              while Assigned(Run) do
+              begin
+                if (vsFiltered in Run.States) and FullyVisible[Run] then
+                  if toShowFilteredNodes in ToBeSet then
+                  begin
+                    Inc(FVisibleCount);
+                    AdjustTotalHeight(Run.Parent, Run.NodeHeight, True);
+                  end
+                  else
+                  begin
+                    AdjustTotalHeight(Run.Parent, -Run.NodeHeight, True);
+                    Dec(FVisibleCount);
+                  end;
+                Run := GetNext(Run);
+              end;
+              EndUpdate;
+            end
+            else
+              if toChildrenAbove in ToBeSet + ToBeCleared then
+              begin
+                InvalidateCache;
+                if FUpdateCount = 0 then
                 begin
-                  Inc(FVisibleCount);
-                  AdjustTotalHeight(Run.Parent, Run.NodeHeight, True);
-                end
-                else
-                begin
-                  AdjustTotalHeight(Run.Parent, -Run.NodeHeight, True);
-                  Dec(FVisibleCount);
+                  ValidateCache;
+                  Invalidate;
                 end;
-              Run := GetNext(Run);
-            end;
-            EndUpdate;
-          end
-          else
-            Invalidate;
+              end else
+                Invalidate;
         end;
       end;
   end;
