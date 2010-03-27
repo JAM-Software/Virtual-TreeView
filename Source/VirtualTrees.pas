@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  March 2010
+//   - Bug fix: TBaseVirtualTree.CMMouseLeave now checks if the header is assigned before working with it
 //   - Bug fix: TCustomVirtualTreeOptions.SetPaintOptions will now invalidate the node cache if toChildrenAbove is
 //              changed
 //   - Bug fix: TBaseVirtualTree.HandleMouseUp will no longer cause an AV if HitInfo.HitNode is not assigned and
@@ -17532,9 +17533,12 @@ begin
     FCurrentHotNode := nil;
   end;
 
-  Header.FColumns.FDownIndex := NoColumn;
-  Header.FColumns.FHoverIndex := NoColumn;
-  Header.FColumns.FCheckBoxHit := False;
+  if Assigned(Header) then
+  begin
+    Header.FColumns.FDownIndex := NoColumn;
+    Header.FColumns.FHoverIndex := NoColumn;
+    Header.FColumns.FCheckBoxHit := False;
+  end;
 
   inherited;
 end;
