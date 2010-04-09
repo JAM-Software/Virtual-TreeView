@@ -24,6 +24,12 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  April 2010
+//   - Bug fix: Ctrl+Click on a node often cause a delayed update of the displayed selection due to a missing (or
+//              misplaced) call to Invalidate() in HandleClickSelection().
+//   - Bug fix: Shift+PgUp and Shift+PgDown now behave like a usual List(View) and select the node of the previous/
+//              next page. The behaviourly that was formerly assigned to these shortcuts is now triggeres when using
+//              Shift+Alt+PgUp / Shift+Alt+PgDown
 //  March 2010
 //   - Bug fix: TBaseVirtualTree.CMMouseLeave now checks if the header is assigned before working with it
 //   - Bug fix: TCustomVirtualTreeOptions.SetPaintOptions will now invalidate the node cache if toChildrenAbove is
@@ -15195,7 +15201,6 @@ begin
     if ssShift in Shift then
     begin
       SelectNodes(FRangeAnchor, NewNode, True);
-      Invalidate;
     end
     else
     begin
@@ -15211,6 +15216,7 @@ begin
         else
           AddToSelection(NewNode);
     end;
+    Invalidate;
   end
   else
     // Shift key down
@@ -18121,7 +18127,7 @@ begin
             if Shift = [ssCtrl, ssShift] then
               SetOffsetX(FOffsetX + ClientWidth)
             else
-              if [ssShift] = Shift then
+              if [ssShift,ssAlt] = Shift then 
               begin
                 if FFocusedColumn <= NoColumn then
                   NewColumn := FHeader.FColumns.GetFirstVisibleColumn
@@ -18172,7 +18178,7 @@ begin
             if Shift = [ssCtrl, ssShift] then
               SetOffsetX(FOffsetX - ClientWidth)
             else
-              if [ssShift] = Shift then
+              if [ssShift,ssAlt] = Shift then
               begin
                 if FFocusedColumn <= NoColumn then
                   NewColumn := FHeader.FColumns.GetFirstVisibleColumn
