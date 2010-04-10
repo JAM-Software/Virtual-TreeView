@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 4.8.6
+// Version 4.8.7
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -24,6 +24,11 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  April 2010
+//    - Bug fix: Removed active column changing from TBaseVirtualTree.WMKeyDown to re-gain standard conforming
+//               behaviour for VK_NEXT and VK_PRIOR
+//    - Bug fix: Paint option toUseExplorerTheme works properly without defining columns
+//    - Bug fix: TBaseVirtualTree.PrepareBitmaps now correctly closes the theme handle
 //  January 2010
 //   - Bug fix: TBaseVirtualTree.AdjustTotalHeight now longer calculates wrong total heights if nodes have been
 //              made invisible
@@ -354,7 +359,7 @@ type
 {$endif COMPILER_12_UP}
 
 const
-  VTVersion = '4.8.6';
+  VTVersion = '4.8.7';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -15550,7 +15555,8 @@ var
       {$Ifdef ThemeSupport}
         if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
         begin
-          if not (coParentColor in FHeader.FColumns[FHeader.FMainColumn].FOptions) then
+          if (FHeader.FMainColumn > NoColumn) and not
+             (coParentColor in FHeader.FColumns[FHeader.FMainColumn].FOptions) then
             Brush.Color := FHeader.FColumns[FHeader.FMainColumn].Color
           else
             Brush.Color := Self.Color;
@@ -15706,6 +15712,11 @@ begin
     FDottedBrush := CreatePatternBrush(PatternBitmap);
     DeleteObject(PatternBitmap);
   end;
+
+  {$ifdef ThemeSupport}
+    if Theme <> 0 then
+      CloseThemeData(Theme);
+  {$endif}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -17999,31 +18010,7 @@ begin
               end;
             end;
           VK_PRIOR:
-            if Shift = [ssCtrl, ssShift] then
-              SetOffsetX(FOffsetX + ClientWidth)
-            else if [ssShift] = Shift then
-            begin
-              if FFocusedColumn = InvalidColumn then
-                NewColumn := FHeader.FColumns.GetFirstVisibleColumn
-              else
-              begin
-                Offset := FHeader.FColumns.GetVisibleFixedWidth;
-                NewColumn := FFocusedColumn;
-                while True do
-                begin
-                  TempColumn := FHeader.FColumns.GetPreviousVisibleColumn(NewColumn);
-                  NewWidth := FHeader.FColumns[NewColumn].Width;
-                  if (TempColumn <= NoColumn) or
-                     (Offset + NewWidth >= ClientWidth) or
-                     (coFixed in FHeader.FColumns[TempColumn].FOptions) then
-                    Break;
-                  NewColumn := TempColumn;
-                  Inc(Offset, NewWidth);
-                end;
-              end;
-              SetFocusedColumn(NewColumn);
-            end
-            else if ssCtrl in Shift then
+            if ssCtrl in Shift then
               SetOffsetY(FOffsetY + ClientHeight)
             else
             begin
@@ -18048,31 +18035,7 @@ begin
               FocusedNode := Node;
             end;
           VK_NEXT:
-            if Shift = [ssCtrl, ssShift] then
-              SetOffsetX(FOffsetX - ClientWidth)
-            else if [ssShift] = Shift then
-            begin
-              if FFocusedColumn = InvalidColumn then
-                NewColumn := FHeader.FColumns.GetFirstVisibleColumn
-              else
-              begin
-                Offset := FHeader.FColumns.GetVisibleFixedWidth;
-                NewColumn := FFocusedColumn;
-                while True do
-                begin
-                  TempColumn := FHeader.FColumns.GetNextVisibleColumn(NewColumn);
-                  NewWidth := FHeader.FColumns[NewColumn].Width;
-                  if (TempColumn <= NoColumn) or
-                     (Offset + NewWidth >= ClientWidth) or
-                     (coFixed in FHeader.FColumns[TempColumn].FOptions) then
-                    Break;
-                  NewColumn := TempColumn;
-                  Inc(Offset, NewWidth);
-                end;
-              end;
-              SetFocusedColumn(NewColumn);
-            end
-            else if ssCtrl in Shift then
+            if ssCtrl in Shift then
               SetOffsetY(FOffsetY - ClientHeight)
             else
             begin
