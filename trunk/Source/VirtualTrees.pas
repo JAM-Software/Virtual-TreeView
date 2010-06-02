@@ -24,6 +24,10 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  June 2010
+//   - Improvement: TVTHeader.AutoFitColumns is now declared virtual 
+//   - Bug fix: header captions were badly positioned text if Extra Large fonts have been activated in the Windows
+//              display options
 //  April 2010
 //   - Bug fix: Ctrl+Click on a node often cause a delayed update of the displayed selection due to a missing (or
 //              misplaced) call to Invalidate() in HandleClickSelection().
@@ -1640,7 +1644,7 @@ type
     function AllowFocus(ColumnIndex: TColumnIndex): Boolean;
     procedure Assign(Source: TPersistent); override;
     procedure AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: TSmartAutoFitType = smaUseColumnOption;
-      RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn);
+      RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn); virtual;
     function InHeader(P: TPoint): Boolean; virtual;
     function InHeaderSplitterArea(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False);
@@ -8981,10 +8985,8 @@ begin
       HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y) div 2;
       // If the text is taller than the given height, perform no vertical centration as this
       // would make the text even less readable.
-      if TextSize.cy >= ClientSize.Y then
-        TextPos.Y := 0
-      else
-        TextPos.Y := (ClientSize.Y - TextSize.cy) div 2;
+      //Using Max() fixes badly positioned text if Extra Large fonts have been activated in the Windows display options
+        TextPos.Y := Max(-5,(ClientSize.Y - TextSize.cy) div 2);
     end
     else
     begin
