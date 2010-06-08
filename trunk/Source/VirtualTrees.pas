@@ -28,7 +28,11 @@ unit VirtualTrees;
 //   - Improvement: TVTHeader.AutoFitColumns is now declared virtual 
 //   - Bug fix: header captions were badly positioned text if Extra Large fonts have been activated in the Windows
 //              display options
+//  May 2010
+//   - Improvement: TBaseVirtualTree.PaintTree is now declared virtual
+//   - Bug fix: corrected calculations regarding tree height and visible count when using filtered nodes
 //  April 2010
+//   - Bug fix: Changed TBaseVirtualTree.SetChildCount and TBaseVirtualTree.InitNode to correctly handle filtered nodes
 //   - Bug fix: Ctrl+Click on a node often cause a delayed update of the displayed selection due to a missing (or
 //              misplaced) call to Invalidate() in HandleClickSelection().
 //   - Bug fix: Shift+PgUp and Shift+PgDown now behave like a usual List(View) and select the node of the previous/
@@ -3209,7 +3213,7 @@ type
     procedure MoveTo(Node: PVirtualNode; Tree: TBaseVirtualTree; Mode: TVTNodeAttachMode;
       ChildrenOnly: Boolean); overload;
     procedure PaintTree(TargetCanvas: TCanvas; Window: TRect; Target: TPoint; PaintOptions: TVTInternalPaintOptions;
-      PixelFormat: TPixelFormat = pfDevice);
+      PixelFormat: TPixelFormat = pfDevice); virtual;
     function PasteFromClipboard: Boolean; virtual;
     procedure PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
     procedure Print(Printer: TPrinter; PrintHeader: Boolean);
@@ -3230,8 +3234,11 @@ type
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
     function UpdateAction(Action: TBasicAction): Boolean; override;
+    procedure UpdateHorizontalRange;
     procedure UpdateHorizontalScrollBar(DoRepaint: Boolean);
+    procedure UpdateRanges;
     procedure UpdateScrollBars(DoRepaint: Boolean); virtual;
+    procedure UpdateVerticalRange;
     procedure UpdateVerticalScrollBar(DoRepaint: Boolean);
     function UseRightToLeftReading: Boolean;
     procedure ValidateChildren(Node: PVirtualNode; Recursive: Boolean);
@@ -6471,21 +6478,21 @@ begin
             begin
               BeginUpdate;
               InterruptValidation;
-              Run := GetFirst;
+              Run := GetFirstNoInit;
               while Assigned(Run) do
               begin
                 if (vsFiltered in Run.States) and FullyVisible[Run] then
                   if toShowFilteredNodes in ToBeSet then
                   begin
                     Inc(FVisibleCount);
-                    AdjustTotalHeight(Run.Parent, Run.NodeHeight, True);
+                    AdjustTotalHeight(Run, Run.NodeHeight, True);
                   end
                   else
                   begin
-                    AdjustTotalHeight(Run.Parent, -Run.NodeHeight, True);
+                    AdjustTotalHeight(Run, -Run.NodeHeight, True);
                     Dec(FVisibleCount);
                   end;
-                Run := GetNext(Run);
+                Run := GetNextNoInit(Run);
               end;
               EndUpdate;
             end
@@ -14899,7 +14906,7 @@ begin
     while Assigned(Child) do
     begin
       FixupTotalHeight(Child);
-      if IsEffectivelyVisible[Child] then
+      if vsVisible in Child.States then
         Inc(Node.TotalHeight, Child.TotalHeight);
       Child := Child.NextSibling;
     end;
@@ -16102,7 +16109,7 @@ begin
           if vsExpanded in Node.States then
           begin
             AdjustTotalHeight(Node, NewHeight, True);
-            if FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
+            if FullyVisible[Node] then
               Inc(Integer(FVisibleCount), Count);
           end;
 
@@ -16345,6 +16352,10 @@ var
 begin
   Assert(Assigned(Node) and (Node <> FRoot), 'Invalid parameter.');
 
+  // Initialize the node if necessary as this might change the filtered state.
+  if not (vsInitialized in Node.States) then
+    InitNode(Node);
+
   if Value <> (vsFiltered in Node.States) then
   begin
     InterruptValidation;
@@ -16352,12 +16363,14 @@ begin
     if Value then
     begin
       Include(Node.States, vsFiltered);
-      if (vsExpanded in Node.Parent.States) and not (toShowFilteredNodes in FOptions.FPaintOptions) then
-        AdjustTotalHeight(Node.Parent, -Integer(NodeHeight[Node]), True);
-      if VisiblePath[Node] then
+      if not (toShowFilteredNodes in FOptions.FPaintOptions) then
       begin
-        Dec(FVisibleCount);
-        NeedUpdate := True;
+        AdjustTotalHeight(Node, -Integer(NodeHeight[Node]), True);
+        if FullyVisible[Node] then
+        begin
+          Dec(FVisibleCount);
+          NeedUpdate := True;
+        end;
       end;
 
       if FUpdateCount = 0 then
@@ -16368,13 +16381,14 @@ begin
     else
     begin
       Exclude(Node.States, vsFiltered);
-      if (vsExpanded in Node.Parent.States) and not (toShowFilteredNodes in FOptions.FPaintOptions) then
-        AdjustTotalHeight(Node.Parent, Integer(NodeHeight[Node]), True);
-
-      if VisiblePath[Node] then
+      if not (toShowFilteredNodes in FOptions.FPaintOptions) then
       begin
-        Inc(FVisibleCount);
-        NeedUpdate := True;
+        AdjustTotalHeight(Node, Integer(NodeHeight[Node]), True);
+        if FullyVisible[Node] then
+        begin
+          Inc(FVisibleCount);
+          NeedUpdate := True;
+        end;
       end;
 
       if vsVisible in Node.States then
@@ -16539,20 +16553,25 @@ begin
   begin
     Difference := Integer(Value) - Integer(Node.NodeHeight);
     Node.NodeHeight := Value;
-    AdjustTotalHeight(Node, Difference, True);
 
-    // If an edit operation is currently active then update the editors boundaries as well.
-    UpdateEditBounds;
-
-    // Stay away from touching the node cache while it is being validated.
-    if not (tsValidating in FStates) and FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
+    // If the node is effectively filtered out, nothing else has to be done, as it is not visible anyway.
+    if not IsEffectivelyFiltered[Node] then
     begin
-      InvalidateCache;
-      if FUpdateCount = 0 then
+      AdjustTotalHeight(Node, Difference, True);
+
+      // If an edit operation is currently active then update the editors boundaries as well.
+      UpdateEditBounds;
+
+      // Stay away from touching the node cache while it is being validated.
+      if not (tsValidating in FStates) and FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
       begin
-        ValidateCache;
-        InvalidateToBottom(Node);
-        UpdateScrollBars(True);
+        InvalidateCache;
+        if FUpdateCount = 0 then
+        begin
+          ValidateCache;
+          InvalidateToBottom(Node);
+          UpdateScrollBars(True);
+        end;
       end;
     end;
   end;
@@ -16806,13 +16825,14 @@ begin
         AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
       if VisiblePath[Node] then
       begin
-        Inc(FVisibleCount, 1 + CountVisibleChildren(Node));
+        Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
 
       // Update the hidden children flag of the parent.
       // Since this node is now visible we simply have to remove the flag.
-      Exclude(Node.Parent.States, vsAllChildrenHidden);
+      if not IsEffectivelyFiltered[Node] then
+        Exclude(Node.Parent.States, vsAllChildrenHidden);
     end
     else
     begin
@@ -16821,7 +16841,7 @@ begin
         AdjustTotalHeight(Node.Parent, -Integer(Node.TotalHeight), True);
       if VisiblePath[Node] then
       begin
-        Dec(FVisibleCount, 1 + CountVisibleChildren(Node));
+        Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
 
@@ -18129,7 +18149,7 @@ begin
             if Shift = [ssCtrl, ssShift] then
               SetOffsetX(FOffsetX + ClientWidth)
             else
-              if [ssShift,ssAlt] = Shift then 
+              if [ssShift, ssAlt] = Shift then
               begin
                 if FFocusedColumn <= NoColumn then
                   NewColumn := FHeader.FColumns.GetFirstVisibleColumn
@@ -18180,7 +18200,7 @@ begin
             if Shift = [ssCtrl, ssShift] then
               SetOffsetX(FOffsetX - ClientWidth)
             else
-              if [ssShift,ssAlt] = Shift then
+              if [ssShift, ssAlt] = Shift then
               begin
                 if FFocusedColumn <= NoColumn then
                   NewColumn := FHeader.FColumns.GetFirstVisibleColumn
@@ -19883,9 +19903,8 @@ begin
     Node := Node.FirstChild;
     while Assigned(Node) do
     begin
-      if (vsVisible in Node.States) and (not (vsFiltered in Node.States) or
-         (toShowFilteredNodes in FOptions.FPaintOptions)) then
-        Inc(Result, CountVisibleChildren(Node) + 1);
+      if vsVisible in Node.States then
+        Inc(Result, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
       Node := Node.NextSibling;
     end;
   end;
@@ -23779,7 +23798,16 @@ begin
     if ivsMultiline in InitStates then
       Include(States, vsMultiline);
     if ivsFiltered in InitStates then
+    begin
       Include(States, vsFiltered);
+      if not (toShowFilteredNodes in FOptions.FPaintOptions) then
+      begin
+        AdjustTotalHeight(Node, -NodeHeight, True);
+        if FullyVisible[Node] then
+          Dec(FVisibleCount);
+        UpdateScrollBars(True);
+      end;
+    end;
 
     // Expanded may already be set (when called from ReinitNode) or be set in DoInitNode, allow both.
     if (vsExpanded in Node.States) xor (ivsExpanded in InitStates) then
@@ -24079,13 +24107,10 @@ begin
           AdjustTotalCount(Destination.Parent, Node.TotalCount, True);
 
           // Add the new node's height only if its parent is expanded.
-          if (vsExpanded in Destination.Parent.States) and IsEffectivelyVisible[Node] then
-            AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
           if FullyVisible[Node] then
           begin
-            Inc(FVisibleCount, CountVisibleChildren(Node));
-            if not IsEffectivelyFiltered[Node] then
-              Inc(FVisibleCount);
+            AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
+            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
           end;
         end;
       amInsertAfter:
@@ -24113,13 +24138,10 @@ begin
           AdjustTotalCount(Destination.Parent, Node.TotalCount, True);
 
           // Add the new node's height only if its parent is expanded.
-          if (vsExpanded in Destination.Parent.States) and IsEffectivelyVisible[Node] then
-            AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
           if FullyVisible[Node] then
           begin
-            Inc(FVisibleCount, CountVisibleChildren(Node));
-            if not IsEffectivelyFiltered[Node] then
-              Inc(FVisibleCount);
+            AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
+            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
           end;
         end;
       amAddChildFirst:
@@ -24153,13 +24175,10 @@ begin
           Include(Destination.States, vsHasChildren);
           AdjustTotalCount(Destination, Node.TotalCount, True);
           // Add the new node's height only if its parent is expanded.
-          if (vsExpanded in Destination.States) and IsEffectivelyVisible[Node] then
-            AdjustTotalHeight(Destination, Node.TotalHeight, True);
           if FullyVisible[Node] then
           begin
-            Inc(FVisibleCount, CountVisibleChildren(Node));
-            if not IsEffectivelyFiltered[Node] then
-              Inc(FVisibleCount);
+            AdjustTotalHeight(Destination, Node.TotalHeight, True);
+            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
           end;
         end;
       amAddChildLast:
@@ -24188,13 +24207,10 @@ begin
           Include(Destination.States, vsHasChildren);
           AdjustTotalCount(Destination, Node.TotalCount, True);
           // Add the new node's height only if its parent is expanded.
-          if (vsExpanded in Destination.States) and IsEffectivelyVisible[Node] then
-            AdjustTotalHeight(Destination, Node.TotalHeight, True);
           if FullyVisible[Node] then
           begin
-            Inc(FVisibleCount, CountVisibleChildren(Node));
-            if not IsEffectivelyFiltered[Node] then
-              Inc(FVisibleCount);
+            AdjustTotalHeight(Destination, Node.TotalHeight, True);
+            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
           end;
         end;
     else
@@ -24269,7 +24285,7 @@ begin
     Node.States := Node.States - [vsChecking];
     Parent := Node.Parent;
     Dec(Parent.ChildCount);
-    AdjustHeight := (vsExpanded in Parent.States) and IsEffectivelyVisible[Node];
+    AdjustHeight := (vsExpanded in Parent.States) and (vsVisible in Node.States);
     if Parent.ChildCount = 0 then
     begin
       Parent.States := Parent.States - [vsAllChildrenHidden, vsHasChildren];
@@ -24280,11 +24296,7 @@ begin
     if AdjustHeight then
       AdjustTotalHeight(Parent, -Integer(Node.TotalHeight), True);
     if FullyVisible[Node] then
-    begin
-      Dec(FVisibleCount, CountVisibleChildren(Node));
-      if not IsEffectivelyFiltered[Node] then
-        Dec(FVisibleCount);
-    end;
+      Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
 
     if Assigned(Node.PrevSibling) then
       Node.PrevSibling.NextSibling := Node.NextSibling
@@ -27621,9 +27633,9 @@ begin
   Result := Rect(0, 0, 0, 0);
 
   // Check whether the node is visible (determine indentation level btw.).
-  Temp := Node;
-  if not IsEffectivelyVisible[Temp] then
+  if not IsEffectivelyVisible[Node] then
     Exit;
+  Temp := Node;
   Indent := 0;
   while Temp <> FRoot do
   begin
@@ -32310,27 +32322,7 @@ var
   TotalFit: Boolean;
   ToggleData: TToggleAnimationData;
 
-  //--------------- local functions -------------------------------------------
-
-  procedure UpdateRanges;
-
-  // This function is used to adjust FRangeX/FRangeY in order to correctly
-  // reflect the tree's state after a toggle, because it is essential that
-  // these values are correct if we need to scroll afterwards. To avoid a
-  // useless call to UpdateScrollbars we do it right here.
-
-  begin
-    if FRoot.TotalHeight < FDefaultNodeHeight then
-      FRoot.TotalHeight := FDefaultNodeHeight;
-    FRangeY := FRoot.TotalHeight - FRoot.NodeHeight + FBottomSpace;
-
-    if FHeader.UseColumns then
-      FRangeX := FHeader.FColumns.TotalWidth
-    else
-      FRangeX := GetMaxRightExtend;
-  end;
-
-  //---------------------------------------------------------------------------
+  //--------------- local function --------------------------------------------
 
   procedure PrepareAnimation;
 
@@ -32378,7 +32370,7 @@ var
     end;
   end;
 
-  //--------------- end local functions ---------------------------------------
+  //--------------- end local function ----------------------------------------
 
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
@@ -32484,7 +32476,7 @@ begin
           end;
 
           // collapse the node
-          AdjustTotalHeight(Node, NodeHeight[Node]);
+          AdjustTotalHeight(Node, IfThen(IsEffectivelyFiltered[Node], 0, NodeHeight[Node]));
           if FullyVisible[Node] then
             Dec(FVisibleCount, CountVisibleChildren(Node));
           Exclude(Node.States, vsExpanded);
@@ -32776,16 +32768,24 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.UpdateHorizontalScrollBar(DoRepaint: Boolean);
-
-var
-  ScrollInfo: TScrollInfo;
+procedure TBaseVirtualTree.UpdateHorizontalRange;
 
 begin
   if FHeader.UseColumns then
     FRangeX := FHeader.FColumns.TotalWidth
   else
     FRangeX := GetMaxRightExtend;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.UpdateHorizontalScrollBar(DoRepaint: Boolean);
+
+var
+  ScrollInfo: TScrollInfo;
+
+begin
+  UpdateHorizontalRange;
 
   if tsUpdating in FStates then
     exit;
@@ -32860,6 +32860,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.UpdateRanges;
+
+begin
+  UpdateVerticalRange;
+  UpdateHorizontalRange;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.UpdateScrollBars(DoRepaint: Boolean);
 
 // adjusts scrollbars to reflect current size and paint offset of the tree
@@ -32874,16 +32883,24 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.UpdateVerticalScrollBar(DoRepaint: Boolean);
-
-var
-  ScrollInfo: TScrollInfo;
+procedure TBaseVirtualTree.UpdateVerticalRange;
 
 begin
   // Total node height includes the height of the invisible root node.
   if FRoot.TotalHeight < FDefaultNodeHeight then
     FRoot.TotalHeight := FDefaultNodeHeight;
   FRangeY := FRoot.TotalHeight - FRoot.NodeHeight + FBottomSpace;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.UpdateVerticalScrollBar(DoRepaint: Boolean);
+
+var
+  ScrollInfo: TScrollInfo;
+
+begin
+  UpdateVerticalRange;
 
   if tsUpdating in FStates then
     exit;
