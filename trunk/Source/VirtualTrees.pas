@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  June 2010
+//   - Bug fix: TStringEditLink.BeginEdit now calls AutoAdjustSize to ensure a consistent size of the edit field
 //   - Improvement: TVTHeader.AutoFitColumns is now declared virtual 
 //   - Bug fix: header captions were badly positioned text if Extra Large fonts have been activated in the Windows
 //              display options
@@ -26290,6 +26291,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+//PROFILE-NO
 procedure TBaseVirtualTree.WndProc(var Message: TMessage);
 
 var
@@ -26331,6 +26333,7 @@ begin
     end;
   end;
 end;
+//PROFILE-YES
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -33346,6 +33349,7 @@ begin
     FEdit.Show;
     FEdit.SelectAll;
     FEdit.SetFocus;
+    FEdit.AutoAdjustSize;
   end;
 end;
 
