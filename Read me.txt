@@ -1,0 +1,1 @@
+ml Jun 19, 2010: The Delphi subfolder, which contains all the package files having their version in the name (and hence aren't flexible enough when using the same package names in different Delphi/CBuilder versions) are now marked as deprecated and will sooner or later be removed. Use the packages subfolder instead.
