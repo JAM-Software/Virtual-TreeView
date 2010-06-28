@@ -25,9 +25,10 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  June 2010
+//   - Bug fix: range select with no nodes will no longer result in an access violation
 //   - Bug fix: TBaseVirtualTree.SetVisible now correctly decrements the visible node count
 //   - Bug fix: TStringEditLink.BeginEdit now calls AutoAdjustSize to ensure a consistent size of the edit field
-//   - Improvement: TVTHeader.AutoFitColumns is now declared virtual 
+//   - Improvement: TVTHeader.AutoFitColumns is now declared virtual
 //   - Bug fix: header captions were badly positioned text if Extra Large fonts have been activated in the Windows
 //              display options
 //  May 2010
@@ -18445,13 +18446,17 @@ begin
           FRangeAnchor := FFocusedNode;
           FLastSelectionLevel := GetNodeLevel(FFocusedNode);
         end;
-        // Finally change the selection for a specific range of nodes.
-        if DoRangeSelect then
-          ToggleSelection(LastFocused, FFocusedNode);
 
-        // Make sure the new focused node is also selected.
-        if Assigned(FFocusedNode) and ((LastFocused <> FFocusedNode) or ForceSelection) then
-          AddToSelection(FFocusedNode);
+        if Assigned(FFocusedNode) then
+        begin
+          // Finally change the selection for a specific range of nodes.
+          if DoRangeSelect then
+            ToggleSelection(LastFocused, FFocusedNode);
+
+          // Make sure the new focused node is also selected.
+          if (LastFocused <> FFocusedNode) or ForceSelection then
+            AddToSelection(FFocusedNode);
+        end;
 
         // If a repaint is needed then paint the entire tree because of the ClearSelection call,
         if NeedInvalidate then
