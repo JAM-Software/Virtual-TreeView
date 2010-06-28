@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  June 2010
+//   - Bug fix: TBaseVirtualTree.SetVisible now correctly decrements the visible node count
 //   - Bug fix: TStringEditLink.BeginEdit now calls AutoAdjustSize to ensure a consistent size of the edit field
 //   - Improvement: TVTHeader.AutoFitColumns is now declared virtual 
 //   - Bug fix: header captions were badly positioned text if Extra Large fonts have been activated in the Windows
@@ -16837,7 +16838,6 @@ begin
     end
     else
     begin
-      Exclude(Node.States, vsVisible);
       if vsExpanded in Node.Parent.States then
         AdjustTotalHeight(Node.Parent, -Integer(Node.TotalHeight), True);
       if VisiblePath[Node] then
@@ -16845,6 +16845,7 @@ begin
         Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
+      Exclude(Node.States, vsVisible);
 
       if FUpdateCount = 0 then
         DetermineHiddenChildrenFlag(Node.Parent)
