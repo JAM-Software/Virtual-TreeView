@@ -24,6 +24,9 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  July 2010
+//   - Improvement: Added new property TBaseVirtualTree.EmptyListMessage. If this property is not empty, the assigned
+//                  text will be displayed if there are no nodes to display, similar to the Windows XP file search.
 //  June 2010
 //   - Bug fix: range select with no nodes will no longer result in an access violation
 //   - Bug fix: TBaseVirtualTree.SetVisible now correctly decrements the visible node count
@@ -2277,6 +2280,7 @@ type
     FHeaderRect: TRect;                          // Space which the header currently uses in the control (window coords).
     FLastHintRect: TRect;                        // Area which the mouse must leave to reshow a hint.
     FUpdateRect: TRect;
+    FEmptyListMessage: String;                   // Optional message that will be displayed if no nodes exist in the control.
 
     // paint support and images
     FPlusBM,
@@ -2682,6 +2686,7 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+    procedure SetEmptyListMessage(const Value: UnicodeString);
   protected
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -3262,6 +3267,7 @@ type
     property DragManager: IVTDragManager read GetDragManager;
     property DropTargetNode: PVirtualNode read FDropTargetNode;
     property EditLink: IVTEditLink read FEditLink;
+    property EmptyListMessage: UnicodeString read FEmptyListMessage write SetEmptyListMessage;
     property Expanded[Node: PVirtualNode]: Boolean read GetExpanded write SetExpanded;
     property FocusedColumn: TColumnIndex read FFocusedColumn write SetFocusedColumn default InvalidColumn;
     property FocusedNode: PVirtualNode read FFocusedNode write SetFocusedNode;
@@ -15228,7 +15234,7 @@ begin
         else
           AddToSelection(NewNode);
     end;
-    Invalidate;
+    Update;//Invalidate didn't update owner drawn selections
   end
   else
     // Shift key down
@@ -16244,6 +16250,14 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetEmptyListMessage(const Value: UnicodeString);
+
+begin
+  if Value=EmptyListMessage then exit;  
+  FEmptyListMessage := Value;
+  Invalidate;
+end;
 
 procedure TBaseVirtualTree.SetExpanded(Node: PVirtualNode; Value: Boolean);
 
@@ -26669,6 +26683,7 @@ begin
       Self.Visible := Visible;
       Self.SelectionCurveRadius := SelectionCurveRadius;
       Self.SelectionBlendFactor := SelectionBlendFactor;
+      Self.EmptyListMessage := EmptyListMessage;
     end
     else
       inherited;
@@ -31262,6 +31277,13 @@ begin
         NodeBitmap.Canvas.Unlock;
         NodeBitmap.Free;
       end;
+      if (Self.ChildCount[nil]=0) and (FEmptyListMessage<>'') then begin
+        // output a message if no items are to display
+        Canvas.Font := Self.Font;
+        SetBkMode(TargetCanvas.Handle, TRANSPARENT);
+        TextOutW(TargetCanvas.Handle, 2, 2, PWideChar(FEmptyListMessage), Length(FEmptyListMessage));
+      end;//if
+
       DoAfterPaint(TargetCanvas);
     finally
       DoStateChange([], [tsPainting]);
