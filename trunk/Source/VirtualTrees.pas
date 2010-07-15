@@ -27,6 +27,8 @@ unit VirtualTrees;
 //  July 2010
 //   - Improvement: Added new property TBaseVirtualTree.EmptyListMessage. If this property is not empty, the assigned
 //                  text will be displayed if there are no nodes to display, similar to the Windows XP file search.
+//   - Improvement: Added tstChecked to TVSTTextSourceType enumeration and support for the new flag to 
+//                  GetRenderStartValues(). So you can export only checked nodes.
 //  June 2010
 //   - Bug fix: range select with no nodes will no longer result in an access violation
 //   - Bug fix: TBaseVirtualTree.SetVisible now correctly decrements the visible node count
@@ -3167,7 +3169,8 @@ type
     function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer;
     function GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
-      ConsiderChildrenAbove: Boolean = False): PVirtualNode;
+      ConsiderChildrenAbove: Boolean = False): PVirtualNode; overload;
+    function GetNextChecked(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode; overload;
     function GetNextCutCopy(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextInitialized(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextLeaf(Node: PVirtualNode): PVirtualNode;
@@ -3418,7 +3421,8 @@ type
     tstInitialized,     // Only initialized nodes are rendered.
     tstSelected,        // Only selected nodes are rendered.
     tstCutCopySet,      // Only nodes currently marked as being in the cut/copy clipboard set are rendered.
-    tstVisible          // Only visible nodes are rendered.
+    tstVisible,         // Only visible nodes are rendered.
+    tstChecked          // Only checked nodes are rendered
   );
 
   TVTPaintText = procedure(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
@@ -28764,6 +28768,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetNextChecked(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode;
+begin
+  Result := Self.GetNextChecked(Node, csCheckedNormal, ConsiderChildrenAbove);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetNextCutCopy(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
 
 // Returns the next node in the tree which is currently marked for a clipboard operation. Since only visible nodes can
@@ -33565,6 +33576,11 @@ begin
       begin
         Node := GetFirstVisible(nil, True);
         NextNodeProc := GetNextVisible;
+      end;
+    tstChecked:
+      begin
+        Node := GetFirstChecked;
+        NextNodeProc := GetNextChecked;
       end;
   else // tstAll
     Node := GetFirst;
