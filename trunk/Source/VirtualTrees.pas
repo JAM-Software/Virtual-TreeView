@@ -35028,7 +35028,7 @@ begin
                 begin
                   Buffer.Add(' <td height="');
                   Buffer.Add(IntToStr(NodeHeight[Run]));
-                  Buffer.Add('px">&nbsp;</td>');
+                  Buffer.Add('px" class="normalborder">&nbsp;</td>');
                 end
                 else
                   Buffer.Add(' <td>&nbsp;</td>');
