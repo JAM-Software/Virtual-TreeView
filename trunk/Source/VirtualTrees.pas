@@ -7824,6 +7824,7 @@ begin
             // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
             Inc(Result.Bottom, 6);
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
+            If not Assigned(Tree) then exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
             Inc(Result.Right, 2 * Tree.FTextMargin + 2);
           end;
         end;
@@ -24369,6 +24370,7 @@ begin
     Inc(Cardinal(FSelection[Index]));
     if Assigned(FOnRemoveFromSelection) then
       FOnRemoveFromSelection(Self, Node);
+    AdviseChangeEvent(False, Node, crIgnore);
   end;
 end;
 
