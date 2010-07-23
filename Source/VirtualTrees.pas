@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  July 2010
+//   - Bug fix: Changed TBaseVirtualTree.WMKeyDown to correctly handle special keys in Unicode based Delphi versions
+//   - Bug fix: Changed declaration of TBaseVirtualTree.EmptyListMessage to UnicodeString
 //   - Improvement: Added new property TBaseVirtualTree.EmptyListMessage. If this property is not empty, the assigned
 //                  text will be displayed if there are no nodes to display, similar to the Windows XP file search.
 //   - Improvement: Added tstChecked to TVSTTextSourceType enumeration and support for the new flag to 
@@ -2282,7 +2284,7 @@ type
     FHeaderRect: TRect;                          // Space which the header currently uses in the control (window coords).
     FLastHintRect: TRect;                        // Area which the mouse must leave to reshow a hint.
     FUpdateRect: TRect;
-    FEmptyListMessage: String;                   // Optional message that will be displayed if no nodes exist in the control.
+    FEmptyListMessage: UnicodeString;            // Optional message that will be displayed if no nodes exist in the control.
 
     // paint support and images
     FPlusBM,
@@ -16259,9 +16261,11 @@ end;
 procedure TBaseVirtualTree.SetEmptyListMessage(const Value: UnicodeString);
 
 begin
-  if Value=EmptyListMessage then exit;  
-  FEmptyListMessage := Value;
-  Invalidate;
+  if Value <> EmptyListMessage then
+  begin
+    FEmptyListMessage := Value;
+    Invalidate;
+  end;
 end;
 
 procedure TBaseVirtualTree.SetExpanded(Node: PVirtualNode; Value: Boolean);
@@ -18069,7 +18073,7 @@ var
   GetNextNode: TGetNextNodeProc;
 
   KeyState: TKeyboardState;
-  Buffer: array[0..1] of Char;
+  Buffer: array[0..1] of AnsiChar;
 
 begin
   // Make form key preview work and let application modify the key if it wants this.
@@ -18490,7 +18494,7 @@ begin
         GetKeyboardState(KeyState);
         // Avoid conversion to control characters. We have captured the control key state already in Shift.
         KeyState[VK_CONTROL] := 0;
-        if ToASCII(Message.CharCode, (Message.KeyData shr 16) and 7, KeyState, Buffer, 0) > 0 then
+        if ToASCII(Message.CharCode, (Message.KeyData shr 16) and 7, KeyState, @Buffer, 0) > 0 then
         begin
           case Buffer[0] of
             '*':
@@ -18507,7 +18511,7 @@ begin
         // According to http://www.it-faq.pl/mskb/99/337.HTM there is a problem with ToASCII when used in conjunction
         // with dead chars. The article recommends to call ToASCII twice to restore a deleted flag in the key message
         // structure under certain circumstances. It turned out it is best to always call ToASCII twice.
-        ToASCII(Message.CharCode, (Message.KeyData shr 16) and 7, KeyState, Buffer, 0);
+        ToASCII(Message.CharCode, (Message.KeyData shr 16) and 7, KeyState, @Buffer, 0);
 
         case CharCode of
           VK_F2:
