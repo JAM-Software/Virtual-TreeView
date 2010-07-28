@@ -25,6 +25,10 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  July 2010
+//   - Bug fix: Toggling toShowFilteredNodes will now update the node counts in the tree even if its handle has not
+//              been allocated so far
+//   - Bug fix: TBaseVirtualTree.FindNodeInSelection should now work correctly with nodes above the 2gb boundary
+//   - Bug fix: Nodes that are about to be deleted are now removed from TBaseVirtualTree.FDragSelection
 //   - Bug fix: Changed TBaseVirtualTree.WMKeyDown to correctly handle special keys in Unicode based Delphi versions
 //   - Bug fix: Changed declaration of TBaseVirtualTree.EmptyListMessage to UnicodeString
 //   - Improvement: Added new property TBaseVirtualTree.EmptyListMessage. If this property is not empty, the assigned
@@ -6450,6 +6454,7 @@ var
   ToBeSet,
   ToBeCleared: TVTPaintOptions;
   Run: PVirtualNode;
+  HandleWasAllocated: Boolean;
 
 begin
   if FPaintOptions <> Value then
@@ -6458,6 +6463,34 @@ begin
     ToBeCleared := FPaintOptions - Value;
     FPaintOptions := Value;
     with FOwner do
+    begin
+      HandleWasAllocated := HandleAllocated;
+
+      if not (csLoading in ComponentState) and (toShowFilteredNodes in ToBeSet + ToBeCleared) then
+      begin
+        if HandleWasAllocated then
+          BeginUpdate;
+        InterruptValidation;
+        Run := GetFirstNoInit;
+        while Assigned(Run) do
+        begin
+          if (vsFiltered in Run.States) and FullyVisible[Run] then
+            if toShowFilteredNodes in ToBeSet then
+            begin
+              Inc(FVisibleCount);
+              AdjustTotalHeight(Run, Run.NodeHeight, True);
+            end
+            else
+            begin
+              AdjustTotalHeight(Run, -Run.NodeHeight, True);
+              Dec(FVisibleCount);
+            end;
+          Run := GetNextNoInit(Run);
+        end;
+        if HandleWasAllocated then
+          EndUpdate;
+      end;
+
       if HandleAllocated then
       begin
         if IsWinVistaOrAbove and ((tsUseThemes in FStates) or
@@ -6487,43 +6520,22 @@ begin
 
             PrepareBitmaps(True, False);
             RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME);
-          end
-          else
-            if toShowFilteredNodes in ToBeSet + ToBeCleared then
+          end;
+
+          if toChildrenAbove in ToBeSet + ToBeCleared then
+          begin
+            InvalidateCache;
+            if FUpdateCount = 0 then
             begin
-              BeginUpdate;
-              InterruptValidation;
-              Run := GetFirstNoInit;
-              while Assigned(Run) do
-              begin
-                if (vsFiltered in Run.States) and FullyVisible[Run] then
-                  if toShowFilteredNodes in ToBeSet then
-                  begin
-                    Inc(FVisibleCount);
-                    AdjustTotalHeight(Run, Run.NodeHeight, True);
-                  end
-                  else
-                  begin
-                    AdjustTotalHeight(Run, -Run.NodeHeight, True);
-                    Dec(FVisibleCount);
-                  end;
-                Run := GetNextNoInit(Run);
-              end;
-              EndUpdate;
-            end
-            else
-              if toChildrenAbove in ToBeSet + ToBeCleared then
-              begin
-                InvalidateCache;
-                if FUpdateCount = 0 then
-                begin
-                  ValidateCache;
-                  Invalidate;
-                end;
-              end else
-                Invalidate;
+              ValidateCache;
+              Invalidate;
+            end;
+          end;
+
+          Invalidate;
         end;
       end;
+    end;
   end;
 end;
 
@@ -20849,7 +20861,6 @@ procedure TBaseVirtualTree.DoDragging(P: TPoint);
   //--------------- end local function ----------------------------------------
 
 var
-  I,
   DragEffect,
   AllowedEffects: Integer;
   DragObject: TDragObject;
@@ -20908,15 +20919,7 @@ begin
       if (DragEffect = DROPEFFECT_MOVE) and (toAutoDeleteMovedNodes in TreeOptions.AutoOptions) then
       begin
         // The operation was a move so delete the previously selected nodes.
-        BeginUpdate;
-        try
-          // The list of selected nodes was retrieved in resolved state. That means there can never be a node
-          // in the list whose parent (or its parent etc.) is also selected.
-          for I := 0 to High(FDragSelection) do
-            DeleteNode(FDragSelection[I]);
-        finally
-          EndUpdate;
-        end;
+        DeleteSelectedNodes;
       end;
 
       DoStateChange([], [tsOLEDragging]);
@@ -22612,7 +22615,7 @@ function TBaseVirtualTree.FindNodeInSelection(P: PVirtualNode; var Index: Intege
 
 var
   L, H,
-  I, C: Integer;
+  I: Integer;
 
 begin
   Result := False;
@@ -22625,13 +22628,12 @@ begin
   while L <= H do
   begin
     I := (L + H) shr 1;
-    C := Integer(FSelection[I]) - Integer(P);
-    if C < 0 then
+    if Cardinal(FSelection[I]) < Cardinal(P) then
       L := I + 1
     else
     begin
       H := I - 1;
-      if C = 0 then
+      if FSelection[I] = P then
       begin
         Result := True;
         L := I;
