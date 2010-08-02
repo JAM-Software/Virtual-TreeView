@@ -24,6 +24,9 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  August 2010
+//   - Bug fix: TBaseVirtualTree.OnRemoveFromSelection is now triggered by TBaseVirtualTree.RemoveFromSelection
+//              as intended
 //  July 2010
 //   - Bug fix: Toggling toShowFilteredNodes will now update the node counts in the tree even if its handle has not
 //              been allocated so far
@@ -25473,6 +25476,8 @@ begin
       if FSelectionCount = 0 then
         ResetRangeAnchor;
 
+      if Assigned(FOnRemoveFromSelection) then
+        FOnRemoveFromSelection(Self, Node);
       Change(Node);
     end;
   end;
