@@ -56,8 +56,10 @@
 // - COMPILER_11_UP : Kylix/Delphi/BCB 11.x or higher is the compiler.
 // - COMPILER_12    : Kylix/Delphi/BCB 12.x is the compiler.
 // - COMPILER_12_UP : Kylix/Delphi/BCB 12.x or higher is the compiler.
-// - COMPILER_14    : Kylix/Delphi/BCB 14.x is the compiler.
-// - COMPILER_14_UP : Kylix/Delphi/BCB 14.x or higher is the compiler.
+// - COMPILER_13    : Kylix/Delphi/BCB 13.x is the compiler.
+// - COMPILER_13_UP : Kylix/Delphi/BCB 13.x or higher is the compiler.
+// - COMPILER_14    : Kylix/Delphi/BCB 13.x is the compiler.
+// - COMPILER_14_UP : Kylix/Delphi/BCB 13.x or higher is the compiler.
 //
 // Only defined if Windows is the target:
 // - CPPB        : Any version of BCB is being used.
@@ -127,17 +129,22 @@
 
 // Compiler defines not specific to a particlular platform.
 
- // RAD Studio 2010 (BDS 7.0) DELPHI and BCB are no longer defined, only COMPILER
- {$ifdef VER210}
+  // BDS XE (2011) (BDS 8.0) DELPHI and BCB are no longer defined, only COMPILER
+  {$ifdef VER220}
    {$define COMPILER_14}
- {$endif VER210}
+  {$endif VER200}
 
- // RAD Studio 2009 (BDS 6.0) DELPHI and BCB are no longer defined, only COMPILER
+  // BDS 2010 (BDS 7.0) DELPHI and BCB are no longer defined, only COMPILER
+  {$ifdef VER210}
+    {$define COMPILER_13}
+  {$endif VER200}
+
+  // BDS 2009 (BDS 6.0) DELPHI and BCB are no longer defined, only COMPILER
  {$ifdef VER200}
    {$define COMPILER_12}
  {$endif VER200}
 
- // RAD Studio 2007 (BDS 5.0) DELPHI and BCB are no longer defined, only COMPILER
+  // BDS 2007 (BDS 5.0) DELPHI and BCB are no longer defined, only COMPILER
  {$ifdef VER190}
    {$define COMPILER_11}
  {$endif VER190}
@@ -540,6 +547,43 @@
 
 {$endif}
 
+
+{$ifdef COMPILER_13}
+  {$define COMPILER_1_UP}
+  {$define COMPILER_2_UP}
+  {$define COMPILER_3_UP}
+  {$define COMPILER_4_UP}
+  {$define COMPILER_5_UP}
+  {$define COMPILER_6_UP}
+  {$define COMPILER_7_UP}
+  {$define COMPILER_8_UP}
+  {$define COMPILER_9_UP}
+  {$define COMPILER_10_UP}
+  {$define COMPILER_11_UP}
+  {$define COMPILER_12_UP}
+  {$define COMPILER_13_UP}
+  // Backwards compatibility
+  {$define DELPHI_2_UP}
+  {$define DELPHI_3_UP}
+  {$define DELPHI_4_UP}
+  {$define DELPHI_5_UP}
+  {$define DELPHI_6_UP}
+  {$define DELPHI_7_UP}
+  {$define DELPHI_8_UP}
+  {$define DELPHI_9_UP}
+  {$define CPPB_3_UP}
+  {$define CPPB_4_UP}
+  {$define CPPB_5_UP}
+  {$define CPPB_6_UP}
+
+  {$ifdef BCB}
+    {$define CPPB}
+  {$else}
+    {$define DELPHI}
+  {$endif}
+
+{$endif}
+
 {$ifdef COMPILER_14}
  {$define COMPILER_1_UP}
  {$define COMPILER_2_UP}
@@ -553,6 +597,7 @@
  {$define COMPILER_10_UP}
  {$define COMPILER_11_UP}
  {$define COMPILER_12_UP}
+  {$define COMPILER_13_UP}
  {$define COMPILER_14_UP}
  // Backwards compatibility
  {$define DELPHI_2_UP}
