@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  September 2010
+//   - Improvement: Made compatible with Delphi XE (Thanks to Roman Kassebaum)
 //  August 2010
 //   - Improvement: TCustomVirtualStringTree.DoTextMeasuring now returns TSize
 //   - Improvement: Renamed TVTMeasureTextWidthEvent to TVTMeasureTextEvent and introduced new
@@ -34628,7 +34630,7 @@ begin
       end;
   else
     if Format = CF_CSV then
-      S := ContentToText(Source, AnsiChar (ListSeparator)) + #0
+      S := ContentToText(Source, AnsiChar ({$IFDEF COMPILER_15_UP}FormatSettings.{$ENDIF}ListSeparator)) + #0
     else
       if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
         S := ContentToRTF(Source) + #0
