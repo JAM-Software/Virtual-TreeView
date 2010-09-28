@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2010
+//   - Improvement: Added additional check regarding the tree reference to TVirtualTreeHintWindow.AnimationCallback
 //   - Improvement: Made TBaseVirtualTree.AdjustImageBorder protected and virtual
 //   - Improvement: TVirtualTreeColumns now observes if the focused column is removed
 //   - Improvement: Made compatible with Delphi XE (Thanks to Roman Kassebaum)
@@ -7363,7 +7364,7 @@ function TVirtualTreeHintWindow.AnimationCallback(Step, StepSize: Integer; Data:
 
 begin
   Result := not FHintWindowDestroyed and HandleAllocated and IsWindowVisible(Handle) and
-    not (tsCancelHintAnimation in FHintData.Tree.FStates);
+    Assigned(FHintData.Tree) and not (tsCancelHintAnimation in FHintData.Tree.FStates);
   if Result then
   begin
     InternalPaint(Step, StepSize);
