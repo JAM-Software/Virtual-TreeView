@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2010
+//   - Improvement: TVirtualTreeColumns now observes if the focused column is removed
 //   - Improvement: Made compatible with Delphi XE (Thanks to Roman Kassebaum)
 //  August 2010
 //   - Improvement: TCustomVirtualStringTree.DoTextMeasuring now returns TSize
@@ -198,7 +199,7 @@ unit VirtualTrees;
 //              as the bitmap was not completely erased using previous size under certain conditions
 //   - Bug fix: fixed TBaseVirtualTree.GetPreviousLevel
 // January 2009
-//   - Bug fix: removed off-by-1 error in  TBaseVirtualTree.GetBottomNode
+//   - Bug fix: removed off-by-1 error in TBaseVirtualTree.GetBottomNode
 //   - Improvement: improved speed of TBaseVirtualTree.GetMaxColumnWidth when using UseSmartColumnWidth
 //   - Version is now 4.8.0
 // December 2008
@@ -1446,6 +1447,7 @@ type
     procedure HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean); virtual;
     procedure IndexChanged(OldIndex, NewIndex: Integer);
     procedure InitializePositionArray;
+    procedure Notify(Item: TCollectionItem; Action: TCollectionNotification); override;
     procedure ReorderColumns(RTL: Boolean);
     procedure Update(Item: TCollectionItem); override;
     procedure UpdatePositions(Force: Boolean = False);
@@ -10262,6 +10264,17 @@ begin
       until not Changed;
     end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVirtualTreeColumns.Notify(Item: TCollectionItem; Action: TCollectionNotification);
+
+begin
+  if Action in [cnExtracting, cnDeleting] then
+    with Header.Treeview do
+      if not (csLoading in ComponentState) and (FFocusedColumn = Item.Index) then
+        FFocusedColumn := NoColumn;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
