@@ -24,6 +24,9 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  October 2010
+//   - Improvement: TBaseVirtualTree.ToggleNode now tries to keep the visual position of the toggled node,
+//                  even when toChildrenAbove is set
 //  September 2010
 //   - Improvement: Added additional check regarding the tree reference to TVirtualTreeHintWindow.AnimationCallback
 //   - Improvement: Made TBaseVirtualTree.AdjustImageBorder protected and virtual
@@ -32477,6 +32480,8 @@ begin
         begin
           NeedUpdate := True;
 
+          // Calculate the height delta right now as we need it for toChildrenAbove anyway.
+          HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]); 
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
@@ -32490,7 +32495,6 @@ begin
               // on the position of the node to be collapsed.
               R1 := GetDisplayRect(Node, NoColumn, False);
               Mode2 := tamNoScroll;
-              HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]);
               if toChildrenAbove in FOptions.FPaintOptions then
               begin
                 PosHoldable := (FOffsetY + (Integer(Node.TotalHeight - NodeHeight[Node]))) <= 0;
