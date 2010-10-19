@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  October 2010
+//   - Bug Fix: Now taking horizontal scroll position into account when drawing text of EmptyListMessage property
+//   - Bug Fix: Prevented potential "index out of bounds" exception in TVirtualTreeHintWindow.CalcHintRect
 //   - Improvement: TBaseVirtualTree.ToggleNode now tries to keep the visual position of the toggled node,
 //                  even when toChildrenAbove is set
 //  September 2010
@@ -2863,7 +2865,7 @@ type
     procedure FontChanged(AFont: TObject); virtual;
     function GetBorderDimensions: TSize; virtual;
     function GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType = ctNone;
-      ImgCheckState: TCheckState = csUncheckedNormal; ImgEnabled: Boolean = False): Integer; virtual;
+      ImgCheckState: TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer; virtual;
     class function GetCheckImageListFor(Kind: TCheckImageKind): TCustomImageList; virtual;
     function GetColumnClass: TVirtualTreeColumnClass; virtual;
     function GetHeaderClass: TVTHeaderClass; virtual;
@@ -7821,7 +7823,7 @@ begin
               // If the node height and the column width are both already large enough to cover the entire text,
               // then we don't need the hint, though.
               // However if the text is partially scrolled out of the client area then a hint is useful as well.
-              if ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and
+              if (Tree.Header.Columns.Count > 0) and ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and
                  ((Tree.Header.Columns[Column].Width + 2) >= (Result.Right - Result.Left)) and not
                  ((Result.Left < 0) or (Result.Right > Tree.ClientWidth + 3) or
                   (Result.Top < 0) or (Result.Bottom > Tree.ClientHeight + 3)) then
@@ -22741,7 +22743,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType = ctNone; ImgCheckState:
-  TCheckState = csUncheckedNormal; ImgEnabled: Boolean = False): Integer;
+  TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer;
 
 // Determines the index into the check image list for the given node depending on the check type
 // and enabled state.
@@ -31332,7 +31334,7 @@ begin
         // output a message if no items are to display
         Canvas.Font := Self.Font;
         SetBkMode(TargetCanvas.Handle, TRANSPARENT);
-        TextOutW(TargetCanvas.Handle, 2, 2, PWideChar(FEmptyListMessage), Length(FEmptyListMessage));
+        TextOutW(TargetCanvas.Handle, 2 - Window.Left, 2 - Window.Top, PWideChar(FEmptyListMessage), Length(FEmptyListMessage));
       end;//if
 
       DoAfterPaint(TargetCanvas);
