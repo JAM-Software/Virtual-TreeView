@@ -27,6 +27,10 @@ unit VirtualTrees;
 //  October 2010
 //   - Bug Fix: Now taking horizontal scroll position into account when drawing text of EmptyListMessage property
 //   - Bug Fix: Prevented potential "index out of bounds" exception in TVirtualTreeHintWindow.CalcHintRect
+//   - Bug Fix - Issue #187: Showing a dialog in OnChange or OnRemoveSelection event handlers can cause the VT to
+//              enter mode for drawing selection rectangle.
+//   - Improvement: Made inherited event OnCanResize published for TVirtualStringTree for Delphi 2010 and later
+//
 //   - Improvement: TBaseVirtualTree.ToggleNode now tries to keep the visual position of the toggled node,
 //                  even when toChildrenAbove is set
 //  September 2010
@@ -3788,6 +3792,9 @@ type
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
+    {$if CompilerVersion>=21}
+    property OnCanResize;
+    {$ifend}
   end;
 
   TVTDrawHintEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode; R: TRect;
@@ -23606,6 +23613,18 @@ begin
     with HitInfo, Message do
       CanClear := not AutoDrag and
         (not (tsRightButtonDown in FStates) or not HasPopupMenu(HitNode, HitColumn, Point(XPos, YPos)));
+
+    // User starts a selection with a selection rectangle.
+    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsHit or FullRowDrag) and MultiSelect then
+    begin
+      SetCapture(Handle);
+      DoStateChange([tsDrawSelPending]);
+      FDrawSelShiftState := ShiftState;
+      FNewSelRect := Rect(Message.XPos + FEffectiveOffsetX, Message.YPos - FOffsetY, Message.XPos + FEffectiveOffsetX,
+        Message.YPos - FOffsetY);
+      FLastSelRect := Rect(0, 0, 0, 0);
+    end;
+
     if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
       (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect))) then
     begin
@@ -23636,15 +23655,10 @@ begin
       (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty then
       DoStateChange([tsEditPending]);
 
-    // User starts a selection with a selection rectangle.
     if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsHit or FullRowDrag) and MultiSelect then
     begin
-      SetCapture(Handle);
-      DoStateChange([tsDrawSelPending]);
-      FDrawSelShiftState := ShiftState;
-      FNewSelRect := Rect(Message.XPos + FEffectiveOffsetX, Message.YPos - FOffsetY, Message.XPos + FEffectiveOffsetX,
-        Message.YPos - FOffsetY);
-      FLastSelRect := Rect(0, 0, 0, 0);
+      // The original code here was moved up to fix issue #187.
+      // In order not to break the semantics of this procedure, we are leaving these if statements here
       if not IsCellHit then
         Exit;
     end;
