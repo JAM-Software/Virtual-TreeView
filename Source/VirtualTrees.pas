@@ -24,13 +24,17 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  November 2010
+//   - Improvement: The default inplace editor now resizes itself even when the tree is in grid mode
+//   - Bug fix: TBaseVirtualTree.PrepareBitmaps now checks the existance of the main column correctly
+//   - Bug fix: TBaseVirtualTree.UpdateEditBounds now checks wether the focused node is assigned
+//   - Improvement: TBaseVirtualTree.FHintData is now available to derived classes via the protected property HintData
 //  October 2010
-//   - Bug Fix: Now taking horizontal scroll position into account when drawing text of EmptyListMessage property
-//   - Bug Fix: Prevented potential "index out of bounds" exception in TVirtualTreeHintWindow.CalcHintRect
-//   - Bug Fix - Issue #187: Showing a dialog in OnChange or OnRemoveSelection event handlers can cause the VT to
+//   - Bug fix: Now taking horizontal scroll position into account when drawing text of EmptyListMessage property
+//   - Bug fix: Prevented potential "index out of bounds" exception in TVirtualTreeHintWindow.CalcHintRect
+//   - Bug fix - Issue #187: Showing a dialog in OnChange or OnRemoveSelection event handlers can cause the VT to
 //              enter mode for drawing selection rectangle.
 //   - Improvement: Made inherited event OnCanResize published for TVirtualStringTree for Delphi 2010 and later
-//
 //   - Improvement: TBaseVirtualTree.ToggleNode now tries to keep the visual position of the toggled node,
 //                  even when toChildrenAbove is set
 //  September 2010
@@ -2981,6 +2985,7 @@ type
     property HeaderRect: TRect read FHeaderRect;
     property HintAnimation: THintAnimationType read FAnimationType write FAnimationType default hatSystemDefault;
     property HintMode: TVTHintMode read FHintMode write FHintMode default hmDefault;
+    property HintData: TVTHintData read FHintData write FHintData;
     property HotCursor: TCursor read FHotCursor write FHotCursor default crDefault;
     property Images: TCustomImageList read FImages write SetImages;
     property IncrementalSearch: TVTIncrementalSearch read FIncrementalSearch write SetSearchOption default isNone;
@@ -15680,8 +15685,8 @@ var
 
       if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
       begin
-        if (FHeader.FMainColumn >= 0) and not (coParentColor in FHeader.FColumns[FHeader.FMainColumn].FOptions) then
-          Brush.Color := FHeader.FColumns[FHeader.FMainColumn].Color
+        if (FHeader.MainColumn > NoColumn) and not (coParentColor in FHeader.FColumns[FHeader.MainColumn].Options) then
+          Brush.Color := FHeader.FColumns[FHeader.MainColumn].Color
         else
           Brush.Color := Self.Color;
       end
@@ -26215,7 +26220,7 @@ var
   CurrentBidiMode: TBidiMode;
 
 begin
-  if tsEditing in FStates then
+  if (tsEditing in FStates) and Assigned(FFocusedNode) then
   begin
     if vsMultiline in FFocusedNode.States then
       R := GetDisplayRect(FFocusedNode, FEditColumn, True, False)
@@ -33222,7 +33227,6 @@ procedure TVTEdit.CNCommand(var Message: TWMCommand);
 
 begin
   if Assigned(FLink) and Assigned(FLink.FTree) and (Message.NotifyCode = EN_UPDATE) and
-    not (toGridExtensions in FLink.FTree.FOptions.FMiscOptions) and
     not (vsMultiline in FLink.FNode.States) then
     // Instead directly calling AutoAdjustSize it is necessary on Win9x/Me to decouple this notification message
     // and eventual resizing. Hence we use a message to accomplish that.
