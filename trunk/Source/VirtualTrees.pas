@@ -25,6 +25,12 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  November 2010
+//   - Improvement: Made TBaseVirtualTree.FRangeX and FRangeY accessible via read-only protected property
+//   - Improvement: Unified clipping handling
+//   - Improvement: Added new color setting "SelectionTextColor"
+//   - Improvement: Creating the WorkerThread will no longer change System.IsMultiThread
+//   - Bug fix: Fixed a potential integer overflow in TBaseVirtualTree.ToggleNode
+//   - Bug fix: TBaseVirtualTree.ToggleNode now measures the child node heights before summing them
 //   - Improvement: Made some private field of TVTHeader and TVirtualTreeColumns protected to make writing
 //                  derived classes easier
 //   - Improvement: Enclosed call to DoDragDrop in TBaseVirtualTree.CMDrag in a try..finally block
@@ -1963,7 +1969,7 @@ type
   TVTColors = class(TPersistent)
   private
     FOwner: TBaseVirtualTree;
-    FColors: array[0..14] of TColor;
+    FColors: array[0..15] of TColor;
     function GetColor(const Index: Integer): TColor;
     procedure SetColor(const Index: Integer; const Value: TColor);
   public
@@ -1983,6 +1989,7 @@ type
     property HotColor: TColor index 8 read GetColor write SetColor default clWindowText;
     property SelectionRectangleBlendColor: TColor index 12 read GetColor write SetColor default clHighlight;
     property SelectionRectangleBorderColor: TColor index 13 read GetColor write SetColor default clHighlight;
+    property SelectionTextColor: TColor index 15 read GetColor write SetColor default clHighlightText;
     property TreeLineColor: TColor index 5 read GetColor write SetColor default clBtnShadow;
     property UnfocusedSelectionColor: TColor index 6 read GetColor write SetColor default clBtnFace;
     property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clBtnFace;
@@ -2610,7 +2617,6 @@ type
     procedure InterruptValidation;
     function IsFirstVisibleChild(Parent, Node: PVirtualNode): Boolean;
     function IsLastVisibleChild(Parent, Node: PVirtualNode): Boolean;
-    procedure LimitPaintingToArea(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
     function MakeNewNode: PVirtualNode;
     function PackArray(TheArray: TNodeArray; Count: Integer): Integer;
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
@@ -3007,6 +3013,8 @@ type
     property NodeAlignment: TVTNodeAlignment read FNodeAlignment write SetNodeAlignment default naProportional;
     property NodeDataSize: Integer read FNodeDataSize write SetNodeDataSize default -1;
     property OperationCanceled: Boolean read GetOperationCanceled;
+    property RangeX: Cardinal read FRangeX;
+    property RangeY: Cardinal read FRangeY;
     property RootNodeCount: Cardinal read GetRootNodeCount write SetRootNodeCount default 0;
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
     property SelectionBlendFactor: Byte read FSelectionBlendFactor write FSelectionBlendFactor default 128;
@@ -4265,7 +4273,7 @@ type
   end;
 
   // Helper classes to speed up rendering text formats for clipboard and drag'n drop transfers.
- TBufferedAnsiString = class
+  TBufferedAnsiString = class
   private
     FStart,
     FPosition,
@@ -5120,9 +5128,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure GetStringDrawRect(DC: HDC; const S: UnicodeString; var Bounds: TRect; DrawFormat: Cardinal);
+
 // Calculates bounds of a drawing rectangle for the given string
 
-procedure GetStringDrawRect(DC: HDC; const S: UnicodeString; var Bounds: TRect; DrawFormat: Cardinal);
 begin
   Bounds.Right := Bounds.Left + 1;
   Bounds.Bottom := Bounds.Top + 1;
@@ -5915,6 +5924,25 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure ClipCanvas(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
+
+// Clip a given canvas to ClipRect while transforming the given rect to device coordinates.
+
+var
+  ClipRegion: HRGN;
+
+begin
+  // Regions expect their coordinates in device coordinates, hence we have to transform the region rectangle.
+  LPtoDP(Canvas.Handle, ClipRect, 2);
+  ClipRegion := CreateRectRgnIndirect(ClipRect);
+  if VisibleRegion <> 0 then
+    CombineRgn(ClipRegion, ClipRegion, VisibleRegion, RGN_AND);
+  SelectClipRgn(Canvas.Handle, ClipRegion);
+  DeleteObject(ClipRegion);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure InitializeGlobalStructures;
 
 // initialization of stuff global to the unit
@@ -6091,8 +6119,11 @@ end;
 
 procedure AddThreadReference;
 
+var
+  OldIsMultiThread: Boolean;
+
 begin
-  if WorkerThread = nil then
+  if not Assigned(WorkerThread) then
   begin
     // Create an event used to trigger our worker thread when something is to do.
     WorkEvent := CreateEvent(nil, False, False, nil);
@@ -6100,7 +6131,9 @@ begin
       RaiseLastOSError;
 
     // Create worker thread, initialize it and send it to its wait loop.
+    OldIsMultiThread := System.IsMultiThread;
     WorkerThread := TWorkerThread.Create(False);
+    System.IsMultiThread := OldIsMultiThread;
   end;
   Inc(WorkerThread.FRefCount);
 end;
@@ -6123,10 +6156,8 @@ begin
       begin
         Terminate;
         SetEvent(WorkEvent);
-
-        WorkerThread.Free;
       end;
-      WorkerThread := nil;
+      FreeAndNil(WorkerThread);
       CloseHandle(WorkEvent);
     end;
   end;
@@ -8350,7 +8381,7 @@ begin
       ClipRect.TopLeft := PaintTarget;
       ClipRect.Right := ClipRect.Left + R.Right - R.Left;
       ClipRect.Bottom := ClipRect.Top + R.Bottom - R.Top;
-      Tree.LimitPaintingToArea(Canvas, ClipRect, VisibleRegion);
+      ClipCanvas(Canvas, ClipRect, VisibleRegion);
       Tree.PaintTree(Canvas, R, PaintTarget, PaintOptions);
 
       if CaptureNCArea then
@@ -11065,9 +11096,7 @@ begin
             if Temp.Left < R.Left then
               Temp.Left := R.Left;
 
-            ButtonRgn := CreateRectRgnIndirect(Temp);
-            SelectClipRgn(Handle, ButtonRgn);
-            DeleteObject(ButtonRgn);
+            ClipCanvas(TargetCanvas, Temp);
 
             IsHoverIndex := (Integer(FPositionToIndex[I]) = FHoverIndex) and (hoHotTrack in FHeader.FOptions) and
               (coEnabled in FOptions);
@@ -13636,6 +13665,7 @@ begin
   FColors[12] := clHighlight;     // SelectionRectangleBlendColor
   FColors[13] := clHighlight;     // SelectionRectangleBorderColor
   FColors[14] := clBtnShadow;     // HeaderHotColor
+  FColors[15] := clHighlightText; // SelectionTextColor
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -13953,6 +13983,8 @@ begin
       Run := Run.Parent;
     until False;
   end;
+
+  UpdateVerticalRange;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15553,26 +15585,6 @@ begin
     Run := Run.PrevSibling;
 
   Result := Assigned(Run) and (Run = Node);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.LimitPaintingToArea(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
-
-// Limits further painting onto the given canvas to the given rectangle.
-// VisibleRegion is an optional region which can be used to limit drawing further.
-
-var
-  ClipRegion: HRGN;
-
-begin
-  // Regions expect their coordinates in device coordinates, hence we have to transform the region rectangle.
-  LPtoDP(Canvas.Handle, ClipRect, 2);
-  ClipRegion := CreateRectRgnIndirect(ClipRect);
-  if VisibleRegion <> 0 then
-    CombineRgn(ClipRegion, ClipRegion, VisibleRegion, RGN_AND);
-  SelectClipRgn(Canvas.Handle, ClipRegion);
-  DeleteObject(ClipRegion);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31090,7 +31102,7 @@ begin
                             AdjustCoordinatesByIndent(PaintInfo, IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize));
 
                           if UseColumns then
-                            LimitPaintingToArea(Canvas, CellRect);
+                            ClipCanvas(Canvas, CellRect);
 
                           // Paint the horizontal grid line.
                           if (poGridLines in PaintOptions) and (toShowHorzGridLines in FOptions.FPaintOptions) then
@@ -32527,7 +32539,7 @@ begin
               Mode2 := tamNoScroll;
               if toChildrenAbove in FOptions.FPaintOptions then
               begin
-                PosHoldable := (FOffsetY + (Integer(Node.TotalHeight - NodeHeight[Node]))) <= 0;
+                PosHoldable := (FOffsetY + (Integer(Node.TotalHeight) - Integer(NodeHeight[Node]))) <= 0;
                 NodeInView := R1.Top < ClientHeight;
 
                 StepsR1 := 0;
@@ -32620,7 +32632,12 @@ begin
             Child := Node.FirstChild;
             repeat
               if IsEffectivelyVisible[Child] then
+              begin
+                // Ensure the item height is measured
+                MeasureItemHeight(Canvas, Child);
+                
                 Inc(HeightDelta, Child.TotalHeight);
+              end;
               Child := Child.NextSibling;
             until Child = nil;
 
@@ -33771,14 +33788,14 @@ begin
         begin
           if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) and not
              (tsUseExplorerTheme in FStates) then
-            Canvas.Font.Color := clHighlightText;
+            Canvas.Font.Color := FColors.SelectionTextColor;
         end
         else
           if vsSelected in Node.States then
           begin
             if (Focused or (toPopupMode in FOptions.FPaintOptions)) and not
                (tsUseExplorerTheme in FStates) then
-              Canvas.Font.Color := clHighlightText;
+              Canvas.Font.Color := FColors.SelectionTextColor;
           end;
       end;
     end;
@@ -33891,7 +33908,7 @@ begin
       if Node = FDropTargetNode then
       begin
         if (FLastDropMode = dmOnNode) or (vsSelected in Node.States)then
-          Canvas.Font.Color := clHighlightText
+          Canvas.Font.Color := FColors.SelectionTextColor
         else
           Canvas.Font.Color := Font.Color;
       end
@@ -33899,7 +33916,7 @@ begin
         if vsSelected in Node.States then
         begin
           if Focused or (toPopupMode in FOptions.FPaintOptions) then
-            Canvas.Font.Color := clHighlightText
+            Canvas.Font.Color := FColors.SelectionTextColor
           else
             Canvas.Font.Color := Font.Color;
         end;
