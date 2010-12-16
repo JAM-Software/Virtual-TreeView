@@ -25,6 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  December 2010
+//   - Improvement: TBaseVirtualTree.HandleMouseUp now checks CanEdit just in case toEditOnClick
+//   - Bug fix: TotalNodeHeights are now correctly adjusted when toggling toShowHiddenNodes
 //   - Bug fix: Fixed BCB compiler error due to re-defining IDropTargetHelper
 //   - Improvement: New TVTInternalPaintOption poUnbuffered to directly paint onto a given canvas (especially useful
 //                  when printing and/or scaling via world transformations)
@@ -6597,17 +6599,15 @@ begin
         Run := GetFirstNoInit;
         while Assigned(Run) do
         begin
-          if (vsFiltered in Run.States) and FullyVisible[Run] then
+          if (vsFiltered in Run.States) then
+          begin
+            if FullyVisible[Run] then
+              Inc(FVisibleCount, IfThen(toShowFilteredNodes in ToBeSet, 1, 0));
             if toShowFilteredNodes in ToBeSet then
-            begin
-              Inc(FVisibleCount);
-              AdjustTotalHeight(Run, Run.NodeHeight, True);
-            end
+              AdjustTotalHeight(Run, Run.NodeHeight, True)
             else
-            begin
               AdjustTotalHeight(Run, -Run.NodeHeight, True);
-              Dec(FVisibleCount);
-            end;
+          end;
           Run := GetNextNoInit(Run);
         end;
         if HandleWasAllocated then
@@ -23920,7 +23920,7 @@ begin
     begin
       // Is the mouse still over the same node?
       if (HitInfo.HitNode = FFocusedNode) and (hiOnItem in HitInfo.HitPositions) and
-         CanEdit(FFocusedNode, HitInfo.HitColumn) and (toEditOnClick in FOptions.FMiscOptions) then
+         (toEditOnClick in FOptions.FMiscOptions) and CanEdit(FFocusedNode, HitInfo.HitColumn) then
       begin
         FEditColumn := FFocusedColumn;
         SetTimer(Handle, EditTimer, FEditDelay, nil);
