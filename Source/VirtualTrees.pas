@@ -24,6 +24,11 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  January 2010
+//   - Improvement: RTF export now uses landscape paper format and smaller margins, so that more of the contents
+//                  fits on the page
+//   - Improvement: New Option hoHeaderClickAutoSort for TVTHeader.Options: Clicks on the header will make the
+//                    clicked column the SortColumn or toggle sort direction if it already was the sort column
 //  December 2010
 //   - Improvement: TBaseVirtualTree.HandleMouseUp now checks CanEdit just in case toEditOnClick
 //   - Bug fix: TotalNodeHeights are now correctly adjusted when toggling toShowHiddenNodes
@@ -1326,6 +1331,11 @@ type
     blGlyphBottom
   );
 
+  TSortDirection = (
+    sdAscending,
+    sdDescending
+  );
+
   TVirtualTreeColumn = class(TCollectionItem)
   private
     FText,
@@ -1355,6 +1365,7 @@ type
     FCheckState: TCheckState;
     FImageRect: TRect;
     FHasImage: Boolean;
+    fDefaultSortDirection: TSortDirection;
     function GetCaptionAlignment: TAlignment;
     function GetLeft: Integer;
     function IsBiDiModeStored: Boolean;
@@ -1420,6 +1431,7 @@ type
     property CheckState: TCheckState read FCheckState write SetCheckState default csUncheckedNormal;
     property CheckBox: Boolean read FCheckBox write SetCheckBox default False;
     property Color: TColor read FColor write SetColor stored IsColorStored;
+    property DefaultSortDirection: TSortDirection read fDefaultSortDirection write fDefaultSortDirection default sdAscending;
     property Hint: UnicodeString read FHint write FHint stored False;
     property ImageIndex: TImageIndex read FImageIndex write SetImageIndex default -1;
     property Layout: TVTHeaderColumnLayout read FLayout write SetLayout default blGlyphLeft;
@@ -1583,7 +1595,9 @@ type
     hoFullRepaintOnResize,   // Fully invalidate the header (instead of subsequent columns only) when a column is resized.
     hoDisableAnimatedResize, // Disable animated resize for all columns.
     hoHeightResize,          // Allow resizing header height via mouse.
-    hoHeightDblClickResize   // Allow the header to resize itself to its default height.
+    hoHeightDblClickResize,  // Allow the header to resize itself to its default height.
+    hoHeaderClickAutoSort    // Clicks on the header will make the clicked column the SortColumn or toggle sort direction if
+                             // it already was the sort column
   );
   TVTHeaderOptions = set of TVTHeaderOption;
 
@@ -1601,11 +1615,6 @@ type
     hsNeedScaling              // the header needs to be scaled
   );
   THeaderStates = set of THeaderState;
-
-  TSortDirection = (
-    sdAscending,
-    sdDescending
-  );
 
   // describes the used column resize behaviour for AutoFitColumns
   TSmartAutoFitType = (
@@ -6351,7 +6360,7 @@ begin
   try
     Remove(Tree);
   finally
-    FWaiterList.UnlockList;
+    FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
   end;
   CancelValidation(Tree);
 end;
@@ -7752,7 +7761,7 @@ var
   StopLastAnimation: Boolean;
 
 begin
-  if IsRectEmpty(Rect) then
+  if IsRectEmpty(Rect) or not Assigned(FHintData.Tree) then
     Application.CancelHint
   else
   begin
@@ -8552,6 +8561,7 @@ begin
   FCheckState := csUncheckedNormal;
   FCheckBox := False;
   FHasImage := False;
+  fDefaultSortDirection := sdAscending;
 
   inherited Create(Collection);
 
@@ -10271,6 +10281,22 @@ begin
     HitInfo.Column := NoColumn;
     HitInfo.HitPosition := [hhiNoWhere];
   end;
+
+  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and (HitInfo.Column >= 0) then begin
+    // handle automatic setting of SortColumn and toggling of the sort order
+    if HitInfo.Column<>Header.SortColumn then begin
+      // set sort column
+      Header.SortColumn := HitInfo.Column;
+      Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection
+    end//if
+    else begin
+      // toggle sort direction
+      if Header.SortDirection = sdDescending then
+        Header.SortDirection := sdAscending
+      else
+        Header.SortDirection := sdDescending
+    end;//else
+  end;//if
 
   if DblClick then
     FHeader.Treeview.DoHeaderDblClick(HitInfo)
@@ -13333,7 +13359,7 @@ begin
     Height := Dummy;
     ReadBuffer(Dummy, SizeOf(Dummy));
     FOptions := OldOptions;
-    Options := TVTHeaderOptions(Word(Dummy));
+    Options := TVTHeaderOptions(Dummy);
     // PopupMenu is neither saved nor restored
     ReadBuffer(Dummy, SizeOf(Dummy));
     Style := TVTHeaderStyle(Dummy);
@@ -13617,7 +13643,7 @@ begin
     WriteBuffer(Dummy, SizeOf(Dummy));
     Dummy := FHeight;
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := Word(FOptions);
+    Dummy := Integer(FOptions);
     WriteBuffer(Dummy, SizeOf(Dummy));
     // PopupMenu is neither saved nor restored
     Dummy := Ord(FStyle);
@@ -35554,6 +35580,7 @@ var
   Index: Integer;
   Alignment: TAlignment;
   BidiMode: TBidiMode;
+  LocaleBuffer: Array [0..1] of Char;
 
 begin
   Buffer := TBufferedAnsiString.Create;
@@ -35734,7 +35761,12 @@ begin
       S := S + Format('\red%d\green%d\blue%d;', [J and $FF, (J shr 8) and $FF, (J shr 16) and $FF]);
     end;
     S := S + '}';
-
+    if (GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, @LocaleBuffer, Length(LocaleBuffer)) <> 0) and (LocaleBuffer[0] = '0'{metric}) then
+      S := S + '\paperw16840\paperh11907'// This sets A4 landscape format
+    else
+      S := S + '\paperw15840\paperh12240';//[JAM:marder]  This sets US Letter landscape format
+    // Make sure a small margin is used so that a lot of the table fits on a paper. This defines a margin of 0.5"
+    S := S + '\margl720\margr720\margt720\margb720';
     Result := S + Buffer.AsString + '}';
     Fonts.Free;
     Colors.Free;

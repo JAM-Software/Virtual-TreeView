@@ -28,7 +28,7 @@
 			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DllSuffix>15</DllSuffix>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-			<DCC_UnitSearchPath>$(Components)\VirtualTree;$(Components)\VirtualTree\Common;$(Components)\VirtualTree\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>$(Components)\VirtualTree;$(Components)\VirtualTree\Common;$(Components)\VirtualTree\Source;..\..\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_IOChecking>false</DCC_IOChecking>
 			<DCC_DependencyCheckOutputName>..\..\..\Compile\2011\VirtualTreesR15.bpl</DCC_DependencyCheckOutputName>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
