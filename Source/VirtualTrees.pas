@@ -29,6 +29,8 @@ unit VirtualTrees;
 //                  fits on the page
 //   - Improvement: New Option hoHeaderClickAutoSort for TVTHeader.Options: Clicks on the header will make the
 //                    clicked column the SortColumn or toggle sort direction if it already was the sort column
+//   - Improvement: Pressing the tab key in edit mode advances to the next node in edit node, just like the
+//                  Windows 7 Explorer does it.
 //  December 2010
 //   - Improvement: TBaseVirtualTree.HandleMouseUp now checks CanEdit just in case toEditOnClick
 //   - Bug fix: TotalNodeHeights are now correctly adjusted when toggling toShowHiddenNodes
@@ -33514,13 +33516,13 @@ var
   Shift: TShiftState;
   EndEdit: Boolean;
   Tree: TBaseVirtualTree;
-
+  NextNode: PVirtualNode;
 begin
+  Tree := FLink.FTree;
   case Message.CharCode of
     VK_ESCAPE:
       begin
-        Tree := FLink.FTree;
-        FLink.FTree.DoCancelEdit;
+        Tree.DoCancelEdit;
         Tree.SetFocus;
       end;
     VK_RETURN:
@@ -33552,6 +33554,16 @@ begin
         if not (vsMultiline in FLink.FNode.States) then
           Message.CharCode := VK_RIGHT;
         inherited;
+      end;
+    VK_TAB:
+      begin
+        if Tree.IsEditing then begin
+          Tree.InvalidateNode(FLink.FNode);
+          NextNode := Tree.GetNextVisible(FLink.FNode, True);
+          Tree.EndEditNode;
+          Tree.FocusedNode := NextNode;
+          Tree.DoEdit;
+        end;
       end;
   else
     inherited;
