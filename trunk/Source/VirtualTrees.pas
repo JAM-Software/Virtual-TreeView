@@ -31,6 +31,7 @@ unit VirtualTrees;
 //                    clicked column the SortColumn or toggle sort direction if it already was the sort column
 //   - Improvement: Pressing the tab key in edit mode advances to the next node in edit node, just like the
 //                  Windows 7 Explorer does it.
+//   - Bug fix: No longer auto-scrolling horizontally when the focused node changes if toFullRowSelect is turned on.
 //  December 2010
 //   - Improvement: TBaseVirtualTree.HandleMouseUp now checks CanEdit just in case toEditOnClick
 //   - Bug fix: TotalNodeHeights are now correctly adjusted when toggling toShowHiddenNodes
@@ -21348,7 +21349,7 @@ begin
       InvalidateNode(FFocusedNode);
       if (FUpdateCount = 0) and not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions) then
         ScrollIntoView(FFocusedNode, (toCenterScrollIntoView in FOptions.SelectionOptions) and
-          (MouseButtonDown * FStates = []), True);
+          (MouseButtonDown * FStates = []), not (toFullRowSelect in FOptions.SelectionOptions) );
     end;
 
     // Reset range anchor if necessary.
@@ -23874,7 +23875,7 @@ begin
       if NewNode or NewColumn then
       begin
         ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
-                       not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions));
+                       not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions) and not (toFullRowSelect in FOptions.SelectionOptions));
         DoFocusChange(FFocusedNode, FFocusedColumn);
       end;
     end;
