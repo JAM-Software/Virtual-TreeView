@@ -24,7 +24,10 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
-//  January 2010
+//  February 2011
+//   - Bug fix: In case the LastStructureChangeNode is deleted before the StructureChange event is fired,
+//              the reference to the LastStructureChangeNode is cleared to avoid providing an invalid node
+//  January 2011
 //   - Improvement: RTF export now uses landscape paper format and smaller margins, so that more of the contents
 //                  fits on the page
 //   - Improvement: New Option hoHeaderClickAutoSort for TVTHeader.Options: Clicks on the header will make the
@@ -32,6 +35,7 @@ unit VirtualTrees;
 //   - Improvement: Pressing the tab key in edit mode advances to the next node in edit node, just like the
 //                  Windows 7 Explorer does it.
 //   - Bug fix: No longer auto-scrolling horizontally when the focused node changes if toFullRowSelect is turned on.
+//   - Bug fix: Fixed a clipping issue when drawing unbuffered
 //  December 2010
 //   - Improvement: TBaseVirtualTree.HandleMouseUp now checks CanEdit just in case toEditOnClick
 //   - Bug fix: TotalNodeHeights are now correctly adjusted when toggling toShowHiddenNodes
@@ -21369,6 +21373,8 @@ begin
     FCurrentHotNode := nil;
   if Node = FDropTargetNode then
     FDropTargetNode := nil;
+  if Node = FLastStructureChangeNode then
+    FLastStructureChangeNode := nil;
   if Assigned(FOnFreeNode) and ([vsInitialized, vsInitialUserData] * Node.States <> []) then
     FOnFreeNode(Self, Node);
   FreeMem(Node);
@@ -27773,7 +27779,7 @@ begin
         repeat
           if [vsHasChildren, vsExpanded] * Node.States = [vsHasChildren, vsExpanded] then
             ToggleNode(Node);
-          Node := GetPreviousNoInit(Node);
+          Node := GetPreviousNoInit(Node, True);
         until Node = Stop;
 
         // Collapse the start node too.
@@ -31164,7 +31170,8 @@ begin
               else
               begin
                 SetCanvasOrigin(PaintInfo.Canvas, -TargetRect.Left + Window.Left, -TargetRect.Top);
-                ClipCanvas(PaintInfo.Canvas, TargetRect);
+                ClipCanvas(PaintInfo.Canvas, Rect(TargetRect.Left, TargetRect.Top, TargetRect.Right,
+                                                  Min(TargetRect.Bottom, MaximumBottom)))
               end;
 
               // Set the origin of the canvas' brush. This depends on the node heights.
@@ -31292,6 +31299,7 @@ begin
                               ClipRect.Left := Max(ClipRect.Left, Window.Left);
                               ClipRect.Right := Min(ClipRect.Right, Window.Right);
                               ClipRect.Top := Max(ClipRect.Top, Window.Top - (BaseOffset - CurrentNodeHeight));
+                              ClipRect.Bottom := ClipRect.Bottom - Max(TargetRect.Bottom - MaximumBottom, 0);
                             end;
                             ClipCanvas(Canvas, ClipRect);
                           end;
@@ -32836,11 +32844,11 @@ begin
             // Iterate through the child nodes without initializing them. We have to determine the entire height.
             Child := Node.FirstChild;
             repeat
-              if IsEffectivelyVisible[Child] then
+              if vsVisible in Child.States then
               begin
                 // Ensure the item height is measured
                 MeasureItemHeight(Canvas, Child);
-                
+
                 Inc(HeightDelta, Child.TotalHeight);
               end;
               Child := Child.NextSibling;
