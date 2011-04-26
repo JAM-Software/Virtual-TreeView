@@ -24,6 +24,11 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  April 2011
+//   - Bug fix: Reverted change of November 2010 (Creating the WorkerThread will no longer change System.IsMultiThread)
+//              it caused sporadic AVs during app start which disappeared after revering the change. This code can lead to a wrong value 
+//              of System.IsMultiThread which causes the memory manager to assume a single threaded application.
+//   - Bug fix: When advancing to the next item while in edit mode, we are now also calling CanEdit().
 //  February 2011
 //   - Bug fix: In case the LastStructureChangeNode is deleted before the StructureChange event is fired,
 //              the reference to the LastStructureChangeNode is cleared to avoid providing an invalid node
@@ -6189,10 +6194,6 @@ end;
 //----------------- TWorkerThread --------------------------------------------------------------------------------------
 
 procedure AddThreadReference;
-
-var
-  OldIsMultiThread: Boolean;
-
 begin
   if not Assigned(WorkerThread) then
   begin
@@ -6202,9 +6203,7 @@ begin
       RaiseLastOSError;
 
     // Create worker thread, initialize it and send it to its wait loop.
-    OldIsMultiThread := System.IsMultiThread;
     WorkerThread := TWorkerThread.Create(False);
-    System.IsMultiThread := OldIsMultiThread;
   end;
   Inc(WorkerThread.FRefCount);
 end;
@@ -10341,7 +10340,7 @@ begin
       begin
         // Index found. Move all higher entries one step down and remove the last entry.
         if I < Upper then
-          Move(FPositionToIndex[I + 1], FPositionToIndex[I], (Upper - I) * SizeOf(Integer));
+          Move(FPositionToIndex[I + 1], FPositionToIndex[I], (Upper - I) * SizeOf(TColumnIndex));
       end;
       // Decrease all indices, which are greater than the index to be deleted.
       if FPositionToIndex[I] > OldIndex then
@@ -22873,7 +22872,7 @@ var
 
 begin
   // seek back to the second entry in the chunk header
-  Stream.Position := StartPos + SizeOf(Integer);
+  Stream.Position := StartPos + SizeOf(Size);
   // determine size of chunk without the chunk header
   Size := EndPos - StartPos - SizeOf(TChunkHeader);
   // write the size...
@@ -33571,7 +33570,8 @@ begin
           NextNode := Tree.GetNextVisible(FLink.FNode, True);
           Tree.EndEditNode;
           Tree.FocusedNode := NextNode;
-          Tree.DoEdit;
+          if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
+            Tree.DoEdit;
         end;
       end;
   else
