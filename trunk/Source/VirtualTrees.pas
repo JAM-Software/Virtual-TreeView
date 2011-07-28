@@ -35665,6 +35665,8 @@ begin
         if BidiMode <> bdLeftToRight then
           ChangeBidiModeAlignment(Alignment);
         case Alignment of
+          taLeftJustify:
+            Buffer.Add('\ql');
           taRightJustify:
             Buffer.Add('\qr');
           taCenter:
