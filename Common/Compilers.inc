@@ -547,6 +547,43 @@
 
 {$endif}
 
+
+{$ifdef COMPILER_13}
+  {$define COMPILER_1_UP}
+  {$define COMPILER_2_UP}
+  {$define COMPILER_3_UP}
+  {$define COMPILER_4_UP}
+  {$define COMPILER_5_UP}
+  {$define COMPILER_6_UP}
+  {$define COMPILER_7_UP}
+  {$define COMPILER_8_UP}
+  {$define COMPILER_9_UP}
+  {$define COMPILER_10_UP}
+  {$define COMPILER_11_UP}
+  {$define COMPILER_12_UP}
+  {$define COMPILER_13_UP}
+  // Backwards compatibility
+  {$define DELPHI_2_UP}
+  {$define DELPHI_3_UP}
+  {$define DELPHI_4_UP}
+  {$define DELPHI_5_UP}
+  {$define DELPHI_6_UP}
+  {$define DELPHI_7_UP}
+  {$define DELPHI_8_UP}
+  {$define DELPHI_9_UP}
+  {$define CPPB_3_UP}
+  {$define CPPB_4_UP}
+  {$define CPPB_5_UP}
+  {$define CPPB_6_UP}
+
+  {$ifdef BCB}
+    {$define CPPB}
+  {$else}
+    {$define DELPHI}
+  {$endif}
+
+{$endif}
+
 {$ifdef COMPILER_14}
  {$define COMPILER_1_UP}
  {$define COMPILER_2_UP}
@@ -560,6 +597,7 @@
  {$define COMPILER_10_UP}
  {$define COMPILER_11_UP}
  {$define COMPILER_12_UP}
+ {$define COMPILER_13_UP}
  {$define COMPILER_14_UP}
  // Backwards compatibility
  {$define DELPHI_2_UP}
@@ -583,7 +621,9 @@
 
 {$endif}
 
-{$ifdef COMPILER_15}
+
+// RAD Studio XE
+{$if CompilerVersion >= 22}
  {$define COMPILER_1_UP}
  {$define COMPILER_2_UP}
  {$define COMPILER_3_UP}
@@ -596,6 +636,7 @@
  {$define COMPILER_10_UP}
  {$define COMPILER_11_UP}
  {$define COMPILER_12_UP}
+  {$define COMPILER_13_UP}
  {$define COMPILER_14_UP}
  {$define COMPILER_15_UP}
  // Backwards compatibility
@@ -617,7 +658,6 @@
  {$else}
    {$define DELPHI}
  {$endif}
-
-{$endif}
+{$ifend}
 
 //----------------------------------------------------------------------------------------------------------------------
