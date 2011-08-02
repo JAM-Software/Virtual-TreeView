@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  August 2011
+//   - Improvement: This unit now compiles on Delphi XE2 32 Bit
 //  April 2011
 //   - Bug fix: Reverted change of November 2010 (Creating the WorkerThread will no longer change System.IsMultiThread)
 //              it caused sporadic AVs during app start which disappeared after revering the change. This code can lead to a wrong value 
@@ -17390,7 +17392,7 @@ var
   ShiftState: Integer;
   P: TPoint;
   Formats: TFormatArray;
-
+  dwEffect: LongInt;// This variable in necessary for comptability with Delphi XE2
 begin
   with Message, DragRec^ do
   begin
@@ -17427,7 +17429,9 @@ begin
 
             // Allowed drop effects are simulated for VCL dd.
             Result := DROPEFFECT_MOVE or DROPEFFECT_COPY;
-            DragOver(S, ShiftState, TDragState(DragMessage), Pos, Result);
+            dwEffect := Result;
+            DragOver(S, ShiftState, TDragState(DragMessage), Pos, dwEffect);
+            Result := dwEffect;
             FLastVCLDragTarget := FDropTargetNode;
             FVCLDragEffect := Result;
             if (DragMessage = dmDragLeave) and Assigned(FDropTargetNode) then
