@@ -25,7 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  August 2011
-//   - Improvement: This unit now compiles on Delphi XE2 32 Bit
+//   - Improvement: Minor code improvements
 //  April 2011
 //   - Bug fix: Reverted change of November 2010 (Creating the WorkerThread will no longer change System.IsMultiThread)
 //              it caused sporadic AVs during app start which disappeared after revering the change. This code can lead to a wrong value 
@@ -17392,7 +17392,7 @@ var
   ShiftState: Integer;
   P: TPoint;
   Formats: TFormatArray;
-  dwEffect: LongInt;// This variable in necessary for comptability with Delphi XE2
+  dwEffect: LongInt;
 begin
   with Message, DragRec^ do
   begin
