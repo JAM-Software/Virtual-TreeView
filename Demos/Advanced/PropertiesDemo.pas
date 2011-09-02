@@ -200,7 +200,7 @@ begin
       // to start a new edit operation if the last one is still in progress. So we post us a special message and
       // in the message handler we then can start editing the new node. This works because the posted message
       // is first executed *after* this event and the message, which triggered it is finished.
-      PostMessage(Self.Handle, WM_STARTEDITING, Integer(Node), 0);
+      PostMessage(Self.Handle, WM_STARTEDITING, WPARAM(Node), 0);
     end;
   end;
 end;

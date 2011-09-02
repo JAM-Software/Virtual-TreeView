@@ -108,7 +108,7 @@ begin
     for I := 0 to High(Strings) do
     begin
       Head := Tail;
-      while not (Tail^ in [WideChar(#0), WideChar(#13)]) do
+      while not (Ord(Tail^) in [0, 13]) do
         Inc(Tail);
       SetString(Strings[I], Head, Tail - Head);
       // Skip carriage return and linefeed.
