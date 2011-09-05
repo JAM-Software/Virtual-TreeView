@@ -24,6 +24,8 @@ unit VirtualTrees;
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
 //----------------------------------------------------------------------------------------------------------------------
 //
+//  September 2011
+//   - Improvement: Added support for Delphi XE2 and 64Bit compiler
 //  August 2011
 //   - Improvement: Minor code improvements
 //  April 2011
@@ -464,9 +466,11 @@ interface
 {$I VTConfig.inc}
 
 // For some things to work we need code, which is classified as being unsafe for .NET.
-{$warn UNSAFE_TYPE off}
-{$warn UNSAFE_CAST off}
-{$warn UNSAFE_CODE off}
+{$ifdef CONDITIONALEXPRESSIONS}
+  {$WARN UNSAFE_TYPE OFF}
+  {$WARN UNSAFE_CAST OFF}
+  {$WARN UNSAFE_CODE OFF}
+{$endif CONDITIONALEXPRESSIONS}
 
 {$ifdef COMPILER_12_UP}
   {$WARN IMPLICIT_STRING_CAST       OFF}
@@ -632,22 +636,26 @@ type
   TAutoScrollInterval = 1..1000;
 
   // Need to declare the correct WMNCPaint record as the VCL (D5-) doesn't.
+  {$ifdef COMPILER_16_UP}
+  TRealWMNCPaint = TWMNCPaint;
+  {$else}
   TRealWMNCPaint = packed record
-    Msg: Cardinal;
+    Msg: UINT;
     Rgn: HRGN;
-    lParam: Integer;
-    Result: Integer;
+    lParam: LPARAM;
+    Result: LRESULT;
   end;
 
   // The next two message records are not declared in Delphi 6 and lower.
   TWMPrint = packed record
-    Msg: Cardinal;
+    Msg: UINT;
     DC: HDC;
-    Flags: Cardinal;
-    Result: Integer;
+    Flags: LPARAM;
+    Result: LRESULT;
   end;
 
   TWMPrintClient = TWMPrint;
+  {$endif ~COMPILER_16_UP}
 
   // Be careful when adding new states as this might change the size of the type which in turn
   // changes the alignment in the node record as well as the stream chunks.
@@ -1755,7 +1763,7 @@ type
     property Background: TColor read FBackground write SetBackground default clBtnFace;
     property Columns: TVirtualTreeColumns read FColumns write SetColumns stored False; // Stored by the owner tree to
                                                                                        // support VFI.
-    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight;
+    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default 17;
     property Font: TFont read FFont write SetFont stored IsFontStored;
     property FixedAreaConstraints: TVTFixedAreaConstraints read FFixedAreaConstraints write FFixedAreaConstraints;
     property Height: Integer read FHeight write SetHeight default 17;
@@ -2231,6 +2239,7 @@ type
   TVTNodeCopiedEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
   TVTNodeCopyingEvent = procedure(Sender: TBaseVirtualTree; Node, Target: PVirtualNode;
     var Allowed: Boolean) of object;
+  TVTNodeClickEvent = procedure(Sender: TBaseVirtualTree; const HitInfo: THitInfo) of object;
   TVTNodeHeightTrackingEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Shift: TShiftState;
     var TrackPoint: TPoint; P: TPoint; var Allowed: Boolean) of object;
   TVTNodeHeightDblClickResizeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
@@ -2281,6 +2290,7 @@ type
   TVTOperationEvent = procedure(Sender: TBaseVirtualTree; OperationKind: TVTOperationKind) of object;
 
   // miscellaneous
+  TVTBeforeDrawLineImageEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Level: Integer; var PosX: Integer) of object;
   TVTGetNodeDataSizeEvent = procedure(Sender: TBaseVirtualTree; var NodeDataSize: Integer) of object;
   TVTKeyActionEvent = procedure(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState;
     var DoDefault: Boolean) of object;
@@ -2295,6 +2305,51 @@ type
   // Helper types for node iterations.
   TGetFirstNodeProc = function: PVirtualNode of object;
   TGetNextNodeProc = function(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode of object;
+
+  TVZVirtualNodeEnumerationMode = (
+    vneAll,
+    vneChecked,
+    vneChild,
+    vneCutCopy,
+    vneInitialized,
+    vneLeaf,
+    vneLevel,
+    vneNoInit,
+    vneSelected,
+    vneVisible,
+    vneVisibleChild,
+    vneVisibleNoInitChild,
+    vneVisibleNoInit
+  );
+
+  PVTVirtualNodeEnumeration = ^TVTVirtualNodeEnumeration;
+
+  TVTVirtualNodeEnumerator = {$ifdef COMPILER_10_UP}record{$else}class{$endif}
+  private
+    FNode: PVirtualNode;
+    FCanModeNext: Boolean;
+    FEnumeration: PVTVirtualNodeEnumeration;
+    function GetCurrent: PVirtualNode; {$ifdef COMPILER_10_UP}inline;{$endif}
+  public
+    function MoveNext: Boolean; {$ifdef COMPILER_10_UP}inline;{$endif}
+    property Current: PVirtualNode read GetCurrent;
+  end;
+
+  TVTVirtualNodeEnumeration = {$ifdef COMPILER_10_UP}record{$else}object{$endif}
+  private
+    FMode: TVZVirtualNodeEnumerationMode;
+    FTree: TBaseVirtualTree;
+    // GetNextXxx parameters:
+    FConsiderChildrenAbove: Boolean;
+    FNode: PVirtualNode;
+    FNodeLevel: Cardinal;
+    FState: TCheckState;
+    FIncludeFiltered: Boolean;
+  public
+    function GetEnumerator: TVTVirtualNodeEnumerator;
+  private
+    function GetNext(Node: PVirtualNode): PVirtualNode;
+  end;
 
   // ----- TBaseVirtualTree
   TBaseVirtualTree = class(TCustomControl)
@@ -2489,8 +2544,10 @@ type
                                                  // (this can be cancelled)
     FOnNodeMoved: TVTNodeMovedEvent;             // called after a node and its children have been moved to another
                                                  // parent node (probably another tree, but within the same application)
-    FOnNodeCopying: TVTNodeCopyingEvent;         // called when an node is copied to another parent node (probably in
+    FOnNodeCopying: TVTNodeCopyingEvent;         // called when a node is copied to another parent node (probably in
                                                  // another tree, but within the same application, can be cancelled)
+    FOnNodeClick: TVTNodeClickEvent;             // called when the user clicks on a node
+    FOnNodeDblClick: TVTNodeClickEvent;          // called when the user double clicks on a node
     FOnCanSplitterResizeNode: TVTCanSplitterResizeNodeEvent;       // called to query the application wether resizing a node is allowed
     FOnNodeHeightTracking: TVTNodeHeightTrackingEvent;             // called when a node's height is being changed via mouse
     FOnNodeHeightDblClickResize: TVTNodeHeightDblClickResizeEvent; // called when a node's vertical splitter is double clicked
@@ -2586,6 +2643,7 @@ type
 
     // miscellanous events
     FOnGetNodeDataSize: TVTGetNodeDataSizeEvent; // Called if NodeDataSize is -1.
+    FOnBeforeDrawLineImage: TVTBeforeDrawLineImageEvent; // Called to allow adjusting the indention of treelines.
     FOnKeyAction: TVTKeyActionEvent;             // Used to selectively prevent key actions (full expand on Ctrl+'+' etc.).
     FOnScroll: TVTScrollEvent;                   // Called when one or both paint offsets changed.
     FOnUpdating: TVTUpdatingEvent;               // Called from BeginUpdate, EndUpdate, BeginSynch and EndSynch.
@@ -2656,7 +2714,7 @@ type
     function IsFirstVisibleChild(Parent, Node: PVirtualNode): Boolean;
     function IsLastVisibleChild(Parent, Node: PVirtualNode): Boolean;
     function MakeNewNode: PVirtualNode;
-    function PackArray(TheArray: TNodeArray; Count: Integer): Integer;
+    function PackArray({*}const TheArray: TNodeArray; Count: Integer): Integer;
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
     procedure ReadOldOptions(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
@@ -2831,6 +2889,7 @@ type
     function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; virtual;
     procedure DoDragging(P: TPoint); virtual;
     procedure DoDragExpand; virtual;
+    procedure DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: Integer); virtual;
     function DoDragOver(Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
       var Effect: Integer): Boolean; virtual;
     procedure DoDragDrop(Source: TObject; DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
@@ -2880,6 +2939,8 @@ type
     procedure DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer); virtual;
     procedure DoNodeCopied(Node: PVirtualNode); virtual;
     function DoNodeCopying(Node, NewParent: PVirtualNode): Boolean; virtual;
+    procedure DoNodeClick(const HitInfo: THitInfo); virtual;
+    procedure DoNodeDblClick(const HitInfo: THitInfo); virtual;
     function DoNodeHeightDblClickResize(Node: PVirtualNode; Column: TColumnIndex; Shift: TShiftState;
       P: TPoint): Boolean; virtual;
     function DoNodeHeightTracking(Node: PVirtualNode; Column: TColumnIndex;  Shift: TShiftState;
@@ -3089,6 +3150,7 @@ type
     property OnBeforeColumnExport: TVTColumnExportEvent read FOnBeforeColumnExport write FOnBeforeColumnExport;
     property OnBeforeColumnWidthTracking: TVTBeforeColumnWidthTrackingEvent read FOnBeforeColumnWidthTracking
       write FOnBeforeColumnWidthTracking;
+    property OnBeforeDrawTreeLine: TVTBeforeDrawLineImageEvent read FOnBeforeDrawLineImage write FOnBeforeDrawLineImage;
     property OnBeforeGetMaxColumnWidth: TVTBeforeGetMaxColumnWidthEvent read FOnBeforeGetMaxColumnWidth write FOnBeforeGetMaxColumnWidth;
     property OnBeforeHeaderExport: TVTTreeExportEvent read FOnBeforeHeaderExport write FOnBeforeHeaderExport;
     property OnBeforeHeaderHeightTracking: TVTBeforeHeaderHeightTrackingEvent read FOnBeforeHeaderHeightTracking
@@ -3164,8 +3226,10 @@ type
     property OnLoadNode: TVTSaveNodeEvent read FOnLoadNode write FOnLoadNode;
     property OnLoadTree: TVTSaveTreeEvent read FOnLoadTree write FOnLoadTree;
     property OnMeasureItem: TVTMeasureItemEvent read FOnMeasureItem write FOnMeasureItem;
+    property OnNodeClick: TVTNodeClickEvent read FOnNodeClick write FOnNodeClick;
     property OnNodeCopied: TVTNodeCopiedEvent read FOnNodeCopied write FOnNodeCopied;
     property OnNodeCopying: TVTNodeCopyingEvent read FOnNodeCopying write FOnNodeCopying;
+    property OnNodeDblClick: TVTNodeClickEvent read FOnNodeDblClick write FOnNodeDblClick;
     property OnNodeExport: TVTNodeExportEvent read FOnNodeExport write FOnNodeExport;
     property OnNodeHeightTracking: TVTNodeHeightTrackingEvent read FOnNodeHeightTracking write FOnNodeHeightTracking;
     property OnNodeHeightDblClickResize: TVTNodeHeightDblClickResizeEvent read FOnNodeHeightDblClickResize
@@ -3343,6 +3407,23 @@ type
     function UseRightToLeftReading: Boolean;
     procedure ValidateChildren(Node: PVirtualNode; Recursive: Boolean);
     procedure ValidateNode(Node: PVirtualNode; Recursive: Boolean);
+
+    { Enumerations }
+    function Nodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function CheckedNodes(State: TCheckState = csCheckedNormal; ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function ChildNodes(Node: PVirtualNode): TVTVirtualNodeEnumeration;
+    function CutCopyNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function InitializedNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function LeafNodes: TVTVirtualNodeEnumeration;
+    function LevelNodes(NodeLevel: Cardinal): TVTVirtualNodeEnumeration;
+    function NoInitNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function SelectedNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function VisibleNodes(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
+      IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
+    function VisibleChildNodes(Node: PVirtualNode; IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
+    function VisibleChildNoInitNodes(Node: PVirtualNode; IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
+    function VisibleNoInitNodes(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
+      IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
 
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
@@ -3740,6 +3821,7 @@ type
     property OnBeforeCellPaint;
     property OnBeforeColumnExport;
     property OnBeforeColumnWidthTracking;
+    property OnBeforeDrawTreeLine;
     property OnBeforeGetMaxColumnWidth;
     property OnBeforeHeaderExport;
     property OnBeforeHeaderHeightTracking;
@@ -3830,8 +3912,10 @@ type
     property OnMouseUp;
     property OnMouseWheel;
     property OnNewText;
+    property OnNodeClick;
     property OnNodeCopied;
     property OnNodeCopying;
+    property OnNodeDblClick;
     property OnNodeExport;
     property OnNodeHeightDblClickResize;
     property OnNodeHeightTracking;
@@ -3999,6 +4083,7 @@ type
     property OnBeforeCellPaint;
     property OnBeforeColumnExport;
     property OnBeforeColumnWidthTracking;
+    property OnBeforeDrawTreeLine;
     property OnBeforeGetMaxColumnWidth;
     property OnBeforeHeaderExport;
     property OnBeforeHeaderHeightTracking;
@@ -4084,8 +4169,10 @@ type
     property OnMouseMove;
     property OnMouseUp;
     property OnMouseWheel;
+    property OnNodeClick;
     property OnNodeCopied;
     property OnNodeCopying;
+    property OnNodeDblClick;
     property OnNodeExport;
     property OnNodeHeightTracking;
     property OnNodeHeightDblClickResize;
@@ -4175,7 +4262,7 @@ const
   ClipboardStates = [tsCopyPending, tsCutPending];
   DefaultScrollUpdateFlags = [suoRepaintHeader, suoRepaintScrollbars, suoScrollClientArea, suoUpdateNCArea];
   MinimumTimerInterval = 1; // minimum resolution for timeGetTime
-  TreeNodeSize = (SizeOf(TVirtualNode) + 3) and not 3; // used for node allocation and access to internal data
+  TreeNodeSize = (SizeOf(TVirtualNode) + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1); // used for node allocation and access to internal data
 
   // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
   PressedState: array[TCheckState] of TCheckState = (
@@ -4204,6 +4291,13 @@ var
     tymed: TYMED_ISTREAM or TYMED_HGLOBAL;
   );
 
+type
+  // protection against TRect record method that cause problems with with-statements
+  TWithSafeRect = record
+    case Integer of
+      0: (Left, Top, Right, Bottom: Longint);
+      1: (TopLeft, BottomRight: TPoint);
+  end;
 
 type // streaming support
   TMagicID = array[0..5] of WideChar;
@@ -4636,6 +4730,9 @@ var
     (ID: CF_ENHMETAFILE; Description: 'Enhanced metafile image'), // Do not localize
     (ID: CF_HDROP; Description: 'File name(s)'), // Do not localize
     (ID: CF_LOCALE; Description: 'Locale descriptor') // Do not localize
+    {$ifdef COMPILER_16_UP}
+    ,(ID: CF_DIBV5; Description: 'DIB image V5') // Do not localize
+    {$endif COMPILER_16_UP}
   );
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4804,9 +4901,9 @@ begin
     J := R;
     P := TheArray[(L + R) shr 1];
     repeat
-      while Cardinal(TheArray[I]) < Cardinal(P) do
+      while PAnsiChar(TheArray[I]) < PAnsiChar(P) do
         Inc(I);
-      while Cardinal(TheArray[J]) > Cardinal(P) do
+      while PAnsiChar(TheArray[J]) > PAnsiChar(P) do
         Dec(J);
       if I <= J then
       begin
@@ -5287,6 +5384,66 @@ procedure AlphaBlendLineConstant(Source, Destination: Pointer; Count: Integer; C
 // and 255 totally opaque (source pixel only).
 // Bias is an additional value which gets added to every component and must be in the range -128..127
 //
+{$ifdef CPUX64}
+// RCX contains Source
+// RDX contains Destination
+// R8D contains Count
+// R9D contains ConstantAlpha
+// Bias is on the stack
+
+asm
+        //.NOFRAME
+
+        // Load XMM3 with the constant alpha value (replicate it for every component).
+        // Expand it to word size.
+        MOVD        XMM3, R9D  // ConstantAlpha
+        PUNPCKLWD   XMM3, XMM3
+        PUNPCKLDQ   XMM3, XMM3
+
+        // Load XMM5 with the bias value.
+        MOVD        XMM5, [Bias]
+        PUNPCKLWD   XMM5, XMM5
+        PUNPCKLDQ   XMM5, XMM5
+
+        // Load XMM4 with 128 to allow for saturated biasing.
+        MOV         R10D, 128
+        MOVD        XMM4, R10D
+        PUNPCKLWD   XMM4, XMM4
+        PUNPCKLDQ   XMM4, XMM4
+
+@1:     // The pixel loop calculates an entire pixel in one run.
+        // Note: The pixel byte values are expanded into the higher bytes of a word due
+        //       to the way unpacking works. We compensate for this with an extra shift.
+        MOVD        XMM1, DWORD PTR [RCX]   // data is unaligned
+        MOVD        XMM2, DWORD PTR [RDX]   // data is unaligned
+        PXOR        XMM0, XMM0    // clear source pixel register for unpacking
+        PUNPCKLBW   XMM0, XMM1{[RCX]}    // unpack source pixel byte values into words
+        PSRLW       XMM0, 8       // move higher bytes to lower bytes
+        PXOR        XMM1, XMM1    // clear target pixel register for unpacking
+        PUNPCKLBW   XMM1, XMM2{[RDX]}    // unpack target pixel byte values into words
+        MOVQ        XMM2, XMM1    // make a copy of the shifted values, we need them again
+        PSRLW       XMM1, 8       // move higher bytes to lower bytes
+
+        // calculation is: target = (alpha * (source - target) + 256 * target) / 256
+        PSUBW       XMM0, XMM1    // source - target
+        PMULLW      XMM0, XMM3    // alpha * (source - target)
+        PADDW       XMM0, XMM2    // add target (in shifted form)
+        PSRLW       XMM0, 8       // divide by 256
+
+        // Bias is accounted for by conversion of range 0..255 to -128..127,
+        // doing a saturated add and convert back to 0..255.
+        PSUBW     XMM0, XMM4
+        PADDSW    XMM0, XMM5
+        PADDW     XMM0, XMM4
+        PACKUSWB  XMM0, XMM0      // convert words to bytes with saturation
+        MOVD      DWORD PTR [RDX], XMM0     // store the result
+@3:
+        ADD       RCX, 4
+        ADD       RDX, 4
+        DEC       R8D
+        JNZ       @1
+end;
+{$else}
 // EAX contains Source
 // EDX contains Destination
 // ECX contains Count
@@ -5350,6 +5507,7 @@ asm
         POP     EDI
         POP     ESI
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5359,6 +5517,65 @@ procedure AlphaBlendLinePerPixel(Source, Destination: Pointer; Count, Bias: Inte
 // The layout of a pixel must be BGRA.
 // Bias is an additional value which gets added to every component and must be in the range -128..127
 //
+{$ifdef CPUX64}
+// RCX contains Source
+// RDX contains Destination
+// R8D contains Count
+// R9D contains Bias
+
+asm
+        //.NOFRAME
+
+        // Load XMM5 with the bias value.
+        MOVD        XMM5, R9D   // Bias
+        PUNPCKLWD   XMM5, XMM5
+        PUNPCKLDQ   XMM5, XMM5
+
+        // Load XMM4 with 128 to allow for saturated biasing.
+        MOV         R10D, 128
+        MOVD        XMM4, R10D
+        PUNPCKLWD   XMM4, XMM4
+        PUNPCKLDQ   XMM4, XMM4
+
+@1:     // The pixel loop calculates an entire pixel in one run.
+        // Note: The pixel byte values are expanded into the higher bytes of a word due
+        //       to the way unpacking works. We compensate for this with an extra shift.
+        MOVD        XMM1, DWORD PTR [RCX]   // data is unaligned
+        MOVD        XMM2, DWORD PTR [RDX]   // data is unaligned
+        PXOR        XMM0, XMM0    // clear source pixel register for unpacking
+        PUNPCKLBW   XMM0, XMM1{[RCX]}    // unpack source pixel byte values into words
+        PSRLW       XMM0, 8       // move higher bytes to lower bytes
+        PXOR        XMM1, XMM1    // clear target pixel register for unpacking
+        PUNPCKLBW   XMM1, XMM2{[RDX]}    // unpack target pixel byte values into words
+        MOVQ        XMM2, XMM1    // make a copy of the shifted values, we need them again
+        PSRLW       XMM1, 8       // move higher bytes to lower bytes
+
+        // Load XMM3 with the source alpha value (replicate it for every component).
+        // Expand it to word size.
+        MOVQ        XMM3, XMM0
+        PUNPCKHWD   XMM3, XMM3
+        PUNPCKHDQ   XMM3, XMM3
+
+        // calculation is: target = (alpha * (source - target) + 256 * target) / 256
+        PSUBW       XMM0, XMM1    // source - target
+        PMULLW      XMM0, XMM3    // alpha * (source - target)
+        PADDW       XMM0, XMM2    // add target (in shifted form)
+        PSRLW       XMM0, 8       // divide by 256
+
+        // Bias is accounted for by conversion of range 0..255 to -128..127,
+        // doing a saturated add and convert back to 0..255.
+        PSUBW       XMM0, XMM4
+        PADDSW      XMM0, XMM5
+        PADDW       XMM0, XMM4
+        PACKUSWB    XMM0, XMM0    // convert words to bytes with saturation
+        MOVD        DWORD PTR [RDX], XMM0   // store the result
+@3:
+        ADD         RCX, 4
+        ADD         RDX, 4
+        DEC         R8D
+        JNZ         @1
+end;
+{$else}
 // EAX contains Source
 // EDX contains Destination
 // ECX contains Count
@@ -5421,6 +5638,7 @@ asm
         POP     EDI
         POP     ESI
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5431,6 +5649,75 @@ procedure AlphaBlendLineMaster(Source, Destination: Pointer; Count: Integer; Con
 // ConstantAlpha must be in the range 0..255.
 // Bias is an additional value which gets added to every component and must be in the range -128..127
 //
+{$ifdef CPUX64}
+// RCX contains Source
+// RDX contains Destination
+// R8D contains Count
+// R9D contains ConstantAlpha
+// Bias is on the stack
+
+asm
+        .SAVENV XMM6
+
+        // Load XMM3 with the constant alpha value (replicate it for every component).
+        // Expand it to word size.
+        MOVD        XMM3, R9D    // ConstantAlpha
+        PUNPCKLWD   XMM3, XMM3
+        PUNPCKLDQ   XMM3, XMM3
+
+        // Load XMM5 with the bias value.
+        MOV         R10D, [Bias]
+        MOVD        XMM5, R10D
+        PUNPCKLWD   XMM5, XMM5
+        PUNPCKLDQ   XMM5, XMM5
+
+        // Load XMM4 with 128 to allow for saturated biasing.
+        MOV         R10D, 128
+        MOVD        XMM4, R10D
+        PUNPCKLWD   XMM4, XMM4
+        PUNPCKLDQ   XMM4, XMM4
+
+@1:     // The pixel loop calculates an entire pixel in one run.
+        // Note: The pixel byte values are expanded into the higher bytes of a word due
+        //       to the way unpacking works. We compensate for this with an extra shift.
+        MOVD        XMM1, DWORD PTR [RCX]   // data is unaligned
+        MOVD        XMM2, DWORD PTR [RDX]   // data is unaligned
+        PXOR        XMM0, XMM0    // clear source pixel register for unpacking
+        PUNPCKLBW   XMM0, XMM1{[RCX]}     // unpack source pixel byte values into words
+        PSRLW       XMM0, 8       // move higher bytes to lower bytes
+        PXOR        XMM1, XMM1    // clear target pixel register for unpacking
+        PUNPCKLBW   XMM1, XMM2{[RCX]}     // unpack target pixel byte values into words
+        MOVQ        XMM2, XMM1    // make a copy of the shifted values, we need them again
+        PSRLW       XMM1, 8       // move higher bytes to lower bytes
+
+        // Load XMM6 with the source alpha value (replicate it for every component).
+        // Expand it to word size.
+        MOVQ        XMM6, XMM0
+        PUNPCKHWD   XMM6, XMM6
+        PUNPCKHDQ   XMM6, XMM6
+        PMULLW      XMM6, XMM3    // source alpha * master alpha
+        PSRLW       XMM6, 8       // divide by 256
+
+        // calculation is: target = (alpha * master alpha * (source - target) + 256 * target) / 256
+        PSUBW       XMM0, XMM1    // source - target
+        PMULLW      XMM0, XMM6    // alpha * (source - target)
+        PADDW       XMM0, XMM2    // add target (in shifted form)
+        PSRLW       XMM0, 8       // divide by 256
+
+        // Bias is accounted for by conversion of range 0..255 to -128..127,
+        // doing a saturated add and convert back to 0..255.
+        PSUBW       XMM0, XMM4
+        PADDSW      XMM0, XMM5
+        PADDW       XMM0, XMM4
+        PACKUSWB    XMM0, XMM0    // convert words to bytes with saturation
+        MOVD        DWORD PTR [RDX], XMM0   // store the result
+@3:
+        ADD         RCX, 4
+        ADD         RDX, 4
+        DEC         R8D
+        JNZ         @1
+end;
+{$else}
 // EAX contains Source
 // EDX contains Destination
 // ECX contains Count
@@ -5502,6 +5789,7 @@ asm
         POP     EDI
         POP     ESI
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5511,6 +5799,56 @@ procedure AlphaBlendLineMasterAndColor(Destination: Pointer; Count: Integer; Con
 // The layout of a pixel must be BGRA and Color must be rrggbb00 (as stored by a COLORREF).
 // ConstantAlpha must be in the range 0..255.
 //
+{$ifdef CPUX64}
+// RCX contains Destination
+// EDX contains Count
+// R8D contains ConstantAlpha
+// R9D contains Color
+
+asm
+        //.NOFRAME
+
+        // The used formula is: target = (alpha * color + (256 - alpha) * target) / 256.
+        // alpha * color (factor 1) and 256 - alpha (factor 2) are constant values which can be calculated in advance.
+        // The remaining calculation is therefore: target = (F1 + F2 * target) / 256
+
+        // Load XMM3 with the constant alpha value (replicate it for every component).
+        // Expand it to word size. (Every calculation here works on word sized operands.)
+        MOVD        XMM3, R8D   // ConstantAlpha
+        PUNPCKLWD   XMM3, XMM3
+        PUNPCKLDQ   XMM3, XMM3
+
+        // Calculate factor 2.
+        MOV         R10D, $100
+        MOVD        XMM2, R10D
+        PUNPCKLWD   XMM2, XMM2
+        PUNPCKLDQ   XMM2, XMM2
+        PSUBW       XMM2, XMM3             // XMM2 contains now: 255 - alpha = F2
+
+        // Now calculate factor 1. Alpha is still in XMM3, but the r and b components of Color must be swapped.
+        BSWAP       R9D  // Color
+        ROR         R9D, 8
+        MOVD        XMM1, R9D              // Load the color and convert to word sized values.
+        PXOR        XMM4, XMM4
+        PUNPCKLBW   XMM1, XMM4
+        PMULLW      XMM1, XMM3             // XMM1 contains now: color * alpha = F1
+
+@1:     // The pixel loop calculates an entire pixel in one run.
+        MOVD        XMM0, DWORD PTR [RCX]
+        PUNPCKLBW   XMM0, XMM4
+
+        PMULLW      XMM0, XMM2             // calculate F1 + F2 * target
+        PADDW       XMM0, XMM1
+        PSRLW       XMM0, 8                // divide by 256
+
+        PACKUSWB    XMM0, XMM0             // convert words to bytes with saturation
+        MOVD        DWORD PTR [RCX], XMM0            // store the result
+
+        ADD         RCX, 4
+        DEC         EDX
+        JNZ         @1
+end;
+{$else}
 // EAX contains Destination
 // EDX contains Count
 // ECX contains ConstantAlpha
@@ -5558,6 +5896,7 @@ asm
         DEC     EDX
         JNZ     @1
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5565,9 +5904,15 @@ procedure EMMS;
 
 // Reset MMX state to use the FPU for other tasks again.
 
+{$ifdef CPUX64}
+  inline;
+begin
+end;
+{$else}
 asm
         DB      $0F, $77               /// EMMS
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5610,7 +5955,7 @@ begin
   if Height > 0 then  // bottom-up DIB
     Row := Height - Row - 1;
   // Return DWORD aligned address of the requested scanline.
-  Integer(Result) := Integer(Bits) + Row * ((Width * 32 + 31) and not 31) div 8;
+  Result := PAnsiChar(Bits) + Row * ((Width * 32 + 31) and not 31) div 8;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5908,6 +6253,12 @@ function HasMMX: Boolean;
 
 // Helper method to determine whether the current processor supports MMX.
 
+{$ifdef CPUX64}
+begin
+  // We use SSE2 in the "MMX-functions"
+  Result := True;
+end;
+{$else}
 asm
         PUSH    EBX
         XOR     EAX, EAX     // Result := False
@@ -5936,6 +6287,7 @@ asm
 @1:
         POP     EBX
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -7662,8 +8014,7 @@ begin
           Y := (R.Top - R.Bottom - Shadow + Self.Height) div 2;
       end;
 
-      with ClientRect do
-        R := Rect(0, 0, Width - Shadow, Height - Shadow);
+      R := Rect(0, 0, Width - Shadow, Height - Shadow);
 
       if (Tree is TCustomVirtualDrawTree) and Assigned(Node) then
       begin
@@ -7805,7 +8156,7 @@ begin
     // capture screen
     DC := GetDC(0);
     try
-      with Rect do
+      with TWithSafeRect(Rect) do
         BitBlt(FBackground.Canvas.Handle, 0, 0, Width, Height, DC, Left, Top, SRCCOPY);
     finally
       ReleaseDC(0, DC);
@@ -8210,7 +8561,7 @@ begin
             // restore uncovered areas of the screen
             if DeltaX = 0 then
             begin
-              with RDraw2 do
+              with TWithSafeRect(RDraw2) do
                 BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top,
                   SRCCOPY);
             end
@@ -8218,16 +8569,16 @@ begin
             begin
               if DeltaY = 0 then
               begin
-                with RDraw1 do
+                with TWithSafeRect(RDraw1) do
                   BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top,
                     SRCCOPY);
               end
               else
               begin
-                with RDraw1 do
+                with TWithSafeRect(RDraw1) do
                   BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top,
                     SRCCOPY);
-                with RDraw2 do
+                with TWithSafeRect(RDraw2) do
                   BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top,
                     SRCCOPY);
               end;
@@ -8242,23 +8593,23 @@ begin
             // Get first and second additional rectangle from screen.
             if DeltaX = 0 then
             begin
-              with RSamp2 do
+              with TWithSafeRect(RSamp2) do
                 BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top,
                   SRCCOPY);
             end
             else
               if DeltaY = 0 then
               begin
-                with RSamp1 do
+                with TWithSafeRect(RSamp1) do
                   BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top,
                     SRCCOPY);
               end
               else
               begin
-                with RSamp1 do
+                with TWithSafeRect(RSamp1) do
                   BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top,
                     SRCCOPY);
-                with RSamp2 do
+                with TWithSafeRect(RSamp2) do
                   BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top,
                     SRCCOPY);
               end;
@@ -8462,7 +8813,7 @@ begin
         // get the same effect.
         GetWindowRect(Tree.Handle, ClipRect);
         SetCanvasOrigin(Canvas, DragRect.Left - ClipRect.Left, DragRect.Top - ClipRect.Top);
-        Tree.Perform(WM_PRINT, Integer(Canvas.Handle), PRF_NONCLIENT);
+        Tree.Perform(WM_PRINT, WPARAM(Canvas.Handle), PRF_NONCLIENT);
         SetCanvasOrigin(Canvas, 0, 0);
       end;
       SelectClipRgn(Canvas.Handle, 0);
@@ -8544,6 +8895,143 @@ begin
     end;
 
     Result := (DeltaX <> 0) or (DeltaY <> 0);
+  end;
+end;
+
+//----------------- TVTVirtualNodeEnumerator ---------------------------------------------------------------------------
+
+function TVTVirtualNodeEnumerator.GetCurrent: PVirtualNode;
+
+begin
+  Result := FNode;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTVirtualNodeEnumerator.MoveNext: Boolean;
+
+begin
+  Result := FCanModeNext;
+  if Result then
+  begin
+    FNode := FEnumeration.GetNext(FNode);
+    Result := FNode <> nil;
+    FCanModeNext := Result;
+  end;
+end;
+
+//----------------- TVTVirtualNodeEnumeration --------------------------------------------------------------------------
+
+function TVTVirtualNodeEnumeration.GetEnumerator: TVTVirtualNodeEnumerator;
+
+begin
+  {$ifdef COMPILER_10_UP}
+  {$else}
+  Result := TVTVirtualNodeEnumerator.Create;
+  {$endif COMPILER_10_UP}
+  Result.FNode := nil;
+  Result.FCanModeNext := True;
+  Result.FEnumeration := @Self;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTVirtualNodeEnumeration.GetNext(Node: PVirtualNode): PVirtualNode;
+begin
+  case FMode of
+    vneAll:
+      if Node = nil then
+        Result := FTree.GetFirst(FConsiderChildrenAbove)
+      else
+        Result := FTree.GetNext(Node, FConsiderChildrenAbove);
+
+    vneChecked:
+      if Node = nil then
+        Result := FTree.GetFirstChecked(FState, FConsiderChildrenAbove)
+      else
+        Result := FTree.GetNextChecked(Node, FState, FConsiderChildrenAbove);
+
+    vneChild:
+      if Node = nil then
+        Result := FTree.GetFirstChild(FNode)
+      else
+        Result := FTree.GetNextSibling(Node);
+
+    vneCutCopy:
+      if Node = nil then
+        Result := FTree.GetFirstCutCopy(FConsiderChildrenAbove)
+      else
+        Result := FTree.GetNextCutCopy(Node, FConsiderChildrenAbove);
+
+    vneInitialized:
+      if Node = nil then
+        Result := FTree.GetFirstInitialized(FConsiderChildrenAbove)
+      else
+        Result := FTree.GetNextInitialized(Node, FConsiderChildrenAbove);
+
+    vneLeaf:
+      if Node = nil then
+        Result := FTree.GetFirstLeaf
+      else
+        Result := FTree.GetNextLeaf(Node);
+
+    vneLevel:
+      if Node = nil then
+        Result := FTree.GetFirstLevel(FNodeLevel)
+      else
+        Result := FTree.GetNextLevel(Node, FNodeLevel);
+
+    vneNoInit:
+      if Node = nil then
+        Result := FTree.GetFirstNoInit(FConsiderChildrenAbove)
+      else
+        Result := FTree.GetNextNoInit(Node, FConsiderChildrenAbove);
+
+    vneSelected:
+      if Node = nil then
+        Result := FTree.GetFirstSelected(FConsiderChildrenAbove)
+      else
+        Result := FTree.GetNextSelected(Node, FConsiderChildrenAbove);
+
+    vneVisible:
+      begin
+        if Node = nil then
+        begin
+          Result := FTree.GetFirstVisible(FNode, FConsiderChildrenAbove, FIncludeFiltered);
+          if FIncludeFiltered or not FTree.IsEffectivelyFiltered[Result] then
+            Exit;
+        end;
+        repeat
+          Result := FTree.GetNextVisible(Node{, FConsiderChildrenAbove});
+        until not Assigned(Result) or FIncludeFiltered or not FTree.IsEffectivelyFiltered[Result];
+      end;
+
+    vneVisibleChild:
+      if Node = nil then
+        Result := FTree.GetFirstVisibleChild(FNode, FIncludeFiltered)
+      else
+        Result := FTree.GetNextVisibleSibling(Node, FIncludeFiltered);
+
+    vneVisibleNoInitChild:
+      if Node = nil then
+        Result := FTree.GetFirstVisibleChildNoInit(FNode, FIncludeFiltered)
+      else
+        Result := FTree.GetNextVisibleSiblingNoInit(Node, FIncludeFiltered);
+
+    vneVisibleNoInit:
+      begin
+        if Node = nil then
+        begin
+          Result := FTree.GetFirstVisibleNoInit(FNode, FConsiderChildrenAbove, FIncludeFiltered);
+          if FIncludeFiltered or not FTree.IsEffectivelyFiltered[Result] then
+            Exit;
+        end;
+        repeat
+          Result := FTree.GetNextVisibleNoInit(Node, FConsiderChildrenAbove);
+        until not Assigned(Result) or FIncludeFiltered or not FTree.IsEffectivelyFiltered[Result];
+      end;
+  else
+    Result := nil;
   end;
 end;
 
@@ -9339,11 +9827,8 @@ begin
       MinLeft := SortGlyphPos.X + SortGlyphSize.cx + FSpacing;
 
     // Finally transform sort glyph to its actual position.
-    with SortGlyphPos do
-    begin
-      Inc(X, Client.Left);
-      Inc(Y, Client.Top);
-    end;
+    Inc(SortGlyphPos.X, Client.Left);
+    Inc(SortGlyphPos.Y, Client.Top);
   end;
   if UseHeaderGlyph then
   begin
@@ -9358,11 +9843,8 @@ begin
     if FCheckBox and (Owner.Header.MainColumn = Self.Index) then
       Dec(HeaderGlyphPos.X, 2 + 2 * Integer(toShowRoot in Owner.FHeader.Treeview.TreeOptions.FPaintOptions));
     // Finally transform header glyph to its actual position.
-    with HeaderGlyphPos do
-    begin
-      Inc(X, Client.Left);
-      Inc(Y, Client.Top);
-    end;
+    Inc(HeaderGlyphPos.X, Client.Left);
+    Inc(HeaderGlyphPos.Y, Client.Top);
   end;
   if UseText then
   begin
@@ -11002,7 +11484,7 @@ begin
       for I := 0 to ItemCount - 1 do
         Add.LoadFromStream(Stream, Version);
       SetLength(FPositionToIndex, ItemCount);
-      Stream.ReadBuffer(FPositionToIndex[0], ItemCount * SizeOf(Cardinal));
+      Stream.ReadBuffer(FPositionToIndex[0], ItemCount * SizeOf(TColumnIndex));
       UpdatePositions(True);
     finally
       EndUpdate;
@@ -11035,7 +11517,7 @@ var
 
 begin
   // Adjust size of the header bitmap
-  with FHeader.Treeview.FHeaderRect do
+  with TWithSafeRect(FHeader.Treeview.FHeaderRect) do
   begin
     FHeaderBitmap.Width := Max(Right, R.Right - R.Left);
     FHeaderBitmap.Height := Bottom;
@@ -11062,7 +11544,7 @@ begin
     PaintFixedArea;
   
   // Blit the result to target.
-  with R do
+  with TWithSafeRect(R) do
     BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
 end;
 
@@ -11317,7 +11799,7 @@ var
           end;
 
           FHasImage := True;
-          with FImageRect do
+          with TWithSafeRect(FImageRect) do
           begin
             Left := GlyphPos.X;
             Top := GlyphPos.Y;
@@ -11474,7 +11956,7 @@ begin
     for I := 0 to Count - 1 do
       TVirtualTreeColumn(Items[I]).SaveToStream(Stream);
 
-    Stream.WriteBuffer(FPositionToIndex[0], Count * SizeOf(Cardinal));
+    Stream.WriteBuffer(FPositionToIndex[0], Count * SizeOf(TColumnIndex));
   end;
 
   // Data introduced with header stream version 5.
@@ -13382,11 +13864,11 @@ begin
       SetLength(S, Dummy);
       ReadBuffer(PAnsiChar(S)^, Dummy);
       if VTHeaderStreamVersion >= 4 then
-        {$IFDEF COMPILER_12_UP}
+        {$ifdef COMPILER_12_UP}
         Name := UTF8ToString(S)
-        {$ELSE}
+        {$else}
         Name := UTF8Decode(S)
-        {$ENDIF}
+        {$endif}
       else
         Name := S;
       ReadBuffer(Dummy, SizeOf(Dummy));
@@ -14030,11 +14512,11 @@ begin
   FStateChangeLink.Free;
   FCustomCheckChangeLink.Free;
   FScrollBarOptions.Free;
-  FOptions.Free;
 
   // The window handle must be destroyed before the header is freed because it is needed in WM_NCDESTROY.
   if HandleAllocated then
     DestroyWindowHandle;
+  FOptions.Free; // WM_NCDESTROY accesses FOptions
   FHeader.Free;
   FHeader := nil;
 
@@ -14094,7 +14576,7 @@ begin
   if relative then
     Difference := Value
   else
-    Difference := Integer(Value) - Integer(Node.TotalCount);
+    Difference := Value - Integer(Node.TotalCount);
   if Difference <> 0 then
   begin
     Run := Node;
@@ -14121,7 +14603,7 @@ begin
   if relative then
     Difference := Value
   else
-    Difference := Integer(Value) - Integer(Node.TotalHeight);
+    Difference := Value - Integer(Node.TotalHeight);
   if Difference <> 0 then
   begin
     Run := Node;
@@ -14772,7 +15254,7 @@ begin
               Pen.Color := FColors.UnfocusedSelectionBorderColor;
             end;
 
-            with R do
+            with TWithSafeRect(R) do
               RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end
           else
@@ -15774,7 +16256,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.PackArray(TheArray: TNodeArray; Count: Integer): Integer; assembler;
+function TBaseVirtualTree.PackArray({*}const TheArray: TNodeArray; Count: Integer): Integer; assembler;
+// *This is an optimization to get as near as possible with the PUREPASCAL code without the
+//  compiler generating a _DynArrayAddRef call. We still modify the array's content via pointers.
 
 // Removes all entries from the selection array which are no longer in use. The selection array must be sorted for this
 // algo to work. Values which must be removed are marked with bit 0 (LSB) set. This little trick works because memory
@@ -15786,6 +16270,39 @@ function TBaseVirtualTree.PackArray(TheArray: TNodeArray; Count: Integer): Integ
 // The returned value is the number of remaining entries in the array, so the caller can reallocate (shorten)
 // the selection array if needed or -1 if nothing needs to be changed.
 
+{$ifdef CPUX64}
+var
+  Source, Dest: ^PVirtualNode;
+  ConstOne: NativeInt;
+begin
+  Source := Pointer(TheArray);
+  ConstOne := 1;
+  Result := 0;
+  // Do the fastest scan possible to find the first entry
+  while (Count <> 0) and {not Odd(NativeInt(Source^))} (NativeInt(Source^) and ConstOne = 0) do
+  begin
+    Inc(Result);
+    Inc(Source);
+    Dec(Count);
+  end;
+
+  if Count <> 0 then
+  begin
+    Dest := Source;
+    repeat
+      // Skip odd entries
+      if {not Odd(NativeInt(Source^))} NativeInt(Source^) and ConstOne = 0 then
+      begin
+        Dest^ := Source^;
+        Inc(Result);
+        Inc(Dest);
+      end;
+      Inc(Source); // Point to the next entry
+      Dec(Count);
+    until Count = 0;
+  end;
+end;
+{$else}
 asm
         PUSH    EBX
         PUSH    EDI
@@ -15827,6 +16344,7 @@ asm
         POP     EDI
         POP     EBX
 end;
+{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -17148,18 +17666,16 @@ begin
     if Source.Transparent then
     begin
       // Leave transparent area as destination unchanged (DST), copy non-transparent areas to canvas (SRCCOPY).
-      with DrawRect do
-        MaskBlt(Target.Handle, Left - OffsetPosition.X, Top - OffsetPosition.Y, (Right - OffsetPosition.X) - (Left - OffsetPosition.X),
-          (Bottom - OffsetPosition.Y) - (Top - OffsetPosition.Y), Source.Canvas.Handle, Left - PicRect.Left, DrawRect.Top - PicRect.Top,
-          Source.MaskHandle, Left - PicRect.Left, Top - PicRect.Top, MakeROP4(DST, SRCCOPY));
+      MaskBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
+        (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y), Source.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
+        Source.MaskHandle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, MakeROP4(DST, SRCCOPY));
     end
     else
     begin
       // copy image to destination
-      with DrawRect do
-        BitBlt(Target.Handle, Left - OffsetPosition.X, Top - OffsetPosition.Y, (Right - OffsetPosition.X) - (Left - OffsetPosition.X),
-          (Bottom - OffsetPosition.Y) - (Top - OffsetPosition.Y) + R.Top, Source.Canvas.Handle, Left - PicRect.Left, DrawRect.Top - PicRect.Top,
-          SRCCOPY);
+      BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
+        (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, Source.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
+        SRCCOPY);
     end;
   end;
 end;
@@ -17392,7 +17908,8 @@ var
   ShiftState: Integer;
   P: TPoint;
   Formats: TFormatArray;
-  dwEffect: LongInt;
+  Effect: Integer;
+
 begin
   with Message, DragRec^ do
   begin
@@ -17428,17 +17945,16 @@ begin
               ShiftState := ShiftState or MK_CONTROL;
 
             // Allowed drop effects are simulated for VCL dd.
-            Result := DROPEFFECT_MOVE or DROPEFFECT_COPY;
-            dwEffect := Result;
-            DragOver(S, ShiftState, TDragState(DragMessage), Pos, dwEffect);
-            Result := dwEffect;
+            Effect := DROPEFFECT_MOVE or DROPEFFECT_COPY;
+            DragOver(S, ShiftState, TDragState(DragMessage), Pos, Effect);
             FLastVCLDragTarget := FDropTargetNode;
-            FVCLDragEffect := Result;
+            FVCLDragEffect := Effect;
             if (DragMessage = dmDragLeave) and Assigned(FDropTargetNode) then
             begin
               InvalidateNode(FDropTargetNode);
               FDropTargetNode := nil;
             end;
+            Result := LRESULT(Effect);
           end;
         dmDragDrop:
           begin
@@ -17468,9 +17984,9 @@ begin
           end;
         dmFindTarget:
           begin
-            Result := Integer(ControlAtPos(ScreenToClient(Pos), False));
+            Result := LRESULT(ControlAtPos(ScreenToClient(Pos), False));
             if Result = 0 then
-              Result := Integer(Self);
+              Result := LRESULT(Self);
 
             // This is a reliable place to check whether VCL drag has
             // really begun.
@@ -18008,33 +18524,33 @@ begin
   Node := Pointer(Message.LParam);
   case Message.WParam of
     TVGN_CARET:
-      Message.Result := Integer(FFocusedNode);
+      Message.Result := LRESULT(FFocusedNode);
     TVGN_CHILD:
       if Assigned(Node) then
-        Message.Result := Integer(GetFirstChild(Node));
+        Message.Result := LRESULT(GetFirstChild(Node));
     TVGN_DROPHILITE:
-      Message.Result := Integer(FDropTargetNode);
+      Message.Result := LRESULT(FDropTargetNode);
     TVGN_FIRSTVISIBLE:
-      Message.Result := Integer(GetFirstVisible(nil, True));
+      Message.Result := LRESULT(GetFirstVisible(nil, True));
     TVGN_LASTVISIBLE:
-      Message.Result := Integer(GetLastVisible(nil, True));
+      Message.Result := LRESULT(GetLastVisible(nil, True));
     TVGN_NEXT:
       if Assigned(Node) then
-        Message.Result := Integer(GetNextSibling(Node));
+        Message.Result := LRESULT(GetNextSibling(Node));
     TVGN_NEXTVISIBLE:
       if Assigned(Node) then
-        Message.Result := Integer(GetNextVisible(Node, True));
+        Message.Result := LRESULT(GetNextVisible(Node, True));
     TVGN_PARENT:
       if Assigned(Node) and (Node <> FRoot) and (Node.Parent <> FRoot) then
-        Message.Result := Integer(Node.Parent);
+        Message.Result := LRESULT(Node.Parent);
     TVGN_PREVIOUS:
       if Assigned(Node) then
-        Message.Result := Integer(GetPreviousSibling(Node));
+        Message.Result := LRESULT(GetPreviousSibling(Node));
     TVGN_PREVIOUSVISIBLE:
       if Assigned(Node) then
-        Message.Result := Integer(GetPreviousVisible(Node, True));
+        Message.Result := LRESULT(GetPreviousVisible(Node, True));
     TVGN_ROOT:
-      Message.Result := Integer(GetFirst);
+      Message.Result := LRESULT(GetFirst);
   end;
 end;
 
@@ -19162,7 +19678,7 @@ begin
       // window area region.
       if Message.Rgn <> 1 then
         CombineRgn(TempRgn, Message.Rgn, TempRgn, RGN_AND);
-      DefWindowProc(Handle, Message.Msg, Integer(TempRgn), 0);
+      DefWindowProc(Handle, Message.Msg, WPARAM(TempRgn), 0);
       DeleteObject(TempRgn);
     end
     else
@@ -19788,7 +20304,7 @@ begin
   Assert((FRoot = nil) or (FRoot.ChildCount = 0), 'Internal data allocation must be done before any node is created.');
 
   Result := TreeNodeSize + FTotalInternalDataSize;
-  Inc(FTotalInternalDataSize, (Size + 3) and not 3);
+  Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
   InitRootNode(Result);
 end;
 
@@ -21198,6 +21714,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: Integer);
+
+begin
+  if Assigned(FOnBeforeDrawLineImage) then
+    FOnBeforeDrawLineImage(Self, Node, Level, XPos);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DoEdit;
 
 begin
@@ -21768,6 +22293,24 @@ begin
   Result := True;
   if Assigned(FOnNodeCopying) then
     FOnNodeCopying(Self, Node, NewParent, Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoNodeClick(const HitInfo: THitInfo);
+
+begin
+  if Assigned(FOnNodeClick) then
+    FOnNodeClick(Self, HitInfo);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoNodeDblClick(const HitInfo: THitInfo);
+
+begin
+  if Assigned(FOnNodeDblClick) then
+    FOnNodeDblClick(Self, HitInfo);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22526,12 +23069,12 @@ begin
   GetCursorPos(P);
   P := ScreenToClient(P);
   if tsRightButtonDown in FStates then
-    Perform(WM_RBUTTONUP, 0, Longint(PointToSmallPoint(P)))
+    Perform(WM_RBUTTONUP, 0, LPARAM(Longint(PointToSmallPoint(P))))
   else
     if tsMiddleButtonDown in FStates then
-      Perform(WM_MBUTTONUP, 0, Longint(PointToSmallPoint(P)))
+      Perform(WM_MBUTTONUP, 0, LPARAM(Longint(PointToSmallPoint(P))))
     else
-      Perform(WM_LBUTTONUP, 0, Longint(PointToSmallPoint(P)));
+      Perform(WM_LBUTTONUP, 0, LPARAM(Longint(PointToSmallPoint(P))));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22850,7 +23393,7 @@ begin
   while L <= H do
   begin
     I := (L + H) shr 1;
-    if Cardinal(FSelection[I]) < Cardinal(P) then
+    if PAnsiChar(FSelection[I]) < PAnsiChar(P) then
       L := I + 1
     else
     begin
@@ -23547,6 +24090,9 @@ begin
     if HitInfo.HitColumn = FHeader.FColumns.FClickIndex then
       DoColumnDblClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
 
+      if HitInfo.HitNode <> nil then
+      DoNodeDblClick(HitInfo);
+
     Node := nil;
     if (hiOnItem in HitInfo.HitPositions) and (hitInfo.HitColumn > NoColumn) and
        (coFixed in FHeader.FColumns[HitInfo.HitColumn].FOptions) then
@@ -23953,6 +24499,9 @@ begin
     if (FHeader.FColumns.FClickIndex > NoColumn) and (FHeader.FColumns.FClickIndex = HitInfo.HitColumn) then
       DoColumnClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
 
+    if HitInfo.HitNode <> nil then
+     DoNodeClick(HitInfo);
+
     // handle a pending edit event
     if tsEditPending in FStates then
     begin
@@ -24205,7 +24754,7 @@ begin
       if ([vsSelected, vsDisabled] * NewItems[I].States <> []) or
          (Constrained and (Cardinal(FLastSelectionLevel) <> GetNodeLevel(NewItems[I]))) or
          (SiblingConstrained and (FRangeAnchor.Parent <> NewItems[I].Parent)) then
-        Inc(Cardinal(NewItems[I]))
+        Inc(PAnsiChar(NewItems[I]))
       else
       begin
         Include(NewItems[I].States, vsSelected);
@@ -24239,7 +24788,7 @@ begin
       // array and only the remaining new items must be inserted.
       if CurrentEnd >= 0 then
       begin
-        while (J >= 0) and (Cardinal(NewItems[J]) > Cardinal(FSelection[CurrentEnd])) do
+        while (J >= 0) and (PAnsiChar(NewItems[J]) > PAnsiChar(FSelection[CurrentEnd])) do
         begin
           FSelection[CurrentEnd + J + 1] := NewItems[J];
           Dec(J);
@@ -24602,7 +25151,7 @@ begin
   if FindNodeInSelection(Node, Index, -1, -1) then
   begin
     Exclude(Node.States, vsSelected);
-    Inc(Cardinal(FSelection[Index]));
+    Inc(PAnsiChar(FSelection[Index]));
     if Assigned(FOnRemoveFromSelection) then
       FOnRemoveFromSelection(Self, Node);
     AdviseChangeEvent(False, Node, crIgnore);
@@ -24900,7 +25449,7 @@ begin
         Inc(EdgeSize, BevelWidth);
       if BevelOuter <> bvNone then
         Inc(EdgeSize, BevelWidth);
-      with RC do
+      with TWithSafeRect(RC) do
       begin
         if beLeft in BevelEdges then
           Inc(Left, EdgeSize);
@@ -25243,6 +25792,7 @@ begin
           PaintInfo.Canvas.Font.Color := FColors.GridLineColor;
           for I := 0 to IndentSize - 1 do
           begin
+            DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
             DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlignment, NewStyles[I],
               BidiMode <> bdLeftToRight);
             Inc(XPos, Offset);
@@ -25252,6 +25802,7 @@ begin
       PaintInfo.Canvas.Font.Color := FColors.TreeLineColor;
       for I := 0 to IndentSize - 1 do
       begin
+        DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
         DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlignment, LineImage[I],
           BidiMode <> bdLeftToRight);
         Inc(XPos, Offset);
@@ -25411,18 +25962,18 @@ begin
     begin
       case Alignment of
         taLeftJustify:
-          with InnerRect do
+          with TWithSafeRect(InnerRect) do
             if Left + NodeWidth < Right then
               Right := Left + NodeWidth;
         taCenter:
-          with InnerRect do
+          with TWithSafeRect(InnerRect) do
             if (Right - Left) > NodeWidth then
             begin
               Left := (Left + Right - NodeWidth) div 2;
               Right := Left + NodeWidth;
             end;
         taRightJustify:
-          with InnerRect do
+          with TWithSafeRect(InnerRect) do
             if (Right - Left) > NodeWidth then
               Left := Right - NodeWidth;
       end;
@@ -25450,7 +26001,7 @@ begin
                 if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
                   AlphaBlendSelection(Brush.Color)
                 else
-                  with InnerRect do
+                  with TWithSafeRect(InnerRect) do
                     RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end
           else
@@ -25486,7 +26037,7 @@ begin
                 if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
                   AlphaBlendSelection(Brush.Color)
                 else
-                  with InnerRect do
+                  with TWithSafeRect(InnerRect) do
                     RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end;
       end;
@@ -25694,7 +26245,7 @@ begin
     begin
       Exclude(Node.States, vsSelected);
       if FindNodeInSelection(Node, Index, -1, -1) and (Index < FSelectionCount - 1) then
-        Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * 4);
+        Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
       if FSelectionCount > 0 then
         Dec(FSelectionCount);
       SetLength(FSelection, FSelectionCount);
@@ -26018,6 +26569,7 @@ var
   TempClass: TWndClass;
   ClassRegistered: Boolean;
   ImageName: string;
+  Pt: TPoint;
 
 begin
   // Set both panning and scrolling flag. One will be removed shortly depending on whether the middle mouse button is
@@ -26036,9 +26588,9 @@ begin
     Windows.RegisterClass(PanningWindowClass);
   end;
   // Create the helper window and show it at the given position without activating it.
-  with ClientToScreen(Position) do
-    FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, X - 16, Y - 16,
-      32, 32, Handle, 0, HInstance, nil);
+  Pt := ClientToScreen(Position);
+  FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - 16, Pt.Y - 16,
+    32, 32, Handle, 0, HInstance, nil);
 
   FPanningImage := TBitmap.Create;
   if Integer(FRangeX) > ClientWidth then
@@ -26053,7 +26605,11 @@ begin
   FPanningImage.LoadFromResourceName(HInstance, ImageName);
   SetWindowRgn(FPanningWindow, CreateClipRegion, False);
 
-  SetWindowLong(FPanningWindow, GWL_WNDPROC, Integer(Classes.MakeObjectInstance(PanningWindowProc)));
+  {$ifdef CPUX64}
+  SetWindowLongPtr(FPanningWindow, GWLP_WNDPROC, LONG_PTR(Classes.MakeObjectInstance(PanningWindowProc)));
+  {$else}
+  SetWindowLong(FPanningWindow, GWL_WNDPROC, Longint(Classes.MakeObjectInstance(PanningWindowProc)));
+  {$endif CPUX64}
   ShowWindow(FPanningWindow, SW_SHOWNOACTIVATE);
 
   // Setup the panscroll timer and capture all mouse input.
@@ -26080,7 +26636,11 @@ begin
     DoStateChange([], [tsWheelPanning, tsWheelScrolling]);
 
     // Destroy the helper window.
+    {$ifdef CPUX64}
+    Instance := Pointer(GetWindowLongPtr(FPanningWindow, GWLP_WNDPROC));
+    {$else}
     Instance := Pointer(GetWindowLong(FPanningWindow, GWL_WNDPROC));
+    {$endif CPUX64}
     DestroyWindow(FPanningWindow);
     if Instance <> @DefWindowProc then
       Classes.FreeObjectInstance(Instance);
@@ -26458,6 +27018,7 @@ var
   NCRegion: HRGN;      // the region representing the non-client area of the tree
   DragRect,
   NCRect: TRect;
+  Pt: TPoint;
   RedrawFlags: Cardinal;
 
   VisibleTreeRegion: HRGN;
@@ -26476,8 +27037,10 @@ begin
 
     // In Win9x the returned visible region is given in client coordinates. We need it in screen coordinates, though.
     if not IsWinNT then
-      with ClientToScreen(Point(0, 0)) do
-        OffsetRgn(VisibleTreeRegion, X, Y);
+    begin
+      Pt := ClientToScreen(Point(0, 0));
+      OffsetRgn(VisibleTreeRegion, Pt.X, Pt.Y);
+    end;
 
     // The drag image will figure out itself what part of the rectangle can be recaptured.
     // Recapturing is not done by taking a snapshot of the screen, but by letting the tree draw itself
@@ -26764,7 +27327,7 @@ begin
 
     // Check if there is initial user data and there is also enough user data space allocated.
     if Assigned(UserData) then
-      if FNodeDataSize >= 4 then
+      if FNodeDataSize >= SizeOf(Pointer) then
       begin
         NodeData := Pointer(PByte(@Result.Data) + FTotalInternalDataSize);
         NodeData^ := UserData;
@@ -30136,6 +30699,169 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.Nodes(ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for all nodes
+
+begin
+  Result.FMode := vneAll;
+  Result.FTree := Self;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.CheckedNodes(State: TCheckState; ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for all checked nodes
+
+begin
+  Result.FMode := vneChecked;
+  Result.FTree := Self;
+  Result.FState := State;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.ChildNodes(Node: PVirtualNode): TVTVirtualNodeEnumeration;
+
+// Enumeration for child nodes
+
+begin
+  Result.FMode := vneChild;
+  Result.FTree := Self;
+  Result.FNode := Node;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.CutCopyNodes(ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for cut copy node
+
+begin
+  Result.FMode := vneCutCopy;
+  Result.FTree := Self;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.InitializedNodes(ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for initialized nodes
+
+begin
+  Result.FMode := vneInitialized;
+  Result.FTree := Self;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.LeafNodes: TVTVirtualNodeEnumeration;
+
+// Enumeration for leaf nodes
+
+begin
+  Result.FMode := vneLeaf;
+  Result.FTree := Self;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.LevelNodes(NodeLevel: Cardinal): TVTVirtualNodeEnumeration;
+
+// Enumeration for level nodes
+
+begin
+  Result.FMode := vneLevel;
+  Result.FTree := Self;
+  Result.FNodeLevel := NodeLevel;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.NoInitNodes(ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for no init nodes
+begin
+  Result.FMode := vneNoInit;
+  Result.FTree := Self;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.SelectedNodes(ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for selected nodes
+
+begin
+  Result.FMode := vneSelected;
+  Result.FTree := Self;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.VisibleNodes(Node: PVirtualNode; ConsiderChildrenAbove: Boolean;
+  IncludeFiltered: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for visible nodes
+
+begin
+  Result.FMode := vneVisible;
+  Result.FTree := Self;
+  Result.FNode := Node;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+  Result.FIncludeFiltered := IncludeFiltered;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.VisibleChildNodes(Node: PVirtualNode; IncludeFiltered: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for visible child nodes
+
+begin
+  Result.FMode := vneVisibleChild;
+  Result.FTree := Self;
+  Result.FNode := Node;
+  Result.FIncludeFiltered := IncludeFiltered;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.VisibleChildNoInitNodes(Node: PVirtualNode; IncludeFiltered: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for visible child no init nodes
+
+begin
+  Result.FMode := vneVisibleNoInitChild;
+  Result.FTree := Self;
+  Result.FNode := Node;
+  Result.FIncludeFiltered := IncludeFiltered;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.VisibleNoInitNodes(Node: PVirtualNode; ConsiderChildrenAbove: Boolean;
+  IncludeFiltered: Boolean): TVTVirtualNodeEnumeration;
+
+// Enumeration for visible no init nodes
+
+begin
+  Result.FMode := vneVisibleNoInit;
+  Result.FTree := Self;
+  Result.FNode := Node;
+  Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+  Result.FIncludeFiltered := IncludeFiltered;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetSortedCutCopySet(Resolve: Boolean): TNodeArray;
 
 // Same as GetSortedSelection but with nodes marked as being part in the current cut/copy set (e.g. for clipboard).
@@ -30470,7 +31196,7 @@ var
   R: TRect;
 
 begin
-  if (FUpdateCount = 0) and FHeader.FColumns.IsValidColumn(Column) then
+  if (FUpdateCount = 0) and HandleAllocated and FHeader.FColumns.IsValidColumn(Column) then
   begin
     R := ClientRect;
     FHeader.Columns.GetColumnBounds(Column, R.Left, R.Right);
@@ -30503,7 +31229,7 @@ var
   R: TRect;
 
 begin
-  if FUpdateCount = 0 then
+  if (FUpdateCount = 0) and HandleAllocated then
   begin
     if (Node = nil) or (Node = FRoot) then
       Invalidate
@@ -31433,7 +32159,7 @@ begin
 
                 // Put the constructed node image onto the target canvas.
                 if not (poUnbuffered in PaintOptions) then
-                  with TargetRect, NodeBitmap do
+                  with TWithSafeRect(TargetRect), NodeBitmap do
                     BitBlt(TargetCanvas.Handle, Left, Top, Width, Height, Canvas.Handle, Window.Left, 0, SRCCOPY);
               end;
             end;
@@ -31661,9 +32387,9 @@ begin
       LocalSpot.Y + FDragHeight div 2);
 
     // Check that we have a valid rectangle.
-    with TreeRect do
+    PaintRect := TreeRect;
+    with TWithSafeRect(TreeRect) do
     begin
-      PaintRect := TreeRect;
       if Left < 0 then
       begin
         PaintTarget.X := -Left;
@@ -33820,36 +34546,33 @@ var
 begin
   if not FStopping then
   begin
-    with R do
+    // Set the edit's bounds but make sure there's a minimum width and the right border does not
+    // extend beyond the parent's left/right border.
+    if R.Left < 0 then
+      R.Left := 0;
+    if R.Right - R.Left < 30 then
     begin
-      // Set the edit's bounds but make sure there's a minimum width and the right border does not
-      // extend beyond the parent's left/right border.
-      if Left < 0 then
-        Left := 0;
-      if Right - Left < 30 then
-      begin
-        if FAlignment = taRightJustify then
-          Left := Right - 30
-        else
-          Right := Left + 30;
-      end;
-      if Right > FTree.ClientWidth then
-        Right := FTree.ClientWidth;
-      FEdit.BoundsRect := R;
-
-      // The selected text shall exclude the text margins and be centered vertically.
-      // We have to take out the two pixel border of the edit control as well as a one pixel "edit border" the
-      // control leaves around the (selected) text.
-      R := FEdit.ClientRect;
-      lOffset := 2;
-      if tsUseThemes in FTree.FStates then
-        Inc(lOffset);
-      InflateRect(R, -FTree.FTextMargin + lOffset, lOffset);
-      if not (vsMultiline in FNode.States) then
-        OffsetRect(R, 0, FTextBounds.Top - FEdit.Top);
-
-      SendMessage(FEdit.Handle, EM_SETRECTNP, 0, Integer(@R));
+      if FAlignment = taRightJustify then
+        R.Left := R.Right - 30
+      else
+        R.Right := R.Left + 30;
     end;
+    if R.Right > FTree.ClientWidth then
+      R.Right := FTree.ClientWidth;
+    FEdit.BoundsRect := R;
+
+    // The selected text shall exclude the text margins and be centered vertically.
+    // We have to take out the two pixel border of the edit control as well as a one pixel "edit border" the
+    // control leaves around the (selected) text.
+    R := FEdit.ClientRect;
+    lOffset := 2;
+    if tsUseThemes in FTree.FStates then
+      Inc(lOffset);
+    InflateRect(R, -FTree.FTextMargin + lOffset, lOffset);
+    if not (vsMultiline in FNode.States) then
+      OffsetRect(R, 0, FTextBounds.Top - FEdit.Top);
+
+    SendMessage(FEdit.Handle, EM_SETRECTNP, 0, LPARAM(@R));
   end;
 end;
 
@@ -34563,7 +35286,6 @@ function TCustomVirtualStringTree.DoTextMeasuring(Canvas: TCanvas; Node: PVirtua
   Text: UnicodeString): TSize;
 
 var
-  Size: TSize;
   R: TRect;
   DrawFormat: Integer;
 
@@ -34575,7 +35297,7 @@ begin
     if BidiMode <> bdLeftToRight then
       DrawFormat := DrawFormat or DT_RTLREADING;
 
-    R := Rect(0, 0, Size.cx, MaxInt);
+    R := Rect(0, 0, Result.cx, MaxInt);
     if IsWinNT then
       Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat)
     else
@@ -34922,7 +35644,7 @@ begin
       end;
   else
     if Format = CF_CSV then
-      S := ContentToText(Source, AnsiChar ({$IFDEF COMPILER_15_UP}FormatSettings.{$ENDIF}ListSeparator)) + #0
+      S := ContentToText(Source, AnsiChar ({$ifdef COMPILER_15_UP}FormatSettings.{$endif}ListSeparator)) + #0
     else
       if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
         S := ContentToRTF(Source) + #0
