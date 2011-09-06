@@ -26,6 +26,7 @@ unit VirtualTrees;
 //
 //  September 2011
 //   - Improvement: Added support for Delphi XE2 and 64Bit compiler
+//   - Support for Delphi 5/6 and C++ Builder 5/6 has been dropped.
 //  August 2011
 //   - Improvement: Minor code improvements
 //  April 2011
@@ -466,11 +467,9 @@ interface
 {$I VTConfig.inc}
 
 // For some things to work we need code, which is classified as being unsafe for .NET.
-{$ifdef CONDITIONALEXPRESSIONS}
-  {$WARN UNSAFE_TYPE OFF}
-  {$WARN UNSAFE_CAST OFF}
-  {$WARN UNSAFE_CODE OFF}
-{$endif CONDITIONALEXPRESSIONS}
+{$WARN UNSAFE_TYPE OFF}
+{$WARN UNSAFE_CAST OFF}
+{$WARN UNSAFE_CODE OFF}
 
 {$ifdef COMPILER_12_UP}
   {$WARN IMPLICIT_STRING_CAST       OFF}
