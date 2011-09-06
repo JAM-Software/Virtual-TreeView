@@ -20320,7 +20320,7 @@ begin
         if (vsSelected in Node.FStates) and not Ghosted then
           Images.BlendColor := clDefault;
 
-        TImageListHelper(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle {$ifndef COMPILER_6_UP}, True {$endif});
+        TImageListHelper(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle);
 
         // Now, draw the overlay. This circumnavigates limitations in the overlay mask index (it has to be 4 bits in size,
         // anything larger will be truncated by the ILD_OVERLAYMASK).
@@ -20329,7 +20329,7 @@ begin
         if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
           // Note: XPos and YPos are those of the normal images.
           TImageListHelper(ImageInfo[iiOverlay].Images).DoDraw(ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
-            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle {$ifndef COMPILER_6_UP}, True {$endif});
+            Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle);
     end;
   end;
 end;
