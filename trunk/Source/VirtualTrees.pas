@@ -25,7 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2011
-//   - Variable IsWinNT and support for Windows 9x has been removed.
+//   - Global variables InWin2k and IsWinXP, enum member hsXPStyle, function DrawXPButton() and support for Windows 2000 has been removed.
+//   - Global variable IsWinNT and support for Windows 9x has been removed.
 //   - Improvement: Added support for Delphi XE2 and 64Bit compiler.
 //   - Support for Delphi 5/6 and C++ Builder 5/6 has been dropped.
 //  August 2011
@@ -617,9 +618,6 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   CF_CSV: Word;
 
   MMXAvailable: Boolean; // necessary to know because the blend code uses MMX instructions
-
-  IsWin2K: Boolean;      // Nessary to provide correct string shortage
-  IsWinXP: Boolean;
   IsWinVistaOrAbove: Boolean;
 
   {$MinEnumSize 1, make enumerations as small as possible}
@@ -1509,7 +1507,6 @@ type
     procedure DoCanSplitterResize(P: TPoint; Column: TColumnIndex; var Allowed: Boolean); virtual;
     procedure DrawButtonText(DC: HDC; Caption: UnicodeString; Bounds: TRect; Enabled, Hot: Boolean; DrawFormat: Cardinal;
       WrapCaption: Boolean);
-    procedure DrawXPButton(DC: HDC; ButtonR: TRect; DrawSplitter, Down, Hover: Boolean);
     procedure FixPositions;
     function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: Integer; Relative: Boolean = True): Integer;
     function GetOwner: TPersistent; override;
@@ -1594,8 +1591,7 @@ type
   TVTHeaderStyle = (
     hsThickButtons,    // TButton look and feel
     hsFlatButtons,     // flatter look than hsThickButton, like an always raised flat TToolButton
-    hsPlates,          // flat TToolButton look and feel (raise on hover etc.)
-    hsXPStyle          // Windows XP style
+    hsPlates          // flat TToolButton look and feel (raise on hover etc.)
   );
 
   TVTHeaderOption = (
@@ -6238,11 +6234,6 @@ begin
 
   // For the drag image a fast MMX blend routine is used. We have to make sure MMX is available.
   MMXAvailable := HasMMX;
-
-  // There is a bug in Win95 and WinME (and potentially in Win98 too) regarding GetDCEx which causes sometimes
-  // serious trouble within GDI (see method WMNCPaint).
-  IsWin2K := (Win32MajorVersion = 5) and (Win32MinorVersion = 0);
-  IsWinXP := (Win32MajorVersion = 5) and (Win32MinorVersion = 1);
   IsWinVistaOrAbove := (Win32MajorVersion >= 6);
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
@@ -10342,155 +10333,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// XP style header button legacy code. This procedure is only used on non-XP systems to simulate the themed
-// header style.
-// Note: the theme elements displayed here only correspond to the standard themes of Windows XP
-
-const
-  XPMainHeaderColorUp = $DBEAEB;       // Main background color of the header if drawn as being not pressed.
-  XPMainHeaderColorDown = $D8DFDE;     // Main background color of the header if drawn as being pressed.
-  XPMainHeaderColorHover = $F3F8FA;    // Main background color of the header if drawn as being under the mouse pointer.
-  XPDarkSplitBarColor = $B2C5C7;       // Dark color of the splitter bar.
-  XPLightSplitBarColor = $FFFFFF;      // Light color of the splitter bar.
-  XPDarkGradientColor = $B8C7CB;       // Darkest color in the bottom gradient. Other colors will be interpolated.
-  XPDownOuterLineColor = $97A5A5;      // Down state border color.
-  XPDownMiddleLineColor = $B8C2C1;     // Down state border color.
-  XPDownInnerLineColor = $C9D1D0;      // Down state border color.
-
-procedure TVirtualTreeColumns.DrawXPButton(DC: HDC; ButtonR: TRect; DrawSplitter, Down, Hover: Boolean);
-
-// Helper procedure to draw an Windows XP like header button.
-
-var
-  PaintBrush: HBRUSH;
-  Pen,
-  OldPen: HPEN;
-  PenColor,
-  FillColor: COLORREF;
-  dRed, dGreen, dBlue: Single;
-  Width,
-  XPos: Integer;
-
-begin
-  if Down then
-    FillColor := XPMainHeaderColorDown
-  else
-    if Hover then
-      FillColor := XPMainHeaderColorHover
-    else
-      FillColor := XPMainHeaderColorUp;
-  PaintBrush := CreateSolidBrush(FillColor);
-  FillRect(DC, ButtonR, PaintBrush);
-  DeleteObject(PaintBrush);
-
-  if DrawSplitter and not (Down or Hover) then
-  begin
-    // One solid pen for the dark line...
-    Pen := CreatePen(PS_SOLID, 1, XPDarkSplitBarColor);
-    OldPen := SelectObject(DC, Pen);
-    MoveToEx(DC, ButtonR.Right - 2, ButtonR.Top + 3, nil);
-    LineTo(DC, ButtonR.Right - 2, ButtonR.Bottom - 5);
-    // ... and one solid pen for the light line.
-    Pen := CreatePen(PS_SOLID, 1, XPLightSplitBarColor);
-    DeleteObject(SelectObject(DC, Pen));
-    MoveToEx(DC, ButtonR.Right - 1, ButtonR.Top + 3, nil);
-    LineTo(DC, ButtonR.Right - 1, ButtonR.Bottom - 5);
-    SelectObject(DC, OldPen);
-    DeleteObject(Pen);
-  end;
-
-  if Down then
-  begin
-    // Down state. Three lines to draw.
-    // First one is the outer line, drawn at left, bottom and right.
-    Pen := CreatePen(PS_SOLID, 1, XPDownOuterLineColor);
-    OldPen := SelectObject(DC, Pen);
-    MoveToEx(DC, ButtonR.Left, ButtonR.Top, nil);
-    LineTo(DC, ButtonR.Left, ButtonR.Bottom - 1);
-    LineTo(DC, ButtonR.Right - 1, ButtonR.Bottom - 1);
-    LineTo(DC, ButtonR.Right - 1, ButtonR.Top - 1);
-
-    // Second one is the middle line, which is a bit lighter.
-    Pen := CreatePen(PS_SOLID, 1, XPDownMiddleLineColor);
-    DeleteObject(SelectObject(DC, Pen));
-    MoveToEx(DC, ButtonR.Left + 1, ButtonR.Bottom - 2, nil);
-    LineTo(DC, ButtonR.Left + 1, ButtonR.Top);
-    LineTo(DC, ButtonR.Right - 1, ButtonR.Top);
-
-    // Third line is the inner line, which is even lighter than the middle line.
-    Pen := CreatePen(PS_SOLID, 1, XPDownInnerLineColor);
-    DeleteObject(SelectObject(DC, Pen));
-    MoveToEx(DC, ButtonR.Left + 2, ButtonR.Bottom - 2, nil);
-    LineTo(DC, ButtonR.Left + 2, ButtonR.Top + 1);
-    LineTo(DC, ButtonR.Right - 1, ButtonR.Top + 1);
-
-    // Housekeeping:
-    SelectObject(DC, OldPen);
-    DeleteObject(Pen);
-  end
-  else
-    if Hover then
-    begin
-      // Hover state. There are three lines at the bottom border, but they are rendered in a way which
-      // requires expensive construction.
-      Width := ButtonR.Right - ButtonR.Left;
-      if Width <= 32 then
-      begin
-        ImageList_DrawEx(UtilityImages.Handle, 8, DC, ButtonR.Right - 16, ButtonR.Bottom - 3, 16, 3, CLR_NONE, CLR_NONE,
-          ILD_NORMAL);
-        ImageList_DrawEx(UtilityImages.Handle, 6, DC, ButtonR.Left, ButtonR.Bottom - 3, Width div 2, 3, CLR_NONE,
-          CLR_NONE, ILD_NORMAL);
-      end
-      else
-      begin
-        ImageList_DrawEx(UtilityImages.Handle, 6, DC, ButtonR.Left, ButtonR.Bottom - 3, 16, 3, CLR_NONE, CLR_NONE,
-          ILD_NORMAL);
-        // Replicate inner part as many times as need to fill up the button rectangle.
-        XPos := ButtonR.Left + 16;
-        repeat
-          ImageList_DrawEx(UtilityImages.Handle, 7, DC, XPos, ButtonR.Bottom - 3, 16, 3, CLR_NONE, CLR_NONE, ILD_NORMAL);
-          Inc(XPos, 16);
-        until XPos + 16 >= ButtonR.Right;
-        ImageList_DrawEx(UtilityImages.Handle, 8, DC, ButtonR.Right - 16, ButtonR.Bottom - 3, 16, 3, CLR_NONE, CLR_NONE,
-          ILD_NORMAL);
-      end;
-    end
-    else
-    begin
-      // There is a three line gradient near the bottom border which transforms from the button color to a dark,
-      // clBtnFace like color (here XPDarkGradientColor).
-      PenColor := XPMainHeaderColorUp;
-      dRed := ((PenColor and $FF) - (XPDarkGradientColor and $FF)) / 3;
-      dGreen := (((PenColor shr 8) and $FF) - ((XPDarkGradientColor shr 8) and $FF)) / 3;
-      dBlue := (((PenColor shr 16) and $FF) - ((XPDarkGradientColor shr 16) and $FF)) / 3;
-
-      // First line:
-      PenColor := PenColor - Round(dRed) - Round(dGreen) shl 8 - Round(dBlue) shl 16;
-      Pen := CreatePen(PS_SOLID, 1, PenColor);
-      OldPen := SelectObject(DC, Pen);
-      MoveToEx(DC, ButtonR.Left, ButtonR.Bottom - 3, nil);
-      LineTo(DC, ButtonR.Right, ButtonR.Bottom - 3);
-
-      // Second line:
-      PenColor := PenColor - Round(dRed) - Round(dGreen) shl 8 - Round(dBlue) shl 16;
-      Pen := CreatePen(PS_SOLID, 1, PenColor);
-      DeleteObject(SelectObject(DC, Pen));
-      MoveToEx(DC, ButtonR.Left, ButtonR.Bottom - 2, nil);
-      LineTo(DC, ButtonR.Right, ButtonR.Bottom - 2);
-
-      // Third line:
-      Pen := CreatePen(PS_SOLID, 1, XPDarkGradientColor);
-      DeleteObject(SelectObject(DC, Pen));
-      MoveToEx(DC, ButtonR.Left, ButtonR.Bottom - 1, nil);
-      LineTo(DC, ButtonR.Right, ButtonR.Bottom - 1);
-
-      // Housekeeping:
-      DeleteObject(SelectObject(DC, OldPen));
-    end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TVirtualTreeColumns.FixPositions;
 
 // Fixes column positions after loading from DFM or Bidi mode change.
@@ -11468,14 +11310,10 @@ var
           Details := ThemeServices.GetElementDetails(thHeaderItemRightNormal);
           ThemeServices.DrawElement(Handle, Details, BackgroundRect, @BackgroundRect);
         end
-        else
-          if FHeader.Style = hsXPStyle then
-            DrawXPButton(Handle, BackgroundRect, False, False, False)
-          else
-          begin
-            Brush.Color := FHeader.FBackground;
-            FillRect(BackgroundRect);
-          end;
+        else begin
+          Brush.Color := FHeader.FBackground;
+          FillRect(BackgroundRect);
+        end;
       end;
     end;
   end;
@@ -11558,20 +11396,17 @@ var
           end
           else
           begin
-            if FHeader.Style = hsXPStyle then
-              DrawXPButton(TargetCanvas.Handle, PaintRectangle, RightBorderFlag <> 0, IsDownIndex, IsHoverIndex)
+            if IsDownIndex then
+              DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
             else
-              if IsDownIndex then
-                DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
+              // Plates have the special case of raising on mouse over.
+              if (FHeader.Style = hsPlates) and IsHoverIndex and
+                (coAllowClick in FOptions) and (coEnabled in FOptions) then
+                DrawEdge(TargetCanvas.Handle, PaintRectangle, RaisedButtonStyle,
+                         RaisedButtonFlags or RightBorderFlag)
               else
-                // Plates have the special case of raising on mouse over.
-                if (FHeader.Style = hsPlates) and IsHoverIndex and
-                  (coAllowClick in FOptions) and (coEnabled in FOptions) then
-                  DrawEdge(TargetCanvas.Handle, PaintRectangle, RaisedButtonStyle,
-                           RaisedButtonFlags or RightBorderFlag)
-                else
-                  DrawEdge(TargetCanvas.Handle, PaintRectangle, NormalButtonStyle,
-                           NormalButtonFlags or RightBorderFlag);
+                DrawEdge(TargetCanvas.Handle, PaintRectangle, NormalButtonStyle,
+                         NormalButtonFlags or RightBorderFlag);
           end;
         end;
 
