@@ -25,7 +25,8 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2011
-//   - Improvement: Added support for Delphi XE2 and 64Bit compiler
+//   - Variable IsWinNT and support for Windows 9x has been removed.
+//   - Improvement: Added support for Delphi XE2 and 64Bit compiler.
 //   - Support for Delphi 5/6 and C++ Builder 5/6 has been dropped.
 //  August 2011
 //   - Improvement: Minor code improvements
@@ -617,8 +618,6 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 
   MMXAvailable: Boolean; // necessary to know because the blend code uses MMX instructions
 
-  IsWinNT: Boolean;      // Necessary to fix bugs in Win95/WinME (non-client area region intersection, edit resize)
-                         // and to allow for check of system dependent hint animation.
   IsWin2K: Boolean;      // Nessary to provide correct string shortage
   IsWinXP: Boolean;
   IsWinVistaOrAbove: Boolean;
@@ -4214,8 +4213,6 @@ function RegisterVTClipboardFormat(Description: string; TreeClass: TVirtualTreeC
 
 // utility routines
 procedure AlphaBlend(Source, Destination: HDC; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
-procedure DrawTextW(DC: HDC; lpString: PWideChar; nCount: Integer; var lpRect: TRect; uFormat: Cardinal;
-  AdjustRight: Boolean);
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
 function ShortenString(DC: HDC; const S: UnicodeString; Width: Integer; EllipsisWidth: Integer = 0): UnicodeString;
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
@@ -4919,146 +4916,6 @@ begin
   until I >= R;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure DrawTextW(DC: HDC; lpString: PWideChar; nCount: Integer; var lpRect: TRect; uFormat: Cardinal;
-  AdjustRight: Boolean);
-
-// This procedure implements a subset of Window's DrawText API for Unicode which is not available for
-// Windows 9x. For a description of the parameters see DrawText in the online help.
-// Supported flags are currently:
-//   - DT_LEFT
-//   - DT_TOP
-//   - DT_CALCRECT
-//   - DT_NOCLIP
-//   - DT_RTLREADING
-//   - DT_SINGLELINE
-//   - DT_VCENTER
-// Differences to the DrawTextW Windows API:
-//   - The additional parameter AdjustRight determines whether to adjust the right border of the given rectangle to
-//     accomodate the largest line in the text. It has only a meaning if also DT_CALCRECT is specified.
-
-var
-  Head, Tail: PWideChar;
-  Size: TSize;
-  MaxWidth: Integer;
-  TextOutFlags: Integer;
-  TextAlign,
-  OldTextAlign: Cardinal;
-  TM: TTextMetric;
-  TextHeight: Integer;
-  LineRect: TRect;
-  TextPosY,
-  TextPosX: Integer;
-
-  CalculateRect: Boolean;
-
-begin
-  // Prepare some work variables.
-  MaxWidth := 0;
-  Head := lpString;
-  GetTextMetrics(DC, TM);
-  TextHeight := TM.tmHeight;
-  if uFormat and DT_SINGLELINE <> 0 then
-    LineRect := lpRect
-  else
-    LineRect := Rect(lpRect.Left, lpRect.Top, lpRect.Right, lpRect.Top + TextHeight);
-
-  CalculateRect := uFormat and DT_CALCRECT <> 0;
-
-  // Prepare text output.
-  TextOutFlags := 0;
-  if uFormat and DT_NOCLIP = 0 then
-    TextOutFlags := TextOutFlags or ETO_CLIPPED;
-  if uFormat and DT_RTLREADING <> 0 then
-    TextOutFlags := TextOutFlags or ETO_RTLREADING;
-
-  // Determine horizontal and vertical text alignment.
-  OldTextAlign := GetTextAlign(DC);
-  TextAlign := TA_LEFT or TA_TOP;
-  TextPosX := lpRect.Left;
-  if uFormat and DT_RIGHT <> 0 then
-  begin
-    TextAlign := TextAlign or TA_RIGHT and not TA_LEFT;
-    TextPosX := lpRect.Right;
-  end
-  else
-    if uFormat and DT_CENTER <> 0 then
-    begin
-      TextAlign := TextAlign or TA_CENTER and not TA_LEFT;
-      TextPosX := (lpRect.Left + lpRect.Right) div 2;
-    end;
-
-  TextPosY := lpRect.Top;
-  if uFormat and DT_VCENTER <> 0 then
-  begin
-    // Note: vertical alignment does only work with single line text ouput!
-    TextPosY := (lpRect.Top + lpRect.Bottom - TextHeight) div 2;
-  end;
-  SetTextAlign(DC, TextAlign);
-
-  if uFormat and DT_SINGLELINE <> 0 then
-  begin
-    if CalculateRect then
-    begin
-      GetTextExtentPoint32W(DC, Head, nCount, Size);
-      if Size.cx > MaxWidth then
-        MaxWidth := Size.cx;
-    end
-    else
-      ExtTextOutW(DC, TextPosX, TextPosY, TextOutFlags, @LineRect, Head, nCount, nil);
-    OffsetRect(LineRect, 0, TextHeight);
-  end
-  else
-  begin
-    while (nCount > 0) and (Head^ <> WideNull) do
-    begin
-      Tail := Head;
-      // Look for the end of the current line. A line is finished either by the string end or a line break.
-      while (nCount > 0) and (Tail^ <> WideNull) and (Tail^ <> WideCR) and (Tail^ <> WideLF) and
-            (Tail^ <> WideLineSeparator) do
-      begin
-        Inc(Tail);
-        Dec(nCount);
-      end;
-
-      if CalculateRect then
-      begin
-        GetTextExtentPoint32W(DC, Head, Tail - Head, Size);
-        if Size.cx > MaxWidth then
-          MaxWidth := Size.cx;
-      end
-      else
-        ExtTextOutW(DC, TextPosX, LineRect.Top, TextOutFlags, @LineRect, Head, Tail - Head, nil);
-      OffsetRect(LineRect, 0, TextHeight);
-
-      // Get out of the loop if the rectangle is filled up.
-      if (nCount = 0) or (not CalculateRect and (LineRect.Top >= lpRect.Bottom)) then
-        Break;
-
-      if (nCount > 0) and (Tail^ = WideCR) or (Tail^ = WideLineSeparator) then
-      begin
-        Inc(Tail);
-        Dec(nCount);
-      end;
-
-      if (nCount > 0) and (Tail^ = WideLF) then
-      begin
-        Inc(Tail);
-        Dec(nCount);
-      end;
-      Head := Tail;
-    end;
-  end;
-
-  SetTextAlign(DC, OldTextAlign);
-  if CalculateRect then
-  begin
-    if AdjustRight then
-      lpRect.Right := lpRect.Left + MaxWidth;
-    lpRect.Bottom := LineRect.Top;
-  end;
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5274,10 +5131,7 @@ begin
   Bounds.Right := Bounds.Left + 1;
   Bounds.Bottom := Bounds.Top + 1;
 
-  if IsWinNT then
-    Windows.DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT)
-  else
-    DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT, True);
+  Windows.DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT)
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6387,7 +6241,6 @@ begin
 
   // There is a bug in Win95 and WinME (and potentially in Win98 too) regarding GetDCEx which causes sometimes
   // serious trouble within GDI (see method WMNCPaint).
-  IsWinNT := (Win32Platform and VER_PLATFORM_WIN32_NT) <> 0;
   IsWin2K := (Win32MajorVersion = 5) and (Win32MinorVersion = 0);
   IsWinXP := (Win32MajorVersion = 5) and (Win32MinorVersion = 1);
   IsWinVistaOrAbove := (Win32MajorVersion >= 6);
@@ -6400,10 +6253,7 @@ begin
 
   // Load all internal image lists and convert their colors to current desktop color scheme.
   // In order to use high color images we have to create the image list handle ourselves.
-  if IsWinNT then
-    Flags := ILC_COLOR32 or ILC_MASK
-  else
-    Flags := ILC_COLOR16 or ILC_MASK;
+  Flags := ILC_COLOR32 or ILC_MASK;
   LightCheckImages := TImageList.Create(nil);
   with LightCheckImages do
     Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
@@ -8048,10 +7898,7 @@ begin
           R.Top := Y;
           if Assigned(Node) and (LineBreakStyle = hlbForceMultiLine) then
             DrawFormat := DrawFormat or DT_WORDBREAK;
-          if IsWinNT then
-            Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat)
-          else
-            DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat, False);
+          Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat)
         end;
     end;
   end;
@@ -8276,11 +8123,7 @@ begin
               // On Windows NT/2K/XP the behavior of the tooltip is slightly different to that on Windows 9x/Me.
               // We don't have Unicode word wrap on the latter so the tooltip gets as wide as the largest line
               // in the caption (limited by carriage return), which results in unoptimal overlay of the tooltip.
-              // On Windows NT the tooltip exactly overlays the node text.
-              if IsWinNT then
-                Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_WORDBREAK)
-              else
-                DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT, True);
+              Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_WORDBREAK);
               if BidiMode = bdLeftToRight then
                 Result.Right := R.Right + Tree.FTextMargin
               else
@@ -8321,10 +8164,7 @@ begin
             // Start with the base size of the hint in client coordinates.
             Result := Rect(0, 0, MaxWidth, FTextHeight);
             // Calculate the true size of the text rectangle.
-            if IsWinNT then
-              Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), Result, DT_CALCRECT)
-            else
-              DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), Result, DT_CALCRECT, True);
+            Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), Result, DT_CALCRECT);
             // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
             Inc(Result.Bottom, 6);
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
@@ -9311,8 +9151,6 @@ procedure TVirtualTreeColumn.SetMaxWidth(Value: Integer);
 begin
   if Value < FMinWidth then
     Value := FMinWidth;
-  if not IsWinNT and (Value > 10000) then
-    Value := 10000;
   FMaxWidth := Value;
   SetWidth(FWidth);
 end;
@@ -10487,16 +10325,10 @@ begin
   begin
     OffsetRect(Bounds, 1, 1);
     SetTextColor(DC, ColorToRGB(clBtnHighlight));
-    if IsWinNT then
-      Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat)
-    else
-      DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat, False);
+    Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
     OffsetRect(Bounds, -1, -1);
     SetTextColor(DC, ColorToRGB(clBtnShadow));
-    if IsWinNT then
-      Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat)
-    else
-      DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat, False);
+    Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
   end
   else
   begin
@@ -10504,10 +10336,7 @@ begin
       SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderHotColor))
     else
       SetTextColor(DC, ColorToRGB(FHeader.FFont.Color));
-    if IsWinNT then
-      Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat)
-    else
-      DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat, False);
+    Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
   end;
 end;
 
@@ -12304,8 +12133,6 @@ procedure TVTHeader.SetMaxHeight(Value: Integer);
 begin
   if Value < FMinHeight then
     Value := FMinHeight;
-  if not IsWinNT and (Value > 10000) then
-    Value := 10000;
   FMaxHeight := Value;
   SetHeight(FHeight);
 end;
@@ -19688,7 +19515,7 @@ begin
 
   Flags := DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE;
 
-  if (Message.Rgn = 1) or not IsWinNT then
+  if (Message.Rgn = 1) then
     DC := GetDCEx(Handle, 0, Flags)
   else
     DC := GetDCEx(Handle, Message.Rgn, Flags or DCX_INTERSECTRGN);
@@ -21926,21 +21753,16 @@ begin
   Result := FAnimationType;
   if Result = hatSystemDefault then
   begin
-    if not IsWinNT then
-      Result := hatSlide
+    SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animation, 0);
+    if not Animation then
+      Result := hatNone
     else
     begin
-      SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animation, 0);
-      if not Animation then
-        Result := hatNone
+      SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animation, 0);
+      if Animation then
+        Result := hatFade
       else
-      begin
-        SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animation, 0);
-        if Animation then
-          Result := hatFade
-        else
-          Result := hatSlide;
-      end;
+        Result := hatSlide;
     end;
   end;
 
@@ -27017,7 +26839,6 @@ var
   NCRegion: HRGN;      // the region representing the non-client area of the tree
   DragRect,
   NCRect: TRect;
-  Pt: TPoint;
   RedrawFlags: Cardinal;
 
   VisibleTreeRegion: HRGN;
@@ -27033,13 +26854,6 @@ begin
     DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_WINDOW or DCX_CLIPSIBLINGS or DCX_CLIPCHILDREN);
     GetRandomRgn(DC, VisibleTreeRegion, SYSRGN);
     ReleaseDC(Handle, DC);
-
-    // In Win9x the returned visible region is given in client coordinates. We need it in screen coordinates, though.
-    if not IsWinNT then
-    begin
-      Pt := ClientToScreen(Point(0, 0));
-      OffsetRgn(VisibleTreeRegion, Pt.X, Pt.Y);
-    end;
 
     // The drag image will figure out itself what part of the rectangle can be recaptured.
     // Recapturing is not done by taking a snapshot of the screen, but by letting the tree draw itself
@@ -34197,10 +34011,7 @@ begin
     not (vsMultiline in FLink.FNode.States) then
     // Instead directly calling AutoAdjustSize it is necessary on Win9x/Me to decouple this notification message
     // and eventual resizing. Hence we use a message to accomplish that.
-    if IsWinNT then
-      AutoAdjustSize
-    else
-      PostMessage(Handle, CM_AUTOADJUST, 0, 0);
+    AutoAdjustSize()
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34889,10 +34700,7 @@ begin
       SetBkMode(Canvas.Handle, TRANSPARENT)
     else
       SetBkMode(Canvas.Handle, OPAQUE);
-    if IsWinNT then
-      Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat)
-    else
-      DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat, False);
+    Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat);
   end;
 end;
 
@@ -35271,12 +35079,7 @@ begin
   if Assigned(FOnDrawText) then
     FOnDrawText(Self, PaintInfo.Canvas, PaintInfo.Node, PaintInfo.Column, Text, CellRect, DefaultDraw);
   if DefaultDraw then
-  begin
-    if IsWinNT then
-      Windows.DrawTextW(PaintInfo.Canvas.Handle, PWideChar(Text), Length(Text), CellRect, DrawFormat)
-    else
-      DrawTextW(PaintInfo.Canvas.Handle, PWideChar(Text), Length(Text), CellRect, DrawFormat, False);
-  end;
+    Windows.DrawTextW(PaintInfo.Canvas.Handle, PWideChar(Text), Length(Text), CellRect, DrawFormat);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35297,10 +35100,7 @@ begin
       DrawFormat := DrawFormat or DT_RTLREADING;
 
     R := Rect(0, 0, Result.cx, MaxInt);
-    if IsWinNT then
-      Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat)
-    else
-      DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat, False);
+    Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat);
     Result.cx := R.Right - R.Left;
   end;
   if Assigned(FOnMeasureTextWidth) then
@@ -35547,10 +35347,7 @@ begin
     DrawFormat := DrawFormat or DT_RIGHT or DT_RTLREADING
   else
     DrawFormat := DrawFormat or DT_LEFT;
-  if IsWinNT then
-    Windows.DrawTextW(Canvas.Handle, PWideChar(S), Length(S), PaintInfo.CellRect, DrawFormat)
-  else
-    DrawTextW(Canvas.Handle, PWideChar(S), Length(S), PaintInfo.CellRect, DrawFormat, False);
+  Windows.DrawTextW(Canvas.Handle, PWideChar(S), Length(S), PaintInfo.CellRect, DrawFormat);
   Result := PaintInfo.CellRect.Bottom - PaintInfo.CellRect.Top;
 end;
 
