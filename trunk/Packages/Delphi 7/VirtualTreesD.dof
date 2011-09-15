@@ -129,14 +129,10 @@ LegalTrademarks=
 OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
-[Excluded Packages]
-C:\Program Files (x86)\EurekaLog 6\Delphi7\ExceptionExpert7.bpl=EurekaLog
-c:\program files (x86)\borland\delphi7\Projects\Bpl\dwWin7Controls_7.bpl=(untitled)
-D:\Projects\ShellBrowser\Packages\JamShellD7.bpl=ShellBrowser Components by JAM Software 
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=2
 Item0=..\..\Common
-Item1=..\Common
+Item1=..\..\Source
