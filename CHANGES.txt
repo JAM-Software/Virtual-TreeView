@@ -5,6 +5,14 @@ September 2011
  - Global variable IsWinNT and support for Windows 9x has been removed.
  - Improvement: Added support for Delphi XE2 and 64Bit compiler.
  - Support for Delphi 5/6 and C++ Builder 5/6 has been dropped.
+ - Bug fix: Fixed a potential integer overflow in TBaseVirtualTree.ToggleNode in case of toChildrenAbove and NodeInView
+ - Bug fix: Fixed a potential Assertion in TBaseVirtualTree.ToggleNode by checking GetFirstVisible before calling GetDisplayRect
+ - Bug fix: TCustomVirtualTreeOptions.SetPaintOptions correctly changes the VisibleCount when toShowFilteredNodes is toggled
+ - Improvement: Added new functions TBaseVirtualTree.DetermineDropMode
+ - Improvement: Added usage of TBaseVirtualTree.DetermineDropMode in TBaseVirtualTree.DragOver
+ - Improvement: Made EffectiveOffsetX accessible via read-only protected property for easier subclassing
+ - Improvement: Moved TBaseVirtualTree.DetermineLineImageAndSelectLevel from private to protected for easier subclassing
+ - Improvement: Sorted TBaseVirtualTree.SetEmptyListMessage
 August 2011
  - Improvement: Minor code improvements
 April 2011

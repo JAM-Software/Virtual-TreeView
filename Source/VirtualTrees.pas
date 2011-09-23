@@ -2254,7 +2254,6 @@ type
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
-    function DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode; overload;
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
@@ -2316,6 +2315,7 @@ type
     procedure SetCustomCheckImages(const Value: TCustomImageList);
     procedure SetDefaultNodeHeight(Value: Cardinal);
     procedure SetDisabled(Node: PVirtualNode; Value: Boolean);
+    procedure SetEmptyListMessage(const Value: UnicodeString);
     procedure SetExpanded(Node: PVirtualNode; Value: Boolean);
     procedure SetFocusedColumn(Value: TColumnIndex);
     procedure SetFocusedNode(Value: PVirtualNode);
@@ -2406,7 +2406,6 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
-    procedure SetEmptyListMessage(const Value: UnicodeString);
   protected
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -2432,10 +2431,12 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWnd; override;
     procedure DefineProperties(Filer: TFiler); override;
+    function DetermineDropMode(const P: TPoint; var HitInfo: THitInfo; var NodeRect: TRect): TDropMode; virtual;
     procedure DetermineHiddenChildrenFlag(Node: PVirtualNode); virtual;
     procedure DetermineHiddenChildrenFlagAllNodes; virtual;
     procedure DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: Integer; Alignment: TAlignment); virtual;
     procedure DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: Integer; Alignment: TAlignment); virtual;
+    function DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer; virtual;
     function DetermineNextCheckState(CheckType: TCheckType; CheckState: TCheckState): TCheckState; virtual;
     function DetermineScrollDirections(X, Y: Integer): TScrollDirections; virtual;
     procedure DoAdvancedHeaderDraw(var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements); virtual;
@@ -2672,6 +2673,7 @@ type
       default smDottedRectangle;
     property EditColumn: TColumnIndex read FEditColumn write FEditColumn;
     property EditDelay: Cardinal read FEditDelay write FEditDelay default 1000;
+    property EffectiveOffsetX: Integer read FEffectiveOffsetX;
     property Header: TVTHeader read FHeader write SetHeader;
     property HeaderRect: TRect read FHeaderRect;
     property HintAnimation: THintAnimationType read FAnimationType write FAnimationType default hatSystemDefault;
@@ -6387,7 +6389,12 @@ begin
           if (vsFiltered in Run.States) then
           begin
             if FullyVisible[Run] then
-              Inc(FVisibleCount, IfThen(toShowFilteredNodes in ToBeSet, 1, 0));
+            begin
+              if toShowFilteredNodes in ToBeSet then
+                Inc(FVisibleCount)
+              else
+                Dec(FVisibleCount);
+            end;
             if toShowFilteredNodes in ToBeSet then
               AdjustTotalHeight(Run, Run.NodeHeight, True)
             else
@@ -14555,135 +14562,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer;
-
-// This method is used during paint cycles and initializes an array of line type IDs. These IDs are used to paint
-// the tree lines in front of the given node.
-// Additionally an initial count of selected parents is determined and returned which is used for specific painting.
-
-var
-  X: Integer;
-  Indent: Integer;
-  Run: PVirtualNode;
-
-begin
-  Result := 0;
-  if toShowRoot in FOptions.FPaintOptions then
-    X := 1
-  else
-    X := 0;
-  Run := Node;
-  // Determine indentation level of top node.
-  while Run.Parent <> FRoot do
-  begin
-    Inc(X);
-    Run := Run.Parent;
-    // Count selected nodes (FRoot is never selected).
-    if vsSelected in Run.States then
-      Inc(Result);
-  end;
-
-  // Set initial size of line index array, this will automatically initialized all entries to ltNone.
-  SetLength(LineImage, X);
-  Indent := X - 1;
-
-  // Only use lines if requested.
-  if (toShowTreeLines in FOptions.FPaintOptions) and
-     (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or not (tsUseThemes in FStates)) then
-  begin
-    if toChildrenAbove in FOptions.FPaintOptions then
-    begin
-      Dec(X);
-      if not HasVisiblePreviousSibling(Node) then
-      begin
-        if (Node.Parent <> FRoot) or HasVisibleNextSibling(Node) then
-          LineImage[X] := ltBottomRight
-        else
-          LineImage[X] := ltRight;
-      end
-      else
-        if (Node.Parent = FRoot) and (not HasVisibleNextSibling(Node)) then
-          LineImage[X] := ltTopRight
-        else
-          LineImage[X] := ltTopDownRight;
-
-      // Now go up to the root to determine the rest.
-      Run := Node.Parent;
-      while Run <> FRoot do
-      begin
-        Dec(X);
-        if HasVisiblePreviousSibling(Run) then
-          LineImage[X] := ltTopDown;
-
-        Run := Run.Parent;
-      end;
-    end
-    else
-    begin
-      // Start over parent traversal if necessary.
-      Run := Node;
-
-      if Run.Parent <> FRoot then
-      begin
-        // The very last image (the one immediately before the item label) is different.
-        if HasVisibleNextSibling(Run) then
-          LineImage[X - 1] := ltTopDownRight
-        else
-          LineImage[X - 1] := ltTopRight;
-        Run := Run.Parent;
-
-        // Now go up all parents.
-        repeat
-          if Run.Parent = FRoot then
-            Break;
-          Dec(X);
-          if HasVisibleNextSibling(Run) then
-            LineImage[X - 1] := ltTopDown
-          else
-            LineImage[X - 1] := ltNone;
-          Run := Run.Parent;
-        until False;
-      end;
-
-      // Prepare root level. Run points at this stage to a top level node.
-      if (toShowRoot in FOptions.FPaintOptions) and ((toShowTreeLines in FOptions.FPaintOptions) and
-         (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or not (tsUseThemes in FStates))) then
-      begin
-        // Is the top node a root node?
-        if Run = Node then
-        begin
-          // First child gets the bottom-right bitmap if it isn't also the only child.
-          if IsFirstVisibleChild(FRoot, Run) then
-            // Is it the only child?
-            if IsLastVisibleChild(FRoot, Run) then
-              LineImage[0] := ltRight
-            else
-              LineImage[0] := ltBottomRight
-          else
-            // real last child
-            if IsLastVisibleChild(FRoot, Run) then
-              LineImage[0] := ltTopRight
-            else
-              LineImage[0] := ltTopDownRight;
-        end
-        else
-        begin
-          // No, top node is not a top level node. So we need different painting.
-          if HasVisibleNextSibling(Run) then
-            LineImage[0] := ltTopDown
-          else
-            LineImage[0] := ltNone;
-        end;
-      end;
-    end;
-  end;
-
-  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) then
-    LineImage[Indent] := ltNone;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType;
   Reverse: Boolean);
 
@@ -16214,6 +16092,8 @@ begin
     Invalidate;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.SetExpanded(Node: PVirtualNode; Value: Boolean);
 
@@ -20013,6 +19893,41 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.DetermineDropMode(const P: TPoint; var HitInfo: THitInfo; var NodeRect: TRect): TDropMode;
+
+// Determine the DropMode.
+
+var
+  ImageHit: Boolean;
+  LabelHit: Boolean;
+  ItemHit: Boolean;
+
+begin
+  ImageHit := HitInfo.HitPositions * [hiOnNormalIcon, hiOnStateIcon] <> [];
+  LabelHit := hiOnItemLabel in HitInfo.HitPositions;
+  ItemHit := ((hiOnItem in HitInfo.HitPositions) and ((toFullRowDrag in FOptions.FMiscOptions) or
+             (toFullRowSelect in FOptions.FSelectionOptions)));
+  // In report mode only direct hits of the node captions/images in the main column are accepted as hits.
+  if (toReportMode in FOptions.FMiscOptions) and not (ItemHit or ((LabelHit or ImageHit) and
+    (HitInfo.HitColumn = FHeader.MainColumn))) then
+    HitInfo.HitNode := nil;
+
+  if Assigned(HitInfo.HitNode) then
+  begin
+    if ItemHit or LabelHit or ImageHit or not (toShowDropmark in FOptions.FPaintOptions) then
+      Result := dmOnNode
+    else
+      if ((NodeRect.Top + NodeRect.Bottom) div 2) > P.Y then
+        Result := dmAbove
+      else
+        Result := dmBelow;
+  end
+  else
+    Result := dmNowhere;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DetermineHiddenChildrenFlag(Node: PVirtualNode);
 
 // Update the hidden children flag of the given node.
@@ -20335,6 +20250,137 @@ begin
       end;
     end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer;
+
+// This method is used during paint cycles and initializes an array of line type IDs. These IDs are used to paint
+// the tree lines in front of the given node.
+// Additionally an initial count of selected parents is determined and returned which is used for specific painting.
+
+var
+  X: Integer;
+  Indent: Integer;
+  Run: PVirtualNode;
+
+begin
+  Result := 0;
+  if toShowRoot in FOptions.FPaintOptions then
+    X := 1
+  else
+    X := 0;
+  Run := Node;
+  // Determine indentation level of top node.
+  while Run.Parent <> FRoot do
+  begin
+    Inc(X);
+    Run := Run.Parent;
+    // Count selected nodes (FRoot is never selected).
+    if vsSelected in Run.States then
+      Inc(Result);
+  end;
+
+  // Set initial size of line index array, this will automatically initialized all entries to ltNone.
+  SetLength(LineImage, X);
+  Indent := X - 1;
+
+  // Only use lines if requested.
+  if (toShowTreeLines in FOptions.FPaintOptions) and
+     (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or not (tsUseThemes in FStates)) then
+  begin
+    if toChildrenAbove in FOptions.FPaintOptions then
+    begin
+      Dec(X);
+      if not HasVisiblePreviousSibling(Node) then
+      begin
+        if (Node.Parent <> FRoot) or HasVisibleNextSibling(Node) then
+          LineImage[X] := ltBottomRight
+        else
+          LineImage[X] := ltRight;
+      end
+      else
+        if (Node.Parent = FRoot) and (not HasVisibleNextSibling(Node)) then
+          LineImage[X] := ltTopRight
+        else
+          LineImage[X] := ltTopDownRight;
+
+      // Now go up to the root to determine the rest.
+      Run := Node.Parent;
+      while Run <> FRoot do
+      begin
+        Dec(X);
+        if HasVisiblePreviousSibling(Run) then
+          LineImage[X] := ltTopDown
+        else
+          LineImage[X] := ltNone;
+
+        Run := Run.Parent;
+      end;
+    end
+    else
+    begin
+      // Start over parent traversal if necessary.
+      Run := Node;
+
+      if Run.Parent <> FRoot then
+      begin
+        // The very last image (the one immediately before the item label) is different.
+        if HasVisibleNextSibling(Run) then
+          LineImage[X - 1] := ltTopDownRight
+        else
+          LineImage[X - 1] := ltTopRight;
+        Run := Run.Parent;
+
+        // Now go up all parents.
+        repeat
+          if Run.Parent = FRoot then
+            Break;
+          Dec(X);
+          if HasVisibleNextSibling(Run) then
+            LineImage[X - 1] := ltTopDown
+          else
+            LineImage[X - 1] := ltNone;
+          Run := Run.Parent;
+        until False;
+      end;
+
+      // Prepare root level. Run points at this stage to a top level node.
+      if (toShowRoot in FOptions.FPaintOptions) and ((toShowTreeLines in FOptions.FPaintOptions) and
+         (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or not (tsUseThemes in FStates))) then
+      begin
+        // Is the top node a root node?
+        if Run = Node then
+        begin
+          // First child gets the bottom-right bitmap if it isn't also the only child.
+          if IsFirstVisibleChild(FRoot, Run) then
+            // Is it the only child?
+            if IsLastVisibleChild(FRoot, Run) then
+              LineImage[0] := ltRight
+            else
+              LineImage[0] := ltBottomRight
+          else
+            // real last child
+            if IsLastVisibleChild(FRoot, Run) then
+              LineImage[0] := ltTopRight
+            else
+              LineImage[0] := ltTopDownRight;
+        end
+        else
+        begin
+          // No, top node is not a top level node. So we need different painting.
+          if HasVisibleNextSibling(Run) then
+            LineImage[0] := ltTopDown
+          else
+            LineImage[0] := ltNone;
+        end;
+      end;
+    end;
+  end;
+
+  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) then
+    LineImage[Indent] := ltNone;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22311,9 +22357,6 @@ var
   OldR, R: TRect;
   NewDropMode: TDropMode;
   HitInfo: THitInfo;
-  ImageHit: Boolean;
-  LabelHit: Boolean;
-  ItemHit: Boolean;
   DragPos: TPoint;
   Tree: TBaseVirtualTree;
   LastNode: PVirtualNode;
@@ -22381,32 +22424,13 @@ begin
       Include(Shift, ssMiddle);
     if tsRightButtonDown in FStates then
       Include(Shift, ssRight);
-    GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo);
-    ImageHit := HitInfo.HitPositions * [hiOnNormalIcon, hiOnStateIcon] <> [];
-    LabelHit := hiOnItemLabel in HitInfo.HitPositions;
-    ItemHit := ((hiOnItem in HitInfo.HitPositions) and ((toFullRowDrag in FOptions.FMiscOptions) or
-               (toFullRowSelect in FOptions.FSelectionOptions)));
-    // In report mode only direct hits of the node captions/images in the main column are accepted as hits.
-    if (toReportMode in FOptions.FMiscOptions) and not (ItemHit or ((LabelHit or ImageHit) and
-      (HitInfo.HitColumn = FHeader.MainColumn))) then
-      HitInfo.HitNode := nil;
 
+    GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo);
     if Assigned(HitInfo.HitNode) then
-    begin
-      R := GetDisplayRect(HitInfo.HitNode, NoColumn, False);
-      if ItemHit or LabelHit or ImageHit or not (toShowDropmark in FOptions.FPaintOptions) then
-        NewDropMode := dmOnNode
-      else
-        if ((R.Top + R.Bottom) div 2) > Pt.Y then
-          NewDropMode := dmAbove
-        else
-          NewDropMode := dmBelow;
-    end
+      R := GetDisplayRect(HitInfo.HitNode, NoColumn, False)
     else
-    begin
-      NewDropMode := dmNowhere;
       R := Rect(0, 0, 0, 0);
-    end;
+    NewDropMode := DetermineDropMode(Pt, HitInfo, R);
 
     if Assigned(Tree) then
       DragImageWillMove := Tree.FDragImage.WillMove(DragPos)
@@ -32569,7 +32593,8 @@ procedure TBaseVirtualTree.ToggleNode(Node: PVirtualNode);
 // Changes a node's expand state to the opposite state.
 
 var
-  Child: PVirtualNode;
+  Child,
+  FirstVisible: PVirtualNode;
   HeightDelta,
   StepsR1,
   StepsR2,
@@ -32688,7 +32713,7 @@ begin
                     Mode1 := tamScrollDown;
                     R1.Bottom := R1.Top;
                     R1.Top := 0;
-                    StepsR1 := Min(R1.Bottom - R1.Top + 1, Node.TotalHeight - NodeHeight[Node]);
+                    StepsR1 := Min(R1.Bottom - R1.Top + 1, Integer(Node.TotalHeight) - Integer(NodeHeight[Node]));
                   end
                   else
                   begin
@@ -32952,8 +32977,11 @@ begin
                     SetOffsetY(FOffsetY - Integer(HeightDelta))
                   else
                     if TotalFit and NodeInView then
-                      SetOffsetY(FOffsetY - GetDisplayRect(GetFirstVisible(Node, True), NoColumn, False).Top)
-                    else
+                    begin
+                      FirstVisible := GetFirstVisible(Node, True);
+                      if Assigned(FirstVisible) then // otherwise there is no visible child at all
+                        SetOffsetY(FOffsetY - GetDisplayRect(FirstVisible, NoColumn, False).Top)
+                    end else
                       BottomNode := Node;
                 end
                 else
