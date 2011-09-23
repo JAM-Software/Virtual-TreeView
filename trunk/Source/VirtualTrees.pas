@@ -25,6 +25,7 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 //
 //  September 2011
+//   - The property EmptyListMessage may now contain linebreaks in Delphi 2009 and higher, the text in now printed in dark gray.
 //   - Support for flat scroll bars has been removed.
 //   - Global variables InWin2k and IsWinXP, enum member hsXPStyle, function DrawXPButton() and support for Windows 2000 has been removed.
 //   - Global variable IsWinNT and support for Windows 9x has been removed.
@@ -31915,8 +31916,16 @@ begin
         // output a message if no items are to display
         Canvas.Font := Self.Font;
         SetBkMode(TargetCanvas.Handle, TRANSPARENT);
-        TextOutW(TargetCanvas.Handle, 2 - Window.Left, 2 - Window.Top, PWideChar(FEmptyListMessage),
-          Length(FEmptyListMessage));
+        R.Left := TargetRect.Left + 3;
+        R.Top := TargetRect.Top + 2;
+        R.Right := Max(TargetRect.Right, Window.Right) -2; //  TargetRect.Right is very small when the window is moved out of the Dektop on the left
+        R.Bottom := TargetRect.Bottom -2;
+        TargetCanvas.Font.Color := clGrayText;
+        {$if CompilerVersion >= 20}
+        TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft]);
+        {$else}
+        TextOutW(TargetCanvas.Handle, 2 - Window.Left, 2 - Window.Top, PWideChar(FEmptyListMessage), Length(FEmptyListMessage));
+        {$ifend}
       end;
 
       DoAfterPaint(TargetCanvas);
