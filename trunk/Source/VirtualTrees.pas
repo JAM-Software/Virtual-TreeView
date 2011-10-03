@@ -220,7 +220,7 @@ type
   TAutoScrollInterval = 1..1000;
 
   // Need to declare the correct WMNCPaint record as the VCL (D5-) doesn't.
-  {$ifdef COMPILER_16_UP}
+  {$if CompilerVersion >= 23}
   TRealWMNCPaint = TWMNCPaint;
   {$else}
   TRealWMNCPaint = packed record
@@ -239,7 +239,7 @@ type
   end;
 
   TWMPrintClient = TWMPrint;
-  {$endif ~COMPILER_16_UP}
+  {$ifend}
 
   // Be careful when adding new states as this might change the size of the type which in turn
   // changes the alignment in the node record as well as the stream chunks.
@@ -4283,7 +4283,7 @@ type
   end;
 
 var
-  ClipboardDescriptions: array [1..CF_MAX - {$if CompilerVersion >= 23}2{$else}1{$ifend}] of TClipboardFormatEntry = (
+  ClipboardDescriptions: array [1..CF_MAX - 1] of TClipboardFormatEntry = (
     (ID: CF_TEXT; Description: 'Plain text'), // Do not localize
     (ID: CF_BITMAP; Description: 'Windows bitmap'), // Do not localize
     (ID: CF_METAFILEPICT; Description: 'Windows metafile'), // Do not localize
@@ -4300,9 +4300,9 @@ var
     (ID: CF_ENHMETAFILE; Description: 'Enhanced metafile image'), // Do not localize
     (ID: CF_HDROP; Description: 'File name(s)'), // Do not localize
     (ID: CF_LOCALE; Description: 'Locale descriptor') // Do not localize
-    {$ifdef COMPILER_16_UP}
+    {$if CompilerVersion >= 23}
     ,(ID: CF_DIBV5; Description: 'DIB image V5') // Do not localize
-    {$endif COMPILER_16_UP}
+    {$ifend}
   );
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18788,7 +18788,7 @@ begin
 
   Flags := DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE;
 
-  if (Message.Rgn = 1) then
+  if ((Message.Rgn {$ifdef CPUX64}shr 32{$endif}) = 1) then // fixes issue #235
     DC := GetDCEx(Handle, 0, Flags)
   else
     DC := GetDCEx(Handle, Message.Rgn, Flags or DCX_INTERSECTRGN);
