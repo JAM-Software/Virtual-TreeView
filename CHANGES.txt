@@ -1,3 +1,5 @@
+December 2011
+ - Fixed compiler warning in RAD Studio XE2 regarding deprecated ThemeServices
 September 2011
  - The property EmptyListMessage may now contain linebreaks in Delphi 2009 and higher, the text in now printed in dark gray.
  - Support for flat scroll bars has been removed.
