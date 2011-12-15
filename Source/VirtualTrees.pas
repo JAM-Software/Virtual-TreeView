@@ -3876,7 +3876,7 @@ type
     class function Enabled: Boolean; inline;
     class function DrawElement(DC: HDC; Details: TThemedElementDetails; const R: TRect; ClipRect: PRect = nil): Boolean; inline;
     class function GetElementDetails(Detail: TThemedHeader): TThemedElementDetails; inline;
-    class function PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
+    class procedure PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
   end;
 
   class function StyleServices.Enabled: Boolean;
@@ -3895,7 +3895,7 @@ type
     Result := ThemeServices.GetElementDetails(Detail);
   end;
 
-  class function StyleServices.PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
+  class procedure StyleServices.PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
   begin
     ThemeServices.PaintBorder(Control, EraseLRCorner);
   end;
@@ -22455,8 +22455,8 @@ begin
       Include(Shift, ssMiddle);
     if tsRightButtonDown in FStates then
       Include(Shift, ssRight);
-
     GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo);
+
     if Assigned(HitInfo.HitNode) then
       R := GetDisplayRect(HitInfo.HitNode, NoColumn, False)
     else
