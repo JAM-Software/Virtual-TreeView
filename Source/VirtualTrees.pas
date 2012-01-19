@@ -27588,11 +27588,11 @@ begin
           if [vsHasChildren, vsExpanded] * Node.States = [vsHasChildren, vsExpanded] then
             ToggleNode(Node);
           Node := GetPreviousNoInit(Node, True);
-        until Node = Stop;
+        until (Node = Stop) or not Assigned(Node);
 
         // Collapse the start node too.
-        if Assigned(Node) and ([vsHasChildren, vsExpanded] * Node.States = [vsHasChildren, vsExpanded]) then
-          ToggleNode(Node);
+        if Assigned(Stop) and ([vsHasChildren, vsExpanded] * Stop.States = [vsHasChildren, vsExpanded]) then
+          ToggleNode(Stop);
       end;
     finally
       EndUpdate;

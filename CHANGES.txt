@@ -1,3 +1,5 @@
+January 2012
+ - Bug fix: Fixed a potential access violation in TBaseVirtualTree.FullCollapse in case of toChildrenAbove
 December 2011
  - Fixed compiler warning in RAD Studio XE2 regarding deprecated ThemeServices
 September 2011
