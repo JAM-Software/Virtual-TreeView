@@ -3873,9 +3873,9 @@ var
 type
   // For compatibility with Delphi XE and earlier, prevents deprecated warnings in Delphi XE2 and higher
   StyleServices = class
-    class function Enabled: Boolean; inline;
-    class function DrawElement(DC: HDC; Details: TThemedElementDetails; const R: TRect; ClipRect: PRect = nil): Boolean; inline;
-    class function GetElementDetails(Detail: TThemedHeader): TThemedElementDetails; inline;
+    class function Enabled: Boolean;
+    class function DrawElement(DC: HDC; Details: TThemedElementDetails; const R: TRect; ClipRect: PRect = nil): Boolean;
+    class function GetElementDetails(Detail: TThemedHeader): TThemedElementDetails; 
     class procedure PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
   end;
 
@@ -25187,7 +25187,7 @@ var
 begin
   if tsUseExplorerTheme in FStates then
   begin
-    Theme := OpenThemeData(Application.ActiveFormHandle, 'Explorer::TreeView');
+    Theme := OpenThemeData(Application.{$if CompilerVersion >= 20}ActiveFormHandle{$else}Handle{$ifend}, 'Explorer::TreeView');
     RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
     if (Header.Columns.Count = 0) and (toFullRowSelect in TreeOptions.SelectionOptions) then
       RowRect.Right := ClientWidth;
