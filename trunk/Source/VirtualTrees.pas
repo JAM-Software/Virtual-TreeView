@@ -3871,17 +3871,41 @@ var
 
   {$if CompilerVersion < 23}
 type
+  TElementEdge = (
+    eeRaisedOuter
+  );
+
+  TElementEdges = set of TElementEdge;
+
+  TElementEdgeFlag = (
+    efRect
+  );
+
+  TElementEdgeFlags = set of TElementEdgeFlag;
+
   // For compatibility with Delphi XE and earlier, prevents deprecated warnings in Delphi XE2 and higher
   StyleServices = class
     class function Enabled: Boolean;
+    class function DrawEdge(DC: HDC; Details: TThemedElementDetails; const R: TRect;
+      Edges: TElementEdges; Flags: TElementEdgeFlags; ContentRect: PRect = nil): Boolean;
     class function DrawElement(DC: HDC; Details: TThemedElementDetails; const R: TRect; ClipRect: PRect = nil): Boolean;
-    class function GetElementDetails(Detail: TThemedHeader): TThemedElementDetails; 
+    class function GetElementDetails(Detail: TThemedHeader): TThemedElementDetails; overload;
+    class function GetElementDetails(Detail: TThemedToolTip): TThemedElementDetails; overload;
+    class function GetElementDetails(Detail: TThemedWindow): TThemedElementDetails; overload;
     class procedure PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
   end;
 
   class function StyleServices.Enabled: Boolean;
   begin
     Result := ThemeServices.ThemesEnabled;
+  end;
+
+  class function StyleServices.DrawEdge(DC: HDC; Details: TThemedElementDetails; const R: TRect;
+    Edges: TElementEdges; Flags: TElementEdgeFlags; ContentRect: PRect = nil): Boolean;
+  begin
+    Assert((Edges = [eeRaisedOuter]) and (Flags = [efRect]));
+    ThemeServices.DrawEdge(DC, Details, R, BDR_RAISEDOUTER, BF_RECT);
+    Result := Enabled;
   end;
 
   class function StyleServices.DrawElement(DC: HDC; Details: TThemedElementDetails; const R: TRect; ClipRect: PRect = nil): Boolean;
@@ -3891,6 +3915,16 @@ type
   end;
 
   class function StyleServices.GetElementDetails(Detail: TThemedHeader): TThemedElementDetails;
+  begin
+    Result := ThemeServices.GetElementDetails(Detail);
+  end;
+
+  class function StyleServices.GetElementDetails(Detail: TThemedToolTip): TThemedElementDetails;
+  begin
+    Result := ThemeServices.GetElementDetails(Detail);
+  end;
+
+  class function StyleServices.GetElementDetails(Detail: TThemedWindow): TThemedElementDetails;
   begin
     Result := ThemeServices.GetElementDetails(Detail);
   end;
@@ -7446,6 +7480,7 @@ var
   S: UnicodeString;
   DrawFormat: Cardinal;
   Shadow: Integer;
+  LClipRect: TRect;
 
 begin
   Shadow := 0;
@@ -7484,6 +7519,22 @@ begin
           Font.Color := clInfoText;
           Pen.Color := clBlack;
           Brush.Color := clInfoBk;
+          if IsWinVistaOrAbove and StyleServices.Enabled and
+            ((toThemeAware in Tree.TreeOptions.PaintOptions) or
+             (toUseExplorerTheme in Tree.TreeOptions.PaintOptions)) then
+          begin
+            if toUseExplorerTheme in Tree.TreeOptions.PaintOptions then // ToolTip style
+              StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tttStandardNormal), R)
+            else
+            begin // Hint style
+              LClipRect := R;
+              InflateRect(R, 4, 4);
+              StyleServices.DrawElement(Handle, StyleServices.GetElementDetails(tttStandardNormal), R, @LClipRect);
+              R := LClipRect;
+              StyleServices.DrawEdge(Handle, StyleServices.GetElementDetails(twWindowRoot), R, [eeRaisedOuter], [efRect]);
+            end;
+          end
+          else
           Rectangle(R);
 
           // Determine text position and don't forget the border.
@@ -19699,14 +19750,16 @@ begin
   begin
     DoCheckClick(Node, NewCheckState);
     // Recursively adjust parent of parent.
-    with Node^ do
-    begin
-      if not (vsInitialized in Parent.States) then
-        InitNode(Parent);
-      if ([vsChecking, vsDisabled] * Parent.States = []) and (Parent <> FRoot) and
-        (Parent.CheckType = ctTriStateCheckBox) then
-        Result := CheckParentCheckState(Node, NewCheckState);
-    end;
+    // This is already done in the function DoCheckClick() called in the above line
+    // We revent unnecessary upward recursion by commenting this code.
+    //    with Node^ do
+    //    begin
+    //      if not (vsInitialized in Parent.States) then
+    //        InitNode(Parent);
+    //      if ([vsChecking, vsDisabled] * Parent.States = []) and (Parent <> FRoot) and
+    //        (Parent.CheckType = ctTriStateCheckBox) then
+    //        Result := CheckParentCheckState(Node, NewCheckState);
+    //    end;
   end;
 end;
 
