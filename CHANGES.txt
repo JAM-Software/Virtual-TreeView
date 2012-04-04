@@ -1,6 +1,9 @@
+April 2012
+ - Added support for theming of hint window (thanks to Arno Garrels and Uwe Schuster)
+ - TBaseVirtualTree.CheckParentCheckState: Fixed duplicate recursion to parent nodes
 March 2012
-- Fixed painting of Windows7/Vista style Explorer selection in case tsUseExplorerTheme is in TreeOptions
-- Ctrl + A now selects all items
+ - Fixed painting of Windows7/Vista style Explorer selection in case tsUseExplorerTheme is in TreeOptions
+ - Ctrl + A now selects all items
 January 2012
  - Bug fix: Fixed a potential access violation in TBaseVirtualTree.FullCollapse in case of toChildrenAbove
 December 2011
