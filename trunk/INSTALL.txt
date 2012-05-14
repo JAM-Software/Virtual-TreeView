@@ -1,0 +1,14 @@
+Supported Delphi version: Delphi 7 - XE2
+Supported Windows Versions: XP, 2003, Vista, 2008, 7, 2008R2
+
+
+Delphi 7 Installation
+~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\VirtualTrees.bpg"
+2. Right click on "VirtualTreesD" and click "Install"
+3. Go to "Tools > Environment Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+   
+   
+
+
