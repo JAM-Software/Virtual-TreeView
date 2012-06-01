@@ -1,0 +1,271 @@
+@@Features.htm
+<title Features overview>
+
+<image Hierarchy>
+
+Virtual Treeview is "pure VCL" which means it is not based on any of the system controls but was written from scratch. As
+the name already indicates, this control uses a different paradigm for tree management than other controls of this kind.
+It does not know anything about the data it manages (except its size), not even the captions of a node. Everything is
+retrieved from the application via events (or descendants via overridden methods). Virtual Treeview has been carefully
+designed and thoroughly tested. The control proved its concept as well as everyday fitness already in many commercial
+products and freeware projects.The following list summarizes in categories the most important features:
+
+<table noborder>
+<image Topaz>   General
+--------------  --------
+</table>
+
+  * Virtual Treeview is <b>extremely fast</b>. Adding one million nodes takes only 700 milliseconds&#42; ! This makes it
+    currently the fastest treeview publicly available on the Delphi/BCB market.
+  * Virtual Treeview has a <b>very small memory</b> foot print. By only allocating about 60 bytes per node (in the string
+    tree, the base tree uses only 56 bytes) it is well prepared to hold a million of them.
+  * Virtual Treeview is <b>optimized for high speed access</b>. It takes as few as 0.5 seconds to traverse one million
+    nodes&#42; depending on needed validation and node validation states.
+  * <b>Multiselection</b> is supported, including <b>constrained selection</b> so that only nodes of a certain initial
+    level can be selected. A lot of effort has been put into the development of <b>effective algorithms</b> e.g. to allow for
+    modifying an already large selection set still interactively.
+  * <b>Drawing</b> the entire tree <b>to a bitmap or the printer</b> is supported by the central PaintTree method. The
+    messages WM_PRINT and WM_PRINTCLIENT are handled correctly which allow things like drawing a tree into a bitmap (e.g. <b>for
+    layered windows</b> or to implement animated drop down of controls which use VT as drop down control).
+  * There is an OnHint event to display <b>node specific hints</b>.
+  * There is an OnGetHelpContext event to retrieve <b>node specific help context IDs</b>. This includes automatic tree
+    and window parent control traversal as is invoked when the user pressed F1
+  * There is an OnGetPopupMenu event to retrieve <b>node specific popup menus</b>, includes automatic tree traversal.
+  * <b>Middle</b> and <b>right mouse buttons</b> can be used in addition to the left button and support everything which
+    is possible with the left button (dragging, selection etc.). These alternative buttons can be switched, of course.
+  * A <b>fixed background image</b> can be used in the tree and can be given a certain offset, e.g. to simulate shared
+    backgrounds.
+  * <b>Hot style</b> for nodes is supported (just like links in a browser window). A special cursor can be assigned for
+    this task.
+  * String trees support so called <b>static text</b> which appears after a node's caption (in every column) and which
+    can be formatted differently to the caption but cannot be edited, selected etc.
+  * An <b>auto span column</b> mode is supported which allows a column to take up more space for its caption if there are
+    empty columns to its right. This avoids clipping of long captions but still allows using multiple columns.
+  * A <b>node</b> can be <b>selected in every column</b> (this is switchable) as well as edited, making Virtual Treeview
+    some kind of a grid too. The tabulator key can be used to switch the focus between cells. A special option
+    (toGridExtensions) exist to support grid specific tasks.
+  * Nodes can have <b>individual heights</b> and the <b>vertical alignment</b> of a node's images and lines can be
+    adjusted individually.
+  * Virtual Treeview exposes its <b>internal states</b> like pending drag or edit events, multi selection or expanding in
+    progress. Using this information an application can <b>optimize its code execution</b> (state updates etc.).
+  * <b>Sorting a node</b> is supported via an application defined <b>compare call back</b>. Additionally, a tree can be
+    set to <b>auto sort</b>.
+  * <b>Hints</b> can contain <b>multiple lines</b> of text and mirror the <b>alignment and directionality</b> of the node
+    \or column they are displayed for. For their animation <b>sliding and alpha blending</b> is available.
+  * <b>Incremental search</b> with various options and directions is available too.
+  * <b>Auto scrolling</b> of the client area happens when the mouse is near the borders while dragging and draw selecting
+    (multi selection).
+  * <b>Default node height</b> and <b>default node text for string trees</b> can be used to avoid setting many nodes
+    explicitly to the same start value.
+
+<table noborder>
+<image Topaz>   Newest technologies
+--------------  --------------------
+</table>
+
+  * For <b>smooth animations</b> (e.g. hint fading) Virtual Treeview uses <b>hand optimized MMX assembler</b> routines.
+    This code is also used to draw the translucent selection rectangle in multi selection mode. This is very much like what
+    Windows 2000 and Windows XP support but works also on Windows 95/98/Me.
+  * An <b>alpha blended image</b> of the tree window is shown while doing drag and drop. On Windows 2000 and Windows XP <b>IDropTargetHelper
+    and IDragSourceHelper interfaces</b> are supported which allow for some very neat effects (as used by Explorer). On older
+    consumer Windows versions the drag image is simulated by the tree but underlies there some minor limitations.
+  * Virtual Treeview supports <b>Windows XP themes</b>. It acts properly on theme changes and uses for all visual
+    elements which are themed the correct image by using native APIs. Under other Windows systems these styles are supported
+    by separate legacy code. Theme awareness can be switched.
+  * Virtual Treeview supports the 64Bit compiler of Delphi XE2
+
+<table noborder>
+<image Topaz>   Unicode
+--------------  --------
+</table>
+
+  * TVirtualStringTree is implemented using <b>Unicode/wide strings</b> exclusively.
+  * The tree saves and reads all Unicode properties (e.g. column captions, default node text and the like) correctly
+    to/from DFM.
+  * All Unicode drawing <b>fully supports bidirectionality</b> (i.e. right&#45;to&#45;left drawing), column alignment
+    (left, center, right) and correctly aligned hints. Of course also this feature is available on Windows 95/98/Me.
+  * On Windows NT/2000/XP multiline captions are fully supported (on Win9x/Me there is limited support).
+  * In order to have also <b>Unicode editing capabilities</b> Virtual Treeview supports the TNT controls written by Troy
+    Wolbrink. This support can be enabled via a compiler switch named <b>TntSupport</b>. You must download and install the
+    TNT package first, however.
+
+<table noborder>
+<image Topaz>   Drag'n drop and clipboard support
+--------------  ----------------------------------
+</table>
+
+  * <b>OLE drag and drop</b> and <b>OLE clipboard transfers</b> are supported with the tree as source and target.
+    Alternatively, VCL drag'n drop can still be used for compatibility.
+
+These formats are support by the standard implementation:
+
+  * <b>Native serialized format</b> (CF_VIRTUALTREE and CF_VTREFERENCE), which is a compact form to exchange data between
+    Virtual Treeviews (also between applications). Two storage formats are available: HGlobal and IStream.
+  * <b>Plain ANSI text</b> string format.
+  * <b>Plain Unicode text</b> string format.
+  * <b>Rich Text (RTF)</b> string format (with Unicode text).
+  * <b>HTML text</b> string format (<b>UTF&#45;8</b>). This is the preferred clipboard format for Word 2000 etc. and
+    allows copy and paste tree content to a word document with nearly no application code.
+
+There is a registration scheme which allows descendants to specify and implement their own clipboard formats. Via a drop
+handler the application can accept any OLE format without deriving an own tree class. In order to aid processing of the
+native tree data specialized methods are implemented. See also: ProcessOLEData and ProcessDrop.<b>Dropmarks</b> show
+during drag'n drop where data will be inserted. This works also with VCL drag'n drop. The drop target model has been
+extended to allow <b>drop actions above, below or on a node</b>. Meanwhile vendors of other treeview controls have
+started using this little but powerfull idea too.<b>Auto expand</b> of nodes which are the drop target for more than an
+adjustable time interval is performed if enabled.
+
+<table noborder>
+<image Topaz>   Header and columns
+--------------  -------------------
+</table>
+
+  * <b>Multiple columns</b> are supported by an own header implementation. This header takes up space in the non&#45;client
+    area of the tree control and supports <b>various buttons styles</b> (standard listview thick buttons, flat buttons,
+    plates, Windows XP style and owner draw).
+  * Columns can <b>appear in every order</b> in the tree window.
+  * <b>Each column can be hidden</b> including the main column which holds the actual tree.
+  * <b>Each column</b> can become the <b>main column</b>.
+  * <b>Columns</b> can be shown also <b>without</b> the <b>header</b>.
+  * Columns can have <b>various options</b> (visible, clickable, resizable, draggable etc.).
+  * You can set <b>individual alignments</b> for each column as well as right&#45;to&#45;left or left&#45;to&#45;right <b>directionality</b>
+    (again: available also on non&#45;middle&#45;east and older Windows consumer systems).
+  * Each column can have an <b>own color</b>.
+  * The header as well as the columns collection class and the actual <b>column classes support streaming</b>. This is
+    independant from the treeview streaming.
+  * Each column can individually be customized by the application. An advance custom draw handling is implemented, which
+    allows for very sophisticated effects, including animations.
+
+<table noborder>
+<image Topaz>   Check support
+--------------  --------------
+</table>
+
+  * <b>Each node</b> in the tree can have its <b>own check type</b>. This can either be <b>check box</b> (also tristate),
+    <b>radio button</b> or <b>node button</b>. These types can <b>freely be mixed</b> so you can for instance have a node
+    with 10 nodes of which 5 comprise a radio group (where only one of these 5 nodes can be checked) and the other 5 nodes
+    can have a check box (or no check type at all).
+  * Mixed (tri&#45;state) <b>check boxes</b> with proper handling for <b>partial checking</b> of child nodes are
+    supported (as often used in install and backup programs).
+  * <b>Automatic state change propagation</b> for mixed check button type is possible (if enabled).
+  * Check events <b>OnChecking</b> and <b>OnCheck</b> events are supplied too.
+  * For special purposes a small <b>flat button</b> can be used, which is called a <b>node button</b>.
+  * <b>7 different</b> kinds of <b>check images</b> are possible. Dark and light check marks, dark and light tick marks,
+    flat check images, Windows XP style check images and application defined check images. For an overview see property
+    CheckImageKind.
+
+<table noborder>
+<image Topaz>   Design time
+--------------  ------------
+</table>
+
+  * Virtual Treeview's properties and methods are registered with <b>Delphi categories</b> (Delphi 5 and BCB 5 or
+    higher).
+  * A special <b>property editor</b> for the <b>clipboard formats</b> is included which allows a simple format choice.
+    This is particularly important since the available clipboard formats must be given as strings and it is also quite handy
+    to have a list of available formats, even if they are not enabled yet (to know what can be enabled).
+
+<table noborder>
+<image Topaz>   Customization
+--------------  --------------
+</table>
+
+  * <b>Custom draw and paint cycles</b> are supported via paint events (for the entire tree and for each node)
+  * Apart from the built&#45;in check types a <b>user defined check image</b> can be used which is supported by a
+    separate image list.
+  * Each button in the header can be drawn individually.
+  * Three different lines styles are available: dotted lines, solid lines and application defined lines.
+  * Applications and descendants can provide their <b>own node editor</b> (which has not necessarily to be a single
+    control) by handling the OnCreateEditor event or overriding DoCreateEditor. This allows to completely replace node
+    editing by own (business) rules.
+
+&#42;
+
+  * Applications and descendants can provide their <b>own drag manager interface</b> by handling the
+  * OnCreateDragManager event or overriding DoCreateDragManager. This allows to customize the entire OLE drag handling of
+    the
+  * tree. Note: VCL drag'n drop is managed by the VCL so this cannot be customized.
+  * Applications and descendants can provide their <b>own data object interface</b> by handling the OnCreateDataObject
+    event or overriding DoCreateDataObject. This allows to provide own clipboard formats.
+  * There is registration function (RegisterVTClipboardFormat) which allows to register tree descendants with <b>own
+    clipboard and/or storage formats</b>. Applications get provide own clipboard formats (without deriving new tree classes)
+    by handling the GetUserClipboardFormats event.
+  * Applications and descendants can completely <b>modify the tree's key handling</b> by handling the OnKeyAction event
+    \or overriding DoKeyAction. This works also for incremental search.
+  * Applications and descendants can <b>customize the tree's background</b> which is not covered by nodes by handling the
+    OnPaintBackground event or overriding DoPaintBackground. For nodes there are further events for customization.
+  * Applications and descendants can <b>customize how the string tree shortens too long captions</b> by handling the
+    OnShortenString event or overriding DoShortenString.
+
+<table noborder>
+<image Topaz>   Scrolling
+--------------  ----------
+</table>
+
+  * <b>Flat scroll bars</b> are supported. But since they conflict with Windows XP this support is switched off by a
+    compiler symbol (<b>UseFlatScrollbars</b>). Enable this symbol if you really want to use flat scroll bars before
+    compiling the tree unit.
+  * Every scroll operation triggers an OnScroll event. This allows to synchronize trees with other controls.
+  * There are properties (e.g. OffsetXY) which allow to scroll the tree content to any postion in code without sending
+    messages around.
+
+<table noborder>
+<image Topaz>   Streaming
+--------------  ----------
+</table>
+
+  * <b>Sophisticated tree content serialization</b> has been implemented to allow saving and restoring a tree to/from
+    streams. This includes also user data as long as it can be written to a stream.
+  * Virtual Treeview allows also to <b>add data from stream</b> instead replacing the entire content.
+  * The internal format of the <b>stream is chunk based</b> which makes it very flexible for future enhancements but
+    still keeps compatibility with older implementations.
+  * There is a user chunk which takes data written to the stream in the OnSaveNode event. The data of this user chunk is
+    can be read in OnLoadNode.
+
+<table noborder>
+<image Topaz>   Developer support
+--------------  ------------------
+</table>
+
+  * Special care has been taken to format the <b>source code</b> of Virtual Treeview <b>consistently</b>.
+  * A <b>large part</b> of the entire implementation are <b>comments</b> which describe the inner workings.
+  * Methods and properties are <b>consequently ordered alphabetically</b> within their scope (private, protected, public,
+    published). The only exception are the constructors and destructors which always appear at the top of the public section
+    in the class declaration and are always the first methods in the class implementation.
+  * For <b>every event</b> there is a <b>virtual method</b> which calls the event handler. This allows descendants to get
+    notice of <b>every</b> event without assigning a handler. The names of these methods correspond directly to the events by
+    using the pattern: Do<i>EventName</i>.
+  * Many measures have been taken to ensure <b>Borland C++ Builder compatibility</b>. This is particularly difficult
+    because the automatic translation from Delphi to C++ code in BCB is buggy.
+  * There is an easy and <b>powerfull mechanism</b> for descendants writers to allocate their <b>own data</b> on a <b>per
+    node</b> basis. Simply call AllocateInternalData to register your needs. This will not influence existing or future
+    application code if it consequently uses GetNodeData for user data access.
+
+<table noborder>
+<image Topaz>   Editing
+--------------  --------
+</table>
+
+  * <b>Application defined editors</b> are supported via an edit link interface. A generic (non&#45;Unicode) editor
+    implementation is available too.
+  * <b>Every column</b> in the tree is <b>editable</b> if enabled (see toExtendedFocus).
+  * By supporting the TNT controls library (see chapter Unicode above) it is also possible to have full Unicode editing
+    capabilities.
+
+<table noborder>
+<image Topaz>   Utilities
+--------------  ----------
+</table>
+For your convenience some of the internally used functions which are of general interest are exposed.
+
+  * <b>AlphaBlend</b>: a general purpose procedure to blend a source onto a target bitmap using several different modes.
+  * <b>DrawTextW</b>: a partial implementation of the DrawText API which supports Unicode. This method is not used on
+    Windows NT/2000/XP machines.
+  * <b>ShortenString</b>: a general purpose function which makes a given WideString fitting into a given space. This is
+    partially implemented by the Windows DrawText API but takes additionally care for right&#45;to&#45;left alignment and
+    works with Unicode also on Windows 95/98/Me.
+
+<table>
+\* Times given here are taken on a Windws XP professional system running on an Athlon 650 MHz with 256MB RAM. All
+ possible optimization were applied.
+</table>
