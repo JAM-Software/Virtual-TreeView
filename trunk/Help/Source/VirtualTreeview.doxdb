@@ -37,536 +37,643 @@
       <topicid>!!MEMBERTYPE_Constructors_TBaseVirtualTree</topicid>
       <displaystring>TBaseVirtualTree Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TBaseVirtualTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TBaseVirtualTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TClipboardFormatList</topicid>
       <displaystring>TClipboardFormatList Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TClipboardFormatList.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TClipboardFormatList.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TClipboardFormats</topicid>
       <displaystring>TClipboardFormats Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TClipboardFormats.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TClipboardFormats.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TCriticalSection</topicid>
       <displaystring>TCriticalSection Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TCriticalSection.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TCriticalSection.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TCustomStringTreeOptions</topicid>
       <displaystring>TCustomStringTreeOptions Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TCustomStringTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TCustomStringTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TCustomVirtualStringTree</topicid>
       <displaystring>TCustomVirtualStringTree Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TCustomVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TCustomVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TCustomVirtualTreeOptions</topicid>
       <displaystring>TCustomVirtualTreeOptions Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TCustomVirtualTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TCustomVirtualTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TEnumFormatEtc</topicid>
       <displaystring>TEnumFormatEtc Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TEnumFormatEtc.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TEnumFormatEtc.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TScrollBarOptions</topicid>
       <displaystring>TScrollBarOptions Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TScrollBarOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TScrollBarOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TStringEditLink</topicid>
       <displaystring>TStringEditLink Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TStringEditLink.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TStringEditLink.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVirtualTreeColumn</topicid>
       <displaystring>TVirtualTreeColumn Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVirtualTreeColumn.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVirtualTreeColumn.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVirtualTreeColumns</topicid>
       <displaystring>TVirtualTreeColumns Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVirtualTreeColumns.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVirtualTreeColumns.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVirtualTreeHintWindow</topicid>
       <displaystring>TVirtualTreeHintWindow Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVirtualTreeHintWindow.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVirtualTreeHintWindow.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTColors</topicid>
       <displaystring>TVTColors Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTColors.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTColors.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTDataObject</topicid>
       <displaystring>TVTDataObject Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTDataObject.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTDataObject.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTDragImage</topicid>
       <displaystring>TVTDragImage Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTDragImage.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTDragImage.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTDragManager</topicid>
       <displaystring>TVTDragManager Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTDragManager.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTDragManager.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTEdit</topicid>
       <displaystring>TVTEdit Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTEdit.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTEdit.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTFixedAreaConstraints</topicid>
       <displaystring>TVTFixedAreaConstraints Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTFixedAreaConstraints.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTFixedAreaConstraints.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TVTHeader</topicid>
       <displaystring>TVTHeader Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TVTHeader.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TVTHeader.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Constructors_TWorkerThread</topicid>
       <displaystring>TWorkerThread Constructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Constructors_TWorkerThread.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Constructors_TWorkerThread.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TBaseVirtualTree</topicid>
       <displaystring>TBaseVirtualTree Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TBaseVirtualTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TBaseVirtualTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TBufferedAnsiString</topicid>
       <displaystring>TBufferedAnsiString Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TBufferedAnsiString.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TBufferedAnsiString.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TClipboardFormatList</topicid>
       <displaystring>TClipboardFormatList Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TClipboardFormatList.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TClipboardFormatList.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TCriticalSection</topicid>
       <displaystring>TCriticalSection Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TCriticalSection.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TCriticalSection.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TStringEditLink</topicid>
       <displaystring>TStringEditLink Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TStringEditLink.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TStringEditLink.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVirtualTreeColumn</topicid>
       <displaystring>TVirtualTreeColumn Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVirtualTreeColumn.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVirtualTreeColumn.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVirtualTreeColumns</topicid>
       <displaystring>TVirtualTreeColumns Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVirtualTreeColumns.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVirtualTreeColumns.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVirtualTreeHintWindow</topicid>
       <displaystring>TVirtualTreeHintWindow Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVirtualTreeHintWindow.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVirtualTreeHintWindow.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVTDataObject</topicid>
       <displaystring>TVTDataObject Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVTDataObject.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVTDataObject.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVTDragImage</topicid>
       <displaystring>TVTDragImage Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVTDragImage.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVTDragImage.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVTDragManager</topicid>
       <displaystring>TVTDragManager Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVTDragManager.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVTDragManager.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TVTHeader</topicid>
       <displaystring>TVTHeader Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TVTHeader.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TVTHeader.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TWideBufferedString</topicid>
       <displaystring>TWideBufferedString Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TWideBufferedString.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TWideBufferedString.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Destructors_TWorkerThread</topicid>
       <displaystring>TWorkerThread Destructors</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Destructors_TWorkerThread.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Destructors_TWorkerThread.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Events_TBaseVirtualTree</topicid>
       <displaystring>TBaseVirtualTree Events</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Events_TBaseVirtualTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Events_TBaseVirtualTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Events_TCustomVirtualDrawTree</topicid>
       <displaystring>TCustomVirtualDrawTree Events</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Events_TCustomVirtualDrawTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Events_TCustomVirtualDrawTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Events_TCustomVirtualStringTree</topicid>
       <displaystring>TCustomVirtualStringTree Events</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Events_TCustomVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Events_TCustomVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Events_TVirtualDrawTree</topicid>
       <displaystring>TVirtualDrawTree Events</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Events_TVirtualDrawTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Events_TVirtualDrawTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Events_TVirtualStringTree</topicid>
       <displaystring>TVirtualStringTree Events</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Events_TVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Events_TVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Events_TVTHeaderPopupMenu</topicid>
       <displaystring>TVTHeaderPopupMenu Events</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Events_TVTHeaderPopupMenu.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Events_TVTHeaderPopupMenu.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TCriticalSection</topicid>
       <displaystring>TCriticalSection Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TCriticalSection.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TCriticalSection.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TStringEditLink</topicid>
       <displaystring>TStringEditLink Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TStringEditLink.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TStringEditLink.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TVirtualTreeColumns</topicid>
       <displaystring>TVirtualTreeColumns Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TVirtualTreeColumns.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TVirtualTreeColumns.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TVTEdit</topicid>
       <displaystring>TVTEdit Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TVTEdit.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TVTEdit.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TVTHeader</topicid>
       <displaystring>TVTHeader Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TVTHeader.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TVTHeader.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TVTVirtualNodeEnumeration</topicid>
       <displaystring>TVTVirtualNodeEnumeration Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TVTVirtualNodeEnumeration.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TVTVirtualNodeEnumeration.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Fields_TVTVirtualNodeEnumerator</topicid>
       <displaystring>TVTVirtualNodeEnumerator Fields</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Fields_TVTVirtualNodeEnumerator.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Fields_TVTVirtualNodeEnumerator.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_IDragSourceHelper</topicid>
       <displaystring>IDragSourceHelper Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_IDragSourceHelper.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_IDragSourceHelper.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_IDropTargetHelper</topicid>
       <displaystring>IDropTargetHelper Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_IDropTargetHelper.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_IDropTargetHelper.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_IVTDragManager</topicid>
       <displaystring>IVTDragManager Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_IVTDragManager.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_IVTDragManager.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_IVTEditLink</topicid>
       <displaystring>IVTEditLink Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_IVTEditLink.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_IVTEditLink.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TBaseVirtualTree</topicid>
       <displaystring>TBaseVirtualTree Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TBaseVirtualTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TBaseVirtualTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TBufferedAnsiString</topicid>
       <displaystring>TBufferedAnsiString Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TBufferedAnsiString.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TBufferedAnsiString.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TClipboardFormatList</topicid>
       <displaystring>TClipboardFormatList Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TClipboardFormatList.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TClipboardFormatList.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TClipboardFormats</topicid>
       <displaystring>TClipboardFormats Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TClipboardFormats.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TClipboardFormats.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TCriticalSection</topicid>
       <displaystring>TCriticalSection Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TCriticalSection.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TCriticalSection.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TCustomStringTreeOptions</topicid>
       <displaystring>TCustomStringTreeOptions Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TCustomStringTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TCustomStringTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TCustomVirtualDrawTree</topicid>
       <displaystring>TCustomVirtualDrawTree Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TCustomVirtualDrawTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TCustomVirtualDrawTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TCustomVirtualStringTree</topicid>
       <displaystring>TCustomVirtualStringTree Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TCustomVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TCustomVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TCustomVirtualTreeOptions</topicid>
       <displaystring>TCustomVirtualTreeOptions Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TCustomVirtualTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TCustomVirtualTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TEnumFormatEtc</topicid>
       <displaystring>TEnumFormatEtc Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TEnumFormatEtc.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TEnumFormatEtc.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TScrollBarOptions</topicid>
       <displaystring>TScrollBarOptions Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TScrollBarOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TScrollBarOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TStringEditLink</topicid>
       <displaystring>TStringEditLink Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TStringEditLink.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TStringEditLink.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVirtualDrawTree</topicid>
       <displaystring>TVirtualDrawTree Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVirtualDrawTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVirtualDrawTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVirtualStringTree</topicid>
       <displaystring>TVirtualStringTree Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVirtualTreeColumn</topicid>
       <displaystring>TVirtualTreeColumn Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVirtualTreeColumn.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVirtualTreeColumn.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVirtualTreeColumns</topicid>
       <displaystring>TVirtualTreeColumns Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVirtualTreeColumns.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVirtualTreeColumns.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVirtualTreeHintWindow</topicid>
       <displaystring>TVirtualTreeHintWindow Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVirtualTreeHintWindow.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVirtualTreeHintWindow.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTColors</topicid>
       <displaystring>TVTColors Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTColors.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTColors.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTDataObject</topicid>
       <displaystring>TVTDataObject Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTDataObject.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTDataObject.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTDragImage</topicid>
       <displaystring>TVTDragImage Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTDragImage.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTDragImage.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTDragManager</topicid>
       <displaystring>TVTDragManager Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTDragManager.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTDragManager.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTEdit</topicid>
       <displaystring>TVTEdit Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTEdit.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTEdit.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTFixedAreaConstraints</topicid>
       <displaystring>TVTFixedAreaConstraints Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTFixedAreaConstraints.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTFixedAreaConstraints.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTHeader</topicid>
       <displaystring>TVTHeader Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTHeader.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTHeader.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTHeaderPopupMenu</topicid>
       <displaystring>TVTHeaderPopupMenu Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTHeaderPopupMenu.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTHeaderPopupMenu.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTVirtualNodeEnumeration</topicid>
       <displaystring>TVTVirtualNodeEnumeration Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTVirtualNodeEnumeration.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTVirtualNodeEnumeration.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TVTVirtualNodeEnumerator</topicid>
       <displaystring>TVTVirtualNodeEnumerator Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TVTVirtualNodeEnumerator.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TVTVirtualNodeEnumerator.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TWideBufferedString</topicid>
       <displaystring>TWideBufferedString Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TWideBufferedString.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TWideBufferedString.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Methods_TWorkerThread</topicid>
       <displaystring>TWorkerThread Methods</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Methods_TWorkerThread.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Methods_TWorkerThread.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_IVTDragManager</topicid>
       <displaystring>IVTDragManager Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_IVTDragManager.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_IVTDragManager.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TBaseVirtualTree</topicid>
       <displaystring>TBaseVirtualTree Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TBaseVirtualTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TBaseVirtualTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TBufferedAnsiString</topicid>
       <displaystring>TBufferedAnsiString Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TBufferedAnsiString.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TBufferedAnsiString.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TClipboardFormats</topicid>
       <displaystring>TClipboardFormats Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TClipboardFormats.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TClipboardFormats.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TCustomStringTreeOptions</topicid>
       <displaystring>TCustomStringTreeOptions Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TCustomStringTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TCustomStringTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TCustomVirtualStringTree</topicid>
       <displaystring>TCustomVirtualStringTree Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TCustomVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TCustomVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TCustomVirtualTreeOptions</topicid>
       <displaystring>TCustomVirtualTreeOptions Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TCustomVirtualTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TCustomVirtualTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TScrollBarOptions</topicid>
       <displaystring>TScrollBarOptions Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TScrollBarOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TScrollBarOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TStringEditLink</topicid>
       <displaystring>TStringEditLink Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TStringEditLink.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TStringEditLink.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TStringTreeOptions</topicid>
       <displaystring>TStringTreeOptions Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TStringTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TStringTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVirtualDrawTree</topicid>
       <displaystring>TVirtualDrawTree Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVirtualDrawTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVirtualDrawTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVirtualStringTree</topicid>
       <displaystring>TVirtualStringTree Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVirtualStringTree.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVirtualStringTree.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVirtualTreeColumn</topicid>
       <displaystring>TVirtualTreeColumn Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVirtualTreeColumn.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVirtualTreeColumn.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVirtualTreeColumns</topicid>
       <displaystring>TVirtualTreeColumns Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVirtualTreeColumns.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVirtualTreeColumns.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVirtualTreeHintWindow</topicid>
       <displaystring>TVirtualTreeHintWindow Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVirtualTreeHintWindow.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVirtualTreeHintWindow.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVirtualTreeOptions</topicid>
       <displaystring>TVirtualTreeOptions Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVirtualTreeOptions.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVirtualTreeOptions.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTColors</topicid>
       <displaystring>TVTColors Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTColors.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTColors.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTDataObject</topicid>
       <displaystring>TVTDataObject Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTDataObject.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTDataObject.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTDragImage</topicid>
       <displaystring>TVTDragImage Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTDragImage.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTDragImage.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTEdit</topicid>
       <displaystring>TVTEdit Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTEdit.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTEdit.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTFixedAreaConstraints</topicid>
       <displaystring>TVTFixedAreaConstraints Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTFixedAreaConstraints.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTFixedAreaConstraints.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTHeader</topicid>
       <displaystring>TVTHeader Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTHeader.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTHeader.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTHeaderPopupMenu</topicid>
       <displaystring>TVTHeaderPopupMenu Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTHeaderPopupMenu.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTHeaderPopupMenu.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TVTVirtualNodeEnumerator</topicid>
       <displaystring>TVTVirtualNodeEnumerator Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TVTVirtualNodeEnumerator.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TVTVirtualNodeEnumerator.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TWideBufferedString</topicid>
       <displaystring>TWideBufferedString Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TWideBufferedString.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TWideBufferedString.html</target>
     </link>
     <link>
       <topicid>!!MEMBERTYPE_Properties_TWorkerThread</topicid>
       <displaystring>TWorkerThread Properties</displaystring>
       <target id="html">../Output/!!MEMBERTYPE_Properties_TWorkerThread.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/!!MEMBERTYPE_Properties_TWorkerThread.html</target>
     </link>
     <link>
       <topicid>!!OVERLOADED_AddToSelection_TBaseVirtualTree</topicid>
@@ -1648,7 +1755,6 @@
       <topicid>DrawTextW@HDC@PWideChar@Integer@TRect@Cardinal@Boolean</topicid>
       <displaystring>DrawTextW@HDC@PWideChar@Integer@TRect@Cardinal@Boolean</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/DrawTextW@HDC@PWideChar@Integer@TRect@Cardinal@Boolean.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/DrawTextW@HDC@PWideChar@Integer@TRect@Cardinal@Boolean.html</target>
       <target id="pdf">pdf://10@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -3526,7 +3632,6 @@
       <topicid>ShortenString@HDC@WideString@Integer@Boolean@Integer</topicid>
       <displaystring>ShortenString@HDC@WideString@Integer@Boolean@Integer</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/ShortenString@HDC@WideString@Integer@Boolean@Integer.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/ShortenString@HDC@WideString@Integer@Boolean@Integer.html</target>
       <target id="pdf">pdf://11@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -4225,7 +4330,6 @@
       <topicid>TBaseVirtualTree.CompareNodePositions@PVirtualNode@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.CompareNodePositions@PVirtualNode@PVirtualNode</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_CompareNodePositions@PVirtualNode@PVirtualNode.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_CompareNodePositions@PVirtualNode@PVirtualNode.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.ComputeRTLOffset@Boolean</topicid>
@@ -5596,7 +5700,6 @@
       <topicid>TBaseVirtualTree.GetDisplayRect@PVirtualNode@TColumnIndex@Boolean@Boolean</topicid>
       <displaystring>TBaseVirtualTree.GetDisplayRect@PVirtualNode@TColumnIndex@Boolean@Boolean</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetDisplayRect@PVirtualNode@TColumnIndex@Boolean@Boolean.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetDisplayRect@PVirtualNode@TColumnIndex@Boolean@Boolean.html</target>
       <target id="pdf">pdf://636@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -5704,7 +5807,6 @@
       <topicid>TBaseVirtualTree.GetLast@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetLast@PVirtualNode</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetLast@PVirtualNode.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetLast@PVirtualNode.html</target>
       <target id="pdf">pdf://641@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -5718,11 +5820,13 @@
       <topicid>TBaseVirtualTree.GetLastChild@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetLastChild Method</displaystring>
       <target id="html">../Output/TBaseVirtualTree_GetLastChild@PVirtualNode.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetLastChild@PVirtualNode.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.GetLastChildNoInit@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetLastChildNoInit Method</displaystring>
       <target id="html">../Output/TBaseVirtualTree_GetLastChildNoInit@PVirtualNode.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetLastChildNoInit@PVirtualNode.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.GetLastInitialized@PVirtualNode@Boolean</topicid>
@@ -5770,7 +5874,6 @@
       <topicid>TBaseVirtualTree.GetMaxColumnWidth@TColumnIndex</topicid>
       <displaystring>TBaseVirtualTree.GetMaxColumnWidth@TColumnIndex</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetMaxColumnWidth@TColumnIndex.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetMaxColumnWidth@TColumnIndex.html</target>
       <target id="pdf">pdf://642@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -5800,7 +5903,6 @@
       <topicid>TBaseVirtualTree.GetNext@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetNext@PVirtualNode</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetNext@PVirtualNode.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetNext@PVirtualNode.html</target>
       <target id="pdf">pdf://645@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -5875,6 +5977,7 @@
       <topicid>TBaseVirtualTree.GetNextSibling@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetNextSibling Method</displaystring>
       <target id="html">../Output/TBaseVirtualTree_GetNextSibling@PVirtualNode.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetNextSibling@PVirtualNode.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.GetNextVisible@PVirtualNode@Boolean</topicid>
@@ -5955,7 +6058,6 @@
       <topicid>TBaseVirtualTree.GetPrevious@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetPrevious@PVirtualNode</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetPrevious@PVirtualNode.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetPrevious@PVirtualNode.html</target>
       <target id="pdf">pdf://651@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -6018,6 +6120,7 @@
       <topicid>TBaseVirtualTree.GetPreviousSibling@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetPreviousSibling Method</displaystring>
       <target id="html">../Output/TBaseVirtualTree_GetPreviousSibling@PVirtualNode.html</target>
+      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetPreviousSibling@PVirtualNode.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.GetPreviousVisible@PVirtualNode@Boolean</topicid>
@@ -6074,7 +6177,6 @@
       <topicid>TBaseVirtualTree.GetTextInfo@PVirtualNode@TColumnIndex@TFont@TRect@WideString</topicid>
       <displaystring>TBaseVirtualTree.GetTextInfo@PVirtualNode@TColumnIndex@TFont@TRect@WideString</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetTextInfo@PVirtualNode@TColumnIndex@TFont@TRect@WideString.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetTextInfo@PVirtualNode@TColumnIndex@TFont@TRect@WideString.html</target>
       <target id="pdf">pdf://654@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -6097,7 +6199,6 @@
       <topicid>TBaseVirtualTree.GetVisibleParent@PVirtualNode</topicid>
       <displaystring>TBaseVirtualTree.GetVisibleParent@PVirtualNode</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_GetVisibleParent@PVirtualNode.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_GetVisibleParent@PVirtualNode.html</target>
       <target id="pdf">pdf://657@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -6315,7 +6416,6 @@
       <topicid>TBaseVirtualTree.InitializeLineImageAndSelectLevel@PVirtualNode@TLineImage</topicid>
       <displaystring>TBaseVirtualTree.InitializeLineImageAndSelectLevel@PVirtualNode@TLineImage</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_InitializeLineImageAndSelectLevel@PVirtualNode@TLineImage.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_InitializeLineImageAndSelectLevel@PVirtualNode@TLineImage.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.InitNode@PVirtualNode</topicid>
@@ -6555,7 +6655,6 @@
       <topicid>TBaseVirtualTree.LimitPaintingToArea@TCanvas@TRect@HRGN</topicid>
       <displaystring>TBaseVirtualTree.LimitPaintingToArea@TCanvas@TRect@HRGN</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBaseVirtualTree_LimitPaintingToArea@TCanvas@TRect@HRGN.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBaseVirtualTree_LimitPaintingToArea@TCanvas@TRect@HRGN.html</target>
     </link>
     <link>
       <topicid>TBaseVirtualTree.LineMode</topicid>
@@ -8341,7 +8440,6 @@
       <topicid>TBufferedString</topicid>
       <displaystring>TBufferedString</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TBufferedString.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TBufferedString.html</target>
       <target id="pdf">pdf://110@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -8423,7 +8521,6 @@
       <topicid>TCheckImageKind.ckSystem</topicid>
       <displaystring>TCheckImageKind.ckSystem</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TCheckImageKind_ckSystem.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TCheckImageKind_ckSystem.html</target>
     </link>
     <link>
       <topicid>TCheckState</topicid>
@@ -9419,13 +9516,11 @@
       <topicid>THeaderState.hsTracking</topicid>
       <displaystring>THeaderState.hsTracking</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/THeaderState_hsTracking.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/THeaderState_hsTracking.html</target>
     </link>
     <link>
       <topicid>THeaderState.hsTrackPending</topicid>
       <displaystring>THeaderState.hsTrackPending</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/THeaderState_hsTrackPending.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/THeaderState_hsTrackPending.html</target>
     </link>
     <link>
       <topicid>THeaderStates</topicid>
@@ -10480,13 +10575,11 @@
       <topicid>TToggleAnimationData.Expand</topicid>
       <displaystring>TToggleAnimationData.Expand</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TToggleAnimationData_Expand.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TToggleAnimationData_Expand.html</target>
     </link>
     <link>
       <topicid>TToggleAnimationData.R</topicid>
       <displaystring>TToggleAnimationData.R</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TToggleAnimationData_R.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TToggleAnimationData_R.html</target>
     </link>
     <link>
       <topicid>TToggleAnimationMode</topicid>
@@ -13990,7 +14083,6 @@
       <topicid>TVirtualTreeColumn.ComputeHeaderLayout@HDC@TRect@Boolean@Boolean@TPoint@TPoint@TRect</topicid>
       <displaystring>TVirtualTreeColumn.ComputeHeaderLayout@HDC@TRect@Boolean@Boolean@TPoint@TPoint@TRect</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVirtualTreeColumn_ComputeHeaderLayout@HDC@TRect@Boolean@Boolean@TPoint@TPoint@TRect.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVirtualTreeColumn_ComputeHeaderLayout@HDC@TRect@Boolean@Boolean@TPoint@TPoint@TRect.html</target>
       <target id="pdf">pdf://23@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -14439,7 +14531,6 @@
       <topicid>TVirtualTreeColumns.DrawXPButton@HDC@TRect@Boolean@Boolean@Boolean</topicid>
       <displaystring>TVirtualTreeColumns.DrawXPButton@HDC@TRect@Boolean@Boolean@Boolean</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVirtualTreeColumns_DrawXPButton@HDC@TRect@Boolean@Boolean@Boolean.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVirtualTreeColumns_DrawXPButton@HDC@TRect@Boolean@Boolean@Boolean.html</target>
       <target id="pdf">pdf://1348@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -14453,7 +14544,6 @@
       <topicid>TVirtualTreeColumns.Equals@TVirtualTreeColumns</topicid>
       <displaystring>TVirtualTreeColumns.Equals@TVirtualTreeColumns</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVirtualTreeColumns_Equals@TVirtualTreeColumns.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVirtualTreeColumns_Equals@TVirtualTreeColumns.html</target>
       <target id="pdf">pdf://1349@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -14529,7 +14619,6 @@
       <topicid>TVirtualTreeColumns.GetNextVisibleColumn@TColumnIndex</topicid>
       <displaystring>TVirtualTreeColumns.GetNextVisibleColumn@TColumnIndex</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVirtualTreeColumns_GetNextVisibleColumn@TColumnIndex.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVirtualTreeColumns_GetNextVisibleColumn@TColumnIndex.html</target>
       <target id="pdf">pdf://1356@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -14559,7 +14648,6 @@
       <topicid>TVirtualTreeColumns.GetPreviousVisibleColumn@TColumnIndex</topicid>
       <displaystring>TVirtualTreeColumns.GetPreviousVisibleColumn@TColumnIndex</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVirtualTreeColumns_GetPreviousVisibleColumn@TColumnIndex.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVirtualTreeColumns_GetPreviousVisibleColumn@TColumnIndex.html</target>
       <target id="pdf">pdf://1359@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -16618,7 +16706,6 @@
       <topicid>TVTHeader.FLeftTrackPos</topicid>
       <displaystring>TVTHeader.FLeftTrackPos</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVTHeader_FLeftTrackPos.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVTHeader_FLeftTrackPos.html</target>
     </link>
     <link>
       <topicid>TVTHeader.Font</topicid>
@@ -17147,7 +17234,6 @@
       <topicid>TVTHeaderStyle.hsXPStyle</topicid>
       <displaystring>TVTHeaderStyle.hsXPStyle</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/TVTHeaderStyle_hsXPStyle.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/TVTHeaderStyle_hsXPStyle.html</target>
     </link>
     <link>
       <topicid>TVTHelpContextEvent</topicid>
