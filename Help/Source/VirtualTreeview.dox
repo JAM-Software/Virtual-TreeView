@@ -403,7 +403,7 @@ CValue_9=16711680
 
 [Configurations]
 Count=5
-Current=0
+Current=1
 Name0=Configuration 1
 Name1=Configuration 2
 Name2=Configuration 3
@@ -11072,7 +11072,7 @@ HTMLFileExtension=.html
 HTMLFilenaming=0
 HTMLFileTemplate=
 InsertCustomHEADCode=1
-OutputDir=Output
+OutputDir=..\HTML
 OutputOptions=15
 OutputTOCLevels=0
 OutputXHTML=0
@@ -24429,7 +24429,7 @@ HTMLFilenaming=0
 HTMLFileTemplate=
 InsertCustomHEADCode=1
 OutputDir=Output
-OutputOptions=7
+OutputOptions=5
 OutputTOCLevels=0
 OutputXHTML=0
 PrintFlagsInIndex=0
@@ -24477,7 +24477,7 @@ HelpCompiler=C:\Programme\HTML Help Workshop\hhc.exe
 HelpProjectFileAutomatic=1
 HTMLHelp2Filename=
 HTMLHelpDisplayFontScaleButton=0
-HTMLHelpFilename=VirtualTreeview.chm
+HTMLHelpFilename=..\VirtualTreeview.chm
 SaveUserPosition=1
 SupportEnhancedDecompilation=0
 WindowPosition_Bottom=0
@@ -50546,7 +50546,7 @@ UseInheritedTopics=1
 UseInheritedUseUsing=0
 
 [External Topic Properties]
-Count=337
+Count=380
 ID0=!!CLASSES
 ID1=!!CONSTANTS
 ID10=!!VARIABLES
@@ -50561,261 +50561,304 @@ ID107=Overview.htm
 ID108=PaintCycles.htm
 ID109=Paradigm.htm
 ID11=$Inner fundamentals
-ID110=PCardinal
-ID111=PClipboardFormatListEntry
-ID112=PressedState
-ID113=PSHDragImage
-ID114=PVirtualNode
-ID115=PVTHintData
-ID116=PVTReference
-ID117=QA.htm
-ID118=Repositiory.htm
-ID119=RTLFlag
+ID110=PByte
+ID111=PCardinal
+ID112=PClipboardFormatListEntry
+ID113=PressedState
+ID114=PSHDragImage
+ID115=PVirtualNode
+ID116=PVTHintData
+ID117=PVTReference
+ID118=PVTVirtualNodeEnumeration
+ID119=QA.htm
 ID12=$Main
-ID120=SCannotSetUserData
-ID121=SClipboardFailed
-ID122=SCorruptStream1
-ID123=SCorruptStream2
-ID124=ScrollBarProp
-ID125=ScrollTimer
-ID126=SearchTimer
-ID127=SEditLinkIsNil
-ID128=ShadowSize
-ID129=SID_IDragSourceHelper
+ID120=Repositiory.htm
+ID121=RTLFlag
+ID122=SCannotSetUserData
+ID123=SClipboardFailed
+ID124=SCorruptStream1
+ID125=SCorruptStream2
+ID126=ScrollBarProp
+ID127=ScrollTimer
+ID128=SearchTimer
+ID129=SEditLinkIsNil
 ID13=$Quick Start
-ID130=SID_IDropTarget
-ID131=SID_IDropTargetHelper
-ID132=SStreamTooSmall
-ID133=StructureChangeTimer
-ID134=SWrongMoveError
-ID135=SWrongStreamFormat
-ID136=SWrongStreamVersion
-ID137=SysGrays
-ID138=TAddHeaderPopupItemEvent
-ID139=TAddPopupItemType
+ID130=ShadowSize
+ID131=SID_IDragSourceHelper
+ID132=SID_IDropTarget
+ID133=SID_IDropTargetHelper
+ID134=SStreamTooSmall
+ID135=StructureChangeTimer
+ID136=SWrongMoveError
+ID137=SWrongStreamFormat
+ID138=SWrongStreamVersion
+ID139=SysGrays
 ID14=$Virtual Treeview Overview
-ID140=TAutoScrollInterval
-ID141=TBaseVirtualTree.AfterConstruction
-ID142=TBaseVirtualTree.Create@TComponent
-ID143=TBaseVirtualTree.Destroy
-ID144=TBlendMode
-ID145=TBufferedString
-ID146=TCache
-ID147=TCardinalArray
-ID148=TChangeReason
-ID149=TChangeStates
+ID140=TAddHeaderPopupItemEvent
+ID141=TAddPopupItemType
+ID142=TAutoScrollInterval
+ID143=TBaseVirtualTree.AfterConstruction
+ID144=TBaseVirtualTree.Create@TComponent
+ID145=TBaseVirtualTree.Destroy
+ID146=TBlendMode
+ID147=TBufferedString
+ID148=TCache
+ID149=TCardinalArray
 ID15=1  Preparations
-ID150=TCheckImageKind
-ID151=TCheckState
-ID152=TCheckType
-ID153=TColumnChangeEvent
-ID154=TColumnIndex
-ID155=TColumnPosition
-ID156=TColumnsArray
-ID157=TDragOperation
-ID158=TDragOperations
-ID159=TDropMode
+ID150=TChangeReason
+ID151=TChangeStates
+ID152=TCheckImageKind
+ID153=TCheckState
+ID154=TCheckType
+ID155=TColumnChangeEvent
+ID156=TColumnIndex
+ID157=TColumnPosition
+ID158=TColumnsArray
+ID159=TDragOperation
 ID16=AdditionalInfo.htm
-ID160=TFormatArray
-ID161=TFormatEtcArray
-ID162=TGetFirstNodeProc
-ID163=TGetNextNodeProc
-ID164=THeaderPaintElements
-ID165=THeaderState
-ID166=THeaderStates
-ID167=THintAnimationType
-ID168=THitPosition
-ID169=THitPositions
+ID160=TDragOperations
+ID161=TDropMode
+ID162=TFormatArray
+ID163=TFormatEtcArray
+ID164=TGetFirstNodeProc
+ID165=TGetNextNodeProc
+ID166=THeaderPaintElements
+ID167=THeaderState
+ID168=THeaderStates
+ID169=THintAnimationType
 ID17=AlignmentToDrawFlag
-ID170=TImageIndex
-ID171=TIndexArray
-ID172=TInternalStgMediumArray
-ID173=TItemEraseAction
-ID174=TLineImage
-ID175=TMagicID
-ID176=TMouseButtons
-ID177=TNodeArray
-ID178=TOldVTOption
-ID179=TreeImage.htm
+ID170=THitPosition
+ID171=THitPositions
+ID172=TImageIndex
+ID173=TIndexArray
+ID174=TInternalStgMediumArray
+ID175=TItemEraseAction
+ID176=TLineImage
+ID177=TMagicID
+ID178=TMouseButtons
+ID179=TNodeArray
 ID18=AllocIncrement
-ID180=TreeNodeSize
-ID181=TScrollBarStyle
-ID182=TScrollDirections
-ID183=TScrollUpdateOptions
-ID184=TSortDirection
-ID185=TTreeOptionsClass
-ID186=TVirtualNodeInitState
-ID187=TVirtualNodeInitStates
-ID188=TVirtualNodeState
-ID189=TVirtualNodeStates
+ID180=TOldVTOption
+ID181=TreeImage.htm
+ID182=TreeNodeSize
+ID183=TScrollBarStyle
+ID184=TScrollDirections
+ID185=TScrollUpdateOptions
+ID186=TSortDirection
+ID187=TTreeOptionsClass
+ID188=TVirtualNodeInitState
+ID189=TVirtualNodeInitStates
 ID19=BaseChunk
-ID190=TVirtualTreeCast
-ID191=TVirtualTreeClass
-ID192=TVirtualTreeColumnClass
-ID193=TVirtualTreeColumnsClass
-ID194=TVirtualTreeColumnStyle
-ID195=TVirtualTreeStates
-ID196=TVSTGetTextEvent
-ID197=TVSTNewTextEvent
-ID198=TVSTShortenStringEvent
-ID199=TVSTTextSourceType
+ID190=TVirtualNodeState
+ID191=TVirtualNodeStates
+ID192=TVirtualTreeCast
+ID193=TVirtualTreeClass
+ID194=TVirtualTreeColumnClass
+ID195=TVirtualTreeColumnsClass
+ID196=TVirtualTreeColumnStyle
+ID197=TVirtualTreeStates
+ID198=TVSTGetHintEvent
+ID199=TVSTGetTextEvent
 ID2=!!CONTENTS
 ID20=CacheThreshold
-ID200=TVSTTextType
-ID201=TVTAdvancedHeaderPaintEvent
-ID202=TVTAfterCellPaintEvent
-ID203=TVTAfterItemEraseEvent
-ID204=TVTAfterItemPaintEvent
-ID205=TVTAnimationCallback
-ID206=TVTAnimationOption
-ID207=TVTAnimationOptions
-ID208=TVTAutoOption
-ID209=TVTAutoOptions
+ID200=TVSTNewTextEvent
+ID201=TVSTShortenStringEvent
+ID202=TVSTTextSourceType
+ID203=TVSTTextType
+ID204=TVTAddToSelectionEvent
+ID205=TVTAdvancedHeaderPaintEvent
+ID206=TVTAfterAutoFitColumnEvent
+ID207=TVTAfterAutoFitColumnsEvent
+ID208=TVTAfterCellPaintEvent
+ID209=TVTAfterColumnWidthTrackingEvent
 ID21=CaptionChunk
-ID210=TVTBackgroundPaintEvent
-ID211=TVTBeforeCellPaintEvent
-ID212=TVTBeforeItemEraseEvent
-ID213=TVTBeforeItemPaintEvent
-ID214=TVTBias
-ID215=TVTButtonFillMode
-ID216=TVTButtonStyle
-ID217=TVTChangeEvent
-ID218=TVTChangingEvent
-ID219=TVTCheckChangingEvent
+ID210=TVTAfterGetMaxColumnWidthEvent
+ID211=TVTAfterHeaderHeightTrackingEvent
+ID212=TVTAfterItemEraseEvent
+ID213=TVTAfterItemPaintEvent
+ID214=TVTAnimationCallback
+ID215=TVTAnimationOption
+ID216=TVTAnimationOptions
+ID217=TVTAutoOption
+ID218=TVTAutoOptions
+ID219=TVTBackgroundPaintEvent
 ID22=CFSTR_CSV
-ID220=TVTColumnClickEvent
-ID221=TVTColumnDblClickEvent
-ID222=TVTColumnOption
-ID223=TVTColumnOptions
-ID224=TVTCompareEvent
-ID225=TVTCreateDataObjectEvent
-ID226=TVTCreateDragManagerEvent
-ID227=TVTCreateEditorEvent
-ID228=TVTDragAllowedEvent
-ID229=TVTDragDropEvent
+ID220=TVTBeforeAutoFitColumnEvent
+ID221=TVTBeforeAutoFitColumnsEvent
+ID222=TVTBeforeCellPaintEvent
+ID223=TVTBeforeColumnWidthTrackingEvent
+ID224=TVTBeforeDrawLineImageEvent
+ID225=TVTBeforeGetMaxColumnWidthEvent
+ID226=TVTBeforeHeaderHeightTrackingEvent
+ID227=TVTBeforeItemEraseEvent
+ID228=TVTBeforeItemPaintEvent
+ID229=TVTBias
 ID23=CFSTR_HTML
-ID230=TVTDragImageKind
-ID231=TVTDragImageStates
-ID232=TVTDragMoveRestriction
-ID233=TVTDragOverEvent
-ID234=TVTDragType
-ID235=TVTDrawHintEvent
-ID236=TVTDrawNodeEvent
-ID237=TVTDrawSelectionMode
-ID238=TVTDropMarkMode
-ID239=TVTEditCancelEvent
+ID230=TVTButtonFillMode
+ID231=TVTButtonStyle
+ID232=TVTCanSplitterResizeColumnEvent
+ID233=TVTCanSplitterResizeHeaderEvent
+ID234=TVTCanSplitterResizeNodeEvent
+ID235=TVTChangeEvent
+ID236=TVTChangingEvent
+ID237=TVTCheckChangingEvent
+ID238=TVTColumnClickEvent
+ID239=TVTColumnDblClickEvent
 ID24=CFSTR_RTF
-ID240=TVTEditChangeEvent
-ID241=TVTEditChangingEvent
-ID242=TVTFocusChangeEvent
-ID243=TVTFocusChangingEvent
-ID244=TVTFreeNodeEvent
-ID245=TVTGetCursorEvent
-ID246=TVTGetHeaderCursorEvent
-ID247=TVTGetHintSizeEvent
-ID248=TVTGetImageEvent
-ID249=TVTGetLineStyleEvent
+ID240=TVTColumnExportEvent
+ID241=TVTColumnOption
+ID242=TVTColumnOptions
+ID243=TVTColumnWidthDblClickResizeEvent
+ID244=TVTColumnWidthTrackingEvent
+ID245=TVTCompareEvent
+ID246=TVTConstraintPercent
+ID247=TVTCreateDataObjectEvent
+ID248=TVTCreateDragManagerEvent
+ID249=TVTCreateEditorEvent
 ID25=CFSTR_RTFNOOBJS
-ID250=TVTGetNodeDataSizeEvent
-ID251=TVTGetNodeProc
-ID252=TVTGetNodeWidthEvent
-ID253=TVTGetUserClipboardFormatsEvent
-ID254=TVTHeaderClass
-ID255=TVTHeaderClickEvent
-ID256=TVTHeaderColumnLayout
-ID257=TVTHeaderDraggedEvent
-ID258=TVTHeaderDraggedOutEvent
-ID259=TVTHeaderDraggingEvent
+ID250=TVTDragAllowedEvent
+ID251=TVTDragDropEvent
+ID252=TVTDragImageKind
+ID253=TVTDragImageStates
+ID254=TVTDragMoveRestriction
+ID255=TVTDragOverEvent
+ID256=TVTDragType
+ID257=TVTDrawHintEvent
+ID258=TVTDrawNodeEvent
+ID259=TVTDrawSelectionMode
 ID26=CFSTR_VIRTUALTREE
-ID260=TVTHeaderMouseEvent
-ID261=TVTHeaderMouseMoveEvent
-ID262=TVTHeaderNotifyEvent
-ID263=TVTHeaderOption
-ID264=TVTHeaderOptions
-ID265=TVTHeaderPaintEvent
-ID266=TVTHeaderPaintQueryElementsEvent
-ID267=TVTHeaderPopupOption
-ID268=TVTHeaderPopupOptions
-ID269=TVTHeaderStyle
+ID260=TVTDrawTextEvent
+ID261=TVTDropMarkMode
+ID262=TVTEditCancelEvent
+ID263=TVTEditChangeEvent
+ID264=TVTEditChangingEvent
+ID265=TVTFocusChangeEvent
+ID266=TVTFocusChangingEvent
+ID267=TVTFreeNodeEvent
+ID268=TVTGetCellContentMarginEvent
+ID269=TVTGetCellIsEmptyEvent
 ID27=CFSTR_VTREFERENCE
-ID270=TVTHelpContextEvent
-ID271=TVTHintMode
-ID272=TVTHotNodeChangeEvent
-ID273=TVTImageInfoIndex
-ID274=TVTImageKind
-ID275=TVTIncrementalSearch
-ID276=TVTIncrementalSearchEvent
-ID277=TVTInitChildrenEvent
-ID278=TVTInitNodeEvent
-ID279=TVTInternalPaintOption
+ID270=TVTGetCursorEvent
+ID271=TVTGetHeaderCursorEvent
+ID272=TVTGetHintSizeEvent
+ID273=TVTGetImageEvent
+ID274=TVTGetImageExEvent
+ID275=TVTGetImageTextEvent
+ID276=TVTGetLineStyleEvent
+ID277=TVTGetNodeDataSizeEvent
+ID278=TVTGetNodeProc
+ID279=TVTGetNodeWidthEvent
 ID28=ChangeTimer
-ID280=TVTInternalPaintOptions
-ID281=TVTKeyActionEvent
-ID282=TVTLineMode
-ID283=TVTLineStyle
-ID284=TVTLineType
-ID285=TVTMeasureItemEvent
-ID286=TVTMiscOption
-ID287=TVTMiscOptions
-ID288=TVTNodeAlignment
-ID289=TVTNodeAttachMode
+ID280=TVTGetUserClipboardFormatsEvent
+ID281=TVTHeaderClass
+ID282=TVTHeaderClickEvent
+ID283=TVTHeaderColumnLayout
+ID284=TVTHeaderDraggedEvent
+ID285=TVTHeaderDraggedOutEvent
+ID286=TVTHeaderDraggingEvent
+ID287=TVTHeaderHeightDblClickResizeEvent
+ID288=TVTHeaderHeightTrackingEvent
+ID289=TVTHeaderHitPositions
 ID29=Check button image indices
-ID290=TVTNodeCopiedEvent
-ID291=TVTNodeCopyingEvent
-ID292=TVTNodeMovedEvent
-ID293=TVTNodeMovingEvent
-ID294=TVTPaintEvent
-ID295=TVTPaintOption
-ID296=TVTPaintOptions
-ID297=TVTPaintText
-ID298=TVTPopupEvent
-ID299=TVTRenderOLEDataEvent
+ID290=TVTHeaderMouseEvent
+ID291=TVTHeaderMouseMoveEvent
+ID292=TVTHeaderNotifyEvent
+ID293=TVTHeaderOption
+ID294=TVTHeaderOptions
+ID295=TVTHeaderPaintEvent
+ID296=TVTHeaderPaintQueryElementsEvent
+ID297=TVTHeaderPopupOption
+ID298=TVTHeaderPopupOptions
+ID299=TVTHeaderStyle
 ID3=!!COPYRIGHT
 ID30=ckButtonDisabled
-ID300=TVTSaveNodeEvent
-ID301=TVTScrollEvent
-ID302=TVTScrollIncrement
-ID303=TVTSearchDirection
-ID304=TVTSearchStart
-ID305=TVTSelectionOption
-ID306=TVTSelectionOptions
-ID307=TVTStateChangeEvent
-ID308=TVTStringOption
-ID309=TVTStringOptions
+ID300=TVTHelpContextEvent
+ID301=TVTHintMode
+ID302=TVTHotNodeChangeEvent
+ID303=TVTImageInfoIndex
+ID304=TVTImageKind
+ID305=TVTIncrementalSearch
+ID306=TVTIncrementalSearchEvent
+ID307=TVTInitChildrenEvent
+ID308=TVTInitNodeEvent
+ID309=TVTInternalPaintOption
 ID31=ckButtonHot
-ID310=TVTStructureChangeEvent
-ID311=TVTTransparency
-ID312=TVTUpdateState
-ID313=TVTUpdatingEvent
-ID314=TWMContextMenu
-ID315=TWMPrintClient
-ID316=UnpressedState
-ID317=UserChunk
-ID318=UtilityImageSize
-ID319=VTHeaderStreamVersion
+ID310=TVTInternalPaintOptions
+ID311=TVTKeyActionEvent
+ID312=TVTLineMode
+ID313=TVTLineStyle
+ID314=TVTLineType
+ID315=TVTMeasureItemEvent
+ID316=TVTMeasureTextEvent
+ID317=TVTMenuItem
+ID318=TVTMiscOption
+ID319=TVTMiscOptions
 ID32=ckButtonNormal
-ID320=VTTreeStreamVersion
-ID321=VTVersion
-ID322=WideCR
-ID323=WideLF
-ID324=WideLineSeparator
-ID325=WideNull
-ID326=WM_CHANGESTATE
-ID327=WM_RELEASEEDITLINK
-ID328=XPDarkGradientColor
-ID329=XPDarkSplitBarColor
+ID320=TVTNodeAlignment
+ID321=TVTNodeAttachMode
+ID322=TVTNodeClickEvent
+ID323=TVTNodeCopiedEvent
+ID324=TVTNodeCopyingEvent
+ID325=TVTNodeExportEvent
+ID326=TVTNodeHeightDblClickResizeEvent
+ID327=TVTNodeHeightTrackingEvent
+ID328=TVTNodeMovedEvent
+ID329=TVTNodeMovingEvent
 ID33=ckButtonPressed
-ID330=XPDownInnerLineColor
-ID331=XPDownMiddleLineColor
-ID332=XPDownOuterLineColor
-ID333=XPLightSplitBarColor
-ID334=XPMainHeaderColorDown
-ID335=XPMainHeaderColorHover
-ID336=XPMainHeaderColorUp
+ID330=TVTOperationEvent
+ID331=TVTOperationKinds
+ID332=TVTPaintEvent
+ID333=TVTPaintOption
+ID334=TVTPaintOptions
+ID335=TVTPaintText
+ID336=TVTPopupEvent
+ID337=TVTRemoveFromSelectionEvent
+ID338=TVTRenderOLEDataEvent
+ID339=TVTSaveNodeEvent
 ID34=ckCheckCheckedDisabled
+ID340=TVTSaveTreeEvent
+ID341=TVTScrollbarShowEvent
+ID342=TVTScrollEvent
+ID343=TVTScrollIncrement
+ID344=TVTSearchDirection
+ID345=TVTSearchStart
+ID346=TVTSelectionOption
+ID347=TVTSelectionOptions
+ID348=TVTStateChangeEvent
+ID349=TVTStringOption
 ID35=ckCheckCheckedHot
+ID350=TVTStringOptions
+ID351=TVTStructureChangeEvent
+ID352=TVTTransparency
+ID353=TVTTreeExportEvent
+ID354=TVTUpdateState
+ID355=TVTUpdatingEvent
+ID356=TWMContextMenu
+ID357=TWMPrintClient
+ID358=UnicodeString
+ID359=UnpressedState
 ID36=ckCheckCheckedNormal
+ID360=UserChunk
+ID361=UtilityImageSize
+ID362=VTHeaderStreamVersion
+ID363=VTTreeStreamVersion
+ID364=VTVersion
+ID365=WideCR
+ID366=WideLF
+ID367=WideLineSeparator
+ID368=WideNull
+ID369=WM_CHANGESTATE
 ID37=ckCheckCheckedPressed
+ID370=WM_RELEASEEDITLINK
+ID371=XPDarkGradientColor
+ID372=XPDarkSplitBarColor
+ID373=XPDownInnerLineColor
+ID374=XPDownMiddleLineColor
+ID375=XPDownOuterLineColor
+ID376=XPLightSplitBarColor
+ID377=XPMainHeaderColorDown
+ID378=XPMainHeaderColorHover
+ID379=XPMainHeaderColorUp
 ID38=ckCheckMixedDisabled
 ID39=ckCheckMixedHot
 ID4=!!FUNCTIONS
@@ -51499,15 +51542,20 @@ ETPCommand1=3
 ETPGroup1=$Inner fundamentals
 ETPTopicOrder0=0
 
-[External Topic Properties\PCardinal]
+[External Topic Properties\PByte]
 Count=1
 ETPCommand0=2
 ETPTopicOrder0=0
 
-[External Topic Properties\PClipboardFormatListEntry]
+[External Topic Properties\PCardinal]
 Count=1
 ETPCommand0=2
 ETPTopicOrder0=1
+
+[External Topic Properties\PClipboardFormatListEntry]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=2
 
 [External Topic Properties\PressedState]
 Count=1
@@ -51517,22 +51565,27 @@ ETPTopicOrder0=77
 [External Topic Properties\PSHDragImage]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=2
+ETPTopicOrder0=3
 
 [External Topic Properties\PVirtualNode]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=3
+ETPTopicOrder0=4
 
 [External Topic Properties\PVTHintData]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=4
+ETPTopicOrder0=5
 
 [External Topic Properties\PVTReference]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=5
+ETPTopicOrder0=6
+
+[External Topic Properties\PVTVirtualNodeEnumeration]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=7
 
 [External Topic Properties\QA.htm]
 Count=2
@@ -51646,19 +51699,19 @@ ETPTopicOrder0=96
 [External Topic Properties\TAddHeaderPopupItemEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=6
+ETPTopicOrder0=8
 
 [External Topic Properties\TAddPopupItemType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=126
+ETPTopicOrder0=9
 
 [External Topic Properties\TAutoScrollInterval]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=7
+ETPTopicOrder0=10
 
 [External Topic Properties\TBaseVirtualTree.AfterConstruction]
 Count=1
@@ -51677,7 +51730,7 @@ Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=127
+ETPTopicOrder0=11
 
 [External Topic Properties\TBufferedString]
 Count=1
@@ -51686,140 +51739,140 @@ ETPCommand0=15
 [External Topic Properties\TCache]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=8
+ETPTopicOrder0=12
 
 [External Topic Properties\TCardinalArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=9
+ETPTopicOrder0=13
 
 [External Topic Properties\TChangeReason]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=128
+ETPTopicOrder0=14
 
 [External Topic Properties\TChangeStates]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=10
+ETPTopicOrder0=15
 
 [External Topic Properties\TCheckImageKind]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=129
+ETPTopicOrder0=16
 
 [External Topic Properties\TCheckState]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=130
+ETPTopicOrder0=17
 
 [External Topic Properties\TCheckType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=131
+ETPTopicOrder0=18
 
 [External Topic Properties\TColumnChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=11
+ETPTopicOrder0=19
 
 [External Topic Properties\TColumnIndex]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=12
+ETPTopicOrder0=20
 
 [External Topic Properties\TColumnPosition]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=13
+ETPTopicOrder0=21
 
 [External Topic Properties\TColumnsArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=14
+ETPTopicOrder0=22
 
 [External Topic Properties\TDragOperation]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=132
+ETPTopicOrder0=23
 
 [External Topic Properties\TDragOperations]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=15
+ETPTopicOrder0=24
 
 [External Topic Properties\TDropMode]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=133
+ETPTopicOrder0=25
 
 [External Topic Properties\TFormatArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=16
+ETPTopicOrder0=26
 
 [External Topic Properties\TFormatEtcArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=17
+ETPTopicOrder0=27
 
 [External Topic Properties\TGetFirstNodeProc]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=18
+ETPTopicOrder0=28
 
 [External Topic Properties\TGetNextNodeProc]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=19
+ETPTopicOrder0=29
 
 [External Topic Properties\THeaderPaintElements]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=20
+ETPTopicOrder0=30
 
 [External Topic Properties\THeaderState]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=134
+ETPTopicOrder0=31
 
 [External Topic Properties\THeaderStates]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=21
+ETPTopicOrder0=32
 
 [External Topic Properties\THintAnimationType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=135
+ETPTopicOrder0=33
 
 [External Topic Properties\THitPosition]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=136
+ETPTopicOrder0=34
 
 [External Topic Properties\THitPositions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=22
+ETPTopicOrder0=35
 
 [External Topic Properties\TImageIndex]
 Count=1
@@ -51829,39 +51882,39 @@ ETPTopicOrder0=23
 [External Topic Properties\TIndexArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=24
+ETPTopicOrder0=36
 
 [External Topic Properties\TInternalStgMediumArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=25
+ETPTopicOrder0=37
 
 [External Topic Properties\TItemEraseAction]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=137
+ETPTopicOrder0=38
 
 [External Topic Properties\TLineImage]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=26
+ETPTopicOrder0=39
 
 [External Topic Properties\TMagicID]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=27
+ETPTopicOrder0=40
 
 [External Topic Properties\TMouseButtons]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=28
+ETPTopicOrder0=41
 
 [External Topic Properties\TNodeArray]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=29
+ETPTopicOrder0=42
 
 [External Topic Properties\TOldVTOption]
 Count=3
@@ -51888,53 +51941,53 @@ Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=139
+ETPTopicOrder0=43
 
 [External Topic Properties\TScrollDirections]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=30
+ETPTopicOrder0=44
 
 [External Topic Properties\TScrollUpdateOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=31
+ETPTopicOrder0=45
 
 [External Topic Properties\TSortDirection]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=140
+ETPTopicOrder0=46
 
 [External Topic Properties\TTreeOptionsClass]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=32
+ETPTopicOrder0=47
 
 [External Topic Properties\TVirtualNodeInitState]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=141
+ETPTopicOrder0=48
 
 [External Topic Properties\TVirtualNodeInitStates]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=33
+ETPTopicOrder0=49
 
 [External Topic Properties\TVirtualNodeState]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=142
+ETPTopicOrder0=50
 
 [External Topic Properties\TVirtualNodeStates]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=34
+ETPTopicOrder0=51
 
 [External Topic Properties\TVirtualTreeCast]
 Count=1
@@ -51943,436 +51996,576 @@ ETPCommand0=15
 [External Topic Properties\TVirtualTreeClass]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=35
+ETPTopicOrder0=52
 
 [External Topic Properties\TVirtualTreeColumnClass]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=36
+ETPTopicOrder0=53
 
 [External Topic Properties\TVirtualTreeColumnsClass]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=37
+ETPTopicOrder0=54
 
 [External Topic Properties\TVirtualTreeColumnStyle]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=143
+ETPTopicOrder0=55
 
 [External Topic Properties\TVirtualTreeStates]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=38
+ETPTopicOrder0=56
+
+[External Topic Properties\TVSTGetHintEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=57
 
 [External Topic Properties\TVSTGetTextEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=39
+ETPTopicOrder0=58
 
 [External Topic Properties\TVSTNewTextEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=40
+ETPTopicOrder0=59
 
 [External Topic Properties\TVSTShortenStringEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=41
+ETPTopicOrder0=60
 
 [External Topic Properties\TVSTTextSourceType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=144
+ETPTopicOrder0=61
 
 [External Topic Properties\TVSTTextType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=145
+ETPTopicOrder0=62
+
+[External Topic Properties\TVTAddToSelectionEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=63
 
 [External Topic Properties\TVTAdvancedHeaderPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=42
+ETPTopicOrder0=64
+
+[External Topic Properties\TVTAfterAutoFitColumnEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=65
+
+[External Topic Properties\TVTAfterAutoFitColumnsEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=66
 
 [External Topic Properties\TVTAfterCellPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=43
+ETPTopicOrder0=67
+
+[External Topic Properties\TVTAfterColumnWidthTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=68
+
+[External Topic Properties\TVTAfterGetMaxColumnWidthEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=69
+
+[External Topic Properties\TVTAfterHeaderHeightTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=70
 
 [External Topic Properties\TVTAfterItemEraseEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=44
+ETPTopicOrder0=71
 
 [External Topic Properties\TVTAfterItemPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=45
+ETPTopicOrder0=72
 
 [External Topic Properties\TVTAnimationCallback]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=46
+ETPTopicOrder0=73
 
 [External Topic Properties\TVTAnimationOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=146
+ETPTopicOrder0=74
 
 [External Topic Properties\TVTAnimationOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=47
+ETPTopicOrder0=75
 
 [External Topic Properties\TVTAutoOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=147
+ETPTopicOrder0=76
 
 [External Topic Properties\TVTAutoOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=48
+ETPTopicOrder0=77
 
 [External Topic Properties\TVTBackgroundPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=49
+ETPTopicOrder0=78
+
+[External Topic Properties\TVTBeforeAutoFitColumnEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=79
+
+[External Topic Properties\TVTBeforeAutoFitColumnsEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=80
 
 [External Topic Properties\TVTBeforeCellPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=50
+ETPTopicOrder0=81
+
+[External Topic Properties\TVTBeforeColumnWidthTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=82
+
+[External Topic Properties\TVTBeforeDrawLineImageEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=83
+
+[External Topic Properties\TVTBeforeGetMaxColumnWidthEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=84
+
+[External Topic Properties\TVTBeforeHeaderHeightTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=85
 
 [External Topic Properties\TVTBeforeItemEraseEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=51
+ETPTopicOrder0=86
 
 [External Topic Properties\TVTBeforeItemPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=52
+ETPTopicOrder0=87
 
 [External Topic Properties\TVTBias]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=53
+ETPTopicOrder0=88
 
 [External Topic Properties\TVTButtonFillMode]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=148
+ETPTopicOrder0=89
 
 [External Topic Properties\TVTButtonStyle]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=149
+ETPTopicOrder0=90
+
+[External Topic Properties\TVTCanSplitterResizeColumnEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=91
+
+[External Topic Properties\TVTCanSplitterResizeHeaderEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=92
+
+[External Topic Properties\TVTCanSplitterResizeNodeEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=93
 
 [External Topic Properties\TVTChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=54
+ETPTopicOrder0=94
 
 [External Topic Properties\TVTChangingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=55
+ETPTopicOrder0=95
 
 [External Topic Properties\TVTCheckChangingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=56
+ETPTopicOrder0=96
 
 [External Topic Properties\TVTColumnClickEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=57
+ETPTopicOrder0=97
 
 [External Topic Properties\TVTColumnDblClickEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=58
+ETPTopicOrder0=98
+
+[External Topic Properties\TVTColumnExportEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=99
 
 [External Topic Properties\TVTColumnOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=150
+ETPTopicOrder0=100
 
 [External Topic Properties\TVTColumnOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=59
+ETPTopicOrder0=101
+
+[External Topic Properties\TVTColumnWidthDblClickResizeEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=102
+
+[External Topic Properties\TVTColumnWidthTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=103
 
 [External Topic Properties\TVTCompareEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=60
+ETPTopicOrder0=104
+
+[External Topic Properties\TVTConstraintPercent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=105
 
 [External Topic Properties\TVTCreateDataObjectEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=61
+ETPTopicOrder0=106
 
 [External Topic Properties\TVTCreateDragManagerEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=62
+ETPTopicOrder0=107
 
 [External Topic Properties\TVTCreateEditorEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=63
+ETPTopicOrder0=108
 
 [External Topic Properties\TVTDragAllowedEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=64
+ETPTopicOrder0=109
 
 [External Topic Properties\TVTDragDropEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=65
+ETPTopicOrder0=110
 
 [External Topic Properties\TVTDragImageKind]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=151
+ETPTopicOrder0=111
 
 [External Topic Properties\TVTDragImageStates]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=66
+ETPTopicOrder0=112
 
 [External Topic Properties\TVTDragMoveRestriction]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=152
+ETPTopicOrder0=113
 
 [External Topic Properties\TVTDragOverEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=67
+ETPTopicOrder0=114
 
 [External Topic Properties\TVTDragType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=153
+ETPTopicOrder0=115
 
 [External Topic Properties\TVTDrawHintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=68
+ETPTopicOrder0=116
 
 [External Topic Properties\TVTDrawNodeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=69
+ETPTopicOrder0=117
 
 [External Topic Properties\TVTDrawSelectionMode]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=154
+ETPTopicOrder0=118
+
+[External Topic Properties\TVTDrawTextEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=119
 
 [External Topic Properties\TVTDropMarkMode]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=155
+ETPTopicOrder0=120
 
 [External Topic Properties\TVTEditCancelEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=70
+ETPTopicOrder0=121
 
 [External Topic Properties\TVTEditChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=71
+ETPTopicOrder0=122
 
 [External Topic Properties\TVTEditChangingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=72
+ETPTopicOrder0=123
 
 [External Topic Properties\TVTFocusChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=73
+ETPTopicOrder0=124
 
 [External Topic Properties\TVTFocusChangingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=74
+ETPTopicOrder0=125
 
 [External Topic Properties\TVTFreeNodeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=75
+ETPTopicOrder0=126
+
+[External Topic Properties\TVTGetCellContentMarginEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=127
+
+[External Topic Properties\TVTGetCellIsEmptyEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=128
 
 [External Topic Properties\TVTGetCursorEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=76
+ETPTopicOrder0=129
 
 [External Topic Properties\TVTGetHeaderCursorEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=77
+ETPTopicOrder0=130
 
 [External Topic Properties\TVTGetHintSizeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=78
+ETPTopicOrder0=131
 
 [External Topic Properties\TVTGetImageEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=79
+ETPTopicOrder0=132
+
+[External Topic Properties\TVTGetImageExEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=133
+
+[External Topic Properties\TVTGetImageTextEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=134
 
 [External Topic Properties\TVTGetLineStyleEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=80
+ETPTopicOrder0=135
 
 [External Topic Properties\TVTGetNodeDataSizeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=81
+ETPTopicOrder0=136
 
 [External Topic Properties\TVTGetNodeProc]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=82
+ETPTopicOrder0=137
 
 [External Topic Properties\TVTGetNodeWidthEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=83
+ETPTopicOrder0=138
 
 [External Topic Properties\TVTGetUserClipboardFormatsEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=84
+ETPTopicOrder0=139
 
 [External Topic Properties\TVTHeaderClass]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=85
+ETPTopicOrder0=140
 
 [External Topic Properties\TVTHeaderClickEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=86
+ETPTopicOrder0=141
 
 [External Topic Properties\TVTHeaderColumnLayout]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=156
+ETPTopicOrder0=142
 
 [External Topic Properties\TVTHeaderDraggedEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=87
+ETPTopicOrder0=143
 
 [External Topic Properties\TVTHeaderDraggedOutEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=88
+ETPTopicOrder0=144
 
 [External Topic Properties\TVTHeaderDraggingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=89
+ETPTopicOrder0=145
+
+[External Topic Properties\TVTHeaderHeightDblClickResizeEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=146
+
+[External Topic Properties\TVTHeaderHeightTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=147
+
+[External Topic Properties\TVTHeaderHitPositions]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=148
 
 [External Topic Properties\TVTHeaderMouseEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=90
+ETPTopicOrder0=149
 
 [External Topic Properties\TVTHeaderMouseMoveEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=91
+ETPTopicOrder0=150
 
 [External Topic Properties\TVTHeaderNotifyEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=92
+ETPTopicOrder0=151
 
 [External Topic Properties\TVTHeaderOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=157
+ETPTopicOrder0=152
 
 [External Topic Properties\TVTHeaderOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=93
+ETPTopicOrder0=153
 
 [External Topic Properties\TVTHeaderPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=94
+ETPTopicOrder0=154
 
 [External Topic Properties\TVTHeaderPaintQueryElementsEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=95
+ETPTopicOrder0=155
 
 [External Topic Properties\TVTHeaderPopupOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=158
+ETPTopicOrder0=156
 
 [External Topic Properties\TVTHeaderPopupOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=96
+ETPTopicOrder0=157
 
 [External Topic Properties\TVTHeaderStyle]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=159
+ETPTopicOrder0=158
 
 [External Topic Properties\TVTHelpContextEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=97
+ETPTopicOrder0=159
 
 [External Topic Properties\TVTHintMode]
 Count=2
@@ -52384,244 +52577,304 @@ ETPTopicOrder0=160
 [External Topic Properties\TVTHotNodeChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=98
+ETPTopicOrder0=161
 
 [External Topic Properties\TVTImageInfoIndex]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=161
+ETPTopicOrder0=162
 
 [External Topic Properties\TVTImageKind]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=162
+ETPTopicOrder0=163
 
 [External Topic Properties\TVTIncrementalSearch]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=163
+ETPTopicOrder0=164
 
 [External Topic Properties\TVTIncrementalSearchEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=99
+ETPTopicOrder0=165
 
 [External Topic Properties\TVTInitChildrenEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=100
+ETPTopicOrder0=166
 
 [External Topic Properties\TVTInitNodeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=101
+ETPTopicOrder0=167
 
 [External Topic Properties\TVTInternalPaintOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=164
+ETPTopicOrder0=168
 
 [External Topic Properties\TVTInternalPaintOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=102
+ETPTopicOrder0=169
 
 [External Topic Properties\TVTKeyActionEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=103
+ETPTopicOrder0=170
 
 [External Topic Properties\TVTLineMode]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=165
+ETPTopicOrder0=171
 
 [External Topic Properties\TVTLineStyle]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=166
+ETPTopicOrder0=172
 
 [External Topic Properties\TVTLineType]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=167
+ETPTopicOrder0=173
 
 [External Topic Properties\TVTMeasureItemEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=104
+ETPTopicOrder0=174
+
+[External Topic Properties\TVTMeasureTextEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=175
+
+[External Topic Properties\TVTMenuItem]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=176
 
 [External Topic Properties\TVTMiscOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=168
+ETPTopicOrder0=177
 
 [External Topic Properties\TVTMiscOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=105
+ETPTopicOrder0=178
 
 [External Topic Properties\TVTNodeAlignment]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=169
+ETPTopicOrder0=179
 
 [External Topic Properties\TVTNodeAttachMode]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=170
+ETPTopicOrder0=180
+
+[External Topic Properties\TVTNodeClickEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=181
 
 [External Topic Properties\TVTNodeCopiedEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=106
+ETPTopicOrder0=182
 
 [External Topic Properties\TVTNodeCopyingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=107
+ETPTopicOrder0=183
+
+[External Topic Properties\TVTNodeExportEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=184
+
+[External Topic Properties\TVTNodeHeightDblClickResizeEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=185
+
+[External Topic Properties\TVTNodeHeightTrackingEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=186
 
 [External Topic Properties\TVTNodeMovedEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=108
+ETPTopicOrder0=187
 
 [External Topic Properties\TVTNodeMovingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=109
+ETPTopicOrder0=188
+
+[External Topic Properties\TVTOperationEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=189
+
+[External Topic Properties\TVTOperationKinds]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=190
 
 [External Topic Properties\TVTPaintEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=110
+ETPTopicOrder0=191
 
 [External Topic Properties\TVTPaintOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=171
+ETPTopicOrder0=192
 
 [External Topic Properties\TVTPaintOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=111
+ETPTopicOrder0=193
 
 [External Topic Properties\TVTPaintText]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=112
+ETPTopicOrder0=194
 
 [External Topic Properties\TVTPopupEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=113
+ETPTopicOrder0=195
+
+[External Topic Properties\TVTRemoveFromSelectionEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=196
 
 [External Topic Properties\TVTRenderOLEDataEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=114
+ETPTopicOrder0=197
 
 [External Topic Properties\TVTSaveNodeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=115
+ETPTopicOrder0=198
+
+[External Topic Properties\TVTSaveTreeEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=199
+
+[External Topic Properties\TVTScrollbarShowEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=200
 
 [External Topic Properties\TVTScrollEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=116
+ETPTopicOrder0=201
 
 [External Topic Properties\TVTScrollIncrement]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=117
+ETPTopicOrder0=202
 
 [External Topic Properties\TVTSearchDirection]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=172
+ETPTopicOrder0=203
 
 [External Topic Properties\TVTSearchStart]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=173
+ETPTopicOrder0=204
 
 [External Topic Properties\TVTSelectionOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=174
+ETPTopicOrder0=205
 
 [External Topic Properties\TVTSelectionOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=118
+ETPTopicOrder0=206
 
 [External Topic Properties\TVTStateChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=119
+ETPTopicOrder0=207
 
 [External Topic Properties\TVTStringOption]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=175
+ETPTopicOrder0=208
 
 [External Topic Properties\TVTStringOptions]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=120
+ETPTopicOrder0=209
 
 [External Topic Properties\TVTStructureChangeEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=121
+ETPTopicOrder0=210
 
 [External Topic Properties\TVTTransparency]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=122
+ETPTopicOrder0=211
+
+[External Topic Properties\TVTTreeExportEvent]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=212
 
 [External Topic Properties\TVTUpdateState]
 Count=2
 ETPCommand0=2
 ETPCommand1=3
 ETPGroup1=!!TYPES
-ETPTopicOrder0=176
+ETPTopicOrder0=213
 
 [External Topic Properties\TVTUpdatingEvent]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=123
+ETPTopicOrder0=214
 
 [External Topic Properties\TWMContextMenu]
 Count=1
@@ -52631,7 +52884,12 @@ ETPTopicOrder0=124
 [External Topic Properties\TWMPrintClient]
 Count=1
 ETPCommand0=2
-ETPTopicOrder0=125
+ETPTopicOrder0=215
+
+[External Topic Properties\UnicodeString]
+Count=1
+ETPCommand0=2
+ETPTopicOrder0=216
 
 [External Topic Properties\UnpressedState]
 Count=1

@@ -36,21 +36,6 @@ check boxes
 
 
 
-@@ShortenString@HDC@WideString@Integer@Boolean@Integer
-Note
-It is assumed that the string really needs shortage. Check this in advance.
-Summary
-General purpose routine to shorten a Unicode string to a given maximum size.
-
-Description
-Adjusts the given string <B>S</B> so that it fits into the given width. <B>DC</B> holds the handle to a valid device
-context which can be used to determine the width of a string. Of couse, this device context should be set up with the
-proper values for the current font. <B>EllipsisWidth</B> gives the width (in logical units) of the three points to be
-added to the shorted string. If this value is 0 then it will be determined implicitely. For higher speed (and multiple
-entries to be shorted) specify this value explicitely. <B>RTL</B> determines if right-to-left reading is active, which is
-needed to put the ellipsisis on the correct side. The result is the left part of the string which fits into the given
-space plus the ellipsisis.
-
 
 @@TBaseVirtualTree
 TBaseVirtualTree is the main and base class for all other Virtual Treeview descendants. This class implements most of the
@@ -113,9 +98,6 @@ the function returns. Another side effect of this method is that a temporary lis
 Helper routine used when a draw selection takes place. This version handles right-to-left directionality.
 See also comments in CollectSelectedNodesLTR.
 
-@@TBaseVirtualTree.CompareNodePositions@PVirtualNode@PVirtualNode
-Tries hard and smart to quickly determine whether Node1's structural position is before Node2's position
-Returns 0 if Node1 = Node2, < 0 if Node1 is located before Node2 else > 0.
 
 @@TBaseVirtualTree.DrawLineImage@TVTPaintInfo@Integer@Integer@Integer@Integer@TVTLineType@Boolean
 Draws (depending on Style) one of the 5 line types of the tree.
@@ -572,10 +554,6 @@ draw correct tree lines.
 @@TBaseVirtualTree.InitializeFirstColumnValues@TVTPaintInfo
 Determines initial index, position and cell size of the first visible column.
 
-@@TBaseVirtualTree.InitializeLineImageAndSelectLevel@PVirtualNode@TLineImage
-This method is used during paint cycles and initializes an array of line type IDs. These IDs are used to paint
-the tree lines in front of the given node.
-Additionally an initial count of selected parents is determined and returned which is used for specific painting.
 
 @@TBaseVirtualTree.InitRootNode@Cardinal
 Reinitializes the root node.
@@ -589,9 +567,6 @@ Helper method to check if Node is the same as the first visible child of Parent.
 @@TBaseVirtualTree.IsLastVisibleChild@PVirtualNode@PVirtualNode
 Helper method to check if Node is the same as the last visible child of Parent.
 
-@@TBaseVirtualTree.LimitPaintingToArea@TCanvas@TRect@HRGN
-Limits further painting onto the given canvas to the given rectangle.
-VisibleRegion is an optional region which can be used to limit drawing further.
 
 @@TBaseVirtualTree.PrepareBitmaps@Boolean@Boolean
 initializes the contents of the internal bitmaps
@@ -745,8 +720,6 @@ gray cross
 @@TCheckImageKind.ckLightTick
 gray tick mark
 
-@@TCheckImageKind.ckSystem
-System defined check images.
 
 @@TCheckImageKind.ckSystemFlat
 Flat system defined check images.
@@ -865,11 +838,6 @@ left button is down, user might want to start dragging a column
 @@THeaderState.hsLoading
 The header currently loads from stream, so updates are not necessary.
 
-@@THeaderState.hsTracking
-column resizing is in progress
-
-@@THeaderState.hsTrackPending
-left button is down, user might want to start resize a column
 
 
 @@THintAnimationType.hatFade
@@ -1054,8 +1022,6 @@ the DC of the window to erase unconvered parts
 @@TToggleAnimationData.Expand
 if true then expanding is in progress
 
-@@TToggleAnimationData.R
-the scroll rectangle
 
 @@TToggleAnimationData.Window
 copy of the tree's window handle
@@ -6493,3 +6459,14 @@ a method resolution clause to avoid a name clash. The clause can look similar to
 <B>procedure</B> EditLinkSetBounds(R: TRect); <B>stdcall</B>;
 <B>procedure</B> IVTEditLink.SetBounds = EditLinkSetBounds;
 </CODE>
+ 
+@@TCheckImageKind.ckSystemDefault
+System defined check images.
+ @@THeaderState.hsResizing
+multi column resizing in progress
+ 
+@@THeaderState.hsColumnWidthTrackPending
+left button is down, user might want to start resize a column
+ 
+@@THeaderState.hsColumnWidthTracking
+column resizing is in progress
