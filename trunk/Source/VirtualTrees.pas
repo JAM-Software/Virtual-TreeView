@@ -1219,14 +1219,14 @@ type
   );
   THeaderStates = set of THeaderState;
 
-  // describes the used column resize behaviour for AutoFitColumns
+
   TSmartAutoFitType = (
     smaAllColumns,      // consider nodes in view only for all columns
     smaNoColumn,        // consider nodes in view only for no column
     smaUseColumnOption  // use coSmartResize of the corresponding column
-  );
+  );  // describes the used column resize behaviour for AutoFitColumns
 
-  // desribes what made a structure change event happen
+
   TChangeReason = (
     crIgnore,       // used as placeholder
     crAccumulated,  // used for delayed changes
@@ -1235,7 +1235,7 @@ type
     crNodeAdded,    // a node has been added
     crNodeCopied,   // a node has been duplicated
     crNodeMoved     // a node has been moved to a new place
-  );
+  ); // desribes what made a structure change event happen
 
   TVTHeader = class(TPersistent)
   private
