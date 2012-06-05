@@ -3312,7 +3312,6 @@
       <displaystring>PByte Type</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/PByte.html</target>
       <target id="html">../Output/PByte.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/PByte.html</target>
     </link>
     <link>
       <topicid>PCardinal</topicid>
@@ -3327,7 +3326,6 @@
       <displaystring>PClipboardFormatListEntry Type</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/PClipboardFormatListEntry.html</target>
       <target id="html">../Output/PClipboardFormatListEntry.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/PClipboardFormatListEntry.html</target>
       <target id="pdf">pdf://236@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -3438,7 +3436,6 @@
       <displaystring>PSHDragImage Type</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/PSHDragImage.html</target>
       <target id="html">../Output/PSHDragImage.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/PSHDragImage.html</target>
       <target id="pdf">pdf://237@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -3454,7 +3451,6 @@
       <displaystring>PVTHintData Type</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/PVTHintData.html</target>
       <target id="html">../Output/PVTHintData.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/PVTHintData.html</target>
       <target id="pdf">pdf://238@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -3462,7 +3458,6 @@
       <displaystring>PVTReference Type</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/PVTReference.html</target>
       <target id="html">../Output/PVTReference.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/PVTReference.html</target>
       <target id="pdf">pdf://239@Virtual Treeview.pdf</target>
     </link>
     <link>
@@ -3470,7 +3465,6 @@
       <displaystring>PVTVirtualNodeEnumeration Type</displaystring>
       <target id="help2">ms-help://VirtualTreeview.HxS/VirtualTreeview/PVTVirtualNodeEnumeration.html</target>
       <target id="html">../Output/PVTVirtualNodeEnumeration.html</target>
-      <target id="htmlhelp">mk:@MSITStore:VirtualTreeview.chm::/PVTVirtualNodeEnumeration.html</target>
     </link>
     <link>
       <topicid>QA.htm</topicid>
