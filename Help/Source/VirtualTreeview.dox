@@ -53692,7 +53692,7 @@ ID9=9
 SavedValues=1
 
 [Source Files]
-Count=22
+Count=21
 File0=Include\AdditionalInfo.dtx
 File1=Include\DataHandling.dtx
 File10=Include\Overview.dtx
@@ -53704,10 +53704,9 @@ File15=Include\specialtopics.dtx
 File16=Include\TreeImage.dtx
 File17=..\..\Source\VirtualTrees.dtx
 File18=..\..\Source\VirtualTrees.pas
-File19=..\..\Source\VirtualTreesD7.dpk
+File19=..\..\Source\VTHeaderPopup.dtx
 File2=Include\DragDrop.dtx
-File20=..\..\Source\VTHeaderPopup.dtx
-File21=..\..\Source\VTHeaderPopup.pas
+File20=..\..\Source\VTHeaderPopup.pas
 File3=Include\Editing.dtx
 File4=Include\Features.dtx
 File5=Include\GettingStartedE.dtx
