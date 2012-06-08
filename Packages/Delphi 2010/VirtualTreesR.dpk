@@ -23,6 +23,7 @@ package VirtualTreesR;
 {$MINENUMSIZE 1}
 {$IMAGEBASE $30400000}
 {$DESCRIPTION 'Virtual Treeview runtime package'}
+{$LIBSUFFIX '14'}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
 
