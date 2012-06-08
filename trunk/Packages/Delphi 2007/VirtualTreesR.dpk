@@ -21,10 +21,11 @@ package VirtualTreesR;
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
-{$IMAGEBASE $30400000}
+{$IMAGEBASE $400000}
 {$DESCRIPTION 'Virtual Treeview runtime package'}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
+{$DEFINE RELEASE}
 
 requires
   vcl,
