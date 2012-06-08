@@ -4,7 +4,7 @@
 			<MainSource>VirtualTreesD.dpk</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<ProjectVersion>12.2</ProjectVersion>
+			<ProjectVersion>12.3</ProjectVersion>
 			<Basis>True</Basis>
 			<Platform>Win32</Platform>
 			<AppType>Package</AppType>
@@ -27,7 +27,7 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DllSuffix>15</DllSuffix>
-			<DCC_UnitSearchPath>$(Components)\VirtualTree\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>..\..\Common;$(Components)\VirtualTree\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_DependencyCheckOutputName>..\..\..\Compile\2011\VirtualTreesD15.bpl</DCC_DependencyCheckOutputName>
 			<DCC_BplOutput>$(ComponentsBin)</DCC_BplOutput>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
@@ -59,7 +59,7 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="..\..\Design\VirtualTrees.dcr"/>
-			<DCCReference Include="dclstd.dcp"/>
+			<DCCReference Include="DesignIde.dcp"/>
 			<DCCReference Include="VirtualTreesR.dcp"/>
 			<DCCReference Include="..\..\Design\VirtualTreesReg.pas"/>
 			<BuildConfiguration Include="Debug">
@@ -75,7 +75,7 @@
 			</BuildConfiguration>
 		</ItemGroup>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
-		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\8.0\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\8.0\UserTools.proj"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>Package</Borland.ProjectType>
