@@ -21,19 +21,19 @@
 			<MSBuild Projects="VirtualTreesR.dproj"/>
 		</Target>
 		<Target Name="VirtualTreesR:Clean">
-			<MSBuild Targets="Clean" Projects="VirtualTreesR.dproj"/>
+			<MSBuild Projects="VirtualTreesR.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="VirtualTreesR:Make">
-			<MSBuild Targets="Make" Projects="VirtualTreesR.dproj"/>
+			<MSBuild Projects="VirtualTreesR.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="VirtualTreesD">
 			<MSBuild Projects="VirtualTreesD.dproj"/>
 		</Target>
 		<Target Name="VirtualTreesD:Clean">
-			<MSBuild Targets="Clean" Projects="VirtualTreesD.dproj"/>
+			<MSBuild Projects="VirtualTreesD.dproj" Targets="Clean"/>
 		</Target>
 		<Target Name="VirtualTreesD:Make">
-			<MSBuild Targets="Make" Projects="VirtualTreesD.dproj"/>
+			<MSBuild Projects="VirtualTreesD.dproj" Targets="Make"/>
 		</Target>
 		<Target Name="Build">
 			<CallTarget Targets="VirtualTreesR;VirtualTreesD"/>
@@ -44,5 +44,5 @@
 		<Target Name="Make">
 			<CallTarget Targets="VirtualTreesR:Make;VirtualTreesD:Make"/>
 		</Target>
-		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
 	</Project>

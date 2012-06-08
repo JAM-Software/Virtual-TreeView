@@ -27,11 +27,11 @@ package VirtualTreesD;
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$LIBSUFFIX '16'}
+{$DESIGNONLY}
 {$IMPLICITBUILD ON}
 
 requires
-  dclstd,
-  vcl,
+  DesignIDE,
   VirtualTreesR;
 
 contains
