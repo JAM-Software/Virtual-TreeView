@@ -1,3 +1,5 @@
+June 2012
+ - Updated help file for V5.0
 April 2012
  - Added support for theming of hint window (thanks to Arno Garrels and Uwe Schuster)
  - TBaseVirtualTree.CheckParentCheckState: Fixed duplicate recursion to parent nodes
