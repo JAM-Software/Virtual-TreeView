@@ -24,11 +24,12 @@ package VirtualTreesD;
 {$MINENUMSIZE 1}
 {$IMAGEBASE $30400000}
 {$DESCRIPTION 'Virtual Treeview design time package'}
+{$LIBSUFFIX '12'}
 {$DESIGNONLY}
 {$IMPLICITBUILD ON}
 
 requires
-  dclstd,
+  DesignIde,
   VirtualTreesR;
 
 contains
