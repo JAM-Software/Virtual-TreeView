@@ -4,7 +4,7 @@
 			<MainSource>VirtualTreesR.dpk</MainSource>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<ProjectVersion>12.2</ProjectVersion>
+			<ProjectVersion>12.3</ProjectVersion>
 			<Basis>True</Basis>
 			<Platform>Win32</Platform>
 			<AppType>Package</AppType>
@@ -28,7 +28,7 @@
 			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DllSuffix>15</DllSuffix>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-			<DCC_UnitSearchPath>$(Components)\VirtualTree;$(Components)\VirtualTree\Common;$(Components)\VirtualTree\Source;..\..\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>..\..\Common;$(Components)\VirtualTree;$(Components)\VirtualTree\Common;$(Components)\VirtualTree\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<DCC_IOChecking>false</DCC_IOChecking>
 			<DCC_DependencyCheckOutputName>..\..\..\Compile\2011\VirtualTreesR15.bpl</DCC_DependencyCheckOutputName>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
@@ -79,7 +79,7 @@
 			</BuildConfiguration>
 		</ItemGroup>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
-		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\8.0\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\8.0\UserTools.proj"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType>Package</Borland.ProjectType>

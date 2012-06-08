@@ -29,7 +29,7 @@ package VirtualTreesD;
 {$IMPLICITBUILD OFF}
 
 requires
-  dclstd,
+  DesignIde,
   VirtualTreesR;
 
 contains
