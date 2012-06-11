@@ -2913,7 +2913,7 @@ type
     function GetNextNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextSelected(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextSibling(Node: PVirtualNode): PVirtualNode;
-    function GetNextSiblingnNoInit(Node: PVirtualNode): PVirtualNode;
+    function GetNextSiblingNoInit(Node: PVirtualNode): PVirtualNode;
     function GetNextVisible(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = True): PVirtualNode;
     function GetNextVisibleNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = True): PVirtualNode;
     function GetNextVisibleSibling(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
@@ -29082,7 +29082,7 @@ begin
   end;
 end;
 
-function TBaseVirtualTree.GetNextSiblingnNoInit(Node: PVirtualNode): PVirtualNode;
+function TBaseVirtualTree.GetNextSiblingNoInit(Node: PVirtualNode): PVirtualNode;
 
 // Returns the next sibling of Node.
 
