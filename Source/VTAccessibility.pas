@@ -14,9 +14,7 @@ interface
 
 uses
   Windows, Classes, ActiveX, Types,
-  {$if CompilerVersion < 18}
-    MSAAIntf, // MSAA support for Delphi up to 2005
-  {$else}
+  {$if CompilerVersion >= 18}
     oleacc, // MSAA support in Delphi 2006 or higher
   {$ifend}
   VirtualTrees, VTAccessibilityFactory, Controls;
@@ -108,6 +106,16 @@ implementation
 
 uses
   SysUtils, Forms, Variants, Math;
+
+{$if CompilerVersion < 18}
+const
+  //MSAA interfaces not included in Delphi 7
+  ROLE_SYSTEM_OUTLINE = $23 ;
+  ROLE_SYSTEM_OUTLINEITEM = $24 ;
+  STATE_SYSTEM_HASPOPUP = $40000000;
+  IID_IAccessible: TGUID = '{618736E0-3C3D-11CF-810C-00AA00389B71}';
+  function AccessibleObjectFromWindow(hwnd: THandle; dwId: DWORD; const riid: TGUID; out ppvObject): HRESULT; stdcall; external 'oleacc.dll' name 'AccessibleObjectFromWindow'; 
+{$ifend}
 
 
 { TVirtualTreeAccessibility }

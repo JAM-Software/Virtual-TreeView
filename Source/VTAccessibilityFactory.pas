@@ -19,9 +19,7 @@ unit VTAccessibilityFactory;
 interface
 
 uses
-  {$if CompilerVersion < 18}
-    MSAAIntf, // MSAA support for Delphi up to 2005
-  {$else}
+  {$if CompilerVersion >= 18}
     oleacc, // MSAA support in Delphi 2006 or higher
   {$ifend}
   Classes, VirtualTrees;
@@ -113,9 +111,6 @@ destructor TVTAccessibilityFactory.Destroy;
 begin
   FAccessibleProviders.Free;
   FAccessibleProviders := nil;
-  {$if CompilerVersion < 18}
-    FreeAccLibrary;
-  {$ifend}
   inherited Destroy;
 end;
 
@@ -143,11 +138,7 @@ function GetAccessibilityFactory: TVTAccessibilityFactory;
 begin
   // first, check if we've loaded the library already
   if not AccessibilityAvailable then
-    {$if CompilerVersion < 18}
-      AccessibilityAvailable := InitAccLibrary;
-    {$else}
-      AccessibilityAvailable := True;
-    {$ifend}
+    AccessibilityAvailable := True;
   if AccessibilityAvailable then
   begin
     // Check to see if the class has already been created.
