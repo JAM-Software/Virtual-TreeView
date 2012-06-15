@@ -1,7 +1,11 @@
-June 2012
- - Updated help file for V5.0
+June 11-30, 2012
+ - Removed dependecy on file Compilers.inc
+ - Fixed issues #252 and #259
  - Bug fix: Functions GetLastVisible and GetLastVisibleNoInit return correct results even if some anchestor of the last visible node is not effectively visible
  - Improvement: Added functions GetNextSiblingNoInit and GetPreviousSiblingNoInit
+June 01-10, 2012
+ - Release of V5.0.0 RC1
+ - Updated help file for V5.0
 April 2012
  - Added support for theming of hint window (thanks to Arno Garrels and Uwe Schuster)
  - TBaseVirtualTree.CheckParentCheckState: Fixed duplicate recursion to parent nodes

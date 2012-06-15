@@ -53,17 +53,16 @@ interface
 
 {$booleval off} // Use fastest possible boolean evaluation.
 
-{$I Compilers.inc}
 {$I VTConfig.inc}
 
 // For some things to work we need code, which is classified as being unsafe for .NET.
 {$WARN UNSAFE_TYPE OFF}
 {$WARN UNSAFE_CAST OFF}
 
-{$ifdef COMPILER_12_UP}
+{$if CompilerVersion >= 20}
   {$WARN IMPLICIT_STRING_CAST       OFF}
   {$WARN IMPLICIT_STRING_CAST_LOSS  OFF}
-{$endif COMPILER_12_UP}
+{$ifend}
 
 {$HPPEMIT '#include <objidl.h>'}
 {$HPPEMIT '#include <oleidl.h>'}
@@ -72,11 +71,11 @@ interface
 
 uses
   Windows,
-  {$ifndef COMPILER_10_UP}
+  {$if CompilerVersion < 18}
     MSAAIntf, // MSAA support for Delphi up to 2005
   {$else}
     oleacc,   // MSAA support in Delphi 2006 or higher
-  {$endif COMPILER_10_UP}
+  {$ifend}
   Messages, SysUtils, Classes, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Menus, Printers,
   CommCtrl,   // image lists, common controls tree structures
   Themes, UxTheme
@@ -85,11 +84,11 @@ uses
   {$endif TntSupport}
   ;
 
-{$ifndef COMPILER_12_UP}
+{$if CompilerVersion < 20}
 type
   UnicodeString = WideString;
   PByte = PAnsiChar;
-{$endif COMPILER_12_UP}
+{$ifend}
 
 const
   VTVersion = '5.0.0';
@@ -1010,11 +1009,11 @@ type
     destructor Destroy; override;
 
     procedure Assign(Source: TPersistent); override;
-{$ifdef COMPILER_12_UP}
+{$if CompilerVersion >= 20}
    function Equals(OtherColumnObj: TObject): Boolean; override;
 {$else}
    function Equals(OtherColumnObj: TObject): Boolean;
-{$endif}
+{$ifend}
     function GetRect: TRect; virtual;
     procedure LoadFromStream(const Stream: TStream; Version: Integer);
     procedure ParentBiDiModeChanged;
@@ -1116,11 +1115,11 @@ type
     procedure Clear; virtual;
     function ColumnFromPosition(P: TPoint; Relative: Boolean = True): TColumnIndex; overload; virtual;
     function ColumnFromPosition(PositionIndex: TColumnPosition): TColumnIndex; overload; virtual;
-{$ifdef COMPILER_12_UP}
+{$if CompilerVersion >= 20}
    function Equals(OtherColumnsObj: TObject): Boolean; override;
 {$else}
    function Equals(OtherColumnsObj: TObject): Boolean;
-{$endif}
+{$ifend}
     procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: Integer);
     function GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
@@ -1904,18 +1903,18 @@ type
 
   PVTVirtualNodeEnumeration = ^TVTVirtualNodeEnumeration;
 
-  TVTVirtualNodeEnumerator = {$ifdef COMPILER_10_UP}record{$else}class{$endif}
+  TVTVirtualNodeEnumerator = {$if CompilerVersion >= 18}record{$else}class{$ifend}
   private
     FNode: PVirtualNode;
     FCanModeNext: Boolean;
     FEnumeration: PVTVirtualNodeEnumeration;
-    function GetCurrent: PVirtualNode; {$ifdef COMPILER_10_UP}inline;{$endif}
+    function GetCurrent: PVirtualNode; {$if CompilerVersion >= 18}inline;{$ifend}
   public
-    function MoveNext: Boolean; {$ifdef COMPILER_10_UP}inline;{$endif}
+    function MoveNext: Boolean; {$if CompilerVersion >= 18}inline;{$ifend}
     property Current: PVirtualNode read GetCurrent;
   end;
 
-  TVTVirtualNodeEnumeration = {$ifdef COMPILER_10_UP}record{$else}object{$endif}
+  TVTVirtualNodeEnumeration = {$if CompilerVersion >= 18}record{$else}object{$ifend}
   private
     FMode: TVZVirtualNodeEnumerationMode;
     FTree: TBaseVirtualTree;
@@ -4000,10 +3999,10 @@ const
   CaptionChunk = 3;     // used by the string tree to store a node's caption
   UserChunk = 4;        // used for data supplied by the application
 
-  {$ifndef COMPILER_11_UP}
+  {$if CompilerVersion < 19}
     const
       TVP_HOTGLYPH = 4;
-  {$endif COMPILER_11_UP}
+  {$ifend}
 
   RTLFlag: array[Boolean] of Integer = (0, ETO_RTLREADING);
   AlignmentToDrawFlag: array[TAlignment] of Cardinal = (DT_LEFT, DT_RIGHT, DT_CENTER);
@@ -8423,10 +8422,10 @@ end;
 function TVTVirtualNodeEnumeration.GetEnumerator: TVTVirtualNodeEnumerator;
 
 begin
-  {$ifdef COMPILER_10_UP}
+  {$if CompilerVersion >= 18}
   {$else}
   Result := TVTVirtualNodeEnumerator.Create;
-  {$endif COMPILER_10_UP}
+  {$ifend}
   Result.FNode := nil;
   Result.FCanModeNext := True;
   Result.FEnumeration := @Self;
@@ -13192,11 +13191,11 @@ begin
       SetLength(S, Dummy);
       ReadBuffer(PAnsiChar(S)^, Dummy);
       if VTHeaderStreamVersion >= 4 then
-        {$ifdef COMPILER_12_UP}
+        {$if CompilerVersion >= 20}
         Name := UTF8ToString(S)
         {$else}
         Name := UTF8Decode(S)
-        {$endif}
+        {$ifend}
       else
         Name := S;
       ReadBuffer(Dummy, SizeOf(Dummy));
@@ -25198,10 +25197,11 @@ var
   InnerRect: TRect;
   RowRect: TRect;
   Theme: HTHEME;
-  {$ifndef COMPILER_11_UP}
+  {$if CompilerVersion < 19}
+
     const
       TREIS_HOTSELECTED = 6;
-  {$endif COMPILER_11_UP}
+  {$ifend}
 
   //--------------- local functions -------------------------------------------
 
@@ -34936,7 +34936,7 @@ begin
       end;
   else
     if Format = CF_CSV then
-      S := ContentToText(Source, AnsiChar ({$ifdef COMPILER_15_UP}FormatSettings.{$endif}ListSeparator)) + #0
+      S := ContentToText(Source, AnsiChar ({$if CompilerVersion>=23}FormatSettings.{$ifend}ListSeparator)) + #0
     else
       if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
         S := ContentToRTF(Source) + #0
