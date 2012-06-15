@@ -9,8 +9,6 @@ unit AlignDemo;
 
 interface
 
-{$include Compilers.inc}
-
 // For some things to work we need code, which is classified as being unsafe for .NET.
 {$warn UNSAFE_TYPE off}
 {$warn UNSAFE_CAST off}
