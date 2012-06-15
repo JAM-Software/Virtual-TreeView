@@ -37,7 +37,6 @@ type
     ToolButton6: TToolButton;
     Label1: TLabel;
     Label2: TLabel;
-    Label4: TLabel;
     ToolButton8: TToolButton;
     ToolButton9: TToolButton;
     PrintDialog: TPrintDialog;
