@@ -30,7 +30,6 @@ unit MSAAIntf;
 //   Hint: Parameter 'var' of IAccPropServices.SetHwndProp changed to 'var_'
 //   Hint: Parameter 'var' of IAccPropServices.SetHmenuProp changed to 'var_'
 // ************************************************************************ //
-{$I Compilers.inc}
 
 {$TYPEDADDRESS OFF} // Unit must be compiled without type-checked pointers. 
 {$WARN SYMBOL_PLATFORM OFF}
