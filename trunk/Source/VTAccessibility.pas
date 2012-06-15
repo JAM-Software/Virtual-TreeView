@@ -10,18 +10,15 @@ unit VTAccessibility;
 //
 // Written by Marco Zehe. (c) 2007
 
-{$I Compilers.inc}
-
 interface
 
 uses
-  Windows, Classes, ActiveX,
-  {$ifndef COMPILER_10_UP}
+  Windows, Classes, ActiveX, Types,
+  {$if CompilerVersion < 18}
     MSAAIntf, // MSAA support for Delphi up to 2005
   {$else}
-    Types,
     oleacc, // MSAA support in Delphi 2006 or higher
-  {$endif COMPILER_10_UP}
+  {$ifend}
   VirtualTrees, VTAccessibilityFactory, Controls;
 
 type
