@@ -3922,6 +3922,7 @@ type
     class function GetElementDetails(Detail: TThemedHeader): TThemedElementDetails; overload;
     class function GetElementDetails(Detail: TThemedToolTip): TThemedElementDetails; overload;
     class function GetElementDetails(Detail: TThemedWindow): TThemedElementDetails; overload;
+    class function GetElementDetails(Detail: TThemedButton): TThemedElementDetails; overload;
     class procedure PaintBorder(Control: TWinControl; EraseLRCorner: Boolean);
   end;
 
@@ -3955,6 +3956,11 @@ type
   end;
 
   class function StyleServices.GetElementDetails(Detail: TThemedWindow): TThemedElementDetails;
+  begin
+    Result := ThemeServices.GetElementDetails(Detail);
+  end;
+
+  class function StyleServices.GetElementDetails(Detail: TThemedButton): TThemedElementDetails;
   begin
     Result := ThemeServices.GetElementDetails(Detail);
   end;
@@ -24892,24 +24898,35 @@ begin
       R := Rect(XPos - 1, YPos, XPos + 16, YPos + 16);
       Details.Element := teButton;
       case Index of
-        0..8: // radio buttons
-          begin
-            Details.Part := BP_RADIOBUTTON;
-            Details.State := Index;
-          end;
-        9..20: // check boxes
-          begin
-            Details.Part := BP_CHECKBOX;
-            Details.State := Index - 8;
-          end;
-        21..24: // buttons
-          begin
-            Details.Part := BP_PUSHBUTTON;
-            Details.State := Index - 20;
-          end;
+        // ctRadioButton
+        1 : Details := StyleServices.GetElementDetails(tbRadioButtonUncheckedNormal);
+        2 : Details := StyleServices.GetElementDetails(tbRadioButtonUncheckedHot);
+        3 : Details := StyleServices.GetElementDetails(tbRadioButtonUncheckedPressed);
+        4 : Details := StyleServices.GetElementDetails(tbRadioButtonUncheckedDisabled);
+        5 : Details := StyleServices.GetElementDetails(tbRadioButtonCheckedNormal);
+        6 : Details := StyleServices.GetElementDetails(tbRadioButtonCheckedHot);
+        7 : Details := StyleServices.GetElementDetails(tbRadioButtonCheckedPressed);
+        8 : Details := StyleServices.GetElementDetails(tbRadioButtonCheckedDisabled);
+       // ct(TriState)CheckBox
+        9 : Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal);
+       10 : Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedHot);
+       11 : Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedPressed);
+       12 : Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedDisabled);
+       13 : Details := StyleServices.GetElementDetails(tbCheckBoxCheckedNormal);
+       14 : Details := StyleServices.GetElementDetails(tbCheckBoxCheckedHot);
+       15 : Details := StyleServices.GetElementDetails(tbCheckBoxCheckedPressed);
+       16 : Details := StyleServices.GetElementDetails(tbCheckBoxCheckedDisabled);
+       17 : Details := StyleServices.GetElementDetails(tbCheckBoxMixedNormal);
+       18 : Details := StyleServices.GetElementDetails(tbCheckBoxMixedHot);
+       19 : Details := StyleServices.GetElementDetails(tbCheckBoxMixedPressed);
+       20 : Details := StyleServices.GetElementDetails(tbCheckBoxMixedDisabled);
+       // ctButton
+       21 : Details := StyleServices.GetElementDetails(tbPushButtonNormal);
+       22 : Details := StyleServices.GetElementDetails(tbPushButtonHot);
+       23 : Details := StyleServices.GetElementDetails(tbPushButtonPressed);
+       24 : Details := StyleServices.GetElementDetails(tbPushButtonDisabled);
       else
-        Details.Part := 0;
-        Details.State := 0;
+        Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
       StyleServices.DrawElement(Canvas.Handle, Details, R);
       if Index in [21..24] then
