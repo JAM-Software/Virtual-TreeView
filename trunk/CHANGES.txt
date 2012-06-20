@@ -1,10 +1,13 @@
 June 11-30, 2012
+ - Release of V5.0.0 RC2
  - Removed dependecy on file Compilers.inc
  - Removed dependency on file MSAAIntf.pas
  - Removed folder Common
- - Fixed issues #252 and #259
+ - Fixed issues #252, #259, #253, #265
  - Bug fix: Functions GetLastVisible and GetLastVisibleNoInit return correct results even if some anchestor of the last visible node is not effectively visible
  - Improvement: Added functions GetNextSiblingNoInit and GetPreviousSiblingNoInit
+ - "Res" folder of Advanced sample was not included in ZIP archive 
+ - Added folder "Contributions" to release
 June 01-10, 2012
  - Release of V5.0.0 RC1
  - Updated help file for V5.0
