@@ -1,9 +1,14 @@
+July 03, 2012
+ - Release of V5.0.0 final
 June 11-30, 2012
  - Release of V5.0.0 RC2
  - Removed dependecy on file Compilers.inc
  - Removed dependency on file MSAAIntf.pas
  - Removed folder Common
- - Fixed issues #252, #259, #253, #265
+ - Fixed issue #252: Incorrect width of edit control rectangle when grid extensions are set
+ - Fixed issue #259: Hit position wrong when Indent is not default
+ - Fixed issue #253: Compatibility issues with XE2's VCL style checkboxes
+ - Fixed issue #265: Lib suffix not set for all configurations in Delphi XE2 package
  - Bug fix: Functions GetLastVisible and GetLastVisibleNoInit return correct results even if some anchestor of the last visible node is not effectively visible
  - Improvement: Added functions GetNextSiblingNoInit and GetPreviousSiblingNoInit
  - "Res" folder of Advanced sample was not included in ZIP archive 
