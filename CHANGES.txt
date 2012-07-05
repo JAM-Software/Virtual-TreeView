@@ -1,3 +1,5 @@
+ - Fixed runtime package of Delphi 7
+ - Fixed issue #273: Incremental search for international symbols not working in Delphi 2009-XE2
 July 03, 2012
  - Release of V5.0.0 final
 June 11-30, 2012
