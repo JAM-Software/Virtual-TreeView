@@ -23287,13 +23287,15 @@ var
   //---------------------------------------------------------------------------
 
   function KeyUnicode(C: Char): WideChar;
-
   // Converts the given character into its corresponding Unicode character
   // depending on the active keyboard layout.
-
   begin
+    {$ifdef UNICODE}
+    Result := C;      //!!!!!!
+    {$ELSE}
     MultiByteToWideChar(CodePageFromLocale(GetKeyboardLayout(0) and $FFFF),
       MB_USEGLYPHCHARS, @C, 1, @Result, 1);
+    {$endif}
   end;
 
   //--------------- end local functions ---------------------------------------
