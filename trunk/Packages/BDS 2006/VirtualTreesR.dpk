@@ -35,7 +35,6 @@ contains
   VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
   VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
   VTAccessibility in '..\..\Source\VTAccessibility.pas';
-  MSAAIntf in '..\..\Common\MSAAIntf.pas';
 
 end.
 
