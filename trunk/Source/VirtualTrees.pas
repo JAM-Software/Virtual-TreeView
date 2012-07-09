@@ -28615,7 +28615,7 @@ begin
   Result := GetLastVisibleNoInit(Node, ConsiderChildrenAbove);
 
   Run := Result;
-  while Assigned(Run) and (Run <> Node) do
+  while Assigned(Run) and (Run <> Node)  and (Run <> RootNode) do
   begin
     if not (vsInitialized in Run.States) then
       InitNode(Run);
