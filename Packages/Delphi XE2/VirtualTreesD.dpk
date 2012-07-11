@@ -29,7 +29,7 @@ package VirtualTreesD;
 {$DESCRIPTION 'VirtualTreeView Controls'}
 {$LIBSUFFIX '16'}
 {$DESIGNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   DesignIDE,

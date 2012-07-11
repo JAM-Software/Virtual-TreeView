@@ -47,6 +47,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 			<DllSuffix>16</DllSuffix>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
