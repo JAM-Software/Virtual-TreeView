@@ -1,3 +1,4 @@
+ - Fixed #251: Added supoort for C++ Builder XE2
  - Fixed #274: Wrong stop condition in TBaseVirtualTree.GetLastVisible
  - Fixed runtime package of Delphi 7
  - Fixed issue #273: Incremental search for international symbols not working in Delphi 2009-XE2

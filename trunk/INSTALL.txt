@@ -45,9 +45,9 @@ Delphi XE Installation
    Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
 
 
-Delphi XE2 Installation
-~~~~~~~~~~~~~~~~~~~~~
-1. Open the project group "Packages\Delphi XE2\Delphi XE2.groupproj"
+Delphi XE2 / C++ Builder XE2 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\RAD Studio XE2\RAD Studio XE2.groupproj"
 2. Right click on "VirtualTreesD16.bpl" and click "Install"
 3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
    Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
