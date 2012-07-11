@@ -27,7 +27,7 @@ package VirtualTreesR;
 {$ENDIF IMPLICITBUILDING}
 {$LIBSUFFIX '16'}
 {$RUNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   vcl,
