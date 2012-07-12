@@ -42,7 +42,6 @@
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
     <DCCReference Include="..\..\Design\VirtualTrees.dcr" />
-    <DCCReference Include="..\..\Design\VirtualTrees.dcr" />
     <DCCReference Include="..\..\Design\VirtualTreesReg.pas" />
     <DCCReference Include="DesignIde.dcp" />
     <DCCReference Include="VirtualTreesR.dcp" />
