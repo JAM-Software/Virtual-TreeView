@@ -26,13 +26,14 @@ package VirtualTreesD;
 {$DESCRIPTION 'Virtual Treeview design time package'}
 {$DESIGNONLY}
 {$IMPLICITBUILD ON}
-{$DEFINE RELEASE}
 
 requires
   DesignIde,
-  VirtualTreesR;
+  vcl,
+  rtl;
 
 contains
+  VirtualTrees in '..\..\Source\VirtualTrees.pas',
   VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas';
 
 end.
