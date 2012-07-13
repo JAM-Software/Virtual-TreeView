@@ -1,3 +1,4 @@
+ - Fixed problem with Delphi 2007 package
  - Fixed #251: Added supoort for C++ Builder XE2
  - Fixed #274: Wrong stop condition in TBaseVirtualTree.GetLastVisible
  - Fixed runtime package of Delphi 7
