@@ -27235,15 +27235,10 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.CutToClipBoard;
-
-var
-  DataObject: IDataObject;
-
 begin
   if (FSelectionCount > 0) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
-    DataObject := TVTDataObject.Create(Self, True) as IDataObject;
-    if OleSetClipBoard(DataObject) = S_OK then
+    if OleSetClipBoard(TVTDataObject.Create(Self, True)) = S_OK then
     begin
       MarkCutCopyNodes;
       DoStateChange([tsCutPending], [tsCopyPending]);
@@ -31725,19 +31720,17 @@ begin
   begin
     if OleGetClipboard(Data) <> S_OK then
       ShowError(SClipboardFailed, hcTFClipboardFailed)
-    else
-    try
+    else begin
       // Try to get the source tree of the operation to optimize the operation.
       Source := GetTreeFromDataObject(Data);
       Result := ProcessOLEData(Source, Data, FFocusedNode, FDefaultPasteMode, Assigned(Source) and
         (tsCutPending in Source.FStates));
-      if Assigned(Source) then
+      if Assigned(Source) then begin
         if Source <> Self then
           Source.FinishCutOrCopy
         else
           DoStateChange([], [tsCutPending]);
-    finally
-      Data := nil;
+      end;    
     end;
   end;
 end;
@@ -34987,7 +34980,7 @@ begin
       end;
   else
     if Format = CF_CSV then
-      S := ContentToText(Source, AnsiChar ({$if CompilerVersion>=23}FormatSettings.{$ifend}ListSeparator)) + #0
+      S := ContentToText(Source, AnsiChar ({$if CompilerVersion>=22}FormatSettings.{$ifend}ListSeparator)) + #0
     else
       if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
         S := ContentToRTF(Source) + #0
