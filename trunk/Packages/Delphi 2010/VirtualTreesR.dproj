@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DllSuffix>14</DllSuffix>
 			<DCC_DependencyCheckOutputName>..\..\..\..\..\All Users\Documents\RAD Studio\7.0\Bpl\VirtualTreesR14.bpl</DCC_DependencyCheckOutputName>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
@@ -125,4 +126,3 @@
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
 	</Project>
-	

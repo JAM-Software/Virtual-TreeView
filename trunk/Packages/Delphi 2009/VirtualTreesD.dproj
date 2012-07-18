@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DCC_ImageBase>30400000</DCC_ImageBase>
 			<DCC_DependencyCheckOutputName>..\..\..\..\..\All Users\Documents\RAD Studio\6.0\Bpl\VirtualTreesD12.bpl</DCC_DependencyCheckOutputName>
 			<DllSuffix>12</DllSuffix>
