@@ -25,7 +25,7 @@ package VirtualTreesR;
 {$DESCRIPTION 'Virtual Treeview runtime package'}
 {$LIBSUFFIX '14'}
 {$RUNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   vcl,

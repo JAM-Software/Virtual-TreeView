@@ -26,7 +26,7 @@ package VirtualTreesD;
 {$DESCRIPTION 'Virtual Treeview design time package'}
 {$LIBSUFFIX '12'}
 {$DESIGNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   DesignIde,

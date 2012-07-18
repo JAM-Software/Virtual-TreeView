@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 			<DllSuffix>14</DllSuffix>
 			<DCC_DependencyCheckOutputName>..\..\..\..\..\All Users\Documents\RAD Studio\7.0\Bpl\VirtualTreesD14.bpl</DCC_DependencyCheckOutputName>
 			<DCC_UnitSearchPath>..\..\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
