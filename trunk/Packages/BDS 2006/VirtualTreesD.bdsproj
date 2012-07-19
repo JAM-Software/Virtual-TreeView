@@ -120,10 +120,10 @@
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir"></Directories>
-			<Directories Name="UnitOutputDir">..\..\intermediate</Directories>
-			<Directories Name="PackageDLLOutputDir">..\..\..\..\..\Output</Directories>
-			<Directories Name="PackageDCPOutputDir">..\..\..\..\..\Output</Directories>
-			<Directories Name="SearchPath">..\..\Source;..\..\..\Common</Directories>
+			<Directories Name="UnitOutputDir"></Directories>
+			<Directories Name="PackageDLLOutputDir"></Directories>
+			<Directories Name="PackageDCPOutputDir"></Directories>
+			<Directories Name="SearchPath">..\..\Source</Directories>
 			<Directories Name="Packages"></Directories>
 			<Directories Name="Conditionals"></Directories>
 			<Directories Name="DebugSourceDirs"></Directories>
