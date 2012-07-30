@@ -1,4 +1,5 @@
  - Fixed problem with Delphi 2007 package
+ - Delphi 2009 and 2010 packages are also implicit build packages now, like those for XE and XE2 (issue #279)
  - Fixed #251: Added supoort for C++ Builder XE2
  - Fixed #274: Wrong stop condition in TBaseVirtualTree.GetLastVisible
  - Fixed runtime package of Delphi 7
