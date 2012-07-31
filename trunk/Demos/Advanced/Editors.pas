@@ -42,6 +42,7 @@ type
     FColumn: Integer;          // The column of the node being edited.
   protected
     procedure EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
     destructor Destroy; override;
 
@@ -209,13 +210,11 @@ var
 
 begin
   CanAdvance := true;
-  
+
   case Key of
     VK_ESCAPE:
-      if CanAdvance then
       begin
-        FTree.CancelEditNode;
-        Key := 0;
+        Key := 0;//ESC will be handled in EditKeyUp()
       end;
     VK_RETURN:
       if CanAdvance then
@@ -242,6 +241,17 @@ begin
         end;
       end;
   end;
+end;
+
+procedure TPropertyEditLink.EditKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  case Key of
+    VK_ESCAPE:
+      begin
+        FTree.CancelEditNode;
+        Key := 0;
+      end;//VK_ESCAPE
+  end;//case
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -329,6 +339,7 @@ begin
           Parent := Tree;
           Text := Data.Value;
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtPickString:
@@ -344,6 +355,7 @@ begin
           Items.Add('Additional');
           Items.Add('Win32');
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtNumber:
@@ -356,6 +368,7 @@ begin
           EditMask := '9999';
           Text := Data.Value;
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtPickNumber:
@@ -367,6 +380,7 @@ begin
           Parent := Tree;
           Text := Data.Value;
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtMemo:
@@ -381,6 +395,7 @@ begin
           Text := Data.Value;
           Items.Add(Data.Value);
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtDate:
@@ -397,6 +412,7 @@ begin
           CalColors.TrailingTextColor := clBtnFace;
           Date := StrToDate(Data.Value);
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
   else
@@ -500,6 +516,7 @@ begin
           Parent := Tree;
           Text := Data.Value[FColumn - 1];
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtPickString:
@@ -529,6 +546,7 @@ begin
               end;
           end;
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtNumber:
@@ -541,6 +559,7 @@ begin
           EditMask := '9999;0; ';
           Text := Data.Value[FColumn - 1];
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtPickNumber:
@@ -552,6 +571,7 @@ begin
           Parent := Tree;
           Text := Data.Value[FColumn - 1];
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtMemo:
@@ -566,6 +586,7 @@ begin
           Text := Data.Value[FColumn - 1];
           Items.Add(Data.Value[FColumn - 1]);
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
     vtDate:
@@ -582,6 +603,7 @@ begin
           CalColors.TrailingTextColor := clBtnFace;
           Date := StrToDate(Data.Value[FColumn - 1]);
           OnKeyDown := EditKeyDown;
+          OnKeyUp := EditKeyUp;
         end;
       end;
   else
