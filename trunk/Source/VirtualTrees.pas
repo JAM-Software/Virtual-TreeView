@@ -75,7 +75,7 @@ uses
   {$if CompilerVersion >= 18}
     oleacc,   // MSAA support in Delphi 2006 or higher
   {$ifend}
-  Messages, SysUtils, Classes, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Menus, Printers,
+  Messages, SysUtils, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Classes, Menus, Printers,
   CommCtrl,   // image lists, common controls tree structures
   Themes, UxTheme
   {$ifdef TntSupport}
@@ -9463,7 +9463,7 @@ begin
     vaLString, vaString:
       SetText(Reader.ReadString);
   else
-    SetText(Reader.ReadWideString);
+    SetText(Reader.{$if CompilerVersion >= 23}ReadString{$else}ReadWideString{$ifend});
   end;
 end;
 
@@ -9476,7 +9476,7 @@ begin
     vaLString, vaString:
       FHint := Reader.ReadString;
   else
-    FHint := Reader.ReadWideString;
+    FHint := Reader.{$if CompilerVersion >= 23}ReadString{$else}ReadWideString{$ifend};
   end;
 end;
 
@@ -34253,7 +34253,7 @@ begin
     vaLString, vaString:
       SetDefaultText(Reader.ReadString);
   else
-    SetDefaultText(Reader.ReadWideString);
+    SetDefaultText(Reader.{$if CompilerVersion >= 23}ReadString{$else}ReadWideString{$ifend});
   end;
 end;
 
