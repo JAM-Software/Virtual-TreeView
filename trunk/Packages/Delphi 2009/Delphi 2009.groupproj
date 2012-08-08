@@ -7,7 +7,7 @@
 				<Dependencies/>
 			</Projects>
 			<Projects Include="VirtualTreesD.dproj">
-				<Dependencies/>
+				<Dependencies>VirtualTreesR.dproj</Dependencies>
 			</Projects>
 		</ItemGroup>
 		<ProjectExtensions>
@@ -26,13 +26,13 @@
 		<Target Name="VirtualTreesR:Make">
 			<MSBuild Targets="Make" Projects="VirtualTreesR.dproj"/>
 		</Target>
-		<Target Name="VirtualTreesD">
+		<Target Name="VirtualTreesD" DependsOnTargets="VirtualTreesR">
 			<MSBuild Projects="VirtualTreesD.dproj"/>
 		</Target>
-		<Target Name="VirtualTreesD:Clean">
+		<Target Name="VirtualTreesD:Clean" DependsOnTargets="VirtualTreesR:Clean">
 			<MSBuild Targets="Clean" Projects="VirtualTreesD.dproj"/>
 		</Target>
-		<Target Name="VirtualTreesD:Make">
+		<Target Name="VirtualTreesD:Make" DependsOnTargets="VirtualTreesR:Make">
 			<MSBuild Targets="Make" Projects="VirtualTreesD.dproj"/>
 		</Target>
 		<Target Name="Build">
