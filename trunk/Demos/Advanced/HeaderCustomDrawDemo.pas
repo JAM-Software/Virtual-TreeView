@@ -50,7 +50,7 @@ var
 implementation
 
 uses
-  States;
+  States, Types;
   
 {$R *.dfm}
 
