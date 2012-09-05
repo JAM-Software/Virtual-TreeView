@@ -60,6 +60,10 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 
+{$IF CompilerVersion >= 24}
+  {$LEGACYIFEND ON}
+{$IFEND}
+
 {$if CompilerVersion >= 20}
   {$WARN IMPLICIT_STRING_CAST       OFF}
   {$WARN IMPLICIT_STRING_CAST_LOSS  OFF}
@@ -3851,6 +3855,9 @@ uses
   {$ifdef UNICODE}
   AnsiStrings,
   {$endif UNICODE}
+  {$IF CompilerVersion >= 24}
+  UITypes,
+  {$IFEND}
   StrUtils,
   VTAccessibilityFactory;  // accessibility helper class
 
@@ -20131,7 +20138,7 @@ begin
     end;
   end;
 
-  if Offset < (Indent + Margin{See issue #259}) then
+  if (MainColumnHit and (Offset < (Indent + Margin{See issue #259}))) then
   begin
     // Position is to the left of calculated indentation which can only happen for the main column.
     // Check whether it corresponds to a button/checkbox.
