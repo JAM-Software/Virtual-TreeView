@@ -3056,7 +3056,7 @@ type
     property CutCopyCount: Integer read GetCutCopyCount;
     property DragImage: TVTDragImage read FDragImage;
     property DragManager: IVTDragManager read GetDragManager;
-    property DropTargetNode: PVirtualNode read FDropTargetNode;
+    property DropTargetNode: PVirtualNode read FDropTargetNode write FDropTargetNode;
     property EditLink: IVTEditLink read FEditLink;
     property EmptyListMessage: UnicodeString read FEmptyListMessage write SetEmptyListMessage;
     property Expanded[Node: PVirtualNode]: Boolean read GetExpanded write SetExpanded;
