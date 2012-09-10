@@ -4,6 +4,7 @@ September 10, 2012
  - Fixed issue #176: Multiline Aligment Problem
  - Fixed issue #283: VTV no longer allows to drop above or below when using Full row selection
  - Fixed issue #173: Two suggestions about class member visibilities
+ - Fixed issue #192: Fixed column painting bug when OffsetX > 0
 
 V5.0.1 (06 Sep 2012):
  - Added Support for RAD Studio XE3
