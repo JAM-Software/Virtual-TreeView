@@ -1,3 +1,6 @@
+September 10, 2012
+ - Fixed issue #66: column auto-resize makes not aware of StaticText
+
 V5.0.1 (06 Sep 2012):
  - Added Support for RAD Studio XE3
  - Fixed definition of event OnAfterHeaderExport, it used the same member variable as OnBeforeHeaderExport.
