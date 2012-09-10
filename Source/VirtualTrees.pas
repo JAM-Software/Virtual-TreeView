@@ -9193,7 +9193,7 @@ begin
       // If the text is taller than the given height, perform no vertical centration as this
       // would make the text even less readable.
       //Using Max() fixes badly positioned text if Extra Large fonts have been activated in the Windows display options
-        TextPos.Y := Max(-5,(ClientSize.Y - TextSize.cy) div 2);
+      TextPos.Y := Max(-5, (ClientSize.Y - TextSize.cy) div 2);
     end
     else
     begin
@@ -31149,6 +31149,10 @@ var
   SelectLevel: Integer;        // > 0 if current node is selected or child/grandchild etc. of a selected node
   FirstColumn: TColumnIndex;   // index of first column which is at least partially visible in the given window
 
+  MaxRight,
+  ColLeft,
+  ColRight: Integer;
+
   SavedTargetDC: Integer;
   PaintWidth: Integer;
   CurrentNodeHeight: Integer;
@@ -31633,30 +31637,40 @@ begin
                     R.Right := R.Left +  Items[FirstColumn].FWidth;
                   end;
 
+                  // Initialize MaxRight.
+                  MaxRight := Target.X - 1;
+
                   PaintInfo.Canvas.Font.Color := FColors.GridLineColor;
-                  while (FirstColumn <> InvalidColumn) and (R.Left < TargetRect.Right + Target.X) do
+                  while (FirstColumn <> InvalidColumn) and (MaxRight < TargetRect.Right + Target.X) do
                   begin
-                    if (poGridLines in PaintOptions) and
-                       (toFullVertGridLines in FOptions.FPaintOptions) and
-                       (toShowVertGridLines in FOptions.FPaintOptions) and
-                       (not (hoAutoResize in FHeader.FOptions) or (Cardinal(FirstColumn) < TColumnPosition(Count - 1))) then
+                    // Determine left and right coordinate of the current column
+                    ColLeft := Items[FirstColumn].Left;
+                    ColRight := (ColLeft + Items[FirstColumn].FWidth);
+
+                    // Check wether this column needs to be painted at all.
+                    if (ColRight >= MaxRight) then
                     begin
-                      DrawDottedVLine(PaintInfo, R.Top, R.Bottom, R.Right - 1);
-                      Dec(R.Right);
+                      R.Left := MaxRight;     // Continue where we left off
+                      R.Right := ColRight;    // Paint to the right of the column
+                      MaxRight := ColRight;   // And record were to start the next column.
+
+                      if (poGridLines in PaintOptions) and
+                         (toFullVertGridLines in FOptions.FPaintOptions) and
+                         (toShowVertGridLines in FOptions.FPaintOptions) and
+                         (not (hoAutoResize in FHeader.FOptions) or (Cardinal(FirstColumn) < TColumnPosition(Count - 1))) then
+                      begin
+                        DrawDottedVLine(PaintInfo, R.Top, R.Bottom, R.Right - 1);
+                        Dec(R.Right);
+                      end;
+
+                      if not (coParentColor in Items[FirstColumn].FOptions) then
+                        PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
+                      else
+                        PaintInfo.Canvas.Brush.Color := Color;
+
+                      PaintInfo.Canvas.FillRect(R);
                     end;
-
-                    if not (coParentColor in Items[FirstColumn].FOptions) then
-                      PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
-                    else
-                      PaintInfo.Canvas.Brush.Color := Color;
-
-                    PaintInfo.Canvas.FillRect(R);
                     FirstColumn := GetNextVisibleColumn(FirstColumn);
-                    if FirstColumn <> InvalidColumn then
-                    begin
-                      R.Left := Items[FirstColumn].Left;
-                      R.Right := R.Left + Items[FirstColumn].FWidth;
-                    end;
                   end;
 
                   // Erase also the part of the tree not covert by a column.
