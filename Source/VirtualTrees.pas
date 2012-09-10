@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 5.0.0
+// Version 5.0.1
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -125,7 +125,7 @@ type
 {$ifend}
 
 const
-  VTVersion = '5.0.0';
+  VTVersion = '5.0.1';
   VTTreeStreamVersion = 2;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
