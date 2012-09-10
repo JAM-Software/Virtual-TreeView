@@ -2,6 +2,7 @@ September 10, 2012
  - Fixed issue #66: column auto-resize makes not aware of StaticText
  - Fixed issue #53: Misalignment Images Columns > 0
  - Fixed issue #176: Multiline Aligment Problem
+ - Fixed issue #283: VTV no longer allows to drop above or below when using Full row selection
 
 V5.0.1 (06 Sep 2012):
  - Added Support for RAD Studio XE3
