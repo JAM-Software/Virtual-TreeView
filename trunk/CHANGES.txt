@@ -1,5 +1,6 @@
 September 10, 2012
  - Fixed issue #66: column auto-resize makes not aware of StaticText
+ - Fixed issue #53: Misalignment Images Columns > 0
 
 V5.0.1 (06 Sep 2012):
  - Added Support for RAD Studio XE3
