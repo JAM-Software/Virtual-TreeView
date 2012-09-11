@@ -14033,7 +14033,7 @@ begin
         VAlign := MulDiv(Integer(Node.NodeHeight), Node.Align, 100);
   end;
 
-  VButtonAlign := VAlign - FPlusBM.Height div 2;
+  VButtonAlign := VAlign - FPlusBM.Height div 2 - (FPlusBM.Height and 1);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25177,7 +25177,7 @@ begin
           for I := 0 to IndentSize - 1 do
           begin
             DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
-            DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlignment, NewStyles[I],
+            DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlignment - 1, NewStyles[I],
               BidiMode <> bdLeftToRight);
             Inc(XPos, Offset);
           end;
@@ -25187,7 +25187,7 @@ begin
       for I := 0 to IndentSize - 1 do
       begin
         DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
-        DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlignment, LineImage[I],
+        DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlignment - 1, LineImage[I],
           BidiMode <> bdLeftToRight);
         Inc(XPos, Offset);
       end;
@@ -31253,7 +31253,7 @@ begin
 
         if Assigned(PaintInfo.Node) then
         begin
-          ButtonX := Round((Integer(FIndent) - FPlusBM.Width) / 2);
+          ButtonX := Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
 
           // ----- main node paint loop
           while Assigned(PaintInfo.Node) do
@@ -31262,7 +31262,7 @@ begin
             SelectLevel := DetermineLineImageAndSelectLevel(PaintInfo.Node, LineImage);
             IndentSize := Length(LineImage);
             if not (toFixedIndent in FOptions.FPaintOptions) then
-              ButtonX := (IndentSize - 1) * Integer(FIndent) + Round((Integer(FIndent) - FPlusBM.Width) / 2);
+              ButtonX := (IndentSize - 1) * Integer(FIndent) + Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
 
             // Initialize node if not already done.
             if not (vsInitialized in PaintInfo.Node.States) then
