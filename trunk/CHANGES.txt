@@ -1,5 +1,6 @@
 September 11, 2012
  - Fixed issue #52: Misalignement of CheckBox and TreeLine/Buttons
+ - Fixed issue #43: VT stop repaint after Windows visual style change
 
 September 10, 2012
  - Fixed issue #66: column auto-resize makes not aware of StaticText
