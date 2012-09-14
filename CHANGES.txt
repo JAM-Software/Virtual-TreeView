@@ -1,3 +1,6 @@
+September 14, 2012
+ - Fixed issue #222: FDottedBrush is never released in the tree is never shown
+
 September 11, 2012
  - Fixed issue #52: Misalignement of CheckBox and TreeLine/Buttons
  - Fixed issue #43: VT stop repaint after Windows visual style change
