@@ -13884,6 +13884,12 @@ begin
   // The window handle must be destroyed before the header is freed because it is needed in WM_NCDESTROY.
   if HandleAllocated then
     DestroyWindowHandle;
+
+  // Release FDottedBrush in case WM_NCDESTROY hasn't been triggered.
+  if FDottedBrush <> 0 then
+    DeleteObject(FDottedBrush);
+  FDottedBrush := 0;
+
   FOptions.Free; // WM_NCDESTROY accesses FOptions
   FHeader.Free;
   FHeader := nil;
