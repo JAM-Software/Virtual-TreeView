@@ -34,7 +34,9 @@ requires
 
 contains
   VirtualTrees in '..\..\Source\VirtualTrees.pas',
-  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas';
+  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas',
+  VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
+  VTAccessibility in '..\..\Source\VTAccessibility.pas';
 
 end.
 
