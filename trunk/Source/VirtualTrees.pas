@@ -81,7 +81,7 @@ uses
   {$ifend}
   Messages, SysUtils, Graphics, Controls, Forms, ImgList, ActiveX, StdCtrls, Classes, Menus, Printers,
   CommCtrl,   // image lists, common controls tree structures
-  Themes, UxTheme
+  Themes, UxTheme, ShlObj
   {$ifdef TntSupport}
     , TntStdCtrls       // Unicode aware inplace editor.
   {$endif TntSupport}
@@ -206,11 +206,16 @@ const
   IID_IDropTargetHelper: TGUID = (D1: $4657278B; D2: $411B; D3: $11D2; D4: ($83, $9A, $00, $C0, $4F, $D9, $18, $D0));
   IID_IDragSourceHelper: TGUID = (D1: $DE5BF786; D2: $477A; D3: $11D2; D4: ($83, $9D, $00, $C0, $4F, $D9, $18, $D0));
   IID_IDropTarget: TGUID = (D1: $00000122; D2: $0000; D3: $0000; D4: ($C0, $00, $00, $00, $00, $00, $00, $46));
+
+{$if CompilerVersion<21}
   CLSID_DragDropHelper: TGUID = (D1: $4657278A; D2: $411B; D3: $11D2; D4: ($83, $9A, $00, $C0, $4F, $D9, $18, $D0));
+  DSH_ALLOWDROPDESCRIPTIONTEXT = $1;
 
   SID_IDropTargetHelper = '{4657278B-411B-11D2-839A-00C04FD918D0}';
   SID_IDragSourceHelper = '{DE5BF786-477A-11D2-839D-00C04FD918D0}';
+  SID_IDragSourceHelper2 = '{83E07D0D-0C5F-4163-BF1A-60B274051E40}';
   SID_IDropTarget = '{00000122-0000-0000-C000-000000000046}';
+{$ifend}
 
   // Help identifiers for exceptions. Application developers are responsible to link them with actual help topics.
   hcTFEditLinkIsNil      = 2000;
@@ -730,7 +735,7 @@ type
 
   // ----- OLE drag'n drop handling
 
-  { 01.05.2006  Jim - Problem with BDS2006 C++ compiler and ambiguous defines
+{$if CompilerVersion<21}
   {$EXTERNALSYM IDropTargetHelper}
 
   IDropTargetHelper = interface(IUnknown)
@@ -747,7 +752,7 @@ type
     sizeDragImage: TSize;
     ptOffset: TPoint;
     hbmpDragImage: HBITMAP;
-    ColorRef: TColorRef;
+    crColorKey: TColorRef;
   end;
 
   IDragSourceHelper = interface(IUnknown)
@@ -755,6 +760,14 @@ type
     function InitializeFromBitmap(var SHDragImage: TSHDragImage; pDataObject: IDataObject): HRESULT; stdcall;
     function InitializeFromWindow(Window: HWND; var ppt: TPoint; pDataObject: IDataObject): HRESULT; stdcall;
   end;
+  {$EXTERNALSYM IDragSourceHelper}
+
+    IDragSourceHelper2 = interface(IDragSourceHelper)
+  [SID_IDragSourceHelper2]
+    function SetFlags(dwFlags: DWORD): HRESULT; stdcall;
+  end;
+  {$EXTERNALSYM IDragSourceHelper2}
+{$ifend}
 
   IVTDragManager = interface(IUnknown)
     ['{C4B25559-14DA-446B-8901-0C879000EB16}']
@@ -2585,8 +2598,8 @@ type
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
-    procedure DragAndDrop(AllowedEffects: Integer; DataObject: IDataObject;
-      var DragEffect: Integer); virtual;
+    procedure DragAndDrop(AllowedEffects: DWord; DataObject: IDataObject;
+      var DragEffect: LongInt); virtual;
     procedure DragCanceled; override;
     function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
@@ -8244,28 +8257,33 @@ var
   Height: Integer;
   DragSourceHelper: IDragSourceHelper;
   DragInfo: TSHDragImage;
-
+  lDragSourceHelper2: IDragSourceHelper2;// Needed to get Windows Vista+ style drag hints.
+  lNullPoint: TPoint;
 begin
   Width := DragImage.Width;
   Height := DragImage.Height;
 
   // Determine whether the system supports the drag helper interfaces.
   if Assigned(DataObject) and Succeeded(CoCreateInstance(CLSID_DragDropHelper, nil, CLSCTX_INPROC_SERVER,
-    IID_IDragSourceHelper, DragSourceHelper)) then
+    IDragSourceHelper, DragSourceHelper)) then
   begin
     Include(FStates, disSystemSupport);
-
-    // Supply the drag source helper with our drag image.
-    DragInfo.sizeDragImage.cx := Width;
-    DragInfo.sizeDragImage.cy := Height;
-    DragInfo.ptOffset.x := Width div 2;
-    DragInfo.ptOffset.y := Height div 2;
-    DragInfo.hbmpDragImage := CopyImage(DragImage.Handle, IMAGE_BITMAP, Width, Height, LR_COPYRETURNORG);
-    DragInfo.ColorRef := ColorToRGB(FColorKey);
-    if not Succeeded(DragSourceHelper.InitializeFromBitmap(DragInfo, DataObject)) then
-    begin
-      DeleteObject(DragInfo.hbmpDragImage);
-      Exclude(FStates, disSystemSupport);
+    lNullPoint := Point(0,0);
+    if Supports(DragSourceHelper, IDragSourceHelper2, lDragSourceHelper2) then
+      lDragSourceHelper2.SetFlags(DSH_ALLOWDROPDESCRIPTIONTEXT);// Show description texts
+    if not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then begin   // First let the system try to initialze the DragSourceHelper, this works fine e.g. for file system objects
+      // Supply the drag source helper with our drag image.
+      DragInfo.sizeDragImage.cx := Width;
+      DragInfo.sizeDragImage.cy := Height;
+      DragInfo.ptOffset.x := Width div 2;
+      DragInfo.ptOffset.y := Height div 2;
+      DragInfo.hbmpDragImage := CopyImage(DragImage.Handle, IMAGE_BITMAP, Width, Height, LR_COPYRETURNORG);
+      DragInfo.crColorKey := ColorToRGB(FColorKey);
+      if not Succeeded(DragSourceHelper.InitializeFromBitmap(@DragInfo, DataObject)) then
+      begin
+        DeleteObject(DragInfo.hbmpDragImage);
+        Exclude(FStates, disSystemSupport);
+      end;
     end;
   end
   else
@@ -21019,7 +21037,7 @@ procedure TBaseVirtualTree.DoDragging(P: TPoint);
 
 var
   DragEffect,
-  AllowedEffects: Integer;
+  AllowedEffects: LongInt;
   DragObject: TDragObject;
 
   DataObject: IDataObject;
@@ -22328,10 +22346,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Integer;
-  DataObject: IDataObject; var DragEffect: Integer);
-
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; DataObject: IDataObject; var DragEffect: LongInt);
+{$IF CompilerVersion >= 21}
+var
+  lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
+{$ifend}
 begin
+  {$IF CompilerVersion >= 21}
+  if IsWinVistaOrAbove then begin
+    lDragEffect := DWord(DragEffect);
+    SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
+    DragEffect := LongInt(lDragEffect);
+  end
+  else
+  {$ifend}
   ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
 end;
 
@@ -23607,8 +23635,9 @@ begin
     DoStateChange([], [tsEditPending]);
   end;
 
-  if not (tsEditing in FStates) or DoEndEdit then
-  begin
+  if (tsEditing in FStates) then
+    DoEndEdit;
+
     // Focus change. Don't use the SetFocus method as this does not work for MDI windows.
     if not Focused and CanFocus then
     begin
@@ -23843,7 +23872,6 @@ begin
     if AutoDrag and IsAnyHit and (FStates * [tsLeftButtonDown, tsRightButtonDown, tsMiddleButtonDown] <> []) then
       BeginDrag(False);
   end;
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -31235,7 +31263,7 @@ begin
       try
         // Prepare the current selection rectangle once. The corner points are absolute tree coordinates.
         SelectionRect := OrderRect(FNewSelRect);
-        DrawSelectionRect := IsMouseSelecting and not IsRectEmpty(SelectionRect);
+        DrawSelectionRect := IsMouseSelecting and not IsRectEmpty(SelectionRect) and (GetKeyState(VK_LBUTTON) < 0);
 
         // R represents an entire node (all columns), but is a bit unprecise when it comes to
         // trees without any column defined, because FRangeX only represents the maximum width of all
