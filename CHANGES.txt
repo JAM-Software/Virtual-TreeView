@@ -1,3 +1,7 @@
+October 19, 2012
+- Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
+- Fixed problem with drawing selection rectangle after canceled rename
+
 October 04, 2012
  - Fixed issue regarding activating explorer theme
 
