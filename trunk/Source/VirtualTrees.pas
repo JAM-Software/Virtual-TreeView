@@ -32817,7 +32817,7 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
     begin
       if DoInit and not (vsInitialized in Run.States) then
         InitNode(Run);
-      if (vsInitialized in Run.States) and Expanded[Node] then // There is no need to sort collapsed branches
+      if (vsInitialized in Run.States) and Expanded[Run] then // There is no need to sort collapsed branches
         DoSort(Run);
       Run := Run.NextSibling;
     end;
