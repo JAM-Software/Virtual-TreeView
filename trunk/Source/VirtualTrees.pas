@@ -23920,12 +23920,18 @@ begin
     if tsMouseCheckPending in FStates then
     begin
       DoStateChange([], [tsMouseCheckPending]);
-      // Is the mouse still over the same node?
-      if (HitInfo.HitNode = FCheckNode) and (hiOnItem in HitInfo.HitPositions) then
-        DoCheckClick(FCheckNode, FPendingCheckState)
-      else
-        FCheckNode.CheckState := UnpressedState[FCheckNode.CheckState];
-      InvalidateNode(FCheckNode);
+     //  Need check for nil, issue #285
+     //  because when mouse down on checkbox but not yet released
+     //  and in this time list starts to rebuild by timer
+     //  after this when mouse release  FCheckNode equal nil
+     if Assigned (FCheckNode) then begin
+       // Is the mouse still over the same node?
+       if (HitInfo.HitNode = FCheckNode) and (hiOnItem in HitInfo.HitPositions) then
+          DoCheckClick(FCheckNode, FPendingCheckState)
+        else
+          FCheckNode.CheckState := UnpressedState[FCheckNode.CheckState];
+        InvalidateNode(FCheckNode);
+      end;
       FCheckNode := nil;
     end;
 
