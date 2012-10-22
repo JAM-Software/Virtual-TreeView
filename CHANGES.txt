@@ -1,24 +1,23 @@
-October 19, 2012
-- Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
-- Fixed problem with drawing selection rectangle after canceled rename
-
-October 04, 2012
+October 2012
+ - Fixed issue #285: access violation when mouse down over checkbox sometimes
+ - Fixed issue #293: OnAdvancedHeaderDraw is called with wrong PaintInfo.PaintRectangle
+ - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
+ - Fixed problem with drawing selection rectangle after canceled rename
+ - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
+ - Fixed problem with drawing selection rectangle after canceled rename
  - Fixed issue regarding activating explorer theme
-
-September 14, 2012
+ 
+September 2012
  - Fixed issue #222: FDottedBrush is never released in the tree is never shown
-
-September 11, 2012
  - Fixed issue #52: Misalignement of CheckBox and TreeLine/Buttons
  - Fixed issue #43: VT stop repaint after Windows visual style change
-
-September 10, 2012
  - Fixed issue #66: column auto-resize makes not aware of StaticText
  - Fixed issue #53: Misalignment Images Columns > 0
  - Fixed issue #176: Multiline Aligment Problem
  - Fixed issue #283: VTV no longer allows to drop above or below when using Full row selection
  - Fixed issue #173: Two suggestions about class member visibilities
  - Fixed issue #192: Fixed column painting bug when OffsetX > 0
+ - Fixed Delphi 2007 Designer package
 
 V5.0.1 (06 Sep 2012):
  - Added Support for RAD Studio XE3
