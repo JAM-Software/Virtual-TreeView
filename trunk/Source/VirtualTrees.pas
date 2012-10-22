@@ -757,7 +757,7 @@ type
 
   IDragSourceHelper = interface(IUnknown)
     [SID_IDragSourceHelper]
-    function InitializeFromBitmap(var SHDragImage: TSHDragImage; pDataObject: IDataObject): HRESULT; stdcall;
+    function InitializeFromBitmap(SHDragImage: PSHDragImage; pDataObject: IDataObject): HRESULT; stdcall;
     function InitializeFromWindow(Window: HWND; var ppt: TPoint; pDataObject: IDataObject): HRESULT; stdcall;
   end;
   {$EXTERNALSYM IDragSourceHelper}
@@ -2400,7 +2400,7 @@ type
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
     procedure StaticBackground(Source: TBitmap; Target: TCanvas; OffsetPosition: TPoint; R: TRect);
     procedure StopTimer(ID: Integer);
-    procedure SetWindowTheme(Theme: String);
+    procedure SetWindowTheme(Theme: Unicodestring);
     procedure TileBackground(Source: TBitmap; Target: TCanvas; Offset: TPoint; R: TRect);
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
@@ -16958,7 +16958,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetWindowTheme(Theme: String);
+procedure TBaseVirtualTree.SetWindowTheme(Theme: Unicodestring);
 
 begin
   FChangingTheme := True;
