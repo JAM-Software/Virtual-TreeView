@@ -1,4 +1,5 @@
 October 2012
+ - Added support for VCl styles of RAD Studio XE2 and higher. (Thanks to Dietmar Rösler, issue #288)
  - Fixed issue #285: access violation when mouse down over checkbox sometimes
  - Fixed issue #293: OnAdvancedHeaderDraw is called with wrong PaintInfo.PaintRectangle
  - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
