@@ -1650,14 +1650,16 @@ type
     FColors: array[0..15] of TColor;
     function GetColor(const Index: Integer): TColor;
     procedure SetColor(const Index: Integer; const Value: TColor);
-  protected
-    function GetBackgroundColor: TColor; virtual;
-    function GetNodeFontColor: TColor; virtual;
-    function GetHeaderFontColor: TColor; virtual;
+    function GetBackgroundColor: TColor;
+    function GetHeaderFontColor: TColor;
+    function GetNodeFontColor: TColor;
   public
     constructor Create(AOwner: TBaseVirtualTree);
 
     procedure Assign(Source: TPersistent); override;
+    property BackGroundColor: TColor read GetBackgroundColor;
+    property HeaderFontColor: TColor read  GetHeaderFontColor;
+    property NodeFontColor: TColor read GetNodeFontColor;
   published
     property BorderColor: TColor index 7 read GetColor write SetColor default clBtnFace;
     property DisabledColor: TColor index 0 read GetColor write SetColor default clBtnShadow;
@@ -10207,7 +10209,7 @@ begin
   if not Enabled then
     if FHeader.Treeview.FVclStyleAvailable then
     begin
-      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.GetHeaderFontColor));
+      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
       Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
     end
     else
@@ -10224,7 +10226,7 @@ begin
     if Hot then
       SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderHotColor))
     else
-      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.GetHeaderFontColor));
+      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
     Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
   end;
 end;
@@ -11211,7 +11213,7 @@ var
           StyleServices.DrawElement(Handle, Details, BackgroundRect, @BackgroundRect);
         end
         else begin
-          Brush.Color := FHeader.FBackground;
+          Brush.Color :=  FHeader.FBackground;
           FillRect(BackgroundRect);
         end;
       end;
@@ -13891,7 +13893,7 @@ begin
       8:
         if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemHot), ecTextColor, Result) or
           (Result <> clWindowText) then
-          Result := GetNodeFontColor; // HotColor
+          Result := NodeFontColor; // HotColor
       9:
         StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecFillColor, Result);
       // FocusedSelectionBorderColor
@@ -13908,7 +13910,7 @@ begin
       15:
         if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecTextColor, Result) or
           (Result <> clWindowText) then
-          Result := GetNodeFontColor; // SelectionTextColor
+          Result := NodeFontColor; // SelectionTextColor
     end;
   end
   else
@@ -14847,7 +14849,7 @@ begin
   with PaintInfo do
   begin
     EraseAction := eaDefault;
-    BackColor := FColors.GetBackgroundColor;
+    BackColor := FColors.BackGroundColor;
     if Floating then
     begin
       Offset := Point(-FEffectiveOffsetX, R.Top);
@@ -14901,7 +14903,7 @@ begin
           end
           else
           begin
-            Brush.Color := FColors.GetBackgroundColor;
+            Brush.Color := FColors.BackGroundColor;
             FillRect(R);
           end;
         end;
@@ -15885,12 +15887,12 @@ var
       Width := Size.cx;
       Height := Size.cy;
 
-      if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) then
+      if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) or FVclStyleAvailable then
       begin
         if (FHeader.MainColumn > NoColumn) and not (coParentColor in FHeader.FColumns[FHeader.MainColumn].Options) then
           Brush.Color := FHeader.FColumns[FHeader.MainColumn].Color
         else
-          Brush.Color := FColors.GetBackgroundColor;
+          Brush.Color :=  FColors.BackGroundColor;
       end
       else
         Brush.Color := clFuchsia;
@@ -15942,13 +15944,13 @@ begin
             begin
               case FButtonFillMode of
                 fmTreeColor:
-                  Brush.Color := FColors.GetBackgroundColor;
+                  Brush.Color := FColors.BackGroundColor;
                 fmWindowColor:
                   Brush.Color := clWindow;
               end;
               Pen.Color := FColors.TreeLineColor;
               Rectangle(0, 0, Width, Height);
-              Pen.Color := FColors.GetNodeFontColor;
+              Pen.Color := FColors.NodeFontColor;
               MoveTo(2, Width div 2);
               LineTo(Width - 2, Width div 2);
             end
@@ -15981,14 +15983,14 @@ begin
             begin
               case FButtonFillMode of
                 fmTreeColor:
-                  Brush.Color := FColors.GetBackgroundColor;
+                  Brush.Color := FColors.BackGroundColor;
                 fmWindowColor:
                   Brush.Color := clWindow;
               end;
 
               Pen.Color := FColors.TreeLineColor;
               Rectangle(0, 0, Width, Height);
-              Pen.Color := FColors.GetNodeFontColor;
+              Pen.Color := FColors.NodeFontColor;
               MoveTo(2, Width div 2);
               LineTo(Width - 2, Width div 2);
               MoveTo(Width div 2, 2);
@@ -23049,7 +23051,7 @@ var
 begin
   with PaintInfo, Canvas do
   begin
-    Brush.Color := FColors.GetBackgroundColor;
+    Brush.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
     Windows.FillRect(Handle, R, FDottedBrush);
   end;
@@ -23067,7 +23069,7 @@ var
 begin
   with PaintInfo, Canvas do
   begin
-    Brush.Color := FColors.GetBackgroundColor;
+    Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
     Windows.FillRect(Handle, R, FDottedBrush);
   end;
@@ -25666,10 +25668,10 @@ var
   procedure DrawBackground(State: Integer);
   begin
     with PaintInfo do
-      if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
-        DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, RowRect, @CellRect)
-      else
-        DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
+    if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
+      DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, RowRect, @CellRect)
+    else
+     DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
   end;
 
   //--------------- end local functions ---------------------------------------
@@ -25689,11 +25691,14 @@ begin
   begin
     // Fill cell background if its color differs from tree background.
     with FHeader.FColumns do
-      if poColumnColor in PaintOptions then
-      begin
+    if poColumnColor in PaintOptions then
+    begin
+      if (FVclStyleAvailable or (FVclStyleAvailable and not (coParentColor in FHeader.FColumns[Column].FOptions))) then
+        Brush.Color := FColors.BackGroundColor
+      else
         Brush.Color := Items[Column].Color;
-        FillRect(CellRect);
-      end;
+      FillRect(CellRect);
+     end;
 
     // Let the application customize the cell background and the content rectangle.
     DoBeforeCellPaint(Canvas, Node, Column, cpmPaint, CellRect, ContentRect);
@@ -32047,11 +32052,7 @@ begin
                         Dec(R.Right);
                       end;
 
-                      if not (coParentColor in Items[FirstColumn].FOptions) then
-                        PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
-                      else
-                        PaintInfo.Canvas.Brush.Color := Color;
-
+                      PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
                       PaintInfo.Canvas.FillRect(R);
                     end;
                     FirstColumn := GetNextVisibleColumn(FirstColumn);
@@ -32067,7 +32068,7 @@ begin
                        (toFullVertGridLines in FOptions.FPaintOptions) and (toShowVertGridLines in FOptions.FPaintOptions) and
                        (not (hoAutoResize in FHeader.FOptions)) then
                       Inc(R.Left);
-                    PaintInfo.Canvas.Brush.Color := Color;
+                    PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
                     PaintInfo.Canvas.FillRect(R);
                   end;
                 end;
@@ -32077,7 +32078,7 @@ begin
               begin
                 // No columns nor bitmap background. Simply erase it with the tree color.
                 SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
-                PaintInfo.Canvas.Brush.Color := FColors.GetBackgroundColor;
+                PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
                 PaintInfo.Canvas.FillRect(TargetRect);
               end;
             end;
@@ -32216,7 +32217,7 @@ begin
       Height := TreeRect.Bottom - TreeRect.Top;
       // Erase the entire image with the color key value, for the case not everything
       // in the image is covered by the tree image.
-      Canvas.Brush.Color := FColors.GetBackgroundColor;
+      Canvas.Brush.Color := FColors.BackGroundColor;
       Canvas.FillRect(Rect(0, 0, Width, Height));
 
       PaintOptions := [poDrawSelection, poSelectedOnly];
@@ -32229,7 +32230,7 @@ begin
       ImagePos := ClientToScreen(TreeRect.TopLeft);
       HotSpot := ClientToScreen(HotSpot);
 
-      FDragImage.ColorKey := FColors.GetBackgroundColor;
+      FDragImage.ColorKey := FColors.BackGroundColor;
       FDragImage.PrepareDrag(Image, ImagePos, HotSpot, DataObject);
     finally
       Image.Free;
@@ -32300,7 +32301,7 @@ begin
       ImgRect.Right := Image.Width;
 
       // Force the background to white color during the rendering.
-      SaveColor := FColors.GetBackgroundColor;
+      SaveColor := FColors.BackGroundColor;
       Color := clWhite;
       // Print header if it is visible.
       if (hoVisible in FHeader.Options) and PrintHeader then
@@ -33207,7 +33208,7 @@ var
     begin
       Window := Handle;
       DC := GetDC(Handle);
-      Self.Brush.Color := FColors.GetBackgroundColor;
+      Self.Brush.Color := FColors.BackGroundColor;
       Brush := Self.Brush.Handle;
 
       if (Mode1 <> tamNoScroll) and (Mode2 <> tamNoScroll) then
@@ -34514,7 +34515,7 @@ begin
     Canvas.Font := Font;
     // TODO: Added - procedure TCustomVirtualStringTree.InitializeTextProperties
     if Enabled then // Es werden sonst nur die Farben verwendet von Font die an  Canvas.Font übergeben wurden
-      Canvas.Font.Color := FColors.GetNodeFontColor
+       Canvas.Font.Color :=  FColors.NodeFontColor
     else
       Canvas.Font.Color := FColors.DisabledColor;
 
@@ -34663,7 +34664,7 @@ begin
         if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
           Canvas.Font.Color := FColors.SelectionTextColor
         else
-          Canvas.Font.Color := FColors.GetNodeFontColor;
+          Canvas.Font.Color := FColors.NodeFontColor;
       end
       else
         if vsSelected in Node.States then
@@ -34671,7 +34672,7 @@ begin
           if Focused or (toPopupMode in FOptions.FPaintOptions) then
           Canvas.Font.Color := FColors.SelectionTextColor
           else
-            Canvas.Font.Color := FColors.GetNodeFontColor;
+            Canvas.Font.Color := FColors.NodeFontColor;
         end;
     end;
 
