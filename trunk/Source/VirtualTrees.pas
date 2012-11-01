@@ -14846,10 +14846,11 @@ var
   Offset: TPoint;
 
 begin
+  BackColor := FColors.BackGroundColor;
   with PaintInfo do
   begin
     EraseAction := eaDefault;
-    BackColor := FColors.BackGroundColor;
+
     if Floating then
     begin
       Offset := Point(-FEffectiveOffsetX, R.Top);
@@ -14903,7 +14904,7 @@ begin
           end
           else
           begin
-            Brush.Color := FColors.BackGroundColor;
+            Brush.Color := BackColor;
             FillRect(R);
           end;
         end;
@@ -17299,7 +17300,10 @@ var
           FillRect(DC, Run, Brush)
         else
         begin
-          LocalBrush := CreateSolidBrush(ColorToRGB(Items[Column].Color));
+          if FVclStyleAvailable then
+            LocalBrush := CreateSolidBrush(ColorToRGB(FColors.BackGroundColor))
+          else
+            LocalBrush := CreateSolidBrush(ColorToRGB(Items[Column].Color));
           FillRect(DC, Run, LocalBrush);
           DeleteObject(LocalBrush);
         end;
