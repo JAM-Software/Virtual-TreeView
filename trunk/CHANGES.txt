@@ -1,4 +1,4 @@
-October 2012
+V5.1.0 (05 Nov 2012):
  - Added support for VCl styles of RAD Studio XE2 and higher. (Thanks to Dietmar Rösler, issue #288)
  - Fixed issue #285: access violation when mouse down over checkbox sometimes
  - Fixed issue #293: OnAdvancedHeaderDraw is called with wrong PaintInfo.PaintRectangle
@@ -7,8 +7,6 @@ October 2012
  - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
  - Fixed problem with drawing selection rectangle after canceled rename
  - Fixed issue regarding activating explorer theme
- 
-September 2012
  - Fixed issue #222: FDottedBrush is never released in the tree is never shown
  - Fixed issue #52: Misalignement of CheckBox and TreeLine/Buttons
  - Fixed issue #43: VT stop repaint after Windows visual style change
