@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 5.0.1
+// Version 5.1.0
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
