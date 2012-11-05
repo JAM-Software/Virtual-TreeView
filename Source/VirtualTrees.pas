@@ -17613,6 +17613,7 @@ var
   IsFocusedOrEditing: Boolean;
   ParentForm: TCustomForm;
   BottomRightCellContentMargin: TPoint;
+  DummyLineBreakStyle: TVTTooltipLineBreakStyle;
 
 begin
   with Message do
@@ -17646,7 +17647,35 @@ begin
         Result := 0;
         ShowOwnHint := False;
         // Assign a dummy string otherwise the VCL will not show the hint window.
-        HintStr := ' ';
+        if GetHintWindowClass.InheritsFrom(TVirtualTreeHintWindow) then
+          HintStr := ' '
+        else
+        begin
+          //workaround for issue #291
+          //it duplicates parts of the following code and code in TVirtualTreeHintWindow
+          HintStr := '';
+          if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(CursorPos) then
+          begin
+            CursorRect := FHeaderRect;
+            // Convert the cursor rectangle into real client coordinates.
+            OffsetRect(CursorRect, 0, -Integer(FHeader.FHeight));
+            HitInfo.HitColumn := FHeader.FColumns.GetColumnAndBounds(CursorPos, CursorRect.Left, CursorRect.Right);
+            if (HitInfo.HitColumn > -1) and not (csLButtonDown in ControlState) and
+              (FHeader.FColumns[HitInfo.HitColumn].FHint <> '') then
+              HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
+          end
+          else
+          if HintMode = hmDefault then
+            HintStr := GetShortHint(Hint)
+          else
+          if Assigned(HitInfo.HitNode) and (HitInfo.HitColumn > InvalidColumn) then
+          begin
+            if HintMode = hmToolTip then
+              HintStr := DoGetNodeToolTip(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle)
+            else
+              HintStr := DoGetNodeHint(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle);
+          end;
+        end;
 
         // First check whether there is a header hint to show.
         if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(CursorPos) then
