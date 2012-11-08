@@ -37,6 +37,9 @@
     <DCCReference Include="..\..\Source\VirtualTrees.pas" />
     <DCCReference Include="..\..\Design\VirtualTrees.dcr" />
     <DCCReference Include="..\..\Design\VirtualTreesReg.pas" />
+    <DCCReference Include="..\..\Source\VTAccessibility.pas" />
+    <DCCReference Include="..\..\Source\VTAccessibilityFactory.pas" />
+    <DCCReference Include="..\..\Source\VTHeaderPopup.pas" />
     <DCCReference Include="DesignIde.dcp" />
     <DCCReference Include="rtl.dcp" />
     <DCCReference Include="vcl.dcp" />

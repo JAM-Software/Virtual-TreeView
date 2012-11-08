@@ -5,7 +5,7 @@ package VirtualTreesD;
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
-{$DEBUGINFO OFF}
+{$DEBUGINFO ON}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
@@ -35,6 +35,7 @@ requires
 contains
   VirtualTrees in '..\..\Source\VirtualTrees.pas',
   VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas',
+  VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
   VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
   VTAccessibility in '..\..\Source\VTAccessibility.pas';
 
