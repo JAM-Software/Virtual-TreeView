@@ -1,5 +1,6 @@
  - Removed file VTConfig.inc. The former $ifdef ReverseFullExpandHotKey is now a flag in the 
    TVTMiscOption enumeration. The $ifdef TntSupport can be defined at the beginning of the unit VirtualTrees.
+ - Added new optional parameter "Recursive" to TBaseVirtualTree.Sort()
 
 V5.1.0 (05 Nov 2012):
  - Fixed issue #291: Empty hint strings are shown when using custom hint window classes
