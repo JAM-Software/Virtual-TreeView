@@ -3167,7 +3167,7 @@ public
     function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
-    procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
+    procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True; Recursive: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
     function UpdateAction(Action: TBasicAction): Boolean; override;
@@ -32947,7 +32947,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True);
+procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True; Recursive: Boolean = True);
 
 // Sorts the given node. The application is queried about how to sort via the OnCompareNodes event.
 // Column is simply passed to the the compare function so the application can also sort in a particular column.
@@ -33053,7 +33053,8 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
     begin
       A := MergeSortAscending(Node, N div 2);
       B := MergeSortAscending(Node, (N + 1) div 2);
-      Result := MergeAscending(A, B);
+      if Recursive then
+        Result := MergeAscending(A, B);
     end
     else
     begin
@@ -33077,7 +33078,8 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
     begin
       A := MergeSortDescending(Node, N div 2);
       B := MergeSortDescending(Node, (N + 1) div 2);
-      Result := MergeDescending(A, B);
+      if Recursive then
+        Result := MergeDescending(A, B);
     end
     else
     begin
