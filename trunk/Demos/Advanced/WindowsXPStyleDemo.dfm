@@ -19,31 +19,16 @@ object WindowsXPForm: TWindowsXPForm
   TextHeight = 16
   object Label1: TLabel
     Left = 512
-    Top = 40
+    Top = 68
     Width = 244
     Height = 105
     Anchors = [akTop, akRight]
     AutoSize = False
     Caption = 
       'This demo shows a tree with properties which make it look as in ' +
-      'the new Windows XP style. Under Windows XP native theme APIs are' +
-      ' used to paint the tree. On other system legacy code is used whi' +
-      'ch simulates the look.'
-    Transparent = True
-    WordWrap = True
-  end
-  object Label2: TLabel
-    Left = 512
-    Top = 148
-    Width = 243
-    Height = 81
-    Anchors = [akTop, akRight]
-    AutoSize = False
-    Caption = 
-      'Note that the scrollbars are not drawn in the new style on non-X' +
-      'P systems.  It would be far off the goal of the tree to reimplem' +
-      'ent a full blown scrollbar handling, which would be required oth' +
-      'erwise.'
+      'the Windows Vista+ style. Under Windows Vista+ native theme APIs' +
+      ' are used to paint the tree. On other system legacy code is used' +
+      ' which simulates the look.'
     Transparent = True
     WordWrap = True
   end
@@ -89,8 +74,8 @@ object WindowsXPForm: TWindowsXPForm
     TreeOptions.AnimationOptions = [toAnimatedToggle]
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
-    TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toThemeAware]
-    TreeOptions.SelectionOptions = [toMultiSelect]
+    TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
+    TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
     OnCompareNodes = XPTreeCompareNodes
     OnGetText = XPTreeGetText
     OnGetImageIndex = XPTreeGetImageIndex
