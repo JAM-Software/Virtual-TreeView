@@ -6,15 +6,11 @@ unit WindowsXPStyleDemo;
 
 interface
 
-// For some things to work we need code, which is classified as being unsafe for .NET.
 {$warn UNSAFE_TYPE off}
 {$warn UNSAFE_CAST off}
 {$warn UNSAFE_CODE off}
 
 uses
-  {$ifdef VER140}
-    Variants,
-  {$endif}
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, VirtualTrees, ImgList, ComCtrls, ToolWin, Menus, StdCtrls;
 
@@ -32,7 +28,6 @@ type
     ToolButton5: TToolButton;
     ToolButton6: TToolButton;
     Label1: TLabel;
-    Label2: TLabel;
     ToolButton8: TToolButton;
     ToolButton9: TToolButton;
     PrintDialog: TPrintDialog;
