@@ -1992,104 +1992,97 @@ type
   end;
 
 
-  // XE2 VCL Style
-  // TODO:  Compilerversion  Ein/Ausschalten < Ist Eingeschaltet >
+  // XE2+ VCL Style
 {$if CompilerVersion >= 23 }
-  TVclStyleScrollBarsHook = class(TMouseTrackControlStyleHook)strict private type
-{$REGION 'TVclStyleScrollBarWindow'}
-    TVclStyleScrollBarWindow = class(TWinControl)strict private FScrollBarWindowOwner: TVclStyleScrollBarsHook;
-  FScrollBarVertical: Boolean;
-  FScrollBarVisible: Boolean;
-  FScrollBarEnabled: Boolean;
-  procedure WMNCHitTest(var Msg: TWMNCHitTest);
-  message WM_NCHITTEST;
-  procedure WMEraseBkgnd(var Msg: TMessage);
-  message WM_ERASEBKGND;
-  procedure WMPaint(var Msg: TWMPaint);
-  message WM_PAINT;
-strict protected
-  procedure CreateParams(var Params: TCreateParams);
-  override;
-public
-  constructor Create(AOwner: TComponent);
-  override;
-  property ScrollBarWindowOwner: TVclStyleScrollBarsHook read FScrollBarWindowOwner write FScrollBarWindowOwner;
-  property ScrollBarVertical: Boolean read FScrollBarVertical write FScrollBarVertical;
-  property ScrollBarVisible: Boolean read FScrollBarVisible write FScrollBarVisible;
-  property ScrollBarEnabled: Boolean read FScrollBarEnabled write FScrollBarEnabled;
-  end;
-{$ENDREGION}
-private
-  FHorzScrollBarDownButtonRect: TRect;
-  FHorzScrollBarDownButtonState: TThemedScrollBar;
-  FHorzScrollBarRect: TRect;
-  FHorzScrollBarSliderState: TThemedScrollBar;
-  FHorzScrollBarSliderTrackRect: TRect;
-  FHorzScrollBarUpButtonRect: TRect;
-  FHorzScrollBarUpButtonState: TThemedScrollBar;
-  FHorzScrollBarWindow: TVclStyleScrollBarWindow;
-  FLeftMouseButtonDown: Boolean;
-  FPrevScrollPos: Integer;
-  FScrollPos: Single;
-  FVertScrollBarDownButtonRect: TRect;
-  FVertScrollBarDownButtonState: TThemedScrollBar;
-  FVertScrollBarRect: TRect;
-  FVertScrollBarSliderState: TThemedScrollBar;
-  FVertScrollBarSliderTrackRect: TRect;
-  FVertScrollBarUpButtonRect: TRect;
-  FVertScrollBarUpButtonState: TThemedScrollBar;
-  FVertScrollBarWindow: TVclStyleScrollBarWindow;
+  TVclStyleScrollBarsHook = class(TMouseTrackControlStyleHook)
+  strict private type
+  {$REGION 'TVclStyleScrollBarWindow'}
+      TVclStyleScrollBarWindow = class(TWinControl)strict private FScrollBarWindowOwner: TVclStyleScrollBarsHook;
+    FScrollBarVertical: Boolean;
+    FScrollBarVisible: Boolean;
+    FScrollBarEnabled: Boolean;
+    procedure WMNCHitTest(var Msg: TWMNCHitTest);
+    message WM_NCHITTEST;
+    procedure WMEraseBkgnd(var Msg: TMessage);
+    message WM_ERASEBKGND;
+    procedure WMPaint(var Msg: TWMPaint);
+    message WM_PAINT;
+  strict protected
+    procedure CreateParams(var Params: TCreateParams);
+    override;
+  public
+    constructor Create(AOwner: TComponent);
+    override;
+    property ScrollBarWindowOwner: TVclStyleScrollBarsHook read FScrollBarWindowOwner write FScrollBarWindowOwner;
+    property ScrollBarVertical: Boolean read FScrollBarVertical write FScrollBarVertical;
+    property ScrollBarVisible: Boolean read FScrollBarVisible write FScrollBarVisible;
+    property ScrollBarEnabled: Boolean read FScrollBarEnabled write FScrollBarEnabled;
+    end;
+  {$ENDREGION}
+  private
+    FHorzScrollBarDownButtonRect: TRect;
+    FHorzScrollBarDownButtonState: TThemedScrollBar;
+    FHorzScrollBarRect: TRect;
+    FHorzScrollBarSliderState: TThemedScrollBar;
+    FHorzScrollBarSliderTrackRect: TRect;
+    FHorzScrollBarUpButtonRect: TRect;
+    FHorzScrollBarUpButtonState: TThemedScrollBar;
+    FHorzScrollBarWindow: TVclStyleScrollBarWindow;
+    FLeftMouseButtonDown: Boolean;
+    FPrevScrollPos: Integer;
+    FScrollPos: Single;
+    FVertScrollBarDownButtonRect: TRect;
+    FVertScrollBarDownButtonState: TThemedScrollBar;
+    FVertScrollBarRect: TRect;
+    FVertScrollBarSliderState: TThemedScrollBar;
+    FVertScrollBarSliderTrackRect: TRect;
+    FVertScrollBarUpButtonRect: TRect;
+    FVertScrollBarUpButtonState: TThemedScrollBar;
+    FVertScrollBarWindow: TVclStyleScrollBarWindow;
 
-  procedure WMKeyDown(var Msg: TMessage);
-  message WM_KEYDOWN;
-  procedure WMKeyUp(var Msg: TMessage);
-  message WM_KEYUP;
-  procedure WMLButtonDown(var Msg: TWMMouse);
-  message WM_LBUTTONDOWN;
-  procedure WMLButtonUp(var Msg: TWMMouse);
-  message WM_LBUTTONUP;
-  procedure WMNCLButtonDown(var Msg: TWMMouse);
-  message WM_NCLBUTTONDOWN;
-  procedure WMNCMouseMove(var Msg: TWMMouse);
-  message WM_NCMOUSEMOVE;
-  procedure WMNCLButtonUp(var Msg: TWMMouse);
-  message WM_NCLBUTTONUP;
-  procedure WMNCPaint(var Msg: TMessage);
-  message WM_NCPAINT;
-  procedure WMMouseMove(var Msg: TWMMouse);
-  message WM_MOUSEMOVE;
-  procedure WMMouseWheel(var Msg: TMessage);
-  message WM_MOUSEWHEEL;
-  procedure WMVScroll(var Msg: TMessage);
-  message WM_VSCROLL;
-  procedure WMHScroll(var Msg: TMessage);
-  message WM_HSCROLL;
-  procedure WMCaptureChanged(var Msg: TMessage);
-  message WM_CAPTURECHANGED;
-  procedure WMNCLButtonDblClk(var Msg: TWMMouse);
-  message WM_NCLBUTTONDBLCLK;
-  procedure WMSize(var Msg: TMessage);
-  message WM_SIZE;
-protected
-  procedure CalcScrollBarsRect;
-  virtual;
-  procedure DrawHorzScrollBar(DC: HDC);
-  virtual;
-  procedure DrawVertScrollBar(DC: HDC);
-  virtual;
-  function GetHorzScrollBarSliderRect: TRect;
-  function GetVertScrollBarSliderRect: TRect;
-  procedure MouseLeave;
-  override;
-  procedure PaintScrollBars;
-  virtual;
-  function PointInTreeHeader(const P: TPoint): Boolean;
-  procedure UpdateScrollBarWindow;
-public
-  constructor Create(AControl: TWinControl);
-  override;
-  destructor Destroy;
-  override;
+    procedure WMKeyDown(var Msg: TMessage);
+    message WM_KEYDOWN;
+    procedure WMKeyUp(var Msg: TMessage);
+    message WM_KEYUP;
+    procedure WMLButtonDown(var Msg: TWMMouse);
+    message WM_LBUTTONDOWN;
+    procedure WMLButtonUp(var Msg: TWMMouse);
+    message WM_LBUTTONUP;
+    procedure WMNCLButtonDown(var Msg: TWMMouse);
+    message WM_NCLBUTTONDOWN;
+    procedure WMNCMouseMove(var Msg: TWMMouse);
+    message WM_NCMOUSEMOVE;
+    procedure WMNCLButtonUp(var Msg: TWMMouse);
+    message WM_NCLBUTTONUP;
+    procedure WMNCPaint(var Msg: TMessage);
+    message WM_NCPAINT;
+    procedure WMMouseMove(var Msg: TWMMouse);
+    message WM_MOUSEMOVE;
+    procedure WMMouseWheel(var Msg: TMessage);
+    message WM_MOUSEWHEEL;
+    procedure WMVScroll(var Msg: TMessage);
+    message WM_VSCROLL;
+    procedure WMHScroll(var Msg: TMessage);
+    message WM_HSCROLL;
+    procedure WMCaptureChanged(var Msg: TMessage);
+    message WM_CAPTURECHANGED;
+    procedure WMNCLButtonDblClk(var Msg: TWMMouse);
+    message WM_NCLBUTTONDBLCLK;
+    procedure WMSize(var Msg: TMessage);
+    message WM_SIZE;
+  protected
+    procedure CalcScrollBarsRect; virtual;
+    procedure DrawHorzScrollBar(DC: HDC); virtual;
+    procedure DrawVertScrollBar(DC: HDC); virtual;
+    function GetHorzScrollBarSliderRect: TRect;
+    function GetVertScrollBarSliderRect: TRect;
+    procedure MouseLeave; override;
+    procedure PaintScrollBars; virtual;
+    function PointInTreeHeader(const P: TPoint): Boolean;
+    procedure UpdateScrollBarWindow;
+  public
+    constructor Create(AControl: TWinControl); override;
+    destructor Destroy; override;
   end;
 {$ifend}
 
@@ -2406,7 +2399,6 @@ public
 
     FVclStyleAvailable: Boolean;
 
-    // TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
     {$if CompilerVersion >= 23 }
     FSavedBevelKind: TBevelKind;
     FSavedBorderWidth: Integer;
@@ -13859,7 +13851,6 @@ end;
 function TVTColors.GetBackgroundColor: TColor;
 begin
 // XE2 VCL Style
-// TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
 {$IF CompilerVersion >= 23 }
   if FOwner.FVclStyleAvailable then
     Result := StyleServices.GetStyleColor(scTreeView)
@@ -13871,7 +13862,6 @@ end;
 function TVTColors.GetColor(const Index: Integer): TColor;
 
 begin
-  // TODO:  Compilerversion On/Off < On >
 {$IF CompilerVersion >= 23 }
   if FOwner.FVclStyleAvailable then
   begin
@@ -13922,8 +13912,7 @@ end;
 
 function TVTColors.GetHeaderFontColor: TColor;
 begin
-// XE2 VCL Style
-// TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
+// XE2+ VCL Style
 {$IF CompilerVersion >= 23 }
   if FOwner.FVclStyleAvailable then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result)
@@ -13934,7 +13923,6 @@ end;
 
 function TVTColors.GetNodeFontColor: TColor;
 begin
-// TODO:  Compilerversion On/Off < On >
 {$IF CompilerVersion >= 23 }
   if FOwner.FVclStyleAvailable then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
@@ -14075,7 +14063,7 @@ begin
   DoubleBuffered := False;
 
   FCheckImageKind := ckSystemDefault;
-  FCheckImages := LightCheckImages;
+  FCheckImages := SystemCheckImages;
 
   FImageChangeLink := TChangeLink.Create;
   FImageChangeLink.OnChange := ImageListChange;
@@ -17426,7 +17414,6 @@ begin
   FHeader.Invalidate(nil);
 end;
 
-// TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
  {$if CompilerVersion >= 23 }
 procedure TBaseVirtualTree.CMBorderChanged(var Message: TMessage);
 begin
@@ -17440,7 +17427,6 @@ begin
 end;
 {$IFEND}
 
-// TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
  {$if CompilerVersion >= 23 }
 procedure TBaseVirtualTree.CMStyleChanged(var Message: TMessage);
 begin
@@ -20287,7 +20273,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
  {$if CompilerVersion >= 23 }
 class constructor TBaseVirtualTree.Create;
 begin
@@ -24964,7 +24949,6 @@ var
 
 begin
   inherited;
-  // TODO: Hinzugefügt - TBaseVirtualTree.Loaded
   {$IF CompilerVersion >= 23}
     FSavedBorderWidth := BevelWidth;
     FSavedBevelKind := BevelKind;
@@ -25319,7 +25303,7 @@ begin
   begin
     if (tsUseThemes in FStates) and (FCheckImageKind = ckSystemDefault) then
     begin
-      R := Rect(XPos - 1, YPos, XPos + 16, YPos + 16);
+      R := Rect(XPos - 1, YPos + 1, XPos + 16, YPos + 16);
       Details.Element := teButton;
       case Index of
         // ctRadioButton
@@ -25670,11 +25654,10 @@ var
   InnerRect: TRect;
   RowRect: TRect;
   Theme: HTHEME;
-  {$if CompilerVersion < 19}
-
-    const
-      TREIS_HOTSELECTED = 6;
-  {$ifend}
+{$if CompilerVersion < 19}
+const
+  TREIS_HOTSELECTED = 6;
+{$ifend}
 
   //--------------- local functions -------------------------------------------
 
@@ -25702,11 +25685,22 @@ var
 
   procedure DrawBackground(State: Integer);
   begin
-    with PaintInfo do
     if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
-      DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, RowRect, @CellRect)
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, RowRect, nil)
     else
-     DrawThemeBackground(Theme, Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
+  end;
+
+  procedure DrawThemedFocusRect(State: Integer);
+  var
+    Theme: HTHEME;
+  begin
+    Theme := OpenThemeData(Application.{$if CompilerVersion >= 20}ActiveFormHandle{$else}Handle{$ifend}, 'Explorer::ItemsView');
+    if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, LVP_LISTDETAIL, State, RowRect, nil)
+    else
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, LVP_LISTDETAIL, State, InnerRect, nil);
+    CloseThemeData(Theme);
   end;
 
   //--------------- end local functions ---------------------------------------
@@ -25837,7 +25831,7 @@ begin
       if (poDrawFocusRect in PaintOptions) and
          (Focused or (toPopupMode in FOptions.FPaintOptions)) and (FFocusedNode = Node) and
          ( (Column = FFocusedColumn) or
-             (not (toExtendedFocus in FOptions.FSelectionOptions) and
+             ((not (toExtendedFocus in FOptions.FSelectionOptions) or IsWinVistaOrAbove) and
              (toFullRowSelect in FOptions.FSelectionOptions) and
              (tsUseExplorerTheme in FStates) ) ) then
       begin
@@ -25858,7 +25852,15 @@ begin
         if tsUseExplorerTheme in FStates then
           InflateRect(FocusRect, -1, -1);
 
-        Windows.DrawFocusRect(Handle, FocusRect);
+        if (tsUseExplorerTheme in FStates) and IsWinVistaOrAbove then begin
+          //Draw focused unselected style like Windows 7 Explorer
+          if not (vsSelected in Node.States) then
+            DrawThemedFocusRect(LIS_NORMAL)
+          else
+            DrawBackground(TREIS_HOTSELECTED);
+        end
+        else
+          Windows.DrawFocusRect(Handle, FocusRect);
         SetTextColor(Handle, TextColorBackup);
         SetBkColor(Handle, BackColorBackup);
       end;
@@ -34548,7 +34550,6 @@ begin
   begin
     // Set default font values first.
     Canvas.Font := Font;
-    // TODO: Added - procedure TCustomVirtualStringTree.InitializeTextProperties
     if Enabled then // Es werden sonst nur die Farben verwendet von Font die an  Canvas.Font übergeben wurden
        Canvas.Font.Color :=  FColors.NodeFontColor
     else
@@ -36955,8 +36956,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 
-// XE2 VCL Style
-// TODO:  Compilerversion Ein/Ausschalten < Ist Eingeschaltet >
+// XE2+ VCL Style
  {$if CompilerVersion >= 23 }
 
 { TVclStyleScrollBarsHook }
