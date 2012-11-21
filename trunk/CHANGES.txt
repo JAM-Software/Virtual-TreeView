@@ -1,3 +1,5 @@
+ - Fixed issue #299: Draw themed focus rectangle with toUseExplorerTheme
+ - Fixed issue #198: Wrong check images
  - Removed file VTConfig.inc. The former $ifdef ReverseFullExpandHotKey is now a flag in the 
    TVTMiscOption enumeration. The $ifdef TntSupport can be defined at the beginning of the unit VirtualTrees.
  - Added new optional parameter "Recursive" to TBaseVirtualTree.Sort()
