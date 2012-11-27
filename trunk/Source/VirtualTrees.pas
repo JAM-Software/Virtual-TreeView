@@ -25364,11 +25364,38 @@ end;
 type
   TCustomImageListCast = class(TCustomImageList);
 
-procedure TBaseVirtualTree.PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean);
-
+procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
 const
   Style: array[TImageType] of Cardinal = (0, ILD_MASK);
 
+  procedure DrawDisabledImage(ImageList: TCustomImageList; Canvas: TCanvas; X, Y, Index: Integer);
+  {$if CompilerVersion >= 18}
+  var
+    Params: TImageListDrawParams;
+  begin
+    FillChar(Params, SizeOf(Params), 0);
+    Params.cbSize := SizeOf(Params);
+    Params.himl := ImageList.Handle;
+    Params.i := Index;
+    Params.hdcDst := Canvas.Handle;
+    Params.x := X;
+    Params.y := Y;
+    Params.fState := ILS_SATURATE;
+    ImageList_DrawIndirect(@Params);
+  {$else}
+  begin
+    TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style[ImageList.ImageType] or ExtraStyle, False);
+  {$ifend}
+  end;
+
+begin
+  if Enabled then
+    TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style, Enabled)
+  else
+    DrawDisabledImage(ImageList, Canvas, X, Y, Index);
+end;
+
+procedure TBaseVirtualTree.PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean);
 var
   ExtraStyle: Cardinal;
   CutNode: Boolean;
@@ -25423,7 +25450,7 @@ begin
       if (vsSelected in Node.States) and not Ghosted then
         Images.BlendColor := clDefault;
 
-      TCustomImageListCast(Images).DoDraw(Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle, DrawEnabled);
+      DrawImage(Images, Index, Canvas, XPos, YPos, Style[Images.ImageType] or ExtraStyle, DrawEnabled);
 
       // Now, draw the overlay. This circumnavigates limitations in the overlay mask index (it has to be 4 bits in size,
       // anything larger will be truncated by the ILD_OVERLAYMASK).
@@ -25431,7 +25458,7 @@ begin
       // on overlay image indices (e.g. when using system image lists).
       if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
         // Note: XPos and YPos are those of the normal images.
-        TCustomImageListCast(ImageInfo[iiOverlay].Images).DoDraw(ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
+        DrawImage(ImageInfo[iiOverlay].Images, ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
           Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle, DrawEnabled);
     end;
   end;
