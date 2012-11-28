@@ -25365,8 +25365,6 @@ type
   TCustomImageListCast = class(TCustomImageList);
 
 procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
-const
-  Style: array[TImageType] of Cardinal = (0, ILD_MASK);
 
   procedure DrawDisabledImage(ImageList: TCustomImageList; Canvas: TCanvas; X, Y, Index: Integer);
   {$if CompilerVersion >= 18}
@@ -25384,7 +25382,7 @@ const
     ImageList_DrawIndirect(@Params);
   {$else}
   begin
-    TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style[ImageList.ImageType] or ExtraStyle, False);
+    TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style, False);
   {$ifend}
   end;
 
@@ -25396,6 +25394,8 @@ begin
 end;
 
 procedure TBaseVirtualTree.PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean);
+const
+  Style: array[TImageType] of Cardinal = (0, ILD_MASK);
 var
   ExtraStyle: Cardinal;
   CutNode: Boolean;
