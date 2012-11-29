@@ -15,7 +15,6 @@ V5.1.0 (05 Nov 2012):
  - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
  - Fixed problem with drawing selection rectangle after canceled rename
  - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
- - Fixed problem with drawing selection rectangle after canceled rename
  - Fixed issue regarding activating explorer theme
  - Fixed issue #222: FDottedBrush is never released in the tree is never shown
  - Fixed issue #52: Misalignement of CheckBox and TreeLine/Buttons
