@@ -1,0 +1,119 @@
+@@QA.htm
+<TITLE Questions and Answers>
+
+Got some basic questions and need an answer - look here:
+
+<B>
+
+Q: How to initially fill the tree?
+
+A:</B> The only information VT needs at startup is the number of root nodes. All other information is queried from the
+application when they are needed (text, child count etc.). Hence all to do is to set property RootNodeCount to the number
+\of nodes required.
+
+<B>
+
+Q: When I change the text of a node in code then often the display is not updated. What must I do to make selection etc.
+working again?
+
+A:</B> The Virtual String Tree class keeps the caption's width for each node to allow quick hit tests. But since the
+captions are not stored in the tree they might get out of synch with the cached width. So if you change a node's text or
+\only its width somehow (e.g. making it bold in OnPaintText) then you have to tell the tree about this event. You can do
+this by calling InvalidateNode. For changes in an event, though, you should not call InvaldiateNode all the time but
+rather store the text attributes somewhere and force recalculation only once.
+
+<B>
+
+Q: Why doesn't the horizontal scroll bar stay constant while scrolling vertically and columns are unused?
+
+A:</B> VT holds (except a few important things for the overall structure) no information about a node to save memory and
+provide high speed access. This implies, though, that it only knows the width of the items currently displayed in the
+client area. Hence the horizontal scroll bar reflects only the width of the largest node currently in view. When columns
+are used then the width is determined by the overall width of the header.
+
+<B>
+
+Q: Why is the horizontal scroll bar not updated when scrolling vertically using the scroll thumb?
+
+A:</B> To avoid unnecessary flickering and to keep high speed response the horizontal scroll bar is updated after the
+scroll thumb has been released. You cannot scroll horizontally while scrolling vertically, so the horizontal scroll bar
+doesn't need to be updated while thumb tracking. When columns are used then the width is constant anyway and the
+horizontal scrollbar does not need an update.
+
+<B>
+
+Q: How to assign and access my own data to/on a node?
+
+A:</B> VT does not hide any information about the internal structure of the node from the application. And the best place
+to hold data specific to a node is the node itself. So there's a user definable area at the end of each node record which
+can be used to store application data. Usually you already have all data in your own structure (database, file etc.) so
+you need only to supply an identifier or a pointer (link) into your own structure. This prevents your application from
+doubling the data just for display which in turn can save a remarkable amount of memory. As the space requirements may
+vary from application to application the amount of user data space can be globally adjusted by the property NodeDataSize.
+In order to avoid ugly pointer math there's a function GetNodeData which returns a pointer which directly corresponds to
+the user data area (it points to the first byte in that area). I strongly recommend to use GetNodeData only (instead
+directly accessing a node's data area) because specific tree classes may additionally allocate data in the user data area
+and these parts needs to be taken into account. Assign the returned pointer to your own variable of the correct type (or
+just cast the pointer) and access your own data as usual. <B>Note:</B> Setting NodeDataSize will clear the entire tree
+and build it from scratch using this new size as all node records have to be reallocated.
+
+<B>Q: Do I need to check if a node's data is successfully allocated?
+
+A:</B> No, user data is allocated with the node (actually it is part of a node) so the memory allocation function takes
+care of initialization.
+
+<B>
+
+Q: How to get the currently focused node and the target node during a drag'n drop operation?
+
+A:</B> Just query property FocusedNode and DropTargetNode, respectively.
+
+<B>
+
+Q: When to free my own node specific data?
+
+A:</B> Use OnFreeNode as central routine to release/disconnect all your data (just like as you should use OnNodeInit to
+allocate/attach your data to the node).
+
+<B>
+
+Q: How can I know which node am I working on?
+
+A:</B> You might want to access the currently FocusedNode to add child nodes to etc. or you might want to use the drop
+target to act on during a drag'n drop operation etc. But usually you are working on the selection. You have two
+\opportunities to get a list of currently selected nodes. One is the GetFirstSelected/GetNextSelected pair which is
+really fast but returns the nodes precisely as they are in the internal selection array (which is ordered by memory
+locations, not logically). Or you can use GetSortedSelection which fills a dynamic array with node references in logical
+(structural) order.
+
+<B>
+
+Q: Is user data saved while doing drag'n drop or saving/restoring nodes?
+
+A:</B> This question implies another question, which I want to answer first: Yes, the same mechanism to save and load
+nodes is used for drag'n drop as for streaming to/from a file. Because of potentially large node data and/or many nodes
+the user data is not saved by default with a node. There are the OnSaveNode and OnLoadNode events which provide the
+application with a stream to store its node data in.
+
+<B>
+
+Q: Where should I update my external resources (like a database) involved by any node manipulation?
+
+A:</B> There are several events which could be used. First there is the set of edit events (OnEditCancelled, OnEditing,
+TBaseVirtualTree) which indicate the cancellation, start and successful finish of an edit event, respectively. These
+events are used to generally indicate editing of a node. Especially for the node's text in a TVirtualStringTree another
+event might ease your life. It's the OnNewText event. This is a good place to set a record's description/caption in a
+database etc.
+
+When it comes to structure changes then usually much more work is involved to keep external data in sync. For general
+notifications of such a change you might want to use OnStructureChange. This event might often be enough, in particular
+when also OnInitNode, OnInitChildren and OnFreeNode are considered. But for cut, copy and paste as well as drag'n drop
+even more care must be taken, since a node might move within the tree what then involves a move of a database record or a
+file etc. For this kind of action the event pairs OnNodeCopying/OnNodeCopied and OnNodeMoving/TBaseVirtualTree have been
+introduced. As with all those pairs you can reject copying or moving a node.
+
+<B>Note:</B> These events do only appear for the top node which represents a sub tree! For example if the user drags the
+second and the third top level node of a tree to a Word document then you'll get only two events, one for each selected
+node, but not for any child node even if they are selected too. You can still walk through the child nodes if you need to
+by using e.g. IterateSubTree, but usually a tree represents a hierarchical structure which is recursively defined which
+avoids the need to update each and every of probably many child nodes.

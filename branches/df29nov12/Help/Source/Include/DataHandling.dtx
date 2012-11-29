@@ -1,0 +1,76 @@
+@@DataHandling.htm
+<TITLE Data handling>
+
+Usually single items (as in TTreeview and TListView) only have a simple data member which can take a pointer to the
+actual data an application maintains for this item in an external structure. This principle can be used with Virtual
+Treeview too. But the control goes a step further by letting the application decide how much data per node is needed and
+providing this space implicitly. This way the application is freed from maintaining an extra structure sometimes.
+
+
+
+* Application view *
+The core point behind this technique is that the tree has to allocate and deallocate memory for each node anyway. The
+amount to allocate does not matter with respect to node handling. So it is easy for the tree to allocate some more bytes
+for the application. To know how much memory is to be allocated there are several ways to tell. Firstly there is the
+property NodeDataSize which can be set already at design time and describes the required user memory per node in bytes.
+If you don't know this size (because it depends on a structure which you want to be examined by SizeOf) then simply
+assign your size in the form creation process to the tree via the NodeDataSize property.
+
+
+
+Secondly, use the event OnGetNodeDataSize. This event may occasionally be useful for values which are neither known at
+design time nor can they be determined at compile time (as the size of a record). The event is triggered when the
+NodeDataSize property is -1 (which is by default the case). This value will be replaced by the actual data size returned
+in the event.
+
+
+<TABLE>
+<B>Note: </B>If you want to store application data in a node (e.g. the caption) then you <B>must</B> allocate node data
+ as outlined above. If you get an access violation in OLE32.dll then you have likely forgotten to allocate this node data
+ and tried to assign a string.
+</TABLE>
+
+
+The allocated bytes per node are an inherent part of the node record and follow the last internal member in the
+TVirtualNode structure (symbolized by the Data member). In order for the application to access this memory it needs to
+map its node data structure to this tree internal memory. To simplify this task the application can use GetNodeData. This
+method returns the address of the data area in a node record. This address can then be assigned to a local pointer
+variable (or can be type casted) as shown in the chapter code repository. I strongly recommend that you always use the
+GetNodeData method to get the data address instead of simply using @Node.Data because a tree class may add internal data
+to this area which starts then at this address while the actual application data begins a few bytes later.
+
+
+
+* Tree Control view *
+Depending on its tasks a tree may need to store data on a per node basis (e.g. TCustomVirtualStringTree keeps the width
+\of a node to allow quick response on DoGetNodeWidth which is used for various tasks including draw selection).
+Particularly multi selection with the mouse (draw selection) depends on very quick width determination to allow
+interactivity even with 100,000 selected nodes.
+
+In order to avoid access conflicts between the tree and the application a simple mechanism has been implemented to allow
+flexible internal node data handling (in addition to the normal node record and application data handling). Following
+functions have been added to the base tree:
+
+    * InternalData
+    * AllocateInternalDataArea
+
+
+<TABLE>
+<B>Note: </B>A tree descendant which requires additional internal data <B>must</B> call AllocateInternalDataArea to
+ register its need.
+</TABLE>
+
+
+<B>InternalData</B> is a virtual function which does nothing in the base tree class (returns nil). I recommend to
+\override this method in descendants however and return the address of the internal data for that tree. This address can
+easily be determined by adding the offset returned from AllocateInternalDataArea to the start of the node record. To make
+this work you have of course to keep the offset somewhere, just like TVirtualStringTree does.
+
+
+
+<B>AllocateInternalDataArea</B> is the function which sums up all requests for internal data and keeps this sum which
+must be added to each node data offset to return the correct address for user data. Note: call this method only once
+(e.g. during tree creation) to register the data area you need.
+
+Summary
+An important aspect of the tree is the handling of data for each node. Read here how Virtual Treeview manages your data.
