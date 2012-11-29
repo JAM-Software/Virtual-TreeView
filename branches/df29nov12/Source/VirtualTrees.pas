@@ -18881,7 +18881,7 @@ begin
             if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FFocusedNode) and
               (FFocusedNode.CheckType <> ctNone) then
             begin
-              if (FStates * [tsKeyCheckPending, tsMouseCheckPending] = []) and Assigned(FFocusedNode) and
+              if (FStates * [tsKeyCheckPending, tsMouseCheckPending] = []) and
                 not (vsDisabled in FFocusedNode.States) then
               begin
                 with FFocusedNode^ do
