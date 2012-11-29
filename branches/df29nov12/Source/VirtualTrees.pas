@@ -1247,7 +1247,7 @@ type
     hoShowSortGlyphs,        // Allow visible sort glyphs.
     hoVisible,               // Header is visible.
     hoAutoSpring,            // Distribute size changes of the header to all columns, which are sizable and have the
-                             // coAutoSpring option enabled. hoAutoResize must be enabled too.
+                             // coAutoSpring option enabled.
     hoFullRepaintOnResize,   // Fully invalidate the header (instead of subsequent columns only) when a column is resized.
     hoDisableAnimatedResize, // Disable animated resize for all columns.
     hoHeightResize,          // Allow resizing header height via mouse.
