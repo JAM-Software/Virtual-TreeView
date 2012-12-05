@@ -24950,7 +24950,7 @@ var
 begin
   inherited;
   {$IF CompilerVersion >= 23}
-    FSavedBorderWidth := BevelWidth;
+    FSavedBorderWidth := BorderWidth;
     FSavedBevelKind := BevelKind;
     VclStyleChanged;
   {$IFEND}
@@ -33591,7 +33591,9 @@ begin
                   end;
                 end;
               end;
-            end;
+              if toAutoSort in FOptions.FAutoOptions then
+                Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, False);
+            end;// if UpdateCount = 0
 
             Include(Node.States, vsExpanded);
             AdjustTotalHeight(Node, HeightDelta, True);
