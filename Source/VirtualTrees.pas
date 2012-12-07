@@ -8952,6 +8952,8 @@ begin
   if Value <> FCheckBox then
   begin
     FCheckBox := Value;
+    if Value and (csDesigning in Owner.Header.Treeview.ComponentState) then
+      Owner.Header.Options := Owner.Header.Options + [hoShowImages];
     Changed(False);
   end;
 end;
@@ -11234,6 +11236,7 @@ var
     DrawFormat: Cardinal;
     Pos: TRect;
     DrawHot: Boolean;
+    ImageWidth: Integer;
   begin
     ColImageInfo.Ghosted := False;
     PaintInfo.Column := Items[AColumn];
@@ -11337,8 +11340,13 @@ var
 
         // main glyph
         FHasImage := False;
+        if Assigned(Images) then
+          ImageWidth := Images.Width
+        else
+          ImageWidth := 0;
+
         if not (hpeHeaderGlyph in ActualElements) and ShowHeaderGlyph and
-          (not ShowSortGlyph or (FBidiMode <> bdLeftToRight) or (GlyphPos.X + Images.Width <= SortGlyphPos.X) ) then
+          (not ShowSortGlyph or (FBidiMode <> bdLeftToRight) or (GlyphPos.X + ImageWidth <= SortGlyphPos.X) ) then
         begin
           if not FCheckBox then
           begin
