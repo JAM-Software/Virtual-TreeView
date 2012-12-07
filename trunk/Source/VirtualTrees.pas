@@ -7764,6 +7764,7 @@ begin
           DrawFormat := DT_TOP or DT_NOPREFIX;
           SetBkMode(Handle, Windows.TRANSPARENT);
           R.Top := Y;
+          R.Left := R.Left + 3; // Make the text more centered
           if Assigned(Node) and (LineBreakStyle = hlbForceMultiLine) then
             DrawFormat := DrawFormat or DT_WORDBREAK;
           Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat)
