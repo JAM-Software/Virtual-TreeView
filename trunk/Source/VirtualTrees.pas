@@ -32125,7 +32125,10 @@ begin
                         Dec(R.Right);
                       end;
 
-                      PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
+                      if not (coParentColor in Items[FirstColumn].FOptions) then
+                        PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
+                      else
+                        PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
                       PaintInfo.Canvas.FillRect(R);
                     end;
                     FirstColumn := GetNextVisibleColumn(FirstColumn);
