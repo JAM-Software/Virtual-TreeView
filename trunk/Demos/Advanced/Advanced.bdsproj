@@ -120,9 +120,9 @@
 		</Linker>
 		<Directories>
 			<Directories Name="OutputDir" Type="String"></Directories>
-			<Directories Name="UnitOutputDir" Type="String">..\..\..\..\Output</Directories>
+			<Directories Name="UnitOutputDir" Type="String"></Directories>
 			<Directories Name="PackageDLLOutputDir" Type="String"></Directories>
-			<Directories Name="PackageDCPOutputDir" Type="String">..\..\..\..\Output</Directories>
+			<Directories Name="PackageDCPOutputDir" Type="String"></Directories>
 			<Directories Name="SearchPath" Type="String">..\..\Source;..\..\Common</Directories>
 			<Directories Name="Packages" Type="String">C:\windows\microsoft.net\framework\v1.1.4322\system.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.data.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.drawing.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.windows.forms.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.xml.dll;vcl;rtl</Directories>
 			<Directories Name="Conditionals" Type="String"></Directories>

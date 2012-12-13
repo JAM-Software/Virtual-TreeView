@@ -26923,7 +26923,7 @@ end;
 procedure TBaseVirtualTree.ValidateNodeDataSize(var Size: Integer);
 
 begin
-  Size := 0;
+  Size := sizeof(Pointer);
   if Assigned(FOnGetNodeDataSize) then
     FOnGetNodeDataSize(Self, Size);
 end;

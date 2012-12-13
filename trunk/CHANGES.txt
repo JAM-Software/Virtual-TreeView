@@ -1,3 +1,9 @@
+ - If NodeDataSize has its default value -1, now sizeof(Pointer) is used at runtime as actual value.
+   This makes it easier to store a simple Pointer with each node indepedent of the target platform (32/64Bit).
+ - Fixed issue #300: Made the hint text more centered in the hint window
+ - If TVirtualTreeColumn.CheckBox is set to True in Designer, then hoShowImages is now added to Header.Options
+ - Fixed issue #302: AV when painting sorted header column containing checkbox
+ - Now soring subnodes when they get expanded and the toAutoSort flag is set
  - Added fix for ugly drawn disabled images (thx to S. Glienke). See also: 
    http://stackoverflow.com/questions/6003018/make-disabled-menu-and-toolbar-images-look-better
    http://qc.embarcadero.com/wc/qcmain.aspx?d=86879
