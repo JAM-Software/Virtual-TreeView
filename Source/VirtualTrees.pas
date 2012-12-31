@@ -7739,8 +7739,8 @@ begin
             Font.Color := clInfoText;
             Pen.Color := clBlack;
             Brush.Color := clInfoBk;
-            if IsWinVistaOrAbove and StyleServices.Enabled and  (toThemeAware in Tree.TreeOptions.PaintOptions) or
-               (toUseExplorerTheme in Tree.TreeOptions.PaintOptions) then
+            if IsWinVistaOrAbove and StyleServices.Enabled and ((toThemeAware in Tree.TreeOptions.PaintOptions) or
+               (toUseExplorerTheme in Tree.TreeOptions.PaintOptions)) then
             begin
               if toUseExplorerTheme in Tree.TreeOptions.PaintOptions then // ToolTip style
                 StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tttStandardNormal), R)
@@ -21067,6 +21067,7 @@ begin
       SetUpdateState(True);
     end;
 
+    Canvas.Font := Self.Font; // Fixes issue #298
     FOnBeforeCellPaint(Self, Canvas, Node, Column, CellPaintMode, CellRect, ContentRect);
 
     if CellPaintMode = cpmGetContentMargin then

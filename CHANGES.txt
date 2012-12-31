@@ -1,3 +1,5 @@
+ - Fixed issue #305: Broken hint drawing with classic windows theme and toUseExplorerTheme
+ - Fixed issue #298: Bad canvas parameters in OnBeforeCellPaint method
  - If NodeDataSize has its default value -1, now sizeof(Pointer) is used at runtime as actual value.
    This makes it easier to store a simple Pointer with each node indepedent of the target platform (32/64Bit).
  - Fixed issue #300: Made the hint text more centered in the hint window
