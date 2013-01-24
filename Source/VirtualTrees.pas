@@ -8418,7 +8418,9 @@ begin
     lNullPoint := Point(0,0);
     if Supports(DragSourceHelper, IDragSourceHelper2, lDragSourceHelper2) then
       lDragSourceHelper2.SetFlags(DSH_ALLOWDROPDESCRIPTIONTEXT);// Show description texts
-    if not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then begin   // First let the system try to initialze the DragSourceHelper, this works fine e.g. for file system objects
+    // First let the system try to initialze the DragSourceHelper, this works fine for file system objects (CF_HDROP)
+    StandardOLEFormat.cfFormat := CF_HDROP;
+    if not Succeeded(DataObject.QueryGetData(StandardOLEFormat)) or not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then begin
       // Supply the drag source helper with our drag image.
       DragInfo.sizeDragImage.cx := Width;
       DragInfo.sizeDragImage.cy := Height;
