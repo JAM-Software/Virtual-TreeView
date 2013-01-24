@@ -1,3 +1,4 @@
+ - Fixed issue #306: Drag image was broken except for CF_HDROP
  - Fixed issue #305: Broken hint drawing with classic windows theme and toUseExplorerTheme
  - Fixed issue #298: Bad canvas parameters in OnBeforeCellPaint method
  - If NodeDataSize has its default value -1, now sizeof(Pointer) is used at runtime as actual value.
