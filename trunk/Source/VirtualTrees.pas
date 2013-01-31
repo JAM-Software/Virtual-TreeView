@@ -10912,7 +10912,7 @@ begin
   if Count = 0 then
     Result := InvalidColumn
   else
-    Result := FPositionIndex[0];
+    Result := FPositionToIndex[0];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
