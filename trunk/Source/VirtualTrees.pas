@@ -1178,6 +1178,7 @@ type
     procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: Integer);
     function GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
+    function GetFirstColumn: TColumnIndex;
     function GetNextColumn(Column: TColumnIndex): TColumnIndex;
     function GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetPreviousColumn(Column: TColumnIndex): TColumnIndex;
@@ -1247,7 +1248,7 @@ type
     hoShowSortGlyphs,        // Allow visible sort glyphs.
     hoVisible,               // Header is visible.
     hoAutoSpring,            // Distribute size changes of the header to all columns, which are sizable and have the
-                             // coAutoSpring option enabled. hoAutoResize must be enabled too.
+                             // coAutoSpring option enabled.
     hoFullRepaintOnResize,   // Fully invalidate the header (instead of subsequent columns only) when a column is resized.
     hoDisableAnimatedResize, // Disable animated resize for all columns.
     hoHeightResize,          // Allow resizing header height via mouse.
@@ -10925,6 +10926,19 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVirtualTreeColumns.GetFirstColumn: TColumnIndex;
+
+// Returns the first column in display order.
+
+begin
+  if Count = 0 then
+    Result := InvalidColumn
+  else
+    Result := FPositionIndex[0];
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualTreeColumns.GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
 
 // Returns the next visible column in display order, Column is an index into the columns list.
@@ -18892,7 +18906,7 @@ begin
             if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FFocusedNode) and
               (FFocusedNode.CheckType <> ctNone) then
             begin
-              if (FStates * [tsKeyCheckPending, tsMouseCheckPending] = []) and Assigned(FFocusedNode) and
+              if (FStates * [tsKeyCheckPending, tsMouseCheckPending] = []) and
                 not (vsDisabled in FFocusedNode.States) then
               begin
                 with FFocusedNode^ do
