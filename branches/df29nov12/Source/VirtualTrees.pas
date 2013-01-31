@@ -1178,6 +1178,7 @@ type
     procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: Integer);
     function GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
+    function GetFirstColumn: TColumnIndex;
     function GetNextColumn(Column: TColumnIndex): TColumnIndex;
     function GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetPreviousColumn(Column: TColumnIndex): TColumnIndex;
@@ -10916,6 +10917,19 @@ begin
     else
       Result := InvalidColumn;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVirtualTreeColumns.GetFirstColumn: TColumnIndex;
+
+// Returns the first column in display order.
+
+begin
+  if Count = 0 then
+    Result := InvalidColumn
+  else
+    Result := FPositionIndex[0];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
