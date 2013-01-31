@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 5.1.0
+// Version 5.1.1
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -7740,8 +7740,8 @@ begin
             Font.Color := clInfoText;
             Pen.Color := clBlack;
             Brush.Color := clInfoBk;
-            if IsWinVistaOrAbove and StyleServices.Enabled and  (toThemeAware in Tree.TreeOptions.PaintOptions) or
-               (toUseExplorerTheme in Tree.TreeOptions.PaintOptions) then
+            if IsWinVistaOrAbove and StyleServices.Enabled and ((toThemeAware in Tree.TreeOptions.PaintOptions) or
+               (toUseExplorerTheme in Tree.TreeOptions.PaintOptions)) then
             begin
               if toUseExplorerTheme in Tree.TreeOptions.PaintOptions then // ToolTip style
                 StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tttStandardNormal), R)
@@ -7765,6 +7765,7 @@ begin
           DrawFormat := DT_TOP or DT_NOPREFIX;
           SetBkMode(Handle, Windows.TRANSPARENT);
           R.Top := Y;
+          R.Left := R.Left + 3; // Make the text more centered
           if Assigned(Node) and (LineBreakStyle = hlbForceMultiLine) then
             DrawFormat := DrawFormat or DT_WORDBREAK;
           Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat)
@@ -8418,7 +8419,9 @@ begin
     lNullPoint := Point(0,0);
     if Supports(DragSourceHelper, IDragSourceHelper2, lDragSourceHelper2) then
       lDragSourceHelper2.SetFlags(DSH_ALLOWDROPDESCRIPTIONTEXT);// Show description texts
-    if not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then begin   // First let the system try to initialze the DragSourceHelper, this works fine e.g. for file system objects
+    // First let the system try to initialze the DragSourceHelper, this works fine for file system objects (CF_HDROP)
+    StandardOLEFormat.cfFormat := CF_HDROP;
+    if not Succeeded(DataObject.QueryGetData(StandardOLEFormat)) or not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then begin
       // Supply the drag source helper with our drag image.
       DragInfo.sizeDragImage.cx := Width;
       DragInfo.sizeDragImage.cy := Height;
@@ -8953,6 +8956,8 @@ begin
   if Value <> FCheckBox then
   begin
     FCheckBox := Value;
+    if Value and (csDesigning in Owner.Header.Treeview.ComponentState) then
+      Owner.Header.Options := Owner.Header.Options + [hoShowImages];
     Changed(False);
   end;
 end;
@@ -11248,6 +11253,7 @@ var
     DrawFormat: Cardinal;
     Pos: TRect;
     DrawHot: Boolean;
+    ImageWidth: Integer;
   begin
     ColImageInfo.Ghosted := False;
     PaintInfo.Column := Items[AColumn];
@@ -11351,8 +11357,13 @@ var
 
         // main glyph
         FHasImage := False;
+        if Assigned(Images) then
+          ImageWidth := Images.Width
+        else
+          ImageWidth := 0;
+
         if not (hpeHeaderGlyph in ActualElements) and ShowHeaderGlyph and
-          (not ShowSortGlyph or (FBidiMode <> bdLeftToRight) or (GlyphPos.X + Images.Width <= SortGlyphPos.X) ) then
+          (not ShowSortGlyph or (FBidiMode <> bdLeftToRight) or (GlyphPos.X + ImageWidth <= SortGlyphPos.X) ) then
         begin
           if not FCheckBox then
           begin
@@ -21072,6 +21083,7 @@ begin
       SetUpdateState(True);
     end;
 
+    Canvas.Font := Self.Font; // Fixes issue #298
     FOnBeforeCellPaint(Self, Canvas, Node, Column, CellPaintMode, CellRect, ContentRect);
 
     if CellPaintMode = cpmGetContentMargin then
@@ -24964,7 +24976,7 @@ var
 begin
   inherited;
   {$IF CompilerVersion >= 23}
-    FSavedBorderWidth := BevelWidth;
+    FSavedBorderWidth := BorderWidth;
     FSavedBevelKind := BevelKind;
     VclStyleChanged;
   {$IFEND}
@@ -25381,7 +25393,7 @@ type
 procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
 
   procedure DrawDisabledImage(ImageList: TCustomImageList; Canvas: TCanvas; X, Y, Index: Integer);
-  {$if CompilerVersion >= 18}
+  {$if CompilerVersion >= 20}
   var
     Params: TImageListDrawParams;
   begin
@@ -26928,7 +26940,7 @@ end;
 procedure TBaseVirtualTree.ValidateNodeDataSize(var Size: Integer);
 
 begin
-  Size := 0;
+  Size := sizeof(Pointer);
   if Assigned(FOnGetNodeDataSize) then
     FOnGetNodeDataSize(Self, Size);
 end;
@@ -27140,7 +27152,7 @@ function TBaseVirtualTree.AddChild(Parent: PVirtualNode; UserData: Pointer = nil
 
 // Adds a new node to the given parent node. This is simply done by increasing the child count of the
 // parent node. If Parent is nil then the new node is added as (last) top level node.
-// UserData can be used to set the first 4 bytes of the user data area to an initial value which can be used
+// UserData can be used to set the first sizeof(Pointer) bytes of the user data area to an initial value which can be used
 // in OnInitNode and will also cause to trigger the OnFreeNode event (if <> nil) even if the node is not yet
 // "officially" initialized.
 // AddChild is a compatibility method and will implicitly validate the parent node. This is however
@@ -30944,7 +30956,7 @@ end;
 function TBaseVirtualTree.InsertNode(Node: PVirtualNode; Mode: TVTNodeAttachMode; UserData: Pointer = nil): PVirtualNode;
 
 // Adds a new node relative to Node. The final position is determined by Mode.
-// UserData can be used to set the first 4 bytes of the user data area to an initial value which can be used
+// UserData can be used to set the first sizeof(Pointer) bytes of the user data area to an initial value which can be used
 // in OnInitNode and will also cause to trigger the OnFreeNode event (if <> nil) even if the node is not yet
 // "officially" initialized.
 // InsertNode is a compatibility method and will implicitly validate the given node if the new node
@@ -30980,7 +30992,7 @@ begin
 
     // Check if there is initial user data and there is also enough user data space allocated.
     if Assigned(UserData) then
-      if FNodeDataSize >= 4 then
+      if FNodeDataSize >= sizeof(Pointer) then
       begin
         NodeData := Pointer(PByte(@Result.Data) + FTotalInternalDataSize);
         NodeData^ := UserData;
@@ -32130,7 +32142,10 @@ begin
                         Dec(R.Right);
                       end;
 
-                      PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
+                      if not (coParentColor in Items[FirstColumn].FOptions) then
+                        PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
+                      else
+                        PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
                       PaintInfo.Canvas.FillRect(R);
                     end;
                     FirstColumn := GetNextVisibleColumn(FirstColumn);
@@ -33214,7 +33229,7 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
     begin
       if DoInit and not (vsInitialized in Run.States) then
         InitNode(Run);
-      if (vsInitialized in Run.States) and Expanded[Run] then // There is no need to sort collapsed branches
+      if (vsInitialized in Run.States) and (not (toAutoSort in TreeOptions.AutoOptions) or Expanded[Run]) then // There is no need to sort collapsed branches
         DoSort(Run);
       Run := Run.NextSibling;
     end;
@@ -33605,7 +33620,9 @@ begin
                   end;
                 end;
               end;
-            end;
+              if toAutoSort in FOptions.FAutoOptions then
+                Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, False);
+            end;// if UpdateCount = 0
 
             Include(Node.States, vsExpanded);
             AdjustTotalHeight(Node, HeightDelta, True);
