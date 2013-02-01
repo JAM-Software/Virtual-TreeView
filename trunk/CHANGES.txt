@@ -1,3 +1,4 @@
+ - Fixed issue #313: Translucent selection rectangle completely broken when PaintBackground is used
  - Fixed issue #314: Only if toAutoSort is True non-expanded nodes will be excluded from sorting. 
    This restores the behavior of V5.0.X. 
  - Fixed issue #306: Drag image was broken except for CF_HDROP

@@ -32077,7 +32077,7 @@ begin
           end;
 
           // Call back application/descendants whether they want to erase this area.
-          SetCanvasOrigin(PaintInfo.Canvas, Target.X, 0);
+          //SetCanvasOrigin(PaintInfo.Canvas, Target.X, 0); This line caused issue #313
           if not DoPaintBackground(PaintInfo.Canvas, TargetRect) then
           begin
             if UseBackground then
