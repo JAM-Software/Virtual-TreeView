@@ -32077,7 +32077,6 @@ begin
           end;
 
           // Call back application/descendants whether they want to erase this area.
-          //SetCanvasOrigin(PaintInfo.Canvas, Target.X, 0); This line caused issue #313
           if not DoPaintBackground(PaintInfo.Canvas, TargetRect) then
           begin
             if UseBackground then
@@ -32091,6 +32090,7 @@ begin
             else
             begin
               // Consider here also colors of the columns.
+              SetCanvasOrigin(PaintInfo.Canvas, Target.X, 0); // This line caused issue #313 when it was placed above the if-statement
               if UseColumns then
               begin
                 with FHeader.FColumns do
