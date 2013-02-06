@@ -24337,14 +24337,9 @@ begin
   begin
     Count := Node.ChildCount;
     DoInitChildren(Node, Count);
+    SetChildCount(Node, Count);
     if Count = 0 then
-    begin
-      // Remove any child node which is already there.
-      DeleteChildren(Node);
       Exclude(Node.States, vsHasChildren);
-    end
-    else
-      SetChildCount(Node, Count);
   end;
 end;
 
