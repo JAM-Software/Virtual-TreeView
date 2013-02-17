@@ -11973,7 +11973,7 @@ begin
   begin
     FSortDirection := Value;
     Invalidate(nil);
-    if (toAutoSort in Treeview.FOptions.FAutoOptions) and (Treeview.FUpdateCount = 0) then
+    if ((toAutoSort in Treeview.FOptions.FAutoOptions) or (hoHeaderClickAutoSort in Options)) and (Treeview.FUpdateCount = 0) then
       Treeview.SortTree(FSortColumn, FSortDirection, True);
   end;
 end;
@@ -12255,7 +12255,7 @@ begin
     FSortColumn := Value;
     if FSortColumn > NoColumn then
       Invalidate(Columns[FSortColumn]);
-    if (toAutoSort in Treeview.FOptions.FAutoOptions) and (Treeview.FUpdateCount = 0) then
+    if ((toAutoSort in Treeview.FOptions.FAutoOptions) or (hoHeaderClickAutoSort in Options)) and (Treeview.FUpdateCount = 0) then
       Treeview.SortTree(FSortColumn, FSortDirection, True);
   end;
 end;
