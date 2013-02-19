@@ -8928,7 +8928,7 @@ begin
   if not (coUseCaptionAlignment in FOptions) or (FCaptionAlignment <> Value) then
   begin
     FCaptionAlignment := Value;
-    Exclude(FOptions, coUseCaptionAlignment);
+    Include(FOptions, coUseCaptionAlignment);
     // Setting the alignment affects also the tree, hence invalidate it too.
     Owner.Header.Invalidate(Self);
   end;
