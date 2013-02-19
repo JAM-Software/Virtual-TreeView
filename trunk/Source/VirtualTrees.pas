@@ -25389,7 +25389,7 @@ type
 procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
 
   procedure DrawDisabledImage(ImageList: TCustomImageList; Canvas: TCanvas; X, Y, Index: Integer);
-  {$if CompilerVersion >= 20}
+  {$if CompilerVersion >= 21}
   var
     Params: TImageListDrawParams;
   begin
