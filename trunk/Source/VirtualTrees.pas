@@ -9179,6 +9179,7 @@ begin
   if FText <> Value then
   begin
     FText := Value;
+    FCaptionText := '';
     Changed(False);
   end;
 end;
