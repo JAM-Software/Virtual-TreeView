@@ -8899,6 +8899,8 @@ begin
   if FAlignment <> Value then
   begin
     FAlignment := Value;
+    if not (coUseCaptionAlignment in FOptions) then
+      FCaptionAlignment := FAlignment;
     Changed(False);
     // Setting the alignment affects also the tree, hence invalidate it too.
     Owner.Header.TreeView.Invalidate;
