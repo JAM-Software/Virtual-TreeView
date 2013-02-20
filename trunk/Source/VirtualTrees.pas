@@ -8925,10 +8925,13 @@ end;
 procedure TVirtualTreeColumn.SetCaptionAlignment(const Value: TAlignment);
 
 begin
-  if not (coUseCaptionAlignment in FOptions) or (FCaptionAlignment <> Value) then
+  if FCaptionAlignment <> Value then
   begin
     FCaptionAlignment := Value;
-    Include(FOptions, coUseCaptionAlignment);
+    if FCaptionAlignment = FAlignment then
+      Exclude(FOptions, coUseCaptionAlignment)
+    else
+      Include(FOptions, coUseCaptionAlignment);
     // Setting the alignment affects also the tree, hence invalidate it too.
     Owner.Header.Invalidate(Self);
   end;
