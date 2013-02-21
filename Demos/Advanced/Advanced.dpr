@@ -1,6 +1,6 @@
 program Advanced;
 
-{$R 'Res\ExtraRes.res' 'Res\ExtraRes.rc'}
+{$R 'ExtraRes.res' 'Res\ExtraRes.rc'}
 
 uses
   Forms,
