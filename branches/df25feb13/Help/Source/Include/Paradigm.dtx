@@ -1,0 +1,107 @@
+@@Paradigm.htm
+<TITLE The virtual paradigm>
+
+* The History *
+Years ago I wrote a treeview implementation called TreeNT (see also <EXTLINK http://www.delphi-gems.com>TreeNT at the
+Delphi Gems homepage</EXTLINK>). This control is a wrapper around the system tree control provided by ComCtl32.dll. Over
+the time while I developed the control I encountered many limitations, either introduced by the Delphi VCL or "intended"
+by the underlying system control. The most annoying problems were the dependency on specific ComCtl32.dll versions and
+the slow behavior of the control when more than a couple of nodes had to be managed. In fact Microsoft's tree view has
+been designed to ease life for small node sets only.
+
+
+
+* The problems *
+Despite the problems with the system tree control TreeNT worked quite well and has meanwhile been downloaded several
+thousands of times from my web site and those many other Delphi sites around the world. When I started working for a
+software house in Munich I quickly included TreeNT into the company's inhouse library. But then the problems which were
+formerly only annoying started to make the tree nearly unusable. I realized how much the requirements in the private and
+professional/commercial environment actually differ.
+
+Aside many other problems one was especially annoying: How can adding some 5000-6000 nodes take a minute or so to finish?
+This question was the reason that I created the very first version of Virtual Treeview. What I actually did was to recall
+my studies where I learned my trade. Why, on earth, must everything be wrapped into an object? In Java and the like even
+simple data types like strings are objects. While this kind of abstraction provides some additional conveniences it costs
+quite a lot in terms of CPU power and memory, particularly if it comes to many instances of such simple type pretenders.
+
+
+
+* The nodes *
+These thoughts inspired the idea of using small records as nodes only and putting them into a doubly linked list (see
+also TVirtualNode). Well, this idea is not very new (in fact I used to write many code parts using linked lists), but
+together with other principles it got a new quality. The key points are
+
+    * node minimalism and
+    * pull over push.
+
+Pull over push means here that the tree asks for the data it must display instead of having the application to push it
+into the tree during creation. A node stays uninitialized and dataless until it is touched the first time. Only its
+existence and place in the tree is known. The assumption that this would be much better in terms of speed and
+responsiveness was based on the thought that only very few nodes need really to be accessed usually (mainly to display a
+handful of nodes in the tree window). Tests confirmed quickly that this was indeed the case.
+
+The node minimalism lead to the approach to leave out everything from the node structure which can be determined
+dynamically and/or is used very rarely. One example is the owner tree of the node. There are only very few cases where
+the knowledge about it is necessary. So a standalone method (TreeFromNode) has been created to allow retrieval of the
+\owner tree. Another omitted member was the absolute position of a node which is needed e.g. for invalidation of a
+certain node or start of tree window painting. For this decision however another fact was more relevant: inserting,
+deleting, collapsing, expanding and hiding nodes makes all following positions obsolete and requires a rescan and update
+\of the tree. Since this would be much too expensive a node cache has been introduced. This cache is a simple
+\one-dimensional array which holds node references in increasing absolute position order. A separate thread (which is
+shared between all Virtual Treeview instances in a program) is used to collect the references in the background. Well,
+\one could say that all these updates are still necessary (even with a cache because it must be held coherent) and the
+thread could well work directly in the node records. The most valuable advantage of the array like cache is however that
+you can query it for a node at a particular position by using binary search which is not possible with linked lists.
+
+
+
+* The paradigm *
+Being <B>virtual</B> is more than requesting data on demand. Although this is an important aspect some additional things
+are considered in Virtual Tree. The <B>pull over push</B> principle for data can be extended for the structure as well.
+It means then to create nodes or entire branches only on demand (e.g. when expanding a node or iterating through its
+child nodes for incremental search etc.). This allows to fill a tree view with only the top nodes and initialize only
+those of them which are currently in view. Clearly this increases start up times a lot for large trees.
+
+The core sequence for filling the tree is an iteration, which runs over initializing a node (to tell if it has children
+at all, see OnInitNode) and initializing its children (see OnInitChildren), which only means to tell the tree how many
+child nodes should be there. The tree will automatically allocate memory and set up the structure in the most efficient
+way but does not yet query for data. This will then again be done in OnInitNode for each of the newly created child nodes
+as soon as they are touched the first time. For compatibility reasons also AddChild and InsertNode have been implemented
+but are not as efficient as the iterative approach just explained. For obvious reasons these compatibility methods have
+to trigger some updates for the tree implicitly unless updates are locked. It is therefore strongly recommended to put
+calls to AddChild and InsertNode always into a BeginUpdate/EndUpdate frame (if there is more than one call).
+
+
+
+* Records instead classes *
+Basically, the idea of virtualizing the tree control and using records instead of classes were two ideas which are born
+nearly at the same time. It was quite clear from the very first moment that classes can never be as effective as a simple
+record structures (in terms of size, access speed and management). Sure, a TPersistent only needs 4 bytes more than a
+record (the pointer to the class' VMT), but these are still too many extra bytes if you consider that I have wrestled
+quite a while with myself about every byte in a tree node (and want the minimalism principle). Another point you should
+not underestimate is that classes as nodes would of course also mean to put node specific methods into this class too,
+which will be overridden at times (this is the main argument to use a class after all). This will require additional CPU
+cycles just to lookup access methods, to dereference etc. which in turn will cost extra time. Trees with only some 1000
+nodes will never see a large difference but for big trees this is significant and Virtual Treeview has mainly been
+created to address high capacity tree views.
+
+With choosing records I also gave up the VCL concept of having a tree nodes class which is responsible to manage tree
+nodes and is secondary to the control itself. In Virtual Treeview every access to the tree content is done via methods
+and properties provided by the tree control. Keep also in mind that nobody prevents you from using classes and store
+their references in the node's data area. It is only just so that the node (as internal management structure) is as small
+as possible, opening so all possibilities: from smallest memory footprint to highest comfort.
+
+
+
+* 19.09.2003 *
+* Times are changing *
+With the advent of .NET and C# things outlined in the previous paragraphs need rethinking. The software world is changing
+and so must Virtual Treeview if it wants to stay. Don't get me wrong, all the nice principles in the control have proved
+their usefulness and fitness for the purpose they were designed. However one could see that there are still flaws and
+probably will ever be, regardless of the actual design. Still, nothing is so good that it couldn't get better and the
+approach using records/structs instead of classes not only made it sometimes hard to get used to Virtual Treeview but it
+makes the control as a whole incompatible to the intrinsic values of Microsoft's new concept. And here lies the next
+natural step for it: Virtual Treeview must go .NET. So stay tuned for the things to come...
+
+Summary
+Interested in the story of Virtual Treeview? Well, here is a part of it.
