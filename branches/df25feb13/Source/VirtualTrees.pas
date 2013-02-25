@@ -1650,7 +1650,7 @@ type
   TVTColors = class(TPersistent)
   private
     FOwner: TBaseVirtualTree;
-    FColors: array[0..15] of TColor;
+    FColors: array[0..16] of TColor;
     function GetColor(const Index: Integer): TColor;
     procedure SetColor(const Index: Integer; const Value: TColor);
     function GetBackgroundColor: TColor;
@@ -1676,10 +1676,11 @@ type
     property HotColor: TColor index 8 read GetColor write SetColor default clWindowText;
     property SelectionRectangleBlendColor: TColor index 12 read GetColor write SetColor default clHighlight;
     property SelectionRectangleBorderColor: TColor index 13 read GetColor write SetColor default clHighlight;
-    property SelectionTextColor: TColor index 15 read GetColor write SetColor default clHighlightText;
+    property FocusedSelectionTextColor: TColor index 15 read GetColor write SetColor default clHighlightText;
     property TreeLineColor: TColor index 5 read GetColor write SetColor default clBtnShadow;
     property UnfocusedSelectionColor: TColor index 6 read GetColor write SetColor default clBtnFace;
     property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clBtnFace;
+    property UnfocusedSelectionTextColor: TColor index 16 read GetColor write SetColor default clWindowText;
   end;
 
   // For painting a node and its columns/cells a lot of information must be passed frequently around.
@@ -13869,7 +13870,8 @@ begin
   FColors[12] := clHighlight;     // SelectionRectangleBlendColor
   FColors[13] := clHighlight;     // SelectionRectangleBorderColor
   FColors[14] := clBtnShadow;     // HeaderHotColor
-  FColors[15] := clHighlightText; // SelectionTextColor
+  FColors[15] := clHighlightText; // FocusedSelectionTextColor
+  FColors[16] := clWindowText     // UnfocusedSelectionTextColor
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -13928,7 +13930,11 @@ begin
       15:
         if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecTextColor, Result) or
           (Result <> clWindowText) then
-          Result := NodeFontColor; // SelectionTextColor
+          Result := NodeFontColor; // FocusedSelectionTextColor
+      16:
+        if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelectedNotFocus), ecTextColor, Result) or
+          (Result <> clWindowText) then
+          Result := NodeFontColor; // FocusedSelectionTextColor
     end;
   end
   else
@@ -34625,16 +34631,27 @@ begin
       begin
         if Node = FDropTargetNode then
         begin
-          if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) and not
-             (tsUseExplorerTheme in FStates) then
-            Canvas.Font.Color := FColors.SelectionTextColor;
+          if not (tsUseExplorerTheme in FStates) then
+          begin
+            if (FLastDropMode = dmOnNode) then
+            begin
+              if (vsSelected in Node.States) then
+                Canvas.Font.Color := FColors.FocusedSelectionTextColor
+              else
+                Canvas.Font.Color := FColors.UnfocusedSelectionTextColor;
+            end;
+          end;
         end
         else
           if vsSelected in Node.States then
           begin
-            if (Focused or (toPopupMode in FOptions.FPaintOptions)) and not
-               (tsUseExplorerTheme in FStates) then
-            Canvas.Font.Color := FColors.SelectionTextColor;
+            if not (tsUseExplorerTheme in FStates) then
+            begin
+              if Focused or (toPopupMode in FOptions.FPaintOptions) then
+                Canvas.Font.Color := FColors.FocusedSelectionTextColor
+              else
+                Canvas.Font.Color := FColors.UnfocusedSelectionTextColor;
+            end;
           end;
       end;
     end;
@@ -34751,18 +34768,21 @@ begin
     begin
       if Node = FDropTargetNode then
       begin
-        if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
-          Canvas.Font.Color := FColors.SelectionTextColor
-        else
-          Canvas.Font.Color := FColors.NodeFontColor;
+        if (FLastDropMode = dmOnNode) then
+        begin
+          if (vsSelected in Node.States) then
+            Canvas.Font.Color := FColors.FocusedSelectionTextColor
+          else
+            Canvas.Font.Color := FColors.UnfocusedSelectionTextColor;
+        end;
       end
       else
         if vsSelected in Node.States then
         begin
           if Focused or (toPopupMode in FOptions.FPaintOptions) then
-          Canvas.Font.Color := FColors.SelectionTextColor
+            Canvas.Font.Color := FColors.FocusedSelectionTextColor
           else
-            Canvas.Font.Color := FColors.NodeFontColor;
+            Canvas.Font.Color := FColors.UnfocusedSelectionTextColor;
         end;
     end;
 
