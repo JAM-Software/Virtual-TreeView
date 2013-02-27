@@ -16304,7 +16304,8 @@ begin
   if (Node.CheckType <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
     Node.CheckType := Value;
-    Node.CheckState := csUncheckedNormal;
+    if (Value <> ctTriStateCheckBox) and (Node.CheckState in [csMixedNormal, csMixedPressed]) then
+      Node.CheckState := csUncheckedNormal;// reset check state if it doesn't fit the new check type
     // For check boxes with tri-state check box parents we have to initialize differently.
     if (toAutoTriStateTracking in FOptions.FAutoOptions) and (Value in [ctCheckBox, ctTriStateCheckBox]) and
       (Node.Parent <> FRoot) then
@@ -24338,6 +24339,8 @@ begin
   begin
     Count := Node.ChildCount;
     DoInitChildren(Node, Count);
+    if Count = Node.ChildCount then
+      exit;// value has not chnaged, so nothing to do
     SetChildCount(Node, Count);
     if Count = 0 then
       Exclude(Node.States, vsHasChildren);
