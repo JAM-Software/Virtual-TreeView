@@ -10343,7 +10343,7 @@ begin
     HitInfo.HitPosition := [hhiNoWhere];
   end;
 
-  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and (HitInfo.Column >= 0) then begin
+  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then begin
     // handle automatic setting of SortColumn and toggling of the sort order
     if HitInfo.Column<>Header.SortColumn then begin
       // set sort column
