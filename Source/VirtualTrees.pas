@@ -2574,6 +2574,7 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+    function GetRangeX: Cardinal;
   protected
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -2877,7 +2878,7 @@ type
     property HotPlusBM: TBitmap read FHotPlusBM;
     property MinusBM: TBitmap read FMinusBM;
     property PlusBM: TBitmap read FPlusBM;
-    property RangeX: Cardinal read FRangeX;
+    property RangeX: Cardinal read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
     property RangeY: Cardinal read FRangeY;
     property RootNodeCount: Cardinal read GetRootNodeCount write SetRootNodeCount default 0;
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
@@ -3489,6 +3490,7 @@ type
     function GetOptionsClass: TTreeOptionsClass; override;
   public
     property Canvas;
+    property RangeX;
   published
     property AccessibleName;
     property Action;
@@ -15370,6 +15372,11 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetRangeX: Cardinal;
+begin
+  Result := Max(0, FRangeX);
+end;
 
 function TBaseVirtualTree.GetRootNodeCount: Cardinal;
 
