@@ -1,3 +1,4 @@
+ - Fixed issue #326: Application hangs when aborting OLE Copy/Paste Operation
  - Added new option poResizeToFitItem to TVTHeaderPopupOption: Adds an item which, if clicked, 
    resizes all columns to fit by calling TVTHeader.AutoFitColumns()
  - Property RangeX is now public in the class TVirtualStringTree (#327)
