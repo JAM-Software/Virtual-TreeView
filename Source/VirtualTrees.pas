@@ -32671,16 +32671,17 @@ begin
                     // This seems a bit strange because of the callback for granting to add the node
                     // which actually comes after the node has been added. The reason is that the node must
                     // contain valid data otherwise I don't see how the application can make a funded decision.
-                    if not DoNodeCopying(Node, TargetNode) then
+                    if not DoNodeCopying(Node, TargetNode) then begin
                       DeleteNode(Node)
-                    else
+                    end
+                    else begin
                       DoNodeCopied(Node);
-                    StructureChange(Node, ChangeReason);
-
-                    // In order to maintain the same node order when restoring nodes in the case of amInsertAfter
-                    // we have to move the reference node continously. Othwise we would end up with reversed node order.
-                    if Mode = amInsertAfter then
-                      TargetNode := Node;
+                      StructureChange(Node, ChangeReason);
+                      // In order to maintain the same node order when restoring nodes in the case of amInsertAfter
+                      // we have to move the reference node continously. Othwise we would end up with reversed node order.
+                      if Mode = amInsertAfter then
+                        TargetNode := Node;
+                    end;
                   end;
                   Result := True;
                 finally
