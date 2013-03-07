@@ -1,3 +1,11 @@
+ - Added new option poResizeToFitItem to TVTHeaderPopupOption: Adds an item which, if clicked, 
+   resizes all columns to fit by calling TVTHeader.AutoFitColumns()
+ - Property RangeX is now public in the class TVirtualStringTree (#327)
+ - TVirtualTreeColumns.HandleClick(): No longer triggering auto sort if just the checkbox in the header was clicked
+ - TBaseVirtualTree.SetCheckType new resets PVirtualNode.CheckState only if the check state does not fit the new check type
+ - Fixed issue #321: Delphi2009: undeclared identifier: 'fState' in VirtualTrees.pas:DrawDisabledImage()
+ - Fixed issue #315: hoHeaderClickAutoSort was only working if toAutoSort is also set
+ 
 V5.1.1 (07 Feb 2012):
  - Fixed issue #313: Translucent selection rectangle completely broken when PaintBackground is used
  - Fixed issue #314: Only if toAutoSort is True non-expanded nodes will be excluded from sorting. 
