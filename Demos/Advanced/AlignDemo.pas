@@ -273,6 +273,10 @@ var
  NewItem: TMenuItem;
 
 begin
+  // We assign the OnGetText handler manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  AlignTree.OnGetText := AlignTreeGetText;
+
   // High color image lists look much better.
   ConvertToHighColor(TreeImages);
   ConvertToHighColor(HeaderImages);

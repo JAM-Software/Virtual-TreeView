@@ -203,6 +203,13 @@ var
   Stream: TResourceStream;
 
 begin
+  // We assign these handlers manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  Tree1.OnGetText := Tree1GetText;
+  Tree1.OnNewText := Tree1NewText;
+  Tree2.OnGetText := Tree1GetText;
+  Tree2.OnNewText := Tree1NewText;
+
   Tree1.NodeDataSize := SizeOf(TNodeData);
   Tree1.RootNodeCount := 30;
   Tree2.NodeDataSize := SizeOf(TNodeData);
@@ -215,7 +222,7 @@ begin
   finally
     Stream.Free;
   end;
-end;                                             
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 

@@ -54,6 +54,10 @@ type
 procedure TMainForm.FormCreate(Sender: TObject);
 
 begin
+  // We assign the OnGetText handler manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  VST.OnGetText := VSTGetText;
+
   // Let the tree know how much data space we need.
   VST.NodeDataSize := SizeOf(TMyRec);
   // Set an initial number of nodes.
@@ -85,7 +89,7 @@ procedure TMainForm.AddButtonClick(Sender: TObject);
 var
   Count: Cardinal;
   Start: Cardinal;
-  
+
 begin
   // Add some nodes to the treeview.
   Screen.Cursor := crHourGlass;

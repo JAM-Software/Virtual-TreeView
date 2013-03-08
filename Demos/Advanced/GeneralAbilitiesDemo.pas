@@ -29,12 +29,12 @@ uses
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
   StdActns, ActnList, VTHeaderPopup;
 
-type                                        
+type
   TGeneralForm = class(TForm)
     VST2: TVirtualStringTree;
     CheckMarkCombo: TComboBox;
     Label18: TLabel;
-    MainColumnUpDown: TUpDown;        
+    MainColumnUpDown: TUpDown;
     Label19: TLabel;
     BitBtn1: TBitBtn;
     Label8: TLabel;
@@ -119,6 +119,11 @@ var
   I: Integer;
 
 begin
+  // We assign these handlers manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  VST2.OnGetText := VST2GetText;
+  VST2.OnNewText := VST2NewText;
+
   // Determine if we are running on Windows XP or higher.
   ThemeRadioGroup.Enabled := CheckWin32Version(5, 1);
   if ThemeRadioGroup.Enabled then

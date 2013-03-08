@@ -57,6 +57,10 @@ uses
 procedure TGridForm.FormCreate(Sender: TObject);
 
 begin
+  // We assign the OnGetText handler manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  VST5.OnGetText := VST5GetText;
+
   VST5.NodeDataSize := SizeOf(TGridData);
 end;
 
