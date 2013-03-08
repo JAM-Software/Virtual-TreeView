@@ -77,9 +77,7 @@ object WindowsXPForm: TWindowsXPForm
     TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
     TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
     OnCompareNodes = XPTreeCompareNodes
-    OnGetText = XPTreeGetText
     OnGetImageIndex = XPTreeGetImageIndex
-    OnGetHint = XPTreeGetHint
     OnHeaderClick = XPTreeHeaderClick
     OnInitChildren = XPTreeInitChildren
     OnInitNode = XPTreeInitNode

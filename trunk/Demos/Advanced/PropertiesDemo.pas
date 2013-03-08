@@ -62,6 +62,12 @@ uses
 procedure TPropertiesForm.FormCreate(Sender: TObject);
 
 begin
+  // We assign these handlers manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  VST3.OnGetText := VST3GetText;
+  VST3.OnGetHint := VST3GetHint;
+  VST3.OnIncrementalSearch := VST3IncrementalSearch;
+
   // Always tell the tree how much data space per node it must allocated for us. We can do this here, in the
   // object inspector or in the OnGetNodeDataSize event.
   VST3.NodeDataSize := SizeOf(TPropertyData);

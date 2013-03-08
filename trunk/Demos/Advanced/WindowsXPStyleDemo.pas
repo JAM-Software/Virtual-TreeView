@@ -119,8 +119,13 @@ end;
 procedure TWindowsXPForm.FormCreate(Sender: TObject);
 
 begin
+  // We assign these handlers manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  XPTree.OnGetText := XPTreeGetText;
+  XPTree.OnGetHint := XPTreeGetHint;
+
   XPTree.NodeDataSize := SizeOf(TEntry);
-  
+
   ConvertToHighColor(LargeImages);
   ConvertToHighColor(SmallImages);
 end;
