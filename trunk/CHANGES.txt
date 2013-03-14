@@ -1,3 +1,5 @@
+ - TBaseVirtualTree.GetNodeData() now calls InitNode() if the node had not beend initialized.
+   This fixes issue #323 (Memory leak when the Node has children )
  - Fixed issue #326: Application hangs when aborting OLE Copy/Paste Operation
  - Added new option poResizeToFitItem to TVTHeaderPopupOption: Adds an item which, if clicked, 
    resizes all columns to fit by calling TVTHeader.AutoFitColumns()
