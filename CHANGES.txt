@@ -1,3 +1,5 @@
+ - Added function TVirtualTreeColumns.GetFirstColumn that returns the first column in display order.
+ - Fixed issue #322: CaptionAlignment is not being restored by Header.LoadFromStream().
  - TBaseVirtualTree.GetNodeData() now calls InitNode() if the node had not beend initialized.
    This fixes issue #323 (Memory leak when the Node has children )
  - Fixed issue #326: Application hangs when aborting OLE Copy/Paste Operation
