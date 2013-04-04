@@ -1,0 +1,36 @@
+@@Installation.htm
+<title Installation>
+
+Virtual Treeview is designed for Delphi 7 and higher and can also be used with Borland C++ Builder 2006 and up. It is
+however not designed to work directly with Kylix, Lazarus, Free Pascal or Delphi for .NET.
+
+
+
+The initial core source files are:
+
+<image Document><b>Compilers.inc</b>
+
+Include file which contains various compiler switches which determine the target compiler and the target operating
+system.
+
+<image Document><b>VTConfig.inc</b>
+
+Include file which contains version neutral compiler switches which control certain things that can be compiled into the
+tree view (e.g. Windows XP theme support, Unicode controls, a specialized node memory manager etc.).
+
+<image Document><b>VirtualTrees.pas</b>
+
+The actual implementation of Virtual Treeview and its descendants and support classes.
+
+<image Document><b>VirtualTrees.res</b>
+
+Resource file containing some check and miscellaneous images used for all Virtual Treeviews.
+
+<image Document><b>VTHeaderPopup.pas</b>
+
+Unit containing a TPopupMenu descendant which provides a convenient way to implement a header popup used to switch
+visibility of columns.
+
+* Installation *
+Please have a look at the file INSTALL.txt for installation instructions. the installer which was formerly available is
+no longer maintained.
