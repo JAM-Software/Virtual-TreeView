@@ -1,3 +1,4 @@
+V5.1.2 (04 Apr 2013):
  - Added function TVirtualTreeColumns.GetFirstColumn that returns the first column in display order.
  - Fixed issue #322: CaptionAlignment is not being restored by Header.LoadFromStream().
  - TBaseVirtualTree.GetNodeData() now calls InitNode() if the node had not beend initialized.
@@ -11,7 +12,7 @@
  - Fixed issue #321: Delphi2009: undeclared identifier: 'fState' in VirtualTrees.pas:DrawDisabledImage()
  - Fixed issue #315: hoHeaderClickAutoSort was only working if toAutoSort is also set
  
-V5.1.1 (07 Feb 2012):
+V5.1.1 (07 Feb 2013):
  - Fixed issue #313: Translucent selection rectangle completely broken when PaintBackground is used
  - Fixed issue #314: Only if toAutoSort is True non-expanded nodes will be excluded from sorting. 
    This restores the behavior of V5.0.X. 
