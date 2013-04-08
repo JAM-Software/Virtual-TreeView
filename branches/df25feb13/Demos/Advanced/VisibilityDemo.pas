@@ -102,6 +102,12 @@ var
   Data1, Data2: PLinkData;
 
 begin
+  // We assign the OnGetText handlers manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  VST1.OnGetText := VST1GetText;
+  VST2.OnGetText := VST2GetText;
+  VST3.OnGetText := VST2GetText;
+
   Randomize;
   VST1.RootNodeCount := 5;
 

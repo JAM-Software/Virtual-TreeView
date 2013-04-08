@@ -41,6 +41,7 @@ type
     procedure VST1StructureChange(Sender: TBaseVirtualTree; Node: PVirtualNode; Reason: TChangeReason);
     procedure DeleteSelectionButtonClick(Sender: TObject);
     procedure VST1StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure FormCreate(Sender: TObject);
   end;
 
 var
@@ -180,6 +181,16 @@ begin
   finally
     Screen.Cursor := crDefault;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TSpeedForm.FormCreate(Sender: TObject);
+
+begin
+  // We assign the OnGetText handler manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  VST1.OnGetText := VST1GetText;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

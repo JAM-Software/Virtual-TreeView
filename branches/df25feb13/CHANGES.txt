@@ -1,4 +1,18 @@
-V5.1.1 (07 Feb 2012):
+V5.1.2 (04 Apr 2013):
+ - Added function TVirtualTreeColumns.GetFirstColumn that returns the first column in display order.
+ - Fixed issue #322: CaptionAlignment is not being restored by Header.LoadFromStream().
+ - TBaseVirtualTree.GetNodeData() now calls InitNode() if the node had not beend initialized.
+   This fixes issue #323 (Memory leak when the Node has children )
+ - Fixed issue #326: Application hangs when aborting OLE Copy/Paste Operation
+ - Added new option poResizeToFitItem to TVTHeaderPopupOption: Adds an item which, if clicked, 
+   resizes all columns to fit by calling TVTHeader.AutoFitColumns()
+ - Property RangeX is now public in the class TVirtualStringTree (#327)
+ - TVirtualTreeColumns.HandleClick(): No longer triggering auto sort if just the checkbox in the header was clicked
+ - TBaseVirtualTree.SetCheckType new resets PVirtualNode.CheckState only if the check state does not fit the new check type
+ - Fixed issue #321: Delphi2009: undeclared identifier: 'fState' in VirtualTrees.pas:DrawDisabledImage()
+ - Fixed issue #315: hoHeaderClickAutoSort was only working if toAutoSort is also set
+ 
+V5.1.1 (07 Feb 2013):
  - Fixed issue #313: Translucent selection rectangle completely broken when PaintBackground is used
  - Fixed issue #314: Only if toAutoSort is True non-expanded nodes will be excluded from sorting. 
    This restores the behavior of V5.0.X. 

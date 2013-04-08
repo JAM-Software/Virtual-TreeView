@@ -233,6 +233,10 @@ end;
 procedure THeaderOwnerDrawForm.FormCreate(Sender: TObject);
 
 begin
+  // We assign the OnGetText handler manually to keep the demo source code compatible
+  // with older Delphi versions after using UnicodeString instead of WideString.
+  HeaderCustomDrawTree.OnGetText := HeaderCustomDrawTreeGetText;
+
   FBackBitmap1 := TBitmap.Create;
   FBackBitmap1.PixelFormat := pf32Bit;
   FBackBitmap2 := TBitmap.Create;

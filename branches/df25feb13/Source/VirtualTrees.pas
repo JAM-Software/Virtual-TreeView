@@ -1,6 +1,6 @@
 unit VirtualTrees;
 
-// Version 5.1.1
+// Version 5.1.2
 //
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -2575,6 +2575,7 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+    function GetRangeX: Cardinal;
   protected
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -2878,7 +2879,7 @@ type
     property HotPlusBM: TBitmap read FHotPlusBM;
     property MinusBM: TBitmap read FMinusBM;
     property PlusBM: TBitmap read FPlusBM;
-    property RangeX: Cardinal read FRangeX;
+    property RangeX: Cardinal read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
     property RangeY: Cardinal read FRangeY;
     property RootNodeCount: Cardinal read GetRootNodeCount write SetRootNodeCount default 0;
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
@@ -3490,6 +3491,7 @@ type
     function GetOptionsClass: TTreeOptionsClass; override;
   public
     property Canvas;
+    property RangeX;
   published
     property AccessibleName;
     property Action;
@@ -10344,7 +10346,7 @@ begin
     HitInfo.HitPosition := [hhiNoWhere];
   end;
 
-  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and (HitInfo.Column >= 0) then begin
+  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then begin
     // handle automatic setting of SortColumn and toggling of the sort order
     if HitInfo.Column<>Header.SortColumn then begin
       // set sort column
@@ -15377,6 +15379,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetRangeX: Cardinal;
+begin
+  Result := Max(0, FRangeX);
+end;
+
 function TBaseVirtualTree.GetRootNodeCount: Cardinal;
 
 begin
@@ -16310,7 +16317,8 @@ begin
   if (Node.CheckType <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
     Node.CheckType := Value;
-    Node.CheckState := csUncheckedNormal;
+    if (Value <> ctTriStateCheckBox) and (Node.CheckState in [csMixedNormal, csMixedPressed]) then
+      Node.CheckState := csUncheckedNormal;// reset check state if it doesn't fit the new check type
     // For check boxes with tri-state check box parents we have to initialize differently.
     if (toAutoTriStateTracking in FOptions.FAutoOptions) and (Value in [ctCheckBox, ctTriStateCheckBox]) and
       (Node.Parent <> FRoot) then
@@ -24344,6 +24352,8 @@ begin
   begin
     Count := Node.ChildCount;
     DoInitChildren(Node, Count);
+    if Count = Node.ChildCount then
+      exit;// value has not chnaged, so nothing to do
     SetChildCount(Node, Count);
     if Count = 0 then
       Exclude(Node.States, vsHasChildren);
@@ -29978,11 +29988,13 @@ function TBaseVirtualTree.GetNodeData(Node: PVirtualNode): Pointer;
 
 begin
   Assert(FNodeDataSize > 0, 'NodeDataSize not initialized.');
-
   if (FNodeDataSize <= 0) or (Node = nil) or (Node = FRoot) then
     Result := nil
-  else
+  else begin
+    if ([vsInitialized, vsInitialUserData] * Node.States = []) then
+      InitNode(Node);
     Result := PByte(@Node.Data) + FTotalInternalDataSize;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32667,16 +32679,17 @@ begin
                     // This seems a bit strange because of the callback for granting to add the node
                     // which actually comes after the node has been added. The reason is that the node must
                     // contain valid data otherwise I don't see how the application can make a funded decision.
-                    if not DoNodeCopying(Node, TargetNode) then
+                    if not DoNodeCopying(Node, TargetNode) then begin
                       DeleteNode(Node)
-                    else
+                    end
+                    else begin
                       DoNodeCopied(Node);
-                    StructureChange(Node, ChangeReason);
-
-                    // In order to maintain the same node order when restoring nodes in the case of amInsertAfter
-                    // we have to move the reference node continously. Othwise we would end up with reversed node order.
-                    if Mode = amInsertAfter then
-                      TargetNode := Node;
+                      StructureChange(Node, ChangeReason);
+                      // In order to maintain the same node order when restoring nodes in the case of amInsertAfter
+                      // we have to move the reference node continously. Othwise we would end up with reversed node order.
+                      if Mode = amInsertAfter then
+                        TargetNode := Node;
+                    end;
                   end;
                   Result := True;
                 finally

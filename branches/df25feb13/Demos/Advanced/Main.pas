@@ -93,7 +93,7 @@ var
   Stream: TResourceStream;
   Head, Tail: PWideChar;
   I: Integer;
-                              
+
 begin
   Stream := TResourceStream.Create(0, Name, 'Unicode');
   try
