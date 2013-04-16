@@ -3536,6 +3536,7 @@ type
     property DragWidth;
     property DrawSelectionMode;
     property EditDelay;
+    property EmptyListMessage;
     property Enabled;
     property Font;
     property Header;
@@ -6327,6 +6328,7 @@ var
   LeaveStates: TChangeStates;
 
 begin
+  {$if CompilerVersion >= 21} TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');{$ifend}
   while not Terminated do
   begin
     WaitForSingleObject(WorkEvent, INFINITE);
