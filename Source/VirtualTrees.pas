@@ -32221,7 +32221,7 @@ begin
         R.Bottom := TargetRect.Bottom -2;
         TargetCanvas.Font.Color := clGrayText;
         {$if CompilerVersion >= 20}
-        TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft]);
+        TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft, tfWordBreak]);
         {$else}
         TextOutW(TargetCanvas.Handle, 2 - Window.Left, 2 - Window.Top, PWideChar(FEmptyListMessage), Length(FEmptyListMessage));
         {$ifend}
