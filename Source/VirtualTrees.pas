@@ -20126,7 +20126,7 @@ begin
       DoScale := True;
     if DoScale then
     begin
-      FDefaultNodeHeight := MulDiv(FDefaultNodeHeight, M, D);
+      SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
       FHeader.ChangeScale(M, D);
     end;
   end;
