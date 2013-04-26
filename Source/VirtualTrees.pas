@@ -25250,7 +25250,7 @@ begin
     IntersectClipRect(DC, RC.Left, RC.Top, RC.Right, RC.Bottom);
 
     // Determine inner rectangle to exclude (RC corresponds then to the client area).
-    InflateRect(RC, -BorderWidth, -BorderWidth);
+    InflateRect(RC, -Integer(BorderWidth), -Integer(BorderWidth));
 
     // Remove the inner rectangle.
     ExcludeClipRect(DC, RC.Left, RC.Top, RC.Right, RC.Bottom);
