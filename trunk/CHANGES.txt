@@ -1,3 +1,5 @@
+- Fixed #333: Possible Integer overflow in 64Bit builds.
+
 V5.1.2 (04 Apr 2013):
  - Added function TVirtualTreeColumns.GetFirstColumn that returns the first column in display order.
  - Fixed issue #322: CaptionAlignment is not being restored by Header.LoadFromStream().
