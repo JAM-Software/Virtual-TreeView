@@ -1,3 +1,5 @@
+- Fixed #316: These fixes are to make the treeview behave more like the windows explorer regarding
+  selecting and dragging. Thanks to Stefan Glienke.
 - Fixed #333: Possible Integer overflow in 64Bit builds.
 
 V5.1.2 (04 Apr 2013):
