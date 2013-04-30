@@ -74,8 +74,8 @@ object WindowsXPForm: TWindowsXPForm
     TreeOptions.AnimationOptions = [toAnimatedToggle]
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
-    TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
-    TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
+    TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
+    TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toSimpleDrawSelection]
     OnCompareNodes = XPTreeCompareNodes
     OnGetImageIndex = XPTreeGetImageIndex
     OnHeaderClick = XPTreeHeaderClick
