@@ -14584,8 +14584,10 @@ begin
       // required. Only top and bottom bounds of the rectangle matter.
       if SimpleSelection then
       begin
-        IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom);
-        IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom);
+        IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom) and
+          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > OldRect.Left)) and (NodeLeft < OldRect.Right);
+        IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom) and
+          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > NewRect.Left)) and (NodeLeft < NewRect.Right);
       end
       else
       begin
@@ -23551,7 +23553,8 @@ begin
   if tsUseExplorerTheme in FStates then
     Include(CheckPositions, hiOnItemButtonExact);
 
-  if (CheckPositions * HitInfo.HitPositions = []) and not (toFullRowSelect in FOptions.FSelectionOptions) then
+  if (CheckPositions * HitInfo.HitPositions = []) and
+    (not (toFullRowSelect in FOptions.FSelectionOptions) or (hiNowhere in HitInfo.HitPositions)) then
     HitInfo.HitNode := nil;
   if (HitInfo.HitNode <> FCurrentHotNode) or (HitInfo.HitColumn <> FCurrentHotColumn) then
   begin
@@ -24045,7 +24048,9 @@ begin
     MultiSelect := toMultiSelect in FOptions.FSelectionOptions;
     ShiftEmpty := ShiftState = [];
     NodeSelected := IsAnyHit and (vsSelected in HitInfo.HitNode.States);
-    FullRowDrag := toFullRowDrag in FOptions.FMiscOptions;
+    FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
+      not (hiNowhere in HitInfo.HitPositions) and
+      (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
     IsHeightTracking := (Message.Msg = WM_LBUTTONDOWN) and
                         (hiOnItem in HitInfo.HitPositions) and
                         ([hiUpperSplitter, hiLowerSplitter] * HitInfo.HitPositions <> []);
@@ -24141,7 +24146,7 @@ begin
       // selection, but without a change event if it is the only selected node.
       // The same applies if the Alt key is pressed, which allows to start drawing the selection rectangle also
       // on node captions and images. Here the previous selection state does not matter, though.
-      if NodeSelected or (AltPressed and Assigned(HitInfo.HitNode) and (HitInfo.HitColumn = FHeader.MainColumn)) then
+      if NodeSelected or (AltPressed and Assigned(HitInfo.HitNode) and (HitInfo.HitColumn = FHeader.MainColumn)) and not (hiNowhere in HitInfo.HitPositions) then
       begin
         NeedChange := FSelectionCount > 1;
         InternalClearSelection;
@@ -24166,7 +24171,7 @@ begin
     begin
       // The original code here was moved up to fix issue #187.
       // In order not to break the semantics of this procedure, we are leaving these if statements here
-      if not IsCellHit then
+      if not IsCellHit or (hiNowhere in HitInfo.HitPositions) then
         Exit;
     end;
 
