@@ -36,8 +36,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_DcpOutput>.\$(Platform)\$(Config)</DCC_DcpOutput>
-        <DCC_BplOutput>.\$(Platform)\$(Config)</DCC_BplOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_Description>VirtualTreeView Controls</DCC_Description>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
