@@ -1,4 +1,5 @@
 V5.1.3: (17 Apr 2013)
+- Fixed #341: Error when unloading DLL due to missing UnRegisterStyleHook
 - Improved fix for #323: The fix applied in V5.1.2 was a breaking change for some projects, especially
   if not all the initialization was done in the OnInitNode event (reported as #338). vsInitialUserData
   has been renamed to vsOnFreeNodeCallRequired and is now set when GetNodeData is called. This fixes

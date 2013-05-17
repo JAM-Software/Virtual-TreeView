@@ -3014,6 +3014,7 @@ type
     constructor Create(AOwner: TComponent); override;
     {$if CompilerVersion >= 23 }
     class constructor Create;
+    class destructor Desrtroy;
     {$ifend}
     destructor Destroy; override;
 
@@ -20316,6 +20317,11 @@ end;
 class constructor TBaseVirtualTree.Create;
 begin
   TCustomStyleEngine.RegisterStyleHook(TBaseVirtualTree, TVclStyleScrollBarsHook);
+end;
+
+class destructor TBaseVirtualTree.Destroy;
+begin
+  TCustomStyleEngine.UnRegisterStyleHook(TBaseVirtualTree,  TVclStyleScrollBarsHook);
 end;
 {$ifend}
 
