@@ -1,4 +1,6 @@
 V5.1.3: (17 Apr 2013)
+- Fixed #337: Cannot "grab" item for dragging, odd behaviour of multi selecting with the selection
+  rectangle when toFullRowSelect is True but toSimpleDrawSelection is False.  (thx to Stefan Glienke)
 - Fixed #341: Error when unloading DLL due to missing UnRegisterStyleHook
 - Improved fix for #323: The fix applied in V5.1.2 was a breaking change for some projects, especially
   if not all the initialization was done in the OnInitNode event (reported as #338). vsInitialUserData
