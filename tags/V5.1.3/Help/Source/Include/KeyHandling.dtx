@@ -1,0 +1,135 @@
+@@KeyHandling.htm
+<TITLE Keyboard\, hotkeys and incremental search>
+
+Particularly key navigation is implicitly handled in various ways. A full list of hot keys currently supported by the
+tree view is shown below. Note that the control key has precedence over the shift key if both are pressed at the same
+time. This means that in this case the shift key has no meaning.
+
+
+
+The tree view supports the same hot keys as the Windows system tree control and allows to customize key messages to
+change the meaning of the particular key (see also OnKeyAction). Generally speaking all navigation keys change the
+current selection if no modifier key (like control or shift) is pressed together with the navigator key. Like the system
+tree control Virtual Treeview allows to modify the current selection by holding down the shift key and pressing <B>home</B>,
+<B>page up</B> or any other of those keys at the same time. The control key neither changes the selection nor the focused
+node but can be used to scroll the tree window.
+
+
+
+For special handling a grid mode is supported (see toGridExtensions in Options) which changes (among other things) some
+key semantics. These changes are explicitly marked in the table below.
+
+
+<TABLE>
+Key           Modifier   Function
+Home          none       Selects the first visible node (the focused column does not change). This node also receives the input focus.<P>
+                          <B>Modifications in grid mode:</B> The focused node does not change but the first visible column is focused
+                          instead.
+\             shift      Moves the focus to the first visible node (the focused column does not change) and includes every visible node,
+                          from the previously focused to the newly focused one, into the current selection.<P>
+                          <B>Modifications in grid mode:</B> Not the focused node is changed but the first visible column is focused
+                          instead. The selection does not change (note: you cannot select several columns of the same node).
+\             control    Scrolls the tree to the top left corner without change of any selection or focused state.
+End           none       Selects the last visible node (the focused column does not change). This node also receives the input focus.<P>
+                          <B>Modifications in grid mode:</B> The focused node does not change but the last visible column is focused.
+\             shift      Moves the focus to the last visible node (the focused column does not change) and includes every visible node,
+                          from the previously focused to the newly focused one, into the current selection.<P>
+                          <B>Modifications in grid mode:</B> Not the focused node is changed but the last visible column is focused
+                          instead. The selection does not change.
+\             control    Scrolls the tree to the bottom right corner without change of selection or focused node.
+Prior<P>      none       Scrolls the tree window and single selects a node one page up. This node receive also the current focus.
+ (page up)                
+\             shift      Like without modifier key but includes a page of nodes into the current selection.
+\             control    Scrolls the tree window one page up without change of selection or focused node.
+Next<P>       none       Same as <B>prior</B> but one page down instead.
+ (page down)              
+\             shift      Same as <B>prior</B> but one page down instead.
+\             control    Same as <B>prior</B> but one page down instead.
+Up            none       Advances the focus from the currently focused node to the previous visible node.
+\             shift      Advances the focus and adds the newly focused node to the current selection.
+\             control    Scrolls the tree window one line up. One line is defined as the DefaultNodeHeight.
+Down          none       Same as <B>up</B> but one line down instead.
+\             shift      Same as <B>up</B> but one line down instead.
+\             control    Same as <B>up</B> but one line down instead.
+Left          none       Moves the focus to the parent of the currently focused node and selects it if the current node does not have
+                          children or is already collapsed. Otherwise the focus is not changed but the node will be collapsed. In both
+                          cases the focused node will be the only selected node afterwards.<P>
+                          <B>Modifications in grid mode:</B> If extended focus is enabled (see toExtendedFocus in Options) then the
+                          behavior changes to a simple navigation to the previous visible column.
+\             shift      In opposition to the none-modifier case the expand state of the node does not matter nor is it changed. The
+                          focus is advanced in any case and sibling nodes as well as the parent node are added to the current selection.
+\             control    The tree window is scrolled to the left by the amount pixel given in the indent property.
+Right         none       Moves the focus to the first child node of the currently focused node and selects it if the current node has
+                          children and is already expanded. Otherwise the focus is not changed but the node will be expanded. In both
+                          cases the focused node will be the only selected node afterwards.<P>
+                          <B>Modifications in grid mode:</B> If extended focus is enabled (see toExtendedFocus in Options) then the
+                          behavior changes to a simple navigation to the next visible column.
+\             shift      Same as the none-modifier case but the selection is extended with the first child node.
+\             control    Same as <B>left</B> but the tree window is scrolled to the right.
+Back          none       Moves the focus to the parent of the currently focused node and selects it as only node.
+\             shift      Modifier keys have no meaning for this case.
+\             control    Modifier keys have no meaning for this case.
+Tabulator     none       The tabulator key is a bit special because it is only used with grid extensions to advance from cell to cell.
+                          Without modifier the focus changes from left to right and from top to bottom. It is necessary that you enable
+                          TAB support by setting property WantTabs to True.
+\             shift      Same as without modifier key but the focus advances backwards, from right to left and bottom to top.
+\             control    This modifier has no effect.
+F1            none       This function key triggers node specific help support. Via the OnGetHelp event the application is queried for a
+                          help context to show.
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+F2            none       This function key turns the tree view into edit mode if there is a focused node, the tree is editable and the
+                          application allows to edit the node.
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+\+<P>         none       Expands the currently focused node.
+ (add)                    
+\             shift      This modifier alone has no effect, but see the following comment.
+\             control    Pressing the control key together with + will start auto sizing all columns in the tree. If the shift key is
+                          also pressed then the whole tree is expanded instead.
+\-<P>         none       Collapses the currently focused node.
+ (subtract)               
+\             shift      This modifier alone has no effect, but see the following comment.
+\             control    Pressing the control key together with - will restore all columns to their previous widths. If the shift key is
+                          also pressed then the whole tree is collapsed instead.
+\*<P>         none       Expands the currently focused node and all its children and grand children.
+ (multiply)               
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+/<P>          none       Collapses the currently focused node and all its children and grand children.
+ (divide)                 
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+Escape        none       Stops actions which require a specific state in the tree like editing, mouse selecting, drag'n drop etc.
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+Space         none       Used only if check support is enabled (see toCheckSupport in Options) and the currently focused node has got a
+                          check type other than ctNone. In this case the space key switches the check state.
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+Apps<P>       none       Similar to <B>F1</B> triggers the apps key popup menus on a node by node basis. For more information see also
+ (menu key)               the event OnGetPopupMenu.
+\             shift      This modifier has no effect.
+\             control    This modifier has no effect.
+A             none       This is the only "normal" character used as hotkey so far. It has only an effect together with the control key.
+\             shift      This modifier has no effect.
+\             control    Pressing 'A' together with the control key will select all currently visible nodes in the tree view.
+</TABLE>
+
+
+* Incremental search *
+<U>Incremental search</U> is a commonly used term to describe the effect that the user types some letters while the tree
+view has the focus and the control will try to locate a node whose caption matches the letters. Because Virtual Treeview
+does not know what caption a node has it cannot compare the incoming letters and uses therefore again an event to ask the
+application to do the comparison. By using the lesser of both string lengths and a partial comparison in this event the
+tree will be able to select also partial matches. Note: Virtual Treeview tries to mimic the UI of the system list view
+and system tree view as close as possible and uses therefore two modes when searching. One is used when there is no key
+\or only one key pressed and the new key is the same as the already recorded one. In this case the search always starts
+with the next node and only nodes which match the single new key will be found. This allows to quickly cycle through a
+number of nodes all matching/beginning with the same letter. The other mode is normal linear search where all key presses
+are recorded and compared with the nodes in the tree. Whenever the application considers a node as match (it even hasn't
+to have a caption the same as the search string) this node is returned as new target and focused.
+
+Summary
+Virtual Treeview handles most of the important keyboard actions on its own. Also here you can inject your own handling to
+modify the control's behavior. Read also about incremental search and how it is implemented.

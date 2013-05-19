@@ -1,0 +1,942 @@
+{\rtf1\ansi\ansicpg1252\uc1 \deff28\deflang1031\deflangfe1031{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f1\fswiss\fcharset0\fprq2{\*\panose 020b0604020202020204}Arial;}
+{\f2\fmodern\fcharset0\fprq1{\*\panose 02070309020205020404}Courier New;}{\f3\froman\fcharset2\fprq2{\*\panose 05050102010706020507}Symbol;}{\f14\fnil\fcharset2\fprq2{\*\panose 05000000000000000000}Wingdings;}
+{\f28\fswiss\fcharset0\fprq2{\*\panose 020b0603020202020204}Trebuchet MS;}{\f38\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Verdana;}{\f154\froman\fcharset238\fprq2 Times New Roman CE;}{\f155\froman\fcharset204\fprq2 Times New Roman Cyr;}
+{\f157\froman\fcharset161\fprq2 Times New Roman Greek;}{\f158\froman\fcharset162\fprq2 Times New Roman Tur;}{\f159\froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f160\froman\fcharset178\fprq2 Times New Roman (Arabic);}
+{\f161\froman\fcharset186\fprq2 Times New Roman Baltic;}{\f162\fswiss\fcharset238\fprq2 Arial CE;}{\f163\fswiss\fcharset204\fprq2 Arial Cyr;}{\f165\fswiss\fcharset161\fprq2 Arial Greek;}{\f166\fswiss\fcharset162\fprq2 Arial Tur;}
+{\f167\fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f168\fswiss\fcharset178\fprq2 Arial (Arabic);}{\f169\fswiss\fcharset186\fprq2 Arial Baltic;}{\f170\fmodern\fcharset238\fprq1 Courier New CE;}{\f171\fmodern\fcharset204\fprq1 Courier New Cyr;}
+{\f173\fmodern\fcharset161\fprq1 Courier New Greek;}{\f174\fmodern\fcharset162\fprq1 Courier New Tur;}{\f175\fmodern\fcharset177\fprq1 Courier New (Hebrew);}{\f176\fmodern\fcharset178\fprq1 Courier New (Arabic);}
+{\f177\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f378\fswiss\fcharset238\fprq2 Trebuchet MS CE;}{\f379\fswiss\fcharset204\fprq2 Trebuchet MS Cyr;}{\f381\fswiss\fcharset161\fprq2 Trebuchet MS Greek;}{\f382\fswiss\fcharset162\fprq2 Trebuchet MS Tur;}
+{\f385\fswiss\fcharset186\fprq2 Trebuchet MS Baltic;}{\f458\fswiss\fcharset238\fprq2 Verdana CE;}{\f459\fswiss\fcharset204\fprq2 Verdana Cyr;}{\f461\fswiss\fcharset161\fprq2 Verdana Greek;}{\f462\fswiss\fcharset162\fprq2 Verdana Tur;}
+{\f465\fswiss\fcharset186\fprq2 Verdana Baltic;}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;
+\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{
+\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \snext0 Normal;}{\s1\ql \fi-432\li432\ri0\keepn\nowidctlpar\jclisttab\tx432\faauto\ls13\outlinelevel0\rin0\lin432\itap0 
+\b\f28\fs28\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 \sbasedon0 \snext0 heading 1;}{\s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 2;}{\s3\ql \fi-720\li720\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls13\ilvl2\outlinelevel2\adjustright\rin0\lin720\itap0 
+\b\f28\fs24\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 3;}{\s4\ql \fi-864\li864\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx864\aspalpha\aspnum\faauto\ls13\ilvl3\outlinelevel3\adjustright\rin0\lin864\itap0 
+\b\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 4;}{\s5\ql \fi-1008\li1008\ri0\sb240\sa60\widctlpar\jclisttab\tx1008\aspalpha\aspnum\faauto\ls13\ilvl4\outlinelevel4\adjustright\rin0\lin1008\itap0 
+\b\i\f28\fs26\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 5;}{\s6\ql \fi-1152\li1152\ri0\sb240\sa60\widctlpar\jclisttab\tx1152\aspalpha\aspnum\faauto\ls13\ilvl5\outlinelevel5\adjustright\rin0\lin1152\itap0 
+\b\f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 6;}{\s7\ql \fi-1296\li1296\ri0\sb240\sa60\widctlpar\jclisttab\tx1296\aspalpha\aspnum\faauto\ls13\ilvl6\outlinelevel6\adjustright\rin0\lin1296\itap0 
+\f28\fs24\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 7;}{\s8\ql \fi-1440\li1440\ri0\sb240\sa60\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls13\ilvl7\outlinelevel7\adjustright\rin0\lin1440\itap0 
+\i\f28\fs24\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 8;}{\s9\ql \fi-1584\li1584\ri0\sb240\sa60\widctlpar\jclisttab\tx1584\aspalpha\aspnum\faauto\ls13\ilvl8\outlinelevel8\adjustright\rin0\lin1584\itap0 
+\f1\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext0 heading 9;}{\*\cs10 \additive Default Paragraph Font;}{\*\cs15 \additive \ul\cf2 \sbasedon10 Hyperlink;}{\s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 
+\f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext16 Body Text;}{\s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 \sbasedon0 \snext18 Source Code;}{
+\s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 \sbasedon0 \snext18 Plain Text;}{\*\cs19 \additive \ul\cf12 \sbasedon10 FollowedHyperlink;}{
+\s20\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \b\f38\fs28\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 \sbasedon0 \snext20 Title;}}{\*\listtable{\list\listtemplateid67567645{\listlevel\levelnfc0\levelnfcn0\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li360\jclisttab\tx360 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\'02\'01);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc2\levelnfcn2\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\'02\'02);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1080\jclisttab\tx1080 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\'03(\'03);}{\levelnumbers\'02;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\'03(\'04);}{\levelnumbers\'02;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1800\jclisttab\tx1800 }{\listlevel\levelnfc2\levelnfcn2\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\'03(\'05);}{\levelnumbers\'02;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2520\jclisttab\tx2520 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc2\levelnfcn2\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3240\jclisttab\tx3240 }{\listname ;}\listid106237162}{\list\listtemplateid1857614778\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567633\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li2160\jclisttab\tx2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li4320\jclisttab\tx4320 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6480\jclisttab\tx6480 }{\listname ;}\listid145704588}
+{\list\listtemplateid-1589067142\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567633\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li2160\jclisttab\tx2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers
+\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643
+\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li4320\jclisttab\tx4320 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6480\jclisttab\tx6480 }{\listname ;}\listid223953659}{\list\listtemplateid536405448\listhybrid{\listlevel
+\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567629\'01\u-3844 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720
+\jclisttab\tx720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 
+\fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621
+\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li4320\jclisttab\tx4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li6480\jclisttab\tx6480 }{\listname ;}\listid241109229}{\list\listtemplateid-474201660
+\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'00.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li720
+\jclisttab\tx720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 
+\fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-180\li2160\jclisttab\tx2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers
+\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li4320\jclisttab\tx4320 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631
+\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6480\jclisttab\tx6480 }{\listname ;}\listid366638587}{\list\listtemplateid238222416\listhybrid{\listlevel\levelnfc0\levelnfcn0
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid-1181813976\'02\'00);}{\levelnumbers\'01;}\b\i\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li360\jclisttab\tx360 }{\listlevel
+\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1080\jclisttab\tx1080 }{\listlevel
+\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li1800\jclisttab\tx1800 }{\listlevel
+\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2520\jclisttab\tx2520 }{\listlevel
+\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3240\jclisttab\tx3240 }{\listlevel
+\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li3960\jclisttab\tx3960 }{\listlevel
+\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li4680\jclisttab\tx4680 }{\listlevel
+\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5400\jclisttab\tx5400 }{\listlevel
+\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6120\jclisttab\tx6120 }{\listname 
+;}\listid440420471}{\list\listtemplateid67567653{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'01\'00;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s1
+\fi-432\li432\jclisttab\tx432 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'03\'00.\'01;}{\levelnumbers\'01\'03;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s2\fi-576\li576
+\jclisttab\tx576 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'05\'00.\'01.\'02;}{\levelnumbers\'01\'03\'05;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s3\fi-720\li720
+\jclisttab\tx720 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'07\'00.\'01.\'02.\'03;}{\levelnumbers\'01\'03\'05\'07;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s4
+\fi-864\li864\jclisttab\tx864 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'09\'00.\'01.\'02.\'03.\'04;}{\levelnumbers\'01\'03\'05\'07\'09;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \s5\fi-1008\li1008\jclisttab\tx1008 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'0b\'00.\'01.\'02.\'03.\'04.\'05;}{\levelnumbers\'01\'03\'05\'07\'09\'0b;}
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s6\fi-1152\li1152\jclisttab\tx1152 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'0d\'00.\'01.\'02.\'03.\'04.\'05.\'06;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s7\fi-1296\li1296\jclisttab\tx1296 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'0f\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s8\fi-1440\li1440\jclisttab\tx1440 }{\listlevel\levelnfc0\levelnfcn0
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'11\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.\'08;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f\'11;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \s9\fi-1584\li1584
+\jclisttab\tx1584 }{\listname ;}\listid543566166}{\list\listtemplateid-1733914952\listhybrid{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567639
+\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li360\jclisttab\tx360 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641
+\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1080\jclisttab\tx1080 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li1800\jclisttab\tx1800 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2520\jclisttab\tx2520 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3240\jclisttab\tx3240 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li3960\jclisttab\tx3960 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li4680\jclisttab\tx4680 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5400\jclisttab\tx5400 }{\listlevel\levelnfc2\levelnfcn2\leveljc2
+\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6120\jclisttab\tx6120 }{\listname ;}\listid560870778}
+{\list\listtemplateid-540499212\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567633\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li360\jclisttab\tx360 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li1080\jclisttab\tx1080 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li1800\jclisttab\tx1800 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2520\jclisttab\tx2520 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers
+\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3240\jclisttab\tx3240 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643
+\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li3960\jclisttab\tx3960 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li4680\jclisttab\tx4680 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5400\jclisttab\tx5400 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6120\jclisttab\tx6120 }{\listname ;}\listid1095052103}{\list\listtemplateid-92627972\listhybrid{\listlevel
+\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567629\'01\u-3844 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720
+\jclisttab\tx720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 
+\fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621
+\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li4320\jclisttab\tx4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li6480\jclisttab\tx6480 }{\listname ;}\listid1168407219}{\list\listtemplateid815064868
+\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace0\levelindent0{\leveltext\leveltemplateid67567633\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720
+\jclisttab\tx720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1440
+\jclisttab\tx1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li2160
+\jclisttab\tx2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2880
+\jclisttab\tx2880 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3600
+\jclisttab\tx3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li4320
+\jclisttab\tx4320 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5040
+\jclisttab\tx5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5760
+\jclisttab\tx5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6480
+\jclisttab\tx6480 }{\listname ;}\listid1257786161}{\list\listtemplateid1085203998\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers
+;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619
+\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li4320\jclisttab\tx4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc23
+\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5760\jclisttab\tx5760 }{\listlevel
+\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li6480
+\jclisttab\tx6480 }{\listname ;}\listid1558739316}{\list\listtemplateid-639481430\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567633
+\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641
+\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li2160\jclisttab\tx2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li4320\jclisttab\tx4320 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2
+\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6480\jclisttab\tx6480 }{\listname ;}\listid1679505587}
+{\list\listtemplateid-2022823962\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567633\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li360\jclisttab\tx360 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li1080\jclisttab\tx1080 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-180\li1800\jclisttab\tx1800 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li2520\jclisttab\tx2520 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li3240\jclisttab\tx3240 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-180\li3960\jclisttab\tx3960 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li4680\jclisttab\tx4680 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-360\li5400\jclisttab\tx5400 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1 \fi-180\li6120\jclisttab\tx6120 }{\listname ;}\listid1720546583}{\list\listtemplateid-92627972\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc23\levelnfcn23
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li4320\jclisttab\tx4320 }{\listlevel
+\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5040
+\jclisttab\tx5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 
+\fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li6480\jclisttab\tx6480 }{\listname ;}\listid1824731545}{\list\listtemplateid1380762134\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567633\'02\'00);}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li360\jclisttab\tx360 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67567641\'02\'01.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li1080\jclisttab\tx1080 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567643\'02\'02.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li1800\jclisttab\tx1800 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'03.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li2520\jclisttab\tx2520 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'04.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li3240\jclisttab\tx3240 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'05.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li3960\jclisttab\tx3960 }{\listlevel\levelnfc0\levelnfcn0\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567631\'02\'06.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li4680\jclisttab\tx4680 }{\listlevel\levelnfc4\levelnfcn4
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567641\'02\'07.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-360\li5400\jclisttab\tx5400 }{\listlevel\levelnfc2
+\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567643\'02\'08.;}{\levelnumbers\'01;}\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1 \fi-180\li6120\jclisttab\tx6120 }{\listname 
+;}\listid1877808913}{\list\listtemplateid536405448\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 
+\chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621
+\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li4320\jclisttab\tx4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc23\levelnfcn23
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc23
+\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li6480\jclisttab\tx6480 }
+{\listname ;}\listid1954172682}{\list\listtemplateid709158878\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr
+\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li720\jclisttab\tx720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2
+\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li1440\jclisttab\tx1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621
+\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2160\jclisttab\tx2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li2880\jclisttab\tx2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li3600\jclisttab\tx3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li4320\jclisttab\tx4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567617\'01\u-3913 ?;}{\levelnumbers;}\f3\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5040\jclisttab\tx5040 }{\listlevel\levelnfc23\levelnfcn23
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567619\'01o;}{\levelnumbers;}\f2\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li5760\jclisttab\tx5760 }{\listlevel\levelnfc23
+\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67567621\'01\u-3929 ?;}{\levelnumbers;}\f14\chbrdr\brdrnone\brdrcf1 \chshdng0\chcfpat1\chcbpat1\fbias0 \fi-360\li6480\jclisttab\tx6480 }
+{\listname ;}\listid2130051619}}{\*\listoverridetable{\listoverride\listid1679505587\listoverridecount0\ls1}{\listoverride\listid1257786161\listoverridecount0\ls2}{\listoverride\listid106237162\listoverridecount0\ls3}{\listoverride\listid366638587
+\listoverridecount0\ls4}{\listoverride\listid1168407219\listoverridecount0\ls5}{\listoverride\listid1095052103\listoverridecount0\ls6}{\listoverride\listid145704588\listoverridecount0\ls7}{\listoverride\listid1877808913\listoverridecount0\ls8}
+{\listoverride\listid560870778\listoverridecount0\ls9}{\listoverride\listid1720546583\listoverridecount0\ls10}{\listoverride\listid223953659\listoverridecount0\ls11}{\listoverride\listid440420471\listoverridecount0\ls12}{\listoverride\listid543566166
+\listoverridecount0\ls13}{\listoverride\listid241109229\listoverridecount0\ls14}{\listoverride\listid1954172682\listoverridecount0\ls15}{\listoverride\listid1824731545\listoverridecount0\ls16}{\listoverride\listid2130051619\listoverridecount0\ls17}
+{\listoverride\listid1558739316\listoverridecount0\ls18}}{\info{\author Mike Lischke}{\operator Mike Lischke}{\creatim\yr2001\mo4\dy15\hr13\min39}{\revtim\yr2002\mo1\dy4\hr18}{\version468}{\edmins0}{\nofpages15}{\nofwords4222}{\nofchars24066}
+{\*\company privat}{\nofcharsws29554}{\vern8249}}\margl1417\margr1417\margt1417\margb1134 \widowctrl\ftnbj\aenddoc\hyphhotz425\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984
+\dghshow0\dgvshow3\jcompress\viewkind1\viewscale114\viewzk2\nolnhtadjtbl \fet0\sectd \linex0\sectdefaultcl {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl3
+\pndec\pnstart1\pnindent720\pnhang{\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang{\pntxta )}}{\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}
+{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang{\pntxtb (}{\pntxta )}}\pard\plain 
+\s20\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \b\f38\fs28\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {Virtual Treeview step by step
+\par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\lang2057\langfe1031\langnp2057 
+\par }{\f38\fs20 von Sven H. (}{\field\fldedit{\*\fldinst {\f38\fs20 HYPERLINK "mailto:h.sven@gmx.at"}{\f38\fs20 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b0200000003000000e0c9ea79f9bace118c8200aa004ba90b2a0000006d00610069006c0074006f003a0068002e007300760065006e00400067006d0078002e00610074000000000000}}}{\fldrslt {\cs15\f38\fs20\ul\cf2 h.sven@gmx.at}}}{\f38\fs20 ), \'dc
+berarbeitung von Mike Lischke (}{\field\fldedit{\*\fldinst {\f38\fs20 HYPERLINK "mailto:public@lischke-online.de"}{\f38\fs20 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b0200000003000000e0c9ea79f9bace118c8200aa004ba90b400000006d00610069006c0074006f003a007000750062006c006900630040006c0069007300630068006b0065002d006f006e006c0069006e0065002e00640065000000000000}}}{\fldrslt {
+\cs15\f38\fs20\ul\cf2 public@lischke-online.de}}}{\f38\fs20 )
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1  
+\par Zum Zeitpunkt als diese Beschreibung entstanden ist, hatte ich noch wenig Delphi-Kenntnisse und habe noch keines meiner 2 Delphib\'fccher fertig gelesen. Aber nat\'fcrlich war ich ungeduldig und wollte gleich einmal ausprobieren, was so geht.
+\par 
+\par Ich habe zwar etwas Ahnung von objektorientierter Programmierung und C++ (habe dar\'fcber auch einiges w\'e4hrend meines Studiums gelernt), dieses Projekt ist jedoch mein erster Gehversuch in Delphi.
+\par 
+\par Es kann sein, dass meine L\'f6sungen nicht die elegantesten sind und ich bin f\'fcr Verbesserungsvorschl\'e4ge immer zu haben. Aber alle Prinzipien, die ich hier demonstriere, funktionieren auch (zumindest bei mir }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL
+ 74 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{\f38\fs20\cf1 ). Ich habe sie so in meinem ersten Projekt implementiert.
+\par 
+\par Diese Anleitung wendet sich in erster Linie an Programmierer, die mit dem Virtual Treeview noch nicht vertraut sind und so vielleicht einen leichteren Einstieg haben.
+\par 
+\par F\'fcr Fragen und Anregungen, die diese Kurzanleitung betreffen, bitte an }{\field\fldedit{\*\fldinst {\f38\fs20\cf1 HYPERLINK "mailto:h.sven@gmx.at"}{\f38\fs20\cf1 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b0200000003000000e0c9ea79f9bace118c8200aa004ba90b2a0000006d00610069006c0074006f003a0068002e007300760065006e00400067006d0078002e00610074000000000000}}}{\fldrslt {\cs15\f38\fs20\ul\cf2 h.sven@gmx.at}}}{\f38\fs20\cf1 
+ wenden. F\'fcr sonstige Fragen seid ihr sicher bei Mike bzw. der daf\'fcr eingerichteten Yahoo Group (}{\field\flddirty{\*\fldinst {\f38\fs20\cf1  HYPERLINK "http://www.yahoogroups.com/group/VirtualTreeview" }{\f38\fs20\cf1 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000003100000068007400740070003a002f002f007700770077002e007900610068006f006f00670072006f007500700073002e0063006f006d002f00670072006f00750070002f005600690072007400750061006c00540072006500650076006900650077000000
+e0c9ea79f9bace118c8200aa004ba90b6200000068007400740070003a002f002f007700770077002e007900610068006f006f00670072006f007500700073002e0063006f006d002f00670072006f00750070002f005600690072007400750061006c0054007200650065007600690065007700000000000000}}
+}{\fldrslt {\cs15\f38\fs20\ul\cf2 http://www.yahoogroups.com/group/VirtualTreeview}}}{\f38\fs20\cf1 ) besser aufgehoben.
+\par 
+\par Ich bin weder ein Virtual Treeview- noch ein Delphi-Experte und habe mir alle Antworten m\'fchsam (mit der Hilfe von Mike) erk\'e4mpft. Damit die im nachhinein relativ simplen Dinge keine gro\'dfe H\'fc
+rde darstellen und jeder diese tolle Komponente rasch produktiv nutzen kann, habe ich diese Kurzanleitung geschrieben. Die 'richtigen' Probleme beginnen erst danach }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL 74 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{
+\f38\fs20\cf1 .
+\par 
+\par \'a9 2001 Der \'fcber das Wiedergeben von Textstellen der Onlinehilfe hinausgehende Teil dieser Anleitung ist urheberrechtlich gesch\'fctzt. Jede Ver\'f6ffentlichung bedarf meiner Zustimmung.
+\par 
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\f38 Viel Spa\'df damit, Sven.
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par 
+\par 
+\par {\*\bkmkstart _Vorbereitungen}{\*\bkmkend _Vorbereitungen}{\listtext\pard\plain\s1 \b\f38\fs28\cf1 \hich\af38\dbch\af0\loch\f38 1\tab}}\pard\plain \s1\ql \fi-432\li432\ri0\keepn\nowidctlpar\jclisttab\tx432\faauto\ls13\outlinelevel0\rin0\lin432\itap0 
+\b\f28\fs28\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\lang1031\langfe1031\langnp1031 Vorbereitungen
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Bevor wir beginnen, sind einige Vorbereitungen notwendig:
+\par 
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\nowidctlpar\jclisttab\tx720\faauto\ls16\rin0\lin720\itap0 {\f38\fs20\cf1 Die Komponente (Virtual Treeview) muss auf ein Formular gelegt werden.
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}Die Eigenschaften der Komponente sollten wie gew\'fcnscht festlegen werden.
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}Ein Record f\'fcr die Knotendaten muss definiert werden.
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1  
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Um die 'eigenen' Knotendaten zu speichern, m\'fcssen einige \'dc
+berlegungen angestellt werden. Wie soll der Record aussehen?
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par {\listtext\pard\plain\b\f38\fs20 \hich\af38\dbch\af0\loch\f38 a)\tab}}\pard \ql \fi-360\li360\ri0\widctlpar\jclisttab\tx360\aspalpha\aspnum\faauto\ls9\adjustright\rin0\lin360\itap0 {\b\f38\fs20 alle Knoten im Tree sind gleich
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 In diesem Fall kann ein einfacher Record die notwendige Daten-Struktur definieren. }{\f38\fs20\cf1\lang2057\langfe1031\langnp2057 Also z. B.:
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b type
+\par }{  rTreeData = }{\b record}{
+\par     Text: WideString;
+\par     URL: }{\b string}{[255];
+\par     CRC: LongInt;
+\par     isOpened: Boolean;
+\par     }{\lang1031\langfe1031\langnp1031 ImageIndex: Integer;
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par {\listtext\pard\plain\b\f38\fs20\cf1 \hich\af38\dbch\af0\loch\f38 b)\tab}}\pard \ql \fi-360\li360\ri0\nowidctlpar\jclisttab\tx360\faauto\ls9\rin0\lin360\itap0 {\b\f38\fs20\cf1 
+es gibt verschiedene Knoten im Tree (also z.B. Ordner die andere Unterknoten enthalten k\'f6nnen)
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 Diesen Fall werde ich nun weiter verfolgen da mein Baum Ordner enthalten soll, die wiederum eigene Knoten enthalten k\'f6nnen.
+\par 
+\par Da ich vorhabe erzeugte B\'e4ume in einem File zu sichern, um den Baum sp\'e4ter wieder rekonstruieren zu k\'f6nnen, sind weitere \'dcberlegungen notewendig:
+\par 
+\par Angenommen, ein Ordner-Knoten hat nur einen Namen und ein Blattknoten hat einen Namen und ein Textinfofeld. M\'f6glicherweise m\'f6
+chte ich auch noch eine zweite Art von Blattknoten speichern, der dann z.B. anstelle des Testfeldes einen Zahlenwert aufnehmen kann usw.
+\par 
+\par Das Problem im Zusammenhang mit dem Einle
+sen von Daten aus einem Stream ist, ich muss wissen welche Daten in welcher Reihenfolge im Stream gespeichert wurden, weil ich sie ja genau in dieser Reihenfolge wieder auslesen muss. Daher muss ich als allererste Information aus dem Stream lesen k\'f6
+nnen, w
+elche Folgeinformationen da nun 'ankommen'. Also z.B. da kommt ein Knotenname, aber dann? Kommt da jetzt gar nichts mehr, eine Textinformation (String) oder vielleicht gar ein Integerwert. Ich denke der Punkt ist klar. Die erste Information, die ich einle
+se, muss mir dar\'fcber Auskunft geben.
+\par 
+\par Diese \'dcberlegungen haben mich zu folgender L\'f6sung gef\'fchrt: ich speichere also nun im Stream [Kennung]->[Name]->[Folgedaten]
+\par 0 }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL 224 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{\f38\fs20\cf1  'Ordner'
+\par 1 }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL 224 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{\f38\fs20\cf1  'Infoknoten' }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL 224 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{\f38\fs20\cf1  'Blabla'
+\par 2 }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL 224 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{\f38\fs20\cf1  'Zahlenknoten' }{\f38\fs20\cf1 {\field{\*\fldinst SYMBOL 224 \\f "Wingdings" \\s 10}{\fldrslt\f14\fs20}}}{\f38\fs20\cf1  123
+\par 
+\par Ich wei\'df, aus dem Stream lese ich zuerst einen Integerwert. Je nachdem ob ich 1, 2 oder 3 auslese, muss ich noch - nun bekannte - Folgewerte einlesen. So weit so gut, jetzt zum Record.
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b type
+\par }{  rTreeData = }{\b record}{
+\par     Typ: Integer;
+\par     Name: }{\b string}{[255];
+\par     pNodeData: Pointer;
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Aber hallo, jetzt ist da auf einmal ein Pointer im Record? Also, noch ein paar Kommentare dazu:
+\par {\listtext\pard\plain\f38\fs20\cf1 \hich\af38\dbch\af0\loch\f38 1)\tab}}\pard \ql \fi-360\li360\ri0\nowidctlpar\jclisttab\tx360\faauto\ls10\rin0\lin360\itap0 {\f38\fs20\cf1 
+Typ ist ein Integerwert, anhand dessen ich feststellen kann, um welche Art von Knoten es sich handelt. Also, in meinem Beispiel 1, 2 oder 3.
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par {\listtext\pard\plain\f38\fs20\cf1 \hich\af38\dbch\af0\loch\f38 2)\tab}}\pard \ql \fi-360\li360\ri0\nowidctlpar\jclisttab\tx360\faauto\ls10\rin0\lin360\itap0 {\f38\fs20\cf1 Name ist der Name des Knoten - er wird relativ oft ben\'f6
+tigt, weil er ja auch als Text im Baum zu sehen ist und ich m\'f6chte auf diese Information leicht zugreifen k\'f6nnen (Mann, bin ich faul).
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par {\listtext\pard\plain\f38\fs20\cf1 \hich\af38\dbch\af0\loch\f38 3)\tab}}\pard \ql \fi-360\li360\ri0\nowidctlpar\jclisttab\tx360\faauto\ls10\rin0\lin360\itap0 {\f38\fs20\cf1 Der Pointer erm\'f6glicht es mir (\'e4
+hnlich wie die Data-Eigenschaft des Baums) einen Record oder noch besser eine Klasseninstanz damit zu verkn\'fcpfen.
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par Jetzt habe ich nach wie vor die Freiheit eine Basisklasse von Knoten zu definieren. Sie enth\'e4lt dann alle Eigenschaften und Methoden, die alle Klassen gemeinsam haben. Und von ihr kann ich da
+nn die entsprechenden Subklassen ableiten (z.B. Textknoten, Wertknoten usw.). Ein weiterer Vorteil dieses Records ist seine fixe Gr\'f6\'dfe. Daher kann man, falls der Baum beim Hinzuf\'fcgen eines neuen Knotens nach der Gr\'f6\'df
+e der Knotendaten fragt (Eigenschaft 'NodeDataSize'), immer die selbe Gr\'f6\'dfe zur\'fcckliefern. Aber mehr dazu sp\'e4ter.
+\par 
+\par Noch eine Anmerkung:
+\par Will man keine Klassen verwenden, k\'f6nnte man auch einfach 3 Records definieren, die als erstes Element einen Typ definieren und dann je nach Typ unterschiedlich reagieren. 
+\par 
+\par }{\b\f38\fs20\ul\cf1 alternative L\'f6sung:}{\f38\fs20\cf1 
+\par Ja, ich gebe es ja zu. Es w\'e4re nat\'fcrlich auch m\'f6glich, den Typ so wie oben in den Stream zu schreiben und aus dem Stream zu lesen, ohne dass der Typ als Teil des Records gespeichert wird. Der Typ der Knotenklasse ist ja in
+direkt bekannt, weil man eine Klasse ja fragen kann, welchen Klassennamen sie hat (siehe z.B. Klassenfunktion ClassName) bzw. wei\'df die Klasse das ja selbst.
+\par 
+\par Also, ich soll einen Knoten speichern, okay. Ich gebe den Stream weiter an die Methode Knoten.SaveToFile(Stream) und diese Methode schreibt, je nachdem, um welche Knotenklasse es sich tats\'e4
+chlich handelt, automatisch als ersten Wert 1, 2 oder 3 in den Stream.
+\par 
+\par Beim Lesen aus dem Stream lese ich zuerst den Wert 1, 2, oder 3 aus dem Stream aus und entscheide daraufhin, um welche Klasse es sich handelt. Dann erzeuge ich eine Instanz dieser Klasse und rufe ihre Methode LoadFromFile auf.
+\par 
+\par So, diese L\'f6sung gef\'e4llt mir am besten und bevor mir noch eine andere einf\'e4llt, werde ich sie nun gleich implementieren. (Hinweis: in Schritt 5 nehme ich noch eine Ver\'e4nderung vor)
+\par 
+\par }{\f38\fs20\ul\cf1 Also mache ich jetzt folgendes:
+\par }{\f38\fs20\cf1 
+\par Wie man an der Deklaration des 'internen' Knotens eines Virtual Treeviews erkennen kann 
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\lang1031\langfe1031\langnp1031   }{TVirtualNode = }{\b packed}{ }{\b record}{ 
+\par }\pard \s17\ql \li0\ri0\nowidctlpar\tx3119\faauto\rin0\lin0\itap0 {\~\~\~\~Index,\tab }{\cf2 // index of node with regard to its parent}{ 
+\par \~\~\~\~ChildCount: Cardinal;\tab }{\cf2 // number of child nodes}{ 
+\par     ... 
+\par     ... 
+\par \~\~\~\~LastChild: PVirtualNode;\tab }{\cf2 // link to the node's last child...}{ 
+\par }\pard \s17\ql \fi-3119\li3119\ri0\nowidctlpar\tx3119\faauto\rin0\lin3119\itap0 {\~\~\~\~Data: }{\b record}{ }{\b end}{;\tab }{\cf2 // this is a placeholder, each node gets extra\line // data determined by NodeDataSize}{ 
+\par }\pard \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\~\~}{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\f38\lang1031\langfe1031\langnp1031  
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par wird am Ende des Records wieder eine Record-Struktur gespeichert. Welche Struktur das genau ist wird 'indirekt' festgelegt.
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b type
+\par }{  rTreeData = }{\b record}{
+\par }\pard \s17\ql \li0\ri0\nowidctlpar\tx3119\faauto\rin0\lin0\itap0 {    Name: }{\b string}{[255];\tab }{\cf2 // the identifier of the node}{
+\par     ImageIndex: Integer;\tab }{\cf2 // the image index of the node}{
+\par }\pard \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {    pNodeData: Pointer;
+\par   }{\b end}{;}{\f38 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\lang2057\langfe1031\langnp2057 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 soll die Struktur dieses Records sein. Der Virtual Treeview kennt die Struktur eigentlich nicht wirklich, aber er wei
+\'df, wie viel Platz daf\'fcr reserviert werden muss. Woher? Wir teilen ihm das durch 
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\lang1031\langfe1031\langnp1031 myVirtualTree.NodeDataSize := SizeOf(rTreeData); 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par mit.
+\par 
+\par Anmerkung: selbst wenn man nur einen einzigen Wert, wie z.B. einen Pointer als Knotendaten speichern will, wird einfach die Gr\'f6\'dfe, die reserviert werden soll, angegeben.
+\par  
+\par {\listtext\pard\plain\s1 \b\f38\fs28\cf1 \hich\af38\dbch\af0\loch\f38 2\tab}}\pard\plain \s1\ql \fi-432\li432\ri0\keepn\nowidctlpar\jclisttab\tx432\faauto\ls13\outlinelevel0\rin0\lin432\itap0 
+\b\f28\fs28\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\lang1031\langfe1031\langnp1031 Implementierung
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.1\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Ein leerer Baum
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Ich beginne mit einem leeren Baum (zur Entwurfszeit werden noch keine Top-Level-Knoten erzeugt)
+\par 
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\nowidctlpar\jclisttab\tx720\faauto\ls15\rin0\lin720\itap0 {\f38\fs20\cf1 entweder wird ein vorhandener Baum aus einem File eingelesen oder
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}es wird ein Top-Level-Knoten erzeugt
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par Bevor Knoten erzeugt werden, muss nun die Gr\'f6\'dfe f\'fcr die eigenen Knotendaten festgelegt werden. Laut Dokumentation gibt es daf\'fcr 3 M\'f6glichkeiten:
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\nowidctlpar\jclisttab\tx720\faauto\ls17\rin0\lin720\itap0 {\f38\fs20\cf1 im Objektinspektor
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}beim OnGetNodeDataSize-Event
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}oder beim Erzeugen eines Formulars
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par Ich entscheide mich f\'fcr die letzte Variante und werde nun beim Erzeugen des Formulars folgendes tun:
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.FormCreate(Sender: TObject);
+\par }{\b\lang1040\langfe1031\langnp1040 var
+\par }{\lang1040\langfe1031\langnp1040   }{\cf6\lang1040\langfe1031\langnp1040 Node: PVirtualNode;}{\lang1040\langfe1031\langnp1040 
+\par }{\b begin
+\par }{  ...
+\par   }{\cf2 // create tree
+\par }{  }{\cf6 MyTree.NodeDataSize := SizeOf(TTreeData);}{
+\par   }{\b if}{ MyForm.filename = '' }{\b then}{ }{\b begin}{ }{\cf2 // if there is no tree to load
+\par }{    }{\cf2 // create tree with top level node
+\par }{    Node := BookmarkForm.BookmarkTree.}{\cf6 AddChild(nil)}{; }{\cf2 // adds a top level node
+\par }{  }{\b end
+\par }{  }{\b else 
+\par }{  }{\b begin
+\par }{    }{\cf2 // load tree
+\par }{    }{\lang1031\langfe1031\langnp1031 ....
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par ....
+\par 
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\f38\lang1031\langfe1031\langnp1031 \tab 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.2\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Daten f\'fcr den Knoten
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Nach dem Aufruf von AddChild k\'f6nnen nun Daten f\'fcr den Knoten zur Verf\'fcgung gestellt werden. Dazu wird ein Pointer auf den von uns definierten Record erzeugt und \'fcber die Funktion GetNodeData mit der richtigen Adresse belegt. \'dc
+ber diesen Pointer k\'f6nnen wir nun auf die Elemente des Records zugreifen und diese mit Werten belegen.
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b\lang1040\langfe1031\langnp1040 var
+\par }{\lang1040\langfe1031\langnp1040   ...
+\par   NodeData: ^rTreeData;
+\par }{\b begin
+\par }{  ...
+\par   }{\cf2 // determine data for node
+\par }{  NodeData := BookmarkForm.BookmarkTree.GetNodeData(Node);
+\par   NodeData.Name := }{\cf5 'new project'}{;
+\par   }{\lang1031\langfe1031\langnp1031 NodeData.ImageIndex := 0;
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f2    ...
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.3\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Den Knotennamen anzeigen
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Der Name des Knoten soll nun als Knotenbezeichnung im Baum erscheinen. Alle Daten \'fcber den Knoten sind, wie auch der Name, dem VirtualTreeview unbekannt und er muss sie erst erfragen. 
+\par 
+\par Jedes Mal, wenn der Bezeichner des Knotens ben\'f6tigt wird, wird das Ereignis OnGetText ausgel\'f6st. In der Ereignisbehandlungsroutine geben wir den Namen des Knotens in der Variable Text zur\'fcck, mehr ist nicht zu tun.
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TBookmarkForm.BookmarkTreeGetText(Sender: TBaseVirtualTree;
+\par   Node: PVirtualNode; Column: Integer; TextType: TVSTTextType; }{\b var}{ Text: WideString);
+\par }{\b\lang1040\langfe1031\langnp1040 var
+\par }{\lang1040\langfe1031\langnp1040    NodeData: ^rTreeData;
+\par }{\b\lang1040\langfe1031\langnp1040 begin
+\par }{\lang1040\langfe1031\langnp1040   NodeData := Sender.GetNodeData(Node);
+\par 
+\par   }{\cf2 // return identifier of the node
+\par }{  Text := NodeData.Name;
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\f38\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.4\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Das Icon f\'fcr den Knoten
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Weil ich es gerne bunt habe, will ich auch gleich ein Icon f\'fcr den Top-Level-Knoten zur Verf\'fcgung stellen. Daf\'fcr sind folgende Schritte notwendig:
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\nowidctlpar\jclisttab\tx720\faauto\ls18\rin0\lin720\itap0 {\f38\fs20\cf1 ein TImageList auf die Form ziehen und mit Bildern laden
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}die Eigenschaft Images des VirtualTreeviews auf die TImageList zeigen lassen
+\par {\listtext\pard\plain\f2\fs20\cf1 \hich\af2\dbch\af0\loch\f2 o\tab}das Ereignis OnGetImageIndex implementieren
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par Mit dem Ereignis OnGetImageIndex kann der Index festgelegt werden der wiederum bestimmt das wievielte Bild aus der Liste angezeigt werden soll.
+\par 
+\par Da die Methode auch f\'fcr die Zustandsicons aufgerufen wird und ich momentan noch kein Zustandsicon anzeigen will (ich aber bereits eine ImageList mit der Eigenschaft StateImages verkn\'fcpft habe), muss f\'fc
+r diesen Fall (Kind -> ikState) als Index -1 zur\'fcckgegeben werden.
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b\lang1031\langfe1031\langnp1031 procedure}{\lang1031\langfe1031\langnp1031 
+ TBookmarkForm.BookmarkTreeGetImageIndex(Sender: TBaseVirtualTree;
+\par   }{Node: PVirtualNode; Kind: TVTImageKind; Column: Integer; }{\b var}{ Index: Integer);
+\par }{\b\lang1040\langfe1031\langnp1040 var
+\par }{\lang1040\langfe1031\langnp1040    NodeData: ^rTreeData;
+\par }{\b\lang1040\langfe1031\langnp1040 begin
+\par }{\lang1040\langfe1031\langnp1040   NodeData := Sender.GetNodeData(Node);
+\par 
+\par   }{\b case}{ Kind }{\b of}{
+\par     ikState: }{\cf2 // for the case the state icon has been requested}{
+\par       Index := -1;
+\par     ikNormal, ikSelected: }{\cf2 // normal or the selected icon is required}{
+\par       Index := NodeData.ImageIndex;
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par 
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\f38\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Es soll, je nachdem, ob der Knoten selektiert wurde oder nicht, ein anderes Icon angezeigt werden (siehe Schritt 6).
+\par  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.5\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Nur eine Knotenklasse im Record
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Da ich nun diese Mischung von Daten im Record und sp\'e4ter dann Daten in der Knotenklasse vermeiden m\'f6
+chte, habe ich mich entschieden diesen Record
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b type
+\par }{  TTreeData = }{\b record}{
+\par     Name: }{\b string}{[255]; }{\cf2 // the identifier of the node}{
+\par     ImageIndex: Integer; }{\cf2 // the image index of the node}{
+\par     pNodeData: Pointer;
+\par   }{\b end}{;}{\f38 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1\lang2057\langfe1031\langnp2057 
+\par }{\f38\fs20\cf1 in einen Record umzuwandeln, der nur einen Zeiger auf eine Knotenklasse beinhaltet.
+\par Ich deklariere daher zuerst eine Knotenklasse
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\lang1031\langfe1031\langnp1031    }{TBasicNodeData = }{\b class}{
+\par       ...
+\par    }{\b end}{;}{\f38 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1\lang2057\langfe1031\langnp2057 
+\par }{\f38\fs20\cf1 und dann eine Struktur der Form:
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\lang1031\langfe1031\langnp1031   }{rTreeData = }{\b record}{
+\par     BasicND: TBasicNodeData;
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\f38\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1    
+\par Dieses Record belegt also immer 4 Bytes f\'fcr den Zeiger auf die Klasse.
+\par 
+\par Dabei ist besonders Augenmerk auf das Ereignis OnGetText zu lenken. Dieses Ereignis wird schon beim Erzeugen des Knotens mit Tree.AddChild(nil) aufgerufen, um \'fc
+ber einen eventuell vergebenen Text den grafischen Platzbedarf des Knotens zu ermitteln (jedoch nur, wenn keine Spalten erzeugt wurden). Zu diesem Zeitpunkt konnte die Knotenklasse jedoch noch nicht initialisier
+t werden (noch kein Konstruktor Aufruf) und daher muss f\'fcr diesen Fall 
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\lang1031\langfe1031\langnp1031   }{\b if}{ NodeD.BasicND = }{\b nil}{ }{\b then}{ 
+\par     }{\lang1031\langfe1031\langnp1031 Text := ''}{\f38\lang1031\langfe1031\langnp1031  
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par zur\'fcckgegeben werden oder man packt die gesamte Initialisierung in einen BeginUpdate/EndUpdate Block und initialisiert die neuen Knoten bevor EndUpdate ausgef\'fchrt wurde (z.B. mittels }{\f38\fs18\cf1 ValidateNode(Node)}{\f38\fs20\cf1 ).
+\par 
+\par Ohne diese Vorkehrung w\'fcrde man sonst eine Zugriffsverletzung ausl\'f6sen.
+\par 
+\par {\listtext\pard\plain\s3 \b\f38 \hich\af38\dbch\af0\loch\f38 2.5.1\tab}}\pard\plain \s3\ql \fi-720\li720\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls13\ilvl2\outlinelevel2\adjustright\rin0\lin720\itap0 
+\b\f28\fs24\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Beispiel Klassendeklaration
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b\lang1031\langfe1031\langnp1031 unit}{\lang1031\langfe1031\langnp1031  TreeData;
+\par 
+\par }{\b interface}{ 
+\par 
+\par //===========================================
+\par 
+\par }{\b type
+\par }{  }{\cf2 // declare common node class
+\par }{  TBasicNodeData = }{\b class}{
+\par   }{\b protected
+\par }{    cName: ShortString;
+\par     cImageIndex: Integer;
+\par   }{\b public
+\par }{    }{\b constructor}{ Create; }{\b overload}{;
+\par     }{\b constructor}{ Create(vName: ShortString; vIIndex: Integer = 0); }{\b overload}{; 
+\par 
+\par     }{\b property}{ Name: ShortString }{\b read}{ cName }{\b write}{ cName;
+\par     }{\b property}{ ImageIndex: Integer }{\b read}{ cImageIndex }{\b write}{ cImageIndex;
+\par   }{\b end}{;
+\par 
+\par   }{\cf2 // declare new structure for node data
+\par }{  rTreeData = }{\b record}{
+\par     BasicND: TBasicNodeData;
+\par   }{\b end}{;
+\par 
+\par }{\b implementation
+\par }{
+\par }{\b constructor}{ TBasicNodeData.Create;
+\par }{\b begin
+\par }{  }{\cf2 \{ not necessary
+\par    cName := '';
+\par    cImageIndex := 0;
+\par   \}}{
+\par }{\b end}{;
+\par 
+\par }{\b constructor}{ TBasicNodeData.Create(vName: ShortString; vIIndex: Integer = 0);
+\par }{\b begin
+\par }{  cName := vName;
+\par   cImageIndex := vIIndex;
+\par }{\b end}{;
+\par 
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 .
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f2\fs20\cf1  
+\par {\listtext\pard\plain\s3 \b\f38 \hich\af38\dbch\af0\loch\f38 2.5.2\tab}}\pard\plain \s3\ql \fi-720\li720\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls13\ilvl2\outlinelevel2\adjustright\rin0\lin720\itap0 
+\b\f28\fs24\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Beispiel: Erzeugen des Baumes
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f2\fs20\cf1  
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\cf2 // Tree will be created when the form is created.
+\par }{\b procedure}{ TMyForm.FormCreate(Sender: TObject);
+\par }{\b\lang1040\langfe1031\langnp1040 var
+\par }{\lang1040\langfe1031\langnp1040    Node: PVirtualNode;
+\par    }{NodeD: ^rTreeData;
+\par }{\b begin
+\par }{  ....
+\par   }{\cf2 // create tree
+\par }{  MyTree.NodeDataSize := SizeOf(rTreeData);
+\par   }{\b if}{ MainControlForm.filename = }{\cf5 ''}{ }{\b then}{ 
+\par   }{\b begin
+\par }{    }{\cf2 // create tree with top level node
+\par }{    Node := MyTree.AddChild(nil); }{\cf2 // adds a node to the root of the tree}{
+\par     }{\cf2 // assign data for this node
+\par }{    NodeD := MyTree.GetNodeData(Node);
+\par     NodeD.BasicND := TBasicNodeData.Create(}{\cf5 'new project'}{);
+\par   }{\b end
+\par }{  }{\b else 
+\par }{  }{\b begin
+\par }{    }{\cf2 // load tree
+\par }{  }{\b end}{;
+\par   ...
+\par }{\b end}{;
+\par 
+\par 
+\par }{\cf2 \{______________________________MyTree_________________________________\}
+\par }{
+\par 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\cf2\lang2057\langfe1031\langnp2057 // returns the text (the identification) of the node
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.MyTreeGetText(Sender: TBaseVirtualTree;
+\par   Node: PVirtualNode; Column: Integer; TextType: TVSTTextType;
+\par   }{\b var}{ Text: WideString);
+\par }{\b var
+\par }{  NodeD: ^rTreeData;
+\par }{\b begin
+\par }{  NodeD := Sender.GetNodeData(Node);
+\par 
+\par   }{\cf2 // return the identifier of the node
+\par }{  }{\b if}{ NodeD.BasicND = }{\b nil}{ }{\b then}{ 
+\par     Text:=}{\cf5 ''}{
+\par   }{\b else 
+\par }{    Text := NodeD.BasicND.Name;
+\par }{\b end}{;
+\par 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\cf2\lang2057\langfe1031\langnp2057 // returns the index for image display
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.MyTreeGetImageIndex(Sender: TBaseVirtualTree;
+\par   Node: PVirtualNode; Kind: TVTImageKind; Column: Integer; }{\b var}{ Index: Integer);
+\par }{\b var
+\par }{   NodeD: ^rTreeData;
+\par }{\b begin
+\par }{  NodeD := Sender.GetNodeData(Node);
+\par 
+\par   }{\b case}{ Kind }{\b of}{
+\par     ikState: }{\cf2 // for the case the state index has been requested}{
+\par       Index := -1;
+\par     ikNormal, ikSelected: }{\cf2 // normal icon case}{
+\par       Index := NodeD.BasicND.ImageIndex;
+\par   }{\lang1031\langfe1031\langnp1031 end;
+\par 
+\par end;}{\f38\lang1031\langfe1031\langnp1031 
+\par  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.6\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Icons f\'fcr selektierte Knoten
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\lang1031\langfe1031\langnp1031  
+\par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\b\f38\fs20 Wenn ein Knoten selektiert ist, soll ein anderes Symbol angezeigt werden: 
+\par }{\f38\fs20 
+\par Dazu implementiere ich eine neue Methode 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\lang1031\langfe1031\langnp1031   }{\b function}{ GetImageIndex(focus: Boolean): Integer; }{\b virtual}{;
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\lang2057\langfe1031\langnp2057 
+\par }{\f38 die in Abh\'e4ngigkeit davon ob der Knoten den Fokus hat oder nicht, den normalen Bildindex oder den f\'fcr den fokussierten Knoten zur\'fcckliefert.
+\par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20 
+\par Aufruf:
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\lang1031\langfe1031\langnp1031    Index := NodeD.BasicND.GetImageIndex(Node = Sender.FocusedNode);}{
+\lang1031\langfe1031\langnp1031 
+\par }{\f38\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Implementierung der Methode:
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\f38\fs16\lang1031\langfe1031\langnp1031 
+\par }{\b function}{ TBasicNodeData.GetImageIndex(focus: Boolean): Integer;
+\par }{\b begin
+\par }{  }{\b if}{ focus }{\b then}{ 
+\par     Result := cImageIndexFocus
+\par   }{\b else 
+\par }{    Result := cImageIndex;
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par wobei cImageIndex}{\f38\fs16\cf1  }{\f38\fs20\cf1 immer den normalen Index h\'e4lt und cImageIndexFocus}{\f38\fs16\cf1  }{\f38\fs20\cf1 den f\'fcr fokussierte Knoten. Dabei gehe ich davon aus, dass dieser Index immer 1 \'fcber cImageIndex}{\f38\fs16\cf1  
+}{\f38\fs20\cf1 liegt.
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Damit das auch der Fall ist wird der Konstruktor folgenderma\'dfen ge\'e4ndert:
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b constructor}{ TBasicNodeData.Create(vName: ShortString; vIIndex: Integer = 0);
+\par }{\b begin
+\par }{  cName := vName;
+\par   cImageIndex := vIIndex;
+\par   cImageIndexFocus := vIIndex + 1;
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\fs20\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.7\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Knoten hinzuf\'fcgen und l\'f6schen
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par So, damit ich weitere Funktionen implementieren und testen kann, will ich nun endlich die M\'f6glichkeit haben, den Baum aufzubauen. \'dcber ein Kontextmen\'fc soll es m\'f6glich sein, Knoten hinzuzuf\'fcgen und wieder zu entfernen.
+\par 
+\par Also definiere ich ein Popup-Men\'fc mit 2 Eintr\'e4gen: [Hinzuf\'fcgen] und [Entfernen]. Damit bei einem Rechtsklick auch der darunter liegende Knoten den Fokus erh\'e4lt, muss noch die entsprechende Option toRightClickSelect auf True gesetzt werden.
+
+\par 
+\par Wenn also Hinzuf\'fcgen gew\'e4hlt wird, wird f\'fcr den Knoten mit dem Fokus ein Kind-Knoten erzeugt:
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.}{\cf6 addClick }{(Sender: TObject);
+\par }{\b\lang1040\langfe1031\langnp1040 var
+\par }{\lang1040\langfe1031\langnp1040   Node: PVirtualNode;
+\par   }{NodeD: ^rTreeData;
+\par }{\b begin
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\fs18\lang2057\langfe1031\langnp2057   }{\fs18\cf2\lang2057\langfe1031\langnp2057 
+// Ok, a node must be added.
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {  Node := MyTree.}{\cf6 AddChild}{(MyTree.FocusedNode); }{\cf2 // adds a node as the last child}{     
+\par   }{\cf2 // determine data of node
+\par }{  NodeD := MyTree.GetNodeData(Node);
+\par   NodeD.BasicND := TBasicNodeData.Create('Child');
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par }{\b\f38\fs20\ul\cf1 ACHTUNG:}{\f38\fs20\cf1  Was tun, wenn noch kein Knoten den Fokus hat?
+\par }{\f2\fs18\cf1 {\field{\*\fldinst SYMBOL 224 \\f "Wingdings" \\s 9}{\fldrslt\f14\fs18}}}{\f2\fs18\cf1  z.B. den neuen Knoten als Kind eines Top-Level-Knotens einf\'fcgen.
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\lang1031\langfe1031\langnp1031   }{\b if}{ BookmarkTree.FocusedNode = }{\b nil}{ }{\b then}{ 
+\par   }{\b begin}{
+\par     }{\cf2 // insert as child of the first top level node
+\par }{    Node := BookmarkTree.AddChild(BookmarkTree.RootNode.FirstChild);
+\par     }{\cf2 // determine data for node
+\par }{    NodeD := BookmarkTree.GetNodeData(Node);
+\par     NodeD.BasicND := TFolderNodeData.Create(}{\cf5 'new folder'}{);
+\par   }{\b end}{
+\par   }{\b else}{ 
+\par   }{\b begin}{
+\par     }{\cf2 // Ok, a new node must be added.
+\par }{    Node := BookmarkTree.AddChild(BookmarkTree.FocusedNode);
+\par     }{\cf2 // determine data of the node
+\par }{    NodeD := BookmarkTree.GetNodeData(Node);
+\par     NodeD.BasicND := TFolderNodeData.Create(}{\cf5 'new folder'}{);
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par 
+\par Wenn der Knoten mit dem Fokus gel\'f6scht werden soll geschieht folgendes:
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.}{\cf6 delClick }{(Sender: TObject);
+\par }{\b begin}{
+\par   }{\cf2 // The focused node should be removed. The top level must not be deleted however.
+\par }{  }{\b if}{ MyTree.FocusedNode = }{\b nil}{ }{\b then}{
+\par     MessageDlg(}{\cf5 'There was no node selected.'}{, mtInformation, [mbOk], 0)
+\par   }{\b else}{
+\par     }{\cf2 // Note: RootNode is the internal (hidden) root node and parent of all top 
+\par     // level nodes. To determine whether a node is a top level node you also use
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\fs18\lang2057\langfe1031\langnp2057     }{\fs18\cf2\lang2057\langfe1031\langnp2057 
+// GetNodeLevel which returns 0 for top level nodes.
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {  }{\b if}{ MyTree.FocusedNode.Parent = MyTree.RootNode }{\b then}{
+\par     MessageDlg(}{\cf5 'The project node must not be deleted.'}{, mtInformation, [mbOk], 0)
+\par   }{\b else}{ 
+\par     MyTree.}{\cf6 DeleteNode}{(MyTree.FocusedNode);
+\par }{\b\f38\lang1031\langfe1031\langnp1031 end}{\f38\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Ich will jedoch verhindern, das der Top-Level-Knoten gel\'f6scht werden kann. Daher \'fcberpr\'fcfe ich mit dem Vergleich MyTree.FocusedNode.Parent = MyTree.RootNode, ob der Knoten mit dem Fokus nicht auch der Top-Level-Knoten ist. Hier muss man jedoch
+ beachten, dass die Eigenschaft RootNode den (versteckten) internen Rootknoten zur\'fcckgibt, welcher der gemeinsame Vaterknoten aller Top-Level Knoten ist.
+\par 
+\par Da wir schon beim L\'f6schen von Knoten sind: 
+\par Alle Daten im Record werden automatisch freigegeben, soba
+ld das erforderlich ist. In diesem Fall reicht es uns jedoch nicht, wenn der Speicher, den der Pointer auf die Klasse (Objektinstanz) belegt, freigegeben wird, sondern es ist auch erforderlich den Speicherbereich, den die Objektinstanz selbst ben\'f6
+tigt freizugeben. Dies geschieht durch Aufruf des Destruktors beim OnFreeNode Ereignis:
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.MyTreeFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+\par }{\b begin}{
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\fs18\lang2057\langfe1031\langnp2057   }{\fs18\cf2\lang2057\langfe1031\langnp2057 
+// Free here the node data (Note: }{\fs18\cf2\lang2057\langfe1031\langnp2057 type PtreeData = ^rTreeData}{\fs18\cf2\lang2057\langfe1031\langnp2057 ).
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {  }{\lang1040\langfe1031\langnp1040 PTreeData(Sender.GetNodeData(Node)).BasicND.Free;
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;}{\lang1031\langfe1031\langnp1031 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.8\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Ordner und Bl\'e4tter hinzuf\'fcgen
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Jetzt bin ich soweit, um auf der einen Seite Ordner dem Baum hinzuzuf\'fcgen und auf der anderen Seite auch Endknoten, die keine weiteren Kinder haben d\'fcrfen. Daf\'fcr werde ich nun 2 neue Knotenklassen von der Basisklasse ableiten.
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {TFolderNodeData = class(TBasicNodeData)
+\par }{\lang1031\langfe1031\langnp1031 TItemNodeData = class(TBasicNodeData)
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Je nachdem, welche Art von Knoten der Benutzer \'fcber das Kontextmen\'fc  jetzt erzeugen will, speichere ich im Record eine entsprechende Instanz der Klasse.
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {NodeD.BasicND := TFolderNodeData.Create(}{\cf5 'new folder'}{);
+\par NodeD.BasicND := TItemNodeData.Create(}{\cf5 'new node'}{);
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1\lang2057\langfe1031\langnp2057    
+\par }{\f38\fs20\cf1 Die Klassen erhalten eine neue Eigenschaft ChildrenAllowed. Anhand dieser Eigenschaft kann nun unterschieden werden, ob der Knoten mit dem Fokus Kindknoten aufnehmen darf (Ordner) oder nicht (Items).
+\par  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.9\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Baum speichern
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Jetzt kann ich endlich das Speichern des Baums implementieren. \'dcber diesen Schritt habe ich mir schon zu Beginn viele Gedanken gemacht. Mal sehen ob das was gefruchtet hat.
+\par 
+\par Noch mal ein Teil aus }{\field\flddirty{\*\fldinst {\f38\fs20\cf1  HYPERLINK  \\l "_Vorbereitungen" }{\f38\fs20\cf1 {\*\datafield 
+08d0c9ea79f9bace118c8200aa004ba90b0200000008000000100000005f0056006f00720062006500720065006900740075006e00670065006e00000000000000}}}{\fldrslt {\cs15\f38\fs20\ul\cf2 Vorbereitung}}}{\f38\fs20\cf1 :
+\par Ich will einen Knoten speichern, okay. Ich gebe den Stream weiter an die Methode MeineKnotenklasse.SaveToFile und diese Methode schreibt, je nachdem um welche Knotenklasse es sich tats\'e4
+chlich handelt, automatisch als ersten Wert 0, 1 oder 2 als eine Art Klassen ID in den Stream (alternative bietet sich auch eine Enumerationstyp an).
+\par 
+\par Beim Laden lese ich zuerst den Wert 0, 1 oder 2 aus dem Stream aus und entscheide darauf hin, um welche Klasse es sich handelt. Dann erzeuge ich eine Instanz dieser Klasse und rufe ihre Methode LoadFromFile auf.
+\par 
+\par }{\f38\fs20\ul\cf1 Hinweis:}{\f38\fs20\cf1 
+\par Es w\'e4re auch m\'f6glich, anstatt einer ID f\'fcr die Klasse gleich den Klassennamen zu speichern. Beim Lesen und Erzeugen der Instanzen k\'f6
+nnte man die Klassenreferenz und virtuelle Konstruktoren nutzen und so die Case-Anweisung einsparen, wie ich sie im Ereignis OnLoadNode verwende, um zu entscheiden, von welcher Klasse eine Instanz erzeugt werden soll. (Beispiel siehe Delphi 5, von Elmar 
+Warken, Addison-Wesley Verlag - Kapitel 4.3.3, Seite 439)
+\par 
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 
+Bevor etwas gelesen werden kann, muss es geschrieben werden. Daher werde ich zuerst die notwendigen Prozeduren zum Speichern des Baums implementieren. Da wir uns selbst darum k\'fcmmern, dass die Beze
+ichnung des Knotens gespeichert wird, werde ich die StringOptions auf toSaveCaption = False setzen. So werden die Daten nicht doppelt gespeichert.
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Zum Speichern des Baumes wird die Prozedur
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b\lang1031\langfe1031\langnp1031 procedure}{\lang1031\langfe1031\langnp1031  TBaseVirtualTree.}{
+\cf6\lang1031\langfe1031\langnp1031 SaveToFile}{\lang1031\langfe1031\langnp1031 (}{\b\lang1031\langfe1031\langnp1031 const}{\lang1031\langfe1031\langnp1031  FileName: TFileName);
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par aufgerufen. Dadurch wird die Struktur des Baums automatisch gespeichert. Um zus\'e4tzlich unsere Daten mit abzuspeichern existiert das Ereignis OnSaveNode, in dessen Behandlung wir unsere Daten einfach mitspeichern k\'f6nnen.
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b property}{ }{\cf6 OnSaveNode: }{TVTSaveNodeEvent }{\b read}{ FOnSaveNode }{\b write}{ FOnSaveNode;}{\b\fs20 
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1\lang2057\langfe1031\langnp2057 
+\par }{\f38\fs20\cf1 Wird OnSaveNode ausgel\'f6st, wird die Methode SaveNode der entsprechenden Knotendatenklasse aufgerufen:
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TMyForm.MyTreeSaveNode(Sender: TBaseVirtualTree; Node: PVirtualNode;
+\par   Stream: TStream);
+\par }{\b begin}{
+\par   PTreeData(Sender.GetNodeData(Node)).BasicND.}{\cf6 SaveToFile}{(Stream);
+\par }{\b end}{;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs16\cf1\lang2057\langfe1031\langnp2057 
+\par }{\f38\fs20\cf1 In der SaveNode Methode der Klasse werden die Felder wie Knotenname, Image Index usw. im Stream abgelegt:
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TBasicNodeData.SaveNode(Stream: TStream);
+\par }{\b var 
+\par }{  size: Integer;
+\par }{\b begin}{
+\par   }{\cf2 // save type of the node
+\par }{  Stream.Write(Art, SizeOf(Art));
+\par 
+\par   }{\cf2 // store cName
+\par }{  Size := Length(cName) + 1; }{\cf2 // include terminating #0}{
+\par   Stream.Write(Size, SizeOf(Size)); }{\cf2 // store length of the string}{
+\par   Stream.Write(PChar(cName)^, Size); }{\cf2 // now the string itself}{
+\par 
+\par   }{\cf2 // store cImageIndex
+\par }{  Stream.Write(cImageIndex, SizeOf(cImageIndex));
+\par 
+\par   }{\cf2 // store cImageIndexFocus
+\par }{  Stream.Write(cImageIndexFocus, SizeOf(cImageIndexFocus));
+\par 
+\par   }{\cf2 // store cChildrenAllowed 
+\par }{  Stream.Write(cChildrenAllowed, SizeOf(cChildrenAllowed));
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs16\cf1 
+\par }{\f38\fs20\cf1 Jetzt k\'f6nnen wir den Baum, den wir gespeichert haben, auch wieder laden. Dieser Vorgang k\'f6nnte etwa so aussehen:
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b try 
+\par }{  }{\cf2 // load tree
+\par }{  MyTree.LoadFromFile(MainControlForm.Filename);
+\par }{\b except}{
+\par   on E: Exception }{\b do}{ 
+\par   }{\b begin}{
+\par     Application.MessageBox(PChar(E.Message), PChar(}{\cf5 'Error while loading.'}{), MB_OK);
+\par     MainControlForm.Filename := }{\cf5 ''}{;
+\par 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\lang2057\langfe1031\langnp2057     }{\cf2\lang2057\langfe1031\langnp2057 
+// create tree with top level node (since loading failed)
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {    Node := MyTree.AddChild(}{\b nil}{);
+\par     NodeD := MyTree.GetNodeData(Node);
+\par     NodeD.BasicND := TBasicNodeData.Create(}{\cf5 'new project'}{);
+\par   }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs16\cf1      
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Durch den Aufruf von LoadFromFile wird das Ereignis OnLoadNode ausgel\'f6
+st und somit wird die Methode LoadNode aufgerufen:
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs16\cf1    
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TBasicNodeData.LoadNode(Stream: TStream);
+\par }{\b var}{ 
+\par   Size: Integer;
+\par   StrBuffer: PChar;
+\par }{\b begin}{
+\par   }{\cf2 // load cName}{
+\par   Stream.Read(Size, SizeOf(Size)); }{\cf2 // length of the string}{
+\par 
+\par   StrBuffer := AllocMem(Size); }{\cf2 // get temporary memory}{
+\par   Stream.Read(StrBuffer^, Size); }{\cf2 // read the string}{
+\par   cName := StrBuffer; 
+\par }\pard\plain \s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f2\fs20\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\fs18\lang2057\langfe1031\langnp2057   FreeMem(StrBuffer);
+\par   }{\fs18\cf2\lang2057\langfe1031\langnp2057 // Alternatively you can simply use: 
+\par   // SetLength(cName, Size);
+\par   // Stream.Read(PChar(cName)^, Size);}{\fs18\lang2057\langfe1031\langnp2057 
+\par 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {  }{\cf2 // load cImageIndex 
+\par }{  Stream.Read(cImageIndex, SizeOf(cImageIndex));
+\par 
+\par   }{\cf2 // load cImageIndexFocus
+\par }{  Stream.Read(cImageIndexFocus, SizeOf(cImageIndexFocus));
+\par 
+\par   }{\cf2 // load cChildrenAllowed
+\par }{  Stream.Read(cChildrenAllowed, SizeOf(cChildrenAllowed));
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs16\cf1   
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.10\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Zwei Spalten in der Baumansicht
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Ich m\'f6chte jetzt 2 Spalten im Treeview anzeigen. Daf\'fcr lege ich zun\'e4chst im Objektinspektor die neuen Eigenschaften des Baums fest.
+\par 
+\par \'dcber Header.Columns k\'f6nnen durch Doppelklick die gew\'fcnschten Spalten erzeugt werden. Danach muss nur mehr Header.Options.hoVisible = True gesetzt werden und die Spalten erscheinen im Treeview.
+\par 
+\par Nachdem alle sonst gew\'fcnschten Einstellungen vorgenommen worden sind, kann jetzt der Text bzw. das Icon f\'fc
+r die jeweilige Spalte angegeben werden. Das geschieht in den schon vorhandenen Ereignissen OnGetText und OnGetImageIndex, wo nun auch noch auf den \'fcbergebenen Spaltenindex R\'fccksicht genommen werden muss.
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b\lang1031\langfe1031\langnp1031 procedure}{\lang1031\langfe1031\langnp1031  TMyForm.MyTree}{
+\cf6\lang1031\langfe1031\langnp1031 GetText}{\lang1031\langfe1031\langnp1031 (Sender: TBaseVirtualTree; Node: PVirtualNode; 
+\par   Column: Integer; TextType: TVSTTextType; }{\b\lang1031\langfe1031\langnp1031 var}{\lang1031\langfe1031\langnp1031  Text: WideString);
+\par }{\b var}{
+\par   NodeD: ^rTreeData;
+\par }{\b begin}{
+\par   NodeD := Sender.GetNodeData(Node);
+\par 
+\par   }{\cf2 // return the the identifier of the node
+\par }{  }{\b if}{ NodeD.BasicND = }{\b nil}{ }{\b then}{ 
+\par     Text := }{\cf5 ''}{
+\par   }{\b else}{ 
+\par   }{\b begin}{
+\par     }{\b\cf6 case}{\cf6  Column }{\b\cf6 of}{
+\par       -1,
+\par       0: }{\cf2 // main column, -1 if columns are hidden, 0 if they are shown}{
+\par         Text := NodeD.BasicND.Name;
+\par       1: 
+\par         Text := }{\cf5 'This text appears in column 2.'}{;
+\par     }{\b end}{;
+\par   }{\b end}{;
+\par }{\b end}{;
+\par }{\f38 
+\par }{\b procedure}{ TMyForm.MyTree}{\cf6 GetImageIndex}{(Sender: TBaseVirtualTree; Node: PVirtualNode;
+\par   Kind: TVTImageKind; Column: Integer; }{\b var}{ Index: Integer);
+\par }{\b var}{
+\par   NodeD: ^rTreeData;
+\par }{\b begin}{
+\par   NodeD := Sender.GetNodeData(Node);
+\par 
+\par   }{\b if}{ }{\cf6 Column = 0}{ }{\b then}{ }{\cf2 // icons only in the first column}{
+\par     }{\b case}{ Kind }{\b of}{
+\par       ikState:
+\par         Index := -1;
+\par       ikNormal, ikSelected: 
+\par         Index := NodeD.BasicND.GetImageIndex(Node = Sender.FocusedNode);
+\par       ikOverlay: }{\cf2 // e.g. to mark a node whose content changed, 
+\par                  // Note: don\rquote t forget to call ImageList.Overlay for the image.}{
+\par         }{\b if}{ NodeD.BasicND.ImageIndex = 4 }{\b then}{ 
+\par           Index := 6;
+\par     }{\b end}{;
+\par }{\b end}{;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1\lang2057\langfe1031\langnp2057  
+\par {\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.11\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 
+\b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Zugriff auf die Spalten
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Den Zugriff auf die Spalten eines TVirtualStringTrees m\'f6chte ich anhand eines Beispiels demonstrieren. Um wie im }{\field\flddirty{\*\fldinst {\f38\fs20\cf1  HYPERLINK  \\l "_Globale_Baum-Einstellungen" }{\f38\fs20\cf1 {\*\datafield 
+08d0c9ea79f9bace118c8200aa004ba90b02000000080000001c0000005f0047006c006f00620061006c0065005f004200610075006d002d00450069006e007300740065006c006c0075006e00670065006e000000000000}}}{\fldrslt {\cs15\f38\fs20\ul\cf2 Punkt 2.12}}}{\f38\fs20\cf1 
+ globale Einstellungen im Tree zu speichern will ich die Weite einer Spalte erfahren. Diese Information aktualisiere ich immer, wenn es ein OnColumnResize Ereignis gibt:
+\par }{\f38\fs16\cf1 
+\par }\pard\plain \s17\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f2\fs18\cf1\lang2057\langfe1031\cgrid\langnp2057\langfenp1031 {\b procedure}{ TBookmarkForm.BookmarkTreeColumnResize(Sender: TBaseVirtualTree;
+\par   Column: Integer);
+\par }{\b var}{
+\par   NodeD: PTreeData;
+\par }{\b begin}{
+\par   NodeD := Sender.GetNodeData(Sender.RootNode.FirstChild);
+\par 
+\par   }{\cf2 // Keep the new size of the column in the project node.
+\par }{  TProjectNodeData(NodeD.BasicND).SetHColumnsWidth(
+\par     }{\b\cf6 TVirtualStringTree(Sender)}{.Header.Columns.Items[Column].Width,Column);
+\par }{\b\lang1031\langfe1031\langnp1031 end}{\lang1031\langfe1031\langnp1031 ;
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Der spannende Teil ist die Typumwandlung des Sender-Objekts. Im TBaseVirtualTree ist die Header-Property noch protected und erst durch die Umwandlung in TVirtualStringTree kann auf sie zugegriffen werden.
+\par 
+\par {\*\bkmkstart _Globale_Baum_Einstellungen}{\*\bkmkend _Globale_Baum_Einstellungen}{\listtext\pard\plain\s2 \b\i\f38\fs28 \hich\af38\dbch\af0\loch\f38 2.12\tab}}\pard\plain \s2\ql \fi-576\li576\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx576\aspalpha\aspnum\faauto\ls13\ilvl1\outlinelevel1\adjustright\rin0\lin576\itap0 \b\i\f28\fs28\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 Globale Baum-Einstellungen
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1  
+\par Globale Einstellungen, wie z.B. die Gr\'f6\'dfen der Spalten, die im Projekt eingestellt waren, werden als Eigenschaften des einzigen Top-Level-Knotens gespeichert. Er enth\'e4lt somit alle projektbezogenen Einstellungen.
+\par 
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 
+Damit nicht alle abgeleiteten Klassen diese Felder erben wird der Top-Level-Knoten jetzt aus einer neuen Projektknotenklasse gebildet, die von der Basisknotenklasse abgeleitet wird.
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 
+\par Die neue Hierarchie sieht nun so aus:
+\par }\pard \ql \li0\ri0\nowidctlpar\tx142\tx284\tx426\tx3261\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 \'bb\tab Basis-Knotenklasse...\tab vereint Eigenschaften aller Knoten
+\par }\pard\plain \s16\ql \li0\ri0\nowidctlpar\tx142\tx284\tx426\tx3261\faauto\rin0\lin0\itap0 \f28\fs20\cf1\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38 \tab \'bb\tab Projekt-Knotenklasse...\tab 
+bereichert die Basis vor allem um die Verwaltung projektbezogener Einstellungen
+\par }\pard\plain \ql \li0\ri0\nowidctlpar\tx142\tx284\tx426\tx3261\faauto\rin0\lin0\itap0 \f28\fs22\lang1031\langfe1031\cgrid\langnp1031\langfenp1031 {\f38\fs20\cf1 \tab \'bb\tab Ordner-Knotenklasse...\tab bereichert die Basis um Default-Eigenschaften f\'fc
+r alle Blattknoten
+\par \tab \tab \'bb\tab Blatt-Knotenklasse...\tab die eigentliche Knotenklasse (spezielle Eigenschaften)
+\par }\pard \ql \li0\ri0\nowidctlpar\faauto\rin0\lin0\itap0 {\f38\fs20\cf1 
+\par Da es sich hier schon um sehr anwendungsspezifische Programmdetails handelt, will ich nur kurz einige Anmerkungen dazu machen.
+\par 
+\par Die Basis-Knotenklasse besitzt bereits die F\'e4higkeit Knotendaten zu speichern. Diese Methoden m\'fcssen als virtual deklariert werden. Genau diese Methoden werden dann durch die Deklaration override in der Projekt-Knotenklasse \'fc
+berschrieben, um das Speichern der Projektdaten zu realisieren.
+\par 
+\par So, jetzt bin ich soweit, um mit dem VirtualTreeview arbeiten zu k\'f6nnen. Interessant wird es sp\'e4ter noch einmal, wenn ich versuche Daten aus anderen Anwendungen in den Tree zu ziehen. Aber das ist eine andere Geschichte... 
+\par }}

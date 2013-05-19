@@ -1,0 +1,62 @@
+@@DragDrop.htm
+<TITLE Drag'n drop and clipboard handling>
+
+One important aspect for system integration under Windows is the ability to use OLE (object linking and embedding) to
+transfer data from and to other applications. Unfortunately this is a dark chapter in Delphi's feature list because there
+has never been support for either OLE drag'n drop or OLE clipboard handling (until Delphi 6 at least). Instead a
+proprietary mechanism had been invented which is not at all compatible with the rest of the system.
+
+
+
+* Drag'n drop *
+Virtual Treeview supports both kinds of drag'n drop (VCL and OLE) and tries to present a single interface to the
+application. This means that those (already existing) events which can be reused are used in the process (like
+OnStartDrag and OnEndDrag). Other events however differ significantly from the VCL variants because of the additional
+information available during OLE drag'n drop. These events are OnDragOver and OnDragDrop. Read there for a detail
+\description of the parameters. Since in a VCL drag'n drop operation the source is always known as being a VCL control it
+is relatively easy to determine the participants. This however is not very data-oriented and OLE drag'n drop focuses
+exactly on this issue. In such an operation a so called data object is passed to the receiver which is a COM interface
+(IDataObject) and can be used to retrieve the dragged data in various formats.
+
+To accept OLE drag'n drop an application has basically the same steps to perform as always used for VCL drag'n drop plus
+some extra work to handle the different data coming in during the drop event. Usually there is an event handler for
+OnDragOver which tells not only whether dropping is allowed on a particular position but also which effect should then
+take place. Allowed effects are copy, move and link. This is the first new aspect which is not possible with VCL drag'n
+drop. As always the real work must be done in the drop event and Virtual Treeview supports processing its own native data
+format (which is a stream of chunks to represent the tree structure) by a special method called ProcessDrop. Note that
+this method can only be used for the internal format and does not process other formats like text or images. From this
+information you can easily conclude that a lot of other formats can be passed around with the mighty OLE drag'n drop
+mechanism. It is however out of the scope of this help to describe how this mechanism works or to give an overview of
+possible data formats. Please read the Win32 SDK documentation as it comes with your Delphi copy or browse the MSDN
+\online documents at MSDN online for a detailed description. The only interesting aspect you should keep in mind at the
+moment is that the data object used in a drag'n drop operation is the same as used for OLE clipboard data. Hence you can
+share code for handling of both and you don't have to learn different ways or data structures.
+
+
+
+* Step by step *
+The typical approach to determine how to handle data during the drop event in Virtual Treeview is as follows:
+
+    * If the given data object is nil then the source of the drag operation is the VCL and you have to figure out
+      yourself what and how to process the drop. The other parameters contain also mostly useful data (Effects is set to
+      default values however). Read more details at OnDragDrop.
+    * With a valid data object you know OLE data is being passed. Check the source parameter to learn whether a Virtual
+      Treeview is the source or something else. Although further processing can successfully be done without this information
+      it is still useful if you want to optimize data transition and source as well as target tree are in the same process (in
+      which case source memory can be accessed from the target tree).
+    * Loop through the given formats list to find a format you can handle. Since it is recommended to sort this list so
+      that preferred formats come first you can simply accept the first format you find in the array which you are able to
+      handle. With a Virtual Treeview as source usually already the second entry represents the native format (the first is a
+      special reference format which is not useful for an application) and can be passed to ProcessDrop. The native format is
+      registered as CF_VIRTUALTREE while other typical formats include CF_TEXT or CF_HDROP. Note that, because Virtual Treeview
+      is already OLE drag'n drop aware, you do not need to register its window for accepting file drops. If the user drops
+      files onto a Virtual Treeview window you will get the CF_HDROP format in the format list passed to OnDragDrop.
+    * Depending on the data formats you might want to take various actions. For the native tree format you will likely
+      want <B>ProcessDrop</B> to handle the data. If you made sure source and target tree are in the same application (process)
+      you can even omit the entire handling and simply call MoveTo or CopyTo.
+    * If you do not call any tree method or handle the dropped data somehow yourself nothing will happen. No data will be
+      added.
+
+Summary
+Virtual Treeview behaves also well when it comes to data exchange with other applications or structural manipulations
+using the mouse. In both cases the prerred method is using OLE. Read here why and what's behind it.
