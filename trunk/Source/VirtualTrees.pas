@@ -2575,6 +2575,8 @@ type
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
     function GetRangeX: Cardinal;
+    function GetDoubleBuffered: Boolean;
+    procedure SetDoubleBuffered(const Value: Boolean);
   protected
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -3240,6 +3242,7 @@ type
     property VisibleCount: Cardinal read FVisibleCount;
     property VisiblePath[Node: PVirtualNode]: Boolean read GetVisiblePath write SetVisiblePath;
     property UpdateCount: Cardinal read FUpdateCount;
+    property DoubleBuffered: Boolean read GetDoubleBuffered write SetDoubleBuffered default True;
   end;
 
 
@@ -14092,7 +14095,7 @@ begin
   FHeader := GetHeaderClass.Create(Self);
 
   // we have an own double buffer handling
-  DoubleBuffered := False;
+  inherited DoubleBuffered := False;
 
   FCheckImageKind := ckSystemDefault;
   FCheckImages := SystemCheckImages;
@@ -16531,6 +16534,18 @@ begin
     if FUpdateCount = 0 then
       InvalidateNode(Node);
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetDoubleBuffered(const Value: Boolean);
+begin
+  // empty by intention, we do our own buffering
+end;
+
+function TBaseVirtualTree.GetDoubleBuffered: Boolean;
+begin
+  Result := True; // we do our own buffering
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
