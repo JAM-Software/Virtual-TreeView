@@ -2406,6 +2406,7 @@ type
     FSetOrRestoreBevelKindAndBevelWidth: Boolean;
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMBorderChanged(var Message: TMessage); message CM_BORDERCHANGED;
+    procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
     {$ifend}
 
     procedure AdjustCoordinatesByIndent(var PaintInfo: TVTPaintInfo; Indent: Integer);
@@ -16543,6 +16544,8 @@ begin
   // empty by intention, we do our own buffering
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetDoubleBuffered: Boolean;
 begin
   Result := True; // we do our own buffering
@@ -17480,14 +17483,18 @@ begin
     FSavedBorderWidth := BorderWidth;
   end;
 end;
-{$IFEND}
 
- {$if CompilerVersion >= 23 }
 procedure TBaseVirtualTree.CMStyleChanged(var Message: TMessage);
 begin
   VclStyleChanged;
   RecreateWnd;
 end;
+
+procedure TBaseVirtualTree.CMParentDoubleBufferedChange(var Message: TMessage);
+begin
+  // empty by intention, we do our own buffering
+end;
+
 {$ifend}
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18013,7 +18020,6 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.CMSysColorChange(var Message: TMessage);
 
 begin
