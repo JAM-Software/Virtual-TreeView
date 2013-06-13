@@ -2745,6 +2745,7 @@ type
     function GetHintWindowClass: THintWindowClass; virtual;
     procedure GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex;
       DefaultImages: TCustomImageList); virtual;
+    function GetNodeImageSize(Node: PVirtualNode): TSize; virtual;
     function GetMaxRightExtend: Cardinal; virtual;
     procedure GetNativeClipboardFormats(var Formats: TFormatEtcArray); virtual;
     function GetOperationCanceled: Boolean;
@@ -14326,7 +14327,7 @@ begin
     if ShowImages or ShowStateImages then
     begin
       if ShowImages then
-        VAlign := FImages.Height
+        VAlign := GetNodeImageSize(Node).cy
       else
         VAlign := FStateImages.Height;
       VAlign := MulDiv((Integer(NodeHeight[Node]) - VAlign), Node.Align, 100) + VAlign div 2;
@@ -14518,7 +14519,6 @@ var
   NodeWidth,
   Dummy: Integer;
   MinY, MaxY: Integer;
-  ImageOffset,
   StateImageOffset: Integer;
   IsInOldRect,
   IsInNewRect: Boolean;
@@ -14544,10 +14544,6 @@ begin
   WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithImages := Assigned(FImages);
-  if WithImages then
-    ImageOffset := FImages.Width + 2
-  else
-    ImageOffset := 0;
   WithStateImages := Assigned(FStateImages);
   if WithStateImages then
     StateImageOffset := FStateImages.Width + 2
@@ -14578,7 +14574,7 @@ begin
       if WithCheck and (Run.CheckType <> ctNone) then
         Inc(TextLeft, CheckOffset);
       if WithImages and HasImage(Run, ikNormal, MainColumn) then
-        Inc(TextLeft, ImageOffset);
+        Inc(TextLeft, GetNodeImageSize(run).cx + 2);
       if WithStateImages and HasImage(Run, ikState, MainColumn) then
         Inc(TextLeft, StateImageOffset);
       // Ensure the node's height is determined.
@@ -14700,7 +14696,6 @@ var
   NodeWidth,
   Dummy: Integer;
   MinY, MaxY: Integer;
-  ImageOffset,
   StateImageOffset: Integer;
   IsInOldRect,
   IsInNewRect: Boolean;
@@ -14728,10 +14723,6 @@ begin
   WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithImages := Assigned(FImages);
-  if WithImages then
-    ImageOffset := FImages.Width + 2
-  else
-    ImageOffset := 0;
   WithStateImages := Assigned(FStateImages);
   if WithStateImages then
     StateImageOffset := FStateImages.Width + 2
@@ -14762,7 +14753,7 @@ begin
       if WithCheck and (Run.CheckType <> ctNone) then
         Dec(TextRight, CheckOffset);
       if WithImages and HasImage(Run, ikNormal, MainColumn) then
-        Dec(TextRight, ImageOffset);
+        Dec(TextRight, GetNodeImageSize(run).cx + 2);
       if WithStateImages and HasImage(Run, ikState, MainColumn) then
         Dec(TextRight, StateImageOffset);
       // Ensure the node's height is determined.
@@ -20625,7 +20616,7 @@ begin
         else
         begin
           if Assigned(FImages) and HasImage(HitInfo.HitNode, ikNormal, HitInfo.HitColumn) then
-            Inc(ImageOffset, FImages.Width + 2);
+            Inc(ImageOffset, GetNodeImageSize(HitInfo.HitNode).cx + 2);
           if Offset < ImageOffset then
             Include(HitInfo.HitPositions, hiOnNormalIcon)
           else
@@ -20762,7 +20753,7 @@ begin
         else
         begin
           if Assigned(FImages) and HasImage(HitInfo.HitNode, ikNormal, HitInfo.HitColumn) then
-            Dec(ImageOffset, FImages.Width + 2);
+            Dec(ImageOffset, GetNodeImageSize(HitInfo.HitNode).cx + 2);
           if Offset > ImageOffset then
             Include(HitInfo.HitPositions, hiOnNormalIcon)
           else
@@ -23434,6 +23425,23 @@ begin
       ImageInfo[InfoIndex].Images := CustomImages
     else
       ImageInfo[InfoIndex].Images := DefaultImages;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNodeImageSize(Node: PVirtualNode): TSize;
+
+  // Returns the size of an image
+  // Override if you need different sized images for certain nodes.
+begin
+  if Assigned(fImages) then begin
+    Result.cx := fImages.Width;
+    Result.cy := FImages.Height;
+  end
+  else begin
+    Result.cx := 0;
+    Result.cy := 0;
   end;
 end;
 
@@ -28436,7 +28444,7 @@ begin
     if Assigned(FStateImages) and HasImage(Node, ikState, Column) then
       Inc(Offset, FStateImages.Width + 2);
     if Assigned(FImages) and HasImage(Node, ikNormal, Column) then
-      Inc(Offset, FImages.Width + 2);
+      Inc(Offset, GetNodeImageSize(Node).cx + 2);
 
     // Offset contains now the distance from the left or right border of the rectangle (depending on bidi mode).
     // Now consider the alignment too and calculate the final result.
@@ -31934,7 +31942,7 @@ begin
                           begin
                             GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal, FImages);
                             if ImageInfo[iiNormal].Index > -1 then
-                              AdjustImageBorder(FImages, BidiMode, VAlign, ContentRect, ImageInfo[iiNormal]);
+                              AdjustImageBorder(ImageInfo[iiNormal].Images, BidiMode, VAlign, ContentRect, ImageInfo[iiNormal]);
                           end
                           else
                             ImageInfo[iiNormal].Index := -1;
