@@ -141,7 +141,7 @@ object AlignForm: TAlignForm
         BiDiMode = bdLeftToRight
         Color = clWindow
         ImageIndex = 20
-        Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring]
+        Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 0
         Spacing = 10
         Width = 189
@@ -154,7 +154,7 @@ object AlignForm: TAlignForm
         BiDiMode = bdLeftToRight
         Color = clWindow
         ImageIndex = 35
-        Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring]
+        Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 1
         Spacing = 10
         Width = 159
@@ -167,7 +167,7 @@ object AlignForm: TAlignForm
         BiDiMode = bdRightToLeft
         Color = clWindow
         ImageIndex = 32
-        Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring]
+        Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 2
         Spacing = 10
         Width = 213
@@ -184,7 +184,6 @@ object AlignForm: TAlignForm
     Height = 24
     Style = csDropDownList
     Anchors = [akLeft, akBottom]
-    ItemHeight = 16
     TabOrder = 1
     OnChange = AlignComboChange
     Items.Strings = (
@@ -200,7 +199,6 @@ object AlignForm: TAlignForm
     Height = 24
     Style = csDropDownList
     Anchors = [akBottom]
-    ItemHeight = 16
     TabOrder = 2
     OnChange = AlignComboChange
     Items.Strings = (
@@ -216,7 +214,6 @@ object AlignForm: TAlignForm
     Height = 24
     Style = csDropDownList
     Anchors = [akRight, akBottom]
-    ItemHeight = 16
     TabOrder = 3
     OnChange = AlignComboChange
     Items.Strings = (
@@ -330,7 +327,6 @@ object AlignForm: TAlignForm
     Height = 24
     Style = csDropDownList
     Anchors = [akLeft, akBottom]
-    ItemHeight = 16
     TabOrder = 8
     OnChange = LayoutComboChange
     Items.Strings = (

@@ -1,3 +1,8 @@
+- Fixed issue #206: Column painting issue with coWrapCaption in Options
+- Fixed issue #336 by ignoring PARENTDOUBLEBUFFEREDCHANGED message.
+- Fixed issue #342 by adding a new implementation of the VCL's DoubleBuffered property.
+  The inherited DoubleBuffered property of TWinControl must not be set to True!
+
 V5.1.3: (17 Apr 2013)
 - Fixed #340: GetHitTestInfoAt on right border of fixed column.
 - Fixed #337: Cannot "grab" item for dragging, odd behaviour of multi selecting with the selection
