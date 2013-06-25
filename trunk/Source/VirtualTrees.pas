@@ -2195,6 +2195,7 @@ type
     FDropTargetNode: PVirtualNode;               // node currently selected as drop target
     FLastDropMode: TDropMode;                    // set while dragging and used to track changes
     FDragSelection: TNodeArray;                  // temporary copy of FSelection used during drag'n drop
+    FLastDragEffect: LongInt;                    // The last executed drag effect
     FDragType: TVTDragType;                      // used to switch between OLE and VCL drag'n drop
     FDragImage: TVTDragImage;                    // drag image management
     FDragWidth,
@@ -2850,6 +2851,7 @@ type
     property DragImageKind: TVTDragImageKind read FDragImageKind write FDragImageKind default diComplete;
     property DragOperations: TDragOperations read FDragOperations write FDragOperations default [doCopy, doMove];
     property DragSelection: TNodeArray read FDragSelection;
+    property LastDragEffect: LongInt read FLastDragEffect;
     property DragType: TVTDragType read FDragType write FDragType default dtOLE;
     property DragWidth: Integer read FDragWidth write FDragWidth default 200;
     property DrawSelectionMode: TVTDrawSelectionMode read FDrawSelectionMode write FDrawSelectionMode
@@ -3497,6 +3499,7 @@ type
   public
     property Canvas;
     property RangeX;
+    property LastDragEffect;
   published
     property AccessibleName;
     property Action;
@@ -3763,6 +3766,7 @@ type
     function GetOptionsClass: TTreeOptionsClass; override;
   public
     property Canvas;
+    property LastDragEffect;
   published
     property Action;
     property Align;
@@ -14118,6 +14122,7 @@ begin
   FDefaultPasteMode := amAddChildLast;
   FMargin := 4;
   FTextMargin := 4;
+  FLastDragEffect := DROPEFFECT_NONE;
   FDragType := dtOLE;
   FDragHeight := 350;
   FDragWidth := 200;
@@ -21403,7 +21408,6 @@ procedure TBaseVirtualTree.DoDragging(P: TPoint);
   //--------------- end local function ----------------------------------------
 
 var
-  DragEffect,
   AllowedEffects: LongInt;
   DragObject: TDragObject;
 
@@ -21445,10 +21449,10 @@ begin
 
     FLastDropMode := dmOnNode;
     // Don't forget to initialize the result. It might never be touched.
-    DragEffect := DROPEFFECT_NONE;
+    FLastDragEffect := DROPEFFECT_NONE;
     AllowedEffects := GetDragOperations;
     try
-      DragAndDrop(AllowedEffects, DataObject, DragEffect);
+      DragAndDrop(AllowedEffects, DataObject, FLastDragEffect);
       DragManager.ForceDragLeave;
     finally
       GetCursorPos(P);
@@ -21458,7 +21462,7 @@ begin
       FDragImage.EndDrag;
 
       // Finish the operation.
-      if (DragEffect = DROPEFFECT_MOVE) and (toAutoDeleteMovedNodes in TreeOptions.AutoOptions) then
+      if (FLastDragEffect = DROPEFFECT_MOVE) and (toAutoDeleteMovedNodes in TreeOptions.AutoOptions) then
       begin
         // The operation was a move so delete the previously selected nodes.
         DeleteSelectedNodes;
