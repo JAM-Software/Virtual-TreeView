@@ -29260,8 +29260,8 @@ var
   NodeLeft,
   TextLeft,
   CurrentWidth: Integer;
+  AssumeImage: Boolean;
   WithCheck,
-  WithImages,
   WithStateImages: Boolean;
   CheckOffset,
   ImageOffset,
@@ -29282,12 +29282,6 @@ begin
     if Assigned(FOnBeforeGetMaxColumnWidth) then
       FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
 
-    // Don't check the event here as descendant trees might have overriden the DoGetImageIndex method.
-    WithImages := Assigned(FImages);
-    if WithImages then
-      ImageOffset := FImages.Width + 2
-    else
-      ImageOffset := 0;
     WithStateImages := Assigned(FStateImages);
     if WithStateImages then
       StateImageOffset := FStateImages.Width + 2
@@ -29332,13 +29326,16 @@ begin
     else
       LastNode := nil;
 
+    AssumeImage := False;
     while Assigned(Run) and not OperationCanceled do
     begin
       TextLeft := NodeLeft;
       if WithCheck and (Run.CheckType <> ctNone) then
         Inc(TextLeft, CheckOffset);
-      if WithImages and HasImage(Run, ikNormal, Column) then
-        Inc(TextLeft, ImageOffset);
+      if Assigned(fImages) and (AssumeImage or HasImage(Run, ikNormal, Column)) then begin
+        TextLeft := TextLeft + GetNodeImageSize(Run).cx + 2;
+        AssumeImage := True;// From now on, assume that the nodes do ave an image
+      end;
       if WithStateImages and HasImage(Run, ikState, Column) then
         Inc(TextLeft, StateImageOffset);
 
