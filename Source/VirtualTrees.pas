@@ -12624,6 +12624,8 @@ begin
                   // WM_NCLBUTTONDBLCLK
                   Button := mbLeft;
               end;
+              if Button = mbLeft then
+                Columns.AdjustDownColumn(P);
               FColumns.HandleClick(P, Button, True, True);
             end;
       end;
