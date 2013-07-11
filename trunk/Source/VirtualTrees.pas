@@ -6101,7 +6101,7 @@ begin
   IsWinVistaOrAbove := (Win32MajorVersion >= 6);
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
-  NeedToUnitialize := Succeeded(OleInitialize(nil));
+  NeedToUnitialize := not IsLibrary and Succeeded(OleInitialize(nil));
 
   // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
   CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
