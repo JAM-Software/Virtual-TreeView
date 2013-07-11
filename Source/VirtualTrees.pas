@@ -3039,10 +3039,6 @@ type
     property OnUpdating: TVTUpdatingEvent read FOnUpdating write FOnUpdating;
   public
     constructor Create(AOwner: TComponent); override;
-    {$if CompilerVersion >= 23 }
-    class constructor Create;
-    class destructor Destroy;
-    {$ifend}
     destructor Destroy; override;
 
     function AbsoluteIndex(Node: PVirtualNode): Cardinal;
@@ -6172,6 +6168,7 @@ begin
   // Predefined clipboard formats. Just add them to the internal list.
   RegisterVTClipboardFormat(CF_TEXT, TCustomVirtualStringTree, 100);
   RegisterVTClipboardFormat(CF_UNICODETEXT, TCustomVirtualStringTree, 95);
+  {$if CompilerVersion >= 23}TCustomStyleEngine.RegisterStyleHook(TBaseVirtualTree, TVclStyleScrollBarsHook);{$ifend}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6205,6 +6202,8 @@ begin
 
   if NeedToUnitialize then
     OleUninitialize;
+
+  {$if CompilerVersion >= 23}TCustomStyleEngine.UnRegisterStyleHook(TBaseVirtualTree,  TVclStyleScrollBarsHook);{$ifend}
 
   // If VT is used in a package and its special hint window was used then the last instance of this
   // window is not freed correctly (bug in the VCL). We explicitely tell the application to free it
@@ -20351,18 +20350,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
- {$if CompilerVersion >= 23 }
-class constructor TBaseVirtualTree.Create;
-begin
-  TCustomStyleEngine.RegisterStyleHook(TBaseVirtualTree, TVclStyleScrollBarsHook);
-end;
-
-class destructor TBaseVirtualTree.Destroy;
-begin
-  TCustomStyleEngine.UnRegisterStyleHook(TBaseVirtualTree,  TVclStyleScrollBarsHook);
-end;
-{$ifend}
-
 procedure TBaseVirtualTree.CreateParams(var Params: TCreateParams);
 
 const
@@ -29285,7 +29272,6 @@ var
   WithCheck,
   WithStateImages: Boolean;
   CheckOffset,
-//  ImageOffset,
   StateImageOffset: Integer;
 
 begin
@@ -38047,6 +38033,7 @@ initialization
 
   // This watcher is used whenever a global structure could be modified by more than one thread.
   Watcher := TCriticalSection.Create;
+
 finalization
   if Initialized then
     FinalizeGlobalStructures;
