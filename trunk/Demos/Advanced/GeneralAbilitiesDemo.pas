@@ -433,7 +433,7 @@ procedure TGeneralForm.VST2FocusChanging(Sender: TBaseVirtualTree; OldNode, NewN
   NewColumn: TColumnIndex; var Allowed: Boolean);
 
 begin
-  Allowed := NewColumn in [0, 2];
+  Allowed := (NewColumn <= 0) or (NewColumn = 2);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
