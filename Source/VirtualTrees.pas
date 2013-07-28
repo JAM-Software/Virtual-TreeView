@@ -2662,6 +2662,7 @@ type
     procedure DoEndDrag(Target: TObject; X, Y: Integer); override;
     function DoEndEdit: Boolean; virtual;
     procedure DoEndOperation(OperationKind: TVTOperationKind); virtual;
+    procedure DoEnter(); override;
     procedure DoExpanded(Node: PVirtualNode); virtual;
     function DoExpanding(Node: PVirtualNode): Boolean; virtual;
     procedure DoFocusChange(Node: PVirtualNode; Column: TColumnIndex); virtual;
@@ -21611,6 +21612,17 @@ procedure TBaseVirtualTree.DoEndOperation(OperationKind: TVTOperationKind);
 begin
   if Assigned(FOnEndOperation) then
     FOnEndOperation(Self, OperationKind);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoEnter();
+begin
+  inherited;
+  // Always select a node if the control gets the focus, #237
+  if FocusedNode = nil then begin
+    FocusedNode := Self.GetFirstVisible();
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
