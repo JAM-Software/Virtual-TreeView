@@ -24004,7 +24004,7 @@ var
 
   // helper variables to shorten boolean equations/expressions
   AutoDrag,              // automatic (or allowed) drag start
-  IsHit,                 // the node's caption or images are hit
+  IsLabelHit,            // the node's caption or images are hit
   IsCellHit,             // for grid extension or full row select (but not check box, button)
   IsAnyHit,              // either IsHit or IsCellHit
   IsHeightTracking,      // height tracking
@@ -24087,13 +24087,13 @@ begin
     // Various combinations determine what states the tree enters now.
     // We initialize shorthand variables to avoid the following expressions getting too large
     // and to avoid repeative expensive checks.
-    IsHit := not AltPressed and not (toSimpleDrawSelection in FOptions.FSelectionOptions) and
+    IsLabelHit := not AltPressed and not (toSimpleDrawSelection in FOptions.FSelectionOptions) and
              ((hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
-    IsCellHit := not AltPressed and not IsHit and Assigned(HitInfo.HitNode) and
+    IsCellHit := not AltPressed and not IsLabelHit and Assigned(HitInfo.HitNode) and
       ([hiOnItemButton, hiOnItemCheckBox] * HitInfo.HitPositions = []) and
       ((toFullRowSelect in FOptions.FSelectionOptions) or
       ((toGridExtensions in FOptions.FMiscOptions) and (HitInfo.HitColumn > NoColumn)));
-    IsAnyHit := IsHit or IsCellHit;
+    IsAnyHit := IsLabelHit or IsCellHit;
     MultiSelect := toMultiSelect in FOptions.FSelectionOptions;
     ShiftEmpty := ShiftState = [];
     NodeSelected := IsAnyHit and (vsSelected in HitInfo.HitNode.States);
@@ -24110,7 +24110,7 @@ begin
 
     // Query the application to learn if dragging may start now (if set to dmManual).
     if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = dmManual) then
-      AutoDrag := DoBeforeDrag(HitInfo.HitNode, Column) and (IsAnyHit or FullRowDrag);
+      AutoDrag := DoBeforeDrag(HitInfo.HitNode, Column) and (FullRowDrag or IsLabelHit);
 
     // handle node height tracking
     if IsHeightTracking then
@@ -24176,7 +24176,7 @@ begin
         (not (tsRightButtonDown in FStates) or not HasPopupMenu(HitNode, HitColumn, Point(XPos, YPos)));
 
     // User starts a selection with a selection rectangle.
-    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsHit or FullRowDrag) and MultiSelect then
+    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
     begin
       SetCapture(Handle);
       DoStateChange([tsDrawSelPending]);
@@ -24216,7 +24216,7 @@ begin
       (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty then
       DoStateChange([tsEditPending]);
 
-    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsHit or FullRowDrag) and MultiSelect then
+    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
     begin
       // The original code here was moved up to fix issue #187.
       // In order not to break the semantics of this procedure, we are leaving these if statements here
@@ -24228,7 +24228,7 @@ begin
     FLastClickPos := Point(Message.XPos, Message.YPos);
 
     // Handle selection and node focus change.
-    if (IsHit or IsCellHit) and
+    if (IsLabelHit or IsCellHit) and
        DoFocusChanging(FFocusedNode, HitInfo.HitNode, FFocusedColumn, Column) then
     begin
       if NewColumn then
