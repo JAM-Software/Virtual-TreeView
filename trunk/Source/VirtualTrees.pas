@@ -1402,10 +1402,10 @@ type
     property AutoSizeIndex: TColumnIndex read FAutoSizeIndex write SetAutoSizeIndex;
     property Background: TColor read FBackground write SetBackground default clBtnFace;
     property Columns: TVirtualTreeColumns read FColumns write SetColumns stored False; // Stored by the owner tree to support VFI.
-    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default 17;
+    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default 19;
     property Font: TFont read FFont write SetFont stored IsFontStored;
     property FixedAreaConstraints: TVTFixedAreaConstraints read FFixedAreaConstraints write FFixedAreaConstraints;
-    property Height: Integer read FHeight write SetHeight default 17;
+    property Height: Integer read FHeight write SetHeight default 19;
     property Images: TCustomImageList read FImages write SetImages;
     property MainColumn: TColumnIndex read GetMainColumn write SetMainColumn default 0;
     property MaxHeight: Integer read FMaxHeight write SetMaxHeight default 10000;
@@ -1512,7 +1512,6 @@ type
     tsMouseCheckPending,      // A check operation is under way, initiated by a mouse click. Ignore space key.
     tsMiddleButtonDown,       // Set when the middle mouse button is down.
     tsMiddleDblClick,         // Set when the middle mouse button was doubly clicked.
-    tsNeedScale,              // On next ChangeScale scale the default node height.
     tsNeedRootCountUpdate,    // Set if while loading a root node count is set.
     tsOLEDragging,            // OLE dragging in progress.
     tsOLEDragPending,         // User has requested to start delayed dragging.
@@ -11250,7 +11249,7 @@ var
   var
     BackgroundRect: TRect;
     Details: TThemedElementDetails;
-    
+
   begin
     BackgroundRect := Rect(Target.X, Target.Y, Target.X + R.Right - R.Left, Target.Y + FHeader.Height);
 
@@ -11695,8 +11694,8 @@ begin
   inherited Create;
   FOwner := AOwner;
   FColumns := GetColumnsClass.Create(Self);
-  FHeight := 17;
-  FDefaultHeight := 17;
+  FHeight := 19;
+  FDefaultHeight := FHeight;
   FMinHeight := 10;
   FMaxHeight := 10000;
   FFont := TFont.Create;
@@ -12057,7 +12056,9 @@ end;
 procedure TVTHeader.ChangeScale(M, D: Integer);
 
 begin
+  // This method is only executed if toAutoChangeScale is set
   FFont.Size := MulDiv(FFont.Size, M, D);
+  Self.Height := MulDiv(fHeight, M, D)
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -16529,7 +16530,6 @@ begin
     Value := 18;
   if FDefaultNodeHeight <> Value then
   begin
-    DoStateChange([tsNeedScale]);
     Inc(Integer(FRoot.TotalHeight), Integer(Value) - Integer(FDefaultNodeHeight));
     Inc(SmallInt(FRoot.NodeHeight), Integer(Value) - Integer(FDefaultNodeHeight));
     FDefaultNodeHeight := Value;
@@ -20169,15 +20169,8 @@ begin
 
   if (M <> D) and (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
-    if (csLoading in ComponentState) then
-      DoScale := tsNeedScale in FStates
-    else
-      DoScale := True;
-    if DoScale then
-    begin
-      SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
-      FHeader.ChangeScale(M, D);
-    end;
+    SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+    FHeader.ChangeScale(M, D);
   end;
 end;
 
