@@ -1100,7 +1100,7 @@ type
     property MinWidth: Integer read FMinWidth write SetMinWidth default 10;
     property Options: TVTColumnOptions read FOptions write SetOptions default DefaultColumnOptions;
     property Position: TColumnPosition read FPosition write SetPosition;
-    property Spacing: Integer read FSpacing write SetSpacing default 4;
+    property Spacing: Integer read FSpacing write SetSpacing default 3;
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
     property Tag: Integer read FTag write FTag default 0;
     property Text: UnicodeString read FText write SetText stored False; // Never let the VCL store the wide string,
@@ -8802,7 +8802,7 @@ begin
   FMaxWidth := 10000;
   FImageIndex := -1;
   FMargin := 4;
-  FSpacing := 4;
+  FSpacing := 3;
   FText := '';
   FOptions := DefaultColumnOptions;
   FAlignment := taLeftJustify;
@@ -11741,8 +11741,28 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.FontChanged(Sender: TObject);
-
+var
+  i: Integer;
+  lMaxHeight: Integer;
 begin
+  if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then begin
+    // Find the largest Columns[].Spacing
+    lMaxHeight := 0;
+    for i:= 0 to Self.Columns.Count - 1 do
+      lMaxHeight := Max(lMaxHeight, Columns[i].Spacing);
+    // Calculate the required size based on the font, this is important as the use migth just vave increased the size of the icon font
+    With TBitmap.Create do
+      try
+        Canvas.Font.Assign(FFont);
+        lMaxHeight := lMaxHeight {top spacing} + (lMaxHeight div 2) {minimum bottom spacing} + Canvas.TextHeight('Q');
+      finally
+        Free;
+      end;
+    // Get the maximum of the scaled original value an
+    lMaxHeight := Max(lMaxHeight, fHeight);
+    // Set the calculated size
+    Self.SetHeight(lMaxHeight);
+  end;
   Invalidate(nil);
 end;
 
@@ -12057,8 +12077,10 @@ procedure TVTHeader.ChangeScale(M, D: Integer);
 
 begin
   // This method is only executed if toAutoChangeScale is set
-  FFont.Size := MulDiv(FFont.Size, M, D);
-  Self.Height := MulDiv(fHeight, M, D)
+  if not ParentFont then
+    FFont.Size := MulDiv(FFont.Size, M, D);
+  Self.Height := MulDiv(fHeight, M, D);
+  //TODO: We should consider also scaling column width here
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
