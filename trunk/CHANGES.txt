@@ -1,8 +1,18 @@
+V5.2: (09 Aug 2013)
+- Implemented #238: OnMouseEnter and OnMouseLeave events have been added
+- Improved dpi scaling for VirtualTreeView and Header
+- Fixed issue #237: Auto focus the first node on enter if there is no focused node
+- Fixed issue #344: Cannot select row by Ctrl+Click on empty column
+- Fixed issue #206: Column painting issue with coWrapCaption in Options
+- Fixed issue #128: OleUninitialize in FinalizeGlobalStructures can hang when using Virtual Treeview in a DLL
+- Added new public property LastDragEffect which supplies the last executed drag effect.
+- Added virtual method GetNodeImageSize() which can be overridden if one needs different sized images.
 - Added new public property LastDragEffect which supplies the last executed drag effect.
 - Fixed issue #206: Column painting issue with coWrapCaption in Options
 - Fixed issue #336 by ignoring PARENTDOUBLEBUFFEREDCHANGED message.
 - Fixed issue #342 by adding a new implementation of the VCL's DoubleBuffered property.
   The inherited DoubleBuffered property of TWinControl must not be set to True!
+- A few minor improvements have been added.
 
 V5.1.3: (17 Apr 2013)
 - Fixed #340: GetHitTestInfoAt on right border of fixed column.
