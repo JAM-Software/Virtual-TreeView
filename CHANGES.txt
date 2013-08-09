@@ -1,6 +1,7 @@
 V5.2: (09 Aug 2013)
-- Implemented #238: OnMouseEnter and OnMouseLeave events have been added
+- OnMouseEnter and OnMouseLeave events have been added (#238)
 - Improved dpi scaling for VirtualTreeView and Header
+- toAutoChangeScale and toAutoSort are now among the defualt values for TCustomVirtualTreeOptions.AutoOptions
 - Fixed issue #237: Auto focus the first node on enter if there is no focused node
 - Fixed issue #344: Cannot select row by Ctrl+Click on empty column
 - Fixed issue #206: Column painting issue with coWrapCaption in Options
