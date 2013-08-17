@@ -446,6 +446,7 @@ object StateForm: TStateForm
       Caption = 'Default node height scale'
       Enabled = False
       TabOrder = 0
+      Visible = False
     end
     object CheckBox26: TCheckBox
       Left = 10

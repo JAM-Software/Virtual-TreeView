@@ -113,7 +113,7 @@ begin
       SetActiveState(CheckBox19, tsLeftButtonDown in NewStates);
       SetActiveState(CheckBox20, tsMouseCheckPending in NewStates);
       SetActiveState(CheckBox21, tsMiddleButtonDown in NewStates);
-      SetActiveState(CheckBox22, tsNeedScale in NewStates);
+      //SetActiveState(CheckBox22, tsNeedScale in NewStates);
       SetActiveState(CheckBox23, tsNeedRootCountUpdate in NewStates);
       SetActiveState(CheckBox24, tsOLEDragging in NewStates);
       SetActiveState(CheckBox25, tsOLEDragPending in NewStates);
