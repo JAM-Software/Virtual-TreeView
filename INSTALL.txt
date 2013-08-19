@@ -53,6 +53,6 @@ Delphi / RAD Studio XE2 - XE4 Installation
    Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
 
    
-Please send comments and suggestiosn regarding the packages ann the install
+Please send comments and suggestions regarding the packages and the install
 instructions to joachim.marder@gmail.com
 
