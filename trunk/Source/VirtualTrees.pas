@@ -6182,7 +6182,10 @@ begin
   // Predefined clipboard formats. Just add them to the internal list.
   RegisterVTClipboardFormat(CF_TEXT, TCustomVirtualStringTree, 100);
   RegisterVTClipboardFormat(CF_UNICODETEXT, TCustomVirtualStringTree, 95);
-  {$if CompilerVersion >= 23}TCustomStyleEngine.RegisterStyleHook(TBaseVirtualTree, TVclStyleScrollBarsHook);{$ifend}
+  {$if CompilerVersion >= 23}
+  if StyleServices.Enabled then
+    TCustomStyleEngine.RegisterStyleHook(TBaseVirtualTree, TVclStyleScrollBarsHook);
+  {$ifend}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6217,7 +6220,10 @@ begin
   if NeedToUnitialize then
     OleUninitialize;
 
-  {$if CompilerVersion >= 23}TCustomStyleEngine.UnRegisterStyleHook(TBaseVirtualTree,  TVclStyleScrollBarsHook);{$ifend}
+  {$if CompilerVersion >= 23}
+  if StyleServices.Enabled then
+    TCustomStyleEngine.UnRegisterStyleHook(TBaseVirtualTree,  TVclStyleScrollBarsHook);
+  {$ifend}
 
   // If VT is used in a package and its special hint window was used then the last instance of this
   // window is not freed correctly (bug in the VCL). We explicitely tell the application to free it
