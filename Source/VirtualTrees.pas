@@ -6220,11 +6220,6 @@ begin
   if NeedToUnitialize then
     OleUninitialize;
 
-  {$if CompilerVersion >= 23}
-  if StyleServices.Enabled then
-    TCustomStyleEngine.UnRegisterStyleHook(TBaseVirtualTree,  TVclStyleScrollBarsHook);
-  {$ifend}
-
   // If VT is used in a package and its special hint window was used then the last instance of this
   // window is not freed correctly (bug in the VCL). We explicitely tell the application to free it
   // otherwise an AV is raised due to access to an invalid memory area.
@@ -33810,7 +33805,7 @@ begin
           if Node.ChildCount > 0 then
           begin
             UpdateRanges;
-
+            UpdateScrollbars(True);
             if [tsPainting, tsExpanding] * FStates = [] then
             begin
               if (vsExpanded in Node.States) and ((toAutoScrollOnExpand in FOptions.FAutoOptions) or
@@ -33853,7 +33848,7 @@ begin
               end;
             end;
 
-            UpdateScrollbars(True);
+            //UpdateScrollbars(True); Moved up
 
             // Check for automatically scrolled tree.
             if NeedFullInvalidate then
