@@ -23560,6 +23560,7 @@ begin
     if WithCheck and (Node.CheckType <> ctNone) then
       Inc(NodeLeft, CheckOffset);
     CurrentWidth := DoGetNodeWidth(Node, NoColumn);
+    Inc(CurrentWidth, DoGetNodeExtraWidth(Node, NoColumn));
     if Integer(Result) < (NodeLeft + CurrentWidth) then
       Result := NodeLeft + CurrentWidth;
     Inc(TopPosition, NodeHeight[Node]);
