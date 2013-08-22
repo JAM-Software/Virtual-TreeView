@@ -197,7 +197,9 @@ uses
 destructor TPropertyEditLink.Destroy;
 
 begin
-  FEdit.Free;
+  //FEdit.Free; casues issue #357. Fix:
+  if FEdit.HandleAllocated then
+    PostMessage(FEdit.Handle, CM_RELEASE, 0, 0);
   inherited;
 end;
 
