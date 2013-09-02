@@ -424,7 +424,7 @@ begin
   with Sender as TVirtualDrawTree, PaintInfo do
   begin
     Data := Sender.GetNodeData(Node);
-    if (Column = FocusedColumn) and (Node = FocusedNode) then
+    if (Column = FocusedColumn) and (Selected[Node]) then
       Canvas.Font.Color := clHighlightText
     else
       if (Data.Attributes and SFGAO_COMPRESSED) <> 0 then
