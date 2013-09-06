@@ -1,3 +1,13 @@
+V5.2.1: (06 Sep 2013)
+- Fixed #352 and #354 by modifying the implementation of #237 so that a focused node is ensured only if the
+  control is being entered using the TAB key. This is consistent with the behavior of the Windows Explorer.
+- Fixed issue #360 (In the calculation of the horizontal scroll bar static text should be considered) by
+  calling DoGetNodeExtraWidth() in TBaseVirtualTree.GetMaxRightExtend()
+- Used fix proposed in issue #361 to fix issue #357 (AV in advanced demo - PropertiesDemo form in XE3+)
+- Removed call to TCustomStyleEngine.UnRegisterStyleHook() to fix issue #359/#355
+- Fixed issue #358: Horizontal Scrollbar issue when expand ing and scrollbars get visible
+- Fixed issue #355/#345: exception regarding style services
+
 V5.2: (09 Aug 2013)
 - OnMouseEnter and OnMouseLeave events have been added (#238)
 - Improved dpi scaling for VirtualTreeView and Header
