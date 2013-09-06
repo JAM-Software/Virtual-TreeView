@@ -1,0 +1,25 @@
+@@AdditionalInfo.htm
+<TITLE Additional information>
+
+    * Special care has been taken to wrap every event call by a DoXXX method (e.g. for OnBeforeItem paint there is a
+      protected DoBeforeItemPaint method) which is always virtual to allow descendants to override it and intercept so calls to
+      events regardless whether there is actually an event handler assigned or not.
+    * During a locked update stage (entered by BeginUpdate) there will be <B>no</B> updates of the tree nor the
+      selection. If you change the selection in such a stage then it is temporarily accumulated and applied if, during an
+      EndUpdate call, the inner update counter reaches zero.
+
+
+
+<B>Borland C++ Builder:</B>
+
+    * Define the constant NO_WIN32_LEAN_AND_MEAN in your environment/project options to avoid problems with undefined
+      interfaces.
+    * The automatic conversion process from Delphi source code to C++ code has unfortunately some bugs. Most of them
+      could be solved by rearranging the Delphi code, but one problem still remains and must be solved manually. The translator
+      does not automatically consider default parameters in functions. The parameters are correctly converted but without the
+      default value. Usually the problem will appear when you try to compile and there is a call of the function with fewer
+      than expected parameters.
+
+Summary
+This chapter collects everything else which is important or very helpful to know but which does not justify an own
+chapter.

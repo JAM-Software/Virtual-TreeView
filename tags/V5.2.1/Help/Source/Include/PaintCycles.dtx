@@ -1,0 +1,100 @@
+@@PaintCycles.htm
+<TITLE Paint cycles and stages>
+
+Similar to the system tree view Virtual Treeview defines so called <B>paint cycles</B>. A paint cycle is one run of the
+paint code which draws a part or the entire window. In Virtual Treeview this task is accomplished by the method PaintTree
+which centralizes the paint management into one place and is called for various tasks like window painting, drag image
+painting, WM_PRINTCLIENT handling and so on.
+
+
+
+This paint method is able to draw the entire tree regardless of its window to the target canvas and optimizes painting by
+considering the update/clipping rectangle, which is passed in via the Window parameter (see also PaintTree).
+
+
+
+Usually the following paint stages are executed during a paint cycle:
+
+    * before paint (OnBeforePaint)
+    * before item paint (OnBeforeItemPaint)
+    * before item erase (OnBeforeItemErase)
+    * after item erase (OnAfterItemErase)
+    * before cell draw (OnBeforeCellPaint)
+    * on paint text (string trees only, OnPaintText)
+    * after cell draw (OnAfterCellPaint)
+
+after item paint (OnAfterItemPaint) after paint (OnAfterPaint)
+
+
+
+The cell and node events are of course not executed if there is no node to be drawn. A special flag (tsPainting) in
+TreeStates indicates when a paint cycle is in progress. Using this flag an application can for instance determine whether
+a node is initialized because it is about to be drawn or for other reasons.
+
+
+
+Every of the stages above is accompanied by a specific event which allows the application to customize a particular
+aspect in the painting. The following list discusses tasks which can be done during the various stages.
+
+
+<TABLE>
+Stage              \Description                   Comments
+-----------------  -----------------------------  ------------------------------------------------------------------------------------------
+before paint       This stage is entered only     This stage is typically used to do any further setup of the target canvas of the paint
+                    \once per paint cycle. After   \operation (e.g. the window or a printer canvas), like changing the mapping mode or
+                    setting the vsPainting state   setting another clipping region. Since the passed canvas is not directly used to do the
+                    it is the very first           actual painting setting its font or colors has no effect. Basically only properties which
+                    instruction in a cycle.        affect blitting a bitmap to the target canvas have an effect at all.
+before item        This stage is entered once     In the event for this stage you can tell the tree whether you want to paint the node
+ paint              per node to be drawn and       entirely on your own or let the tree paint it. As this happens on a per node basis it is
+                    allows directly to control     the perfect place to maintain a special layout without doing everything in the paint
+                    the path which is the taken    cycle. Note: setting the CustomDraw parameter in the event to True will skip the node
+                    to paint the node.             entirely, without painting anything of the standard things like tree lines, button,
+                                                   images or erasing the background. Hence to display any useful information for the node do
+                                                   it in the OnBeforeItemPaint event.<P>
+                                                   <P>
+                                                   This is the first stage which gets the double buffer canvas which is used to draw a node
+                                                   so if you want to set special properties this is a good opportunity. Keep in mind though
+                                                   that in particular the colors are set by the tree according to specific rules (focus,
+                                                   selection etc.).
+before item        This stage is also entered     This stage and its associated event is usually used to give the node a different
+ erase              \only once per node and        background color or erase the background with a special pattern which is different to
+                    allows to customize the        what the tree would draw.
+                    node's background.             
+after item erase   This stage is also entered     This stage and its associated event is used to do additional drawings after the
+                    \only once per node.           background has been erased.
+before cell        This paint stage is the        While internally a full setup for this node happened before the stage is entered (if it
+ paint              first of the cell specific     is the first run) the only noticeable effect for the application which has changed
+                    stages used to customize a     compared to <B>after item erase</B> is that the painting is limited to the current
+                    single cell of a node and is   column. There are still no lines or images painted yet.
+                    called several times per       
+                    node, depending on the         
+                    number of columns. If no       
+                    columns are used then it is    
+                    called once.                   
+\on paint text     After default stuff like       Because Virtual Treeview does not know how to draw the content of a node it delegates
+                    lines and images has been      this drawing to a virtual method called DoPaintNode. Descendants override this method and
+                    painted the paint node/paint   do whatever is appropriate. For instance TVirtualDrawTree simply triggers its OnDrawNode
+                    text stage is entered.         event while the TVirtualStringTree prepares the target canvas and allows the application
+                                                   to override some or all canvas settings (font etc.) by triggering OnPaintText. After this
+                                                   event returned the text/caption of the node is drawn. Changed font properties are taken
+                                                   into account when aligning and painting the text.<P>
+                                                   <B>Note: </B>The string tree triggers the OnGetText event two times if toShowStaticText
+                                                   is enabled in the TVirtualStringTree.TreeOptions.StringOptions property. Once for the
+                                                   normal text and once for the static text. Use the event's parameter to find out what is
+                                                   required.
+after cell paint   This stage is entered          This stage can be used to add whatever you like to a single cell after everything has
+                    immediately after the cell     been painted there and is triggered once per column.
+                    is drawn.                      
+after item paint   This stage is entered after    The after item paint stage is used to add node specific stuff like frames and the like
+                    all cells of an item are       which concern all columns of that node and is called once per node.
+                    drawn.                         
+after paint        The after paint stage is the   In this stage everything of the tree (related to the current update area) has been drawn,
+                    last stage in the long chain   including the selection rectangle.
+                    \of paint stages and is        
+                    entered after when paint       
+                    cycle is complete.             
+</TABLE>
+Summary
+The most complex process in Virtual Treeview is without doubts its painting. Read here what stages Virtual Treeview
+enters during paint and how you can customize this process.
