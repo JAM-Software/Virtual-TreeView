@@ -4256,6 +4256,7 @@ type
     FWaiterList: TThreadList;
     FRefCount: Cardinal;
   protected
+    procedure CancelValidation(Tree: TBaseVirtualTree);
     procedure Execute; override;
   public
     constructor Create(CreateSuspended: Boolean);
@@ -6320,6 +6321,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TWorkerThread.CancelValidation(Tree: TBaseVirtualTree);
+
+var
+  Msg: TMsg;
+
+begin
+  // Wait for any references to this tree to be released.
+  // Pump Synchronize messages so the thread doesn't block on TThread.Synchronize() calls.
+  while FCurrentTree = Tree do
+  begin
+    CheckSynchronize();
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TWorkerThread.Execute;
 
 // Does some background tasks, like validating tree caches.
@@ -6396,7 +6413,7 @@ begin
   finally
     FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
   end;
-  CheckSynchronize();
+  CancelValidation(Tree);
 end;
 
 //----------------- TBufferedAnsiString ------------------------------------------------------------------------------------
