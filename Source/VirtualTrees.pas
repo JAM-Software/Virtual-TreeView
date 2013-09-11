@@ -2428,7 +2428,8 @@ type
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
-    procedure EndValidateCache();
+    procedure EndValidateCacheSuccess();
+    procedure EndValidateCacheFail();
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode; overload;
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
@@ -6322,10 +6323,6 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TWorkerThread.CancelValidation(Tree: TBaseVirtualTree);
-
-var
-  Msg: TMsg;
-
 begin
   // Wait for any references to this tree to be released.
   // Pump Synchronize messages so the thread doesn't block on TThread.Synchronize() calls.
@@ -6341,6 +6338,9 @@ procedure TWorkerThread.Execute;
 
 // Does some background tasks, like validating tree caches.
 
+var
+  lValidationSuccessful: Boolean;
+  lSyncMethod: TThreadMethod;
 begin
   {$if CompilerVersion >= 21} TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');{$ifend}
   while not Terminated do
@@ -6369,13 +6369,20 @@ begin
       // Something to do?
       if Assigned(FCurrentTree) then
       begin
+        lValidationSuccessful := False;
         try
-          Self.Synchronize(FCurrentTree.BeginValidateCache);
-          if not (tsStopValidation in FCurrentTree.FStates) then
-            FCurrentTree.DoValidateCache;
+          if (tsStopValidation in FCurrentTree.FStates) then
+            continue;
+          Self.{$if CompilerVersion >=20}Queue{$else}Synchronize{$ifend}(FCurrentTree.BeginValidateCache);
+          if FCurrentTree.DoValidateCache then
+            lValidationSuccessful := True;
         finally
-          Self.Synchronize(FCurrentTree.EndValidateCache);
-          FCurrentTree := nil;
+          if lValidationSuccessful then
+            lSyncMethod := FCurrentTree.EndValidateCacheSuccess
+          else
+            lSyncMethod := FCurrentTree.EndValidateCacheFail;
+          FCurrentTree := nil;// set FCurrentThread to nil before calling these 2 methods with TThread.Synchronize() to prevent a deadlock in CancelValidation.
+          Self.Synchronize(lSyncMethod);
         end;
       end;
     end;
@@ -15097,14 +15104,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.EndValidateCache();
-var
-  LeaveStates: TVirtualTreeStates;
+procedure TBaseVirtualTree.EndValidateCacheSuccess();
 begin
-  LeaveStates := [tsValidating, tsStopValidation];
-  if tsUseCache in Self.TreeStates then
-    Include(LeaveStates, tsValidationNeeded);
-  DoStateChange([], LeaveStates);
+  DoStateChange([tsUseCache], [tsValidating, tsStopValidation, tsValidationNeeded]);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.EndValidateCacheFail;
+begin
+  DoStateChange([tsValidationNeeded], [tsValidating, tsStopValidation, tsUseCache]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22733,7 +22742,6 @@ begin
   // height. During validation updates of the scrollbars is disabled so let's do this here.
   if Result and (toVariableNodeHeight in FOptions.FMiscOptions) then begin
     UpdateScrollbars(True);
-    DoStateChange([tsUseCache]);
   end;
 end;
 
