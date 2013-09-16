@@ -28389,6 +28389,7 @@ function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnInde
 var
   Temp: PVirtualNode;
   Offset: Cardinal;
+  CacheIsAvailable: Boolean;
   Indent,
   TextWidth: Integer;
   MainColumnHit: Boolean;
@@ -28424,18 +28425,20 @@ begin
 
   // Here we know the node is visible.
   Offset := 0;
+  CacheIsAvailable := False;
   if tsUseCache in FStates then
   begin
     // If we can use the position cache then do a binary search to find a cached node which is as close as possible
     // to the current node. Iterate then through all following and visible nodes and sum up their heights.
     Temp := FindInPositionCache(Node, Offset);
+    CacheIsAvailable := Assigned(Temp);
     while Assigned(Temp) and (Temp <> Node) do
     begin
       Inc(Offset, NodeHeight[Temp]);
       Temp := GetNextVisibleNoInit(Temp, True);
     end;
-  end
-  else
+  end;
+  if not CacheIsAvailable then
   begin
     // If the cache is not available then go straight through all nodes up to the root and sum up their heights.
     Temp := Node;
