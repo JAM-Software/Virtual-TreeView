@@ -186,6 +186,9 @@ const
 
   ThemeChangedTimerDelay = 500;
 
+  // Need to use this message to release the edit link interface asynchronously.
+  WM_CHANGESTATE = WM_APP + 32;
+
   // Virtual Treeview does not need to be subclassed by an eventual Theme Manager instance as it handles
   // Windows XP theme painting itself. Hence the special message is used to prevent subclassing.
   CM_DENYSUBCLASSING = CM_BASE + 2000;
@@ -1541,6 +1544,13 @@ type
     tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
   );
 
+  TChangeStates = set of (
+    csStopValidation,         // Cache validation can be stopped (usually because a change has occured meanwhile).
+    csUseCache,               // The tree's node caches are validated and non-empty.
+    csValidating,             // The tree's node caches are currently validated.
+    csValidationNeeded        // Something in the structure of the tree has changed. The cache needs validation.
+  );
+
   // determines whether and how the drag image is to show
   TVTDragImageKind = (
     diComplete,       // show a complete drag image with all columns, only visible columns are shown
@@ -2416,7 +2426,6 @@ type
     procedure AdjustCoordinatesByIndent(var PaintInfo: TVTPaintInfo; Indent: Integer);
     procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
     procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
-    procedure BeginValidateCache();
     function CalculateCacheEntryCount: Integer;
     procedure CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode; var VAlign,
       VButtonAlign: Integer);
@@ -2428,8 +2437,6 @@ type
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
-    procedure EndValidateCacheSuccess();
-    procedure EndValidateCacheFail();
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode; overload;
     function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
@@ -2547,6 +2554,7 @@ type
     procedure TVMGetItemRect(var Message: TMessage); message TVM_GETITEMRECT;
     procedure TVMGetNextItem(var Message: TMessage); message TVM_GETNEXTITEM;
     procedure WMCancelMode(var Message: TWMCancelMode); message WM_CANCELMODE;
+    procedure WMChangeState(var Message: TMessage); message WM_CHANGESTATE;
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
     procedure WMCopy(var Message: TWMCopy); message WM_COPY;
@@ -4257,7 +4265,7 @@ type
     FWaiterList: TThreadList;
     FRefCount: Cardinal;
   protected
-    procedure CancelValidation(Tree: TBaseVirtualTree);
+    procedure ChangeTreeStates(EnterStates, LeaveStates: TChangeStates);
     procedure Execute; override;
   public
     constructor Create(CreateSuspended: Boolean);
@@ -6323,13 +6331,30 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TWorkerThread.CancelValidation(Tree: TBaseVirtualTree);
+
+var
+  Msg: TMsg;
+
 begin
   // Wait for any references to this tree to be released.
-  // Pump Synchronize messages so the thread doesn't block on TThread.Synchronize() calls.
+  // Pump WM_CHANGESTATE messages so the thread doesn't block on SendMessage calls.
   while FCurrentTree = Tree do
   begin
-    CheckSynchronize();
+    if Tree.HandleAllocated and PeekMessage(Msg, Tree.Handle, WM_CHANGESTATE, WM_CHANGESTATE, PM_REMOVE) then
+    begin
+      TranslateMessage(Msg);
+      DispatchMessage(Msg);
+    end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TWorkerThread.ChangeTreeStates(EnterStates, LeaveStates: TChangeStates);
+
+begin
+  if Assigned(FCurrentTree) and (FCurrentTree.HandleAllocated) then
+    SendMessage(FCurrentTree.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6339,8 +6364,9 @@ procedure TWorkerThread.Execute;
 // Does some background tasks, like validating tree caches.
 
 var
-  lValidationSuccessful: Boolean;
-  lSyncMethod: TThreadMethod;
+  EnterStates,
+  LeaveStates: TChangeStates;
+
 begin
   {$if CompilerVersion >= 21} TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');{$ifend}
   while not Terminated do
@@ -6367,22 +6393,20 @@ begin
       end;
 
       // Something to do?
-      if Assigned(FCurrentTree) and not Terminated then
+      if Assigned(FCurrentTree) then
       begin
-        lValidationSuccessful := False;
         try
-          if (tsStopValidation in FCurrentTree.FStates) then
-            continue;
-          Self.{$if CompilerVersion >=20}Queue{$else}Synchronize{$ifend}(FCurrentTree.BeginValidateCache);
-          if FCurrentTree.DoValidateCache then
-            lValidationSuccessful := True;
+          ChangeTreeStates([csValidating], [csUseCache]);
+          EnterStates := [];
+          if not (tsStopValidation in FCurrentTree.FStates) and FCurrentTree.DoValidateCache then
+            EnterStates := [csUseCache];
+
         finally
-          if lValidationSuccessful then
-            lSyncMethod := FCurrentTree.EndValidateCacheSuccess
-          else
-            lSyncMethod := FCurrentTree.EndValidateCacheFail;
-          FCurrentTree := nil;// set FCurrentThread to nil before calling these 2 methods with TThread.Synchronize() to prevent a deadlock in CancelValidation.
-          Self.Synchronize(lSyncMethod);
+          LeaveStates := [csValidating, csStopValidation];
+          if csUseCache in EnterStates then
+            Include(LeaveStates, csValidationNeeded);
+          ChangeTreeStates(EnterStates, LeaveStates);
+          FCurrentTree := nil;
         end;
       end;
     end;
@@ -6420,7 +6444,7 @@ begin
   finally
     FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
   end;
-  CancelValidation(Tree);
+  CheckSynchronize();
 end;
 
 //----------------- TBufferedAnsiString ------------------------------------------------------------------------------------
@@ -14335,11 +14359,6 @@ begin
   UpdateVerticalRange;
 end;
 
-procedure TBaseVirtualTree.BeginValidateCache();
-begin
-  Self.DoStateChange([tsValidating], [tsUseCache]);
-end;
-
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.CalculateCacheEntryCount: Integer;
@@ -15101,20 +15120,6 @@ begin
         end;
     end;
   end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.EndValidateCacheSuccess();
-begin
-  DoStateChange([tsUseCache], [tsValidating, tsStopValidation, tsValidationNeeded]);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.EndValidateCacheFail;
-begin
-  DoStateChange([tsValidationNeeded], [tsValidating, tsStopValidation, tsUseCache]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18268,6 +18273,38 @@ begin
     tsDrawSelPending, tsIncrementalSearching]);
 
   inherited;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.WMChangeState(var Message: TMessage);
+
+var
+  EnterStates,
+  LeaveStates: TVirtualTreeStates;
+
+begin
+  EnterStates := [];
+  if csStopValidation in TChangeStates(Byte(Message.WParam)) then
+    Include(EnterStates, tsStopValidation);
+  if csUseCache in TChangeStates(Byte(Message.WParam)) then
+    Include(EnterStates, tsUseCache);
+  if csValidating in TChangeStates(Byte(Message.WParam)) then
+    Include(EnterStates, tsValidating);
+  if csValidationNeeded in TChangeStates(Byte(Message.WParam)) then
+    Include(EnterStates, tsValidationNeeded);
+
+  LeaveStates := [];
+  if csStopValidation in TChangeStates(Byte(Message.LParam)) then
+    Include(LeaveStates, tsStopValidation);
+  if csUseCache in TChangeStates(Byte(Message.LParam)) then
+    Include(LeaveStates, tsUseCache);
+  if csValidating in TChangeStates(Byte(Message.LParam)) then
+    Include(LeaveStates, tsValidating);
+  if csValidationNeeded in TChangeStates(Byte(Message.LParam)) then
+    Include(LeaveStates, tsValidationNeeded);
+
+  DoStateChange(EnterStates, LeaveStates);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -27020,7 +27057,7 @@ begin
   InterruptValidation;
 
   FStartIndex := 0;
-  if (tsValidationNeeded in FStates) and not (csDestroying in ComponentState) then
+  if tsValidationNeeded in FStates then
   begin
     // Tell the thread this tree needs actually something to do.
     WorkerThread.AddTree(Self);
@@ -27939,7 +27976,9 @@ begin
         InvalidateToBottom(Node);
     end;
     StructureChange(Node, crChildDeleted);
-  end;
+  end
+  else if ResetHasChildren then
+    Exclude(Node.States, vsHasChildren);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
