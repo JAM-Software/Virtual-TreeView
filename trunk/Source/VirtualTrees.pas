@@ -4265,6 +4265,7 @@ type
     FWaiterList: TThreadList;
     FRefCount: Cardinal;
   protected
+    procedure CancelValidation(Tree: TBaseVirtualTree);
     procedure ChangeTreeStates(EnterStates, LeaveStates: TChangeStates);
     procedure Execute; override;
   public
@@ -6444,7 +6445,7 @@ begin
   finally
     FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
   end;
-  CheckSynchronize();
+  CancelValidation(Tree);
 end;
 
 //----------------- TBufferedAnsiString ------------------------------------------------------------------------------------
