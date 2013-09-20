@@ -2412,7 +2412,7 @@ type
     FOnStartOperation: TVTOperationEvent;        // Called when an operation starts
     FOnEndOperation: TVTOperationEvent;          // Called when an operation ends
 
-    FVclStyleAvailable: Boolean;
+    FVclStyleEnabled: Boolean;
 
     {$if CompilerVersion >= 23 }
     FSavedBevelKind: TBevelKind;
@@ -2845,14 +2845,8 @@ type
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); virtual;
     procedure WriteNode(Stream: TStream; Node: PVirtualNode); virtual;
 
-
-
-    {$if CompilerVersion >= 23 }
-    function VclStyleServicesAvailable: Boolean;
     procedure VclStyleChanged;
-    property VclStyleAvailable: Boolean read FVclStyleAvailable;
-    {$ifend}
-
+    property VclStyleEnabled: Boolean read FVclStyleEnabled;
 
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
     property AnimationDuration: Cardinal read FAnimationDuration write SetAnimationDuration default 200;
@@ -6716,7 +6710,7 @@ begin
       begin
         if IsWinVistaOrAbove and ((tsUseThemes in FStates) or
            ((toThemeAware in ToBeSet) and StyleServices.Enabled)) and
-           (toUseExplorerTheme in (ToBeSet + ToBeCleared)) and not FVclStyleAvailable then
+           (toUseExplorerTheme in (ToBeSet + ToBeCleared)) and not VclStyleEnabled then
           if (toUseExplorerTheme in ToBeSet) then
           begin
             SetWindowTheme('explorer');
@@ -6731,9 +6725,9 @@ begin
 
         if not (csLoading in ComponentState) then
         begin
-          if ((toThemeAware in ToBeSet + ToBeCleared) or (toUseExplorerTheme in ToBeSet + ToBeCleared) or FVclStyleAvailable) then
+          if ((toThemeAware in ToBeSet + ToBeCleared) or (toUseExplorerTheme in ToBeSet + ToBeCleared) or VclStyleEnabled) then
           begin
-            if ((toThemeAware in ToBeSet) and StyleServices.Enabled) or FVclStyleAvailable then
+            if ((toThemeAware in ToBeSet) and StyleServices.Enabled) or VclStyleEnabled then
               DoStateChange([tsUseThemes])
             else
               if (toThemeAware in ToBeCleared) then
@@ -7766,7 +7760,7 @@ begin
         with Canvas do
         begin
           {$IF CompilerVersion >= 23 }
-          if Tree.FVclStyleAvailable  then
+          if Tree.VclStyleEnabled  then
           begin
             LDetails := StyleServices.GetElementDetails(thHintNormal);
             if StyleServices.GetElementColor(LDetails, ecGradientColor1, LColor) and (LColor <> clNone) then
@@ -7805,7 +7799,7 @@ begin
                 end;
             end
             else
-              if Tree.FVclStyleAvailable then
+              if Tree.VclStyleEnabled then
                 StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tttStandardNormal), R)
               else
                 Rectangle(R);
@@ -10259,7 +10253,7 @@ begin
 
   SetBkMode(DC, TRANSPARENT);
   if not Enabled then
-    if FHeader.Treeview.FVclStyleAvailable then
+    if FHeader.Treeview.VclStyleEnabled then
     begin
       SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
       Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
@@ -11449,7 +11443,7 @@ var
           ColCaptionText := FCaptionText
         else
           ColCaptionText := Text;
-          if IsHoverIndex and FHeader.Treeview.FVclStyleAvailable then
+          if IsHoverIndex and FHeader.Treeview.VclStyleEnabled then
             DrawHot := True
           else
             DrawHot := (IsHoverIndex and (hoHotTrack in FHeader.FOptions) and not(tsUseThemes in FHeader.Treeview.FStates));
@@ -13955,7 +13949,7 @@ function TVTColors.GetBackgroundColor: TColor;
 begin
 // XE2 VCL Style
 {$IF CompilerVersion >= 23 }
-  if FOwner.FVclStyleAvailable then
+  if FOwner.VclStyleEnabled then
     Result := StyleServices.GetStyleColor(scTreeView)
   else
 {$IFEND}
@@ -13966,7 +13960,7 @@ function TVTColors.GetColor(const Index: Integer): TColor;
 
 begin
 {$IF CompilerVersion >= 23 }
-  if FOwner.FVclStyleAvailable then
+  if FOwner.VclStyleEnabled then
   begin
     case Index of
       0:
@@ -14017,7 +14011,7 @@ function TVTColors.GetHeaderFontColor: TColor;
 begin
 // XE2+ VCL Style
 {$IF CompilerVersion >= 23 }
-  if FOwner.FVclStyleAvailable then
+  if FOwner.VclStyleEnabled then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result)
   else
 {$IFEND}
@@ -14027,7 +14021,7 @@ end;
 function TVTColors.GetNodeFontColor: TColor;
 begin
 {$IF CompilerVersion >= 23 }
-  if FOwner.FVclStyleAvailable then
+  if FOwner.VclStyleEnabled then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
   else
 {$IFEND}
@@ -14213,7 +14207,7 @@ begin
 
   AddThreadReference;
 
-  FVclStyleAvailable := False;
+  FVclStyleEnabled := False;
   // XE2+ VCL Style
   {$if CompilerVersion >= 23 }
   FSetOrRestoreBevelKindAndBevelWidth := False;
@@ -15980,7 +15974,7 @@ var
       Width := Size.cx;
       Height := Size.cy;
 
-      if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) or FVclStyleAvailable then
+      if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) or VclStyleEnabled then
       begin
         if (FHeader.MainColumn > NoColumn) and not (coParentColor in FHeader.FColumns[FHeader.MainColumn].Options) then
           Brush.Color := FHeader.FColumns[FHeader.MainColumn].Color
@@ -16020,7 +16014,7 @@ begin
       FillBitmap(FMinusBM);
       FillBitmap(FHotMinusBM);
       // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiﬂe aus
-      if not FVclStyleAvailable then
+      if (not VclStyleEnabled) or (Theme = 0) then
       begin
         if not(tsUseExplorerTheme in FStates) then
         begin
@@ -16059,7 +16053,7 @@ begin
     begin
       FillBitmap(FPlusBM);
       FillBitmap(FHotPlusBM);
-      if not FVclStyleAvailable then
+      if (not VclStyleEnabled) or (Theme = 0) then
       begin
         if not(tsUseExplorerTheme in FStates) then
         begin
@@ -16098,7 +16092,7 @@ begin
     end;
 
     // Overwrite glyph images if theme is active.
-    if tsUseThemes in FStates then
+    if (tsUseThemes in FStates) and (Theme <> 0) then
     begin
       R := Rect(0, 0, Size.cx, Size.cy);
       DrawThemeBackground(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_CLOSED, R, nil);
@@ -17406,7 +17400,7 @@ var
           FillRect(DC, Run, Brush)
         else
         begin
-          if FVclStyleAvailable then
+          if VclStyleEnabled then
             LocalBrush := CreateSolidBrush(ColorToRGB(FColors.BackGroundColor))
           else
             LocalBrush := CreateSolidBrush(ColorToRGB(Items[Column].Color));
@@ -20434,10 +20428,10 @@ begin
   inherited;
   DoStateChange([], [tsWindowCreating]);
 
-  if (StyleServices.Enabled and (toThemeAware in TreeOptions.PaintOptions)) or FVclStyleAvailable then
+  if (StyleServices.Enabled and (toThemeAware in TreeOptions.PaintOptions)) or VclStyleEnabled then
   begin
     DoStateChange([tsUseThemes]);
-    if not FVclStyleAvailable then
+    if not VclStyleEnabled then
       if (toUseExplorerTheme in FOptions.FPaintOptions) and IsWinVistaOrAbove then
       begin
         DoStateChange([tsUseExplorerTheme]);
@@ -25115,8 +25109,8 @@ begin
   {$IF CompilerVersion >= 23}
     FSavedBorderWidth := BorderWidth;
     FSavedBevelKind := BevelKind;
-    VclStyleChanged;
   {$IFEND}
+  VclStyleChanged;
   // If a root node count has been set during load of the tree then update its child structure now
   // as this hasn't been done yet in this case.
   if (tsNeedRootCountUpdate in FStates) and (FRoot.ChildCount > 0) then
@@ -25912,7 +25906,7 @@ begin
     with FHeader.FColumns do
     if poColumnColor in PaintOptions then
     begin
-      if (FVclStyleAvailable or (FVclStyleAvailable and not (coParentColor in FHeader.FColumns[Column].FOptions))) then
+      if (VclStyleEnabled and not (coParentColor in FHeader.FColumns[Column].FOptions)) then
         Brush.Color := FColors.BackGroundColor
       else
         Brush.Color := Items[Column].Color;
@@ -27081,12 +27075,12 @@ begin
     FOnGetNodeDataSize(Self, Size);
 end;
 
-{$if CompilerVersion >= 23 }
 procedure TBaseVirtualTree.VclStyleChanged;
 begin
-   FSetOrRestoreBevelKindAndBevelWidth := True;
-  FVclStyleAvailable := VclStyleServicesAvailable;
-  if not FVclStyleAvailable then
+  {$if CompilerVersion >= 23 }
+  FSetOrRestoreBevelKindAndBevelWidth := True;
+  FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle;
+  if not VclStyleEnabled then
   begin
     if FSavedBevelKind <> BevelKind then
       BevelKind := FSavedBevelKind;
@@ -27101,13 +27095,10 @@ begin
       BorderWidth := 0;
   end;
   FSetOrRestoreBevelKindAndBevelWidth := False;
+  {$else}
+  FVclStyleEnabled := False;
+  {$ifend}
 end;
-
-function TBaseVirtualTree.VclStyleServicesAvailable: Boolean;
-begin
-   Result := StyleServices.Enabled and StyleServices.Available and not StyleServices.IsSystemStyle;
-end;
-{$ifend}
 
 //----------------------------------------------------------------------------------------------------------------------
 
