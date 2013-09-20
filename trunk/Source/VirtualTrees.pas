@@ -2730,6 +2730,7 @@ type
     procedure DoPaintDropMark(Canvas: TCanvas; Node: PVirtualNode; R: TRect); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); virtual;
     procedure DoPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint); virtual;
+    procedure DoRemoveFromSelection(Node: PVirtualNode); virtual;
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
       ForClipboard: Boolean): HRESULT; virtual;
     procedure DoReset(Node: PVirtualNode); virtual;
@@ -22323,6 +22324,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DoRemoveFromSelection(Node: PVirtualNode);
+begin
+  if Assigned(FOnRemoveFromSelection) then
+    FOnRemoveFromSelection(Self, Node);
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
   ForClipboard: Boolean): HRESULT;
 
@@ -24770,8 +24778,7 @@ begin
   begin
     Dec(FSelectionCount);
     Exclude(FSelection[FSelectionCount].States, vsSelected);
-    if Assigned(FOnRemoveFromSelection) then
-      FOnRemoveFromSelection(Self, FSelection[FSelectionCount]);
+    DoRemoveFromSelection(FSelection[FSelectionCount]);
   end;
   ResetRangeAnchor;
   FSelection := nil;
@@ -25055,8 +25062,7 @@ begin
   begin
     Exclude(Node.States, vsSelected);
     Inc(PAnsiChar(FSelection[Index]));
-    if Assigned(FOnRemoveFromSelection) then
-      FOnRemoveFromSelection(Self, Node);
+    DoRemoveFromSelection(Node);
     AdviseChangeEvent(False, Node, crIgnore);
   end;
 end;
@@ -26222,8 +26228,7 @@ begin
       if FSelectionCount = 0 then
         ResetRangeAnchor;
 
-      if Assigned(FOnRemoveFromSelection) then
-        FOnRemoveFromSelection(Self, Node);
+      DoRemoveFromSelection(Node);
       Change(Node);
     end;
   end;
