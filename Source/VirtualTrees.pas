@@ -3755,8 +3755,9 @@ type
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
-    {$if CompilerVersion>=21}
+    {$if CompilerVersion>=22}
     property OnCanResize;
+    property OnGesture;
     property Touch;
     {$ifend}
   end;
@@ -4005,6 +4006,11 @@ type
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
+    {$if CompilerVersion>=22}
+    property OnCanResize;
+    property OnGesture;
+    property Touch;
+    {$ifend}
   end;
 
 type
