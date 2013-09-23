@@ -22742,6 +22742,9 @@ begin
       begin
         while not (tsStopValidation in FStates) do
         begin
+          // If the cache is full then stop the loop.
+          if (Integer(Index) > Length(FPositionCache)) then    // ADDED: 17.09.2013 - Veit Zimmermann
+            Break;                                             // ADDED: 17.09.2013 - Veit Zimmermann
           if (EntryCount mod CacheThreshold) = 0 then
           begin
             // New cache entry to set up.
@@ -22756,9 +22759,9 @@ begin
           Inc(CurrentTop, NodeHeight[CurrentNode]);
           // Advance to next visible node.
           Temp := GetNextVisibleNoInit(CurrentNode, True);
-          // If there is no further node or the cache is full then stop the loop.
-          if (Temp = nil) or (Integer(Index) = Length(FPositionCache)) then
-            Break;
+          // If there is no further node then stop the loop.
+          if (Temp = nil) then       // CHANGED: 17.09.2013 - Veit Zimmermann
+            Break;                   // CHANGED: 17.09.2013 - Veit Zimmermann
 
           CurrentNode := Temp;
           Inc(EntryCount);
