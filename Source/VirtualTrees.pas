@@ -25866,7 +25866,11 @@ const
 
   procedure DrawBackground(State: Integer);
   begin
-    if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
+    // if the toGridExtensions is NOT in MiscOptions or a full row
+    // selection is enabled, draw the selection into the RowRect; if
+    // toGridExtensions is included, draw just to the InnerRect cell
+    // rectangle
+    if not (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
       DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, RowRect, nil)
     else
       DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
@@ -25877,7 +25881,7 @@ const
     Theme: HTHEME;
   begin
     Theme := OpenThemeData(Application.{$if CompilerVersion >= 20}ActiveFormHandle{$else}Handle{$ifend}, 'Explorer::ItemsView');
-    if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
+    if not (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
       DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, LVP_LISTDETAIL, State, RowRect, nil)
     else
       DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, LVP_LISTDETAIL, State, InnerRect, nil);
