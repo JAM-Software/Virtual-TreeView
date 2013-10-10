@@ -32342,10 +32342,10 @@ begin
         // output a message if no items are to display
         Canvas.Font := Self.Font;
         SetBkMode(TargetCanvas.Handle, TRANSPARENT);
-        R.Left := TargetRect.Left + 3;
-        R.Top := TargetRect.Top + 2;
-        R.Right := Max(TargetRect.Right, Window.Right) -2; //  TargetRect.Right is very small when the window is moved out of the Dektop on the left
-        R.Bottom := TargetRect.Bottom -2;
+        R.Left := OffSetX + 2;
+        R.Top := 2;
+        R.Right := R.Left + Width - 2;
+        R.Bottom := Height -2;
         TargetCanvas.Font.Color := clGrayText;
         {$if CompilerVersion >= 20}
         TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft, tfWordBreak]);
