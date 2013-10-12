@@ -34617,7 +34617,7 @@ begin
     // We have to take out the two pixel border of the edit control as well as a one pixel "edit border" the
     // control leaves around the (selected) text.
     R := FEdit.ClientRect;
-    lOffset := 2;
+    lOffset := IfThen(vsMultiline in FNode.States, 0, 2);
     if tsUseThemes in FTree.FStates then
       Inc(lOffset);
     InflateRect(R, -FTree.FTextMargin + lOffset, lOffset);
@@ -34855,7 +34855,7 @@ begin
     //       for 9x/Me.
     if vsMultiline in Node.States then
     begin
-      Height := ComputeNodeHeight(Canvas, Node, Column);
+      Height  := ComputeNodeHeight(Canvas, Node, Column);
       DoPaintText(Node, Canvas, Column, ttNormal);
       // Disabled node color overrides all other variants.
       if (vsDisabled in Node.States) or not Enabled then
