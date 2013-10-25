@@ -8086,7 +8086,7 @@ begin
             Inc(Result.Bottom, 6);
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
             If not Assigned(Tree) then exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
-            Inc(Result.Right, 2 * Tree.FTextMargin + 2);
+            Inc(Result.Right, Tree.FTextMargin + FTextHeight); // We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
           end;
         end;
       end;
@@ -22701,75 +22701,72 @@ begin
     if FStartIndex = 0 then
       FPositionCache := nil;
 
-    if FVisibleCount > CacheThreshold then
+    EntryCount := CalculateCacheEntryCount;
+    SetLength(FPositionCache, EntryCount);
+    if FStartIndex > EntryCount then
+      FStartIndex := EntryCount;
+
+    // Optimize validation by starting with FStartIndex if set.
+    if (FStartIndex > 0) and Assigned(FPositionCache[FStartIndex - 1].Node) then
     begin
-      EntryCount := CalculateCacheEntryCount;
-      SetLength(FPositionCache, EntryCount);
-      if FStartIndex > EntryCount then
-        FStartIndex := EntryCount;
+      // Index is the current entry in FPositionCache.
+      Index := FStartIndex - 1;
+      // Running term for absolute top value.
+      CurrentTop := FPositionCache[Index].AbsoluteTop;
+      // Running node pointer.
+      CurrentNode := FPositionCache[Index].Node;
+    end
+    else
+    begin
+      // Index is the current entry in FPositionCache.
+      Index := 0;
+      // Running term for absolute top value.
+      CurrentTop := 0;
+      // Running node pointer.
+      CurrentNode := GetFirstVisibleNoInit(nil, True);
+    end;
 
-      // Optimize validation by starting with FStartIndex if set.
-      if (FStartIndex > 0) and Assigned(FPositionCache[FStartIndex - 1].Node) then
+    // EntryCount serves as counter for processed nodes here. This value can always start at 0 as
+    // the validation either starts also at index 0 or an index which is always a multiple of CacheThreshold
+    // and EntryCount is only used with modulo CacheThreshold.
+    EntryCount := 0;
+    if Assigned(CurrentNode) then
+    begin
+      while not (tsStopValidation in FStates) do
       begin
-        // Index is the current entry in FPositionCache.
-        Index := FStartIndex - 1;
-        // Running term for absolute top value.
-        CurrentTop := FPositionCache[Index].AbsoluteTop;
-        // Running node pointer.
-        CurrentNode := FPositionCache[Index].Node;
-      end
-      else
-      begin
-        // Index is the current entry in FPositionCache.
-        Index := 0;
-        // Running term for absolute top value.
-        CurrentTop := 0;
-        // Running node pointer.
-        CurrentNode := GetFirstVisibleNoInit(nil, True);
-      end;
-
-      // EntryCount serves as counter for processed nodes here. This value can always start at 0 as
-      // the validation either starts also at index 0 or an index which is always a multiple of CacheThreshold
-      // and EntryCount is only used with modulo CacheThreshold.
-      EntryCount := 0;
-      if Assigned(CurrentNode) then
-      begin
-        while not (tsStopValidation in FStates) do
+        // If the cache is full then stop the loop.
+        if (Integer(Index) > Length(FPositionCache)) then    // ADDED: 17.09.2013 - Veit Zimmermann
+          Break;                                             // ADDED: 17.09.2013 - Veit Zimmermann
+        if (EntryCount mod CacheThreshold) = 0 then
         begin
-          // If the cache is full then stop the loop.
-          if (Integer(Index) > Length(FPositionCache)) then    // ADDED: 17.09.2013 - Veit Zimmermann
-            Break;                                             // ADDED: 17.09.2013 - Veit Zimmermann
-          if (EntryCount mod CacheThreshold) = 0 then
+          // New cache entry to set up.
+          with FPositionCache[Index] do
           begin
-            // New cache entry to set up.
-            with FPositionCache[Index] do
-            begin
-              Node := CurrentNode;
-              AbsoluteTop := CurrentTop;
-            end;
-            Inc(Index);
+            Node := CurrentNode;
+            AbsoluteTop := CurrentTop;
           end;
-
-          Inc(CurrentTop, NodeHeight[CurrentNode]);
-          // Advance to next visible node.
-          Temp := GetNextVisibleNoInit(CurrentNode, True);
-          // If there is no further node then stop the loop.
-          if (Temp = nil) then       // CHANGED: 17.09.2013 - Veit Zimmermann
-            Break;                   // CHANGED: 17.09.2013 - Veit Zimmermann
-
-          CurrentNode := Temp;
-          Inc(EntryCount);
+          Inc(Index);
         end;
+
+        Inc(CurrentTop, NodeHeight[CurrentNode]);
+        // Advance to next visible node.
+        Temp := GetNextVisibleNoInit(CurrentNode, True);
+        // If there is no further node then stop the loop.
+        if (Temp = nil) then       // CHANGED: 17.09.2013 - Veit Zimmermann
+          Break;                   // CHANGED: 17.09.2013 - Veit Zimmermann
+
+        CurrentNode := Temp;
+        Inc(EntryCount);
       end;
-      // Finalize the position cache so no nil entry remains there.
-      if not (tsStopValidation in FStates) and (Integer(Index) <= High(FPositionCache)) then
+    end;
+    // Finalize the position cache so no nil entry remains there.
+    if not (tsStopValidation in FStates) and (Integer(Index) <= High(FPositionCache)) then
+    begin
+      SetLength(FPositionCache, Index + 1);
+      with FPositionCache[Index] do
       begin
-        SetLength(FPositionCache, Index + 1);
-        with FPositionCache[Index] do
-        begin
-          Node := CurrentNode;
-          AbsoluteTop := CurrentTop;
-        end;
+        Node := CurrentNode;
+        AbsoluteTop := CurrentTop;
       end;
     end;
   end;
@@ -27058,7 +27055,7 @@ begin
   InterruptValidation;
 
   FStartIndex := 0;
-  if tsValidationNeeded in FStates then
+  if (tsValidationNeeded in FStates) and (FVisibleCount > CacheThreshold) then
   begin
     // Tell the thread this tree needs actually something to do.
     WorkerThread.AddTree(Self);
