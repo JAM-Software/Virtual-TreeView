@@ -1,3 +1,15 @@
+V5.2.2: (30 Oct 2013)
+- Added support for Delphi / RAD Studio XE5
+- Fixed issue #371: property OnGesture is now published.
+- Fixed issue #365: No longer changing timer resolution globally
+- Fixed issue #347: No expand-pluses seen under Windopws classic theme for a vcl styled application
+- Fixed issue #373: Scrollbar does not size properly for more than 2000 nodes with variable node height:
+  The OnMeasureItem event is triggered only in case the toVariableNode flags in included in MiscOptions 
+- Fixed issue #376: Incorrect selection paint when toGridExtensions is included in the MiscOptions
+- Improved displaying of EmptyListMessage text, especially when scrolling horizontally.
+- Fixed issue #61: EditCursor missing with manifest + toThemeAware + vsMultiline
+- Fixed issue #352: Minor improvement in calculation of right margin of hint window.  
+
 V5.2.1: (06 Sep 2013)
 - Fixed #352 and #354 by modifying the implementation of #237 so that a focused node is ensured only if the
   control is being entered using the TAB key. This is consistent with the behavior of the Windows Explorer.
