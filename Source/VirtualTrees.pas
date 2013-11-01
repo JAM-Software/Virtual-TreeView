@@ -24467,14 +24467,12 @@ begin
   begin
     Count := Node.ChildCount;
     DoInitChildren(Node, Count);
-    if Count = Node.ChildCount then
-      exit;// value has not chnaged, so nothing to do
-    SetChildCount(Node, Count);
+    if Count <> Node.ChildCount then
+      SetChildCount(Node, Count);
     if Count = 0 then
       Exclude(Node.States, vsHasChildren);
   end;
 end;
-
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.InitNode(Node: PVirtualNode);
