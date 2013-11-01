@@ -15401,7 +15401,7 @@ begin
         InitNode(Node);
 
       // Ensure the node's height is determined.
-      MeasureItemHeight(Canvas, Node);
+      MeasureItemHeight(Self.Canvas, Node);
     end;
     Result := Node.NodeHeight
   end
@@ -31857,6 +31857,7 @@ begin
 
         TargetRect := Rect(Target.X, Target.Y - (Window.Top - BaseOffset), MaximumRight, 0);
         TargetRect.Bottom := TargetRect.Top;
+        TargetCanvas.Font := Self.Font;
 
         // This marker gets the index of the first column which is visible in the given window.
         // This is needed for column based background colors.
