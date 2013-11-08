@@ -6470,7 +6470,7 @@ procedure TBufferedAnsiString.Add(const S: AnsiString);
 var
   NewLen,
   LastOffset,
-  Len: NativeUInt;
+  Len: NativeInt;
 
 begin
   Len := Length(S);
@@ -6495,7 +6495,7 @@ procedure TBufferedAnsiString.AddNewLine;
 
 var
   NewLen,
-  LastOffset: NativeUInt;
+  LastOffset: NativeInt;
 
 begin
   // Make room for the CR/LF characters.
