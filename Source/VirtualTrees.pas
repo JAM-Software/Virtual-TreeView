@@ -23309,7 +23309,8 @@ procedure TBaseVirtualTree.FontChanged(AFont: TObject);
 
 begin
   FFontChanged := True;
-  FOldFontChange(AFont);
+  if Assigned(FOldFontChange) then
+    FOldFontChange(AFont);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
