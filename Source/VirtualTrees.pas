@@ -6674,6 +6674,11 @@ begin
     ToBeSet := Value - FPaintOptions;
     ToBeCleared := FPaintOptions - Value;
     FPaintOptions := Value;
+    if (toFixedIndent in ToBeSet) then begin
+      // Fixes issue #388
+      Include(FPaintOptions, toShowRoot);
+      Include(ToBeSet, toShowRoot);
+    end;//if
     with FOwner do
     begin
       HandleWasAllocated := HandleAllocated;
@@ -16935,7 +16940,7 @@ begin
       if not (tsValidating in FStates) and FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
       begin
         InvalidateCache;
-        if FUpdateCount = 0 then
+        if (FUpdateCount = 0) and ([tsPainting, tsSizing] * FStates = []) then
         begin
           ValidateCache;
           InvalidateToBottom(Node);
@@ -28447,14 +28452,17 @@ begin
     Exit;
   Temp := Node;
   Indent := 0;
-  while Temp <> FRoot do
+  if not (toFixedIndent in FOptions.FPaintOptions) then
   begin
-    if not (vsVisible in Temp.States) or not (vsExpanded in Temp.Parent.States) then
-      Exit;
-    Temp := Temp.Parent;
-    if MainColumnHit and (Temp <> FRoot) then
-      Inc(Indent, FIndent);
-  end;
+    while Temp <> FRoot do
+    begin
+      if not (vsVisible in Temp.States) or not (vsExpanded in Temp.Parent.States) then
+        Exit;
+      Temp := Temp.Parent;
+      if MainColumnHit and (Temp <> FRoot) then
+        Inc(Indent, FIndent);
+    end;
+  end;//if not toFixedIndent
 
   // Here we know the node is visible.
   Offset := 0;
@@ -31515,12 +31523,17 @@ var
   NewNodeHeight: Integer;
 
 begin
-  if not (vsHeightMeasured in Node.States) then
+  if not (vsHeightMeasured in Node.States) {$if CompilerVersion < 20}and (MainThreadId = GetCurrentThreadId){$ifend} then
   begin
     Include(Node.States, vsHeightMeasured);
     if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
       NewNodeHeight := Node.NodeHeight;
-      DoMeasureItem(Canvas, Node, NewNodeHeight);
+      {$if CompilerVersion > 20} // Anonymous methods help to make this thread safe easily.
+      if (MainThreadId <> GetCurrentThreadId) then
+        TThread.Synchronize(nil, procedure begin DoMeasureItem(Canvas, Node, NewNodeHeight) end)
+      else
+      {$ifend}
+        DoMeasureItem(Canvas, Node, NewNodeHeight);
       if NewNodeHeight <> Node.NodeHeight then
         SetNodeHeight(Node, NewNodeHeight);
     end;
