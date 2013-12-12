@@ -98,7 +98,7 @@ object GeneralForm: TGeneralForm
     TabOrder = 0
     TreeOptions.AnimationOptions = [toAnimatedToggle]
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoSpanColumns, toAutoTristateTracking, toAutoHideButtons, toDisableAutoscrollOnFocus, toAutoChangeScale]
-    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
     TreeOptions.PaintOptions = [toHideSelection, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseBlendedSelection]
     TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect, toRightClickSelect]
     TreeOptions.StringOptions = [toSaveCaptions, toShowStaticText, toAutoAcceptEditChange]
@@ -151,7 +151,6 @@ object GeneralForm: TGeneralForm
     Height = 21
     Style = csDropDownList
     Anchors = [akRight, akBottom]
-    ItemHeight = 13
     PopupMenu = PopupMenu1
     TabOrder = 1
     OnChange = CheckMarkComboChange
