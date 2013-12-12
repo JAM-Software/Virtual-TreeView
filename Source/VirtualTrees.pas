@@ -35332,25 +35332,28 @@ begin
   // This long winded procedure is necessary because font changes (as well as brush and pen changes) are
   // unfortunately not announced via the Canvas.OnChange event.
   RedirectFontChangeEvent(PaintInfo.Canvas);
+  try
 
-  // Determine main text direction as well as other text properties.
-  TextOutFlags := ETO_CLIPPED or RTLFlag[PaintInfo.BidiMode <> bdLeftToRight];
-  S := Text[PaintInfo.Node, PaintInfo.Column];
+    // Determine main text direction as well as other text properties.
+    TextOutFlags := ETO_CLIPPED or RTLFlag[PaintInfo.BidiMode <> bdLeftToRight];
+    S := Text[PaintInfo.Node, PaintInfo.Column];
 
-  // Paint the normal text first...
-  if Length(S) > 0 then
-    PaintNormalText(PaintInfo, TextOutFlags, S);
-
-  // ... and afterwards the static text if not centered and the node is not multiline enabled.
-  if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.FStringOptions) then
-  begin
-    S := '';
-    with PaintInfo do
-      DoGetText(Node, Column, ttStatic, S);
+    // Paint the normal text first...
     if Length(S) > 0 then
-      PaintStaticText(PaintInfo, TextOutFlags, S);
+      PaintNormalText(PaintInfo, TextOutFlags, S);
+
+    // ... and afterwards the static text if not centered and the node is not multiline enabled.
+    if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.FStringOptions) then
+    begin
+      S := '';
+      with PaintInfo do
+        DoGetText(Node, Column, ttStatic, S);
+      if Length(S) > 0 then
+        PaintStaticText(PaintInfo, TextOutFlags, S);
+    end;
+  finally
+    RestoreFontChangeEvent(PaintInfo.Canvas);
   end;
-  RestoreFontChangeEvent(PaintInfo.Canvas);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
