@@ -34370,7 +34370,7 @@ begin
       end;
     Ord('A'):
       begin
-        if Tree.IsEditing and (ssCtrl in KeyboardStateToShiftState) then begin
+        if Tree.IsEditing and ([ssCtrl] = KeyboardStateToShiftState) then begin
           Self.SelectAll();
           Message.CharCode := 0;
         end;
