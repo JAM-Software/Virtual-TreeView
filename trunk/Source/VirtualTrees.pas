@@ -95,6 +95,7 @@ const
 {$if CompilerVersion < 20}
 type
   UnicodeString = WideString;
+  RawByteString = AnsiString;
   PByte = PAnsiChar;
 {$ifend}
 
@@ -3497,8 +3498,8 @@ type
     function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: UnicodeString = ''): Integer; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
     procedure ContentToCustom(Source: TVSTTextSourceType);
-    function ContentToHTML(Source: TVSTTextSourceType; Caption: UnicodeString = ''): AnsiString;
-    function ContentToRTF(Source: TVSTTextSourceType): AnsiString;
+    function ContentToHTML(Source: TVSTTextSourceType; Caption: UnicodeString = ''): RawByteString;
+    function ContentToRTF(Source: TVSTTextSourceType): RawByteString;
     function ContentToText(Source: TVSTTextSourceType; Separator: Char): AnsiString; overload;
     function ContentToText(Source: TVSTTextSourceType; const Separator: AnsiString): AnsiString; overload;
     function ContentToUnicode(Source: TVSTTextSourceType; Separator: WideChar): UnicodeString; overload;
@@ -4284,14 +4285,14 @@ type
     FStart,
     FPosition,
     FEnd: PAnsiChar;
-    function GetAsString: AnsiString;
+    function GetAsString: RawByteString;
   public
     destructor Destroy; override;
 
-    procedure Add(const S: AnsiString);
+    procedure Add(const S: RawByteString);
     procedure AddNewLine;
 
-    property AsString: AnsiString read GetAsString;
+    property AsString: RawByteString read GetAsString;
   end;
 
   TWideBufferedString = class
@@ -6458,7 +6459,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBufferedAnsiString.GetAsString: AnsiString;
+function TBufferedAnsiString.GetAsString: RawBytestring;
 
 begin
   SetString(Result, FStart, FPosition - FStart);
@@ -6466,7 +6467,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBufferedAnsiString.Add(const S: AnsiString);
+procedure TBufferedAnsiString.Add(const S: RawByteString);
 
 var
   NewLen,
@@ -35785,7 +35786,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; Caption: UnicodeString = ''): AnsiString;
+function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; Caption: UnicodeString = ''): RawByteString;
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
@@ -36301,7 +36302,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): AnsiString;
+function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): RawByteString;
 
 // Renders the current tree content (depending on Source) as RTF (rich text).
 // Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
@@ -36432,7 +36433,7 @@ var
   I, J: Integer;
   Save, Run: PVirtualNode;
   GetNextNode: TGetNextNodeProc;
-  S, Tabs : AnsiString;
+  S, Tabs : RawByteString;
   Text: UnicodeString;
   Twips: Integer;
 
@@ -36604,6 +36605,7 @@ begin
         Inc(I);
       end;
       Buffer.Add('\row');
+      Buffer.AddNewLine;
       if (Assigned(FOnAfterNodeExport)) then
         FOnAfterNodeExport(Self, etRTF, Run);
       Run := GetNextNode(Run);
