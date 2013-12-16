@@ -24178,9 +24178,17 @@ begin
     MultiSelect := toMultiSelect in FOptions.FSelectionOptions;
     ShiftEmpty := ShiftState = [];
     NodeSelected := IsAnyHit and (vsSelected in HitInfo.HitNode.States);
-    FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
-      not (hiNowhere in HitInfo.HitPositions) and
-      (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
+    if MultiSelect then
+    begin
+      // If MultiSelect is selected we will start a full row drag only in case a label was hit,
+      // otherwise a multi selection will start.
+      FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
+          not (hiNowhere in HitInfo.HitPositions) and
+          (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions))
+    end
+    else // No MultiSelect, hence we can start a drag anywhere in the row.
+      FullRowDrag := toFullRowDrag in FOptions.FMiscOptions;
+
     IsHeightTracking := (Message.Msg = WM_LBUTTONDOWN) and
                         (hiOnItem in HitInfo.HitPositions) and
                         ([hiUpperSplitter, hiLowerSplitter] * HitInfo.HitPositions <> []);
