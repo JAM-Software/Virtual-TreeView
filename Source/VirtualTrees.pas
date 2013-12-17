@@ -25893,14 +25893,12 @@ const
 
   procedure DrawBackground(State: Integer);
   begin
-    // if the toGridExtensions is NOT in MiscOptions or a full row
-    // selection is enabled, draw the selection into the RowRect; if
-    // toGridExtensions is included, draw just to the InnerRect cell
-    // rectangle
-    if not (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
-      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, RowRect, nil)
+    // if the full row selection is disabled or toGridExtensions is in the MiscOptions, draw the selection
+    // into the InnerRect, otherwise into the RowRect
+    if not (toFullRowSelect in FOptions.FSelectionOptions) or (toGridExtensions in FOptions.FMiscOptions) then
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil)
     else
-      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil);
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, RowRect, nil);
   end;
 
   procedure DrawThemedFocusRect(State: Integer);
