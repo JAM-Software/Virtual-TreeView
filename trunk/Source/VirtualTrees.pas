@@ -34281,6 +34281,8 @@ begin
     // Instead directly calling AutoAdjustSize it is necessary on Win9x/Me to decouple this notification message
     // and eventual resizing. Hence we use a message to accomplish that.
     AutoAdjustSize()
+  else
+    Inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
