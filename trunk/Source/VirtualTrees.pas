@@ -6407,6 +6407,7 @@ begin
           if csUseCache in EnterStates then
             Include(LeaveStates, csValidationNeeded);
           ChangeTreeStates(EnterStates, LeaveStates);
+          Synchronize(FCurrentTree.UpdateEditBounds);
           FCurrentTree := nil;
         end;
       end;
@@ -26957,6 +26958,10 @@ var
 begin
   if (tsEditing in FStates) and Assigned(FFocusedNode) then
   begin
+    if (GetCurrentThreadId <> MainThreadID) then begin
+      // UpdateEditBounds() will be called at the end of the thread
+      Exit;
+    end;
     if vsMultiline in FFocusedNode.States then
       R := GetDisplayRect(FFocusedNode, FEditColumn, True, False)
     else
@@ -26984,6 +26989,7 @@ begin
     end;
     if toShowHorzGridLines in TreeOptions.PaintOptions then
       Dec(R.Bottom);
+    R.Bottom := R.Top + Max(R.Bottom - R.Top, FEditLink.GetBounds.Bottom - FEditLink.GetBounds.Top); // Ensure to never decrease the size of the currently active edit control. Helps to prevent issue #159
     FEditLink.SetBounds(R);
   end;
 end;
@@ -34425,13 +34431,14 @@ begin
       {$ifdef TntSupport}
         GetTextExtentPoint32W(DC, PWideChar(Text), Length(Text), Size);
       {$else}
-        GetTextExtentPoint32(DC, PChar(Text), Length(Text), Size);
+        GetTextExtentPoint32(DC, PChar(Text+'yG'), Length(Text)+2, Size);
       {$endif TntSupport}
       Inc(Size.cx, 2 * FLink.FTree.FTextMargin);
-
+      Inc(Size.cy, 2 * FLink.FTree.FTextMargin);
+      Height := Max(Size.cy, Height - 2 * GetSystemMetrics(SM_CYBORDER)); // Ensure a minimum height so that the edit field's content and cursor are displayed correctly.
       // Repaint associated node if the edit becomes smaller.
       if Size.cx < Width then
-        FLink.FTree.InvalidateNode(FLink.FNode);
+        FLink.FTree.Invalidate();
 
       if FLink.FAlignment = taRightJustify then
         FLink.SetBounds(Rect(Left + Width - Size.cx, Top, Left + Width, Top + Height))
@@ -34662,7 +34669,7 @@ begin
     InflateRect(R, -FTree.FTextMargin + lOffset, lOffset);
     if not (vsMultiline in FNode.States) then
       OffsetRect(R, 0, FTextBounds.Top - FEdit.Top);
-
+    R.Top := Max(-1, R.Top); // A value smaller than -1 will prevent the edit cursor from being shown by Windows, see issue #159
     SendMessage(FEdit.Handle, EM_SETRECTNP, 0, LPARAM(@R));
   end;
 end;
