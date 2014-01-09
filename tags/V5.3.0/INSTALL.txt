@@ -1,0 +1,58 @@
+Supported Delphi version: Delphi 7, Delphi 2006 - XE, RAD Studio XE2
+Supported Windows Versions: XP, 2003, Vista, 2008, 7, 2008R2
+
+
+The former installer is no longer maintained, but installation is quite easy:
+
+
+Delphi 7 Installation
+~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 7\VirtualTrees.bpg"
+2. Right click on "VirtualTreesD" and click "Install"
+3. Go to "Tools > Environment Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2007 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2007\Delphi 2007.groupproj"
+2. Right click on "VirtualTreesD.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2009 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2009\Delphi 2009.groupproj"
+2. Right click on "VirtualTreesD12.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2010 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2010\Delphi 2010.groupproj"
+2. Right click on "VirtualTreesD14.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi XE Installation
+~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi XE\Delphi XE.groupproj"
+2. Right click on "VirtualTreesD15.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi / RAD Studio XE2 - XE5 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\RAD Studio XE2\RAD Studio XE*.groupproj"
+2. Right click on "VirtualTreesD1*.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+   
+Please send comments and suggestions regarding the packages and the install
+instructions to joachim.marder@gmail.com
+
