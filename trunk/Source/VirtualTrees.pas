@@ -6407,7 +6407,7 @@ begin
           if csUseCache in EnterStates then
             Include(LeaveStates, csValidationNeeded);
           ChangeTreeStates(EnterStates, LeaveStates);
-          Synchronize(FCurrentTree.UpdateEditBounds);
+          {$if CompilerVersion >=20}Queue{$else}Synchronize{$ifend}(FCurrentTree.UpdateEditBounds);
           FCurrentTree := nil;
         end;
       end;
