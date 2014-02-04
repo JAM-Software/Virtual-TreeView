@@ -9616,7 +9616,7 @@ begin
     if Layout = blGlyphLeft then
       MinLeft := HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing;
     if FCheckBox and (Owner.Header.MainColumn = Self.Index) then
-      Dec(HeaderGlyphPos.X, 2 + 2 * Integer(toShowRoot in Owner.FHeader.Treeview.TreeOptions.FPaintOptions))
+      Dec(HeaderGlyphPos.X, 2
     else
       if Owner.Header.MainColumn <> Self.Index then
         Dec(HeaderGlyphPos.X, 2);
