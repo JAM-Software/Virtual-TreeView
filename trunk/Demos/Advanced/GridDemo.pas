@@ -38,6 +38,7 @@ type
     procedure VST5AfterCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       CellRect: TRect);
     procedure VST5StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure VST5FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   end;
 
 var
@@ -90,6 +91,15 @@ procedure TGridForm.VST5FocusChanging(Sender: TBaseVirtualTree; OldNode, NewNode
 begin
   // Do not allow focusing the indicator column (which is a fixed column).
   Allowed := NewColumn > 0;
+end;
+
+procedure TGridForm.VST5FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  Data: PGridData;
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data.Value[1]);
+  Finalize(Data.Value[2]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
