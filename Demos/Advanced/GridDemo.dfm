@@ -100,6 +100,7 @@ object GridForm: TGridForm
     OnBeforeItemErase = VST5BeforeItemErase
     OnCreateEditor = VST5CreateEditor
     OnFocusChanging = VST5FocusChanging
+    OnFreeNode = VST5FreeNode
     OnPaintText = VST5PaintText
     OnInitNode = VST5InitNode
     OnStateChange = VST5StateChange
