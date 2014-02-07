@@ -12951,7 +12951,7 @@ begin
         if IsVSplitterHit or IsHSplitterHit then
         begin
           NewCursor := Screen.Cursors[Treeview.Cursor];
-          if IsVSplitterHit and (hoHeightResize in FOptions) or (csDesigning in Treeview.ComponentState) then
+          if IsVSplitterHit and ((hoHeightResize in FOptions) or (csDesigning in Treeview.ComponentState)) then
             NewCursor := Screen.Cursors[crVertSplit]
           else
             if IsHSplitterHit then
