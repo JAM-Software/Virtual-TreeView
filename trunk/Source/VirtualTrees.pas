@@ -18959,8 +18959,9 @@ begin
           end;
         end;
 
-        // According to http://www.it-faq.pl/mskb/99/337.HTM there is a problem with ToASCII when used in conjunction
-        // with dead chars. The article recommends to call ToASCII twice to restore a deleted flag in the key message
+        // According to https://web.archive.org/web/20041129085958/http://www.it-faq.pl/mskb/99/337.HTM
+        // there is a problem with ToASCII when used in conjunction with dead chars.
+        // The article recommends to call ToASCII twice to restore a deleted flag in the key message
         // structure under certain circumstances. It turned out it is best to always call ToASCII twice.
         ToASCII(Message.CharCode, (Message.KeyData shr 16) and 7, KeyState, @Buffer, 0);
 
