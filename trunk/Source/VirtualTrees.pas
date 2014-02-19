@@ -6345,7 +6345,7 @@ begin
       TranslateMessage(Msg);
       DispatchMessage(Msg);
     end;
-    CheckSynchronize();// If this call makes problems consider doing it only when needed by counting Synchronize() calls in a threadsafe counter
+    {$if CompilerVersion <20}CheckSynchronize();{$ifend} // Wo don't need to call CheckSynchronize() if TThread.Queue can be used in TWorkerThread.Execute() as it is non-blocking
   end;
 end;
 
