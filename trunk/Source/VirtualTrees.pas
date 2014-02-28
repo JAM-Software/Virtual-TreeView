@@ -1103,7 +1103,7 @@ type
     property Position: TColumnPosition read FPosition write SetPosition;
     property Spacing: Integer read FSpacing write SetSpacing default 3;
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
-    property Tag: Integer read FTag write FTag default 0;
+    property Tag: NativeInt read FTag write FTag default 0;
     property Text: UnicodeString read FText write SetText stored False; // Never let the VCL store the wide string,
                                                                      // it is simply unable to write it correctly.
                                                                      // We use DefineProperties here.
