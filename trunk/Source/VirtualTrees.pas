@@ -3096,6 +3096,7 @@ type
     function GetFirst(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetFirstChecked(State: TCheckState = csCheckedNormal; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetFirstChild(Node: PVirtualNode): PVirtualNode;
+    function GetFirstChildNoInit(Node: PVirtualNode): PVirtualNode;
     function GetFirstCutCopy(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetFirstInitialized(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetFirstLeaf: PVirtualNode;
@@ -28761,6 +28762,23 @@ begin
 
   if Assigned(Result) and not (vsInitialized in Result.States) then
     InitNode(Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetFirstChildNoInit(Node: PVirtualNode): PVirtualNode;
+// Determines the first child of the given node but does not initialize it.
+
+begin
+  if (Node = nil) or (Node = FRoot) then
+    Result := FRoot.FirstChild
+  else
+  begin
+    if vsHasChildren in Node.States then
+      Result := Node.FirstChild
+    else
+      Result := nil;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
