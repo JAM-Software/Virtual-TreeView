@@ -26983,7 +26983,8 @@ var
   CurrentBidiMode: TBidiMode;
 
 begin
-  if (tsEditing in FStates) and Assigned(FFocusedNode) then
+  if (tsEditing in FStates) and Assigned(FFocusedNode) and
+     (FEditColumn < FHeader.Columns.Count) then // prevent EArgumentOutOfRangeException
   begin
     if (GetCurrentThreadId <> MainThreadID) then begin
       // UpdateEditBounds() will be called at the end of the thread
