@@ -2714,7 +2714,7 @@ type
     procedure DoHeaderMouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); virtual;
     procedure DoHotChange(Old, New: PVirtualNode); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: UnicodeString): Integer; virtual;
-    procedure DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal); virtual;
+    function DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean; virtual;
     procedure DoInitNode(Parent, Node: PVirtualNode; var InitStates: TVirtualNodeInitStates); virtual;
     function DoKeyAction(var CharCode: Word; var Shift: TShiftState): Boolean; virtual;
     procedure DoLoadUserData(Node: PVirtualNode; Stream: TStream); virtual;
@@ -22136,11 +22136,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal);
-
+function TBaseVirtualTree.DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean;
+/// The function calls the OnInitChildren and returns True if the event was called; it returns False if the caller can expect that no changes have been made to ChildCount
 begin
-  if Assigned(FOnInitChildren) then
+  if Assigned(FOnInitChildren) then begin
     FOnInitChildren(Self, Node, ChildCount);
+    Result :=  True;
+  end
+  else
+    Result := False;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24524,11 +24528,11 @@ begin
   if Assigned(Node) and (Node <> FRoot) and (vsHasChildren in Node.States) then
   begin
     Count := Node.ChildCount;
-    DoInitChildren(Node, Count);
-    if Count <> Node.ChildCount then
+    if DoInitChildren(Node, Count) then begin
       SetChildCount(Node, Count);
-    if Count = 0 then
-      Exclude(Node.States, vsHasChildren);
+      if Count = 0 then
+        Exclude(Node.States, vsHasChildren);
+    end;
   end;
 end;
 //----------------------------------------------------------------------------------------------------------------------
