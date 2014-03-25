@@ -67,7 +67,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <ILINK_LibraryPath>C:\Program Files (x86)\Embarcadero\DelphiXE5\lib\win32\release\psdk\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
-        <Icon_MainIcon>VirtualTreesR.ico</Icon_MainIcon>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -124,9 +123,6 @@
         <CppCompile Include="VirtualTreesR.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
-        <ResFiles Include="VirtualTreesR.res">
-            <BuildOrder>2</BuildOrder>
-        </ResFiles>
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>6</BuildOrder>
         </PackageImport>
@@ -158,7 +154,7 @@
                     <Source Name="MainSource">VirtualTreesR.cpp</Source>
                 </Source>
                 <VersionInfo>
-                    <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
                     <VersionInfo Name="AutoIncBuild">False</VersionInfo>
                     <VersionInfo Name="MajorVer">1</VersionInfo>
                     <VersionInfo Name="MinorVer">0</VersionInfo>
