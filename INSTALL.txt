@@ -3,6 +3,8 @@ Supported Windows Versions: XP, 2003, Vista, 2008, 7, 2008R2
 
 
 The former installer is no longer maintained, but installation is quite easy:
+Extract the entire(!) ZIP file and follow the instzructions below for your 
+Delphi / RAD Studio version.
 
 
 Delphi 7 Installation
