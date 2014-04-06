@@ -2015,12 +2015,9 @@ type
     FScrollBarVertical: Boolean;
     FScrollBarVisible: Boolean;
     FScrollBarEnabled: Boolean;
-    procedure WMNCHitTest(var Msg: TWMNCHitTest);
-    message WM_NCHITTEST;
-    procedure WMEraseBkgnd(var Msg: TMessage);
-    message WM_ERASEBKGND;
-    procedure WMPaint(var Msg: TWMPaint);
-    message WM_PAINT;
+    procedure WMNCHitTest(var Msg: TWMNCHitTest); message WM_NCHITTEST;
+    procedure WMEraseBkgnd(var Msg: TMessage); message WM_ERASEBKGND;
+    procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
   strict protected
     procedure CreateParams(var Params: TCreateParams);
     override;
@@ -2054,36 +2051,23 @@ type
     FVertScrollBarUpButtonState: TThemedScrollBar;
     FVertScrollBarWindow: TVclStyleScrollBarWindow;
 
-    procedure WMKeyDown(var Msg: TMessage);
-    message WM_KEYDOWN;
-    procedure WMKeyUp(var Msg: TMessage);
-    message WM_KEYUP;
-    procedure WMLButtonDown(var Msg: TWMMouse);
-    message WM_LBUTTONDOWN;
-    procedure WMLButtonUp(var Msg: TWMMouse);
-    message WM_LBUTTONUP;
-    procedure WMNCLButtonDown(var Msg: TWMMouse);
-    message WM_NCLBUTTONDOWN;
-    procedure WMNCMouseMove(var Msg: TWMMouse);
-    message WM_NCMOUSEMOVE;
-    procedure WMNCLButtonUp(var Msg: TWMMouse);
-    message WM_NCLBUTTONUP;
-    procedure WMNCPaint(var Msg: TMessage);
-    message WM_NCPAINT;
-    procedure WMMouseMove(var Msg: TWMMouse);
-    message WM_MOUSEMOVE;
-    procedure WMMouseWheel(var Msg: TMessage);
-    message WM_MOUSEWHEEL;
-    procedure WMVScroll(var Msg: TMessage);
-    message WM_VSCROLL;
-    procedure WMHScroll(var Msg: TMessage);
-    message WM_HSCROLL;
-    procedure WMCaptureChanged(var Msg: TMessage);
-    message WM_CAPTURECHANGED;
-    procedure WMNCLButtonDblClk(var Msg: TWMMouse);
-    message WM_NCLBUTTONDBLCLK;
-    procedure WMSize(var Msg: TMessage);
-    message WM_SIZE;
+    procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
+    procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
+    procedure WMLButtonDown(var Msg: TWMMouse);  message WM_LBUTTONDOWN;
+    procedure WMLButtonUp(var Msg: TWMMouse); message WM_LBUTTONUP;
+    procedure WMNCLButtonDown(var Msg: TWMMouse); message WM_NCLBUTTONDOWN;
+    procedure WMNCMouseMove(var Msg: TWMMouse); message WM_NCMOUSEMOVE;
+    procedure WMNCLButtonUp(var Msg: TWMMouse); message WM_NCLBUTTONUP;
+    procedure WMNCPaint(var Msg: TMessage); message WM_NCPAINT;
+    procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
+    procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
+    procedure WMVScroll(var Msg: TMessage); message WM_VSCROLL;
+    procedure WMHScroll(var Msg: TMessage); message WM_HSCROLL;
+    procedure WMCaptureChanged(var Msg: TMessage); message WM_CAPTURECHANGED;
+    procedure WMNCLButtonDblClk(var Msg: TWMMouse); message WM_NCLBUTTONDBLCLK;
+    procedure WMSize(var Msg: TMessage); message WM_SIZE;
+    procedure WMMove(var Msg: TMessage); message WM_MOVE;
+    procedure WMPosChanged(var Msg: TMessage); message WM_WINDOWPOSCHANGED;
   protected
     procedure CalcScrollBarsRect; virtual;
     procedure DrawHorzScrollBar(DC: HDC); virtual;
@@ -2598,6 +2582,7 @@ type
     function GetRangeX: Cardinal;
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
+    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
   protected
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -4272,7 +4257,6 @@ type
     FRefCount: Cardinal;
   protected
     procedure CancelValidation(Tree: TBaseVirtualTree);
-    procedure ChangeTreeStates(EnterStates, LeaveStates: TChangeStates);
     procedure Execute; override;
   public
     constructor Create(CreateSuspended: Boolean);
@@ -6353,15 +6337,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TWorkerThread.ChangeTreeStates(EnterStates, LeaveStates: TChangeStates);
-
-begin
-  if Assigned(FCurrentTree) and (FCurrentTree.HandleAllocated) then
-    SendMessage(FCurrentTree.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TWorkerThread.Execute;
 
 // Does some background tasks, like validating tree caches.
@@ -6399,7 +6374,7 @@ begin
       if Assigned(FCurrentTree) then
       begin
         try
-          ChangeTreeStates([csValidating], [csUseCache]);
+          FCurrentTree.ChangeTreeStatesAsync([csValidating], [csUseCache]);
           EnterStates := [];
           if not (tsStopValidation in FCurrentTree.FStates) and FCurrentTree.DoValidateCache then
             EnterStates := [csUseCache];
@@ -6408,7 +6383,7 @@ begin
           LeaveStates := [csValidating, csStopValidation];
           if csUseCache in EnterStates then
             Include(LeaveStates, csValidationNeeded);
-          ChangeTreeStates(EnterStates, LeaveStates);
+          FCurrentTree.ChangeTreeStatesAsync(EnterStates, LeaveStates);
           {$if CompilerVersion >=20}Queue{$else}Synchronize{$ifend}(FCurrentTree.UpdateEditBounds);
           FCurrentTree := nil;
         end;
@@ -7893,9 +7868,11 @@ procedure TVirtualTreeHintWindow.ActivateHint(Rect: TRect; const AHint: string);
 var
   DC: HDC;
   StopLastAnimation: Boolean;
-
+  lCursorPos: TPoint;
 begin
-  if IsRectEmpty(Rect) or not Assigned(FHintData.Tree) then
+  if IsRectEmpty(Rect) or not Assigned(FHintData.Tree) or
+     not GetCursorPos(lCursorPos) or not PtInRect(FHintData.Tree.FLastHintRect, FHintData.Tree.ScreenToClient(lCursorPos))
+  then
     Application.CancelHint
   else
   begin
@@ -20246,6 +20223,12 @@ begin
     SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
     FHeader.ChangeScale(M, D);
   end;
+end;
+
+procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
+begin
+  if (Self.HandleAllocated) then
+    SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -38138,6 +38121,22 @@ begin
   UpdateScrollBarWindow;
   PaintScrollBars;
   Handled := True;
+end;
+
+procedure TVclStyleScrollBarsHook.WMMove(var Msg: TMessage);
+begin
+  CallDefaultProc(TMessage(Msg));
+  if not (tsWindowCreating in TBaseVirtualTree(Control).FStates) then begin
+    CalcScrollBarsRect;
+    UpdateScrollBarWindow;
+    PaintScrollBars;
+  end;
+  Handled := True;
+end;
+
+procedure TVclStyleScrollBarsHook.WMPosChanged(var Msg: TMessage);
+begin
+  WMMove(Msg);
 end;
 
 procedure TVclStyleScrollBarsHook.WMVScroll(var Msg: TMessage);
