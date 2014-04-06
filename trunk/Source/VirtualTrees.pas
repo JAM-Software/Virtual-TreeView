@@ -6374,15 +6374,13 @@ begin
       if Assigned(FCurrentTree) then
       begin
         try
-          FCurrentTree.ChangeTreeStatesAsync([csValidating], [csUseCache]);
+          FCurrentTree.ChangeTreeStatesAsync([csValidating], [csUseCache, csValidationNeeded]);
           EnterStates := [];
           if not (tsStopValidation in FCurrentTree.FStates) and FCurrentTree.DoValidateCache then
             EnterStates := [csUseCache];
 
         finally
           LeaveStates := [csValidating, csStopValidation];
-          if csUseCache in EnterStates then
-            Include(LeaveStates, csValidationNeeded);
           FCurrentTree.ChangeTreeStatesAsync(EnterStates, LeaveStates);
           {$if CompilerVersion >=20}Queue{$else}Synchronize{$ifend}(FCurrentTree.UpdateEditBounds);
           FCurrentTree := nil;
@@ -15792,7 +15790,7 @@ begin
     WasValidating := (tsValidating in FStates);
     WorkerThread.RemoveTree(Self);
     if WasValidating then
-      DoStateChange([tsValidationNeeded]);
+      InvalidateCache();
   end;
 end;
 
@@ -25106,6 +25104,7 @@ procedure TBaseVirtualTree.InvalidateCache;
 
 begin
   DoStateChange([tsValidationNeeded], [tsUseCache]);
+  //ChangeTreeStatesAsync([csValidationNeeded], [csUseCache]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
