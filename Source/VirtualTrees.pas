@@ -6330,8 +6330,10 @@ begin
     begin
       TranslateMessage(Msg);
       DispatchMessage(Msg);
+      continue;
     end;
-    {$if CompilerVersion <20}CheckSynchronize();{$ifend} // Wo don't need to call CheckSynchronize() if TThread.Queue can be used in TWorkerThread.Execute() as it is non-blocking
+    if (toVariableNodeHeight in FCurrentTree.TreeOptions.MiscOptions) then
+      CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
   end;
 end;
 
@@ -16943,10 +16945,10 @@ begin
       // If an edit operation is currently active then update the editors boundaries as well.
       UpdateEditBounds;
 
+      InvalidateCache;
       // Stay away from touching the node cache while it is being validated.
       if not (tsValidating in FStates) and FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
       begin
-        InvalidateCache;
         if (FUpdateCount = 0) and ([tsPainting, tsSizing] * FStates = []) then
         begin
           ValidateCache;
@@ -31593,14 +31595,18 @@ begin
     Include(Node.States, vsHeightMeasured);
     if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
       NewNodeHeight := Node.NodeHeight;
-      {$if CompilerVersion > 20} // Anonymous methods help to make this thread safe easily.
+      {$if CompilerVersion > 20} // Anonymous methods help to make this thread safe easily. In Delphi 2007 and lower developers must take care themselves about thread synchronization when consuming the OnMeasureItemHeight event
       if (MainThreadId <> GetCurrentThreadId) then
-        TThread.Synchronize(nil, procedure begin DoMeasureItem(Canvas, Node, NewNodeHeight) end)
+        TThread.Synchronize(nil,
+          procedure begin
+            DoMeasureItem(Canvas, Node, NewNodeHeight);
+            SetNodeHeight(Node, NewNodeHeight);
+          end
+        )
       else
       {$ifend}
-        DoMeasureItem(Canvas, Node, NewNodeHeight);
-      if NewNodeHeight <> Node.NodeHeight then
-        SetNodeHeight(Node, NewNodeHeight);
+      DoMeasureItem(Canvas, Node, NewNodeHeight); //
+      SetNodeHeight(Node, NewNodeHeight);
     end;
   end;
 end;
