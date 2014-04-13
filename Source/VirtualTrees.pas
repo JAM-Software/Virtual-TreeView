@@ -6337,7 +6337,7 @@ begin
       DispatchMessage(Msg);
       continue;
     end;
-    if (toVariableNodeHeight in FCurrentTree.TreeOptions.MiscOptions) then
+    if (toVariableNodeHeight in Tree.TreeOptions.MiscOptions) then
       CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
   end;
 end;
