@@ -542,8 +542,10 @@ type
     toRightClickSelect,        // Allow selection, dragging etc. with the right mouse button.
     toSiblingSelectConstraint, // Constrain selection to nodes with same parent.
     toCenterScrollIntoView,    // Center nodes vertically in the client area when scrolling into view.
-    toSimpleDrawSelection      // Simplifies draw selection, so a node's caption does not need to intersect with the
+    toSimpleDrawSelection,     // Simplifies draw selection, so a node's caption does not need to intersect with the
                                // selection rectangle.
+    toAlwaysSelectNode         // If this flag is set to true, the tree view tries to always have a node selected.
+                               // This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications.
   );
   TVTSelectionOptions = set of TVTSelectionOption;
 
@@ -2237,6 +2239,7 @@ type
     FOperationCount: Cardinal;                   // Counts how many nested long-running operations are in progress.
     FOperationCanceled: Boolean;                 // Used to indicate that a long-running operation should be canceled.
     FChangingTheme: Boolean;                     // Used to indicate that a theme change is goi ng on
+    fNextNodeToSelect: PVirtualNode;             // Next tree node that we would like to select if the current one gets deleted or looses selection for other reasons.
 
     // MSAA support
     FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
@@ -2888,6 +2891,7 @@ type
     property LineMode: TVTLineMode read FLineMode write SetLineMode default lmNormal;
     property LineStyle: TVTLineStyle read FLineStyle write SetLineStyle default lsDotted;
     property Margin: Integer read FMargin write SetMargin default 4;
+    property NextNodeToSelect: PVirtualNode read fNextNodeToSelect; // Next tree node that we would like to select if the current one gets deleted
     property NodeAlignment: TVTNodeAlignment read FNodeAlignment write SetNodeAlignment default naProportional;
     property NodeDataSize: Integer read FNodeDataSize write SetNodeDataSize default -1;
     property OperationCanceled: Boolean read GetOperationCanceled;
@@ -3068,6 +3072,7 @@ type
     function EndEditNode: Boolean;
     procedure EndSynch;
     procedure EndUpdate; virtual;
+    procedure EnsureNodeSelected(); virtual;
     function ExecuteAction(Action: TBasicAction): Boolean; override;
     procedure FinishCutOrCopy;
     procedure FlushClipboard;
@@ -21321,13 +21326,30 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoCollapsed(Node: PVirtualNode);
-
+var
+  lFirstSelected: PVirtualNode;
+  lParent: PVirtualNode;
 begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
 
   if Assigned(FAccessibleItem) then
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then begin
+    // Select the next visible parent if the currently selected node gets invisible due to a collapse
+    // This makes the VT behave more like the Win32 custom TreeView control
+    // This makes only sense no no multi selection is allowed and if there is a selected node at all
+    lFirstSelected := GetFirstSelected();
+    if Assigned(lFirstSelected) and not FullyVisible[lFirstSelected] then begin
+      lParent := GetVisibleParent(lFirstSelected);
+      Selected[lParent] := True;
+      Selected[lFirstSelected] := False;
+    end;//if
+    //if there is (still) no selected node, then use fNextNodeToSelect to select one
+    if SelectedCount = 0 then
+      EnsureNodeSelected();
+  end;//if
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21675,6 +21697,7 @@ end;
 procedure TBaseVirtualTree.DoEnter();
 begin
   inherited;
+  EnsureNodeSelected();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21778,6 +21801,7 @@ end;
 procedure TBaseVirtualTree.DoFreeNode(Node: PVirtualNode);
 
 begin
+  // Prevent invalid references
   if Node = FLastChangedNode then
     FLastChangedNode := nil;
   if Node = FCurrentHotNode then
@@ -21786,9 +21810,31 @@ begin
     FDropTargetNode := nil;
   if Node = FLastStructureChangeNode then
     FLastStructureChangeNode := nil;
+
+  if Node=fNextNodeToSelect then
+    fNextNodeToSelect := nil;
+  if Self.UpdateCount = 0 then begin
+    // Omit this stuff if the control is in a BeginUpdate/EndUpdate bracket to increase performance
+    // We now try
+    // Make sure that CurrentNode does not point to an invalid node
+    if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (Node = GetFirstSelected()) then begin
+      if Assigned(fNextNodeToSelect) then
+        // Select a new node if the currently selected node gets freed
+        Selected[fNextNodeToSelect] := True
+      else begin
+        fNextNodeToSelect := Self.NodeParent[GetFirstSelected()];
+        if Assigned(fNextNodeToSelect) then
+          Selected[fNextNodeToSelect] := True
+      end;//else
+    end;//if
+  end;
+
+  // fire event
   if Assigned(FOnFreeNode) and ([vsInitialized, vsOnFreeNodeCallRequired] * Node.States <> []) then
     FOnFreeNode(Self, Node);
   FreeMem(Node);
+  if Self.UpdateCount = 0 then
+    EnsureNodeSelected();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23273,6 +23319,18 @@ procedure TBaseVirtualTree.EnsureNodeFocused();
 begin
   if FocusedNode = nil then
     FocusedNode := Self.GetFirstVisible();
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.EnsureNodeSelected;
+begin
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked then begin
+    if Assigned(fNextNodeToSelect) then
+      Selected[fNextNodeToSelect] := True
+    else if Self.Focused then
+      Selected[GetFirstVisible] := True;
+  end;//if
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26266,6 +26324,20 @@ begin
 
       if FSelectionCount = 0 then
         ResetRangeAnchor;
+
+      if FSelectionCount <= 1 then begin
+        // save a potential node to select after the currently selected node will be deleted.
+        // This will make the VT to behave more like the Win32 TreeView, which always selecta a new node if the currently
+        // selected one gets deleted.
+        if GetNextSibling(Node)<>nil then
+          fNextNodeToSelect := GetNextSibling(Node)
+        else if GetPreviousSibling(Node)<>nil then
+          fNextNodeToSelect := GetPreviousSibling(Node)
+        else if GetNodeLevel(Node)>0 then
+          fNextNodeToSelect := Node.Parent
+        else
+          fNextNodeToSelect := GetFirstChild(Node);
+      end;//if Assigned(Node);
 
       DoRemoveFromSelection(Node);
       Change(Node);
@@ -31381,6 +31453,8 @@ begin
     Invalidate;
     if TriggerChange then
       Change(nil);
+    if Self.SelectedCount = 0 then
+      fNextNodeToSelect := nil;//Ensure that no other node is selected now
   end;
 end;
 
