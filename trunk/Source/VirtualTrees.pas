@@ -544,8 +544,10 @@ type
     toCenterScrollIntoView,    // Center nodes vertically in the client area when scrolling into view.
     toSimpleDrawSelection,     // Simplifies draw selection, so a node's caption does not need to intersect with the
                                // selection rectangle.
-    toAlwaysSelectNode         // If this flag is set to true, the tree view tries to always have a node selected.
+    toAlwaysSelectNode,        // If this flag is set to true, the tree view tries to always have a node selected.
                                // This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications.
+    toRestoreSelection         // Set to true if upon refill the previously selected nodes should be selected again.
+                               // The nodes will be identified by its caption only.
   );
   TVTSelectionOptions = set of TVTSelectionOption;
 
@@ -3444,6 +3446,7 @@ type
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean=True);
   protected
+    fPreviouslySelected: TStringList;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
     function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString): Integer; virtual;
@@ -3489,7 +3492,8 @@ type
     property OnDrawText: TVTDrawTextEvent read FOnDrawText write FOnDrawText;
   public
     constructor Create(AOwner: TComponent); override;
-
+    destructor Destroy(); override;
+    function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; override;
     function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: UnicodeString = ''): Integer; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
     procedure ContentToCustom(Source: TVSTTextSourceType);
@@ -3504,7 +3508,7 @@ type
     function InvalidateNode(Node: PVirtualNode): TRect; override;
     function Path(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; Delimiter: WideChar): UnicodeString;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
-
+    procedure Clear(); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     property ImageText[Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex]: UnicodeString read GetImageText;
     property StaticText[Node: PVirtualNode; Column: TColumnIndex]: UnicodeString read GetStaticText;
@@ -34799,7 +34803,7 @@ constructor TCustomVirtualStringTree.Create(AOwner: TComponent);
 
 begin
   inherited;
-
+  fPreviouslySelected := nil;
   FDefaultText := 'Node';
   FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
 end;
@@ -35248,6 +35252,25 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TCustomVirtualStringTree.AddChild(Parent: PVirtualNode; UserData: Pointer): PVirtualNode;
+var
+  NewNodeText: String;
+begin
+  Result := Inherited AddChild(Parent, UserData);
+  // Restore the prviously restored node if the caption of this node is knwon and no other node was selected
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and (Self.GetFirstSelected=nil) and Assigned(OnGetText) then begin
+    // See if this was the previously selected node and restore it in this case
+    Self.OnGetText(Self, Result, 0, ttNormal, NewNodeText);
+    if fPreviouslySelected.IndexOf(NewNodeText) >= 0 then begin
+      // Select this node and make sure that the parent node is expanded
+      Self.Selected[Result] := True;
+      // if a there is a selected node now, then make sure that it is visible
+      if Self.GetFirstSelected <> nil then
+        Self.ScrollIntoView(Self.GetFirstSelected, True);
+    end;
+  end
+end;
+
 procedure TCustomVirtualStringTree.AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex);
 
 // In the case a node spans several columns (if enabled) we need to determine how many columns.
@@ -35335,6 +35358,12 @@ begin
   // Delphi still cannot handle wide strings properly while streaming
   Filer.DefineProperty('WideDefaultText', ReadText, WriteText, FDefaultText <> 'Node');
   Filer.DefineProperty('StringOptions', ReadOldStringOptions, nil, False);
+end;
+
+destructor TCustomVirtualStringTree.Destroy;
+begin
+  FreeAndNil(fPreviouslySelected);
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -36441,6 +36470,29 @@ begin
     emUnchecked:
       Result := Node.CheckState = csUncheckedNormal;
   end;
+end;
+
+procedure TCustomVirtualStringTree.Clear();
+var
+  lSelectedNode: PVirtualNode;
+  lSelectedNodeCaption: Unicodestring;
+begin
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and not (csDestroying in ComponentState) then begin
+    if not Assigned(fPreviouslySelected) then begin
+      fPreviouslySelected := TStringList.Create();
+      fPreviouslySelected.Duplicates := dupIgnore;
+      fPreviouslySelected.CaseSensitive := False;
+    end
+    else
+      fPreviouslySelected.Clear();
+    lSelectedNode := Self.GetFirstSelected();
+    while Assigned(lSelectedNode) do begin
+      Self.OnGetText(Self, lSelectedNode, 0, ttNormal, lSelectedNodeCaption);
+      fPreviouslySelected.Add(lSelectedNodeCaption);
+      lSelectedNode := Self.GetNextSelected(lSelectedNode);
+    end;//while
+  end;//if
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
