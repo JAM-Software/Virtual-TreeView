@@ -35254,7 +35254,7 @@ end;
 
 function TCustomVirtualStringTree.AddChild(Parent: PVirtualNode; UserData: Pointer): PVirtualNode;
 var
-  NewNodeText: String;
+  NewNodeText: UnicodeString;
 begin
   Result := Inherited AddChild(Parent, UserData);
   // Restore the prviously restored node if the caption of this node is knwon and no other node was selected
