@@ -1,3 +1,26 @@
+V5.4.0: (22 Apr 2014)
+- Added support for XE6.
+- Added new option toRestoreSelection to TVTSelectionOptions: Set to true if upon refill the previously
+  selected nodes should be selected again. The nodes will be identified by its caption only.
+- Added new option toAlwaysSelectNode to TVTSelectionOption enum. If this flag is set, the treeview tries to
+  always have a node selected. This behavior is closer to the Windows TreeView and useful in Windows Explorer
+  style applications. It is also useful for accessible applications which can indicate having the focus by
+  displaying a selection.
+- Added function TBaseVirtualTree.IsEmpty which returns True if the control has no nodes.  
+- Fixed a wrongly drawn selection after the user scrolled horizontally.
+- Fixed issue #423: Change property TVirtualTreeColumn.Tag to NativeInt. 
+- Implemented #415: Added feature for design time column header dragging and resizing. (Thx to fr0st.brutal)
+- Fixed issue #180: Memory leak in grid demo of Advanced project
+- Implemented #422: Added TBaseVirtualTree.GetFirstChildNoInit() 
+- Fixed issue #420: Add coEditable to TVTColumnOption) by applying the supplied path. Thx to Stefan Glienke.
+- Fixed issue #419: Some issues with changing to edit mode with clicking
+- Fixed issue #430: TVTDragManager memory leak with visual inheritance. Thx to Andreas Hausladen for the patch.
+- TVclStyleScrollBarsHook.WMMouseMove(): Now preventing possible range check error exception.
+- Now handling WM_MOVE and WM_POSCHNAGED correctly in TVclStyleScrollBarsHook (Thx to Dmitri Dmitrienko)
+- Preventing possible stack overflow in TVirtualTreeHintWindow.ActivateHint (Thx to Dmitri Dmitrienko)
+- Added packages for C++ Builder XE5.
+- Some minor cchnages, imporevements and fixes have been incorporated
+
 V5.3.0: (04 Jan 2014)
 - Fix for issue #159 (Cursor missing in edit with non-standard DPI): Ensuring a minimum size of the edit control
 - Fixed issue #403: Declare TVTGetNodeProc as reference to procedure (for D2009+) 
