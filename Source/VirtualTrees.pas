@@ -3165,6 +3165,7 @@ type
     procedure InvertSelection(VisibleOnly: Boolean);
     function IsEditing: Boolean;
     function IsMouseSelecting: Boolean;
+    function IsEmpty: Boolean;
     function IterateSubtree(Node: PVirtualNode; Callback: TVTGetNodeProc; Data: Pointer; Filter: TVirtualNodeStates = [];
       DoInit: Boolean = False; ChildNodesOnly: Boolean = False): PVirtualNode;
     procedure LoadFromFile(const FileName: TFileName); virtual;
@@ -23604,6 +23605,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.IsEmpty: Boolean;
+begin
+  Result := (Self.ChildCount[nil] = 0);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetNodeImageSize(Node: PVirtualNode): TSize;
 
   // Returns the size of an image
@@ -36477,7 +36485,7 @@ var
   lSelectedNode: PVirtualNode;
   lSelectedNodeCaption: Unicodestring;
 begin
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and not (csDestroying in ComponentState) then begin
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and not (csDestroying in ComponentState) and not IsEmpty then begin
     if not Assigned(fPreviouslySelected) then begin
       fPreviouslySelected := TStringList.Create();
       fPreviouslySelected.Duplicates := dupIgnore;
