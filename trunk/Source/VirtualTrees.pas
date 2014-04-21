@@ -2751,7 +2751,7 @@ type
     function DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
       var Effect: LongInt): HResult; reintroduce; virtual;
     procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: Integer); virtual;
-    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer); virtual;
+    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer; UseSelectedBkColor: Boolean = False); virtual;
     procedure EndOperation(OperationKind: TVTOperationKind);
     procedure EnsureNodeFocused(); virtual;
     function FindNodeInSelection(P: PVirtualNode; var Index: Integer; LowBound, HighBound: Integer): Boolean; virtual;
@@ -23295,7 +23295,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer);
+procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer; UseSelectedBkColor: Boolean = False);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -23305,7 +23305,14 @@ var
 begin
   with PaintInfo, Canvas do
   begin
-    Brush.Color := FColors.BackGroundColor;
+    if UseSelectedBkColor then begin
+      if Focused or (toPopupMode in FOptions.FPaintOptions) then
+        Brush.Color := FColors.FocusedSelectionColor
+      else
+        Brush.Color := FColors.UnfocusedSelectionColor;
+    end
+    else
+      Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
     Windows.FillRect(Handle, R, FDottedBrush);
   end;
@@ -31949,6 +31956,7 @@ var
   SavedTargetDC: Integer;
   PaintWidth: Integer;
   CurrentNodeHeight: Integer;
+  lUseSelectedBkColor: Boolean; // determines if the dotted grid lines need to be painted in selection color of background color
 
 begin
   if not (tsPainting in FStates) then
@@ -32262,9 +32270,11 @@ begin
                               if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
                               begin
                                 Canvas.Font.Color := FColors.GridLineColor;
-                                DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1);
-                              end;
-                              Dec(CellRect.Right);
+                                lUseSelectedBkColor := (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
+                                                      (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) and not
+                                                      (tsUseExplorerTheme in FStates);
+                                DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, lUseSelectedBkColor);
+                              end;                              Dec(CellRect.Right);
                               Dec(ContentRect.Right);
                             end;
                           end;
