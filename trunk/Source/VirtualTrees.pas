@@ -14986,7 +14986,11 @@ begin
              (tsUseExplorerTheme in FStates) then
           begin
             if toShowHorzGridLines in FOptions.PaintOptions then
+            begin
+              Brush.Color := BackColor;
+              FillRect(Rect(R.Left, R.Bottom - 1, R.Right, R.Bottom));
               Dec(R.Bottom);
+            end;
             if Focused or (toPopupMode in FOptions.FPaintOptions) then
             begin
               Brush.Color := FColors.FocusedSelectionColor;
