@@ -15,6 +15,7 @@ V5.4.0: (22 Apr 2014)
 - Fixed issue #420: Add coEditable to TVTColumnOption) by applying the supplied path. Thx to Stefan Glienke.
 - Fixed issue #419: Some issues with changing to edit mode with clicking
 - Fixed issue #430: TVTDragManager memory leak with visual inheritance. Thx to Andreas Hausladen for the patch.
+- Fixed issue #431: Visual bug when using TStringEditLink with large node heights
 - TVclStyleScrollBarsHook.WMMouseMove(): Now preventing possible range check error exception.
 - Now handling WM_MOVE and WM_POSCHNAGED correctly in TVclStyleScrollBarsHook (Thx to Dmitri Dmitrienko)
 - Preventing possible stack overflow in TVirtualTreeHintWindow.ActivateHint (Thx to Dmitri Dmitrienko)
