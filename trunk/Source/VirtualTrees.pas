@@ -2589,6 +2589,7 @@ type
     procedure SetDoubleBuffered(const Value: Boolean);
     procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
   protected
+    procedure AutoScale(); virtual;
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustImageBorder(Images: TCustomImageList; BidiMode: TBidiMode; VAlign: Integer; var R: TRect;
@@ -17702,6 +17703,7 @@ var
 
 begin
   inherited;
+  AutoScale();
 
   if not (csLoading in ComponentState) then
   begin
@@ -20480,6 +20482,7 @@ begin
   else
     DoStateChange([], [tsUseThemes, tsUseExplorerTheme]);
 
+  AutoScale();
   // Because of the special recursion and update stopper when creating the window (or resizing it)
   // we have to manually trigger the auto size calculation here.
   if hsNeedScaling in FHeader.FStates then
@@ -23419,6 +23422,7 @@ begin
   FFontChanged := True;
   if Assigned(FOldFontChange) then
     FOldFontChange(AFont);
+  //if not (tsPainting in TreeStates) then AutoScale();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25769,21 +25773,6 @@ var
 begin
   IsHot := (toHotTrack in FOptions.FPaintOptions) and (FCurrentHotNode = Node) and FHotNodeButtonHit;
 
-  if vsExpanded in Node.States then
-  begin
-    if IsHot then
-      Bitmap := FHotMinusBM
-    else
-      Bitmap := FMinusBM;
-  end
-  else
-  begin
-    if IsHot then
-      Bitmap := FHotPlusBM
-    else
-      Bitmap := FPlusBM;
-  end;
-
   // Draw the node's plus/minus button according to the directionality.
   if BidiMode = bdLeftToRight then
     XPos := R.Left + ButtonX
@@ -25794,14 +25783,29 @@ begin
   begin
     Glyph := IfThen(IsHot, TVP_HOTGLYPH, TVP_GLYPH);
     State := IfThen(vsExpanded in Node.States, GLPS_OPENED, GLPS_CLOSED);
-    Pos := Rect(XPos, R.Top + ButtonY, XPos + Bitmap.Width, R.Top + ButtonY + Bitmap.Height);
+    Pos := Rect(XPos, R.Top + ButtonY, XPos + FPlusBM.Width, R.Top + ButtonY + Bitmap.Height);
     Theme := OpenThemeData(Handle, 'TREEVIEW');
     DrawThemeBackground(Theme, Canvas.Handle, Glyph, State, Pos, nil);
     CloseThemeData(Theme);
   end
-  else
+  else begin
+    if vsExpanded in Node.States then
+    begin
+      if IsHot then
+        Bitmap := FHotMinusBM
+      else
+        Bitmap := FMinusBM;
+    end
+    else
+    begin
+      if IsHot then
+        Bitmap := FHotPlusBM
+      else
+        Bitmap := FPlusBM;
+    end;
     // Need to draw this masked.
     Canvas.Draw(XPos, R.Top + ButtonY, Bitmap);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -27631,6 +27635,21 @@ begin
     end
     else
       inherited;
+end;
+
+procedure TBaseVirtualTree.AutoScale();
+
+// If toAutoChangeScale is set, this method ensures that the defaulz node height is set corectly.
+
+var
+  lTextHeight: Cardinal;
+begin
+  if (toAutoChangeScale in TreeOptions.AutoOptions) then begin
+    Canvas.Font.Assign(Self.Font);
+    lTextHeight := Canvas.TextHeight('Tg');
+    if (lTextHeight > Self.DefaultNodeHeight) then
+      Self.DefaultNodeHeight := lTextHeight;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
