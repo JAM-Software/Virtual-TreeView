@@ -1540,6 +1540,7 @@ type
     tsUserDragObject,         // Signals that the application created an own drag object in OnStartDrag.
     tsUseThemes,              // The tree runs under WinXP+, is theme aware and themes are enabled.
     tsValidating,             // The tree's node caches are currently validated.
+    tsPreviouslySelectedLocked,// The member fPreviouslySelected should not be changed
     tsValidationNeeded,       // Something in the structure of the tree has changed. The cache needs validation.
     tsVCLDragging,            // VCL drag'n drop in progress.
     tsVCLDragPending,         // One-shot flag to avoid clearing the current selection on implicit mouse up for VCL drag.
@@ -3510,7 +3511,8 @@ type
     function InvalidateNode(Node: PVirtualNode): TRect; override;
     function Path(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; Delimiter: WideChar): UnicodeString;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
-    procedure Clear(); override;
+    procedure AddToSelection(Node: PVirtualNode); override;
+    procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     property ImageText[Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex]: UnicodeString read GetImageText;
     property StaticText[Node: PVirtualNode; Column: TColumnIndex]: UnicodeString read GetStaticText;
@@ -23315,7 +23317,7 @@ begin
         Brush.Color := FColors.UnfocusedSelectionColor;
     end
     else
-      Brush.Color := FColors.BackGroundColor;
+    Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
     Windows.FillRect(Handle, R, FDottedBrush);
   end;
@@ -25777,13 +25779,13 @@ begin
   if BidiMode = bdLeftToRight then
     XPos := R.Left + ButtonX
   else
-    XPos := R.Right - ButtonX - Bitmap.Width;
+    XPos := R.Right - ButtonX - FPlusBM.Width;
 
   if tsUseExplorerTheme in FStates then
   begin
     Glyph := IfThen(IsHot, TVP_HOTGLYPH, TVP_GLYPH);
     State := IfThen(vsExpanded in Node.States, GLPS_OPENED, GLPS_CLOSED);
-    Pos := Rect(XPos, R.Top + ButtonY, XPos + FPlusBM.Width, R.Top + ButtonY + Bitmap.Height);
+    Pos := Rect(XPos, R.Top + ButtonY, XPos + FPlusBM.Width, R.Top + ButtonY + FPlusBM.Height);
     Theme := OpenThemeData(Handle, 'TREEVIEW');
     DrawThemeBackground(Theme, Canvas.Handle, Glyph, State, Pos, nil);
     CloseThemeData(Theme);
@@ -35300,12 +35302,17 @@ var
 begin
   Result := Inherited AddChild(Parent, UserData);
   // Restore the prviously restored node if the caption of this node is knwon and no other node was selected
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and (Self.GetFirstSelected=nil) and Assigned(OnGetText) then begin
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and Assigned(OnGetText) then begin
     // See if this was the previously selected node and restore it in this case
     Self.OnGetText(Self, Result, 0, ttNormal, NewNodeText);
     if fPreviouslySelected.IndexOf(NewNodeText) >= 0 then begin
       // Select this node and make sure that the parent node is expanded
-      Self.Selected[Result] := True;
+      Include(fStates, tsPreviouslySelectedLocked);
+      try
+        Self.Selected[Result] := True;
+      finally
+        Exclude(fStates, tsPreviouslySelectedLocked);
+      end;
       // if a there is a selected node now, then make sure that it is visible
       if Self.GetFirstSelected <> nil then
         Self.ScrollIntoView(Self.GetFirstSelected, True);
@@ -36514,29 +36521,43 @@ begin
   end;
 end;
 
-procedure TCustomVirtualStringTree.Clear();
+procedure TCustomVirtualStringTree.AddToSelection(Node: PVirtualNode);
 var
-  lSelectedNode: PVirtualNode;
   lSelectedNodeCaption: Unicodestring;
 begin
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and not (csDestroying in ComponentState) and not IsEmpty then begin
+  inherited;
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and Self.Selected[Node] and not (tsPreviouslySelectedLocked in fStates) then begin
     if not Assigned(fPreviouslySelected) then begin
       fPreviouslySelected := TStringList.Create();
       fPreviouslySelected.Duplicates := dupIgnore;
+      fPreviouslySelected.Sorted := True; //Improves performance, required to use Find()
       fPreviouslySelected.CaseSensitive := False;
-    end
-    else
+    end;
+    if Self.SelectedCount = 1 then
       fPreviouslySelected.Clear();
-    lSelectedNode := Self.GetFirstSelected();
-    while Assigned(lSelectedNode) do begin
-      Self.OnGetText(Self, lSelectedNode, 0, ttNormal, lSelectedNodeCaption);
-      fPreviouslySelected.Add(lSelectedNodeCaption);
-      lSelectedNode := Self.GetNextSelected(lSelectedNode);
-    end;//while
+    Self.OnGetText(Self, Node, 0, ttNormal, lSelectedNodeCaption);
+    fPreviouslySelected.Add(lSelectedNodeCaption);
   end;//if
-  inherited;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomVirtualStringTree.RemoveFromSelection(Node: PVirtualNode);
+var
+  lSelectedNodeCaption: Unicodestring;
+  lIndex: Integer;
+begin
+  inherited;
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and not Self.Selected[Node] then begin
+    if Self.SelectedCount = 0 then
+      fPreviouslySelected.Clear()
+    else begin
+      Self.OnGetText(Self, Node, 0, ttNormal, lSelectedNodeCaption);
+      if fPreviouslySelected.Find(lSelectedNodeCaption, lIndex) then
+        fPreviouslySelected.Delete(lIndex);
+    end;//else
+  end;//if
+end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): RawByteString;
