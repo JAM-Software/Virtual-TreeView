@@ -32,11 +32,14 @@ package VirtualTreesD;
 {$IMPLICITBUILD OFF}
 
 requires
-  DesignIDE,
-  VirtualTreesR;
+  DesignIDE;
 
 contains
-  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas';
+  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas',
+  VirtualTrees in '..\..\Source\VirtualTrees.pas',
+  VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
+  VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
+  VTAccessibility in '..\..\Source\VTAccessibility.pas';
 
 end.
 
