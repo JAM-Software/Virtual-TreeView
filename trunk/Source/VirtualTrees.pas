@@ -37700,7 +37700,9 @@ begin
         OffsetRect(Result, 2, 2)
       else
         OffsetRect(Result, 1, 1);
-  end;
+  end
+  else
+    Result := Rect(0, 0, 0, 0);
 end;
 
 function TVclStyleScrollBarsHook.GetVertScrollBarSliderRect: TRect;
@@ -37725,7 +37727,9 @@ begin
         OffsetRect(Result, 2, 2)
       else
         OffsetRect(Result, 1, 1);
-  end;
+  end
+  else
+    Result := Rect(0, 0, 0, 0);
 end;
 
 procedure TVclStyleScrollBarsHook.MouseLeave;
