@@ -24,3 +24,27 @@ List of changes:
   * Preventing possible stack overflow in TVirtualTreeHintWindow.ActivateHint (Thx to Dmitri Dmitrienko)
   * Added packages for C++ Builder XE5.
   * Some minor chnages, imporevements and fixes have been incorporated
+
+
+==15 Jan 2014 ==
+From today Google Code no longer offers to add new downloads. [http://google-opensource.blogspot.de/2013/05/a-change-to-google-code-download-service.html Official reason is misuse]. So we need to seek a new download location.
+
+==04 Jan 2014: Release of V5.4.0==
+  * Fix for issue #159 (Cursor missing in edit with non-standard DPI): Ensuring a minimum size of the edit control
+  * Fixed issue #403: Declare TVTGetNodeProc as reference to procedure (for D2009+) 
+  * Fixed issue #402: TVTEdit.CNCommand discard all notification except EN_UPDATE due to missing inherited
+  * Corrected fix for issue #376 (Incorrect selection paint when toGridExtensions is included in the MiscOptions)
+  * Fixed issue #401: OnNodeClick event doesn't trigger in some case, coFixed set for a column
+  * Modified #316 (concerning r498). The fix for #316 will only be applied in case toMultiSelect is set. If toMultiSelect is not set we can start a drag anywhere in the row.
+  * ContentToHTML() and ContentToRTF() now return a string of type RawByteString. 
+    Because the generated strings are pre-encoded in UTF-8, the previous type AnsiString caused problems in Delphi 2009+ e.g. when this string was written using the VCL TStreamWriter class. The helper class TBufferedAnsiString therefore uses RywByteString now as type too.
+  * Fixed issue #399: EditDelay not working
+  * Fixed issue #400: AltGr+A does not behave as expected for foreign keyboard layouts in VTEdit
+  * Fixed issue #388: VirtualStringTree with toFixedIndent causes range check error
+  * Edit box when editing a node in a tree with toFixedIndent now has the correct indent
+  * Fixed issue #392: Now ensuring that MeasureItemHeight() is only called from the main thread.
+  * Fixed #383: Clear vsHasChildren for a node without children even if the children count didn't change.
+  * Fixed #377: Wrong font (size, etc) in TargetCanvas in MeasureItem for first node
+  * Fixed issue #398 (hoAutoResize causes DFM designer to be modified after loading) by calling TControl.Updating()/Updated() in AdjustAutoSize()
+  * Preventing possible AV in TBaseVirtualTree.FontChanged()
+  * Fixed 32Bit Integer overflows in Win64 build in TBufferedAnsiString.
