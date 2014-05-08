@@ -9,7 +9,7 @@
 
 
 == 23 Apr 2014: Release of V5.4.0 ==
-List of changes: [*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*]
+List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
   * Added support for XE6.
   * Added new option toRestoreSelection to TVTSelectionOptions: Set to true if upon refill the previously selected nodes should be selected again. The nodes will be identified by its caption only.
   * Added new option toAlwaysSelectNode to TVTSelectionOption enum. If this flag is set, the treeview tries to always have a node selected. This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications. It is also useful for accessible applications which can indicate having the focus by displaying a selection.
@@ -43,8 +43,7 @@ From today Google Code no longer offers to add new downloads. [http://google-ope
   * Corrected fix for issue #376 (Incorrect selection paint when toGridExtensions is included in the MiscOptions)
   * Fixed issue #401: OnNodeClick event doesn't trigger in some case, coFixed set for a column
   * Modified #316 (concerning r498). The fix for #316 will only be applied in case toMultiSelect is set. If toMultiSelect is not set we can start a drag anywhere in the row.
-  * ContentToHTML() and ContentToRTF() now return a string of type RawByteString. 
-    Because the generated strings are pre-encoded in UTF-8, the previous type AnsiString caused problems in Delphi 2009+ e.g. when this string was written using the VCL TStreamWriter class. The helper class TBufferedAnsiString therefore uses RywByteString now as type too.
+  * ContentToHTML() and ContentToRTF() now return a string of type RawByteString. Because the generated strings are pre-encoded in UTF-8, the previous type AnsiString caused problems in Delphi 2009+ e.g. when this string was written using the VCL TStreamWriter class. The helper class TBufferedAnsiString therefore uses RywByteString now as type too.
   * Fixed issue #399: EditDelay not working
   * Fixed issue #400: AltGr+A does not behave as expected for foreign keyboard layouts in VTEdit
   * Fixed issue #388: VirtualStringTree with toFixedIndent causes range check error
