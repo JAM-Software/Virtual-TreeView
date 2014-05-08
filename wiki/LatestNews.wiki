@@ -8,8 +8,7 @@
 List of changes:
   * Added support for XE6.
   * Added new option toRestoreSelection to TVTSelectionOptions: Set to true if upon refill the previously selected nodes should be selected again. The nodes will be identified by its caption only.
-  * Added new option toAlwaysSelectNode to TVTSelectionOption enum. If this flag is set, the treeview tries to always have a node selected. This behavior is closer to the Windows TreeView and useful in Windows Explorer
-  style applications. It is also useful for accessible applications which can indicate having the focus by displaying a selection.
+  * Added new option toAlwaysSelectNode to TVTSelectionOption enum. If this flag is set, the treeview tries to always have a node selected. This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications. It is also useful for accessible applications which can indicate having the focus by displaying a selection.
   * Added function TBaseVirtualTree.IsEmpty which returns True if the control has no nodes.  
   * Fixed a wrongly drawn selection after the user scrolled horizontally.
   * Fixed issue #423: Change property TVirtualTreeColumn.Tag to NativeInt. 
