@@ -2,10 +2,10 @@
 
 
 == 24 Apr 2014: JAM Software takes Virtual Treeview under its wing ==
-JAM Software takes Virtual Treeview under its wing, but not much will change besides the homepage and download location. Please read this [http://www.jam-software.com/company/press/EN/April%2022%202014%20-%20Virtual%20Treeview%20-%20JAM%20Software%20takes%20Virtual%20Treeview.pdf press release] for further details.
+*JAM Software* takes Virtual Treeview under its wing, but not much will change besides the homepage and download location. Please read this [http://www.jam-software.com/company/press/EN/April%2022%202014%20-%20Virtual%20Treeview%20-%20JAM%20Software%20takes%20Virtual%20Treeview.pdf press release] for further details.
 
 == 23 Apr 2014: Release of V5.4.0 ==
-V5.4.0: (22 Apr 2014)
+List of changes:
   * Added support for XE6.
   * Added new option toRestoreSelection to TVTSelectionOptions: Set to true if upon refill the previously
   selected nodes should be selected again. The nodes will be identified by its caption only.
