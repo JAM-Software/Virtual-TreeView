@@ -1,8 +1,11 @@
 = Latest news on the Virtual Treeview Control =
 
 
+
 == 24 Apr 2014: JAM Software takes Virtual Treeview under its wing ==
 *JAM Software* takes Virtual Treeview under its wing, but not much will change besides the homepage and download location. Please read this [http://www.jam-software.com/company/press/EN/April%2022%202014%20-%20Virtual%20Treeview%20-%20JAM%20Software%20takes%20Virtual%20Treeview.pdf press release] for further details.
+
+
 
 == 23 Apr 2014: Release of V5.4.0 ==
 List of changes:
@@ -26,8 +29,11 @@ List of changes:
   * Some minor chnages, imporevements and fixes have been incorporated
 
 
-==15 Jan 2014 ==
+
+==15 Jan 2014: No new downloads on Google Code ==
 From today Google Code no longer offers to add new downloads. [http://google-opensource.blogspot.de/2013/05/a-change-to-google-code-download-service.html Official reason is misuse]. So we need to seek a new download location.
+
+
 
 ==04 Jan 2014: Release of V5.4.0==
   * Fix for issue #159 (Cursor missing in edit with non-standard DPI): Ensuring a minimum size of the edit control
