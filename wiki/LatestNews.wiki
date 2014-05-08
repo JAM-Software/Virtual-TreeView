@@ -29,7 +29,7 @@ List of changes:
   * Added packages for C++ Builder XE5.
   * Some minor chnages, imporevements and fixes have been incorporated
 
-
+*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*
 
 ==15 Jan 2014: No new downloads on Google Code ==
 From today Google Code no longer offers to add new downloads. [http://google-opensource.blogspot.de/2013/05/a-change-to-google-code-download-service.html Official reason is misuse]. So we need to seek a new download location.
