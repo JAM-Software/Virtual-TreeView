@@ -12090,13 +12090,17 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.ChangeScale(M, D: Integer);
-
+var
+  i: Integer;
 begin
   // This method is only executed if toAutoChangeScale is set
   if not ParentFont then
     FFont.Size := MulDiv(FFont.Size, M, D);
   Self.Height := MulDiv(fHeight, M, D);
-  //TODO: We should consider also scaling column width here
+  // Scale the columns widths too
+  for i := 0 to FColumns.Count - 1 do begin
+    Self.FColumns[i].Width := MulDiv(Self.FColumns[i].Width, M, D)
+  end;//for i
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

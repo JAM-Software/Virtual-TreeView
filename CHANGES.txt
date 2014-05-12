@@ -2,6 +2,7 @@ V5.4.1:
   * Added packages for C++ Builder XE6
   * If toAutoChangeScale is set in AutoOptions, the Virtual TreeView control now
     increases the DefaultNodeHeight if the font size is too large does not fit.
+  * If toAutoChangeScale is set in AutoOptions, the columns widths are now adjusted too.
   * Improved implementation for toRestoreSelection option
   * Fixed possible AV in PaintNodeButton()
   * Now ensuring that both GetHorzScrollBarSliderRect() and
