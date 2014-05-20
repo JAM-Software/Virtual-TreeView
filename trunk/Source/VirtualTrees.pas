@@ -6359,6 +6359,7 @@ procedure TWorkerThread.Execute;
 var
   EnterStates,
   LeaveStates: TChangeStates;
+  lCurrentTree: TBaseVirtualTree;
 
 begin
   {$if CompilerVersion >= 21} TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');{$ifend}
@@ -6396,9 +6397,10 @@ begin
 
         finally
           LeaveStates := [csValidating, csStopValidation];
-          FCurrentTree.ChangeTreeStatesAsync(EnterStates, LeaveStates);
-          {$if CompilerVersion >=20}Queue{$else}Synchronize{$ifend}(FCurrentTree.UpdateEditBounds);
-          FCurrentTree := nil;
+          fCurrentTree.ChangeTreeStatesAsync(EnterStates, LeaveStates);
+          lCurrentTree := FCurrentTree; // Save reference in a local variable for later use
+          fCurrentTree := nil; //Clear variable to prevent deadlock in CancelValidation. See #434
+          {$if CompilerVersion < 20}Synchronize{$else}Queue{$ifend}(lCurrentTree.UpdateEditBounds);
         end;
       end;
     end;
