@@ -1,6 +1,15 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
+== 26 May 2014: Release of V5.4.1 ==
+List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
+  * Added packages for C++ Builder XE6
+  * If toAutoChangeScale is set in AutoOptions, the Virtual TreeView control now increases the DefaultNodeHeight if the font size is too large does not fit.
+  * If toAutoChangeScale is set in AutoOptions, the columns widths are now adjusted too.
+  * Improved implementation for toRestoreSelection option
+  * Fixed possible AV in PaintNodeButton()
+  * Now ensuring that both GetHorzScrollBarSliderRect() and GetVertScrollBarSliderRect() return a valid value for every code path (Thx to Dmitri Dmitrienko). This could cause strange out od resources exceptions with VCL styles enabled.
+  
 
 
 == 24 Apr 2014: JAM Software takes Virtual Treeview under its wing ==
@@ -9,7 +18,7 @@
 
 
 == 23 Apr 2014: Release of V5.4.0 ==
-List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
+List of changes:
   * Added support for XE6.
   * Added new option toRestoreSelection to TVTSelectionOptions: Set to true if upon refill the previously selected nodes should be selected again. The nodes will be identified by its caption only.
   * Added new option toAlwaysSelectNode to TVTSelectionOption enum. If this flag is set, the treeview tries to always have a node selected. This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications. It is also useful for accessible applications which can indicate having the focus by displaying a selection.
