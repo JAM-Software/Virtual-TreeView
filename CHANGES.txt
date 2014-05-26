@@ -1,14 +1,16 @@
-V5.4.1:
+V5.4.1: (26 May 2014)
   * Added packages for C++ Builder XE6
   * If toAutoChangeScale is set in AutoOptions, the Virtual TreeView control now
-    increases the DefaultNodeHeight if the font size is too large does not fit.
+    increases the DefaultNodeHeight if the font size is too large to fit.
   * If toAutoChangeScale is set in AutoOptions, the columns widths are now adjusted too.
   * Improved implementation for toRestoreSelection option
   * Fixed possible AV in PaintNodeButton()
   * Now ensuring that both GetHorzScrollBarSliderRect() and
     GetVertScrollBarSliderRect() return a valid value for every code path (Thx to
-    Dmitri Dmitrienko). This could cause strange out od resources exceptions with VCL
+    Dmitri Dmitrienko). This could cause strange out of resources exceptions with VCL
     styles enabled.
+  * Fixed issue #434: Application compiled with Delphi 7 stops responding when you call AddChild 
+  * A few minor changes
   
 V5.4.0: (22 Apr 2014)
   * Added support for XE6.
@@ -32,7 +34,7 @@ V5.4.0: (22 Apr 2014)
   * Now handling WM_MOVE and WM_POSCHNAGED correctly in TVclStyleScrollBarsHook (Thx to Dmitri Dmitrienko)
   * Preventing possible stack overflow in TVirtualTreeHintWindow.ActivateHint (Thx to Dmitri Dmitrienko)
   * Added packages for C++ Builder XE5.
-  * Some minor cchnages, imporevements and fixes have been incorporated
+  * Some minor changes, improvements and fixes have been incorporated
 
 V5.3.0: (04 Jan 2014)
   * Fix for issue #159 (Cursor missing in edit with non-standard DPI): Ensuring a minimum size of the edit control
