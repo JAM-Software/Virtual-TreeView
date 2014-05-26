@@ -4,7 +4,7 @@
 == 26 May 2014: Release of V5.4.1 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
   * Added packages for C++ Builder XE6
-  * If toAutoChangeScale is set in AutoOptions, the Virtual TreeView control now increases the DefaultNodeHeight if the font size is too large does not fit.
+  * If toAutoChangeScale is set in AutoOptions, the Virtual TreeView control now increases the DefaultNodeHeight if the font size is too large to fit.
   * If toAutoChangeScale is set in AutoOptions, the columns widths are now adjusted too.
   * Improved implementation for toRestoreSelection option
   * Fixed possible AV in PaintNodeButton()
