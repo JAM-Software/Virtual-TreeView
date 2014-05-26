@@ -8,8 +8,9 @@ List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?arti
   * If toAutoChangeScale is set in AutoOptions, the columns widths are now adjusted too.
   * Improved implementation for toRestoreSelection option
   * Fixed possible AV in PaintNodeButton()
-  * Now ensuring that both GetHorzScrollBarSliderRect() and GetVertScrollBarSliderRect() return a valid value for every code path (Thx to Dmitri Dmitrienko). This could cause strange out od resources exceptions with VCL styles enabled.
-  
+  * Now ensuring that both GetHorzScrollBarSliderRect() and GetVertScrollBarSliderRect() return a valid value for every code path (Thx to Dmitri Dmitrienko). This could cause strange out of resources exceptions with VCL styles enabled.
+  * Fixed issue #434: Application compiled with Delphi 7 stops responding when you call AddChild 
+  * A few minor changes  
 
 
 == 24 Apr 2014: JAM Software takes Virtual Treeview under its wing ==
