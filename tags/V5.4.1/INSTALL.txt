@@ -1,0 +1,63 @@
+Supported Delphi version: Delphi 7, Delphi 2006 - XE, RAD Studio XE2
+Supported Windows Versions: XP, 2003, Vista, 2008, 7, 2008R2
+
+
+The former installer is no longer maintained, but installation is quite easy:
+Extract the entire(!) ZIP file and follow the instzructions below for your 
+Delphi / RAD Studio version.
+
+
+Delphi 7 Installation
+~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 7\VirtualTrees.bpg"
+2. Right click on "VirtualTreesD" and click "Install"
+3. Go to "Tools > Environment Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2007 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2007\Delphi 2007.groupproj"
+2. Right click on "VirtualTreesD.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2009 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2009\Delphi 2009.groupproj"
+2. Right click on "VirtualTreesD12.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2010 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2010\Delphi 2010.groupproj"
+2. Right click on "VirtualTreesD14.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi / RAD Studio XE - XE6 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\RAD Studio XE2\RAD Studio XE*.groupproj"
+2. Right click on "VirtualTreesD.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Troubleshooting
+~~~~~~~~~~~~~~~
+In case you experience any problems, try to delete all these files from your disk and then start over:
+ - Virtualtrees.*
+ - VTAccessibility.* 
+ - VTHeaderPopup.*
+ - VirtualTreesD.* 
+ - VirtualTreesR.*
+I recommand using UltraSearch for this task: http://www.jam-software.de/ultrasearch/ 
+  
+  
+Please send comments and suggestions regarding the packages and the install
+instructions to joachim.marder@gmail.com
+
