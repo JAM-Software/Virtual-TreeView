@@ -72,6 +72,7 @@ interface
 {$HPPEMIT '#include <oleidl.h>'}
 {$HPPEMIT '#include <oleacc.h>'}
 {$HPPEMIT '#include <ShlObj.hpp>'}
+{$HPPEMIT '#pragma link "VirtualTreesR.lib"'}
 
 uses
   Windows,
