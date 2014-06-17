@@ -42,7 +42,7 @@ unit VirtualTrees;
 // CLX:
 //   Dmitri Dmitrienko (initial developer)
 // Source repository:
-//   Subversion (server), TortoiseSVN (client tools), Fisheye (Web interface)
+//   https://code.google.com/p/virtual-treeview/source/
 // Accessability implementation:
 //   Marco Zehe (with help from Sebastian Modersohn)
 //----------------------------------------------------------------------------------------------------------------------
@@ -19100,7 +19100,9 @@ begin
                   Offset := ClientWidth;
               end;
               DoPopupMenu(FFocusedNode, FFocusedColumn, Point(R.Left + Offset div 2, (R.Top + R.Bottom) div 2));
-            end;
+            end
+            else
+              DoPopupMenu(nil, FFocusedColumn, Point(-1, -1));
           Ord('a'), Ord('A'):
             if ssCtrl in Shift then
               SelectAll(True)
