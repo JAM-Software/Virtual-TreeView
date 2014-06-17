@@ -1052,7 +1052,6 @@ type
     procedure SetPosition(Value: TColumnPosition);
     procedure SetSpacing(Value: Integer);
     procedure SetStyle(Value: TVirtualTreeColumnStyle);
-    procedure SetText(const Value: UnicodeString);
     procedure SetWidth(Value: Integer);
   protected
     procedure ComputeHeaderLayout(DC: HDC; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
@@ -1061,6 +1060,8 @@ type
     procedure DefineProperties(Filer: TFiler); override;
     procedure GetAbsoluteBounds(var Left, Right: Integer);
     function GetDisplayName: string; override;
+    function GetText: UnicodeString; virtual; // [IPK]
+    procedure SetText(const Value: UnicodeString); virtual; // [IPK] private to protected & virtual
     function GetOwner: TVirtualTreeColumns; reintroduce;
     procedure ReadHint(Reader: TReader);
     procedure ReadText(Reader: TReader);
@@ -1076,7 +1077,7 @@ type
 {$if CompilerVersion >= 20}
    function Equals(OtherColumnObj: TObject): Boolean; override;
 {$else}
-   function Equals(OtherColumnObj: TObject): Boolean;
+   function Equals(OtherColumnObj: TObject): Boolean; virtual; 
 {$ifend}
     function GetRect: TRect; virtual;
     procedure LoadFromStream(const Stream: TStream; Version: Integer);
@@ -1110,7 +1111,7 @@ type
     property Spacing: Integer read FSpacing write SetSpacing default 3;
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
     property Tag: NativeInt read FTag write FTag default 0;
-    property Text: UnicodeString read FText write SetText stored False; // Never let the VCL store the wide string,
+    property Text: UnicodeString read GetText write SetText stored False; // Never let the VCL store the wide string,  // [IPK] FText changed to GetText
                                                                      // it is simply unable to write it correctly.
                                                                      // We use DefineProperties here.
     property Width: Integer read FWidth write SetWidth default 50;
@@ -1661,7 +1662,7 @@ type
   TVTColors = class(TPersistent)
   private
     FOwner: TBaseVirtualTree;
-    FColors: array[0..15] of TColor;
+    FColors: array[0..16] of TColor; // [IPK] 15 -> 16
     function GetColor(const Index: Integer): TColor;
     procedure SetColor(const Index: Integer; const Value: TColor);
     function GetBackgroundColor: TColor;
@@ -1689,6 +1690,7 @@ type
     property SelectionRectangleBorderColor: TColor index 13 read GetColor write SetColor default clHighlight;
     property SelectionTextColor: TColor index 15 read GetColor write SetColor default clHighlightText;
     property TreeLineColor: TColor index 5 read GetColor write SetColor default clBtnShadow;
+    property UnfocusedColor: TColor index 16 read GetColor write SetColor default clBtnFace; // [IPK] Added
     property UnfocusedSelectionColor: TColor index 6 read GetColor write SetColor default clBtnFace;
     property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clBtnFace;
   end;
@@ -2175,7 +2177,6 @@ type
     FStateChangeLink,
     FCustomCheckChangeLink: TChangeLink;         // connections to the image lists
     FOldFontChange: TNotifyEvent;                // helper method pointer for tracking font changes in the off screen buffer
-    FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer
     FColors: TVTColors;                          // class comprising all customizable colors in the tree
     FButtonStyle: TVTButtonStyle;                // style of the tree buttons
     FButtonFillMode: TVTButtonFillMode;          // for rectangular tree buttons only: how to fill them
@@ -2591,6 +2592,7 @@ type
     procedure SetDoubleBuffered(const Value: Boolean);
     procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
   protected
+    FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
     procedure AutoScale(); virtual;
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
@@ -3370,6 +3372,8 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
+    property Node  : PVirtualNode read FNode; // [IPK] Make FNode accessible
+    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible 
 
     function BeginEdit: Boolean; virtual; stdcall;
     function CancelEdit: Boolean; virtual; stdcall;
@@ -3438,9 +3442,6 @@ type
     function GetOptions: TCustomStringTreeOptions;
     function GetStaticText(Node: PVirtualNode; Column: TColumnIndex): UnicodeString;
     function GetText(Node: PVirtualNode; Column: TColumnIndex): UnicodeString;
-    procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo);
-    procedure PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer; Text: UnicodeString);
-    procedure PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer; const Text: UnicodeString);
     procedure ReadText(Reader: TReader);
     procedure SetDefaultText(const Value: UnicodeString);
     procedure SetOptions(const Value: TCustomStringTreeOptions);
@@ -3451,6 +3452,9 @@ type
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean=True);
   protected
     fPreviouslySelected: TStringList;
+    procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo); // [IPK] - private to protected
+    procedure PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer; Text: UnicodeString); virtual; // [IPK] - private to protected
+    procedure PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer; const Text: UnicodeString); virtual; // [IPK] - private to protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
     function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString): Integer; virtual;
@@ -4038,6 +4042,9 @@ function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 procedure GetStringDrawRect(DC: HDC; const S: UnicodeString; var Bounds: TRect; DrawFormat: Cardinal);
 function WrapString(DC: HDC; const S: UnicodeString; const Bounds: TRect; RTL: Boolean;
   DrawFormat: Cardinal): UnicodeString;
+
+function GetUtilityImages: TImageList;  // [IPK] Allow other classes to access UtilityImages
+procedure ShowError(Msg: UnicodeString; HelpContext: Integer);  // [IPK] Surface this to interface
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4707,6 +4714,14 @@ begin
 end;
 
 //----------------- utility functions ----------------------------------------------------------------------------------
+
+function GetUtilityImages: TImageList; // [IPK]
+
+begin
+  Result := UtilityImages; 
+end; 
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure ShowError(Msg: UnicodeString; HelpContext: Integer);
 
@@ -9825,6 +9840,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+// [IPK]
+function TVirtualTreeColumn.GetText: UnicodeString;
+
+begin
+  Result := FText;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVirtualTreeColumn.LoadFromStream(const Stream: TStream; Version: Integer);
 
   //--------------- local function --------------------------------------------
@@ -13975,6 +13999,7 @@ begin
   FColors[13] := clHighlight;     // SelectionRectangleBorderColor
   FColors[14] := clBtnShadow;     // HeaderHotColor
   FColors[15] := clHighlightText; // SelectionTextColor
+  FColors[16] := clMedGray;       // UnfocusedColor  [IPK]
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
