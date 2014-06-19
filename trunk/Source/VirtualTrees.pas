@@ -91,7 +91,7 @@ uses
   ;
 
 const
-  VTVersion = '5.3.0';
+  VTVersion = '5.3.2';
 
 {$if CompilerVersion < 20}
 type
@@ -710,6 +710,7 @@ type
     HitNode: PVirtualNode;
     HitPositions: THitPositions;
     HitColumn: TColumnIndex;
+    HitPoint: TPoint;
   end;
 
   // auto scroll directions
@@ -29281,6 +29282,8 @@ begin
       Inc(X, FEffectiveOffsetX);
     Inc(Y, -FOffsetY);
   end;
+  HitInfo.HitPoint.X := X;
+  HitInfo.HitPoint.Y := Y;
 
   // If the point is in the tree area then check the nodes.
   if HitInfo.HitPositions = [] then
