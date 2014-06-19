@@ -3362,7 +3362,6 @@ type
   TStringEditLink = class(TInterfacedObject, IVTEditLink)
   private
     FEdit: TVTEdit;                  // A normal custom edit control.
-    procedure SetEdit(const Value: TVTEdit);
   protected
     FTree: TCustomVirtualStringTree; // A back reference to the tree calling.
     FNode: PVirtualNode;             // The node to be edited.
@@ -3370,6 +3369,7 @@ type
     FAlignment: TAlignment;
     FTextBounds: TRect;              // Smallest rectangle around the text.
     FStopping: Boolean;              // Set to True when the edit link requests stopping the edit action.
+    procedure SetEdit(const Value: TVTEdit); // Setter for the FEdit member;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -34719,7 +34719,8 @@ end;
 destructor TStringEditLink.Destroy;
 
 begin
-  FEdit.Release;
+  if Assigned(fEdit) then
+    FEdit.Release;
   inherited;
 end;
 
@@ -34808,6 +34809,12 @@ begin
   Result := Tree is TCustomVirtualStringTree;
   if Result then
   begin
+    if not Assigned(fEdit) then begin
+      FEdit := TVTEdit.Create(Self);
+      FEdit.Visible := False;
+      FEdit.BorderStyle := bsSingle;
+      FEdit.AutoSize := False;
+    end;
     FTree := Tree as TCustomVirtualStringTree;
     FNode := Node;
     FColumn := Column;
