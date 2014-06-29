@@ -10812,7 +10812,7 @@ begin
   if (P.X >= 0) and (P.Y >= 0) and (P.Y <= FHeader.TreeView.Height) then
     with FHeader, Treeview do
     begin
-      if Relative and (P.X > GetVisibleFixedWidth) then
+      if Relative and (P.X >= GetVisibleFixedWidth) then
         Sum := -FEffectiveOffsetX
       else
         Sum := 0;
