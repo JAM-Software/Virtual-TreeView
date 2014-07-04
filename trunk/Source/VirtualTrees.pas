@@ -24267,255 +24267,259 @@ begin
   if (tsEditing in FStates) then
     DoEndEdit;
 
-    // Focus change. Don't use the SetFocus method as this does not work for MDI windows.
-    if not Focused and CanFocus then
-    begin
-      Windows.SetFocus(Handle);
-      // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
-      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
-    end;
-
-    // Keep clicked column in case the application needs it.
-    FHeader.FColumns.FClickIndex := HitInfo.HitColumn;
-
-    // Change column only if we have hit the node label.
-    if (hiOnItemLabel in HitInfo.HitPositions) or
-      (toFullRowSelect in FOptions.FSelectionOptions) or
-      (toGridExtensions in FOptions.FMiscOptions) then
-    begin
-      NewColumn := FFocusedColumn <> HitInfo.HitColumn;
-      if toExtendedFocus in FOptions.FSelectionOptions then
-        Column := HitInfo.HitColumn
-      else
-        Column := FHeader.MainColumn;
-    end
-    else
-    begin
-      NewColumn := False;
-      Column := FFocusedColumn;
-    end;
-
-    if NewColumn and
-       (not FHeader.AllowFocus(Column)) then
-    begin
-      NewColumn := False;
-      Column := FFocusedColumn;
-    end;
-
-    NewNode := FFocusedNode <> HitInfo.HitNode;
-
-    // Translate keys and filter out shift and control key.
-    ShiftState := KeysToShiftState(Message.Keys) * [ssShift, ssCtrl, ssAlt];
-    if ssAlt in ShiftState then
-    begin
-      AltPressed := True;
-      // Remove the Alt key from the shift state. It is not meaningful there.
-      Exclude(ShiftState, ssAlt);
-    end
-    else
-      AltPressed := False;
-
-    // Various combinations determine what states the tree enters now.
-    // We initialize shorthand variables to avoid the following expressions getting too large
-    // and to avoid repeative expensive checks.
-    IsLabelHit := not AltPressed and not (toSimpleDrawSelection in FOptions.FSelectionOptions) and
-             ((hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
-    IsCellHit := not AltPressed and not IsLabelHit and Assigned(HitInfo.HitNode) and
-      ([hiOnItemButton, hiOnItemCheckBox] * HitInfo.HitPositions = []) and
-      ((toFullRowSelect in FOptions.FSelectionOptions) or
-      ((toGridExtensions in FOptions.FMiscOptions) and (HitInfo.HitColumn > NoColumn)));
-    IsAnyHit := IsLabelHit or IsCellHit;
-    MultiSelect := toMultiSelect in FOptions.FSelectionOptions;
-    ShiftEmpty := ShiftState = [];
-    NodeSelected := IsAnyHit and (vsSelected in HitInfo.HitNode.States);
-
-    // Determine the Drag behavior.
-    if MultiSelect and not (toDisableDrawSelection in FOptions.FSelectionOptions) then
-    begin
-      // We have MultiSelect and want to draw a selection rectangle.
-      // We will start a full row drag only in case a label was hit,
-      // otherwise a multi selection will start.
-      FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
-          not (hiNowhere in HitInfo.HitPositions) and
-          (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions))
-    end
-    else // No MultiSelect, hence we can start a drag anywhere in the row.
-      FullRowDrag := toFullRowDrag in FOptions.FMiscOptions;
-
-    IsHeightTracking := (Message.Msg = WM_LBUTTONDOWN) and
-                        (hiOnItem in HitInfo.HitPositions) and
-                        ([hiUpperSplitter, hiLowerSplitter] * HitInfo.HitPositions <> []);
-
-    // Dragging might be started in the inherited handler manually (which is discouraged for stability reasons)
-    // the test for manual mode is done below (after the focused node is set).
-    AutoDrag := ((DragMode = dmAutomatic) or Dragging) and (not IsCellHit or FullRowDrag);
-
-    // Query the application to learn if dragging may start now (if set to dmManual).
-    if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = dmManual) then
-      AutoDrag := DoBeforeDrag(HitInfo.HitNode, Column) and (FullRowDrag or IsLabelHit);
-
-    // handle node height tracking
-    if IsHeightTracking then
-    begin
-      if hiUpperSplitter in HitInfo.HitPositions then
-        FHeightTrackNode := GetPreviousVisible(HitInfo.HitNode, True)
-      else
-        FHeightTrackNode := HitInfo.HitNode;
-
-      if CanSplitterResizeNode(Point(Message.XPos, Message.YPos), FHeightTrackNode, HitInfo.HitColumn) then
-      begin
-        FHeightTrackColumn := HitInfo.HitColumn;
-        NodeRect := GetDisplayRect(FHeightTrackNode, FHeightTrackColumn, False);
-        FHeightTrackPoint := Point(NodeRect.Left, NodeRect.Top);
-        DoStateChange([tsNodeHeightTrackPending]);
-        Exit;
-      end;
-    end;
-
-    // handle button clicks
-    if (hiOnItemButton in HitInfo.HitPositions) and (vsHasChildren in HitInfo.HitNode.States) then
-    begin
-      ToggleNode(HitInfo.HitNode);
-      Exit;
-    end;
-
-    // check event
-    if hiOnItemCheckBox in HitInfo.HitPositions then
-    begin
-      if (FStates * [tsMouseCheckPending, tsKeyCheckPending] = []) and not (vsDisabled in HitInfo.HitNode.States) then
-      begin
-        with HitInfo.HitNode^ do
-          NewCheckState := DetermineNextCheckState(CheckType, CheckState);
-        if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
-        begin
-          DoStateChange([tsMouseCheckPending]);
-          FCheckNode := HitInfo.HitNode;
-          FPendingCheckState := NewCheckState;
-          FCheckNode.CheckState := PressedState[FCheckNode.CheckState];
-          InvalidateNode(HitInfo.HitNode);
-        end;
-      end;
-      Exit;
-    end;
-
-    // Keep this node's level in case we need it for constraint selection.
-    if (FRoot.ChildCount > 0) and ShiftEmpty or (FSelectionCount = 0) then
-      if Assigned(HitInfo.HitNode) then
-        FLastSelectionLevel := GetNodeLevel(HitInfo.HitNode)
-      else
-        FLastSelectionLevel := GetNodeLevel(GetLastVisibleNoInit(nil, True));
-
-    // pending clearance
-    if MultiSelect and ShiftEmpty and not (hiOnItemCheckbox in HitInfo.HitPositions) and IsAnyHit and AutoDrag and
-      NodeSelected and not FSelectionLocked then
-      DoStateChange([tsClearPending]);
-
-    // immediate clearance
-    // Determine for the right mouse button if there is a popup menu. In this case and if drag'n drop is pending
-    // the current selection has to stay as it is.
-    with HitInfo, Message do
-      CanClear := not AutoDrag and
-        (not (tsRightButtonDown in FStates) or not HasPopupMenu(HitNode, HitColumn, Point(XPos, YPos)));
-
-    // User starts a selection with a selection rectangle.
-    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
-    begin
-      SetCapture(Handle);
-      DoStateChange([tsDrawSelPending]);
-      FDrawSelShiftState := ShiftState;
-      FNewSelRect := Rect(Message.XPos + FEffectiveOffsetX, Message.YPos - FOffsetY, Message.XPos + FEffectiveOffsetX,
-        Message.YPos - FOffsetY);
-      FLastSelRect := Rect(0, 0, 0, 0);
-    end;
-
-    if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
-      (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect))) then
-    begin
-      Assert(not (tsClearPending in FStates), 'Pending and direct clearance are mutual exclusive!');
-
-      // If the currently hit node was already selected then we have to reselect it again after clearing the current
-      // selection, but without a change event if it is the only selected node.
-      // The same applies if the Alt key is pressed, which allows to start drawing the selection rectangle also
-      // on node captions and images. Here the previous selection state does not matter, though.
-      if NodeSelected or (AltPressed and Assigned(HitInfo.HitNode) and (HitInfo.HitColumn = FHeader.MainColumn)) and not (hiNowhere in HitInfo.HitPositions) then
-      begin
-        NeedChange := FSelectionCount > 1;
-        InternalClearSelection;
-        InternalAddToSelection(HitInfo.HitNode, True);
-        if NeedChange then
-        begin
-          Invalidate;
-          Change(nil);
-        end;
-      end
-      else
-        ClearSelection;
-    end;
-
-    // pending node edit
-    if Focused and
-      ((hiOnItemLabel in HitInfo.HitPositions) or ((toGridExtensions in FOptions.FMiscOptions) and
-      (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty then
-    begin
-      DoStateChange([tsEditPending]);
-    end;
-
-    if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
-    begin
-      // The original code here was moved up to fix issue #187.
-      // In order not to break the semantics of this procedure, we are leaving these if statements here
-      if not IsCellHit or (hiNowhere in HitInfo.HitPositions) then
-        Exit;
-    end;
-
-    // Keep current mouse position.
-    FLastClickPos := Point(Message.XPos, Message.YPos);
-
-    // Handle selection and node focus change.
-    if (IsLabelHit or IsCellHit) and
-       DoFocusChanging(FFocusedNode, HitInfo.HitNode, FFocusedColumn, Column) then
-    begin
-      if NewColumn then
-      begin
-        InvalidateColumn(FFocusedColumn);
-        InvalidateColumn(Column);
-        FFocusedColumn := Column;
-      end;
-      if DragKind = dkDock then
-      begin
-        StopTimer(ScrollTimer);
-        DoStateChange([], [tsScrollPending, tsScrolling]);
-      end;
-      // Get the currently focused node to make multiple multi-selection blocks possible.
-      LastFocused := FFocusedNode;
-      if NewNode then
-        DoFocusNode(HitInfo.HitNode, False);
-
-      if MultiSelect and not ShiftEmpty then
-        HandleClickSelection(LastFocused, HitInfo.HitNode, ShiftState, AutoDrag)
-      else
-      begin
-        if ShiftEmpty then
-          FRangeAnchor := HitInfo.HitNode;
-
-        // If the hit node is not yet selected then do it now.
-        if not NodeSelected then
-          AddToSelection(HitInfo.HitNode);
-      end;
-
-      if NewNode or NewColumn then
-      begin
-        ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
-                       not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions) and not (toFullRowSelect in FOptions.SelectionOptions));
-        DoFocusChange(FFocusedNode, FFocusedColumn);
-      end;
-    end;
-
-    // Drag'n drop initiation
-    // If we lost focus in the interim the button states would be cleared in WM_KILLFOCUS.
-    if AutoDrag and IsAnyHit and (FStates * [tsLeftButtonDown, tsRightButtonDown, tsMiddleButtonDown] <> []) then
-      BeginDrag(False);
+  // Focus change. Don't use the SetFocus method as this does not work for MDI windows.
+  if not Focused and CanFocus then
+  begin
+    Windows.SetFocus(Handle);
+    // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
   end;
+
+  // Keep clicked column in case the application needs it.
+  FHeader.FColumns.FClickIndex := HitInfo.HitColumn;
+
+  // Change column only if we have hit the node label.
+  if (hiOnItemLabel in HitInfo.HitPositions) or
+    (toFullRowSelect in FOptions.FSelectionOptions) or
+    (toGridExtensions in FOptions.FMiscOptions) then
+  begin
+    NewColumn := FFocusedColumn <> HitInfo.HitColumn;
+    if toExtendedFocus in FOptions.FSelectionOptions then
+      Column := HitInfo.HitColumn
+    else
+      Column := FHeader.MainColumn;
+  end
+  else
+  begin
+    NewColumn := False;
+    Column := FFocusedColumn;
+  end;
+
+  if NewColumn and not FHeader.AllowFocus(Column) then
+  begin
+    NewColumn := False;
+    Column := FFocusedColumn;
+  end;
+
+  NewNode := FFocusedNode <> HitInfo.HitNode;
+
+  // Translate keys and filter out shift and control key.
+  ShiftState := KeysToShiftState(Message.Keys) * [ssShift, ssCtrl, ssAlt];
+  if ssAlt in ShiftState then
+  begin
+    AltPressed := True;
+    // Remove the Alt key from the shift state. It is not meaningful there.
+    Exclude(ShiftState, ssAlt);
+  end
+  else
+    AltPressed := False;
+
+  // Various combinations determine what states the tree enters now.
+  // We initialize shorthand variables to avoid the following expressions getting too large
+  // and to avoid repeative expensive checks.
+  IsLabelHit := not AltPressed and not (toSimpleDrawSelection in FOptions.FSelectionOptions) and
+    ((hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
+
+  IsCellHit := not AltPressed and not IsLabelHit and Assigned(HitInfo.HitNode) and
+    ([hiOnItemButton, hiOnItemCheckBox] * HitInfo.HitPositions = []) and
+    ((toFullRowSelect in FOptions.FSelectionOptions) or
+    ((toGridExtensions in FOptions.FMiscOptions) and (HitInfo.HitColumn > NoColumn)));
+
+  IsAnyHit := IsLabelHit or IsCellHit;
+  MultiSelect := toMultiSelect in FOptions.FSelectionOptions;
+  ShiftEmpty := ShiftState = [];
+  NodeSelected := IsAnyHit and (vsSelected in HitInfo.HitNode.States);
+
+  // Determine the Drag behavior.
+  if MultiSelect and not (toDisableDrawSelection in FOptions.FSelectionOptions) then
+  begin
+    // We have MultiSelect and want to draw a selection rectangle.
+    // We will start a full row drag only in case a label was hit,
+    // otherwise a multi selection will start.
+    FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
+        not (hiNowhere in HitInfo.HitPositions) and
+        (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions))
+  end
+  else // No MultiSelect, hence we can start a drag anywhere in the row.
+    FullRowDrag := toFullRowDrag in FOptions.FMiscOptions;
+
+  IsHeightTracking := (Message.Msg = WM_LBUTTONDOWN) and
+                      (hiOnItem in HitInfo.HitPositions) and
+                      ([hiUpperSplitter, hiLowerSplitter] * HitInfo.HitPositions <> []);
+
+  // Dragging might be started in the inherited handler manually (which is discouraged for stability reasons)
+  // the test for manual mode is done below (after the focused node is set).
+  AutoDrag := ((DragMode = dmAutomatic) or Dragging) and (not IsCellHit or FullRowDrag);
+
+  // Query the application to learn if dragging may start now (if set to dmManual).
+  if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = dmManual) then
+    AutoDrag := DoBeforeDrag(HitInfo.HitNode, Column) and (FullRowDrag or IsLabelHit);
+
+  // handle node height tracking
+  if IsHeightTracking then
+  begin
+    if hiUpperSplitter in HitInfo.HitPositions then
+      FHeightTrackNode := GetPreviousVisible(HitInfo.HitNode, True)
+    else
+      FHeightTrackNode := HitInfo.HitNode;
+
+    if CanSplitterResizeNode(Point(Message.XPos, Message.YPos), FHeightTrackNode, HitInfo.HitColumn) then
+    begin
+      FHeightTrackColumn := HitInfo.HitColumn;
+      NodeRect := GetDisplayRect(FHeightTrackNode, FHeightTrackColumn, False);
+      FHeightTrackPoint := Point(NodeRect.Left, NodeRect.Top);
+      DoStateChange([tsNodeHeightTrackPending]);
+      Exit;
+    end;
+  end;
+
+  // handle button clicks
+  if (hiOnItemButton in HitInfo.HitPositions) and (vsHasChildren in HitInfo.HitNode.States) then
+  begin
+    ToggleNode(HitInfo.HitNode);
+    Exit;
+  end;
+
+  // check event
+  if hiOnItemCheckBox in HitInfo.HitPositions then
+  begin
+    if (FStates * [tsMouseCheckPending, tsKeyCheckPending] = []) and not (vsDisabled in HitInfo.HitNode.States) then
+    begin
+      with HitInfo.HitNode^ do
+        NewCheckState := DetermineNextCheckState(CheckType, CheckState);
+      if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
+      begin
+        DoStateChange([tsMouseCheckPending]);
+        FCheckNode := HitInfo.HitNode;
+        FPendingCheckState := NewCheckState;
+        FCheckNode.CheckState := PressedState[FCheckNode.CheckState];
+        InvalidateNode(HitInfo.HitNode);
+      end;
+    end;
+    Exit;
+  end;
+
+  // Keep this node's level in case we need it for constraint selection.
+  if (FRoot.ChildCount > 0) and ShiftEmpty or (FSelectionCount = 0) then
+    if Assigned(HitInfo.HitNode) then
+      FLastSelectionLevel := GetNodeLevel(HitInfo.HitNode)
+    else
+      FLastSelectionLevel := GetNodeLevel(GetLastVisibleNoInit(nil, True));
+
+  // pending clearance
+  if MultiSelect and ShiftEmpty and not (hiOnItemCheckbox in HitInfo.HitPositions) and IsAnyHit and AutoDrag and
+    NodeSelected and not FSelectionLocked then
+    DoStateChange([tsClearPending]);
+
+  // immediate clearance
+  // Determine for the right mouse button if there is a popup menu. In this case and if drag'n drop is pending
+  // the current selection has to stay as it is.
+  with HitInfo, Message do
+    CanClear := not AutoDrag and
+      (not (tsRightButtonDown in FStates) or not HasPopupMenu(HitNode, HitColumn, Point(XPos, YPos)));
+
+  // User starts a selection with a selection rectangle.
+  if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
+  begin
+    SetCapture(Handle);
+    DoStateChange([tsDrawSelPending]);
+    FDrawSelShiftState := ShiftState;
+    FNewSelRect := Rect(Message.XPos + FEffectiveOffsetX, Message.YPos - FOffsetY, Message.XPos + FEffectiveOffsetX,
+      Message.YPos - FOffsetY);
+    FLastSelRect := Rect(0, 0, 0, 0);
+  end;
+
+  if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
+    (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect))) then
+  begin
+    Assert(not (tsClearPending in FStates), 'Pending and direct clearance are mutual exclusive!');
+
+    // If the currently hit node was already selected then we have to reselect it again after clearing the current
+    // selection, but without a change event if it is the only selected node.
+    // The same applies if the Alt key is pressed, which allows to start drawing the selection rectangle also
+    // on node captions and images. Here the previous selection state does not matter, though.
+    if NodeSelected or (AltPressed and Assigned(HitInfo.HitNode) and (HitInfo.HitColumn = FHeader.MainColumn)) and not (hiNowhere in HitInfo.HitPositions) then
+    begin
+      NeedChange := FSelectionCount > 1;
+      InternalClearSelection;
+      InternalAddToSelection(HitInfo.HitNode, True);
+      if NeedChange then
+      begin
+        Invalidate;
+        Change(nil);
+      end;
+    end
+    else
+      ClearSelection;
+  end;
+
+  // pending node edit
+  if Focused and
+    ((hiOnItemLabel in HitInfo.HitPositions) or ((toGridExtensions in FOptions.FMiscOptions) and
+    (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty then
+  begin
+    DoStateChange([tsEditPending]);
+  end;
+
+  if not (toDisableDrawSelection in FOptions.FSelectionOptions)
+    and not (IsLabelHit or FullRowDrag) and MultiSelect then
+  begin
+    // The original code here was moved up to fix issue #187.
+    // In order not to break the semantics of this procedure, we are leaving these if statements here
+    if not IsCellHit or (hiNowhere in HitInfo.HitPositions) then
+      Exit;
+  end;
+
+  // Keep current mouse position.
+  FLastClickPos := Point(Message.XPos, Message.YPos);
+
+  // Handle selection and node focus change.
+  if (IsLabelHit or IsCellHit) and
+     DoFocusChanging(FFocusedNode, HitInfo.HitNode, FFocusedColumn, Column) then
+  begin
+    if NewColumn then
+    begin
+      InvalidateColumn(FFocusedColumn);
+      InvalidateColumn(Column);
+      FFocusedColumn := Column;
+    end;
+    if DragKind = dkDock then
+    begin
+      StopTimer(ScrollTimer);
+      DoStateChange([], [tsScrollPending, tsScrolling]);
+    end;
+    // Get the currently focused node to make multiple multi-selection blocks possible.
+    LastFocused := FFocusedNode;
+    if NewNode then
+      DoFocusNode(HitInfo.HitNode, False);
+
+    if MultiSelect and not ShiftEmpty then
+      HandleClickSelection(LastFocused, HitInfo.HitNode, ShiftState, AutoDrag)
+    else
+    begin
+      if ShiftEmpty then
+        FRangeAnchor := HitInfo.HitNode;
+
+      // If the hit node is not yet selected then do it now.
+      if not NodeSelected then
+        AddToSelection(HitInfo.HitNode);
+    end;
+
+    if NewNode or NewColumn then
+    begin
+      ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
+        not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions)
+        and not (toFullRowSelect in FOptions.SelectionOptions));
+
+      DoFocusChange(FFocusedNode, FFocusedColumn);
+    end;
+  end;
+
+  // Drag'n drop initiation
+  // If we lost focus in the interim the button states would be cleared in WM_KILLFOCUS.
+  if AutoDrag and IsAnyHit and (FStates * [tsLeftButtonDown, tsRightButtonDown, tsMiddleButtonDown] <> []) then
+    BeginDrag(False);
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
