@@ -24328,9 +24328,12 @@ begin
     MultiSelect := toMultiSelect in FOptions.FSelectionOptions;
     ShiftEmpty := ShiftState = [];
     NodeSelected := IsAnyHit and (vsSelected in HitInfo.HitNode.States);
-    if MultiSelect then
+
+    // Determine the Drag behavior.
+    if MultiSelect and not (toDisableDrawSelection in FOptions.FSelectionOptions) then
     begin
-      // If MultiSelect is selected we will start a full row drag only in case a label was hit,
+      // We have MultiSelect and want to draw a selection rectangle.
+      // We will start a full row drag only in case a label was hit,
       // otherwise a multi selection will start.
       FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
           not (hiNowhere in HitInfo.HitPositions) and
