@@ -3176,7 +3176,7 @@ type
       DoInit: Boolean = False; ChildNodesOnly: Boolean = False): PVirtualNode;
     procedure LoadFromFile(const FileName: TFileName); virtual;
     procedure LoadFromStream(Stream: TStream); virtual;
-    procedure MeasureItemHeight(const Canvas: TCanvas; Node: PVirtualNode);
+    procedure MeasureItemHeight(const Canvas: TCanvas; Node: PVirtualNode); virtual;
     procedure MoveTo(Source, Target: PVirtualNode; Mode: TVTNodeAttachMode; ChildrenOnly: Boolean); overload;
     procedure MoveTo(Node: PVirtualNode; Tree: TBaseVirtualTree; Mode: TVTNodeAttachMode;
       ChildrenOnly: Boolean); overload;
