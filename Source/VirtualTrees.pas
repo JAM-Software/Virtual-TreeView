@@ -18121,7 +18121,7 @@ begin
           if ScrollLines = WHEEL_PAGESCROLL then
             ScrollAmount := Trunc(WheelFactor * ClientHeight)
           else
-            ScrollAmount := Trunc(WheelFactor * ScrollLines * FDefaultNodeHeight);
+            ScrollAmount := Integer(Trunc(WheelFactor * ScrollLines * FDefaultNodeHeight));
         end;
         SetOffsetY(FOffsetY + ScrollAmount);
       end
