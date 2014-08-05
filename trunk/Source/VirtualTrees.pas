@@ -24451,7 +24451,7 @@ begin
         Change(nil);
       end;
     end
-    else
+    else if not ((hiNowhere in HitInfo.HitPositions) and (toAlwaysSelectNode in Self.TreeOptions.SelectionOptions)) then // When clicking in the free space we don't want the selection to be cleared in case toAlwaysSelectNode is set
       ClearSelection;
   end;
 
