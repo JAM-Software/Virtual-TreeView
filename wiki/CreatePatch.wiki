@@ -10,7 +10,7 @@
 
 == Creating the patch ==
 
-  # Right click on "VirtualTrees.pas" and select "SVN Update"
-  # Right click on "VirtualTrees.pas" and select "TortoiseSVN" > "Create patch"
-  # Press OK and save the patch file, its default name is "VirtualTrees.pas.patch"
+  # Right click on `VirtualTrees.pas` and select "SVN Update"
+  # Right click on `VirtualTrees.pas` and select "TortoiseSVN" > "Create patch"
+  # Press OK and save the patch file, its default name is `VirtualTrees.pas.patch`
   # Attach this file to the [https://code.google.com/p/virtual-treeview/issues/list issue] you created.
