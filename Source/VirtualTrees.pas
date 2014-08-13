@@ -198,6 +198,9 @@ const
   // Decoupling message for auto-adjusting the internal edit window.
   CM_AUTOADJUST = CM_BASE + 2005;
 
+
+  CM_UPDATE_VCLSTYLE_SCROLLBARS = CM_BASE + 2050;
+
   // VT's own clipboard formats,
   // Note: The reference format is used internally to allow to link to a tree reference
   //       to implement optimized moves and other back references.
@@ -2060,6 +2063,7 @@ type
     FVertScrollBarUpButtonState: TThemedScrollBar;
     FVertScrollBarWindow: TVclStyleScrollBarWindow;
 
+    procedure CMUpdateVclStyleScrollbars(var Message: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
     procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
     procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
     procedure WMLButtonDown(var Msg: TWMMouse);  message WM_LBUTTONDOWN;
@@ -34282,6 +34286,7 @@ begin
   begin
     UpdateVerticalScrollBar(DoRepaint);
     UpdateHorizontalScrollBar(DoRepaint);
+    Perform(CM_UPDATE_VCLSTYLE_SCROLLBARS,0,0);
   end;
 end;
 
@@ -37920,6 +37925,12 @@ begin
   CallDefaultProc(TMessage(Msg));
   PaintScrollBars;
   Handled := True;
+end;
+
+procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollbars(var Message: TMessage);
+begin
+   CalcScrollBarsRect;
+   PaintScrollBars;
 end;
 
 procedure TVclStyleScrollBarsHook.WMKeyDown(var Msg: TMessage);
