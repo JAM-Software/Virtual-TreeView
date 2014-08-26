@@ -9367,8 +9367,10 @@ begin
       if not FCheckBox then
         HeaderGlyphSize := Point(FImages.Width, FImages.Height)
       else
-        with TBaseVirtualTree.GetCheckImageListFor(FHeader.Treeview.CheckImageKind) do
-          HeaderGlyphSize := Point(Width, Height)
+        with Self.Owner.Header.Treeview do begin
+          if Assigned(FCheckImages) then
+            HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height)
+        end
     else
       HeaderGlyphSize := Point(0, 0);
     if UseSortGlyph then
