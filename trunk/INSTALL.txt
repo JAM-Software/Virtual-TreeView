@@ -41,9 +41,12 @@ Delphi 2010 Installation
 
 Delphi / RAD Studio XE - XE6 Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. Open the project group "Packages\RAD Studio XE2\RAD Studio XE*.groupproj"
-2. Right click on "VirtualTreesD.bpl" and click "Install"
+1. Open the project group "Packages\RAD Studio XE*\RAD Studio XE*.groupproj"
+2. Right click on "VirtualTreesD*.bpl" and click "Install"
 3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+4. C++ Builder users only:
+   Go to "Tools > Options > Environment Options > C++ Options > Paths and Directories > Library Path > [...]"
    Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
 
 
