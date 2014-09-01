@@ -36284,7 +36284,7 @@ begin
     // For customization by the application or descendants we use again the redirected font change event.
     RedirectFontChangeEvent(Canvas);
 
-    CellPadding := Format('padding-left:%dpx;padding-right:%0:dpx;', [FMargin]);
+    CellPadding := Format('padding-left: %dpx; padding-right: %0:dpx;', [FMargin]);
 
     IndentWidth := IntToStr(FIndent);
     AddHeader := ' ';
@@ -36295,7 +36295,7 @@ begin
       AddHeader := AddHeader + Format(' border="%d" frame=box', [BorderWidth + 1]);
 
     Buffer.Add('<META http-equiv="Content-Type" content="text/html; charset=utf-8">');
-      
+
     // Create HTML table based on the tree structure. To simplify formatting we use styles defined in a small CSS area.
     Buffer.Add('<style type="text/css">');
     Buffer.AddnewLine;
@@ -36312,40 +36312,42 @@ begin
       LineStyleText := 'dotted;';
     if toShowHorzGridLines in FOptions.FPaintOptions then
     begin
-      Buffer.Add('.noborder{border-style:');
+      Buffer.Add('.noborder{');
+      Buffer.Add(' border-bottom:1px; border-left: 0px; border-right: 0px; border-top: 1px;');
+      Buffer.Add('border-style:');
       Buffer.Add(LineStyleText);
-      Buffer.Add(' border-bottom:1;border-left:0;border-right:0; border-top:0;');
       Buffer.Add(CellPadding);
       Buffer.Add('}');
     end
     else
     begin
-      Buffer.Add('.noborder{border-style:none;');
+      Buffer.Add('.noborder{border-style: none;');
       Buffer.Add(CellPadding);
       Buffer.Add('}');
     end;
     Buffer.AddNewLine;
 
-    Buffer.Add('.normalborder {border-top:none; border-left:none; vertical-align:top;');
+    Buffer.Add('.normalborder {vertical-align: top; ');
     if toShowVertGridLines in FOptions.FPaintOptions then
-      Buffer.Add('border-right:1 ' + LineStyleText)
+      Buffer.Add('border-right: 1px; border-left: 1px; ')
     else
-      Buffer.Add('border-right:none;');
+      Buffer.Add('border-right: none; border-left:none; ');
     if toShowHorzGridLines in FOptions.FPaintOptions then
-      Buffer.Add('border-bottom:1 ' + LineStyleText)
+      Buffer.Add('border-top: 1px; border-bottom: 1px; ')
     else
-      Buffer.Add('border-bottom:none;');
+      Buffer.Add('border-top:none; border-bottom: none;');
+    Buffer.Add('border-style: ');
+    Buffer.Add(LineStyleText);
     Buffer.Add(CellPadding);
     Buffer.Add('}');
     Buffer.Add('</style>');
     Buffer.AddNewLine;
 
     // General table properties.
-    Buffer.Add('<table class="default" bgcolor=');
+    Buffer.Add('<table class="default" style="border-collapse: collapse;" bgcolor=');
     WriteColorAsHex(Color);
     Buffer.Add(AddHeader);
-    Buffer.Add(' cellspacing="0" cellpadding=');
-    Buffer.Add(IntToStr(FMargin) + '>');
+    Buffer.Add(' cellspacing="0">');
     Buffer.AddNewLine;
 
     Columns := nil;
@@ -36437,7 +36439,7 @@ begin
       if Assigned(FOnAfterHeaderExport) then
         FOnAfterHeaderExport(self, etHTML);
     end;
-  
+
     // Now go through the tree.
     Run := Save;
     while Assigned(Run) do
