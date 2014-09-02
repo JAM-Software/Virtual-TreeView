@@ -14088,7 +14088,7 @@ end;
 function TVTColors.GetNodeFontColor: TColor;
 begin
 {$IF CompilerVersion >= 23 }
-  if FOwner.VclStyleEnabled then
+  if FOwner.VclStyleEnabled and  FOwner.FBackground.Bitmap.Empty then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
   else
 {$IFEND}
@@ -18151,7 +18151,9 @@ begin
         SetOffsetX(FOffsetX + RTLFactor * ScrollAmount);
       end;
     end;
+
   end;
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22619,6 +22621,7 @@ begin
       HandleHotTrack(P.X, P.Y);
 
     DoScroll(DeltaX, DeltaY);
+    Perform(CM_UPDATE_VCLSTYLE_SCROLLBARS,0,0);
   end;
 end;
 
