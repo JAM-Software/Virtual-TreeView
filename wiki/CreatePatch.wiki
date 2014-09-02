@@ -8,6 +8,10 @@
   # Press OK
 
 
+== Precautions ==
+
+  # Edit only the files that were checked out. Do not copy a file which is already edited unless the unedited file matched the revision you have checked out!
+
 == Creating the patch ==
 
   # Right click on `VirtualTrees.pas` and select "SVN Update"
