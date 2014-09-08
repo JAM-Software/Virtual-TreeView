@@ -21,7 +21,7 @@ V5.5: (Planned for 2nd half of September 2014)
   * Added suggestions of #438: Make some members visible to derived classes
   * Fixed issue #440: Context menu does not pop up if there is no selected node
   * Added C++ Builder link demand to VirtualTreesR.Lib as {$HPPEMIT}
-  * Imporved installation instructions, especially for C++ Builder
+  * Improved installation instructions, especially for C++ Builder
   
 V5.4.1: (26 May 2014)
   * Added packages for C++ Builder XE6
