@@ -91,7 +91,7 @@ uses
   ;
 
 const
-  VTVersion = '5.3.2';
+  VTVersion = '5.5.0';
 
 {$if CompilerVersion < 20}
 type
