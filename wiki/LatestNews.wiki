@@ -1,7 +1,7 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
-== 11 Sep 2014: Release of V5.4.1 ==
+== 11 Sep 2014: Release of V5.5 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
   * Added packages for RAD Studio XE7 / Delphi XE7
   * Fixed issue #464: Vertical grid lines not computed correctly for spanned cells with header auto resize
