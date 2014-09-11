@@ -1,8 +1,33 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
-== 26 May 2014: Release of V5.4.1 ==
+== 11 Sep 2014: Release of V5.4.1 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
+  * Added packages for RAD Studio XE7 / Delphi XE7
+  * Fixed issue #464: Vertical grid lines not computed correctly for spanned cells with header auto resize
+  * Fixed issue #442: Scrollbars are not updated for active VCL Style under XE2
+  * Fixed issue #463: HTML export shows grid lines in IE and Chrome, but not in Firefox
+  * Fixed issue #460: Access violation in design time when setting "CheckBox" to True for a Virtual Treeview Column
+  * Fixed issue #72: Call Application.CancelHint only if the current control is showing the hint
+  * Fixed issue #461: corrected condition in TBaseVirtualTree.ScrollIntoView, so that not only partially (by the fixed area) covered columns but also totally covered columns are scrolled in view
+  * Fixed issue #450: Regional letters entered using Right+Alt should also trigger the incremental search.
+  * Improvements for toAlwaysSelectNode: 
+    Clicking the free space below the tree nodes no longer deselects the selected node. 
+    We now prevent toggling of the selection of the last selected node if toAlwaysSelectNode is set in TreeOptions.
+  * Fixed issue #447: SetChildCount() now calls DoMeasureItem() instead of using DefaultNodeHeight.
+  * Fixed issue #444: ERangeError in TBaseVirtualTree.CMMouseWheel
+  * TBaseVirtualTree.MeasureItemHeight() is virtual now.
+  * Fixed issue #445 MultiSelect behavior: Can't drag node which is not selected
+  * Fixed Issue #443: TVirtualTreeColumns.ColumnFromPosition on right border of fixed column
+  * Fixed issue #339: Problems with fixed column 
+  * Implemented #410: Small extension of TStringEditLink: Allow creating own edit control by moving the creation of TVTEdit from constructor to virtual PrepareEdit with assigned check.
+  * Implemented #409: Extend THitInfo record with hit coordinates
+  * Added suggestions of #438: Make some members visible to derived classes
+  * Fixed issue #440: Context menu does not pop up if there is no selected node
+  * Added C++ Builder link demand to VirtualTreesR.Lib as {$HPPEMIT}
+  * Improved installation instructions, especially for C++ Builder
+  
+== 26 May 2014: Release of V5.4.1 ==
   * Added packages for C++ Builder XE6
   * If toAutoChangeScale is set in AutoOptions, the Virtual TreeView control now increases the DefaultNodeHeight if the font size is too large to fit.
   * If toAutoChangeScale is set in AutoOptions, the columns widths are now adjusted too.
