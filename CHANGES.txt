@@ -1,4 +1,4 @@
-V5.5: (Planned for 2nd half of September 2014)
+V5.5: (11 Sep 2014)
   * Added packages for RAD Studio XE7 / Delphi XE7
   * Fixed issue #464: Vertical grid lines not computed correctly for spanned cells with header auto resize
   * Fixed issue #442: Scrollbars are not updated for active VCL Style under XE2
