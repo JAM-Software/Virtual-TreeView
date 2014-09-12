@@ -16525,7 +16525,7 @@ begin
 
             if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
               lNodeHeight := Child.NodeHeight;
-              DoMeasureItem(Canvas, Node, lNodeHeight); //
+              DoMeasureItem(Canvas, Child, lNodeHeight);
               Child.NodeHeight := lNodeHeight;
             end;
             Inc(NewHeight, Child.NodeHeight);
