@@ -18056,6 +18056,7 @@ end;
 procedure TBaseVirtualTree.CMMouseEnter(var Message: TMessage);
 begin
   DoMouseEnter();
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
