@@ -38305,9 +38305,9 @@ begin
         else
           FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
       end;
-
+    CallDefaultProc(TMessage(Msg));
   end;
-  CallDefaultProc(TMessage(Msg));
+  
   if not B and (FHorzScrollBarWindow.Visible) or (FVertScrollBarWindow.Visible) then
     PaintScrollBars;
   Handled := True;
