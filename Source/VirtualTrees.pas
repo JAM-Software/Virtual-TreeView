@@ -4048,7 +4048,7 @@ procedure GetStringDrawRect(DC: HDC; const S: UnicodeString; var Bounds: TRect; 
 function WrapString(DC: HDC; const S: UnicodeString; const Bounds: TRect; RTL: Boolean;
   DrawFormat: Cardinal): UnicodeString;
 
-function GetUtilityImages: TImageList;  // [IPK] Allow other classes to access UtilityImages
+function GetUtilityImages: TCustomImageList;
 procedure ShowError(Msg: UnicodeString; HelpContext: Integer);  // [IPK] Surface this to interface
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4720,7 +4720,7 @@ end;
 
 //----------------- utility functions ----------------------------------------------------------------------------------
 
-function GetUtilityImages: TImageList; // [IPK]
+function GetUtilityImages: TCustomImageList; // [IPK]
 
 begin
   Result := UtilityImages; 
