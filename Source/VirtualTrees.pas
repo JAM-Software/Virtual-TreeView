@@ -4885,14 +4885,14 @@ var
 
 begin
   Result := '';
-  Width := Bounds.Right - Bounds.Left;
-  R := Rect(0, 0, 0, 0);
-
   // Leading and trailing are ignored.
   Buffer := Trim(S);
   Len := Length(Buffer);
   if Len < 1 then
     Exit;
+
+  Width := Bounds.Right - Bounds.Left;
+  R := Rect(0, 0, 0, 0);
 
   // Count the words in the string.
   WordCounter := 1;
