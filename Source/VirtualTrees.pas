@@ -2825,6 +2825,7 @@ type
     procedure ReadNode(Stream: TStream; Version: Integer; Node: PVirtualNode); virtual;
     procedure RedirectFontChangeEvent(Canvas: TCanvas); virtual;
     procedure RemoveFromSelection(Node: PVirtualNode); virtual;
+    procedure UpdateNextNodeToSelect(Node: PVirtualNode); virtual;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual;
     procedure ResetRangeAnchor; virtual;
     procedure RestoreFontChangeEvent(Canvas: TCanvas); virtual;
@@ -26427,25 +26428,35 @@ begin
       if FSelectionCount = 0 then
         ResetRangeAnchor;
 
-      if FSelectionCount <= 1 then begin
-        // save a potential node to select after the currently selected node will be deleted.
-        // This will make the VT to behave more like the Win32 TreeView, which always selecta a new node if the currently
-        // selected one gets deleted.
-        if GetNextSibling(Node)<>nil then
-          fNextNodeToSelect := GetNextSibling(Node)
-        else if GetPreviousSibling(Node)<>nil then
-          fNextNodeToSelect := GetPreviousSibling(Node)
-        else if GetNodeLevel(Node)>0 then
-          fNextNodeToSelect := Node.Parent
-        else
-          fNextNodeToSelect := GetFirstChild(Node);
-      end;//if Assigned(Node);
+      if FSelectionCount <= 1 then
+        UpdateNextNodeToSelect(Node);
 
       DoRemoveFromSelection(Node);
       Change(Node);
     end;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.UpdateNextNodeToSelect(Node: PVirtualNode);
+
+// save a potential node to select after the currently selected node will be deleted.
+// This will make the VT to behave more like the Win32 TreeView, which always selecta a new node if the currently
+// selected one gets deleted.
+
+begin
+  if not (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
+    exit;
+  if GetNextSibling(Node)<>nil then
+    fNextNodeToSelect := GetNextSibling(Node)
+  else if GetPreviousSibling(Node)<>nil then
+    fNextNodeToSelect := GetPreviousSibling(Node)
+  else if GetNodeLevel(Node)>0 then
+    fNextNodeToSelect := Node.Parent
+  else
+    fNextNodeToSelect := GetFirstChild(Node);
+end;//if Assigned(Node);
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -36646,6 +36657,7 @@ begin
     Self.OnGetText(Self, Node, 0, ttNormal, lSelectedNodeCaption);
     fPreviouslySelected.Add(lSelectedNodeCaption);
   end;//if
+  UpdateNextNodeToSelect(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
