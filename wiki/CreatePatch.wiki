@@ -14,7 +14,12 @@
 
 == Creating the patch ==
 
+==== Using the Windows Explorer ====
   # Right click on `VirtualTrees.pas` and select "SVN Update"
   # Right click on `VirtualTrees.pas` and select "TortoiseSVN" > "Create patch"
   # Press OK and save the patch file, its default name is `VirtualTrees.pas.patch`
   # Attach this file to the [https://code.google.com/p/virtual-treeview/issues/list issue] you created.
+
+==== Using the command line ====
+  # Open `CMD.EXE` an `CD` to the `Source` folder of Virtual Treeview
+  # `svn update && svn diff > Virtualtrees.patch`
