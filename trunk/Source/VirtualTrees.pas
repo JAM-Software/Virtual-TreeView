@@ -8657,10 +8657,6 @@ function TVTDragImage.WillMove(P: TPoint): Boolean;
 // target point.
 // Always returns False if the system drag image support is available.
 
-var
-  DeltaX,
-  DeltaY: Integer;
-
 begin
   Result := Visible;
   if Result then
@@ -8668,21 +8664,12 @@ begin
     // Determine distances to move the drag image. Take care for restrictions.
     case FRestriction of
       dmrHorizontalOnly:
-        begin
-          DeltaX := FLastPosition.X - P.X;
-          DeltaY := 0;
-        end;
+        Result := FLastPosition.X <> P.X;
       dmrVerticalOnly:
-        begin
-          DeltaX := 0;
-          DeltaY := FLastPosition.Y - P.Y;
-        end;
+        Result := FLastPosition.Y <> P.Y;
     else // dmrNone
-      DeltaX := FLastPosition.X - P.X;
-      DeltaY := FLastPosition.Y - P.Y;
+      Result := (FLastPosition.X <> P.X) or (FLastPosition.Y <> P.Y);
     end;
-
-    Result := (DeltaX <> 0) or (DeltaY <> 0);
   end;
 end;
 
