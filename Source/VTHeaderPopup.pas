@@ -68,10 +68,12 @@ interface
 uses
   {$ifdef TNT}
     TntMenus,
+    TnTClasses,
   {$else}
     Menus,
+    Classes,
   {$endif TNT}
-  VirtualTrees;
+    VirtualTrees;
 
 type
   TVTHeaderPopupOption = (
@@ -124,12 +126,8 @@ type
 
 implementation
 
-uses Windows,
-  {$ifdef TNT}
-    TnTClasses
-  {$else}
-    Classes
-  {$endif TNT};
+uses
+  Windows;
 
 const
   cResizeToFitMenuItemName = 'VT_ResizeToFitMenuItem';
