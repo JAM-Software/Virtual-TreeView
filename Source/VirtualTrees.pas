@@ -38101,41 +38101,41 @@ begin
     Exit;
   end;
 
-  if (FHorzScrollBarSliderState <> tsThumbBtnHorzPressed) and (FHorzScrollBarSliderState = tsThumbBtnHorzHot) then
+  if FHorzScrollBarSliderState = tsThumbBtnHorzHot then
   begin
     FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
     PaintScrollBars;
-  end;
-
-  if (FVertScrollBarSliderState <> tsThumbBtnVertPressed) and (FVertScrollBarSliderState = tsThumbBtnVertHot) then
-  begin
-    FVertScrollBarSliderState := tsThumbBtnVertNormal;
-    PaintScrollBars;
-  end;
-
-  if (FHorzScrollBarUpButtonState <> tsArrowBtnLeftPressed) and (FHorzScrollBarUpButtonState = tsArrowBtnLeftHot) then
-  begin
-    FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-    PaintScrollBars;
-  end;
-
-  if (FHorzScrollBarDownButtonState <> tsArrowBtnRightPressed) and (FHorzScrollBarDownButtonState = tsArrowBtnRightHot) then
-  begin
-    FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-    PaintScrollBars;
-  end;
-
-  if (FVertScrollBarUpButtonState <> tsArrowBtnUpPressed) and (FVertScrollBarUpButtonState = tsArrowBtnUpHot) then
-  begin
-    FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-    PaintScrollBars;
-  end;
-
-  if (FVertScrollBarDownButtonState <> tsArrowBtnDownPressed) and (FVertScrollBarDownButtonState = tsArrowBtnDownHot) then
-  begin
-    FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-    PaintScrollBars;
-  end;
+  end
+  else
+    if FVertScrollBarSliderState = tsThumbBtnVertHot then
+     begin
+       FVertScrollBarSliderState := tsThumbBtnVertNormal;
+       PaintScrollBars;
+     end  
+     else
+       if FHorzScrollBarUpButtonState = tsArrowBtnLeftHot then
+       begin
+         FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
+         PaintScrollBars;
+       end
+       else
+         if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
+         begin
+           FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
+           PaintScrollBars;
+         end
+         else
+          if FVertScrollBarUpButtonState = tsArrowBtnUpHot then
+          begin
+            FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
+            PaintScrollBars;
+          end
+          else
+            if FVertScrollBarDownButtonState = tsArrowBtnDownHot then
+            begin
+              FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
+              PaintScrollBars;
+            end;
 
   CallDefaultProc(TMessage(Msg));
   if FLeftMouseButtonDown then
