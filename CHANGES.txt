@@ -1,3 +1,15 @@
+V5.5.1: (planned for 06 Oct 2014)
+  * Improvements for toAlwaysSelectNode option: Selection of next sibling has been improved in case the currently selected node is being removed.
+  * Fixed issue #473: Return type of GetUtilityImages should be TCustomImageList
+  * Fix for issue #470: VCL Styles and sorting failure
+  * Added missing inherited to CMMouseEnter()
+  * Fixed issue #468: Redundant code in CreateSystemImageSet()
+  * Added fix for #466: No parent window if column created in constructor
+  * Fixed issue #446: ScrollIntoView does not work properly after applying patch from issue #339
+  * Added missing begin/end-block in MeasureItemHeight() 
+  * Improved fix for issue #438: Now correctly initializing member of property TVTColors.UnfocusedColor  
+  * Improved fix for issue #447: DoMeasureItem() was called for Node instead of Child.
+   
 V5.5: (11 Sep 2014)
   * Added packages for RAD Studio XE7 / Delphi XE7
   * Fixed issue #464: Vertical grid lines not computed correctly for spanned cells with header auto resize
