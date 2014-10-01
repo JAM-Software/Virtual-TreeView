@@ -13,5 +13,11 @@ When making commits to the repository of this project, please follow these guide
 == Coding Style ==
 
 When writing or changing code in this project, please follow these guidelines:
-  * TODO
-  * TODO
+  * As a general rule always examine the surrounding code of your modification to keep the consistent style as much as possible.
+  * Indent blocks with two spaces. Tab character is not allowed.
+  * Capitalization matters. Pascal is not case sensitive but that doesn't mean we should use the Shift key randomly. Hungarian notation style should only be used on enumerated values. Reserved words are all lowercased.
+  * One statement per line.
+  * Every statement should be closed by a semicolon even if it is not mandatory before the *`end`* keyword. There should be no whitespace before the semicolon.
+  * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
+  * Assignment: one space before and after the ` := ` assignment operator.
+  * Brackets: no space after the opening `(` or `[` and no space before the closing `)` or `]`.
