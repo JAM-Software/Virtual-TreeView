@@ -36364,7 +36364,7 @@ begin
       Buffer.Add('border-top: 1px; border-bottom: 1px; ')
     else
       Buffer.Add('border-top:none; border-bottom: none;');
-    Buffer.Add('border-style: ');
+    Buffer.Add('border-width: thin; border-style: ');
     Buffer.Add(LineStyleText);
     Buffer.Add(CellPadding);
     Buffer.Add('}');
