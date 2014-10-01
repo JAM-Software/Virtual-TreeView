@@ -1,0 +1,15 @@
+#guidelines for developers of this projects.
+
+= SVN commits =
+
+When making commits to the repository of this project, please follow these guidelines:
+  * Make commits *as granular as possible*, do not mix several issues or topics in one commit. This makes reverts and merges easier if a change causes problems.
+  * For each functional change *an issue should exists* in the issue tracker which describes the motivation or need for the change. This is not necessary for changes on coding style or minimal fixes.
+  * The *commit message should contain the issue number* and a brief one sentence description of the change. More details can be added to the issue.
+
+
+= Coding Style =
+
+When writing or changing code in this project, please follow these guidelines:
+  * TODO
+  * TODO
