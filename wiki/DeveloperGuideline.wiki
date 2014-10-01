@@ -1,6 +1,8 @@
 #guidelines for developers of this projects.
 
-= SVN commits =
+= Guidelines for Developers=
+
+== SVN commits ==
 
 When making commits to the repository of this project, please follow these guidelines:
   * Make commits *as granular as possible*, do not mix several issues or topics in one commit. This makes reverts and merges easier if a change causes problems.
@@ -8,7 +10,7 @@ When making commits to the repository of this project, please follow these guide
   * The *commit message should contain the issue number* and a brief one sentence description of the change. More details can be added to the issue.
 
 
-= Coding Style =
+== Coding Style ==
 
 When writing or changing code in this project, please follow these guidelines:
   * TODO
