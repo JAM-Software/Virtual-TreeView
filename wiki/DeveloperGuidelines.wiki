@@ -19,7 +19,7 @@ When writing or changing code in this project, please follow these guidelines:
  * One statement per line. No statement is allowed after the *`then`* or *`else`* keywords.
  * Every statement should be closed by a semicolon even if it is not mandatory before the *`end`* keyword.
  * There should be no whitespace before the semicolons. There is one space after the semicolon in the parameter list.
- * Assignment: one space before and after the ` := ` assignment operator.
+ * Operators: one space before and after the operators (even at the assignment operator).
  * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
 Example:
 {{{
