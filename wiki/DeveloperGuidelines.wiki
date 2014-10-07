@@ -21,3 +21,19 @@ When writing or changing code in this project, please follow these guidelines:
   * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
   * Assignment: one space before and after the ` := ` assignment operator.
   * Brackets: no space after the opening `(` or `[` and no space before the closing `)` or `]`.
+  * The following keywords are standing on their own (no character should be written before or after them other than whitespace):
+  `asm, begin, else, end, finalization, finally, implementation, initialization, repeat, resourcestring, threadvar, try, uses`
+
+Example:
+{{{
+if Condition then
+begin
+  Procedure1;
+  Procedure2
+end
+else
+begin
+  Procedure3;
+  Procedure4;
+end;
+}}}
