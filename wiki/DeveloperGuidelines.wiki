@@ -22,7 +22,7 @@ When writing or changing code in this project, please follow these guidelines:
  * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
 Example:
 {{{
-procedure Procedure1(const Caption: string; X, Y: Integer);
+procedure Procedure1(const Caption: string; X, Y: Integer; var ForceUpdate: Boolean);
 var
   I: Integer;
   J: Integer;
