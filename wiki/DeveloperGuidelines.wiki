@@ -44,7 +44,6 @@ else
 
  * The following keywords are standing on their own (no character should be written before or after them other than whitespace).
 *asm, begin, else, end, finalization, finally, implementation, initialization, repeat, resourcestring, threadvar, try, uses*
-
 Example:
 {{{
 if Condition then
@@ -54,4 +53,13 @@ begin
 end
 else
   Procedure3;
+}}}
+
+ * Make the code navigation-friendly: explicitly declare the ancestor in *`class`* declaration even if it is the TObject and write the method name after the *`inherited`* keyword in overridden methods.
+Example:
+{{{
+destructor Destroy;
+begin
+  inherited Destroy;
+end;
 }}}
