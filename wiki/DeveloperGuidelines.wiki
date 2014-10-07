@@ -5,24 +5,45 @@
 == SVN commits ==
 
 When making commits to the repository of this project, please follow these guidelines:
-  * Make commits *as granular as possible*, do not mix several issues or topics in one commit. This makes reverts and merges easier if a change causes problems.
-  * For each functional change *an issue should exists* in the issue tracker which describes the motivation or need for the change. This is not necessary for changes on coding style or minimal fixes.
-  * The *commit message should contain the issue number* and a brief one sentence description of the change. More details can be added to the issue.
+ * Make commits *as granular as possible*, do not mix several issues or topics in one commit. This makes reverts and merges easier if a change causes problems.
+ * For each functional change *an issue should exists* in the issue tracker which describes the motivation or need for the change. This is not necessary for changes on coding style or minimal fixes.
+ * The *commit message should contain the issue number* and a brief one sentence description of the change. More details can be added to the issue.
 
 
 == Coding Style ==
 
 When writing or changing code in this project, please follow these guidelines:
-  * As a general rule always examine the surrounding code of your modification to keep the consistent style as much as possible.
-  * Indent blocks with two spaces. Tab character is not allowed.
-  * Capitalization matters. Pascal is not case sensitive but that doesn't mean we should use the Shift key randomly. Hungarian notation style should only be used on enumerated values. Reserved words are all lowercased.
-  * One statement per line.
-  * Every statement should be closed by a semicolon even if it is not mandatory before the *`end`* keyword. There should be no whitespace before the semicolon.
-  * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
-  * Assignment: one space before and after the ` := ` assignment operator.
-  * Brackets: no space after the opening `(` or `[` and no space before the closing `)` or `]`.
-  * The following keywords are standing on their own (no character should be written before or after them other than whitespace):
-  `asm, begin, else, end, finalization, finally, implementation, initialization, repeat, resourcestring, threadvar, try, uses`
+ * As a general rule always examine the surrounding code of your modification to keep the consistent style as much as possible.
+ * Indent blocks with two spaces. Tab character is not allowed.
+ * Capitalization matters. Pascal is not case sensitive but that doesn't mean we should use the Shift key randomly. Hungarian notation style should only be used on enumerated values. Reserved words are all lowercased.
+ * One statement per line. No statement is allowed after the *`then`* or *`else`* keywords.
+ * Every statement should be closed by a semicolon even if it is not mandatory before the *`end`* keyword. There should be no whitespace before the semicolons.
+ * Assignment: one space before and after the ` := ` assignment operator.
+ * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
+Example:
+{{{
+procedure Procedure1(const Caption: string; X, Y: Integer);
+var
+  I: Integer;
+  J: Integer;
+  Temp: string;
+begin
+  Now;
+end;
+}}}
+
+ * Brackets: no space after the opening `(` or `[` and no space before the closing `)` or `]`. Avoid brackets if there is only one condition.
+Example:
+{{{
+if I < 0 then
+  Procedure1
+else
+  while AllowDecrementOfI and (I > 0) do
+    Dec(I);
+}}}
+
+ * The following keywords are standing on their own (no character should be written before or after them other than whitespace).
+*asm, begin, else, end, finalization, finally, implementation, initialization, repeat, resourcestring, threadvar, try, uses*
 
 Example:
 {{{
