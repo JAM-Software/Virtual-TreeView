@@ -53,8 +53,5 @@ begin
   Procedure2
 end
 else
-begin
   Procedure3;
-  Procedure4;
-end;
 }}}
