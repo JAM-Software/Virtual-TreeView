@@ -16,12 +16,12 @@ When writing or changing code in this project, please follow these guidelines:
  * As a general rule always examine the surrounding code of your modification to keep the consistent style as much as possible.
  * Indent blocks with two spaces. Tab character is not allowed.
  * Capitalization matters. Pascal is not case sensitive but that doesn't mean we should use the Shift key randomly. Hungarian notation style should only be used on enumerated values. Reserved words are all lowercased.
- * One statement per line. No statement is allowed after the *`then`* or *`else`* keywords.
+ * One statement per line. No statement is allowed after the *`then`* or *`else`* keywords within the same line.
  * Every statement should be closed by a semicolon even if it is not mandatory before the *`end`* keyword.
  * There should be no whitespace before the semicolons. There is one space after the semicolon in the parameter list.
  * Operators: one space before and after the operators (even at the assignment operator).
  * Variable declaration: one space after the colon (`Variable: Variant;`). One variable per line. Variable grouping (same type) should only be used in function parameters.
-Example:
+ Example:
 {{{
 procedure Procedure1(const Caption: string; X, Y: Integer; var ForceUpdate: Boolean);
 var
@@ -34,7 +34,7 @@ end;
 }}}
 
  * Brackets: no space after the opening `(` or `[` and no space before the closing `)` or `]`. Avoid brackets if there is only one condition.
-Example:
+ Example:
 {{{
 if I < 0 then
   Procedure1
@@ -43,9 +43,9 @@ else
     Dec(I);
 }}}
 
- * The following keywords are standing on their own (no character should be written before or after them other than whitespace).
+ * The following keywords are standing on their own (no character should be written before or after them other than whitespace):
 *asm, begin, else, end, finalization, finally, implementation, initialization, repeat, resourcestring, threadvar, try, uses*
-Example:
+ Example:
 {{{
 if Condition then
 begin
@@ -57,7 +57,7 @@ else
 }}}
 
  * Make the code navigation-friendly: explicitly declare the ancestor in *`class`* declaration even if it is the TObject and write the method name after the *`inherited`* keyword in overridden methods.
-Example:
+ Example:
 {{{
 destructor TForm1.Destroy;
 begin
