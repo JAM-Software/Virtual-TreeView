@@ -3536,6 +3536,9 @@ type
     procedure SetOptions(const Value: TStringTreeOptions);
   protected
     function GetOptionsClass: TTreeOptionsClass; override;
+    {$if CompilerVersion >= 23}
+    class constructor Create();
+    {$ifend}
   public
     property Canvas;
     property RangeX;
@@ -3801,6 +3804,9 @@ type
     procedure SetOptions(const Value: TVirtualTreeOptions);
   protected
     function GetOptionsClass: TTreeOptionsClass; override;
+    {$if CompilerVersion >= 23}
+    class constructor Create();
+    {$ifend}
   public
     property Canvas;
     property LastDragEffect;
@@ -6203,9 +6209,6 @@ begin
   // Predefined clipboard formats. Just add them to the internal list.
   RegisterVTClipboardFormat(CF_TEXT, TCustomVirtualStringTree, 100);
   RegisterVTClipboardFormat(CF_UNICODETEXT, TCustomVirtualStringTree, 95);
-  {$if CompilerVersion >= 23}
-  TCustomStyleEngine.RegisterStyleHook(TBaseVirtualTree, TVclStyleScrollBarsHook);
-  {$ifend}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -37504,6 +37507,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$if CompilerVersion >= 23}
+class constructor TVirtualStringTree.Create();
+begin
+  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
+end;
+{$ifend}
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TCustomVirtualDrawTree.DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
   CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint;
 
@@ -37570,6 +37582,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$if CompilerVersion >= 23}
+class constructor TVirtualDrawTree.Create();
+begin
+  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
+end;
+{$ifend}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 // XE2+ VCL Style
  {$if CompilerVersion >= 23 }
