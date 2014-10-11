@@ -1,5 +1,5 @@
-V5.5.1: (planned for 06 Oct 2014)
-  * Fixed issue #473: Return type of GetUtilityImages should be TCustomImageList
+V5.5.1: (planned for 13 Oct 2014)
+  * Fixed issue #479: The style hooks for the VCL styles are now registered for TVirtualStringTree and TVirtualDrawTree instead of TBaseVirtualTree, which makes it easier to use own style hooks in derived classes.  * Fixed issue #473: Return type of GetUtilityImages should be TCustomImageList
   * Fix for issue #470: VCL Styles and sorting failure
   * Added missing inherited to CMMouseEnter()
   * Fixed issue #468: Redundant code in CreateSystemImageSet()
