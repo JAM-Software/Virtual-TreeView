@@ -3619,6 +3619,9 @@ type
     property SelectionCurveRadius;
     property ShowHint;
     property StateImages;
+    {$if CompilerVersion >= 24}
+    property StyleElements;
+    {$ifend}
     property TabOrder;
     property TabStop default True;
     property TextMargin;
@@ -4025,6 +4028,9 @@ type
     property OnCanResize;
     property OnGesture;
     property Touch;
+    {$ifend}
+    {$if CompilerVersion >= 24}
+    property StyleElements;
     {$ifend}
   end;
 
@@ -14004,8 +14010,8 @@ end;
 function TVTColors.GetBackgroundColor: TColor;
 begin
 // XE2 VCL Style
-{$IF CompilerVersion >= 23 }
-  if FOwner.VclStyleEnabled then
+{$IF CompilerVersion >= 23}
+  if FOwner.VclStyleEnabled {$IF CompilerVersion >= 24}and (seClient in FOwner.StyleElements){$IFEND} then
     Result := StyleServices.GetStyleColor(scTreeView)
   else
 {$IFEND}
@@ -14066,8 +14072,8 @@ end;
 function TVTColors.GetHeaderFontColor: TColor;
 begin
 // XE2+ VCL Style
-{$IF CompilerVersion >= 23 }
-  if FOwner.VclStyleEnabled then
+{$IF CompilerVersion >= 23}
+  if FOwner.VclStyleEnabled and {$IF CompilerVersion >= 24}(seFont in FOwner.StyleElements){$IFEND} then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result)
   else
 {$IFEND}
@@ -14076,8 +14082,8 @@ end;
 
 function TVTColors.GetNodeFontColor: TColor;
 begin
-{$IF CompilerVersion >= 23 }
-  if FOwner.VclStyleEnabled and  FOwner.FBackground.Bitmap.Empty then
+{$IF CompilerVersion >= 23}
+  if FOwner.VclStyleEnabled and {$IF CompilerVersion >= 24}(seFont in FOwner.StyleElements){$IFEND} then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
   else
 {$IFEND}
@@ -19473,7 +19479,7 @@ begin
     OriginalWMNCPaint(DC);
     ReleaseDC(Handle, DC);
   end;
-    if tsUseThemes in FStates then
+    if ((tsUseThemes in FStates) or VclStyleEnabled){$IF CompilerVersion >= 24} and (seBorder in StyleElements) {$IFEND} then
       StyleServices.PaintBorder(Self, False);
 end;
 
@@ -27695,6 +27701,9 @@ begin
       Self.ScrollBarOptions := ScrollBarOptions;
       Self.ShowHint := ShowHint;
       Self.StateImages := StateImages;
+      {$if CompilerVersion >= 24}
+      Self.StyleElements := StyleElements;
+      {$ifend}
       Self.TabOrder := TabOrder;
       Self.TabStop := TabStop;
       Self.Visible := Visible;
