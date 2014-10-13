@@ -14018,6 +14018,8 @@ begin
     Result := FOwner.Color;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVTColors.GetColor(const Index: Integer): TColor;
 
 begin
@@ -14069,21 +14071,25 @@ begin
   Result := FColors[Index];
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVTColors.GetHeaderFontColor: TColor;
 begin
 // XE2+ VCL Style
 {$IF CompilerVersion >= 23}
-  if FOwner.VclStyleEnabled and {$IF CompilerVersion >= 24}(seFont in FOwner.StyleElements){$IFEND} then
+  if FOwner.VclStyleEnabled {$IF CompilerVersion >= 24}and (seFont in FOwner.StyleElements){$IFEND} then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result)
   else
 {$IFEND}
     Result := FOwner.FHeader.Font.Color;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVTColors.GetNodeFontColor: TColor;
 begin
 {$IF CompilerVersion >= 23}
-  if FOwner.VclStyleEnabled and {$IF CompilerVersion >= 24}(seFont in FOwner.StyleElements){$IFEND} then
+  if FOwner.VclStyleEnabled {$IF CompilerVersion >= 24}and (seFont in FOwner.StyleElements){$IFEND} then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
   else
 {$IFEND}
