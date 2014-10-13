@@ -1,0 +1,914 @@
+@@History.htm
+<title Version history>
+
+<b>Since 2006 the history is maintained in the file CHANGES.txt in the root of this archive.</b>
+
+* Version 4.3.0 - 4.4.2 (December 2004 - November 2005) *
+  * Improvement: fixed column implementation completed (code donation by Igor Savkic)
+  * Improvement: ShowScrollbar calls with conditional defines extracted into a new method. Added event that can be hooked
+    by the application to get notified if a scrollbar is about to show or hide. Introduced OnShowScrollbar event.
+  * Improvement: OnGetImageEx event to allow specifying a custom imagelist.
+  * Improvement: GetFirstChecked, GetNextChecked, ClearChecked helper methods (code donation by Azza).
+  * Bug fix: Reselection of a node in multi selection node did not refresh its visual selection appearance.
+  * Bug fix: root node total count not updated during load of streamed nodes.
+  * Bug fix: When loading a node from stream the initial total height is always set to the current default height of the
+    tree, not the height of the node that is being loaded.
+  * Bug fix: Mantis &#35;260, TBaseVirtualTree.ReadChunk has applied total height of loaded nodes multiple times.
+  * Change: Moved DoCancelEdit and DoEndEdit to the protected section. Don't know it ever could end up in the public
+    section. Use CancelEditNode and EndEditNode instead.
+  * Improvement: Hint window class dynamically assignable. TBaseVirtualTree.GetHintWindowClass
+  * Change: A few GetPrevious&#42; methods were still testing for an initialized parameter.
+  * Change: OnMouseWheel published.
+  * Improvement: Painting of normal, selected, state and overlay image is now done using standard image list access. This
+    allows to use specialized image lists (e.g. with full alpha channel support).
+
+* Version 4.0.16 - 4.3.0 (December 2003 - December 2004) *
+  * Improvement: Delphi 2005 compatibility.
+  * Bug fix: InternalData may return nil, so its result must be checked before accessing it.
+  * Bug fix: WM_CURSOR in TVTHeader.HandleMessage used the screen standard cursors as default instead that of the tree.
+  * Change: If the hot tracking cursor is crDefault when hot tracking is enabled then that of the tree is used instead.
+  * Bug fix: TVirtualTreeColumn.SetIndex removed as it caused reindexing of the position array (which is wrong).
+  * Bug fix: check for existing window handle before posting a message for the node editor.
+  * Change: published events OnAdvancedHeaderDraw and OnHeaderDrawQueryElements in TVirtualDrawTree.
+  * Improvement: tree state tsCheckPropagation is now only reset after a tristate check operation has finished (before
+    the final OnChecked event). Therefore the tree state will include tsCheckPropagation while child nodes are checked or
+    unchecked.
+  * Change: ExecuteAction fixed (incorrect conditional definitions)
+  * Change: DoBeforeItemErase was in the wrong place.
+  * Bug fix in InternalDisconnectNode: When an invisble node is removed from its parent the height of this parent node no
+    longer is changed.
+  * Bug fix: Char handling for incremental search killed the dead char due to a problem with ToASCII.
+  * Improvement: Removed ParentBackground property (also for D7), it is useless because of the own background handling of
+    VT
+  * Improvement: (better multimonitor support) Checks for true screen location for the hint.
+  * Bug fix: TVirtualTreeColumn.SetOptions + : Check for a valid window handle of the tree before doing invalidation.
+  * Improvement: In VT.WMKeyDown additional checks for page up/down, to scroll not more than what fits in one page under
+    all conditions.
+  * Bug fix: In VT.HandleMouseDown check for assigned hit node before doing selection with alt key.
+  * Bug fix: VST.DoNewText, inserted call to UpdateHorizontalScrollbar to account for edited nodes, which now have a
+    significant other length.
+  * Change: Moved some methods to higher visibility.
+  * Improvement: non&#45;tiled background images (code donation by Richard Pringle).
+  * Improvement: Configuration compiler switches are now located in an additional file (VTConfig.inc).
+  * Improvement: Reset of all global objects to nil on finalization. Explicit initialization of Initialized and
+    NeedToUnitialize because of trouble when VT is used in dynamically loaded packages.
+  * Bug fix: Dragging did not work with full row selection and toFullRowDrag switched on while drag mode is dmManual.
+  * Improvement: Mouse button flags are now passed through OnDragOver and OnDragDrop.
+  * Bug fix: The internal node edit now uses clWindowText instead of clBlack as text color to work properly on high
+    contrast color schemes.
+  * Improvement: Introduction of toDisableAutoscrollOnEdit. It prevents a node with a large caption to scroll
+    horizontally when is edited.
+  * Change: Added test for HandleAllocated to TVirtualTreeHintWindow.AnimationCallback.
+  * Improvement: Update edit bounds when a node's height is changed and editing is active.
+  * Change: Partly took back the change for overlay images. VT still must support overlay indices the old way (e.g. for
+    system image lists). Overlay indices \>= 15 now use the new mechanism and are drawn without the need to set
+    TCustomImagelist.Overlay.
+  * Bug fix: Insertion order of nodes was wrong in MoveTo for amAddChildLast.
+  * Change: removed change lock from worker thread. It isn't used any longer.
+  * Bug fixes: Mantis bug entries &#35;158, 162&#45;172, 174&#45;191, 192&#45;196, 199, 202, 204, 205, 208, 212, 215,
+    216, 218, 220, 221, 228.
+  * Other small improvements.
+
+* Version 3.8.3 - 4.0.15 (May - November 2003) *
+  * Bug fix: Initial draw selection with the mouse at the end of large trees (1+ million nodes) started with a huge
+    delay.
+  * Improvement: Better synchronization of tree windows and the worker thread.
+  * Change: WM_RELEASEEDITLINK removed. It is sometimes problematic to release the link asynchroniously. Another
+    mechanism is used instead.
+  * Improvement: check images are now public, to allow to use them for own drawing code.
+  * Bug fix: using Tree.CheckState[Node] in OnInitNode caused an infinite recursion.
+  * Improvement: toFullRowDrag introduced
+  * Improvement: tsCheckPropagation introduced
+  * Improvement: node selection change with the mouse and modifier keys is now more consistent to Windows standard
+    controls.
+  * Improvement: new event OnGetCellIsEmpty
+  * Improvement: TVTColors.HeaderHotColor introduced, default value is clBtnShadow as it was hard wired before.
+  * Improvement: Auto spring feature. Size changes of the header are evenly spread over all columns, which are enabled
+    for this feature. New options introduced: coAutoSpring, hoAutoSpring.
+  * Change: Header stream version increased to 3. This was necessary because the new coAutoSpring options increased a
+    column's option size from byte to word (now there are 9 options).
+  * Improvement: Edit property of TStringEditLink promoted to public.
+  * Improvement: ShortenString better takes right&#45;to&#45;left contexts into account.
+  * Improvement: toAlwaysHideSelection introduced. Allows to hide node selections entirely.
+  * Improvement: toUseBlendedSelection introduced. Allows to have translucent node selections.
+  * Bug fix: Mantis bug entries &#35;140, 144, 125, 122, 129, 147, 148, 149, 152 &#45; 157.
+  * Improvement: Mantis feature request &#35;113, toSimpleDrawSelection introduced.
+  * Improvement: ComputeNodeHeight introduced. Helper method to delegate node height calculation to the tree.
+  * Improvement: Alt key might be pressed when clicking in the tree. This allows to start drawing the selection rectangle
+    also on node captions and images (which would otherwise start dragging).
+  * Bug fix: ValidateCache was not always called in ToggleNode when InvalidateCache was used.
+  * Bug fix: FLastHintRect was sometimes not reset preventing so a new hint to appear.
+  * Bug fix: Redundant ChangeCheckState in HandleMouseDown removed.
+  * Bug fix: OnHeaderDblClick was triggered even if the column was set to be unclickable.
+  * Bug fix: Wheel panning and scrolling was not possible if toAutoScroll was not set. This option has another meaning
+    and should not impact wheel handling.
+  * Bug fix: VT control could not be set as ActiveControl at design time.
+  * Bug fix: In method ContentToText it could be that the text contained the separator char as regular character, so it
+    was necessary to wrap the text with quotation marks then.
+  * Bug fix: Bidi mode and aligment was not correctly considered in UpdateEditBounds when grid extensions were enabled.
+  * Improvement: Check for nil hint data in TVirtualTreeHintWindow.CalcHintRect just to be on the safe side.
+  * Improvement: TVirtualTreeColumn.ComputeHeaderLayout is now virtual to allow descendants to change the layout.
+  * Improvement: toFullVertGridLines, vertical grid lines can be drawn over the full client area height.
+  * Improvement: flickering on column resizing is gone.
+  * Improvement: System conformal border width calculation for certain tasks.
+  * Improvement: Animation parameter for TVTHeader.AutoFitColumns to avoid the size animation (default: True).
+  * Improvement: ParentFont property for the header. Default is False to stay compatible with older tree versions.
+  * Bug fix: cursor rectangle for spanned columns in normal hint mode was too small.
+  * Feature: the implementation is now more than 30.000 lines in size.
+  * Bug fix: Access violation fixed, which was sometimes caused by setting VT to edit mode if the old edit link was not
+    freed yet (because it was still handling a message).
+  * Improvement: Hint animation now does no longer stop quick switches to new hints.
+  * Improvement: ParentBackground property published.
+  * Bug fix: vsAllChildrenHidden and vsExpanded are now removed from a node's state if there are no child nodes anymore
+  * Improvement: column width limit to 10000 is now only applied on non&#45;NT systems (Win9x/Me).
+  * Improvement: single letter mode in incremental search is not used if the current node also fits the repeated
+    character.
+  * Bug fix: correct theme change handling when switching to classic mode.
+  * Improvement: new event OnMeasureItem, new handling for application driven node heights.
+    TCustomVirtualStringTree.ComputeNodeHeight implementation to easy node height computation for multi line nodes.
+  * Improvement: Header is nil'ed when the tree is destroyed and checked before used in TBaseVirtualTree.Notification in
+    \order to avoid potential problems accessing an invalid address.
+  * Bug fix: The cut and copy pending states in the tree and participating nodes were not removed.
+  * Bug fix: csPaintCopy was not considered when painting (used for TWinControl.PaintTo, e.g. in Form.Print).
+  * Bug fix: DT_NOPREFIX added for header text output.
+  * Bug fix: Thread safe check for current tree reference in the worker thread, as it can be reset before it was used.
+  * Bug fix: Color change for non&#45;standard background colors after all columns were hidden.
+  * Improvement: new node background erase action (eaNone).
+
+
+
+* Version 3.6.3 - 3.8.2 (February - April 2003) *
+  * Bug fix: Local tree reference in worker thread is erased when a tree removes itself from the waiter list.
+  * Improvement: TStringEditLink public methods are now virtual.
+  * Change: A couple more methods in the header and columns are virtual now.
+  * Improvement: Introduction of TVirtualTreeColumnsClass and GetColumnsClass in TVTHeader. This allows for more
+    customization.
+  * Improvement: DetermineHiddenChildrenFlagAllNodes, tsUpdateHiddenChildrenNeeded, Optimized flag determination to speed
+    up mass changes of the visiblity state of nodes.
+  * Improvement: Unicode support for inplace editing by utilizing the TNT controls package. This support is by default
+    disabled and can be made active by enabling the compiler symbol <b>TntSupport</b>.
+  * Improvement: MoveTo is now allowed with Source and Target being the same node, but only for amInsertBefore/After and
+    child nodes only.
+  * Bug fix: Mantis bug entry &#35;112, &#35;108, &#35;100, &#35;103, &#35;119
+  * Improvement: All public images properties changed from TImageList to TCustomImageList. (Mantis entry &#35;110)
+  * Bug fix: Handling for manipulating columns via index and manual deletion.
+  * Improvement: Some small additions to aid customizations by descendants.
+  * Bug fix: GetMaxColumnWidth did not consider if there were vertical tree lines.
+  * Improvement: The internally used edit control in the tree edit link can be changed now by assigning a new control to
+    the Edit property. The edit link will take over the ownership of the new control then!
+  * Improvement: Header paint info in advanced custom draw events is now changable (declared as var instead const).
+  * Bug fix: The number of visible nodes was not updated correctly under certain circumstances.
+  * Bug fix: Invalid tree data in TVirtualTreeHintWindow.IsHintMsg was used under rare conditions.
+  * Bug fix: Exception in FindInPositionCache due to invalid position cache data.
+  * Improvement: VT may optionally use a local node memory manager for node allocations. This will increase allocation
+    speed by about 200% for large trees (so node creation and destruction is about 3 times faster). Small trees do not
+    benefit that much from it, so the node memory manager is disabled by default. See <b>UseLocalMemoryManager</b> for more
+    information.
+  * Bug fix: State change management used in the worker thread sometimes caused a deadlock.
+  * Improvement: UpdateScrollBars is now virtual.
+  * Bug fix: The structure change event was not triggered during ProcessOLEData when nodes were copied.
+  * Bug fix: Failure to initialize the OLE subsystem does no longer throw an exception. It is a non&#45;critical problem
+    if it fails, only OLE drag'n drop and clipboard operations do not work then.
+  * Bug fix: Check state changing did not consider the permission of the OnChecking event. Fixing this has the wanted
+    side effect that you cannot change a node's check state if it has a tristate checkbox and none of its child nodes are
+    initialized yet.
+  * Bug fix: DT_NOPREFIX was not used for single line nodes.
+  * Improvement: speed up for column erasing
+  * Improvement: Advanced header custom drawing with the ability to schedule element drawing either by the application or
+    the tree.
+  * Bug fix: Node rectangle calculation in ClearSelection is wrong.
+  * Bug fix: all remaining (and fixable) Mantis bug entries fixed.
+  * Improvement: OnStateChange, DoStateChange, centralized state change method with notification for event sink.
+  * Improvement: DeleteSelectedNodes is now virtual
+
+
+
+* Version 3.5.8 - 3.6.2 (December 2002, January 2003) *
+  * Improvement: hint flickering on key press is gone.
+  * Improvement: Position cache filling is now more fail save.
+  * Bug fix: Mantis bug entry &#35;75.
+  * Bug fix: Mantis bug entry &#35;74.
+  * Bug fix: Mantis bug entry &#35;77.
+  * Bug fix: Mantis bug entry &#35;82.
+  * Bug fix: system check images size does not fit.
+  * Optimization: minimal change in HandleIncrementalSearch.
+  * Improvement: Full boolean evaluation is permanently switched off as VT heavily relies on that setting.
+  * Improvement: The buffer for incremental search is now public.
+  * Bug fix: Column additions now set a column's default properties first before doing default notification handling in
+    \order to have them available when updating the header/tree as result of the TCollection.Changed event.
+  * Improvement: The header font is adjusted according to the system font settings.
+  * Improvement: Exit code for internal node editor does no longer prevent focus switch to other controls.
+  * Improvement: Multiline support for node captions. New node state vsMultiline (default: off). Note: This support
+    requires Windows NT (4.0/2000/XP and up) for word breaking. The word breaking feature is not available on Windows
+    95/98/Me systems.
+
+
+
+* Version 3.5.1 - 3.5.7 (November 2002) *
+  * Improvement: CanFocus is not virtual in Delphi 4 (&#45;\> conditional defination of the override keyword).
+  * Improvement: Most of the properties for the internal edit control are now public.
+  * Improvement: Edit control in the standard edit link is now accessible via a protected read only property.
+  * Improvement: Initialization of global structures is now delayed until the first tree is created. This allows use of
+    VT also in special applications like property sheet extensions.
+  * Improvement: Updating/Updated pair included in VT.Loaded to avoid design time modification state changes.
+  * Work around: CM_AUTOADJUST introduced to decouple edit window notification and resizing for Win9x/Me systems.
+  * Improvement: Reintroduction of automatic exit handling for the internal node editor.
+  * Improvement: System check and flat check images introduced.
+  * Improvement: Exchanged 'x' for ' ' as the dummy hint string to avoid showing up a 'x' when using TAppliction.Hint.
+  * Improvement: The virtual string tree does incremental search independently. Use OnIncrementalSearch if you want to
+    \override the default behavior.
+  * Improvement: VK_BACK can be used in incremental search to return to the previous pattern (deletes the last char in
+    the current pattern and search temporarily backwards).
+
+
+
+* Version 3.4.10 - 3.5.0 (October 2002) *
+  * License: Virtual Treeview is now released under a double license: MPL or LGPL.
+  * Bug fix: hit test in other than the main column sometimes returned a check box hit.
+  * Improvement: new property SelectionBlendFactor. Can be used to adjust the blend effect of the selection rectangle (if
+    it is used).
+  * Improvement: Painting of node images improved to have it exactly as used in standard controls.
+  * Bug fix: pressed state for a checked node is now reset if another key than VK_SAPCE is pressed.
+  * Bug fix: font handling in Print caused wrong output on screen after print.
+  * Improvement: Ability to link Troy Wolbrink's Unicode aware popup menu added. See VTHeaderPopup.pas for more details.
+  * Bug fix: vsAllChildrenHidden is now removed from the parent node in AddChild.
+  * Work around: focus changes between VT and wrapped non&#45;VCL controls like TWebBrowser should be accompanied by
+    resetting the ActiveControl property of the tree's owner form.
+  * Improvement: Consideration of drag objects not derived from the base control drag object.
+  * Improvement: Keyboard handling for expand/collapse extended to main keyboard (formerly only numpad).
+  * Improvement: Consideration of the parent form when checking if focusing of a tree is allowed (the VCL doesn't this).
+  * Work around: When used in a package the special hint window is not freed correctly by the VCL, which causes an access
+    violation on shut down.
+  * Bug fix: Clipboard format enumeration should be sorted by priority.
+  * Improvement: TVTHeader.CanWriteColumns introduced to allow descendants to avoid writing columns to the DFM.
+  * Renamed Canvas to TargetCanvas in TVTBeforeItemEraseEvent (for consistency).
+  * Support for application defined drag objects (VCL drag'n drop only).
+  * Bug fix: NC border painting considers now client edge too (if border width is \> 0 and border style = bsSingle).
+  * ChangeScale implementation / toAutoChangeScale, This is used for big fonts to scale the default node height
+    automatically.
+  * Text alignment is preserved in DrawTextW.
+  * WM_THEMECHANGED also wrapped with ifdef ThemeSupport.
+  * More default values added.
+  * Tree states property is now writable. Writing to it will not trigger any action, but can be used by descendants.
+
+
+
+* Version 3.4.1 - 3.4.9 (August - September 2002) *
+  * Bug fix: Delphi Gems Issue Tracker &#35;41.
+  * Bug fix: Delphi Gems Issue Tracker &#35; 38, The MDI problem work around code in TBaseVirtualTree.WMKillFocus was
+    removed as the problem it was to fix does no longer appear but another problem was created by it.
+  * Bug fix: The tree options were freed in the tree's destructor but used again afterwards (in Clear).
+  * Bug fix: inherited call in TBaseVirtualTree.Notification included.
+  * Selection with Ctrl&#45;klick is handle the same way as Explorer does it (selection on mouse up instead down).
+  * Added reset for last searched node (incrementals search) when the search timer is deactivated.
+  * Work around problems with keypresses while doing hint animation in IsHintMsg
+  * Change in Animate, use Cardinal instead Integer.
+  * Bug fix in ScrollIntoView, scrollbar visibility was not correctly tested.
+  * Bug fix in WMKillFocus, if toGhostedIfUnfocused is used then the focused node should be redrawn too.
+  * Bug fix in CopyTo, if user canceled node copy then result is nil now.
+  * Correction, NewParent in TVTNodeMovingEvent and TVTNodeCopyingEvent is now Target, because the attach operation might
+    have been a sibling action, where NewParent would be inappropriate.
+  * Added all possible default values to TVirtualTreeColumn.
+  * Drop effect support for VCL drag'n drop.
+
+
+
+* Version 3.3.3 - 3.4.0 (July 2002) *
+  * Delphi 7 compatibility.
+  * Bug fix for clipboard formats. The internal clipboard formats array was erronously never used.
+  * Bug fix for freeing image lists if they can get destroyed before the tree.
+  * Bug fix for ChildrenOnly in IterateSubtree, if the given node has no child nodes.
+  * Introduced NodeParent property in Virtual Treeview to ease navigation and manipulations.
+  * Improved client area invalidation check.
+  * New paint option introduced (toGhostedIfUnfocused).
+  * New option toDisableAutoscrollOnFocus introduced, to prevent a tree from scrolling horizontally after a column
+    received the focus, but was not fully visible.
+  * GetTotalCount does not use BeginUpdate/EndUpdate but simple increment/decrement of FUpdateCount to avoid recursion
+    problems.
+  * DetermineHitPositionLTR and DetermineHitPositionRTL are now virtual.
+  * PaintCheckImage, PaintImage, PaintNodeButton and PaintTreeLines are now protected (instead private) and also virtual.
+    This will allow for even further customizations of VT.
+  * Check for FSelectionCount \> 0 in RemoveFromSelection to improve stability.
+  * toReadOnly introduced.
+  * SetItemHeight renamed to SetDefaultNodeHeight.
+  * TVTHeader.Invalidate promoted to public.
+  * Update lock for DeleteChildren operations to avoid access to invalid pointers under certain circumstances.
+
+
+
+* Version 3.2.0 - 3.3.2 (May - June 2002) *
+  * Fixed hit determination bug (appeared when using margins in the tree).
+  * Support for Visual Form Inheritance (VFI) for the header.
+  * Bug fix for loading nodes from stream which are invisible but their parent is expanded.
+  * Improved theme support. Now TThemeServices from the Windows XP Theme Services (another free software from Delphi
+    Gems) is used. You must now explicitely add a manifest to your application! This is no longer done automatically by the
+    tree.
+  * Bug fix: autoscroll in VCL drag mode.
+  * Bug fix: shifted characters for incremental search.
+  * VST lets now first the ancestor/application render to clipboard before it tries itself.
+  * Application might modify TargetCanvas.TextFlags in OnPaintText to control the output of normal and static text
+    (currently background only).
+  * Correct bidi mode window styles.
+  * Bug fix regarding vsAllChildrenHidden node state (DetermineHiddenChildrenFlag).
+  * Bug fix in NC painting (removed child window clipping).
+  * Bug fix horizontal scrolling (ScrollIntoView). Improved horizontal scroll into view.
+  * InternalConnectNode and InternalDisconnectNode are protected now.
+  * InitNode in GetHitTestInfoAt to avoid access to uninitialized nodes under certain circumstances.
+  * Default node text is only stored if it differs from 'Node'.
+  * Printer font assignment fixed.
+  * Bug PaintTree for OnPaintBackground fixed. The owner draw mode is now called with the correct window origin set.
+  * New event OnHeaderDraggedOut.
+  * Switch to minor version 3.2.
+  * Hide selection in full row selection mode.
+  * bug fixes
+  * other small changes
+
+
+
+* Version 3.0 - 3.1.9 (January - April 2002) *
+  * First public beta version of the Virtual Treeview CLX version.
+  * DetermineNextCheckState is now protected and virtual.
+  * Tree printing.
+  * UpdateAction only if tree is focused.
+  * Consideration of the user setting for wheel scroll lines.
+  * Limit drag over node hits for report mode (like listview).
+  * All column indexes are now consistently using TColumnIndex (instead Integer).
+  * Minor changes to make custom implementations of auto column resize possible.
+  * Wheel panning and auto scrolling, option toWheelPanning.
+  * vsClearing node state for optimizations.
+  * Update&#42;Scrollbar methods are now public.
+  * toAutoAcceptEditChange.
+  * MoveTo within a tree now keeps focused node instead resetting it.
+  * WMContextMenu cancels now also drag operations.
+  * PaintTree is now public.
+  * WM_CANCELMODE included.
+  * Bug fix: IStream storage format does not work with OLEFlushClipboard &#45;\> had to remove it (HGlobal is still
+    available).
+  * Other bug fixes.
+
+
+
+* Version 2.7. build 2-6 (December 2001) *
+  * child controls are now correctly scrolled too if there is a background image
+  * tree cursor is now only applied when there is no global cursor (Screen.Cursor) is set
+  * prevented resize of the edit when grid extensions are active
+  * selection anchor setting when the first selected node is set in code
+  * compiler switch ReverseFullExpandHotKey introduced
+  * Renamed CreateEditor to DoCreateEditor to be consistent with similar methods (DoCreateDataObject
+  * drastically simplified auto expand code, it also works now as in Explorer
+  * space handling limited to nodes which have a check box/radio button and if check support is enabled, otherwise space
+    characters are used for incremental search
+  * change events rework
+  * ScrollIntoView allows now for vertical centering, option toCenterScrollIntoView
+  * help contexts for exceptions, EVirtualTreeError now in interface section to allow testing for it in apps.
+  * ResetRangeAnchor
+  * VT allows now two storage formats for drag'n drop and clipboard transfers (HGlobal and IStream). Default format is
+    IStream as it does not need as much memory during construction as HGlobal. It is also a faster in usage.
+  * implementation of events in IDataObject (advise/unadvise sinks etc.) using IDataAdviseHolder
+  * overloaded GetNodeAt variant which only takes X and Y (in client coordinates)
+  * ILC_COLOR32 for image lists is only used for Windows NT systems, this will help avoiding GDI trouble on Win9x/Me
+  * small changes
+  * bug fixes
+
+
+
+* Version 2.6, build 3-14, Version 2.7.1 (November 2001) *
+  * F2 alone makes the tree going into edit mode, no longer any modifier key allowed
+  * added Canvas.Lock/Unlock in PaintTree
+  * added TDragControlObject assignment in CMDrag
+  * further small changes for BCB compatiblity
+  * drag imager helper interface support included thank Jim Kueneman's excellent preparatory work
+  * structure change event trigger in AddChild
+  * some minor optimizations
+  * initial check state setting when changing a check box type
+  * fmTransparent (button fill mode)
+  * correct tree window border for themes (still flickers a bit, need any documentation for this)
+  * theme style is cached now to speed up frequent checks
+  * improved editing (default editor behavior), correct frame for themed application
+  * custom checkimages work now also with a themed tree
+  * OnGetCursor, OnGetHeaderCursor, TVTGetCursorEvent, TVTGetHeaderCursorEvent, DoGetCursor, DoGetHeaderCursor
+  * changed coMovable to coDraggable, (it was never used so far) and made it actually working
+  * published Action property
+  * categorisation of properties for the IDE
+  * toAutoDeleteMovedNodes
+  * visible count bug fix
+  * improved header rect determination and usage
+  * reset of hot node if focused node is changed
+  * check button improvement for XP styles
+  * small tree painting rework
+  * TColumnIndex, TColumnPosition (to utilize better type checking)
+  * overloaded ColumnFromPosition variant to get a column index from a position index
+  * TVTHeaderDraggedEvent, new parameter in OnHeaderDraggedEvent
+  * scrollbar reset when hiding it
+  * Ctrl&#45;A now considers selection constraints
+  * no image blending if the tree is unfocused
+  * improved VCL drag handling
+  * HasPopupMenu
+  * other small changes
+  * bug fixes
+
+
+
+* Version 2.5, build 39-40; 2.6, build 0-2 (October 2001) *
+  * Release candidate 2 for the beta testers and early adopters
+  * Full Windows XP theme support
+  * Legacy code included for XP style support on non&#45;XP systems (TCheckImageKind, TVTHeaderStyle, TVTButtonFillMode,
+    XPImages, DrawXPButton, node buttons)
+  * Node height bug fix for loading trees from stream
+  * VCL drag handling improved
+  * Update blocker in AddChild
+  * Property DragCursor published
+  * ILC_COLOR32 is now used for image list creation (instead ILC_COLOR16) to allow for XP alpha blending
+  * ContentToXXX routines consider now hidden columns
+  * toFullRepaintOnResize
+  * Header drop mark is not shown if the column being dragged is also the current drop target
+  * TBaseVirtualTree.GetHeaderClass (allows creating an own header class)
+  * Correct space distribution for centered column headers showing also the sort indicator
+  * Reset of FRangeAnchor when node is deleted
+  * Conditional compilation of flat scroll bars (see symbol UseFlatScrollbars)
+  * Synchronous update mode (BeginSynch, EndSynch, tsSynchMode, usBeginSynch, usSynch, usEndSynch)
+  * toReportMode in TreeOptions.MiscOptions, to even better simulate TListView
+  * TVTDropMarkMode for header custom draw
+  * Other small changes
+  * Bug fixes
+
+
+
+* Version 2.5, build 23-38 (September 2001) *
+  * Windows XP style check images
+  * more available check images
+  * MDI child parent form problem work around in TBaseVirtualTree.WMKillFocus
+  * check for destruction of the header popup
+  * published OnContextPopup
+  * stop draw selection mode before inherited mouse button up handler opens a popup menu
+  * corrected some spelling errors
+  * SetVisible improvements
+  * FullCollapse changed again, it does not initialize nodes anymore
+  * CanShowDragImage is now virtual
+  * changes to provide a drag image of the tree without showing it (for descendants which have own image handling)
+  * conditional focus setting
+  * GetFirstVisibleChild(NoInit), GetNextVisibleSibling(NoInit), GetPreviousVisibleSibling(NoInit)
+  * VisiblePath now checks for vsVisible style and sets it if VisiblePath is set to True
+  * bug fixes in visibility setting
+  * toAutoHideButtons auto option
+  * vsAllChildrenHidden node flag
+  * VCL drag image bug fix (external drag images)
+  * small improvement in DrawTextW
+  * bug fixes background painting
+  * bug fixes VCL drag image painting (for external drag images)
+  * changed OnDrawHeader to OnHeaderDraw to fit it closer to the other header events
+  * shadows for hints and tooltips
+  * Windows XP style header drawing
+  * TVTButtonFillMode, ButtonFillMode
+  * alpha blended selection rectangle
+  * properties DrawSelectionMode, SelectionRectangleBlendColor and SelectionRectangleBorderColor
+  * OnHeaderDragged published
+  * removed TVTEdit.WMKillFocus
+  * TCustomStringTreeOptions
+  * adjustments so that TCustom... trees only use and return TCustom... options versions
+  * other small changes
+  * bug fixes
+
+
+
+* Version 2.5, build 1-22 (August 2001) *
+  * removed TVTEdit.WMKillFocus
+  * TCustomStringTreeOptions
+  * adjustments so that TCustom... trees only use and return TCustom... options versions
+  * hint positioning
+  * tree options are now really overrideable and extendable
+  * IsVisible[Node] := True now makes a node really visible (expands all parent nodes)
+  * significant speed improvements for ContentToXXX routines
+  * better Delphi 6 compliance
+  * EndUpdate does nothing if the tree is being destroyed
+  * double click on state icon does toggle node too
+  * InvalidateNode checks now for allocated handle
+  * GetMaxRightExtend now correctly includes FMargin in entire width
+  * DoCanEdit, GetImageIndex (separated from DoGetImageIndex), DoGetText called by GetText
+  * improved key conversion for incremental search
+  * support for standard actions
+  * options splitted into sub&#45;options, property Options is now a class instead of a set
+  * new options toUseBlendedImages and toAutoScrollOnExpand
+  * DoBeforeCellPaint is now called in PrepareCell to allow customization after column color application
+  * consolidated DoDrag&#42; and Drag&#42; methods, DoDrag&#42; methods only call their appropriate events
+  * AddChild and InsertNode can now take a pointer to user data which is placed into the first four bytes of a node's
+    user data area (there must of course at least be 4 bytes user data).
+  * vsInitialUserData to indicate a node needs OnFreeNode even if it is not "officially" initialized
+  * FDragSelection is now also a protected property
+  * LineMode
+  * ContentToRTF improvements for correct table building
+  * ContentToHTML improvments and bug fixes
+  * changed CF_RTF&#42; to CF_VRTF&#42; to avoid identifier conflicts
+  * internal data handling improved, method AllocateInternalDataArea, method InternalData
+  * improved text painting
+  * rounded selection rectangles, property SelectionCurveRadius
+  * selection border colors
+  * hatSystemDefault, DoGetAnimationType
+  * small changes
+  * bug fixes
+
+
+
+* Version 2.4, build 1-34 (May to June 2001) *
+  * introduced build numbers
+  * Delphi 6 compatibility
+  * brush alignment bug for dotted lines fixed
+  * test for TYMED_HGLOBAL is now done using a mask instead of direct comparation
+  * tree column classes can now be changed by descendants, see TBaseVirtualTree.GetColumnClass
+  * TVTRenderOLEDataEvent, property OnRenderOLEData, DoRenderOLEData TVTGetUserClipboardFormats,
+    DoGetUserClipboardFormats, property OnGetUserClipboardFormats
+  * removed ScrollIntoView from AddChild and InsertNode
+  * property OnPaintBackground, DoPaintBackground
+  * TVirtualTreeColumn.LoadFromStream adjustments for the new header stream version
+  * BeginDrag is again public, TControl already has this method in the public section
+  * GetFirstSelected and GetNextSelected iterate now through the tree as every other of those methods returning so the
+    nodes in logical order
+  * GetFirstCutCopy, GetNextCutCopy
+  * ContentToRTF, ...HTML, ...CSV, ContentToClipboard
+  * GetFirstInitialized, GetNextInitialized, GetPreviousInitialized, GetLastInitialized
+  * on expanding scroll child nodes into view
+  * new property editor for clipboard formats
+  * procedures RegisterVTClipboardFormat etc. added
+  * property ClipboardFormats added
+  * IDataObject handling and customization added
+  * trees render their clipboard formats now on their own behalf, IDataObject does only dispatch calls
+  * OLEFormats property removed
+  * clipboard handling reworked
+  * TVTDataObject, to have two instances (one for dragging, one for clipboard)
+  * IDataObject is no longer implemented by the drag manager
+  * renamed TVTMoveRestriction to TVTDragMoveRestriction
+  * correct background erasing for animated toggle
+  * Incremental search included in WM_KEYDOWN handling instead WM_CHAR with proper ANSI to Unicode char conversion.
+  * OnUpdating event, DoUpdating method
+  * improved FullExpand, FullCollapse
+  * improved AutoFitColumns
+  * header stream version increase
+  * Color, coParentColor, poColumnColor for columns (streaming and assignment updated accordingly)
+  * no scrollbar updates anymore in AdjustTotalHeight to avoid unwanted side effects
+  * Editors can now prevent node edit stop. CancelEditNode, EndEditNode, DoCancelEdit and DoEndEdit are now functions and
+    return True if editing was stopped.
+  * small changes in ReinitNode/Children
+  * workaround for an unwanted drop action when dropping while auto scrolling
+  * IVTDragManager
+  * tsNeedRootCountUpdate
+  * WM_NCRBUTTONDOWN in header
+  * change of focused column with hot keys in grid mode is now limited to not&#45;full&#45;row&#45;select mode
+  * checks for update count in ToggleNode
+  * CM_FONTCHANGED
+  * SetChildCount/property ChildCount accepts now nil to change the top level node count
+  * improved GetHasChildren
+  * incremental search improvements
+  * GetLastVisible, GetLastVisibleNoInit
+  * Changed semantic for GetLastChild, GetLastVisibleChild, GetLastChildNoInit and GetLastVisibleChildNoInit. They do not
+    iterate the entire child and grand child list but only the child list of the given node.
+  * Deeper iteration to grand children is done via GetLast, GetLastNoInit, GetLastVisible and GetLastVisibleNoInit
+  * customizable line styles
+  * DoGetPopupMenu
+  * OnDragDrop event has a changed parameter list (no open array as parameter to avoid trouble with BCB)
+  * public property Image of TVTDragImage to have access to the internal drag image bitmap
+  * TVTNodeAlignment, property NodeAlignment
+  * incremental search
+  * key handling for non&#45;grid mode improved
+  * small improvements
+  * bug fixes
+
+
+
+* Version 2.4 (April to May 2001) *
+  * key handling for non&#45;grid mode improved
+  * voDisableDrawSelection (32 bits are now used for options, can't add any more)
+  * voHideSelection
+  * GetLast, GetLastNoInit
+  * incremental search (TVTSearchDirection, TVTIncrementalSearch, SearchTimer, event OnIncrementalSearch,
+    DoIncrementalSearch, TVTIncrementalSearchEvent, TVTSearchStart, IncrementalSearchStart)
+  * improved header timer handling
+  * improved key navigation in grid mode
+  * Virtual Explorer Tree (VET) written by Jim Kueneman is now part of the package
+  * VK_HOME and VK_END set now first and last column correctly
+  * removed ivsVisible style because of unpredictable interferences with other code
+  * columns store their last width and can restore it
+  * TVirtualTreeColumn.RestoreLastWidth, TVTHeader.RestoreColumns
+  * restore last column widths
+  * workaround for bad implementation of disabled images in TImageList
+  * brush alignment for drawing of nodes with odd height
+  * dotted lines implementation improved, tree lines are now dotted drawn too
+  * Column parameter in TVTDragAllowedEvent
+  * flat check images, ckFlat
+  * InvalidateChildren
+  * arrow key navigation limited to grid extension, otherwise (extended focus) normal behavior
+  * VK_TAB handling, WantTabs property
+  * published OnShortenString in the string tree
+  * introduced a build number in the main version number
+  * toggle animation only if not the last visible node to be expanded
+  * CharCode in OnKeyAction is now a variable to allow changing it
+  * nodes in SelectAll are now initialized
+  * Position in TVTPopupMenu event
+  * tsVCLDragging, tsOLEDragPending, tsOLEDragging
+  * limited auto scroll to draw selection and dragging
+  * AutoFitColumns
+  * public property EditLink
+  * ProcessMessage in IVTEditLink
+  * improved change handling
+  * InvalidateColumn
+  * TVirtualTreeColumns.IsValidColumn
+  * draw selection is now also possible with full row select
+  * OnScroll, DoOnScroll, TVTOnScrollEvent
+  * scrolling if scrollbar is not visible
+  * UnselectNodes
+  * deselection with Ctrl+Shift if last focused node is not selected
+  * node toggle improvements
+  * background image offsets as properties
+  * more BCB adjustments
+  * animated hints improved
+  * animated toggle improved
+  * method Animate (general animation support)
+  * initial range anchor setting if there was not yet a focused node
+  * animation duration
+  * PaintImage improvements for transparent images and full row selection
+  * function Path
+  * other small changes
+  * bug fixes
+
+
+
+* Version 2.3 (March to April 2001) *
+  * tsIterating state (checks in DeleteNode and DeleteChildren)
+  * paint optimizations
+  * selected images are dimmed now
+  * ShortenString, DoShortenString, OnShortenString event
+  * OnKeyAction
+  * scroll bar improvements
+  * application defined check image list
+  * internal data handling
+  * drag image implementation finished (finally, this was really tough stuff because of the alpha blended image and
+    updates in non client area)
+  * FormatEtcList in the drag manager is now accessible through a property
+  * clipboard handling
+  * GetFirstNoInit (renamed GetFirstNode to GetFirst as it is more consistent)
+  * small changes in TBaseVirtualTree.DoEdit;
+  * restructuring of node checking
+  * high color format for internal image lists
+  * NewParent in OnNodeCopying
+  * other small changes
+  * bug fixes
+
+
+
+* Version 2.2 (March 2001) *
+  * MMX feature check
+  * property OffsetXY
+  * drag image
+  * improved dragging
+  * general drag management improvements
+  * TVTDragImage
+  * alpha blending
+  * Watcher (critical section) introduced
+  * MMX AlphaBlend implementation
+  * improved image painting (ghosted, overlay etc.)
+  * hoDblClickResize
+  * TVirtualTreeColumns.AnimatedResize
+  * column resize on double click
+  * GetMaxColumnWidth
+  * poDrawFocusRect, poDrawSelection in paint options
+  * ChildNodesOnly in IterateSubtree
+  * OnColumnClick, OnColumnDblClick
+  * HandleMouseDblClick, WM_RBUTTONDBLCLK, WM_MBUTTONDBLCLK
+  * TVTDragDropManager.SetOLEFormats is now overridable
+  * hint positioning
+  * reset of node widths on main column switch
+  * optimized tree and header painting
+  * edit mode for item clicks beside the label when grid extensions are set
+  * TVirtualTreeColumn.GetAbsoluteBounds
+  * tsPainting state
+  * simple DrawTextW implementation (works also on Win9x)
+  * improved selection rect painting
+  * tsValidationNeeded
+  * check event rework
+  * PrepareGridExtensions
+  * CM_ENABLEDCHANGED for desgin time
+  * public header click index
+  * draw selection improvement for all text alignments and bidi modes
+  * more header mouse events (OnHeaderDblClick, OnHeaderMouseDown, OnHeaderMouseMove, OnHeaderMouseUp)
+  * virtual event trigger methods for those mouse events
+  * multiline hints
+  * THitPositions
+  * other small changes
+  * bug fixes
+
+
+
+* Version 2.0 to 2.1 (January to February 2001) *
+  * improved hinting (accounts now for alignment and directionality)
+  * improved GetDisplayRect
+  * FNodeCache removed
+  * BidiMode in OnDrawNode
+  * DetermineHitPositionLTR, DetermineHitPositionRTL
+  * improved GetHitTestInfoAt
+  * improved GetNodeAt method
+  * FindInPositionCache
+  * made the header the sender in all events related to the header (e.g. OnHeaderClick)
+  * WM_PRINT, WM_PRINTCLIENT
+  * Text property for TVirtualStringTree
+  * corrected header painting for various border style combinations (WS_BORDER, WS_THICKFRAME, WS_EX_CLIENTEDGE)
+  * check for recursive hint animation loop entrance
+  * voPopupMode
+  * Tree.Assign
+  * Ctrl&#45;A handling (select all)
+  * context menu key handling (popup menu)
+  * DoPopupMenu
+  * right&#45;to&#45;left drawing
+  * some more adjustments for C++ Builder
+  * improved column auto sizing and recover for zero&#45;sized columns
+  * columns can now be used even if the header is invisible
+  * column autosizing and hints while editing
+  * GetNodeAt can now take absolute and relative coordinates
+  * TWMContextMenu declaration for Delphi 4
+  * TChangeReason for OnStructureChange
+  * hint window improvements for RTL columns and user defined fonts
+  * drag manager referencing redesigned, no explicit reference count modifications necessary anymore
+  * complete paint restructuring, now there is only one method to paint the tree: PaintTree, which can be used for normal
+    paint, printing, drag image etc.
+  * TVirtualTreeColumn.GetDisplayName changed to show a column's name in the property inspector if it only contains ANSI
+    characters
+  * column alignment and bidi consideration, added general property in TVirtualTreeColumn
+  * properties IsVisible (changed semantic), VisiblePath, FullyVisible
+  * filtered IterateSubtree
+  * WM_CONTEXTMENU
+  * vsVisible, full visibility implementation for individual nodes (see also GetVisibleParent, GetNextVisibleNoInit etc.)
+  * included FlatSB.pas in uses list to use the flat scrollbar wrapper in case there is a system not providing flat
+    scrollbars
+  * ShortenString speed improvements
+  * introduced stream version for header
+  * OnCreateDragManager event
+  * EditDelay property
+  * dropmark can now be switched off (voShowDropmark)
+  * tree colors class which unites all customizable colors into one tree property
+  * sort enhancements (auto sort option, sort column, sort direction and sort glyph in header)
+  * new tree states for left, middle and right mouse button presses
+  * VCL drag'n drop is now also possible (left mouse button only)
+  * many minor changes
+  * bug fixes
+
+
+
+* Versions 1.30 to 1.31 (December 2000 to January 2001) *
+  * adjustments for C++ Builder (some type declarations moved)
+  * voSiblingSelectConstraint
+  * full MainColumn implementation, the column containing the tree can now freely be chosen
+  * DragOperations property
+  * AutoExpandDelay
+  * header image list
+  * canvas font change tracking during paint cycles
+  * WM_ENABLE
+  * Tag property for a column
+  * OnAfterCellPaint, OnBeforeCellPaint
+  * item customization reworked, TDrawInfo as well as OnGetDrawInfo is no longer needed
+  * InitNode in DoGetText
+  * BeginDrag is now protected and should no longer be used by applications
+  * many minor changes
+  * bug fixes
+
+
+
+* Versions 1.22 to 1.29 (November 2000) *
+  * many other minor adjustments
+  * OnDragAllowed for selective drag start
+  * edit improvements
+  * VK_MULTIPLY handling
+  * TScreen.HintFont replacement and Rectangle() version for Delphi 4
+  * column options
+  * bug fixes
+
+
+
+* Version 1.21 (Oktober 2000) *
+  * header drag mark improvements
+  * utility images (internal use, e.g. for header drag mark)
+  * node focus change events
+  * column options
+  * collapse/expand animations
+  * hint animations
+  * paint improvements
+  * splitted stream and tree versions
+  * property IsDisabled
+  * bug fixes
+
+* Versions 1.17 to 1.20 (September 2000 to Oktober 2000) *
+  * single scroll bar properties class
+  * property IsDisabled
+  * separate tree and stream versions
+  * bug fixes
+
+
+
+* Versions 1.5 to 1.16 (August 2000 to September 2000) *
+  * small improvments
+  * InternalAddFromStream, AddFromStream
+  * grid and tree line colors
+  * improved constrained selection
+  * bug fixes
+
+
+
+* Versions 1.8 to 1.14 (June 2000 to August 2000) *
+  * header streaming
+  * header hints
+  * header drag events
+  * node button
+  * wide string streaming support
+  * margins
+  * gridline color
+  * improved drag image handling
+  * generic editing
+  * non&#45;client area clipping
+  * worker thread improvements (for use in DLLs, services etc.)
+  * initial help file and preparation for first public release
+  * hit test for spanned columns
+  * clipboard and drag'n drop improvements
+  * header owner draw
+  * node sorting (merge sort)
+  * bug fixes
+
+
+
+* Versions 1.6 to 1.7 (May 2000) *
+  * initial expand state (ivsExpanded)
+  * node sort
+  * MarkCutCopyNodes
+  * InitChildren, ValidateChildren
+  * improved clipboard handling (WM_CUT, WM_COPY, WM_PASTE and more)
+  * voInitOnSave
+  * overlay images
+  * no width cache anymore, GetMaxRightExtend instead
+  * column resize event
+  * header popup menus, custom draw, dragging, switchable images
+  * new tree states (expanding, collapsing, updating)
+  * header options
+  * auto span coulumns
+  * bug fixes
+
+
+
+* Version 1.5 (April 2000) *
+  * own implementation for scroll bars
+  * background image
+  * improved NC painting
+  * improved hit test
+  * new events and methods (OnNodeCopying, ReinitNode etc.)
+  * generic node edit improved
+  * property vsHasChildren for nodes, properties ChildCount, ChildrenInitialized and HasChildren in tree
+  * header painting improved (is now also double buffered)
+  * node hint improvements
+  * improved/extended column handling (hit test, FocusedColumn, voExtendedFocus, GetNext(Visible)Column,
+    GetPrevious(Visible)Column, improved autoexpand, voAutoSpanColumns)
+  * custom draw (paint cycles introduced: On(Before/After)[Item]Paint)
+  * many other small improvements and bug fixes
+
+
+
+* Version 1.4 (February 2000 to March 2000) *
+  * node editing, IVTEditLink, WM_RELEASEEDITLINK, application defined node editor
+  * streaming, tree virtualization, application driven save and restore nodes
+  * OLE clipboard support
+  * OLE support by the tree to simplify the work the app. must do (ProcessDrop, ProcessOLEData)
+  * switchable OLE formats the tree should provide
+  * tooltips, node hints
+  * GetSortedSelection, GetSortedCutCopySet
+  * improved accessibility like: TopNode, auto expand/collapes on node focuse change, DeleteSelectedNodes, SelectAll,
+    InvertSelection, GetNext(Previous)Sibling
+  * splitted change event into two, one for node focus change and one for structure change (Add, Delete etc.)
+  * disabled nodes, disabled tree, cutted nodes (with proper visual feedback)
+  * column images
+  * hideable columns, columns auto sizing and reordering
+  * normal and static text for captions
+  * general optimizations
+  * application driven help and popup menu
+  * compatibility for Delphi 4
+  * bug fixes
+
+
+
+* Versions 1.2 to 1.3 (January 2000) *
+  * various new navigation functions (GetFirstSelected etc.)
+  * VCL and OLE drag'n drop united (accept only) plus some support routines (e.g. MoveTo, ConvertSubTree)
+  * new options (auto tristate, auto focus etc.), constrained selection
+  * header and columns (plus support functions)
+  * crossed 10.000 code lines boundary on 31. January
+  * bug fixes
+
+
+
+* Version 1.1 (December 1999) *
+  * OLE drag'n drop
+  * check support
+  * multi selection and other optimizations
+  * bug fixes
+
+
+
+* Version 1.0 (July 1999 to November 1999) *
+  * base implementation (buttons, lines, general window handling, base mouse handling)
+  * caching for optimal speed
+  * multi selection
+  * OLE drag'n drop
+  * common tree functions and properties (InvalidateNode, GetNodeData, Visible, Selected, Expanded...)

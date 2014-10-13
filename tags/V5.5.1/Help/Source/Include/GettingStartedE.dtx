@@ -1,0 +1,957 @@
+@@GettingStartedE.html
+<TITLE Virtual Treeview step by step>
+
+
+<PRE>
+Written by Sven H. (<EXTLINK mailto:h.sven@gmx.at>h.sven@gmx.at</EXTLINK>), Revision and translation by Mike Lischke (<EXTLINK mailto:public@delphi-gems.com>public@delphi-gems.com</EXTLINK>)
+</PRE>
+
+
+At the time when this description was created I had not much Delphi knowledge and had not yet read through any of my two
+Delphi books. But I was quite impatient and wanted to try out what is possible. Although I have some knowledge about
+\object oriented programming and C++ (I have learned something about it during my studies), this project was my first
+attempt to program in Delphi. It could be that I have not provided the most elegant solutions und I am always open for
+improvement suggestions. But all principles I demonstrated here do work (at least for me J). I have implemented them in
+my first project this way. This guidance is made in the first place for programmers who are not yet familiar with Virtual
+Treeview and will so perhaps have an easier start. If you have questions or suggestions regarding this guidance please
+forward them to <EXTLINK mailto:h.sven@gmx.at>h.sven@gmx.at</EXTLINK>. For other questions you can contact Mike and use
+the dedicated newsgroup, respectively.
+
+
+
+I am neither a Virtual Treeview nor a Delphi expert and have collected all the answers (with the help of Mike) with quite
+some effort. In order to avoid the afterwards relatively simple things to become problematic I have written this short
+guidance. The real problems will appear later.
+
+© 2001 The parts in this guidance beyond the text from the online help are copyrighted. Every publication requires my
+admission.
+
+Have fun with it, Sven.
+
+
+
+* Preparations *
+Before we start some preparations are necessary:
+
+    * Place a Virtual Treeview component on a form.
+    * Change the properties as you like.
+    * A record for node data must be defined.
+
+
+
+In order to store the own node data some musing is important. How shall the record look like?
+
+<B>a) All nodes in the tree are equal</B>
+
+In this case a simple record defines the necessary data structure, e.g.:
+
+
+<CODE>
+<B>type</B>
+  rTreeData = <B>record</B>
+  Text: WideString;
+  URL: <B>string</B>[<COLOR Pink>255</COLOR>];
+  CRC: LongInt;
+  isOpened: Boolean;
+  ImageIndex: Integer;
+<B>end</B>;
+</CODE>
+
+
+<B>b) There are different nodes in the tree (e.g. folders that can have sub nodes)</B>
+
+I will follow this case because my tree will hold folders, which can in turn get own nodes. Since I intent to store
+created trees in a file in order to restore them later further deliberations are necessary: Suppose a folder node has
+\only a name and a leaf node has a name and a text info field. Potentially, I also want to store a second kind of leaf
+node, which will for instance have a number instead of the text field. The problem in the context of reading data form a
+stream is that I must know which data is stored in which order in the stream, because I have to read it in exactly the
+same order again. Hence I have to determine from the very first information in the stream what information will follow.
+For instance there is a node name, but then? Is there nothing more or another text information (string) or even an
+integer value? I think the point is clear. The first data, which I read, has to carry this information.
+
+
+
+These deliberations have leaded me to the following solution: I save now in the stream [label]-\>[name]-\>[following
+data]
+
+
+
+0 -\> 'Folder'
+
+1 -\> 'Info node' -\> 'Blabla'
+
+2 -\> 'Number node' -\> 123
+
+
+
+I know from the stream I always read an integer value first. Depending whether this is 0, 1 or 2 I have to read - now
+known - following values. Now let us consider the record.
+
+
+<CODE>
+<B>type</B>
+  rTreeData = <B>record</B>
+  Typ: Integer;
+  Name: <B>string</B>[<COLOR Pink>255</COLOR>];
+  pNodeData: Pointer;
+<B>end</B>;
+</CODE>
+
+
+Hey, there is suddenly a pointer in the record. Well, here are some additional comments:
+
+      1. Typ is an integer value, from which I can determine what kind of node this is, in my example 1, 2 or 3.
+      2. Name is the name of the node. This will be needed relatively often because it is also seen as part of the tree
+         and I want to access this information easily (man, I am lazy).
+      3. The pointer allows (similar to the data property of the tree) a record or even better a class instance to
+         connect.
+
+
+
+Now I still have the freedom to define a base class of node. It contains all properties and methods, which all classes
+will share. And from this I can derive proper sub classes (e.g. text nodes, value nodes etc.). An additional advantage of
+this record is its fixed size. Hence you can always return the same size in case the tree asks for it (see also property
+NodeDataSize), but more about that later.
+
+Just one remark: If you don't want to use classes you can also simply define 3 records, which define as first element, a
+type and which react differently depending on this type.
+
+
+
+<B><U>Alternative solution:</U></B>
+
+Okay, I admit it. It would of course also be possible to write the type into the stream and read it from the stream
+separately without saving it as part of the record. The type of the node class is indirectly known because you can ask a
+class which class name it has (see e.g. class function ClassName) and the class knows it too. So I shall store a node,
+\okay. I pass on the stream to the Node.SaveToFile(Stream) method, which writes, depending on which node class we
+actually have, automatically the value 1, 2 or 3 into the stream.
+
+
+
+During load from stream I read first the value 1, 2 or 3 and decide what class is meant. Then I create an instance of
+this class and call its LoadFromFile method. Well, this solution is my most preferred and before another one enters my
+brain I will implement it (Note: in step 5 I will change something).
+
+
+
+<U>So I do following:</U>
+
+
+
+As you can see from the declaration of the internal node of Virtual Tree
+
+
+<CODE>
+TVirtualNode = <B>packed</B> <B>record</B>
+  Index, <COLOR Blue>// index of node with regard to its parent</COLOR>
+  ChildCount: Cardinal; <COLOR Blue>// number of child nodes</COLOR>
+  ...
+  ...
+  LastChild: PVirtualNode; <COLOR Blue>// link to the node's last child...</COLOR>
+  Data: <B>record</B> <B>end</B>; <COLOR Blue>// this is a placeholder, each node gets extra</COLOR>
+  <COLOR Blue>// data determined by NodeDataSize</COLOR>
+<B>end</B>;
+</CODE>
+
+
+there is another record at the end of the record structure. Which exact structure this is will be determined indirectly.
+
+
+<CODE>
+<B>type</B>
+  rTreeData = <B>record</B>
+    Name: <B>string</B>[<COLOR Pink>255</COLOR>]; <COLOR Blue>// the identifier of the node</COLOR>
+    ImageIndex: Integer; <COLOR Blue>// the image index of the node</COLOR>
+    pNodeData: Pointer;
+<B>  end</B>;
+</CODE>
+
+
+Let the above record be the structure. The Virtual Treeview does not really know this structure, but it knows how much
+space must be reserved. We tell it by
+
+
+<CODE>
+myVirtualTree.NodeDataSize := SizeOf(rTreeData);
+</CODE>
+
+
+\Note, even if you want to store only one value, e.g. a pointer as node data, simply return the size, which should be
+reserved.
+
+
+
+<B>Implementation</B>
+
+<I>An empty tree</I>
+
+
+
+I begin with an empty tree (no top level nodes are created at design time):
+
+    * Either an existing tree is read from a file or
+    * A top-level node is created.
+
+*  *
+Before a node can be created you have to determine the size of the actual node data. According to the docs there are
+three opportunities:
+
+    * In the object inspector
+    * In the OnGetNodeDataSize - event or
+    * During creation of the form
+
+
+
+I decide to use the last variant and will now do the following during form creation:
+
+
+<CODE>
+<B>procedure</B> TMyForm.FormCreate(Sender: TObject);
+
+<B>var</B>
+  Node: PVirtualNode;
+
+<B>begin</B>
+  ...
+  <COLOR Blue>// create tree</COLOR>
+  MyTree.NodeDataSize := SizeOf(TTreeData);
+  <B>if</B> MyForm.filename = <COLOR Pink>''</COLOR> <B>then</B> <B>begin</B> <COLOR Blue>// if there is no tree to load</COLOR>
+    <COLOR Blue>// create tree with top level node</COLOR>
+    Node := BookmarkForm.BookmarkTree.AddChild(nil); <COLOR Blue>// adds a top level node</COLOR>
+<B>  end
+  else
+  begin</B>
+    <COLOR Blue>// load tree</COLOR>
+    ....
+<B>  end</B>;
+  ....
+<B>end</B>;
+</CODE>
+
+
+<B><I>Data for the node</I></B>
+
+
+
+After the call of AddChild data can be assigned. For this a pointer to the self-defined record will be declared and via
+the function GetNodeData connected with the correct address. By using this pointer we can now access the elements of the
+record and assign them values.
+
+
+<CODE>
+<B>var</B>
+  ...
+  NodeData: ^rTreeData;
+
+<B>begin</B>
+  ...
+  <COLOR Blue>// determine data for node</COLOR>
+  NodeData := BookmarkForm.BookmarkTree.GetNodeData(Node);
+  NodeData.Name := <COLOR Pink>'new project'</COLOR>;
+  NodeData.ImageIndex := <COLOR Pink>0</COLOR>;
+  ...
+</CODE>
+
+
+<B><I>Show the node name</I></B>
+
+
+
+The name of the node shall now appear as node identification in the tree. All data about the node as well as the name are
+unknown to the treeview and it has to query for them.
+
+
+
+Every time the identification of the node is needed an event OnGetText will be triggered. In the event handler we return
+the name of the node in the variable Text. Nothing more is needed.
+
+
+<CODE>
+<B>procedure</B> TBookmarkForm.BookmarkTreeGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: Integer; TextType: TVSTTextType; <B>var</B> Text: WideString);
+<B>
+var</B>
+  NodeData: ^rTreeData;
+
+<B>begin</B>
+  NodeData := Sender.GetNodeData(Node);
+  <COLOR Blue>// return identifier of the node</COLOR>
+  Text := NodeData.Name;
+<B>end</B>;
+</CODE>
+
+
+<B><I>The icon for the node</I></B>
+
+
+
+Because I like it colorful I want also to provide an icon for the top-level node. Following steps are necessary to
+accomplish that:
+
+
+
+    * A TImageList must be placed onto the form and filled with images
+    * The property Images of the VirtualTreeview gets assigned this image list
+    * Implement an OnGetImageIndex event handler.
+
+
+
+In the event OnGetImageIndex you can the index be determine which determines in turn which image form the list must be
+shown.
+
+
+
+Because the method is also called for the state icons but I do not want yet to state icons (but I already have assigned
+and image list to the property StateImages) the value for this case (Kind à ikState) is -1.
+
+
+<CODE>
+<B>procedure</B> TBookmarkForm.BookmarkTreeGetImageIndex(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Kind: TVTImageKind; Column: Integer; <B>var</B> Index: Integer);
+
+<B>var</B>
+  NodeData: ^rTreeData;
+
+<B>begin</B>
+  NodeData := Sender.GetNodeData(Node);
+<B>  case</B> Kind <B>of</B>
+    ikState: <COLOR Blue>// for the case the state icon has been requested</COLOR>
+      Index := <COLOR Pink>-1</COLOR>;
+    ikNormal, ikSelected: <COLOR Blue>// normal or the selected icon is required</COLOR>
+      Index := NodeData.ImageIndex;
+<B>  end</B>;
+<B>end</B>;
+</CODE>
+
+
+Depending on whether a node is selected or not, different icons shall be shown (see step 6).
+
+<B><I>
+
+Only one node class in the record</I></B>
+
+
+
+Since I want to avoid mixing data in the record and later then data in the node class I decided to change this record
+
+
+<CODE>
+<B>type</B>
+  TTreeData = <B>record</B>
+    Name: <B>string</B>[<COLOR Pink>255</COLOR>]; <COLOR Blue>// the identifier of the node</COLOR>
+    ImageIndex: Integer; <COLOR Blue>// the image index of the node</COLOR>
+    pNodeData: Pointer;
+<B>end</B>;
+</CODE>
+
+
+into a record which contains only one pointer to a node class. I declare therefore first a node class
+
+
+<CODE>
+TBasicNodeData = <B>class</B>
+  ...
+<B>end</B>;
+</CODE>
+
+
+and then a structure of the form:
+
+
+<CODE>
+rTreeData = <B>record</B>
+  BasicND: TBasicNodeData;
+<B>end</B>;
+</CODE>
+
+
+This record always needs 4 bytes for the pointer to the class.
+
+
+
+Particular attention is to direct to the event OnGetText. This event will already be called during creation of the node
+with Tree.AddChild(nil) in order to determine the space the new node's caption will need (but only if no columns were
+created). At this point however the node class could not yet be initialised (no constructor call yet). Hence for this
+case
+
+
+<CODE>
+<B>if</B> NodeD.BasicND = <B>nil</B> <B>then</B>
+  Text := <COLOR Pink>''</COLOR>
+</CODE>
+
+
+must be returned or you wrap the entire initialization into a BeginUpdate/EndUpdate block and initialized the nodes
+before EndUpdate is called (e.g. by ValidateNode(Node)).*
+
+
+
+Without this provision an access violation would be the result.
+
+
+
+*  *
+* Example class declaration *
+
+<CODE><B>unit</B> TreeData;
+
+<B>interface</B>
+
+<COLOR Blue>//===========================================</COLOR>
+
+<B>type</B>
+  <COLOR Blue>// declare common node class</COLOR>
+  TBasicNodeData = <B>class</B>
+  <B>protected</B>
+    cName: ShortString;
+    cImageIndex: Integer;
+  <B>public</B>
+    <B>constructor</B> Create; <B>overload</B>;
+    <B>constructor</B> Create(vName: ShortString; vIIndex: Integer = 0); <B>overload</B>;
+
+    <B>property</B> Name: ShortString read cName write cName;
+    <B>property</B> ImageIndex: Integer read cImageIndex write cImageIndex;
+  <B>end</B>;
+
+  <COLOR Blue>// declare new structure for node data</COLOR>
+  rTreeData = <B>record</B>
+    BasicND: TBasicNodeData;
+  <B>end</B>;
+
+<B>implementation</B>
+
+<B>constructor</B> TBasicNodeData.Create;
+<B>begin</B>
+   <COLOR Blue>{ not necessary
+   cName := '';
+   cImageIndex := 0;
+   }</COLOR>
+<B>end</B>;
+
+<B>constructor</B> TBasicNodeData.Create(vName: ShortString; vIIndex: Integer = 0);
+<B>begin</B>
+  cName := vName;
+  cImageIndex := vIIndex;
+<B>end</B>;
+
+<B>end</B>.
+</CODE>
+
+
+* Example creation of the tree *
+
+<CODE><COLOR Blue>// Tree will be created when the form is created.</COLOR>
+<B>procedure</B> TMyForm.FormCreate(Sender: TObject);
+
+<B>var</B>
+   Node: PVirtualNode;
+   NodeD: ^rTreeData;
+
+<B>begin</B>
+  ....
+  <COLOR Blue>// create tree</COLOR>
+  MyTree.NodeDataSize := SizeOf(rTreeData);
+  <B>if</B> MainControlForm.filename = <COLOR Pink>''</COLOR> <B>then</B>
+  <B>begin</B>
+    <COLOR Blue>// create tree with top level node</COLOR>
+    Node := MyTree.AddChild(<B>nil</B>); <COLOR Blue>// adds a node to the root of the tree</COLOR>
+    <COLOR Blue>// assign data for this node</COLOR>
+    NodeD := MyTree.GetNodeData(Node);
+    NodeD.BasicND := TBasicNodeData.Create(<COLOR Pink>'new project'</COLOR>);
+  <B>end</B>
+  <B>else</B>
+  <B>begin</B>
+    <COLOR Blue>// load tree</COLOR>
+  <B>end</B>;
+  ...
+<B>end</B>;
+
+<COLOR Blue>// returns the text (the identification) of the node</COLOR>
+<B>procedure</B> TMyForm.MyTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: Integer;
+  TextType: TVSTTextType; <B>var</B> Text: WideString);
+
+<B>var</B>
+   NodeD: ^rTreeData;
+
+<B>begin</B>
+  NodeD := Sender.GetNodeData(Node);
+
+  <COLOR Blue>// return the identifier of the node</COLOR>
+  <B>if</B> NodeD.BasicND = <B>nil</B> <B>then</B>
+    Text := <COLOR Pink>''</COLOR>
+  <B>else</B>
+    Text := NodeD.BasicND.Name;
+<B>end</B>;
+
+<COLOR Blue>// returns the index for image display</COLOR>
+<B>procedure</B> TMyForm.MyTreeGetImageIndex(Sender: TBaseVirtualTree;
+   Node: PVirtualNode; Kind: TVTImageKind; Column: Integer; <B>var</B> Index: Integer);
+
+<B>var</B>
+   NodeD: ^rTreeData;
+
+<B>begin</B>
+  NodeD := Sender.GetNodeData(Node);
+
+  <B>case</B> Kind <B>of</B>
+    ikState: <COLOR Blue>// for the case the state index has been requested</COLOR>
+      Index := <COLOR Pink>-1</COLOR>;
+    ikNormal, ikSelected: <COLOR Blue>// normal icon case</COLOR>
+      Index := NodeD.BasicND.ImageIndex;
+   <B>end</B>;
+<B>end</B>;
+</CODE>
+
+
+* Icons for selected nodes *
+If a node is selected a different symbol shall be shown. Therefore I implement a new method
+
+
+<CODE>
+  <B>function</B> GetImageIndex(focus: Boolean): Integer; <B>virtual</B>;
+</CODE>
+
+
+which gets the normal image index or the index for focused nodes depending on whether the node has the focus or not.
+
+
+
+Call:
+<CODE>
+   Index := NodeD.BasicND.GetImageIndex(Node = Sender.FocusedNode);
+</CODE>
+
+
+Implementation of the method:
+
+
+<CODE>
+<B>function</B> TBasicNodeData.GetImageIndex(focus: Boolean): Integer;
+
+<B>begin</B>
+  <B>if</B> focus <B>then</B>
+    \Result := cImageIndexFocus
+  <B>else</B>
+    \Result := cImageIndex;
+<B>end</B>;
+</CODE>
+
+
+where cImageIndex has always the normal index and cImageIndex Focus the index for focused nodes. I assume in this case
+that the selected index is always one more than the normal index. To ensure this, the constructor is changed this way:
+
+
+<CODE>
+<B>constructor</B> TBasicNodeData.Create(vName: ShortString; vIIndex: Integer = 0);
+
+<B>begin</B>
+  cName := vName;
+  cImageIndex := vIIndex;
+  cImageIndexFocus := vIIndex + <COLOR Pink>1</COLOR>;
+<B>end</B>;
+</CODE>
+
+
+* Adding and deleting nodes *
+In order to implement and test more functions I want finally an opportunity to create the tree. By using a context menu
+is shall be possible to add and remove nodes.
+
+
+
+Hence I define a popup menu with two entries: [Add] and [Remove]. To have the clicked node getting the focus the option
+voRightClickSelect must be set to True.
+
+
+
+So if Add has been chosen a child node will be created for the focused node:
+
+
+<CODE>
+<B>procedure</B> TMyForm.addClick (Sender: TObject);
+
+<B>var</B>
+  Node: PVirtualNode;
+  NodeD: ^rTreeData;
+
+<B>begin</B>
+  <COLOR Blue>// Ok, a node must be added.</COLOR>
+  Node := MyTree.AddChild(MyTree.FocusedNode); <COLOR Blue>// adds a node as the last child</COLOR>
+  <COLOR Blue>// determine data of node</COLOR>
+  NodeD := MyTree.GetNodeData(Node);
+  NodeD.BasicND := TBasicNodeData.Create(<COLOR Pink>'Child'</COLOR>);
+<B>end</B>;
+</CODE>
+
+
+Caution: What must be done if no node has the focus?
+
+\-\> e.g. insert the new node as child of a top level nodes.
+
+
+<CODE>
+  <B>if</B> BookmarkTree.FocusedNode = <B>nil</B> <B>then</B>
+  <B>begin</B>
+    <COLOR Blue>// insert as child of the first top level node</COLOR>
+    Node := BookmarkTree.AddChild(BookmarkTree.RootNode.FirstChild);
+    <COLOR Blue>// determine data for node</COLOR>
+    NodeD := BookmarkTree.GetNodeData(Node);
+    NodeD.BasicND := TFolderNodeData.Create(<COLOR Pink>'new folder'</COLOR>);
+  <B>end
+  else
+  begin</B>
+    <COLOR Blue>// Ok, a new node must be added.</COLOR>
+    Node := BookmarkTree.AddChild(BookmarkTree.FocusedNode);
+    <COLOR Blue>// determine data of the node</COLOR>
+    NodeD := BookmarkTree.GetNodeData(Node);
+    NodeD.BasicND := TFolderNodeData.Create(<COLOR Pink>'new folder'</COLOR>);
+  <B>end</B>;
+</CODE>
+
+
+
+
+If the node with the focus must be deleted the following happens:
+
+
+<CODE>
+<B>procedure</B> TMyForm.delClick (Sender: TObject);
+
+<B>begin</B>
+  <COLOR Blue>// The focused node should be removed. The top level must not be deleted however.</COLOR>
+  <B>if</B> MyTree.FocusedNode = <B>nil</B> <B>then</B>
+    MessageDlg(<COLOR Pink>'There was no node selected.'</COLOR>, mtInformation, [mbOk], 0)
+  <B>else</B>
+    <COLOR Blue>// Note: RootNode is the internal (hidden) root node and parent of all top
+    // level nodes. To determine whether a node is a top level node you also use
+    // GetNodeLevel which returns 0 for top level nodes.</COLOR>
+  <B>if</B> MyTree.FocusedNode.Parent = MyTree.RootNode <B>then</B>
+    MessageDlg(<COLOR Pink>'The project node must not be deleted.'</COLOR>, mtInformation, [mbOk], 0)
+  <B>else</B>
+    MyTree.DeleteNode(MyTree.FocusedNode);
+<B>end</B>;
+</CODE>
+
+
+I want to prevent, however, that the top-level node gets deleted. Hence I check with the comparison
+MyTree.FocusedNode.Parent = MyTree.RootNode whether the focused node is not a top-level node. Here you have to consider
+that the property RootNode returns the (hidden) internal root node, which is the common parent of all top-level nodes.
+
+
+
+While we are at deleting nodes:
+
+Every data of the record is automatically free as soon as this is required. In this case it is not enough, however, to
+free the memory, which holds the pointer to the class (object instance), but it is also necessary to free the memory,
+which is allocated by the class itself. This happens by calling the destructor of the class in the OnFreeNode event:
+
+
+<CODE>
+<B>procedure</B> TMyForm.MyTreeFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+
+<B>begin</B>
+  <COLOR Blue>// Free here the node data (Note: type PtreeData = ^rTreeData).</COLOR>
+  PTreeData(Sender.GetNodeData(Node)).BasicND.Free;
+<B>end</B>;
+</CODE>
+
+
+* Adding folder and leafs *
+Now I am ready to add folders to the tree as well as final nodes, which do not have children. For this I derive two new
+node classes from the base class.
+
+
+<CODE>
+TFolderNodeData = <B>class</B>(TBasicNodeData)
+TItemNodeData = <B>class</B>(TBasicNodeData)
+</CODE>
+
+
+Depending on which kind of node the user wants to create using the context menu I store a particular class in the node
+record.
+
+
+<CODE>
+NodeD.BasicND := TFolderNodeData.Create(<COLOR Pink>'new folder'</COLOR>);
+NodeD.BasicND := TItemNodeData.Create(<COLOR Pink>'new node'</COLOR>);
+</CODE>
+
+
+These classes contain a new property ChildrenAllowed. Based on this property you can now distinct whether the node with
+the focus may get children (folder) or not (items).
+
+
+
+* Storing the tree *
+Now I can finally implement storing the tree. I have already thought a lot about this step. Let us see if this was
+worthwhile.
+
+
+
+Again a quote from Preparations:
+
+I want to store a node, okay. I hand over the stream to the MyNodeClass.SaveToFile method and this method writes
+depending upon which node class it actually is automatically the value 1, 2 or 3 as a kind of class ID into the stream
+(alternatively you can use an enumeration type).
+
+
+
+During load I read first the value 1, 2 or 3 from the stream and decide based on it which class we deal with. Then I
+create an instance of this class and call its method LoadFromFile.
+
+
+
+Hint:
+
+It would also be possible to store the class name instead of the ID for the class. During read and creation of the class
+\one could use class references and virtual constructors and save so the case-statement as I did in the OnLoadNode event,
+to decide which class instance must be created (example see Delphi 5, written by Elmar Warken, Addison-Wesley, chapter
+4.3.3, page 439).
+
+
+
+Before you can read something it must be written first. Hence I will first implement the necessary procedures to store
+the tree. Since we care ourselves that the identification of the node gets saved the option toSaveCaption can be removed
+from StringOptions. This way data is not stored twice.
+
+
+
+For saving the tree the procedure
+
+
+<CODE>
+<B>procedure</B> TBaseVirtualTree.SaveToFile(<B>const</B> FileName: TFileName);
+</CODE>
+
+
+is called. Thereby the structure of the tree is automatically stored. In order to save our additional data there is an
+event OnSaveNode where we can simply store our data into the provided stream.
+
+
+<CODE>
+<B>property</B> OnSaveNode: TVTSaveNodeEvent <B>read</B> FOnSaveNode <B>write</B> FOnSaveNode;
+</CODE>
+
+
+If OnSaveNode is triggered then the method SaveNode of the particular node class will be called:
+
+
+<CODE>
+<B>procedure</B> TMyForm.MyTreeSaveNode(Sender: TBaseVirtualTree; Node: PVirtualNode; Stream: TStream);
+
+<B>begin</B>
+  PTreeData(Sender.GetNodeData(Node)).BasicND.SaveToFile(Stream);
+<B>end</B>;
+</CODE>
+
+
+In the SaveNode method of the class fields like node name, image index etc. are stored in the tree:
+
+
+<CODE>
+<B>procedure</B> TBasicNodeData.SaveNode(Stream: TStream);
+
+<B>var</B>
+  size: Integer;
+
+<B>begin</B>
+  <COLOR Blue>// save type of the node</COLOR>
+  Stream.Write(Art, SizeOf(Art));
+
+  <COLOR Blue>// store cName</COLOR>
+  Size := Length(cName) + <COLOR Pink>1</COLOR>; <COLOR Blue>// include terminating #0</COLOR>
+  Stream.Write(Size, SizeOf(Size)); <COLOR Blue>// store length of the string</COLOR>
+  Stream.Write(PChar(cName)^, Size); <COLOR Blue>// now the string itself</COLOR>
+
+  <COLOR Blue>// store cImageIndex</COLOR>
+  Stream.Write(cImageIndex, SizeOf(cImageIndex));
+
+  <COLOR Blue>// store cImageIndexFocus</COLOR>
+  Stream.Write(cImageIndexFocus, SizeOf(cImageIndexFocus));
+
+  <COLOR Blue>// store cChildrenAllowed</COLOR>
+  Stream.Write(cChildrenAllowed, SizeOf(cChildrenAllowed));
+<B>end</B>;
+
+Now we can the tree we save also load again. This process could look like:
+
+<B>try</B>
+  <COLOR Blue>// load tree</COLOR>
+  MyTree.LoadFromFile(MainControlForm.Filename);
+<B>except</B>
+  <B>on</B> E: Exception <B>do</B>
+  <B>begin</B>
+    Application.MessageBox(PChar(E.Message), PChar(<COLOR Pink>'Error while loading.'</COLOR>), MB_OK);
+    MainControlForm.Filename := <COLOR Pink>''</COLOR>;
+
+    <COLOR Blue>// create tree with top level node (since loading failed)</COLOR>
+    Node := MyTree.AddChild(nil);
+    NodeD := MyTree.GetNodeData(Node);
+    NodeD.BasicND := TBasicNodeData.Create(<COLOR Pink>'new project'</COLOR>);
+  <B>end</B>;
+<B>end</B>;
+</CODE>
+
+
+By the call of LoadFromFile the event OnLoadNode will be triggered and consequently the method LoadNode:
+
+
+<CODE>
+<B>procedure</B> TBasicNodeData.LoadNode(Stream: TStream);
+
+<B>var</B>
+  Size: Integer;
+  StrBuffer: PChar;
+
+<B>begin</B>
+  <COLOR Blue>// load cName</COLOR>
+  Stream.Read(Size, SizeOf(Size)); <COLOR Blue>// length of the string</COLOR>
+
+  StrBuffer := AllocMem(Size); <COLOR Blue>// get temporary memory</COLOR>
+  Stream.Read(StrBuffer^, Size); <COLOR Blue>// read the string</COLOR>
+  cName := StrBuffer;
+  FreeMem(StrBuffer);
+  <COLOR Blue>// Alternatively you can simply use:
+  // SetLength(cName, Size);
+  // Stream.Read(PChar(cName)^, Size);</COLOR>
+
+  <COLOR Blue>// load cImageIndex</COLOR>
+  Stream.Read(cImageIndex, SizeOf(cImageIndex));
+
+  <COLOR Blue>// load cImageIndexFocus</COLOR>
+  Stream.Read(cImageIndexFocus, SizeOf(cImageIndexFocus));
+
+  <COLOR Blue>// load cChildrenAllowed</COLOR>
+  Stream.Read(cChildrenAllowed, SizeOf(cChildrenAllowed));
+<B>end</B>;
+</CODE>
+
+
+* Two columns in the treeview *
+Now I want to show two columns in the treeview. Therefore I set the new properties of the tree in the object inspector.
+
+
+
+By using Header.Columns you can create the desired columns. After that, you only have to set Header.Options.hoVisible to
+True and the columns will appear in the treeview.
+
+
+
+After you have set all necessary options you can give now the text and the icon for the particular column, respectively.
+This happens in the already existing event handlers OnGetText and OnGetImageIndex where now also the given column index
+must be taken into account.
+
+
+<CODE>
+<B>procedure</B> TMyForm.MyTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Column: Integer; TextType: TVSTTextType; <B>var</B> Text: WideString);
+
+<B>var</B>
+  NodeD: ^rTreeData;
+
+<B>begin</B>
+  NodeD := Sender.GetNodeData(Node);
+
+  <COLOR Blue>// return the the identifier of the node</COLOR>
+  <B>if</B> NodeD.BasicND = <B>nil</B> <B>then</B>
+    Text := ''
+  <B>else</B>
+  <B>begin</B>
+    <B>case</B> Column <B>of</B>
+      \-1,
+      0: <COLOR Blue>// main column, -1 if columns are hidden, 0 if they are shown</COLOR>
+        Text := NodeD.BasicND.Name;
+      1:
+        Text := <COLOR Pink>'This text appears in column 2.'</COLOR>;
+    <B>end</B>;
+  <B>end</B>;
+<B>end</B>;
+
+<B>procedure</B> TMyForm.MyTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Kind: TVTImageKind; Column: Integer; <B>var</B> Index: Integer);
+
+<B>var</B>
+  NodeD: ^rTreeData;
+
+<B>begin</B>
+  NodeD := Sender.GetNodeData(Node);
+
+  <B>if</B> Column = 0 <B>then</B> <COLOR Blue>// icons only in the first column</COLOR>
+    <B>case</B> Kind <B>of</B>
+      ikState:
+        Index := <COLOR Pink>-1</COLOR>;
+      ikNormal, ikSelected:
+        Index := NodeD.BasicND.GetImageIndex(Node = Sender.FocusedNode);
+      ikOverlay: <COLOR Blue>// e.g. to mark a node whose content changed,</COLOR>
+        <COLOR Blue>// Note: don't forget to call ImageList.Overlay for the image.</COLOR>
+        <B>if</B> NodeD.BasicND.ImageIndex = 4 <B>then</B>
+          Index := 6;
+    <B>end</B>;
+<B>end</B>;
+</CODE>
+
+
+* Accessing the columns *
+I want to demonstrate the access to the columns of a TVirtualStringTrees based on an example. In order to store global
+\options, as in Point 2.12 I want to know the width of a column. This information is updated every time an OnColumnResize
+event is triggered:
+
+
+<CODE>
+<B>procedure</B> TBookmarkForm.BookmarkTreeColumnResize(Sender: TBaseVirtualTree; Column: Integer);
+
+<B>var</B>
+  NodeD: PTreeData;
+
+<B>begin</B>
+  NodeD := Sender.GetNodeData(Sender.RootNode.FirstChild);
+
+  <COLOR Blue>// Keep the new size of the column in the project node.</COLOR>
+  TProjectNodeData(NodeD.BasicND).SetHColumnsWidth(
+    TVirtualStringTree(Sender).Header.Columns.Items[Column].Width,Column);
+<B>end</B>;
+</CODE>
+
+
+The exciting part is the type casting of the sender object. In TBaseVirtualTree the header property is protected and only
+after conversion (casting) to TVirtualTree it becomes accessible.
+
+
+
+* Global tree options *
+Global options like the sizes of the columns, which are adjusted in the project, will be stored as properties of the
+top-level node. It contains so all project related options.
+
+
+
+In order to avoid that all derived classes inherit these fields the top-level node class will be build from a new project
+node class, which will be derived from the base node class.
+
+
+
+The new hierarchy looks now so:
+
+» Base node class... unites the properties of all nodes
+
+» Project node class... enriches the base with management of project related options
+
+» Folder node classes... enriches the base with default properties for all leaf nodes
+
+» Leaf node class... the actual node class (special properties)
+
+
+
+Since this involves already very application specific program details I want only make some notes.
+
+
+
+The base node class has the ability to store node data. These methods must be declared as virtual and will be overridden
+in the project node class to allow saving the project data.
+
+
+
+Well, now I am ready to work with VirtualTreeview. It will become interesting later again when I will try to drag data
+from other applications to the tree. But this is a different story...
+
+Summary
+Often a simple step by step tutorial gets you much faster started than a long list of features and possibilities. This
+topic describes the basic usage on the basis of a simple project.

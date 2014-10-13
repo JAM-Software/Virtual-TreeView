@@ -1,0 +1,50 @@
+@@Editing.htm
+<TITLE Editors and editing>
+
+Generally it cannot be said what data a user will edit when he or she edits a node. In the case of the string tree it
+becomes a lot easier to decide because we have, as the name implies, strings and captions to edit. But this is only a
+special case and the underlaying edit principle must be flexible to allow editing various different data of a node,
+including several items instead of only single ones.
+
+
+
+Since you cannot generally tell what will be edited the used solution does not assume anything. Instead it delegates the
+entire process to the application or derived trees via the IVTEditLink class. This interface defines some necessary
+methods which allow interaction between the tree and the editor but the actual editor implementation is up to the edit
+link (which can of course delegate this task to even another instance like the application). The edit link is responsible
+for everything including to hide and show the editor, reading the old values of a node and setting the new values etc.
+The tree only signals some general states like the edit start, end or cancellation.
+
+
+
+Editing starts with the protected DoEdit method which may be triggered by the edit timer (which in turn is triggered by
+clicking again on the focused node), by pressing F2 or by calling EditNode. DoEdit creates an editor (actually only the
+edit link) via the virtual CreateEditor method which should be overridden by descendant trees to return a valid edit link
+(as TVirtualStringTree does). Otherwise the method will query the application for an editor link. Actual editing starts
+\only if CreateEditor returns a valid edit link.
+
+After the tree received a valid edit link it initiates communication by calling PrepareEdit which can be used by the link
+to retrieve the values to be edited using the given node and column. If the edit link returns True in this call another
+call is initiated by the tree telling the link where to place the editor using the SetBounds method. Finally the tree
+calls BeginEdit to actually start the edit operation. From now on the edit link is responsible for any further action
+including passing on key presses like VK_UP and VK_DOWN to select a new node to edit etc. The link must also be aware
+that editing might be stopped at any time by EndEdit or CancelEdit. Otherwise however the edit link (and its editor(s))
+is completely autonomous and can use whatever it considers as being appropriate for the editing task. It isn't even
+limited to use an in-place editor.
+
+
+
+With the class TStringEditLink you will find a sample implementation used in the string tree to edit single node
+captions. By examining the used editor (a normal TEdit control) you will find some things which should be handled the
+same or in a similar way to make editing smooth.
+
+
+
+Starting with version 3.8 Virtual Treeview allows to use the TNT controls suite from Troy Wolbrink, which allow to edit
+node captions with Unicode content. Download the latest package and add its path after installation to your project.
+Enable the TntSupport compiler switch by changing it from <B>{.$define TntSupport}</B> to <B>{$define TntSupport}</B> and
+recompile.
+
+Summary
+Because of the virtual nature of Virtual Treeview editing becomes a difficult issue. Read here what needs to be
+considered and where you can hook in to allow any editor for a node.
