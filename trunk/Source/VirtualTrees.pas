@@ -20300,7 +20300,10 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
+
 begin
   if (Self.HandleAllocated) then
     SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
@@ -22291,16 +22294,21 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoMouseEnter();
+
 begin
   if Assigned(FOnMouseEnter) then
     FOnMouseEnter(Self);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DoMouseLeave;
+
 begin
   if Assigned(FOnMouseLeave) then
     FOnMouseLeave(Self);
 end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoNodeCopied(Node: PVirtualNode);
@@ -22464,10 +22472,12 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoRemoveFromSelection(Node: PVirtualNode);
+
 begin
   if Assigned(FOnRemoveFromSelection) then
     FOnRemoveFromSelection(Self, Node);
 end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
@@ -24675,6 +24685,7 @@ begin
     end;
   end;
 end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.InitNode(Node: PVirtualNode);
@@ -25755,6 +25766,8 @@ begin
   else
     DrawDisabledImage(ImageList, Canvas, X, Y, Index);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean);
 const
@@ -27313,6 +27326,8 @@ begin
     FOnGetNodeDataSize(Self, Size);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.VclStyleChanged;
 begin
   {$if CompilerVersion >= 23 }
@@ -27720,6 +27735,8 @@ begin
     else
       inherited;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.AutoScale();
 
@@ -35340,6 +35357,8 @@ begin
   end;//try-finally
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCustomVirtualStringTree.SetDefaultText(const Value: UnicodeString);
 
 begin
@@ -35442,6 +35461,8 @@ begin
   end
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCustomVirtualStringTree.AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex);
 
 // In the case a node spans several columns (if enabled) we need to determine how many columns.
@@ -35530,6 +35551,8 @@ begin
   Filer.DefineProperty('WideDefaultText', ReadText, WriteText, FDefaultText <> 'Node');
   Filer.DefineProperty('StringOptions', ReadOldStringOptions, nil, False);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 destructor TCustomVirtualStringTree.Destroy;
 begin
@@ -36645,6 +36668,8 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCustomVirtualStringTree.AddToSelection(Node: PVirtualNode);
 var
   lSelectedNodeCaption: Unicodestring;
@@ -36683,6 +36708,7 @@ begin
     end;//else
   end;//if
 end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): RawByteString;
