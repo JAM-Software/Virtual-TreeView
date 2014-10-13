@@ -1,8 +1,28 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
-== 11 Sep 2014: Release of V5.5 ==
+== 13 Oct 2014: Release of V5.5.1 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
+  * Fixed issue #479: The style hooks for the VCL styles are now registered for TVirtualStringTree and TVirtualDrawTree instead of TBaseVirtualTree, which makes it easier to use own style hooks in derived classes.  
+  * Partial fix for issue #478: The standard VCL property StyleElemets (public in TControl in RAD Studio XE3 and higher) is now supported and published for TVirtualStringTree and TVirtualDrawTree (XE3 and higher). This means you can define if the font and the backgrounbd color is taken from the VCL style or the control's properties. Leaving out seBorder is not yet working well, more work will be necessary.
+  *  Fixed issue #473: Return type of GetUtilityImages should be TCustomImageList
+  * Fix for issue #470: VCL Styles and sorting failure
+  * Added missing inherited to CMMouseEnter()
+  * Fixed issue #468: Redundant code in CreateSystemImageSet()
+  * Fixed issue #482: AutoScale() could cause exception during form load.
+  * Added fix for #466: No parent window if column created in constructor
+  * Fixed issue #446: ScrollIntoView does not work properly after applying patch from issue #339
+  * Improvements for toAlwaysSelectNode option: Selection of next sibling has been improved in case the currently selected node is being removed.
+  * Added missing begin/end-block in MeasureItemHeight() 
+  * Improved fix for issue #438: Now correctly initializing member of property TVTColors.UnfocusedColor  
+  * Improved fix for issue #447: DoMeasureItem() was called for Node instead of Child.
+  * Minor improvement in appearance of border lines in HTML export.  
+  * Fixed issue #480: Warning when compiling Delphi XE2 packages
+  * Fixed #472: Redundant conditions in TVclStyleScrollBarsHook.WMMouseMove
+  * Fixed #476: Simplify TVTDragImage.WillMove()
+  * Fixed issue #485: unit VirtualTrees does not compile with `{$TYPEDADDRESS ON}`
+
+== 11 Sep 2014: Release of V5.5 ==
   * Added packages for RAD Studio XE7 / Delphi XE7
   * Fixed issue #464: Vertical grid lines not computed correctly for spanned cells with header auto resize
   * Fixed issue #442: Scrollbars are not updated for active VCL Style under XE2
