@@ -216,7 +216,7 @@ const
   IID_IDragSourceHelper: TGUID = (D1: $DE5BF786; D2: $477A; D3: $11D2; D4: ($83, $9D, $00, $C0, $4F, $D9, $18, $D0));
   IID_IDropTarget: TGUID = (D1: $00000122; D2: $0000; D3: $0000; D4: ($C0, $00, $00, $00, $00, $00, $00, $46));
 
-{$if CompilerVersion<21}
+{$if CompilerVersion < 21}
   CLSID_DragDropHelper: TGUID = (D1: $4657278A; D2: $411B; D3: $11D2; D4: ($83, $9A, $00, $C0, $4F, $D9, $18, $D0));
   DSH_ALLOWDROPDESCRIPTIONTEXT = $1;
 
@@ -751,7 +751,7 @@ type
 
   // ----- OLE drag'n drop handling
 
-{$if CompilerVersion<21}
+{$if CompilerVersion < 21}
   {$EXTERNALSYM IDropTargetHelper}
 
   IDropTargetHelper = interface(IUnknown)
@@ -3455,7 +3455,7 @@ type
     procedure WriteText(Writer: TWriter);
 
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
-    procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean=True);
+    procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean = True);
   protected
     fPreviouslySelected: TStringList;
     procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo); // [IPK] - private to protected
@@ -3770,7 +3770,7 @@ type
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
-    {$if CompilerVersion>=22}
+    {$if CompilerVersion >= 22}
     property OnCanResize;
     property OnGesture;
     property Touch;
@@ -4024,7 +4024,7 @@ type
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
-    {$if CompilerVersion>=22}
+    {$if CompilerVersion >= 22}
     property OnCanResize;
     property OnGesture;
     property Touch;
@@ -9414,7 +9414,7 @@ begin
       GetStringDrawRect(DC, FCaptionText, R, DrawFormat);
       TextSize.cx := Client.Right - Client.Left;
       TextSize.cy := R.Bottom - R.Top;
-      TextBounds  := Rect(0, 0, TextSize.cx, TextSize.cy);
+      TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
     end;
     TextSpacing := FSpacing;
   end
@@ -9807,7 +9807,7 @@ var
 begin
   if OtherColumnObj is TVirtualTreeColumn then
   begin
-    OtherColumn :=  TVirtualTreeColumn (OtherColumnObj);
+    OtherColumn := TVirtualTreeColumn (OtherColumnObj);
     Result := (BiDiMode = OtherColumn.BiDiMode) and
       (ImageIndex = OtherColumn.ImageIndex) and
       (Layout = OtherColumn.Layout) and
@@ -10434,7 +10434,7 @@ begin
   if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
   begin
     // handle automatic setting of SortColumn and toggling of the sort order
-    if HitInfo.Column<>Header.SortColumn then
+    if HitInfo.Column <> Header.SortColumn then
     begin
       // set sort column
       Header.SortColumn := HitInfo.Column;
@@ -11321,7 +11321,7 @@ var
         end
         else
         begin
-          Brush.Color :=  FHeader.FBackground;
+          Brush.Color := FHeader.FBackground;
           FillRect(BackgroundRect);
         end;
       end;
@@ -11594,9 +11594,9 @@ begin
     if Run <= NoColumn then
       Exit;
 
-    TargetRect.Top    := Target.Y;
+    TargetRect.Top := Target.Y;
     TargetRect.Bottom := Target.Y + R.Bottom - R.Top;
-    TargetRect.Left   := Target.X - R.Left + Items[Run].FLeft + RTLOffset;
+    TargetRect.Left := Target.X - R.Left + Items[Run].FLeft + RTLOffset;
     // TargetRect.Right will be set in the loop
 
     ShowRightBorder := (FHeader.Style = hsThickButtons) or not (hoAutoResize in FHeader.FOptions) or
@@ -16065,7 +16065,7 @@ var
         if (FHeader.MainColumn > NoColumn) and not (coParentColor in FHeader.FColumns[FHeader.MainColumn].Options) then
           Brush.Color := FHeader.FColumns[FHeader.MainColumn].Color
         else
-          Brush.Color :=  FColors.BackGroundColor;
+          Brush.Color := FColors.BackGroundColor;
       end
       else
         Brush.Color := clFuchsia;
@@ -17942,7 +17942,7 @@ begin
                   ColRight := ClientWidth;
                 end;
 
-                FHintData.DefaultHint :=  '';
+                FHintData.DefaultHint := '';
                 if FHintMode <> hmTooltip then
                 begin
                   // Node specific hint text.
@@ -18609,7 +18609,7 @@ begin
         FCheckNode := nil;
       end;
 
-      if (CharCode in [VK_HOME, VK_END, VK_PRIOR, VK_NEXT, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_BACK, VK_TAB]) and (RootNode.FirstChild<>nil) then
+      if (CharCode in [VK_HOME, VK_END, VK_PRIOR, VK_NEXT, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_BACK, VK_TAB]) and (RootNode.FirstChild <> nil) then
       begin
         HandleMultiSelect := (ssShift in Shift) and (toMultiSelect in FOptions.FSelectionOptions) and not IsEditing;
 
@@ -21902,7 +21902,7 @@ begin
   if Node = FLastStructureChangeNode then
     FLastStructureChangeNode := nil;
 
-  if Node=fNextNodeToSelect then
+  if Node = fNextNodeToSelect then
     fNextNodeToSelect := nil;
   if Self.UpdateCount = 0 then
   begin
@@ -22265,7 +22265,7 @@ begin
   if Assigned(FOnInitChildren) then
   begin
     FOnInitChildren(Self, Node, ChildCount);
-    Result :=  True;
+    Result := True;
   end
   else
     Result := False;
@@ -22629,7 +22629,7 @@ begin
         begin
           if (suoRepaintHeader in Options) and (hoVisible in FHeader.FOptions) then
             FHeader.Invalidate(nil);
-          if not (tsSizing in FStates) and (FScrollBarOptions.ScrollBars in [{$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssBoth]) then
+          if not (tsSizing in FStates) and (FScrollBarOptions.ScrollBars in [{$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssBoth]) then
             UpdateHorizontalScrollBar(suoRepaintScrollbars in Options);
         end;
 
@@ -22637,7 +22637,7 @@ begin
         begin
           UpdateVerticalScrollBar(suoRepaintScrollbars in Options);
           if not (FHeader.UseColumns or IsMouseSelecting) and
-            (FScrollBarOptions.ScrollBars in [{$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssBoth]) then
+            (FScrollBarOptions.ScrollBars in [{$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssBoth]) then
             UpdateHorizontalScrollBar(suoRepaintScrollbars in Options);
         end;
       end;
@@ -23019,7 +23019,7 @@ begin
   // no DragOver event is created by the OLE subsystem.
   Result := DragOver(DragManager.DragSource, KeyState, dsDragMove, Pt, Effect);
   try
-    if (Result <>  NOERROR) or ((Effect and not DROPEFFECT_SCROLL) = DROPEFFECT_NONE) then
+    if (Result <> NOERROR) or ((Effect and not DROPEFFECT_SCROLL) = DROPEFFECT_NONE) then
       Result := E_FAIL
     else
     begin
@@ -23116,7 +23116,7 @@ begin
     // This is only necessary if we cannot use the drag image helper interfaces.
     if not DragManager.DropTargetHelperSupported and Assigned(DragManager.DragSource) then
       DragManager.DragSource.FDragImage.ShowDragImage;
-    Result :=  NOERROR;
+    Result := NOERROR;
   except
     Result := E_UNEXPECTED;
   end;
@@ -23365,7 +23365,7 @@ begin
       Effect := DROPEFFECT_NONE;
     if WindowScrolled then
       Effect := Effect or Integer(DROPEFFECT_SCROLL);
-    Result :=  NOERROR;
+    Result := NOERROR;
   except
     Result := E_UNEXPECTED;
   end;
@@ -26493,11 +26493,11 @@ procedure TBaseVirtualTree.UpdateNextNodeToSelect(Node: PVirtualNode);
 begin
   if not (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
     exit;
-  if GetNextSibling(Node)<>nil then
+  if GetNextSibling(Node) <> nil then
     fNextNodeToSelect := GetNextSibling(Node)
-  else if GetPreviousSibling(Node)<>nil then
+  else if GetPreviousSibling(Node) <> nil then
     fNextNodeToSelect := GetPreviousSibling(Node)
-  else if GetNodeLevel(Node)>0 then
+  else if GetNodeLevel(Node) > 0 then
     fNextNodeToSelect := Node.Parent
   else
     fNextNodeToSelect := GetFirstChild(Node);
@@ -30506,7 +30506,7 @@ begin
         // will ne nil.
         repeat
           Result := Result.Parent;
-          Run    := nil;
+          Run := nil;
           if Result <> FRoot then
             Run := Result.PrevSibling
           else
@@ -30708,7 +30708,7 @@ begin
           // will ne nil.
           repeat
             Result := Result.Parent;
-            Run    := nil;
+            Run := nil;
             if Result <> FRoot then
               Run := Result.PrevSibling
             else
@@ -33410,7 +33410,7 @@ var
   ScrolledHorizontally: Boolean;
 
 begin
-  ScrolledVertically   := False;
+  ScrolledVertically := False;
   ScrolledHorizontally := False;
 
   if Assigned(Node) and (Node <> FRoot) then
@@ -33442,7 +33442,7 @@ begin
     else
       if (R.Bottom > ClientHeight) or Center then
       begin
-        HScrollBarVisible := (ScrollBarOptions.ScrollBars in [{$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssBoth, {$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal]) and
+        HScrollBarVisible := (ScrollBarOptions.ScrollBars in [{$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssBoth, {$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal]) and
           (ScrollBarOptions.AlwaysVisible or (Integer(FRangeX) > ClientWidth));
         if Center then
           SetOffsetY(FOffsetY - R.Bottom + ClientHeight div 2)
@@ -34328,7 +34328,7 @@ begin
   else
     FEffectiveOffsetX := -FOffsetX;
 
-  if FScrollBarOptions.ScrollBars in [{$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >=24}System.UITypes.TScrollStyle.{$ifend}ssBoth] then
+  if FScrollBarOptions.ScrollBars in [{$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssBoth] then
   begin
     ZeroMemory (@ScrollInfo, SizeOf(ScrollInfo));
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
@@ -35093,7 +35093,7 @@ begin
     for LColIndex := LStartIndex to Pred(Header.Columns.Count) do
     begin
       if (LColIndex > LStartIndex) then
-        LAddString  := LAddString + ',';
+        LAddString := LAddString + ',';
       LAddString := LAddString + AnsiQuotedStr(Header.Columns.Items[LColIndex].Text, '"');
     end;//for
     AStrings.Add(LAddString);
@@ -35108,12 +35108,12 @@ begin
     { Read for each column and then populate the text }
     for LColIndex := LStartIndex to Pred(Header.Columns.Count) do
     begin
-      LCellText     := Text[LChildNode, LColIndex];
+      LCellText := Text[LChildNode, LColIndex];
       if (LCellText = EmptyStr) then
-        LCellText   := ' ';
+        LCellText := ' ';
       if (LColIndex > LStartIndex) then
-        LAddString  := LAddString + ',';
-      LAddString    := LAddString + AnsiQuotedStr(LCellText, '"');
+        LAddString := LAddString + ',';
+      LAddString := LAddString + AnsiQuotedStr(LCellText, '"');
     end;//for - Header.Columns.Count
 
     AStrings.Add(LAddString);
@@ -35182,7 +35182,7 @@ begin
     // Set default font values first.
     Canvas.Font := Font;
     if Enabled then // Es werden sonst nur die Farben verwendet von Font die an  Canvas.Font übergeben wurden
-       Canvas.Font.Color :=  FColors.NodeFontColor
+       Canvas.Font.Color := FColors.NodeFontColor
     else
       Canvas.Font.Color := FColors.DisabledColor;
 
@@ -35250,7 +35250,7 @@ begin
     //       for 9x/Me.
     if vsMultiline in Node.States then
     begin
-      Height  := ComputeNodeHeight(Canvas, Node, Column);
+      Height := ComputeNodeHeight(Canvas, Node, Column);
       DoPaintText(Node, Canvas, Column, ttNormal);
       // Disabled node color overrides all other variants.
       if (vsDisabled in Node.States) or not Enabled then
@@ -36170,7 +36170,7 @@ begin
       end;
   else
     if Format = CF_CSV then
-      S := ContentToText(Source, AnsiChar ({$if CompilerVersion>=22}FormatSettings.{$ifend}ListSeparator)) + #0
+      S := ContentToText(Source, AnsiChar ({$if CompilerVersion >= 22}FormatSettings.{$ifend}ListSeparator)) + #0
     else
       if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
         S := ContentToRTF(Source) + #0
