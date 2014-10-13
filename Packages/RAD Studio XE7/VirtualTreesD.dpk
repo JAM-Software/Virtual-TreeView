@@ -27,19 +27,16 @@ package VirtualTreesD;
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'VirtualTreeView Controls'}
-{$LIBSUFFIX '20'}
+{$LIBSUFFIX '21'}
 {$DESIGNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
-  DesignIDE;
+  DesignIDE,
+  VirtualTreesR;
 
 contains
-  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas',
-  VirtualTrees in '..\..\Source\VirtualTrees.pas',
-  VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
-  VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
-  VTAccessibility in '..\..\Source\VTAccessibility.pas';
+  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas';
 
 end.
 
