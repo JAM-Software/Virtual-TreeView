@@ -4893,7 +4893,7 @@ var
   I, W: Integer;
   Buffer,
   Line: UnicodeString;
-  Words: Array of UnicodeString;
+  Words: array of UnicodeString;
   R: TRect;
 
 begin
@@ -8119,7 +8119,7 @@ begin
             // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
             Inc(Result.Bottom, 6);
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
-            If not Assigned(Tree) then exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
+            if not Assigned(Tree) then exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
             Inc(Result.Right, Tree.FTextMargin + FTextHeight); // We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
           end;
         end;
@@ -11797,7 +11797,7 @@ begin
     for i:= 0 to Self.Columns.Count - 1 do
       lMaxHeight := Max(lMaxHeight, Columns[i].Spacing);
     // Calculate the required size based on the font, this is important as the use migth just vave increased the size of the icon font
-    With TBitmap.Create do
+    with TBitmap.Create do
       try
         Canvas.Font.Assign(FFont);
         lMaxHeight := lMaxHeight {top spacing} + (lMaxHeight div 2) {minimum bottom spacing} + Canvas.TextHeight('Q');
@@ -13287,7 +13287,7 @@ procedure TVTHeader.WriteColumns(Writer: TWriter);
 // Write out the columns but take care for the case VT is a nested component.
 
 var
-  LastPropPath: String;
+  LastPropPath: string;
 
 begin
   // Save last property path for restoration.
@@ -13650,7 +13650,7 @@ var
   MaxDelta,
   Difference: Integer;
   Constraints,
-  Widths: Array of Integer;
+  Widths: array of Integer;
   BonusPixel: Boolean;
 
   //--------------- local functions -------------------------------------------
@@ -34589,7 +34589,7 @@ begin
     // and eventual resizing. Hence we use a message to accomplish that.
     AutoAdjustSize()
   else
-    Inherited;
+    inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35036,8 +35036,8 @@ procedure TCustomVirtualStringTree.GetDataFromGrid(const AStrings: TStringList;
 var
   LColIndex   : Integer;
   LStartIndex : Integer;
-  LAddString  : String;
-  LCellText   : String;
+  LAddString  : string;
+  LCellText   : string;
   LChildNode  : PVirtualNode;
 begin
   { Start from the First column. }
@@ -35441,7 +35441,7 @@ function TCustomVirtualStringTree.AddChild(Parent: PVirtualNode; UserData: Point
 var
   NewNodeText: UnicodeString;
 begin
-  Result := Inherited AddChild(Parent, UserData);
+  Result := inherited AddChild(Parent, UserData);
   // Restore the prviously restored node if the caption of this node is knwon and no other node was selected
   if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and Assigned(OnGetText) then begin
     // See if this was the previously selected node and restore it in this case
@@ -36851,7 +36851,7 @@ var
   Index: Integer;
   Alignment: TAlignment;
   BidiMode: TBidiMode;
-  LocaleBuffer: Array [0..1] of Char;
+  LocaleBuffer: array [0..1] of Char;
 
 begin
   Buffer := TBufferedAnsiString.Create;
@@ -37168,7 +37168,7 @@ begin
     while Assigned(Run) do
     begin
       Level := GetNodeLevel(Run);
-      If Level > MaxLevel then
+      if Level > MaxLevel then
         MaxLevel := Level;
       Run := GetNextNode(Run);
     end;
@@ -37325,7 +37325,7 @@ begin
     while Assigned(Run) do
     begin
       Level := GetNodeLevel(Run);
-      If Level > MaxLevel then
+      if Level > MaxLevel then
         MaxLevel := Level;
       Run := GetNextNode(Run);
     end;
