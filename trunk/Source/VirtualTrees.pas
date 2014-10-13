@@ -6701,7 +6701,8 @@ begin
     ToBeSet := Value - FPaintOptions;
     ToBeCleared := FPaintOptions - Value;
     FPaintOptions := Value;
-    if (toFixedIndent in ToBeSet) then begin
+    if (toFixedIndent in ToBeSet) then
+    begin
       // Fixes issue #388
       Include(FPaintOptions, toShowRoot);
       Include(ToBeSet, toShowRoot);
@@ -8500,7 +8501,8 @@ begin
       lDragSourceHelper2.SetFlags(DSH_ALLOWDROPDESCRIPTIONTEXT);// Show description texts
     // First let the system try to initialze the DragSourceHelper, this works fine for file system objects (CF_HDROP)
     StandardOLEFormat.cfFormat := CF_HDROP;
-    if not Succeeded(DataObject.QueryGetData(StandardOLEFormat)) or not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then begin
+    if not Succeeded(DataObject.QueryGetData(StandardOLEFormat)) or not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, DataObject)) then
+    begin
       // Supply the drag source helper with our drag image.
       DragInfo.sizeDragImage.cx := Width;
       DragInfo.sizeDragImage.cy := Height;
@@ -9362,7 +9364,8 @@ begin
       if not FCheckBox then
         HeaderGlyphSize := Point(FImages.Width, FImages.Height)
       else
-        with Self.Owner.Header.Treeview do begin
+        with Self.Owner.Header.Treeview do
+        begin
           if Assigned(FCheckImages) then
             HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height)
         end
@@ -10428,14 +10431,17 @@ begin
     HitInfo.HitPosition := [hhiNoWhere];
   end;
 
-  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then begin
+  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
+  begin
     // handle automatic setting of SortColumn and toggling of the sort order
-    if HitInfo.Column<>Header.SortColumn then begin
+    if HitInfo.Column<>Header.SortColumn then
+    begin
       // set sort column
       Header.SortColumn := HitInfo.Column;
       Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection
     end//if
-    else begin
+    else
+    begin
       // toggle sort direction
       if Header.SortDirection = sdDescending then
         Header.SortDirection := sdAscending
@@ -11301,7 +11307,8 @@ var
 
     with TargetCanvas do
       begin
-      if hpeBackground in RequestedElements then begin
+      if hpeBackground in RequestedElements then
+      begin
         PaintInfo.PaintRectangle := BackgroundRect;
         FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground]);
       end  
@@ -11312,7 +11319,8 @@ var
           Details := StyleServices.GetElementDetails(thHeaderItemRightNormal);
           StyleServices.DrawElement(Handle, Details, BackgroundRect, @BackgroundRect);
         end
-        else begin
+        else
+        begin
           Brush.Color :=  FHeader.FBackground;
           FillRect(BackgroundRect);
         end;
@@ -11791,7 +11799,8 @@ var
   i: Integer;
   lMaxHeight: Integer;
 begin
-  if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then begin
+  if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then
+  begin
     // Find the largest Columns[].Spacing
     lMaxHeight := 0;
     for i:= 0 to Self.Columns.Count - 1 do
@@ -12128,7 +12137,8 @@ begin
     FFont.Size := MulDiv(FFont.Size, M, D);
   Self.Height := MulDiv(fHeight, M, D);
   // Scale the columns widths too
-  for i := 0 to FColumns.Count - 1 do begin
+  for i := 0 to FColumns.Count - 1 do
+  begin
     Self.FColumns[i].Width := MulDiv(Self.FColumns[i].Width, M, D)
   end;//for i
 end;
@@ -14495,7 +14505,8 @@ begin
     try
       if not (vsInitialized in States) then
         InitNode(Node)
-      else if CheckState = Value then begin
+      else if CheckState = Value then
+      begin
         // Value didn't change and node was initialized, so nothing to do
         Result := False;
         exit;
@@ -15335,7 +15346,8 @@ var
 begin
   Result := 0;
   Node := GetFirstChecked;
-  while Assigned(Node) do begin
+  while Assigned(Node) do
+  begin
      Inc(Result);
      Node := GetNextChecked(Node);
   end;
@@ -15386,7 +15398,8 @@ var
 begin
   Result := 0;
   Node := GetFirstCutCopy;
-  while Assigned(Node) do begin
+  while Assigned(Node) do
+  begin
      Inc(Result);
      Node := GetNextCutCopy(Node);
   end;
@@ -16524,7 +16537,8 @@ begin
             Dec(Remaining);
             Inc(Index);
 
-            if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
+            if (toVariableNodeHeight in FOptions.FMiscOptions) then
+            begin
               lNodeHeight := Child.NodeHeight;
               DoMeasureItem(Canvas, Child, lNodeHeight);
               Child.NodeHeight := lNodeHeight;
@@ -21411,12 +21425,14 @@ begin
   if Assigned(FAccessibleItem) then
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 
-  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then begin
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
+  begin
     // Select the next visible parent if the currently selected node gets invisible due to a collapse
     // This makes the VT behave more like the Win32 custom TreeView control
     // This makes only sense no no multi selection is allowed and if there is a selected node at all
     lFirstSelected := GetFirstSelected();
-    if Assigned(lFirstSelected) and not FullyVisible[lFirstSelected] then begin
+    if Assigned(lFirstSelected) and not FullyVisible[lFirstSelected] then
+    begin
       lParent := GetVisibleParent(lFirstSelected);
       Selected[lParent] := True;
       Selected[lFirstSelected] := False;
@@ -21888,15 +21904,18 @@ begin
 
   if Node=fNextNodeToSelect then
     fNextNodeToSelect := nil;
-  if Self.UpdateCount = 0 then begin
+  if Self.UpdateCount = 0 then
+  begin
     // Omit this stuff if the control is in a BeginUpdate/EndUpdate bracket to increase performance
     // We now try
     // Make sure that CurrentNode does not point to an invalid node
-    if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (Node = GetFirstSelected()) then begin
+    if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (Node = GetFirstSelected()) then
+    begin
       if Assigned(fNextNodeToSelect) then
         // Select a new node if the currently selected node gets freed
         Selected[fNextNodeToSelect] := True
-      else begin
+      else
+      begin
         fNextNodeToSelect := Self.NodeParent[GetFirstSelected()];
         if Assigned(fNextNodeToSelect) then
           Selected[fNextNodeToSelect] := True
@@ -22243,7 +22262,8 @@ end;
 function TBaseVirtualTree.DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean;
 /// The function calls the OnInitChildren and returns True if the event was called; it returns False if the caller can expect that no changes have been made to ChildCount
 begin
-  if Assigned(FOnInitChildren) then begin
+  if Assigned(FOnInitChildren) then
+  begin
     FOnInitChildren(Self, Node, ChildCount);
     Result :=  True;
   end
@@ -22938,7 +22958,8 @@ begin
 
   // In variable node height mode it might have happend that some or all of the nodes have been adjusted in their
   // height. During validation updates of the scrollbars is disabled so let's do this here.
-  if Result and (toVariableNodeHeight in FOptions.FMiscOptions) then begin
+  if Result and (toVariableNodeHeight in FOptions.FMiscOptions) then
+  begin
     UpdateScrollbars(True);
   end;
 end;
@@ -22952,7 +22973,8 @@ var
 {$ifend}
 begin
   {$IF CompilerVersion >= 22}
-  if IsWinVistaOrAbove then begin
+  if IsWinVistaOrAbove then
+  begin
     lDragEffect := DWord(DragEffect);
     SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
     DragEffect := LongInt(lDragEffect);
@@ -23379,7 +23401,8 @@ var
 begin
   with PaintInfo, Canvas do
   begin
-    if UseSelectedBkColor then begin
+    if UseSelectedBkColor then
+    begin
       if Focused or (toPopupMode in FOptions.FPaintOptions) then
         Brush.Color := FColors.FocusedSelectionColor
       else
@@ -23416,7 +23439,8 @@ end;
 
 procedure TBaseVirtualTree.EnsureNodeSelected;
 begin
-  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked then begin
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked then
+  begin
     if Assigned(fNextNodeToSelect) then
       Selected[fNextNodeToSelect] := True
     else if Self.Focused then
@@ -23703,11 +23727,13 @@ function TBaseVirtualTree.GetNodeImageSize(Node: PVirtualNode): TSize;
   // Returns the size of an image
   // Override if you need different sized images for certain nodes.
 begin
-  if Assigned(fImages) then begin
+  if Assigned(fImages) then
+  begin
     Result.cx := fImages.Width;
     Result.cy := FImages.Height;
   end
-  else begin
+  else
+  begin
     Result.cx := 0;
     Result.cy := 0;
   end;
@@ -24598,7 +24624,8 @@ begin
      //  because when mouse down on checkbox but not yet released
      //  and in this time list starts to rebuild by timer
      //  after this when mouse release  FCheckNode equal nil
-     if Assigned (FCheckNode) then begin
+     if Assigned (FCheckNode) then
+     begin
        // Is the mouse still over the same node?
        if (HitInfo.HitNode = FCheckNode) and (hiOnItem in HitInfo.HitPositions) then
           DoCheckClick(FCheckNode, FPendingCheckState)
@@ -24678,7 +24705,8 @@ begin
   if Assigned(Node) and (Node <> FRoot) and (vsHasChildren in Node.States) then
   begin
     Count := Node.ChildCount;
-    if DoInitChildren(Node, Count) then begin
+    if DoInitChildren(Node, Count) then
+    begin
       SetChildCount(Node, Count);
       if Count = 0 then
         Exclude(Node.States, vsHasChildren);
@@ -25872,7 +25900,8 @@ begin
     DrawThemeBackground(Theme, Canvas.Handle, Glyph, State, Pos, nil);
     CloseThemeData(Theme);
   end
-  else begin
+  else
+  begin
     if vsExpanded in Node.States then
     begin
       if IsHot then
@@ -26257,7 +26286,8 @@ begin
         if tsUseExplorerTheme in FStates then
           InflateRect(FocusRect, -1, -1);
 
-        if (tsUseExplorerTheme in FStates) and IsWinVistaOrAbove then begin
+        if (tsUseExplorerTheme in FStates) and IsWinVistaOrAbove then
+        begin
           //Draw focused unselected style like Windows 7 Explorer
           if not (vsSelected in Node.States) then
             DrawThemedFocusRect(LIS_NORMAL)
@@ -27174,7 +27204,8 @@ begin
   if (tsEditing in FStates) and Assigned(FFocusedNode) and
      (FEditColumn < FHeader.Columns.Count) then // prevent EArgumentOutOfRangeException
   begin
-    if (GetCurrentThreadId <> MainThreadID) then begin
+    if (GetCurrentThreadId <> MainThreadID) then
+    begin
       // UpdateEditBounds() will be called at the end of the thread
       Exit;
     end;
@@ -27745,7 +27776,8 @@ procedure TBaseVirtualTree.AutoScale();
 var
   lTextHeight: Cardinal;
 begin
-  if (toAutoChangeScale in TreeOptions.AutoOptions) then begin
+  if (toAutoChangeScale in TreeOptions.AutoOptions) then
+  begin
     Canvas.Font.Assign(Self.Font);
     lTextHeight := Canvas.TextHeight('Tg');
     if (lTextHeight > Self.DefaultNodeHeight) then
@@ -29706,7 +29738,8 @@ begin
       TextLeft := NodeLeft;
       if WithCheck and (Run.CheckType <> ctNone) then
         Inc(TextLeft, CheckOffset);
-      if Assigned(fImages) and (AssumeImage or HasImage(Run, ikNormal, Column)) then begin
+      if Assigned(fImages) and (AssumeImage or HasImage(Run, ikNormal, Column)) then
+      begin
         TextLeft := TextLeft + GetNodeImageSize(Run).cx + 2;
         AssumeImage := True;// From now on, assume that the nodes do ave an image
       end;
@@ -30407,7 +30440,8 @@ begin
   Assert(FNodeDataSize > 0, 'NodeDataSize not initialized.');
   if (FNodeDataSize <= 0) or (Node = nil) or (Node = FRoot) then
     Result := nil
-  else begin
+  else
+  begin
     Result := PByte(@Node.Data) + FTotalInternalDataSize;
     Include(Node.States, vsOnFreeNodeCallRequired); // We now need to call OnFreeNode, see bug #323
   end;
@@ -31819,12 +31853,14 @@ begin
   if not (vsHeightMeasured in Node.States) {$if CompilerVersion < 20}and (MainThreadId = GetCurrentThreadId){$ifend} then
   begin
     Include(Node.States, vsHeightMeasured);
-    if (toVariableNodeHeight in FOptions.FMiscOptions) then begin
+    if (toVariableNodeHeight in FOptions.FMiscOptions) then
+    begin
       NewNodeHeight := Node.NodeHeight;
       {$if CompilerVersion >= 20} // Anonymous methods help to make this thread safe easily. In Delphi 2007 and lower developers must take care themselves about thread synchronization when consuming the OnMeasureItemHeight event
       if (MainThreadId <> GetCurrentThreadId) then
         TThread.Synchronize(nil,
-          procedure begin
+          procedure
+          begin
             DoMeasureItem(Canvas, Node, NewNodeHeight);
             SetNodeHeight(Node, NewNodeHeight);
           end
@@ -32715,12 +32751,14 @@ begin
   begin
     if OleGetClipboard(Data) <> S_OK then
       ShowError(SClipboardFailed, hcTFClipboardFailed)
-    else begin
+    else
+    begin
       // Try to get the source tree of the operation to optimize the operation.
       Source := GetTreeFromDataObject(Data);
       Result := ProcessOLEData(Source, Data, FFocusedNode, FDefaultPasteMode, Assigned(Source) and
         (tsCutPending in Source.FStates));
-      if Assigned(Source) then begin
+      if Assigned(Source) then
+      begin
         if Source <> Self then
           Source.FinishCutOrCopy
         else
@@ -33176,10 +33214,12 @@ begin
                     // This seems a bit strange because of the callback for granting to add the node
                     // which actually comes after the node has been added. The reason is that the node must
                     // contain valid data otherwise I don't see how the application can make a funded decision.
-                    if not DoNodeCopying(Node, TargetNode) then begin
+                    if not DoNodeCopying(Node, TargetNode) then
+                    begin
                       DeleteNode(Node)
                     end
-                    else begin
+                    else
+                    begin
                       DoNodeCopied(Node);
                       StructureChange(Node, ChangeReason);
                       // In order to maintain the same node order when restoring nodes in the case of amInsertAfter
@@ -34683,7 +34723,8 @@ begin
       end;
     VK_TAB:
       begin
-        if Tree.IsEditing then begin
+        if Tree.IsEditing then
+        begin
           Tree.InvalidateNode(FLink.FNode);
           NextNode := Tree.GetNextVisible(FLink.FNode, True);
           Tree.EndEditNode;
@@ -34694,7 +34735,8 @@ begin
       end;
     Ord('A'):
       begin
-        if Tree.IsEditing and ([ssCtrl] = KeyboardStateToShiftState) then begin
+        if Tree.IsEditing and ([ssCtrl] = KeyboardStateToShiftState) then
+        begin
           Self.SelectAll();
           Message.CharCode := 0;
         end;
@@ -34896,7 +34938,8 @@ begin
   Result := Tree is TCustomVirtualStringTree;
   if Result then
   begin
-    if not Assigned(fEdit) then begin
+    if not Assigned(fEdit) then
+    begin
       FEdit := TVTEdit.Create(Self);
       FEdit.Visible := False;
       FEdit.BorderStyle := bsSingle;
@@ -35443,10 +35486,12 @@ var
 begin
   Result := inherited AddChild(Parent, UserData);
   // Restore the prviously restored node if the caption of this node is knwon and no other node was selected
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and Assigned(OnGetText) then begin
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and Assigned(OnGetText) then
+  begin
     // See if this was the previously selected node and restore it in this case
     Self.OnGetText(Self, Result, 0, ttNormal, NewNodeText);
-    if fPreviouslySelected.IndexOf(NewNodeText) >= 0 then begin
+    if fPreviouslySelected.IndexOf(NewNodeText) >= 0 then
+    begin
       // Select this node and make sure that the parent node is expanded
       Include(fStates, tsPreviouslySelectedLocked);
       try
@@ -36675,8 +36720,10 @@ var
   lSelectedNodeCaption: Unicodestring;
 begin
   inherited;
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and Self.Selected[Node] and not (tsPreviouslySelectedLocked in fStates) then begin
-    if not Assigned(fPreviouslySelected) then begin
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and Self.Selected[Node] and not (tsPreviouslySelectedLocked in fStates) then
+  begin
+    if not Assigned(fPreviouslySelected) then
+    begin
       fPreviouslySelected := TStringList.Create();
       fPreviouslySelected.Duplicates := dupIgnore;
       fPreviouslySelected.Sorted := True; //Improves performance, required to use Find()
@@ -36698,10 +36745,12 @@ var
   lIndex: Integer;
 begin
   inherited;
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and not Self.Selected[Node] then begin
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(fPreviouslySelected) and not Self.Selected[Node] then
+  begin
     if Self.SelectedCount = 0 then
       fPreviouslySelected.Clear()
-    else begin
+    else
+    begin
       Self.OnGetText(Self, Node, 0, ttNormal, lSelectedNodeCaption);
       if fPreviouslySelected.Find(lSelectedNodeCaption, lIndex) then
         fPreviouslySelected.Delete(lIndex);
@@ -38505,7 +38554,8 @@ end;
 procedure TVclStyleScrollBarsHook.WMMove(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  if not (tsWindowCreating in TBaseVirtualTree(Control).FStates) then begin
+  if not (tsWindowCreating in TBaseVirtualTree(Control).FStates) then
+  begin
     CalcScrollBarsRect;
     UpdateScrollBarWindow;
     PaintScrollBars;
