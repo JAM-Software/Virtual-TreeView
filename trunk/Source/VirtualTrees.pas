@@ -6372,7 +6372,7 @@ begin
     begin
       TranslateMessage(Msg);
       DispatchMessage(Msg);
-      continue;
+      Continue;
     end;
     if (toVariableNodeHeight in Tree.TreeOptions.MiscOptions) then
       CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
@@ -8120,7 +8120,7 @@ begin
             // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
             Inc(Result.Bottom, 6);
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
-            if not Assigned(Tree) then exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
+            if not Assigned(Tree) then Exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
             Inc(Result.Right, Tree.FTextMargin + FTextHeight); // We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
           end;
         end;
@@ -10682,7 +10682,7 @@ var
   LastBrush: HBRUSH;
 
 begin
-  if not IsValidColumn(Column) then exit; // Just in case.
+  if not IsValidColumn(Column) then Exit; // Just in case.
 
   // Make sure the width constrains are considered.
   if NewWidth < Items[Column].FMinWidth then
@@ -13319,7 +13319,7 @@ end;
 function TVTHeader.AllowFocus(ColumnIndex: TColumnIndex): Boolean;
 begin
   Result := False;
-  if not FColumns.IsValidColumn(ColumnIndex) then exit; // Just in case.
+  if not FColumns.IsValidColumn(ColumnIndex) then Exit; // Just in case.
 
   Result := (coAllowFocus in FColumns[ColumnIndex].Options);
 end;
@@ -14509,7 +14509,7 @@ begin
       begin
         // Value didn't change and node was initialized, so nothing to do
         Result := False;
-        exit;
+        Exit;
       end;//if
 
       // Indicate that we are going to propagate check states up and down the hierarchy.
@@ -26492,7 +26492,7 @@ procedure TBaseVirtualTree.UpdateNextNodeToSelect(Node: PVirtualNode);
 
 begin
   if not (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
-    exit;
+    Exit;
   if GetNextSibling(Node) <> nil then
     fNextNodeToSelect := GetNextSibling(Node)
   else if GetPreviousSibling(Node) <> nil then
@@ -33480,8 +33480,8 @@ var
 begin
   Result := False;
 
-  if not FHeader.UseColumns then exit;
-  if not FHeader.Columns.IsValidColumn(Column) then exit; // Just in case.
+  if not FHeader.UseColumns then Exit;
+  if not FHeader.Columns.IsValidColumn(Column) then Exit; // Just in case.
 
   ColumnLeft := Header.Columns.Items[Column].Left;
   ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
@@ -33793,7 +33793,7 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
 
 begin
   if RootNode.TotalCount <= 2 then
-    exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
+    Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
   Inc(FUpdateCount);
@@ -34320,7 +34320,7 @@ begin
   UpdateHorizontalRange;
 
   if (tsUpdating in FStates) or not HandleAllocated then
-    exit;
+    Exit;
 
   // Adjust effect scroll offset depending on bidi mode.
   if UseRightToLeftAlignment then
@@ -34420,7 +34420,7 @@ begin
   UpdateVerticalRange;
 
   if tsUpdating in FStates then
-    exit;
+    Exit;
 
   if FScrollBarOptions.ScrollBars in [ssVertical, ssBoth] then
   begin
