@@ -2535,7 +2535,7 @@ type
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
     procedure StaticBackground(Source: TBitmap; Target: TCanvas; OffsetPosition: TPoint; R: TRect);
     procedure StopTimer(ID: Integer);
-    procedure SetWindowTheme(Theme: Unicodestring);
+    procedure SetWindowTheme(Theme: UnicodeString);
     procedure TileBackground(Source: TBitmap; Target: TCanvas; Offset: TPoint; R: TRect);
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
@@ -6484,7 +6484,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBufferedAnsiString.GetAsString: RawBytestring;
+function TBufferedAnsiString.GetAsString: RawByteString;
 
 begin
   SetString(Result, FStart, FPosition - FStart);
@@ -17406,7 +17406,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetWindowTheme(Theme: Unicodestring);
+procedure TBaseVirtualTree.SetWindowTheme(Theme: UnicodeString);
 
 begin
   FChangingTheme := True;
@@ -36717,7 +36717,7 @@ end;
 
 procedure TCustomVirtualStringTree.AddToSelection(Node: PVirtualNode);
 var
-  lSelectedNodeCaption: Unicodestring;
+  lSelectedNodeCaption: UnicodeString;
 begin
   inherited;
   if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and Self.Selected[Node] and not (tsPreviouslySelectedLocked in fStates) then
@@ -36741,7 +36741,7 @@ end;
 
 procedure TCustomVirtualStringTree.RemoveFromSelection(Node: PVirtualNode);
 var
-  lSelectedNodeCaption: Unicodestring;
+  lSelectedNodeCaption: UnicodeString;
   lIndex: Integer;
 begin
   inherited;
