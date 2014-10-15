@@ -13511,7 +13511,8 @@ begin
           begin
             R.Left := FHeaderRect.Left;
             R.Right := FHeaderRect.Right;
-          end else
+          end
+          else
           begin
             if UseRightToLeftAlignment then
               R.Left := FHeaderRect.Left
@@ -14711,7 +14712,8 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.FPaintOptions then
-      Inc(NodeLeft, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)    else
+      Inc(NodeLeft, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+    else
       Inc(NodeLeft, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
 
     // ----- main loop
@@ -14887,7 +14889,8 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.FPaintOptions then
-      Dec(NodeRight, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)    else
+      Dec(NodeRight, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+    else
       Dec(NodeRight, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
 
     // ----- main loop
@@ -34218,7 +34221,8 @@ begin
                       FirstVisible := GetFirstVisible(Node, True);
                       if Assigned(FirstVisible) then // otherwise there is no visible child at all
                         SetOffsetY(FOffsetY - GetDisplayRect(FirstVisible, NoColumn, False).Top)
-                    end else
+                    end
+                    else
                       BottomNode := Node;
                 end
                 else
