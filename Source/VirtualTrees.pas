@@ -8120,7 +8120,8 @@ begin
             // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
             Inc(Result.Bottom, 6);
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
-            if not Assigned(Tree) then Exit;//Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
+            if not Assigned(Tree) then
+              Exit; // Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
             Inc(Result.Right, Tree.FTextMargin + FTextHeight); // We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
           end;
         end;
@@ -10682,7 +10683,8 @@ var
   LastBrush: HBRUSH;
 
 begin
-  if not IsValidColumn(Column) then Exit; // Just in case.
+  if not IsValidColumn(Column) then
+    Exit; // Just in case.
 
   // Make sure the width constrains are considered.
   if NewWidth < Items[Column].FMinWidth then
@@ -13319,7 +13321,8 @@ end;
 function TVTHeader.AllowFocus(ColumnIndex: TColumnIndex): Boolean;
 begin
   Result := False;
-  if not FColumns.IsValidColumn(ColumnIndex) then Exit; // Just in case.
+  if not FColumns.IsValidColumn(ColumnIndex) then
+    Exit; // Just in case.
 
   Result := (coAllowFocus in FColumns[ColumnIndex].Options);
 end;
@@ -33483,8 +33486,10 @@ var
 begin
   Result := False;
 
-  if not FHeader.UseColumns then Exit;
-  if not FHeader.Columns.IsValidColumn(Column) then Exit; // Just in case.
+  if not FHeader.UseColumns then
+    Exit;
+  if not FHeader.Columns.IsValidColumn(Column) then
+    Exit; // Just in case.
 
   ColumnLeft := Header.Columns.Items[Column].Left;
   ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
@@ -35390,7 +35395,8 @@ var
   LResultList : TStringList;
 begin
   Result := False;
-  if (FileNameWithPath = '') then Exit;
+  if (FileNameWithPath = '') then
+    Exit;
 
   LResultList := TStringList.Create;
   try
