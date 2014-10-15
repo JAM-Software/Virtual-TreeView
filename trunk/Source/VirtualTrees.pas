@@ -4872,7 +4872,7 @@ begin
         else
           H := N - 1;
       end;
-      Result := Copy(S, 1, L) + '...'
+      Result := Copy(S, 1, L) + '...';
     end;
   end;
 end;
@@ -5042,7 +5042,7 @@ begin
   Bounds.Right := Bounds.Left + 1;
   Bounds.Bottom := Bounds.Top + 1;
 
-  Windows.DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT)
+  Windows.DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6977,10 +6977,10 @@ begin
     if TestUnknown.QueryInterface(IUnknown, Result) = 0 then
       Result._Release // Don't actually need it just need the pointer value
     else
-      Result := TestUnknown
+      Result := TestUnknown;
   end
   else
-    Result := TestUnknown
+    Result := TestUnknown;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7008,7 +7008,7 @@ begin
     begin
       Result := I;
       Break;
-    end
+    end;
   end;
 end;
 
@@ -7026,7 +7026,7 @@ begin
     begin
       Result := @InternalStgMediumArray[I].Medium;
       Break;
-    end
+    end;
   end;
 end;
 
@@ -7051,10 +7051,10 @@ begin
       Move(Data^, NewData^, Size);
     finally
       GlobalUnLock(Result);
-    end
+    end;
   finally
     GlobalUnLock(hGlobal);
-  end
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7111,7 +7111,7 @@ begin
           // Generate a unique copy of the data passed
           OutStgMedium.hGlobal := HGlobalClone(InStgMedium.hGlobal);
           if OutStgMedium.hGlobal = 0 then
-            Result := E_OUTOFMEMORY
+            Result := E_OUTOFMEMORY;
         end
         else
           // Don't generate a copy just use ourselves and the copy previously saved.
@@ -7266,8 +7266,8 @@ begin
               Result := FOwner.RenderOLEData(FormatEtcIn, Medium, FForClipboard);
             Break;
           end;
-        end
-      end
+        end;
+      end;
     except
       ZeroMemory (@Medium, SizeOf(Medium));
       Result := E_FAIL;
@@ -7314,7 +7314,7 @@ begin
       else
         Result := DV_E_TYMED;
     end;
-  end
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7359,7 +7359,7 @@ begin
   begin
     // We are simply being given the data and we take control of it.
     LocalStgMedium^ := Medium;
-    Result := S_OK
+    Result := S_OK;
   end
   else
   begin
@@ -7845,7 +7845,7 @@ begin
           R.Left := R.Left + 3; // Make the text more centered
           if Assigned(Node) and (LineBreakStyle = hlbForceMultiLine) then
             DrawFormat := DrawFormat or DT_WORDBREAK;
-          Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat)
+          Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat);
         end;
     end;
   end;
@@ -9210,7 +9210,7 @@ begin
         if coFixed in Owner[Temp].Options then
           Options := Options + [coFixed]
         else
-          Options := Options - [coFixed]
+          Options := Options - [coFixed];
       end;
     end;
   end;
@@ -9368,7 +9368,7 @@ begin
         with Self.Owner.Header.Treeview do
         begin
           if Assigned(FCheckImages) then
-            HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height)
+            HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height);
         end
     else
       HeaderGlyphSize := Point(0, 0);
@@ -9825,10 +9825,10 @@ begin
       (CaptionAlignment = OtherColumn.CaptionAlignment) and
       (Color = OtherColumn.Color) and
       (Tag = OtherColumn.Tag) and
-      (Options = OtherColumn.Options)
+      (Options = OtherColumn.Options);
   end
   else
-    Result := False
+    Result := False;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10439,7 +10439,7 @@ begin
     begin
       // set sort column
       Header.SortColumn := HitInfo.Column;
-      Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection
+      Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection;
     end//if
     else
     begin
@@ -10447,7 +10447,7 @@ begin
       if Header.SortDirection = sdDescending then
         Header.SortDirection := sdAscending
       else
-        Header.SortDirection := sdDescending
+        Header.SortDirection := sdDescending;
     end;//else
   end;//if
 
@@ -10870,7 +10870,7 @@ begin
   if not (OtherColumnsObj is TVirtualTreeColumns) then
   begin
     Result := False;
-    Exit
+    Exit;
   end;
 
   OtherColumns := TVirtualTreeColumns (OtherColumnsObj);
@@ -11618,7 +11618,7 @@ begin
       SelectClipRgn(Handle, 0);
       
       TargetRect.Left := TargetRect.Right;
-      Run := GetNextVisibleColumn(Run)
+      Run := GetNextVisibleColumn(Run);
     end;
   end;
 end;
@@ -11661,7 +11661,7 @@ begin
       LastColumn := GetPreviousVisibleColumn(LastColumn);
     if LastColumn > NoColumn then
       with Items[LastColumn] do
-        Result := FLeft + FWidth
+        Result := FLeft + FWidth;
   end;
 end;
 
@@ -12141,7 +12141,7 @@ begin
   // Scale the columns widths too
   for i := 0 to FColumns.Count - 1 do
   begin
-    Self.FColumns[i].Width := MulDiv(Self.FColumns[i].Width, M, D)
+    Self.FColumns[i].Width := MulDiv(Self.FColumns[i].Width, M, D);
   end;//for i
 end;
 
@@ -12767,7 +12767,7 @@ begin
           begin
             if not (csDesigning in Treeview.ComponentState) then
               DoBeforeHeightTracking(GetShiftState);
-            Include(FStates, hsHeightTrackPending)
+            Include(FStates, hsHeightTrackPending);
           end
           else
           begin
@@ -12945,7 +12945,7 @@ begin
             YCursor := P.y + Integer(FHeight);
             Application.HintMouseMessage(Treeview, Message);
           end;
-        end
+        end;
       end;
     WM_TIMER:
       if TWMTimer(Message).TimerID = HeaderTimer then
@@ -13002,7 +13002,7 @@ begin
           begin
             Windows.SetCursor(NewCursor);
             Message.Result := 1;
-          end
+          end;
         end;
       end
       else
@@ -13638,7 +13638,7 @@ begin
         FMinHeightPercent := TVTConstraintPercent(Dummy);
         ReadBuffer(Dummy, Sizeof(Dummy));
         FMinWidthPercent := TVTConstraintPercent(Dummy);
-      end
+      end;
     end;
   finally
     Exclude(FStates, hsLoading);
@@ -13913,7 +13913,7 @@ begin
       WriteBuffer(Dummy, SizeOf(Dummy));
       Dummy := Integer(FMinWidthPercent);
       WriteBuffer(Dummy, SizeOf(Dummy));
-    end
+    end;
   end;
 end;
 
@@ -15502,7 +15502,7 @@ begin
       // Ensure the node's height is determined.
       MeasureItemHeight(Self.Canvas, Node);
     end;
-    Result := Node.NodeHeight
+    Result := Node.NodeHeight;
   end
   else
     Result := 0;
@@ -17319,7 +17319,7 @@ begin
       if FUpdateCount = 0 then
         DetermineHiddenChildrenFlag(Node.Parent)
       else
-        Include(FStates, tsUpdateHiddenChildrenNeeded)
+        Include(FStates, tsUpdateHiddenChildrenNeeded);
     end;
 
     InvalidateCache;
@@ -18067,7 +18067,7 @@ begin
     // Check if the mouse is in the header or tool tips are enabled, which must be shown without delay anyway.
     if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(ScreenToClient(P)) or
       (FHintMode = hmToolTip) then
-      Message.Pause^ := 0
+      Message.Pause^ := 0;
   end
   else
     if FHintMode = hmToolTip then
@@ -18862,7 +18862,7 @@ begin
                 begin
                   Context := FHeader.Columns.GetPreviousVisibleColumn(FFocusedColumn, True);
                   if Context > -1 then
-                    FocusedColumn := Context
+                    FocusedColumn := Context;
                 end
                 else
                   if Assigned(FFocusedNode) and (vsExpanded in FFocusedNode.States) and
@@ -20000,7 +20000,7 @@ begin
       if ScrollVertical then
         Name := 'VT_MOVEALL'
       else
-        Name := 'VT_MOVEEW'
+        Name := 'VT_MOVEEW';
     end
     else
       Name := 'VT_MOVENS';
@@ -20812,7 +20812,7 @@ begin
                       if Offset < Indent + TextWidth then
                         Include(HitInfo.HitPositions, hiOnItemLabel)
                       else
-                        Include(HitInfo.HitPositions, hiOnItemRight)
+                        Include(HitInfo.HitPositions, hiOnItemRight);
                   end;
                 taRightJustify:
                   begin
@@ -20953,7 +20953,7 @@ begin
                       if Offset < Indent + TextWidth then
                         Include(HitInfo.HitPositions, hiOnItemLabel)
                       else
-                        Include(HitInfo.HitPositions, hiOnItemRight)
+                        Include(HitInfo.HitPositions, hiOnItemRight);
                   end;
                 taRightJustify:
                   begin
@@ -21924,7 +21924,7 @@ begin
       begin
         fNextNodeToSelect := Self.NodeParent[GetFirstSelected()];
         if Assigned(fNextNodeToSelect) then
-          Selected[fNextNodeToSelect] := True
+          Selected[fNextNodeToSelect] := True;
       end;//else
     end;//if
   end;
@@ -24122,7 +24122,7 @@ begin
           if SearchDirection = sdBackward then
             SearchDirection := sdForward
           else
-            SearchDirection := sdBackward
+            SearchDirection := sdBackward;
         end
         else
           SearchDirection := FSearchDirection;
@@ -24218,7 +24218,7 @@ begin
         Node := GetPreviousVisible(HitInfo.HitNode, True)
       else
         if  hiLowerSplitter in HitInfo.HitPositions then
-          Node := HitInfo.HitNode
+          Node := HitInfo.HitNode;
     end;
 
     if Assigned(Node) and (Node <> FRoot) and (toNodeHeightDblClickResize in FOptions.FMiscOptions) then
@@ -24395,7 +24395,7 @@ begin
     // otherwise a multi selection will start.
     FullRowDrag := (toFullRowDrag in FOptions.FMiscOptions) and IsCellHit and
         not (hiNowhere in HitInfo.HitPositions) and
-        (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions))
+        (NodeSelected or (hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
   end
   else // No MultiSelect, hence we can start a drag anywhere in the row.
     FullRowDrag := toFullRowDrag in FOptions.FMiscOptions;
@@ -24612,7 +24612,7 @@ begin
       if vsSelected in HitInfo.HitNode.States then
       begin
         if not (toAlwaysSelectNode in TreeOptions.SelectionOptions) or (Self.SelectedCount > 1) then
-          RemoveFromSelection(HitInfo.HitNode)
+          RemoveFromSelection(HitInfo.HitNode);
       end
       else
         AddToSelection(HitInfo.HitNode);
@@ -26654,7 +26654,7 @@ begin
       begin
         StartNode := GetPreviousVisible(StartNode, True);
         if StartNode = nil then
-          StartNode := GetFirstVisibleNoInit(nil, True)
+          StartNode := GetFirstVisibleNoInit(nil, True);
       end;
 
     if CompareNodePositions(StartNode, EndNode, True) < 0 then
@@ -26847,7 +26847,7 @@ begin
     if Integer(FRangeY) > ClientHeight then
       ImageName := 'VT_MOVEALL'
     else
-      ImageName := 'VT_MOVEEW'
+      ImageName := 'VT_MOVEEW';
   end
   else
     ImageName := 'VT_MOVENS';
@@ -27089,7 +27089,7 @@ begin
       begin
         StartNode := GetPreviousVisible(StartNode, True);
         if StartNode = nil then
-          StartNode := FRoot.FirstChild
+          StartNode := FRoot.FirstChild;
       end;
 
     if CompareNodePositions(StartNode, EndNode) < 0 then
@@ -28564,7 +28564,7 @@ begin
               begin
                 Result := Action is TEditDelete;
                 if Result then
-                  DeleteSelectedNodes
+                  DeleteSelectedNodes;
               end;
           end;
       end;
@@ -30740,7 +30740,7 @@ begin
         if Node.Parent <> FRoot then
           Result := Node.Parent
         else
-          Result := nil
+          Result := nil;
     end;
   end;
 end;
@@ -31758,7 +31758,7 @@ begin
             Callback(Self, Node, Data, Abort);
           if Abort then
             Break;
-          Node := GetNextNode(Node)
+          Node := GetNextNode(Node);
         end;
       end;
     end;
@@ -32274,7 +32274,7 @@ begin
               begin
                 SetCanvasOrigin(PaintInfo.Canvas, -TargetRect.Left + Window.Left, -TargetRect.Top);
                 ClipCanvas(PaintInfo.Canvas, Rect(TargetRect.Left, TargetRect.Top, TargetRect.Right,
-                                                  Min(TargetRect.Bottom, MaximumBottom)))
+                                                  Min(TargetRect.Bottom, MaximumBottom)));
               end;
 
               // Set the origin of the canvas' brush. This depends on the node heights.
@@ -33222,7 +33222,7 @@ begin
                     // contain valid data otherwise I don't see how the application can make a funded decision.
                     if not DoNodeCopying(Node, TargetNode) then
                     begin
-                      DeleteNode(Node)
+                      DeleteNode(Node);
                     end
                     else
                     begin
@@ -34225,7 +34225,7 @@ begin
                     begin
                       FirstVisible := GetFirstVisible(Node, True);
                       if Assigned(FirstVisible) then // otherwise there is no visible child at all
-                        SetOffsetY(FOffsetY - GetDisplayRect(FirstVisible, NoColumn, False).Top)
+                        SetOffsetY(FOffsetY - GetDisplayRect(FirstVisible, NoColumn, False).Top);
                     end
                     else
                       BottomNode := Node;
@@ -35513,7 +35513,7 @@ begin
       if Self.GetFirstSelected <> nil then
         Self.ScrollIntoView(Self.GetFirstSelected, True);
     end;
-  end
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
