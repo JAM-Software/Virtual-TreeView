@@ -1891,7 +1891,7 @@ type
   TVTBeforeGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var UseSmartColumnWidth: Boolean) of object;
   TVTAfterGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var MaxWidth: Integer) of object;
   TVTCanSplitterResizeColumnEvent = procedure(Sender: TVTHeader; P: TPoint; Column: TColumnIndex; var Allowed: Boolean) of object;
-  TVTCanSplitterResizeHeaderEvent = procedure(SendeR: TVTHeader; P: TPoint; var Allowed: Boolean) of object;
+  TVTCanSplitterResizeHeaderEvent = procedure(Sender: TVTHeader; P: TPoint; var Allowed: Boolean) of object;
 
   // move, copy and node tracking events
   TVTNodeMovedEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
@@ -1951,7 +1951,7 @@ type
   TVTOperationEvent = procedure(Sender: TBaseVirtualTree; OperationKind: TVTOperationKind) of object;
 
   TVTHintKind = (vhkText, vhkOwnerDraw);
-  TVTHintKindEvent = procedure(sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Kind: TVTHintKind) of object;
+  TVTHintKindEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Kind: TVTHintKind) of object;
   TVTDrawHintEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode; R: TRect; Column: TColumnIndex) of object;
   TVTGetHintSizeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var R: TRect) of object;
 
@@ -2426,8 +2426,8 @@ type
     {$ifend}
 
     procedure AdjustCoordinatesByIndent(var PaintInfo: TVTPaintInfo; Indent: Integer);
-    procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
-    procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
+    procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; Relative: Boolean = False);
+    procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; Relative: Boolean = False);
     function CalculateCacheEntryCount: Integer;
     procedure CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode; var VAlign,
       VButtonAlign: Integer);
@@ -8475,7 +8475,7 @@ end;
 procedure TVTDragImage.PrepareDrag(DragImage: TBitmap; ImagePosition, HotSpot: TPoint; const DataObject: IDataObject);
 
 // Creates all necessary structures to do alpha blended dragging using the given image.
-// ImagePostion and Hotspot are given in screen coordinates. The first determines where to place the drag image while
+// ImagePostion and HotSpot are given in screen coordinates. The first determines where to place the drag image while
 // the second is the initial mouse position.
 // This method also determines whether the system supports drag images natively. If so then only minimal structures
 // are created.
@@ -14374,7 +14374,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
+procedure TBaseVirtualTree.AdjustTotalCount(Node: PVirtualNode; Value: Integer; Relative: Boolean = False);
 
 // Sets a node's total count to the given value and recursively adjusts the parent's total count
 // (actually, the adjustment is done iteratively to avoid function call overheads).
@@ -14384,7 +14384,7 @@ var
   Run: PVirtualNode;
 
 begin
-  if relative then
+  if Relative then
     Difference := Value
   else
     Difference := Value - Integer(Node.TotalCount);
@@ -14402,7 +14402,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
+procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: Integer; Relative: Boolean = False);
 
 // Sets a node's total height to the given value and recursively adjusts the parent's total height.
 
@@ -14411,7 +14411,7 @@ var
   Run: PVirtualNode;
 
 begin
-  if relative then
+  if Relative then
     Difference := Value
   else
     Difference := Value - Integer(Node.TotalHeight);
@@ -32770,9 +32770,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PrepareDragImage(Hotspot: TPoint; const DataObject: IDataObject);
+procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
 
-// Initiates an image drag operation. Hotspot is the position of the mouse in client coordinates.
+// Initiates an image drag operation. HotSpot is the position of the mouse in client coordinates.
 
 var
   PaintOptions: TVTInternalPaintOptions;
@@ -34521,7 +34521,7 @@ begin
     Child := Node.FirstChild;
     while Assigned(Child) do
     begin
-      ValidateNode(Child, recursive);
+      ValidateNode(Child, Recursive);
       Child := Child.NextSibling;
     end;
   end;
