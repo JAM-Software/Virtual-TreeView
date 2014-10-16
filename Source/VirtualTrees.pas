@@ -8269,7 +8269,7 @@ begin
         else
         begin
           // If the color is not the given color key (or none is used) then do full calculation of a bell curve.
-          T := exp(-8 * Sqrt(Sqr((X - HalfWidth) / MaxDimension) + Sqr((Y - HalfHeight) / MaxDimension)));
+          T := Exp(-8 * Sqrt(Sqr((X - HalfWidth) / MaxDimension) + Sqr((Y - HalfHeight) / MaxDimension)));
           TargetRun.Alpha := Round(255 * T);
         end;
         Inc(SourceRun);
@@ -13632,11 +13632,11 @@ begin
       begin
         ReadBuffer(Dummy, SizeOf(Dummy));
         FMaxHeightPercent := TVTConstraintPercent(Dummy);
-        ReadBuffer(Dummy, Sizeof(Dummy));
+        ReadBuffer(Dummy, SizeOf(Dummy));
         FMaxWidthPercent := TVTConstraintPercent(Dummy);
         ReadBuffer(Dummy, SizeOf(Dummy));
         FMinHeightPercent := TVTConstraintPercent(Dummy);
-        ReadBuffer(Dummy, Sizeof(Dummy));
+        ReadBuffer(Dummy, SizeOf(Dummy));
         FMinWidthPercent := TVTConstraintPercent(Dummy);
       end;
     end;
@@ -27358,7 +27358,7 @@ end;
 procedure TBaseVirtualTree.ValidateNodeDataSize(var Size: Integer);
 
 begin
-  Size := sizeof(Pointer);
+  Size := SizeOf(Pointer);
   if Assigned(FOnGetNodeDataSize) then
     FOnGetNodeDataSize(Self, Size);
 end;
@@ -27569,7 +27569,7 @@ function TBaseVirtualTree.AddChild(Parent: PVirtualNode; UserData: Pointer = nil
 
 // Adds a new node to the given parent node. This is simply done by increasing the child count of the
 // parent node. If Parent is nil then the new node is added as (last) top level node.
-// UserData can be used to set the first sizeof(Pointer) bytes of the user data area to an initial value which can be used
+// UserData can be used to set the first SizeOf(Pointer) bytes of the user data area to an initial value which can be used
 // in OnInitNode and will also cause to trigger the OnFreeNode event (if <> nil) even if the node is not yet
 // "officially" initialized.
 // AddChild is a compatibility method and will implicitly validate the parent node. This is however
@@ -31426,7 +31426,7 @@ end;
 function TBaseVirtualTree.InsertNode(Node: PVirtualNode; Mode: TVTNodeAttachMode; UserData: Pointer = nil): PVirtualNode;
 
 // Adds a new node relative to Node. The final position is determined by Mode.
-// UserData can be used to set the first sizeof(Pointer) bytes of the user data area to an initial value which can be used
+// UserData can be used to set the first SizeOf(Pointer) bytes of the user data area to an initial value which can be used
 // in OnInitNode and will also cause to trigger the OnFreeNode event (if <> nil) even if the node is not yet
 // "officially" initialized.
 // InsertNode is a compatibility method and will implicitly validate the given node if the new node
@@ -31462,7 +31462,7 @@ begin
 
     // Check if there is initial user data and there is also enough user data space allocated.
     if Assigned(UserData) then
-      if FNodeDataSize >= sizeof(Pointer) then
+      if FNodeDataSize >= SizeOf(Pointer) then
       begin
         NodeData := Pointer(PByte(@Result.Data) + FTotalInternalDataSize);
         NodeData^ := UserData;
