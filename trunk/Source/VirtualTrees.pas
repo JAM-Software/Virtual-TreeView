@@ -9019,7 +9019,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetCheckBox(Value: boolean);
+procedure TVirtualTreeColumn.SetCheckBox(Value: Boolean);
 
 begin
   if Value <> FCheckBox then
@@ -10651,7 +10651,7 @@ begin
         if coVisible in FOptions then
           Inc(RunningPos, FWidth);
       end;
-    FHeader.Treeview.UpdateHorizontalScrollBar(false);
+    FHeader.Treeview.UpdateHorizontalScrollBar(False);
   end;
 end;
 
@@ -17921,7 +17921,7 @@ begin
               else
                 // For trees displaying text hints, a decision about showing the hint or not is based
                 // on the hint string (if it is empty then no hint is shown).
-                ShowOwnHint := true;
+                ShowOwnHint := True;
 
               if ShowOwnHint then
               begin
