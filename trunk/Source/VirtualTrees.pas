@@ -1718,7 +1718,7 @@ type
   // Options which are used when modifying the scroll offsets.
   TScrollUpdateOptions = set of (
     suoRepaintHeader,        // if suoUpdateNCArea is also set then invalidate the header
-    suoRepaintScrollbars,    // if suoUpdateNCArea is also set then repaint both scrollbars after updating them
+    suoRepaintScrollBars,    // if suoUpdateNCArea is also set then repaint both scrollbars after updating them
     suoScrollClientArea,     // scroll and invalidate the proper part of the client area
     suoUpdateNCArea          // update non-client area (scrollbars, header)
   );
@@ -1966,7 +1966,7 @@ type
   TVTStateChangeEvent = procedure(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates) of object;
   TVTGetCellIsEmptyEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     var IsEmpty: Boolean) of object;
-  TVTScrollbarShowEvent = procedure(Sender: TBaseVirtualTree; Bar: Integer; Show: Boolean) of object;
+  TVTScrollBarShowEvent = procedure(Sender: TBaseVirtualTree; Bar: Integer; Show: Boolean) of object;
 
   // Helper types for node iterations.
   TGetFirstNodeProc = function: PVirtualNode of object;
@@ -2063,7 +2063,7 @@ type
     FVertScrollBarUpButtonState: TThemedScrollBar;
     FVertScrollBarWindow: TVclStyleScrollBarWindow;
 
-    procedure CMUpdateVclStyleScrollbars(var Message: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
+    procedure CMUpdateVclStyleScrollBars(var Message: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
     procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
     procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
     procedure WMLButtonDown(var Msg: TWMMouse);  message WM_LBUTTONDOWN;
@@ -2399,7 +2399,7 @@ type
     FOnGetCursor: TVTGetCursorEvent;             // Called to allow the app. to set individual cursors.
     FOnStateChange: TVTStateChangeEvent;         // Called whenever a state in the tree changes.
     FOnGetCellIsEmpty: TVTGetCellIsEmptyEvent;   // Called when the tree needs to know if a cell is empty.
-    FOnShowScrollbar: TVTScrollbarShowEvent;     // Called when a scrollbar is changed in its visibility.
+    FOnShowScrollBar: TVTScrollBarShowEvent;     // Called when a scrollbar is changed in its visibility.
 
     // search, sort
     FOnCompareNodes: TVTCompareEvent;            // used during sort
@@ -2617,7 +2617,7 @@ type
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearTempCache; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
-    function ComputeRTLOffset(ExcludeScrollbar: Boolean = False): Integer; virtual;
+    function ComputeRTLOffset(ExcludeScrollBar: Boolean = False): Integer; virtual;
     function CountLevelDifference(Node1, Node2: PVirtualNode): Integer; virtual;
     function CountVisibleChildren(Node: PVirtualNode): Cardinal; virtual;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -2742,7 +2742,7 @@ type
     procedure DoSaveUserData(Node: PVirtualNode; Stream: TStream); virtual;
     procedure DoScroll(DeltaX, DeltaY: Integer); virtual;
     function DoSetOffsetXY(Value: TPoint; Options: TScrollUpdateOptions; ClipRect: PRect = nil): Boolean; virtual;
-    procedure DoShowScrollbar(Bar: Integer; Show: Boolean); virtual;
+    procedure DoShowScrollBar(Bar: Integer; Show: Boolean); virtual;
     procedure DoStartDrag(var DragObject: TDragObject); override;
     procedure DoStartOperation(OperationKind: TVTOperationKind); virtual;
     procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); virtual;
@@ -3046,7 +3046,7 @@ type
     property OnSaveNode: TVTSaveNodeEvent read FOnSaveNode write FOnSaveNode;
     property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
     property OnScroll: TVTScrollEvent read FOnScroll write FOnScroll;
-    property OnShowScrollbar: TVTScrollbarShowEvent read FOnShowScrollbar write FOnShowScrollbar;
+    property OnShowScrollBar: TVTScrollBarShowEvent read FOnShowScrollBar write FOnShowScrollBar;
     property OnStartOperation: TVTOperationEvent read FOnStartOperation write FOnStartOperation;
     property OnStateChange: TVTStateChangeEvent read FOnStateChange write FOnStateChange;
     property OnStructureChange: TVTStructureChangeEvent read FOnStructureChange write FOnStructureChange;
@@ -3763,7 +3763,7 @@ type
     property OnSaveTree;
     property OnScroll;
     property OnShortenString;
-    property OnShowScrollbar;
+    property OnShowScrollBar;
     property OnStartDock;
     property OnStartDrag;
     property OnStartOperation;
@@ -4017,7 +4017,7 @@ type
     property OnSaveNode;
     property OnSaveTree;
     property OnScroll;
-    property OnShowScrollbar;
+    property OnShowScrollBar;
     property OnStartDock;
     property OnStartDrag;
     property OnStartOperation;
@@ -4097,7 +4097,7 @@ resourcestring
 
 const
   ClipboardStates = [tsCopyPending, tsCutPending];
-  DefaultScrollUpdateFlags = [suoRepaintHeader, suoRepaintScrollbars, suoScrollClientArea, suoUpdateNCArea];
+  DefaultScrollUpdateFlags = [suoRepaintHeader, suoRepaintScrollBars, suoScrollClientArea, suoUpdateNCArea];
   TreeNodeSize = (SizeOf(TVirtualNode) + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1); // used for node allocation and access to internal data
 
   // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
@@ -16383,7 +16383,7 @@ begin
     end;
     R := GetDisplayRect(Node, FHeader.MainColumn, True);
     DoSetOffsetXY(Point(FOffsetX, FOffsetY + ClientHeight - R.Top - Integer(NodeHeight[Node])),
-      [suoRepaintScrollbars, suoUpdateNCArea]);
+      [suoRepaintScrollBars, suoUpdateNCArea]);
   end;
 end;
 
@@ -16395,7 +16395,7 @@ begin
   if FBottomSpace <> Value then
   begin
     FBottomSpace := Value;
-    UpdateVerticalScrollbar(True);
+    UpdateVerticalScrollBar(True);
   end;
 end;
 
@@ -20425,17 +20425,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ComputeRTLOffset(ExcludeScrollbar: Boolean): Integer;
+function TBaseVirtualTree.ComputeRTLOffset(ExcludeScrollBar: Boolean): Integer;
 
 // Computes the horizontal offset needed when all columns are automatically right aligned (in RTL bidi mode).
-// ExcludeScrollbar determines if the left-hand vertical scrollbar is to be included (if visible) or not.
+// ExcludeScrollBar determines if the left-hand vertical scrollbar is to be included (if visible) or not.
 
 var
   HeaderWidth: Integer;
-  ScrollbarVisible: Boolean;
+  ScrollBarVisible: Boolean;
 begin
-  ScrollbarVisible := (Integer(FRangeY) > ClientHeight) and (ScrollbarOptions.Scrollbars in [ssVertical, ssBoth]);
-  if ScrollbarVisible then
+  ScrollBarVisible := (Integer(FRangeY) > ClientHeight) and (ScrollBarOptions.ScrollBars in [ssVertical, ssBoth]);
+  if ScrollBarVisible then
     Result := GetSystemMetrics(SM_CXVSCROLL)
   else
     Result := 0;
@@ -20446,7 +20446,7 @@ begin
     Result := HeaderWidth - Integer(FRangeX);
   // Otherwise take only left-hand vertical scrollbar into account.
 
-  if ScrollbarVisible and ExcludeScrollbar then
+  if ScrollBarVisible and ExcludeScrollBar then
     Dec(Result, GetSystemMetrics(SM_CXVSCROLL));
 end;
 
@@ -22636,15 +22636,15 @@ begin
           if (suoRepaintHeader in Options) and (hoVisible in FHeader.FOptions) then
             FHeader.Invalidate(nil);
           if not (tsSizing in FStates) and (FScrollBarOptions.ScrollBars in [{$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssBoth]) then
-            UpdateHorizontalScrollBar(suoRepaintScrollbars in Options);
+            UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
         end;
 
         if (DeltaY <> 0) and ([tsThumbTracking, tsSizing] * FStates = []) then
         begin
-          UpdateVerticalScrollBar(suoRepaintScrollbars in Options);
+          UpdateVerticalScrollBar(suoRepaintScrollBars in Options);
           if not (FHeader.UseColumns or IsMouseSelecting) and
             (FScrollBarOptions.ScrollBars in [{$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssHorizontal, {$if CompilerVersion >= 24}System.UITypes.TScrollStyle.{$ifend}ssBoth]) then
-            UpdateHorizontalScrollBar(suoRepaintScrollbars in Options);
+            UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
         end;
       end;
 
@@ -22665,12 +22665,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoShowScrollbar(Bar: Integer; Show: Boolean);
+procedure TBaseVirtualTree.DoShowScrollBar(Bar: Integer; Show: Boolean);
 
 begin
   ShowScrollBar(Handle, Bar, Show);
-  if Assigned(FOnShowScrollbar) then
-    FOnShowScrollbar(Self, Bar, Show);
+  if Assigned(FOnShowScrollBar) then
+    FOnShowScrollBar(Self, Bar, Show);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22966,7 +22966,7 @@ begin
   // height. During validation updates of the scrollbars is disabled so let's do this here.
   if Result and (toVariableNodeHeight in FOptions.FMiscOptions) then
   begin
-    UpdateScrollbars(True);
+    UpdateScrollBars(True);
   end;
 end;
 
@@ -27627,7 +27627,7 @@ begin
         Sort(Parent, FHeader.FSortColumn, FHeader.FSortDirection, True);
 
       InvalidateToBottom(Parent);
-      UpdateScrollbars(True);
+      UpdateScrollBars(True);
    end;
   end
   else
@@ -28276,7 +28276,7 @@ begin
       end;
 
       ValidateCache;
-      UpdateScrollbars(True);
+      UpdateScrollBars(True);
       // Invalidate entire tree if it scrolled e.g. to make the last node also the
       // bottom node in the treeview.
       if (LastLeft <> FOffsetX) or (LastTop <> FOffsetY) then
@@ -28360,7 +28360,7 @@ begin
       if FUpdateCount = 0 then
       begin
         ValidateCache;
-        UpdateScrollbars(True);
+        UpdateScrollBars(True);
         // Invalidate entire tree if it scrolled e.g. to make the last node also the
         // bottom node in the treeview.
         if (LastLeft <> FOffsetX) or (LastTop <> FOffsetY) then
@@ -31487,7 +31487,7 @@ begin
             Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, True);
         end;
 
-      UpdateScrollbars(True);
+      UpdateScrollBars(True);
       if Mode = amInsertBefore then
         InvalidateToBottom(Result)
       else
@@ -34208,7 +34208,7 @@ begin
           if Node.ChildCount > 0 then
           begin
             UpdateRanges;
-            UpdateScrollbars(True);
+            UpdateScrollBars(True);
             if [tsPainting, tsExpanding] * FStates = [] then
             begin
               if (vsExpanded in Node.States) and ((toAutoScrollOnExpand in FOptions.FAutoOptions) or
@@ -34252,7 +34252,7 @@ begin
               end;
             end;
 
-            //UpdateScrollbars(True); Moved up
+            //UpdateScrollBars(True); Moved up
 
             // Check for automatically scrolled tree.
             if NeedFullInvalidate then
@@ -34465,7 +34465,7 @@ begin
   end
   else
   begin
-    DoShowScrollbar(SB_VERT, False);
+    DoShowScrollBar(SB_VERT, False);
 
     // Reset the current vertical offset to account for window resize etc.
     SetOffsetY(FOffsetY);
@@ -38083,7 +38083,7 @@ begin
   Handled := True;
 end;
 
-procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollbars(var Message: TMessage);
+procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollBars(var Message: TMessage);
 begin
    CalcScrollBarsRect;
    PaintScrollBars;
