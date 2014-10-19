@@ -12613,7 +12613,7 @@ var
 
   //--------------- local function --------------------------------------------
 
-  function HSPlitterHit: Boolean;
+  function HSplitterHit: Boolean;
 
   var
     NextCol: TColumnIndex;
@@ -12941,8 +12941,8 @@ begin
           if hoShowHint in FOptions then
           begin
             // client coordinates!
-            XCursor := P.x;
-            YCursor := P.y + Integer(FHeight);
+            XCursor := P.X;
+            YCursor := P.Y + Integer(FHeight);
             Application.HintMouseMessage(Treeview, Message);
           end;
         end;
