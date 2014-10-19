@@ -3075,8 +3075,8 @@ type
       ChildrenOnly: Boolean): PVirtualNode; overload;
     function CopyTo(Source, Target: PVirtualNode; Mode: TVTNodeAttachMode;
       ChildrenOnly: Boolean): PVirtualNode; overload;
-    procedure CopyToClipBoard; virtual;
-    procedure CutToClipBoard; virtual;
+    procedure CopyToClipboard; virtual;
+    procedure CutToClipboard; virtual;
     procedure DeleteChildren(Node: PVirtualNode; ResetHasChildren: Boolean = False);
     procedure DeleteNode(Node: PVirtualNode; Reindex: Boolean = True);
     procedure DeleteSelectedNodes; virtual;
@@ -27966,7 +27966,7 @@ begin
 
       if ClipboardStates * FStates <> [] then
       begin
-        OleSetClipBoard(nil);
+        OleSetClipboard(nil);
         DoStateChange([], ClipboardStates);
       end;
       ClearSelection;
@@ -28161,7 +28161,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.CopyToClipBoard;
+procedure TBaseVirtualTree.CopyToClipboard;
 
 var
   DataObject: IDataObject;
@@ -28170,7 +28170,7 @@ begin
   if FSelectionCount > 0 then
   begin
     DataObject := TVTDataObject.Create(Self, True) as IDataObject;
-    if OleSetClipBoard(DataObject) = S_OK then
+    if OleSetClipboard(DataObject) = S_OK then
     begin
       MarkCutCopyNodes;
       DoStateChange([tsCopyPending]);
@@ -28181,11 +28181,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.CutToClipBoard;
+procedure TBaseVirtualTree.CutToClipboard;
 begin
   if (FSelectionCount > 0) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
-    if OleSetClipBoard(TVTDataObject.Create(Self, True)) = S_OK then
+    if OleSetClipboard(TVTDataObject.Create(Self, True)) = S_OK then
     begin
       MarkCutCopyNodes;
       DoStateChange([tsCutPending], [tsCopyPending]);
@@ -28554,7 +28554,7 @@ begin
         begin
           Result := Action is TEditCut;
           if Result then
-            CutToClipBoard
+            CutToClipboard
           else
           begin
             Result := Action is TEditPaste;
