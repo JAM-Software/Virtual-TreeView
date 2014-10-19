@@ -6674,7 +6674,7 @@ begin
           Invalidate;
         if not (csDesigning in ComponentState) then
         begin
-          if toFullRepaintOnResize in TobeSet + ToBeCleared then
+          if toFullRepaintOnResize in ToBeSet + ToBeCleared then
             RecreateWnd;
           if toAcceptOLEDrop in ToBeSet then
             RegisterDragDrop(Handle, DragManager as IDropTarget);
@@ -11798,15 +11798,15 @@ end;
 
 procedure TVTHeader.FontChanged(Sender: TObject);
 var
-  i: Integer;
+  I: Integer;
   lMaxHeight: Integer;
 begin
   if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then
   begin
     // Find the largest Columns[].Spacing
     lMaxHeight := 0;
-    for i:= 0 to Self.Columns.Count - 1 do
-      lMaxHeight := Max(lMaxHeight, Columns[i].Spacing);
+    for I := 0 to Self.Columns.Count - 1 do
+      lMaxHeight := Max(lMaxHeight, Columns[I].Spacing);
     // Calculate the required size based on the font, this is important as the use migth just vave increased the size of the icon font
     with TBitmap.Create do
       try
@@ -12132,17 +12132,17 @@ end;
 
 procedure TVTHeader.ChangeScale(M, D: Integer);
 var
-  i: Integer;
+  I: Integer;
 begin
   // This method is only executed if toAutoChangeScale is set
   if not ParentFont then
     FFont.Size := MulDiv(FFont.Size, M, D);
   Self.Height := MulDiv(FHeight, M, D);
   // Scale the columns widths too
-  for i := 0 to FColumns.Count - 1 do
+  for I := 0 to FColumns.Count - 1 do
   begin
-    Self.FColumns[i].Width := MulDiv(Self.FColumns[i].Width, M, D);
-  end;//for i
+    Self.FColumns[I].Width := MulDiv(Self.FColumns[I].Width, M, D);
+  end;//for I
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14728,7 +14728,7 @@ begin
       if WithCheck and (Run.CheckType <> ctNone) then
         Inc(TextLeft, CheckOffset);
       if WithImages and HasImage(Run, ikNormal, MainColumn) then
-        Inc(TextLeft, GetNodeImageSize(run).cx + 2);
+        Inc(TextLeft, GetNodeImageSize(Run).cx + 2);
       if WithStateImages and HasImage(Run, ikState, MainColumn) then
         Inc(TextLeft, StateImageOffset);
       NextTop := CurrentTop + Integer(NodeHeight[Run]);
@@ -14905,7 +14905,7 @@ begin
       if WithCheck and (Run.CheckType <> ctNone) then
         Dec(TextRight, CheckOffset);
       if WithImages and HasImage(Run, ikNormal, MainColumn) then
-        Dec(TextRight, GetNodeImageSize(run).cx + 2);
+        Dec(TextRight, GetNodeImageSize(Run).cx + 2);
       if WithStateImages and HasImage(Run, ikState, MainColumn) then
         Dec(TextRight, StateImageOffset);
       NextTop := CurrentTop + Integer(NodeHeight[Run]);
@@ -15027,7 +15027,7 @@ begin
     else
       Offset := Point(0, 0);
 
-    DoBeforeItemErase(Canvas, Node, R, Backcolor, EraseAction);
+    DoBeforeItemErase(Canvas, Node, R, BackColor, EraseAction);
 
     with Canvas do
     begin
@@ -24211,7 +24211,7 @@ begin
       DoNodeDblClick(HitInfo);
 
     Node := nil;
-    if (hiOnItem in HitInfo.HitPositions) and (hitInfo.HitColumn > NoColumn) and
+    if (hiOnItem in HitInfo.HitPositions) and (HitInfo.HitColumn > NoColumn) and
        (coFixed in FHeader.FColumns[HitInfo.HitColumn].FOptions) then
     begin
       if hiUpperSplitter in HitInfo.HitPositions then
@@ -36561,7 +36561,7 @@ begin
       Buffer.Add('</tr>');
       Buffer.AddNewLine;
       if Assigned(FOnAfterHeaderExport) then
-        FOnAfterHeaderExport(self, etHTML);
+        FOnAfterHeaderExport(Self, etHTML);
     end;
 
     // Now go through the tree.
@@ -36879,7 +36879,7 @@ var
         if (Text[I] = WideLF) then
           Buffer.Add( '{\par}' )
         else
-          if (Text[i] <> WideCR) then
+          if (Text[I] <> WideCR) then
           begin
             Buffer.Add(Format('\u%d\''3f', [SmallInt(Text[I])]));
             Continue;
@@ -36985,7 +36985,7 @@ begin
         TextPlusFont(Columns[I].Text, Header.Font);
         Buffer.Add('\cell');
         if Assigned(FOnAfterColumnExport) then
-          FOnAfterColumnExport( self, etRTF, Columns[I] );
+          FOnAfterColumnExport(Self, etRTF, Columns[I]);
       end;
       Buffer.Add('\row');
       if Assigned(FOnAfterHeaderExport) then
