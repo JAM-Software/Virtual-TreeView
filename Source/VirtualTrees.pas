@@ -584,7 +584,9 @@ type
   TVTExportMode = (
     emAll,        // export all records (regardless checked state)
     emChecked,    // export checked records only
-    emUnchecked   // export unchecked records only
+    emUnchecked,   // export unchecked records only
+    emVisibleDueToExpansion, //Do not export nodes that are not visible because their parent is not expanded
+    emSelected // export selected nodes only
   );
 
   // Kinds of operations
@@ -36711,15 +36713,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.CanExportNode(Node: PVirtualNode ): Boolean;
+function TCustomVirtualStringTree.CanExportNode(Node: PVirtualNode): Boolean;
 
 begin
-  Result := True;
   case FOptions.ExportMode of
     emChecked:
       Result := Node.CheckState = csCheckedNormal;
     emUnchecked:
       Result := Node.CheckState = csUncheckedNormal;
+    emVisibleDueToExpansion: //Do not export nodes that are not visible because their parent is not expanded
+      Result := not Assigned(Node.Parent) or Self.Expanded[Node.Parent];
+    emSelected: // export selected nodes only
+      Result := Selected[Node];
+    else
+      Result := True;
   end;
 end;
 
