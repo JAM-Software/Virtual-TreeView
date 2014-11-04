@@ -2420,7 +2420,7 @@ type
     FVclStyleEnabled: Boolean;
 
 
-    {$if CompilerVersion >= 23 }
+    {$if CompilerVersion >= 24}
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
     {$ifend}
@@ -2848,7 +2848,7 @@ type
     procedure UpdateDesigner; virtual;
     procedure UpdateEditBounds; virtual;
     procedure UpdateHeaderRect; virtual;
-    procedure UpdateStyleElements; {$if CompilerVersion >= 23}override;{$ifend}
+    procedure UpdateStyleElements; {$if CompilerVersion >= 24}override;{$ifend}
     procedure UpdateWindowAndDragImage(const Tree: TBaseVirtualTree; TreeRect: TRect; UpdateNCArea,
       ReshowDragImage: Boolean); virtual;
     procedure ValidateCache; virtual;
