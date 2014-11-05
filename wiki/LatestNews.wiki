@@ -1,6 +1,19 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
+== 05 Nov 2014: Two Branches for older and newer Delphi versions ==
+
+Some of you may have read [http://blog.kassebaum.eu/?p=379 this blog post] on Roman's page. I do agree with many parts of the blog post. Supporting old Delphi versions that I do not have installed is time consuming. And not being able to use new language features that I use throughout my own projects was a pity. This is why I discussed with some of the remaining Virtual Treeview developers earlier this year to limit the support to newer Delphi versions (e.g. Delphi 2010 and higher) and make a branch for the older version within the SVN repository. Then this new development came up.
+
+While I hughly appreciate Roman's work for good but mostly abandoned Delphi components, I don't see a large benefit in doing a new fork of Virtual TreeView at a different site. In my opinion we should join our forces instead of splitting them up (with the consequence of diverging forks and the need of complex merges).
+
+This is why Roman, Marco and I agreed to keep the development of Virtual Treeview centrally in this place but to support only XE3 and higher in the trunk. The trunk will be the base for V6 which I expect next year.
+
+We created a new branch at [https://virtual-treeview.googlecode.com/svn/branches/V5_stable] which can be considered as stable and which will continue to support Delphi 7 to Delphi XE7. I would appreciate if a current user of a Delphi version < XE3 would volunteer to maintain this branch.
+
+_Joachim_
+
+
 == 13 Oct 2014: Release of V5.5.1 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
   * Fixed issue #479: The style hooks for the VCL styles are now registered for TVirtualStringTree and TVirtualDrawTree instead of TBaseVirtualTree, which makes it easier to use own style hooks in derived classes.  
