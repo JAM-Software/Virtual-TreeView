@@ -1,0 +1,281 @@
+@@Repositiory.htm
+<TITLE A little code repository by John Knipper>
+
+This is just written by me John Knipper. Don't bother Mike if something is wrong here. I am not related to Mikes company
+in any way. I'm just doing that because I believe so much in his component, that I would not give you the possibility to
+miss the opportunity to use it. You won't regret it. I'm not going to enumerate all the nice advantage it has on it's
+competitors. Because it has so many. The biggest I see is the speed improvement, the multi columns, the automatic
+allocation of node data and so many more.
+
+
+
+You will see that the strong points of the Virtual tree view are not obvious. But you can believe me, this is the best
+Treeview ever. You will be kinda lost at the beginning, but it's only a matter of forgetting what you know about trees.
+This is the right way to do it. You will ask yourself why it has not be done like that at the beginning.
+
+<B>
+
+
+
+Q: How to initially fill the tree?
+
+A:</B> The only information VT needs at startup is the number of root nodes. All other information is queried from the
+application when they are needed (text, node height etc.). Hence all to do is to set property RootNodeCount to the number
+\of nodes required.
+
+<B>E:</B>
+<CODE>
+VirtualStringTree1.RootNodeCount := 5; <COLOR Blue>// is adding 5 nodes at the root of your tree</COLOR>
+</CODE>
+
+
+To initialize the nodes, use the OnInitNode event
+
+<B>
+
+
+
+Q: How to add a node to the tree?
+
+A:</B> The technique is very similar to the one you used with the standard tree view. The only difference is that you
+fill the node's data after the insertion of the node
+
+<B>E:</B>
+<CODE>
+<B>var</B>
+  Node: PVirtualNode;
+  Node := VirtualStringTree1.AddChild(<B>nil</B>); <COLOR Blue>// Adds a node to the root of the Tree.</COLOR>
+  Node := VirtualStringTree1.AddChild(ParentNode); <COLOR Blue>// Adds a node as the last child of the given node.</COLOR>
+  Node := VirtualStringTree1.InsertNode(Node, amInsertBefore); <COLOR Blue>// Inserts a node as sibling just before the given node.</COLOR>
+</CODE>
+
+
+Alternatively you can use the OnInitChildren event. This event is used when a node is marked as having child nodes and
+these child nodes are somehow about to be accessed (like iteration, expanding, display etc.).
+
+<B>
+
+
+
+Q: Where is gone all the information about my node, like text for example ?
+
+A:</B> The text property is gone. You don't need it anymore. The basic idea behind Virtual Treeview is to leave all data
+management to the application which knows much better how to do this than the tree (see also Related Topics). Every node
+knows which is its parent and which are their children. Information like the text property, the new hint property, the
+ImageIndex property and everything else should be stored in the node's data. The tree will ask for it on demand, e.g.
+when it needs to show a certain node etc.
+
+<B>E:</B>
+<CODE>
+TTreeData = <B>record</B>
+  Text: WideString;
+  URL: <B>String</B>[255];
+  CRC: LongInt;
+  isOpened: Boolean;
+  ImageIndex: Integer;
+<B>end</B>;
+PTreeData = ^TTreeData; <COLOR Blue>// This is a node example.</COLOR>
+</CODE>
+<B>
+
+
+
+Q: When should I allocate memory for the node data?
+
+A:</B> Never, the VT does it for you. The only thing you have to do is to tell the VT how much memory you need for your
+node data.
+
+<B>E:</B>
+<CODE>
+VirtualStringTree1.NodeDataSize := SizeOf(TTreeData); <COLOR Blue>// The nodes are reinitialized when you change that value.</COLOR>
+</CODE>
+
+
+If you know how much memory it will take, you can use the NodeDataSize property of the VT and initialize it directly at
+design time.
+
+
+
+<B>
+
+Q: When should I fill my nodes data?
+
+A:</B> The ideal place for this is the OnInitNode event.
+
+<B>E:</B>
+<CODE>
+<B>procedure</B> TMainForm.VTInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode; <B>var</B> InitialStates: TVirtualNodeInitStates);
+
+<B>var</B>
+  Level: Integer;
+  Data,
+  ParentData: PMyNodeData;
+  Count: Integer;
+
+<B>begin</B>
+  <B>with</B> Sender <B>do</B>
+  <B>begin</B>
+    Data := GetNodeData(Node);
+    ParentData := GetNodeData(ParentNode);
+    if Assigned(ParentData) <B>then</B> Level := ParentData.Level + <COLOR Pink>1</COLOR>
+                            <B>else</B> Level := <COLOR Pink>0</COLOR>;
+
+    <B>case</B> FFillMode <B>of</B>
+      <COLOR Pink>0</COLOR>: <COLOR Blue>// fill tree with a specific amount of nodes and levels</COLOR>
+        <B>begin</B>
+          // determine new node level
+          if Level \< (LevelsUpDown.Position - <COLOR Pink>1</COLOR>) then Include(InitialStates, ivsHasChildren);
+        <B>end</B>;
+      <COLOR Pink>1</COLOR>: <COLOR Blue>// fill tree with one million root nodes (nothing special to do here)</COLOR>
+        ;
+      <COLOR Pink>2</COLOR>: <COLOR Blue>// fill tree with a certain amount of root nodes (they always get fixed text to test sorting)</COLOR>
+        <B>begin</B>
+          Data.FixedText := True;
+          Data.NewText := Format(<COLOR Pink>'Node: %d'</COLOR>, [Node.Index]);
+        <B>end</B>;
+      <COLOR Pink>3</COLOR>: <COLOR Blue>// fill tree with a certain amount of root nodes and a random amount of child nodes
+         // up to an absolute amount of ~1 million nodes and with at most 10 levels</COLOR>
+        <B>begin</B>
+          <B>if</B> Assigned(ParentNode) <B>then</B> Count := ParentNode.ChildCount
+                                  <B>else</B> Count := TVirtualStringTree(Sender).RootNodeCount;
+          <B>if</B> (Level \< 15) <B>and</B>
+             (Random(Count) \< (Count <B>div</B> <COLOR Pink>2</COLOR>)) <B>and</B>
+             (FCurrentCount \< <COLOR Pink>1000000</COLOR>) <B>then</B> Include(InitialStates, ivsHasChildren);
+        <B>end</B>;
+    <B>end</B>;
+
+    Data.Level := Level;
+    Node.CheckType := ctTriStateCheckBox;
+    <B>case</B> Level <B>of</B>
+      <COLOR Pink>1</COLOR>:
+        if Random(<COLOR Pink>5</COLOR>) \< <COLOR Pink>2</COLOR> then Include(InitialStates, ivsDisabled);
+    <B>end</B>;
+  <B>end</B>;
+<B>end</B>;
+</CODE>
+<B>
+
+
+
+Q: How do I access a node's data?
+
+A:</B> Use GetNodeData(Node) to get a pointer on your nodes data
+
+<B>E:</B> Either use
+<CODE>
+<B>with</B> PTreeData(VirtualStringTree1.GetNodeData(Node))^ <B>do
+begin</B>
+  Text:= ChangeFileExt(ExtractFileName(FileName), <COLOR Pink>''</COLOR>);
+  ImageIndex:= <COLOR Pink>1</COLOR>; <COLOR Blue>//it's an example ;)</COLOR>
+<B>end</B>;
+</CODE>
+Or in that case you can use
+<CODE>
+<B>var</B>
+  NodeData: PTreeData;
+
+<B>begin</B>
+  NodeData := VirtualStringTree1.GetNodeData(Node);
+  NodeData.Text := <COLOR Pink>'a test'</COLOR>;
+  NodeData.ImageIndex := <COLOR Pink>1</COLOR>;
+  ...
+</CODE>
+<B>
+
+
+
+Q: What else can I do with that nodes data pointer?
+
+A:</B> Usually you already have all data in your own structure (database, file etc.) so you need only to supply an
+identifier or a pointer into your own structure. This prevents your application from doubling the data just for display
+which in turn saves a remarkable amount of memory.
+
+<B>E:</B> You could connect a TBookmark to the data. To display the name of your customer in a VT :
+<CODE>
+<B>procedure</B> TFRM_WWW_main.vFavTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: Integer; TextType: TVSTTextType; <B>var</B> Text: WideString);
+<B>
+begin</B>
+  <COLOR Blue>// Column is -1 if the header is hidden or no columns are defined</COLOR>
+<B>  if</B> Column \< <COLOR Pink>0</COLOR> <B>then</B> Exit;
+<B>  if</B> TVirtualStringTree(Sender).Header.Columns[Column].Text = <COLOR Pink>'Customer Name'</COLOR> <B>then
+  begin</B>
+    Table.GotoBookmark(TBookmark(Sender.GetNodeData(Node)));
+    Text := Table.FieldByName(<COLOR Pink>'Name'</COLOR>).asString;
+<B>  end</B>;
+<B>end</B>;
+</CODE>
+<B>
+
+Q: A move of a scrollbar's thumb doesn't directly scroll the tree. What to do?
+
+A:</B>
+<CODE>
+VirtualStringTree1.VertScrollBar.Track := True;
+</CODE>
+<B>
+
+
+
+Q: How can I display text for other columns?
+
+A:</B> In the OnGetText event, check the column index.
+
+<B>E:</B>
+<CODE>
+<B>procedure</B> TFRM_WWW_main.vFavTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: Integer; TextType: TVSTTextType; <B>var</B> Text: WideString);
+<B>
+begin
+  case</B> Column <B>of</B>
+    \-1, <COLOR Blue>// main column, -1 if columns are hidden, 0 if they are shown</COLOR>
+    0:
+      Text := <COLOR Pink>'Text of column 1'</COLOR>;
+    1:
+      Text := <COLOR Pink>'Text of column 2'</COLOR>;
+    2:
+      Text := <COLOR Pink>'Text of column 3'</COLOR>;
+<B>  end</B>;
+<B>end</B>;
+</CODE>
+<B>
+
+Q: When do I tell which icon to use?
+
+A:</B> It's the same principle as for the OnGetText event. With the exception that you must tell which icon to use in 3
+cases: the normal icon, the selected icon and the state icon.
+
+<B>E:</B>
+<CODE>
+<B>procedure</B> TFRM_WWW_main.vFavTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: Integer; <B>var</B> <B>Index</B>: Integer);
+<B>
+begin
+  if</B> Kind = ikState <B>then
+  begin
+    </B>Index := <COLOR Pink>2</COLOR>;
+<B>  end
+  else
+    if</B> (Kind = ikNormal) <B>or</B> (Kind = ikSelected) <B>then
+    begin
+      </B>Index := <COLOR Pink>1</COLOR>;
+<B>    end</B>;
+<B>end</B>;
+</CODE>
+\or just use
+<CODE>
+<B>procedure</B> TFRM_WWW_main.vFavTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: Integer; <B>var</B> <B>Index</B>: Integer);
+<B>
+begin
+  case</B> Kind <B>of</B>
+    ikState:
+<B>      Index</B> := <COLOR Pink>2</COLOR>;
+    ikNormal,
+    ikSelected:
+<B>      Index</B> := <COLOR Pink>1</COLOR>;
+<B>  end</B>;
+<B>end</B>;
+</CODE>
+
+
+
+
+Ok, here we are. This is only a small introduction to help you begin with Virtual Treeview. There are many more useful
+functions. Nearly everything was done for you. Thank you very much for your work Mike.
