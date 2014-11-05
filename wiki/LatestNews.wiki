@@ -7,9 +7,9 @@ Some of you may have read [http://blog.kassebaum.eu/?p=379 this blog post] on Ro
 
 While I hughly appreciate Roman's work for good but mostly abandoned Delphi components, I don't see a large benefit in doing a new fork of Virtual TreeView at a different site. In my opinion we should join our forces instead of splitting them up (with the consequence of diverging forks and the need of complex merges).
 
-This is why Roman, Marco and I agreed to keep the development of Virtual Treeview centrally in this place but to support only XE3 and higher in the trunk. The trunk will be the base for V6 which I expect next year.
+This is why Roman, Marco and I agreed to keep the development of Virtual Treeview centrally in this place but to support only XE3 and higher in the trunk. The trunk will be the base for V6 which I expect in 2015. Why XE3 some may ask? It allows us to remove all $ifdef statements and allows us the use record helpers for value types, which I personally like very much.
 
-We created a new branch at [https://virtual-treeview.googlecode.com/svn/branches/V5_stable] which can be considered as stable and which will continue to support Delphi 7 to Delphi XE7. I would appreciate if a current user of a Delphi version < XE3 would volunteer to maintain this branch.
+We have created a new branch at [https://virtual-treeview.googlecode.com/svn/branches/V5_stable] which can be considered as stable and which will continue to support Delphi 7 to Delphi XE7. I would appreciate if a current user of a Delphi version < XE3 would volunteer to maintain this branch.
 
 _Joachim_
 
