@@ -38,6 +38,7 @@ type
     procedure UnRegisterAccessibleProvider(AProvider: IVTAccessibleProvider);
   end;
 
+  
 implementation
 
 { TVTAccessibilityFactory }
