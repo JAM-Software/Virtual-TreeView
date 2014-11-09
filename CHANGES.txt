@@ -1,4 +1,11 @@
-V5.5.1: (planned for 13 Oct 2014)
+V5.5.2: (under development)
+  * Various improvements regarding code style
+  * Implemented #471: Add emVisibleDueToExpansion and emSelected to TVTExportMode  
+  * Fixed issue #488: XE7 packages should depend on one another and use suffix 21
+  * Fixed issue #462: Undo r636, make VirtualTreesD require VirtualTreesR again
+  * Fixed issue #489 XE2 compiler switch error
+       
+V5.5.1: (13 Oct 2014)
   * Fixed issue #479: The style hooks for the VCL styles are now registered for TVirtualStringTree and TVirtualDrawTree instead of TBaseVirtualTree, which makes it easier to use own style hooks in derived classes.  
   * Partial fix for issue #478: The standard VCL property StyleElemets (public in TControl in RAD Studio XE3 and higher) is now supported and published for TVirtualStringTree and TVirtualDrawTree (XE3 and higher). This means you can define if the font and the backgrounbd color is taken from the VCL style or the control's properties. Leaving out seBorder is not yet working well, more work will be necessary.
   *  Fixed issue #473: Return type of GetUtilityImages should be TCustomImageList
