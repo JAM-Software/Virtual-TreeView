@@ -1,5 +1,5 @@
-Supported Delphi version: Delphi 7, Delphi 2006 - XE, RAD Studio XE2
-Supported Windows Versions: XP, 2003, Vista, 2008, 7, 2008R2
+Supported Delphi version: Delphi 7, Delphi 2006 - XE, RAD Studio XE2 - XE7
+Supported Windows Versions: XP and higher
 
 
 The former installer is no longer maintained, but installation is quite easy:
@@ -7,7 +7,7 @@ Extract the entire(!) ZIP file and follow the instzructions below for your
 Delphi / RAD Studio version.
 
 
-Delphi / RAD Studio XE - XE6 Installation
+Delphi / RAD Studio XE - XE7 Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. Open the project group "Packages\RAD Studio XE*\RAD Studio XE*.groupproj"
 2. Right click on "VirtualTreesD*.bpl" and click "Install"
