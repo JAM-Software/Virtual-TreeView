@@ -1,13 +1,14 @@
-Supported Delphi version: RAD Studio XE3 and higher
-Supported Windows Versions: Windows XP and higher
+Supported Delphi version: Delphi 7, Delphi 2006 - XE, RAD Studio XE2 - XE7
+Supported Windows Versions: XP and higher
 
 
-The former installer of V4 is no longer maintained, but installation is quite easy:
-Extract the entire(!) ZIP file and follow the instructions below.
+The former installer is no longer maintained, but installation is quite easy:
+Extract the entire(!) ZIP file and follow the instzructions below for your 
+Delphi / RAD Studio version.
 
 
-Delphi / RAD Studio XE3 and higher Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Delphi / RAD Studio XE - XE7 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. Open the project group "Packages\RAD Studio XE*\RAD Studio XE*.groupproj"
 2. Right click on "VirtualTreesD*.bpl" and click "Install"
 3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
@@ -18,6 +19,38 @@ Delphi / RAD Studio XE3 and higher Installation
       Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK"
    b) Click "System Include path > [...]"                                                      
       Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK""
+
+Delphi 7 Installation
+~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 7\VirtualTrees.bpg"
+2. Right click on "VirtualTreesD" and click "Install"
+3. Go to "Tools > Environment Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2007 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2007\Delphi 2007.groupproj"
+2. Right click on "VirtualTreesD.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2009 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2009\Delphi 2009.groupproj"
+2. Right click on "VirtualTreesD12.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
+
+Delphi 2010 Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\Delphi 2010\Delphi 2010.groupproj"
+2. Right click on "VirtualTreesD14.bpl" and click "Install"
+3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+
 
 
 Troubleshooting

@@ -66,7 +66,14 @@ unit VTHeaderPopup;
 interface
 
 uses
-  Vcl.Menus, VirtualTrees;
+  {$ifdef TNT}
+    TntMenus,
+    TnTClasses,
+  {$else}
+    Menus,
+    Classes,
+  {$endif TNT}
+    VirtualTrees;
 
 type
   TVTHeaderPopupOption = (
@@ -86,15 +93,23 @@ type
     var Cmd: TAddPopupItemType) of object;
   TColumnChangeEvent = procedure(const Sender: TBaseVirtualTree; const Column: TColumnIndex; Visible: Boolean) of object;
 
-  TVTMenuItem = TMenuItem;
+  {$ifdef TNT}
+    TVTMenuItem = TTntMenuItem;
+  {$else}
+    TVTMenuItem = TMenuItem;
+  {$endif}
 
-  TVTHeaderPopupMenu = class(TPopupMenu)
-  strict private
+  {$ifdef TNT}
+    TVTHeaderPopupMenu = class(TTntPopupMenu)
+  {$else}
+    TVTHeaderPopupMenu = class(TPopupMenu)
+  {$endif}
+  private
     FOptions: TVTHeaderPopupOptions;
 
     FOnAddHeaderPopupItem: TAddHeaderPopupItemEvent;
     FOnColumnChange: TColumnChangeEvent;
-  strict protected
+  protected
     procedure DoAddHeaderPopupItem(const Column: TColumnIndex; out Cmd: TAddPopupItemType); virtual;
     procedure DoColumnChange(Column: TColumnIndex; Visible: Boolean); virtual;
     procedure OnMenuItemClick(Sender: TObject);
@@ -112,7 +127,7 @@ type
 implementation
 
 uses
-  Winapi.Windows, System.Classes;
+  Windows;
 
 const
   cResizeToFitMenuItemName = 'VT_ResizeToFitMenuItem';
