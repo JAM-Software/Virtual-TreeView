@@ -1,0 +1,43 @@
+package VirtualTreesD;
+
+{$R *.res}
+{$R '..\..\Design\VirtualTrees.dcr'}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Virtual Treeview design time package'}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  DesignIde,
+  vcl,
+  rtl;
+
+contains
+  VirtualTrees in '..\..\Source\VirtualTrees.pas',
+  VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas',
+  VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
+  VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
+  VTAccessibility in '..\..\Source\VTAccessibility.pas';
+
+end.
+
