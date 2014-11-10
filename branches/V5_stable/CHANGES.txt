@@ -1,6 +1,6 @@
-V5.5.2: (under development)
+V5.5.2: (10 Nov 2014)
   * Various improvements regarding code style
-  * Implemented #471: Add emVisibleDueToExpansion and emSelected to TVTExportMode  
+  * Implemented #471: Added emVisibleDueToExpansion and emSelected to TVTExportMode  
   * Fixed issue #488: XE7 packages should depend on one another and use suffix 21
   * Fixed issue #462: Undo r636, make VirtualTreesD require VirtualTreesR again
   * Fixed issue #489 XE2 compiler switch error
