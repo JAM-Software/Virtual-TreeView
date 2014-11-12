@@ -35261,8 +35261,8 @@ begin
     //       for 9x/Me.
     if vsMultiline in Node.States then
     begin
-      Height := ComputeNodeHeight(Canvas, Node, Column);
       DoPaintText(Node, Canvas, Column, ttNormal);
+      Height := ComputeNodeHeight(Canvas, Node, Column);
       // Disabled node color overrides all other variants.
       if (vsDisabled in Node.States) or not Enabled then
         Canvas.Font.Color := FColors.DisabledColor;
