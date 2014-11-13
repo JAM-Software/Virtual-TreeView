@@ -31,7 +31,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <SanitizedProjectName>VirtualTreesD</SanitizedProjectName>
-        <DCC_HppOutput>..\..\Source\hpp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_Description>VirtualTreeView Controls</DCC_Description>
