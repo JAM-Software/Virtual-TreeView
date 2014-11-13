@@ -52,7 +52,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
-        <DCC_HppOutput>..\..\source\hpp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\source</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_UnitSearchPath>..\..\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
@@ -125,6 +125,9 @@
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <ItemGroup>
+        <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
+            <BuildOrder>9</BuildOrder>
+        </DelphiCompile>
         <PackageImport Include="dclstd.bpi">
             <BuildOrder>10</BuildOrder>
         </PackageImport>
@@ -140,23 +143,20 @@
         <PackageImport Include="vclactnband.bpi">
             <BuildOrder>7</BuildOrder>
         </PackageImport>
+        <PackageImport Include="vclimg.bpi">
+            <BuildOrder>10</BuildOrder>
+        </PackageImport>
         <PackageImport Include="vclx.bpi">
             <BuildOrder>8</BuildOrder>
         </PackageImport>
+        <CppCompile Include="VirtualTreesCD.cpp">
+            <BuildOrder>0</BuildOrder>
+        </CppCompile>
         <PackageImport Include="VirtualTreesCR.bpi">
             <BuildOrder>9</BuildOrder>
         </PackageImport>
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>6</BuildOrder>
-        </PackageImport>
-        <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
-            <BuildOrder>9</BuildOrder>
-        </DelphiCompile>
-        <CppCompile Include="VirtualTreesCD.cpp">
-            <BuildOrder>0</BuildOrder>
-        </CppCompile>
-        <PackageImport Include="vclimg.bpi">
-            <BuildOrder>10</BuildOrder>
         </PackageImport>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

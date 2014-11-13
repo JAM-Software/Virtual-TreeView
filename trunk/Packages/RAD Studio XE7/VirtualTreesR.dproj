@@ -39,7 +39,7 @@
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <SanitizedProjectName>VirtualTreesR</SanitizedProjectName>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_HppOutput>..\..\Source\hpp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DllSuffix>21</DllSuffix>
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
