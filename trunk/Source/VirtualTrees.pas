@@ -24007,7 +24007,7 @@ begin
   begin
     DoStateChange([tsEditPending]);
     FEditColumn := FFocusedColumn;
-    SetTimer(Handle, EditTimer, FEditDelay, nil);
+    SetTimer(Handle, EditTimer, 0, nil);
   end;
 end;
 
