@@ -14082,7 +14082,8 @@ begin
     DeleteObject(FDottedBrush);
   FDottedBrush := 0;
 
-  FreeAndNil(FHeader);
+  FHeader.Free;
+  FHeader := nil; // Do not use FreeAndNil() before checking issue #497
   FreeAndNil(FOptions); // WM_NCDESTROY accesses FOptions
 
   FreeMem(FRoot);
