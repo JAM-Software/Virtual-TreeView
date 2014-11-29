@@ -25388,7 +25388,7 @@ begin
     RTLOffset := ComputeRTLOffset(True)
   else
     RTLOffset := 0;
-   FHeader.Columns.PaintHeader(Canvas,FHeaderRect,Point(-RTLOffset, 0), -FEffectiveOffsetX);
+
   // The update rect has already been filled in WMPaint, as it is the window's update rect, which gets
   // reset when BeginPaint is called (in the ancestor).
   // The difference to the DC's clipbox is that it is also valid with internal paint operations used
