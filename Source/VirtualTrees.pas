@@ -16299,6 +16299,7 @@ begin
               lNodeHeight := Child.NodeHeight;
               DoMeasureItem(Canvas, Child, lNodeHeight);
               Child.NodeHeight := lNodeHeight;
+              Child.TotalHeight := lNodeHeight;
             end;
             Inc(NewHeight, Child.NodeHeight);
           end;
