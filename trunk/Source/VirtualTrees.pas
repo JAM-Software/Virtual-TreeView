@@ -27311,6 +27311,7 @@ begin
     end;
     Result := Parent.LastChild;
 
+    //TODO: The above code implicitely triggers OnMeasureItem, but the NodeData is not set then. Consider doing this similar to InsertNode() with a combination of MakeNewNode and InternalConnectNode()
     // Check if there is initial user data and there is also enough user data space allocated.
     if Assigned(UserData) then
       if FNodeDataSize >= SizeOf(Pointer) then
