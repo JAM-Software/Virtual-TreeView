@@ -7239,9 +7239,12 @@ begin
   // and cannot be updated during a drag operation. With the following call painting is again enabled.
   if not FFullDragging then
     LockWindowUpdate(0);
-  if Assigned(FDropTargetHelper) and FFullDragging then
-    FDropTargetHelper.DragEnter(FOwner.Handle, DataObject, Pt, Effect);
-
+  if Assigned(FDropTargetHelper) and FFullDragging then begin
+    if toAutoScroll in Self.FOwner.TreeOptions.AutoOptions then
+      FDropTargetHelper.DragEnter(FOwner.Handle, DataObject, Pt, Effect)
+    else
+      FDropTargetHelper.DragEnter(0, DataObject, Pt, Effect);// Do not pass handle, otherwise the IDropTargetHelper will perform autoscroll. Issue #486
+  end;
   FDragSource := FOwner.GetTreeFromDataObject(DataObject);
   Result := FOwner.DragEnter(KeyState, Pt, Effect);
 end;
