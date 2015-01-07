@@ -1,3 +1,8 @@
+V5.5.3: (08 Jan 2015)
+  * Fixed issue #495: Incorrect text vertical align when changing font in OnPaintText
+  * Fixed Issue #496: Access violation at VT destroy
+  * Fixed issue #498: Node totalheight not initialized properly when adding new node and using toVariableNodeHeight
+        
 V5.5.2: (10 Nov 2014)
   * Various improvements regarding code style
   * Implemented #471: Added emVisibleDueToExpansion and emSelected to TVTExportMode  
