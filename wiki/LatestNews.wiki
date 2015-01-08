@@ -1,8 +1,14 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
-== 10 Nov 2014: Release of V5.5.2 ==
+== 10 Nov 2014: Release of V5.5.3 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
+  * Fixed issue #495: Incorrect text vertical align when changing font in OnPaintText
+  * Fixed Issue #496: Access violation at VT destroy
+  * Fixed issue #498: Node totalheight not initialized properly when adding new node and using toVariableNodeHeight
+
+== 10 Nov 2014: Release of V5.5.2 ==
+List of changes: 
   * Various improvements regarding code style
   * Implemented #471: Added emVisibleDueToExpansion and emSelected to TVTExportMode  
   * Fixed issue #488: XE7 packages should depend on one another and use suffix 21
