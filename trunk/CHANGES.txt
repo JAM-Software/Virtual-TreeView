@@ -1,8 +1,19 @@
 V6.0 (under development)
+  * Fixed #506: Autosort is being triggered at design-time.
+  * Fixed issue #486: AutoScroll is performed although toAutoScroll is not set.
+  * DoMeasureItem() now ensures that the node was initialized.
+  * Fixed issue #493: Editing with DblClick should always open editor immediately.
+  * TVirtualTreeColumns.UpdatePositions() now exists immediately if the control is destroying, ths prevents AVs.
+  * Added support for CBuilder XE7.  
   * Supporting only Delphi / C++ Builder XE3 and higher
   * A larger patch from Diemtar Rösler was applied which addresses various issue regarding VCL styles (especially #478 and #491).
   * Improved support for C++ Builder  
 
+V5.5.3: (08 Jan 2015)
+  * Fixed issue #495: Incorrect text vertical align when changing font in OnPaintText
+  * Fixed Issue #496: Access violation at VT destroy
+  * Fixed issue #498: Node totalheight not initialized properly when adding new node and using toVariableNodeHeight
+        
 V5.5.2: (10 Nov 2014)
   * Various improvements regarding code style
   * Implemented #471: Add emVisibleDueToExpansion and emSelected to TVTExportMode  
