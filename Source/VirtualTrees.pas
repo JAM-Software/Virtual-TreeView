@@ -3014,7 +3014,10 @@ type
     function GetNodeAt(const P: TPoint): PVirtualNode; overload; inline;
     function GetNodeAt(X, Y: Integer): PVirtualNode; overload;
     function GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode; overload;
-    function GetNodeData(Node: PVirtualNode): Pointer;
+    function GetNodeData(Node: PVirtualNode): Pointer; overload;
+    function GetNodeData<T>(pNode: PVirtualNode): T; overload; inline;
+    function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
+    function GetFirstSelectedNodeData<T>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
@@ -30168,6 +30171,48 @@ begin
     Result := PByte(@Node.Data) + FTotalInternalDataSize;
     Include(Node.States, vsOnFreeNodeCallRequired); // We now need to call OnFreeNode, see bug #323
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNodeData<T>(pNode: PVirtualNode): T;
+
+// Returns associated data converted to the type given in the generic part of the function.
+
+begin
+  if Assigned(pNode) then
+    Result := T(Self.GetNodeData(pNode)^)
+  else
+    Result := Default(T);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetNodeDataAt<T>(pXCoord, pYCoord: Integer): T;
+
+// Returns associated data at the specified coordinates converted to the type given in the generic part of the function.
+
+var
+  lNode: PVirtualNode;
+begin
+  lNode := GetNodeAt(pXCoord, pYCoord);
+
+  if not Assigned(lNode) then
+  begin
+    Exit(nil);
+  end;
+
+  Result := T(Self.GetNodeData(lNode)^);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetFirstSelectedNodeData<T>(): T;
+
+// Returns of the first selected node associated data converted to the type given in the generic part of the function.
+
+begin
+  Result := T(Self.GetNodeData(GetFirstSelected())^);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
