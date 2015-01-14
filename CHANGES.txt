@@ -1,3 +1,6 @@
+V5.5.4:
+* Fixed #506: Autosort is being triggered at design-time
+
 V5.5.3: (08 Jan 2015)
   * Fixed issue #495: Incorrect text vertical align when changing font in OnPaintText
   * Fixed Issue #496: Access violation at VT destroy
