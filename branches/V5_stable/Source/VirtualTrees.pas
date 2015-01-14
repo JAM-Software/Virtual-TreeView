@@ -10396,6 +10396,8 @@ var
   NewClickIndex: Integer;
 
 begin
+  if (csDesigning in Header.Treeview.ComponentState) then
+    exit;
   // Convert vertical position to local coordinates.
   Inc(P.Y, FHeader.FHeight);
   NewClickIndex := ColumnFromPosition(P);
