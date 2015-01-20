@@ -1,9 +1,9 @@
 #labels Featured
 = Latest news on the Virtual Treeview Control =
 
-== 20 Jan 2015: Switch to GitHub? ==
+== 20 Jan 2015: Switch to !GitHub? ==
 
-In the past months several developers and users suggested to move this project to Git or GitHub. The most recent developer was Vincent Parrett, some may know him because of his work on DUnitX. Vincent did an import of the Google code repository at Github: [https://github.com/Virtual-TreeView/Virtual-TreeView]
+In the past months several developers and users suggested to move this project to Git or !GitHub. The most recent developer was Vincent Parrett, some may know him because of his work on DUnitX. Vincent did an import of the Google code repository at GitHub: [https://github.com/Virtual-TreeView/Virtual-TreeView]
 
 In case you think switching to GitHub is not a good idea, please feel free to contact me. Otherwise we may officiall move this project next week.
 
