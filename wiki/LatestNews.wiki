@@ -3,9 +3,9 @@
 
 == 20 Jan 2015: Switch to !GitHub? ==
 
-In the past months several developers and users suggested to move this project to Git or !GitHub. The most recent developer was Vincent Parrett, some may know him because of his work on DUnitX. Vincent did an import of the Google code repository at GitHub: [https://github.com/Virtual-TreeView/Virtual-TreeView]
+In the past months several developers and users suggested to move this project to Git or !GitHub. The most recent developer was Vincent Parrett, some may know him because of his work on !DUnitX. Vincent did an import of the Google code repository at !GitHub: [https://github.com/Virtual-TreeView/Virtual-TreeView]
 
-In case you think switching to GitHub is not a good idea, please feel free to contact me. Otherwise we may officiall move this project next week.
+In case you think switching to !GitHub is not a good idea, please feel free to contact me. Otherwise we may officiall move this project next week.
 
 == 08 Jan 2015: Release of V5.5.3 ==
 List of changes: (*[https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN Download]*)
@@ -25,7 +25,7 @@ List of changes:
 
 Some of you may have read [http://blog.kassebaum.eu/?p=379 this blog post] on Roman's page. I do agree with many parts of the blog post. Supporting old Delphi versions that I do not have installed is time consuming. And not being able to use new language features that I use throughout my own projects was a pity. This is why I discussed with some of the remaining Virtual Treeview developers earlier this year to limit the support to newer Delphi versions (e.g. Delphi 2010 and higher) and make a branch for the older version within the SVN repository. Then this new development came up.
 
-While I highly appreciate Roman's work for good but mostly abandoned Delphi components, I don't see a large benefit in doing a new fork of Virtual TreeView at a different site. In my opinion we should join our forces instead of splitting them up (with the consequence of diverging forks and the need of complex merges).
+While I highly appreciate Roman's work for good but mostly abandoned Delphi components, I don't see a large benefit in doing a new fork of Virtual !TreeView at a different site. In my opinion we should join our forces instead of splitting them up (with the consequence of diverging forks and the need of complex merges).
 
 This is why Roman, Marco and I agreed to keep the development of Virtual Treeview centrally in this place but to support only XE3 and higher in the trunk. The trunk will be the base for V6 which I expect in 2015. Why XE3 some may ask? It allows us to remove all $ifdef statements and allows us the use record helpers for value types, which I personally like very much.
 
