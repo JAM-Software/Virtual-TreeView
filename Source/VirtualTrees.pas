@@ -2073,7 +2073,7 @@ type
     FDropTargetNode: PVirtualNode;               // node currently selected as drop target
     FLastDropMode: TDropMode;                    // set while dragging and used to track changes
     FDragSelection: TNodeArray;                  // temporary copy of FSelection used during drag'n drop
-    FLastDragEffect: LongInt;                    // The last executed drag effect
+    FLastDragEffect: Integer;                    // The last executed drag effect
     FDragType: TVTDragType;                      // used to switch between OLE and VCL drag'n drop
     FDragImage: TVTDragImage;                    // drag image management
     FDragWidth,
@@ -2620,7 +2620,7 @@ type
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
     procedure DragAndDrop(AllowedEffects: DWord; DataObject: IDataObject;
-      var DragEffect: LongInt); virtual;
+      var DragEffect: Integer); virtual;
     procedure DragCanceled; override;
     function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
@@ -2628,7 +2628,7 @@ type
     procedure DragFinished; virtual;
     procedure DragLeave; virtual;
     function DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
-      var Effect: LongInt): HResult; reintroduce; virtual;
+      var Effect: Integer): HResult; reintroduce; virtual;
     procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: Integer); virtual;
     procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer; UseSelectedBkColor: Boolean = False); virtual;
     procedure EndOperation(OperationKind: TVTOperationKind);
@@ -2748,7 +2748,7 @@ type
     property DragImageKind: TVTDragImageKind read FDragImageKind write FDragImageKind default diComplete;
     property DragOperations: TDragOperations read FDragOperations write FDragOperations default [doCopy, doMove];
     property DragSelection: TNodeArray read FDragSelection;
-    property LastDragEffect: LongInt read FLastDragEffect;
+    property LastDragEffect: Integer read FLastDragEffect;
     property DragType: TVTDragType read FDragType write FDragType default dtOLE;
     property DragWidth: Integer read FDragWidth write FDragWidth default 200;
     property DrawSelectionMode: TVTDrawSelectionMode read FDrawSelectionMode write FDrawSelectionMode
@@ -3990,7 +3990,7 @@ type
   // protection against TRect record method that cause problems with with-statements
   TWithSafeRect = record
     case Integer of
-      0: (Left, Top, Right, Bottom: Longint);
+      0: (Left, Top, Right, Bottom: Integer);
       1: (TopLeft, BottomRight: TPoint);
   end;
 
@@ -7269,7 +7269,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDragManager.DragOver(KeyState: Integer; Pt: TPoint; var Effect: LongInt): HResult;
+function TVTDragManager.DragOver(KeyState: Integer; Pt: TPoint; var Effect: Integer): HResult;
 
 begin
   if Assigned(FDropTargetHelper) and FFullDragging then
@@ -21338,7 +21338,7 @@ procedure TBaseVirtualTree.DoDragging(P: TPoint);
   //--------------- end local function ----------------------------------------
 
 var
-  AllowedEffects: LongInt;
+  AllowedEffects: Integer;
   DragObject: TDragObject;
 
   DataObject: IDataObject;
@@ -22719,7 +22719,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; DataObject: IDataObject; var DragEffect: LongInt);
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; DataObject: IDataObject; var DragEffect: Integer);
 var
   lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
 begin
@@ -22727,7 +22727,7 @@ begin
   begin
     lDragEffect := DWord(DragEffect);
     SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
-    DragEffect := LongInt(lDragEffect);
+    DragEffect := lDragEffect;
   end
   else
   Winapi.ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
@@ -22890,12 +22890,12 @@ begin
   GetCursorPos(P);
   P := ScreenToClient(P);
   if tsRightButtonDown in FStates then
-    Perform(WM_RBUTTONUP, 0, LPARAM(Longint(PointToSmallPoint(P))))
+    Perform(WM_RBUTTONUP, 0, LPARAM(PointToSmallPoint(P)))
   else
     if tsMiddleButtonDown in FStates then
-      Perform(WM_MBUTTONUP, 0, LPARAM(Longint(PointToSmallPoint(P))))
+      Perform(WM_MBUTTONUP, 0, LPARAM(PointToSmallPoint(P)))
     else
-      Perform(WM_LBUTTONUP, 0, LPARAM(Longint(PointToSmallPoint(P))));
+      Perform(WM_LBUTTONUP, 0, LPARAM(PointToSmallPoint(P)));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22925,7 +22925,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
-  var Effect: LongInt): HResult;
+  var Effect: Integer): HResult;
 
 // callback routine for the drop target interface
 
@@ -26596,7 +26596,7 @@ begin
   {$ifdef CPUX64}
   SetWindowLongPtr(FPanningWindow, GWLP_WNDPROC, LONG_PTR(System.Classes.MakeObjectInstance(PanningWindowProc)));
   {$else}
-  SetWindowLong(FPanningWindow, GWL_WNDPROC, Longint(System.Classes.MakeObjectInstance(PanningWindowProc)));
+  SetWindowLong(FPanningWindow, GWL_WNDPROC, NativeInt(System.Classes.MakeObjectInstance(PanningWindowProc)));
   {$endif CPUX64}
   ShowWindow(FPanningWindow, SW_SHOWNOACTIVATE);
 
@@ -32816,7 +32816,7 @@ type
   // needed to handle OLE global memory objects
   TOLEMemoryStream = class(TCustomMemoryStream)
   public
-    function Write(const Buffer; Count: Integer): Longint; override;
+    function Write(const Buffer; Count: Integer): Integer; override;
   end;
 
 //----------------------------------------------------------------------------------------------------------------------
