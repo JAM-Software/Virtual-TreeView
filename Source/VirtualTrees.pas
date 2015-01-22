@@ -36164,6 +36164,7 @@ var
   CellPadding: AnsiString;
 
 begin
+  StartOperation(TVTOperationKind.okExport);
   Buffer := TBufferedAnsiString.Create;
   try
     // For customization by the application or descendants we use again the redirected font change event.
@@ -36250,7 +36251,7 @@ begin
     MaxLevel := 0;
     // The table consists of visible columns and rows as used in the tree, but the main tree column is splitted
     // into several HTML columns to accomodate the indentation.
-    while Assigned(Run) do
+    while Assigned(Run) and not FOperationCanceled do
     begin
       if (CanExportNode(Run)) then
       begin
@@ -36327,7 +36328,7 @@ begin
 
     // Now go through the tree.
     Run := Save;
-    while Assigned(Run) do
+    while Assigned(Run) and not FOperationCanceled do
     begin
       if ((not CanExportNode(Run)) or (Assigned(FOnBeforeNodeExport) and (not FOnBeforeNodeExport(Self, etHTML, Run)))) then
       begin
@@ -36466,6 +36467,7 @@ begin
 
     Result := Buffer.AsString;
   finally
+    EndOperation(TVTOperationKind.okExport);
     Buffer.Free;
   end;
 end;
@@ -36680,6 +36682,7 @@ var
 
 begin
   Buffer := TBufferedAnsiString.Create;
+  StartOperation(TVTOperationKind.okExport);
   try
     // For customization by the application or descendants we use again the redirected font change event.
     RedirectFontChangeEvent(Canvas);
@@ -36760,7 +36763,7 @@ begin
 
     // Now write the contents.
     Run := Save;
-    while Assigned(Run) do
+    while Assigned(Run) and not FOperationCanceled do
     begin
       if ((not CanExportNode(Run)) or
          (Assigned(FOnBeforeNodeExport) and (not FOnBeforeNodeExport(Self, etRTF, Run)))) then
@@ -36872,6 +36875,7 @@ begin
 
     RestoreFontChangeEvent(Canvas);
   finally
+    EndOperation(TVTOperationKind.okExport);
     Buffer.Free;
   end;
 end;
@@ -36890,59 +36894,64 @@ var
   Columns: TColumnsArray;
 
 begin
-  Columns := nil;
-  GetRenderStartValues(Source, Run, GetNextNode);
-  Save := Run;
+  StartOperation(TVTOperationKind.okExport);
+  try
+    Columns := nil;
+    GetRenderStartValues(Source, Run, GetNextNode);
+    Save := Run;
 
-  RenderColumns := FHeader.UseColumns and ( hoVisible in FHeader.Options );
+    RenderColumns := FHeader.UseColumns and ( hoVisible in FHeader.Options );
 
-  if Assigned(FOnBeforeTreeExport) then
-    FOnBeforeTreeExport(Self, etCustom);
+    if Assigned(FOnBeforeTreeExport) then
+      FOnBeforeTreeExport(Self, etCustom);
 
-  // Fill table header.
-  if RenderColumns then
-  begin
-    if Assigned(FOnBeforeHeaderExport) then
-      FOnBeforeHeaderExport(Self, etCustom);
-
-    Columns := FHeader.FColumns.GetVisibleColumns;
-    for I := 0 to High(Columns) do
+    // Fill table header.
+    if RenderColumns then
     begin
-      if Assigned(FOnBeforeColumnExport) then
-        FOnBeforeColumnExport(Self, etCustom, Columns[I]);
+      if Assigned(FOnBeforeHeaderExport) then
+        FOnBeforeHeaderExport(Self, etCustom);
 
-      if Assigned(FOnColumnExport) then
-        FOnColumnExport(Self, etCustom, Columns[I]);
+      Columns := FHeader.FColumns.GetVisibleColumns;
+      for I := 0 to High(Columns) do
+      begin
+        if Assigned(FOnBeforeColumnExport) then
+          FOnBeforeColumnExport(Self, etCustom, Columns[I]);
 
-      if Assigned(FOnAfterColumnExport) then
-        FOnAfterColumnExport(Self, etCustom, Columns[I]);
+        if Assigned(FOnColumnExport) then
+          FOnColumnExport(Self, etCustom, Columns[I]);
+
+        if Assigned(FOnAfterColumnExport) then
+          FOnAfterColumnExport(Self, etCustom, Columns[I]);
+      end;
+
+      if Assigned(FOnAfterHeaderExport) then
+        FOnAfterHeaderExport(Self, etCustom);
     end;
 
-    if Assigned(FOnAfterHeaderExport) then
-      FOnAfterHeaderExport(Self, etCustom);
-  end;
-
-  // Now write the content.
-  Run := Save;
-  while Assigned(Run) do
-  begin
-    if CanExportNode(Run) then
+    // Now write the content.
+    Run := Save;
+    while Assigned(Run) and not FOperationCanceled do
     begin
-      if Assigned(FOnBeforeNodeExport) then
-        FOnBeforeNodeExport(Self, etCustom, Run);
+      if CanExportNode(Run) then
+      begin
+        if Assigned(FOnBeforeNodeExport) then
+          FOnBeforeNodeExport(Self, etCustom, Run);
 
-      if Assigned(FOnNodeExport) then
-        FOnNodeExport(Self, etCustom, Run);
+        if Assigned(FOnNodeExport) then
+          FOnNodeExport(Self, etCustom, Run);
 
-      if Assigned(FOnAfterNodeExport) then
-        FOnAfterNodeExport(Self, etCustom, Run);
+        if Assigned(FOnAfterNodeExport) then
+          FOnAfterNodeExport(Self, etCustom, Run);
+      end;
+
+      Run := GetNextNode(Run);
     end;
 
-    Run := GetNextNode(Run);
+    if Assigned(FOnAfterTreeExport) then
+      FOnAfterTreeExport(Self, etCustom);
+  finally
+    EndOperation(TVTOperationKind.okExport);
   end;
-
-  if Assigned(FOnAfterTreeExport) then
-    FOnAfterTreeExport(Self, etCustom);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -36978,6 +36987,7 @@ var
 begin
   Columns := nil;
   Buffer := TBufferedAnsiString.Create;
+  StartOperation(TVTOperationKind.okExport);
   try
     RenderColumns := FHeader.UseColumns;
     if RenderColumns then
@@ -36990,7 +37000,7 @@ begin
     // characters. There are always MaxLevel separator chars in a line (main column only). Either before the caption
     // to ident it or after the caption to make the following column aligned.
     MaxLevel := 0;
-    while Assigned(Run) do
+    while Assigned(Run) and not FOperationCanceled do
     begin
       Level := GetNodeLevel(Run);
       if Level > MaxLevel then
@@ -37026,7 +37036,7 @@ begin
     Run := Save;
     if RenderColumns then
     begin
-      while Assigned(Run) do
+      while Assigned(Run) and not FOperationCanceled do
       begin
         if (not CanExportNode(Run) or
            (Assigned(FOnBeforeNodeExport) and (not FOnBeforeNodeExport(Self, etText, Run)))) then
@@ -37070,7 +37080,7 @@ begin
     end
     else
     begin
-      while Assigned(Run) do
+      while Assigned(Run) and not FOperationCanceled do
       begin
         if ((not CanExportNode(Run)) or
            (Assigned(FOnBeforeNodeExport) and (not FOnBeforeNodeExport(Self, etText, Run)))) then
@@ -37093,6 +37103,7 @@ begin
 
     Result := Buffer.AsString;
   finally
+    EndOperation(TVTOperationKind.okExport);
     Buffer.Free;
   end;
 end;
@@ -37132,10 +37143,10 @@ var
   Buffer: TWideBufferedString;
 
 begin
-  Columns := nil;
-
   Buffer := TWideBufferedString.Create;
+  StartOperation(TVTOperationKind.okExport);
   try
+    Columns := nil;
     RenderColumns := FHeader.UseColumns;
     if RenderColumns then
       Columns := FHeader.FColumns.GetVisibleColumns;
@@ -37147,7 +37158,7 @@ begin
     // characters. There are always MaxLevel separator chars in a line (main column only). Either before the caption
     // to ident it or after the caption to make the following column aligned.
     MaxLevel := 0;
-    while Assigned(Run) do
+    while Assigned(Run) and not FOperationCanceled do
     begin
       Level := GetNodeLevel(Run);
       if Level > MaxLevel then
@@ -37183,7 +37194,7 @@ begin
     Run := Save;
     if RenderColumns then
     begin
-      while Assigned(Run) do
+      while Assigned(Run)  and not FOperationCanceled do
       begin
         for I := 0 to High(Columns) do
         begin
@@ -37226,7 +37237,7 @@ begin
     end
     else
     begin
-      while Assigned(Run) do
+      while Assigned(Run) and not FOperationCanceled do
       begin
         Text := Self.Text[Run, NoColumn];
         Level := GetNodeLevel(Run);
@@ -37239,6 +37250,7 @@ begin
     end;
     Result := Buffer.AsString;
   finally
+    EndOperation(TVTOperationKind.okExport);
     Buffer.Free;
   end;
 end;
