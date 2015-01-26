@@ -25902,7 +25902,7 @@ begin
     with FHeader.FColumns do
     if poColumnColor in PaintOptions then
     begin
-      if (VclStyleEnabled and not (coParentColor in FHeader.FColumns[Column].FOptions)) then
+      if (VclStyleEnabled and (coParentColor in FHeader.FColumns[Column].FOptions)) then
         Brush.Color := FColors.BackGroundColor
       else
         Brush.Color := Items[Column].Color;
