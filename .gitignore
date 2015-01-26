@@ -2,3 +2,4 @@ Packages/RAD Studio XE7/VirtualTreesD.res
 Packages/RAD Studio XE7/VirtualTreesR.res
 Source/__history/
 *.local
+*.hpp
