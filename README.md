@@ -3,6 +3,7 @@ Virtual Treeview is a Delphi treeview control built from ground up. Many years o
 
 ###Downloads
 Official releases can be downloaded from: http://www.jam-software.de/virtual-treeview/. 
+
 **[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)**
 
 The official releases of **V5** and its [branch](https://github.com/Virtual-TreeView/Virtual-TreeView/tree/V5_stable) support **Delphi 7 to XE7**, the trunk and the upcoming **V6** will support **RAD Studio XE3 to XE7**.
