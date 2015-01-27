@@ -509,7 +509,8 @@ type
     okAutoFitColumns,
     okGetMaxColumnWidth,
     okSortNode,
-    okSortTree
+    okSortTree,
+    okExport
   );
   TVTOperationKinds = set of TVTOperationKind;
 

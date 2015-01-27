@@ -36,23 +36,7 @@
 /Win64
 /OSX32
 /__history
-/Tests/Win32
-/Tests/Win64
-/Test/__history
-Expert/__history
-Expert/Win32/
 
 
-# Testing Output  #
-###################
-Tests/dunit-report.xml
-Tests/dunitx-results.xml
-Examples/dunitx-results.xml
-*.fb7lck
-*.fbl7
-*.fbpInf
-Examples/Win32/
-Examples/Win64/
-Examples/OSX32/
 
 
