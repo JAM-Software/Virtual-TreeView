@@ -9,7 +9,7 @@ interface
 uses 
   Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics, 
   VirtualTrees, ActnList, ComCtrls, ExtCtrls, StdCtrls, Controls, Classes,
-  ImgList;
+  ImgList, System.Actions;
 
 type
   TMainForm = class(TForm)
@@ -54,7 +54,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure TreeInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
-    procedure Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
+    procedure Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; const Text: string);
     procedure Button3Click(Sender: TObject);
     procedure Tree2DragAllowed(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
     procedure TreeDragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState;
@@ -77,7 +77,7 @@ var
 implementation                          
 
 uses
-  TypInfo, ShlObj, UrlMon;
+  TypInfo, ShlObj, UrlMon, VirtualTrees.ClipBoard;
   
 {$R *.DFM}
 {$R Res\Extra.res}  // Contains a little rich text for the rich edit control and a XP manifest.
@@ -543,7 +543,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TMainForm.Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
+procedure TMainForm.Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; const Text: string);
 
 var
   Data: PNodeData;

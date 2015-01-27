@@ -50,7 +50,7 @@ var
 implementation
 
 uses
-  States, Types;
+  States, Types,VirtualTrees.Utils;
   
 {$R *.dfm}
 
@@ -188,7 +188,7 @@ var
 
 begin
   R := Rect(0, 0, Bitmap.Width, Bitmap.Height);
-  VirtualTrees.AlphaBlend(0, Bitmap.Canvas.Handle, R, Point(0, 0), bmConstantAlphaAndColor, Alpha,
+  VirtualTrees.Utils.AlphaBlend(0, Bitmap.Canvas.Handle, R, Point(0, 0), bmConstantAlphaAndColor, Alpha,
     ColorToRGB(clHighlight));
   with Bitmap do
   begin
