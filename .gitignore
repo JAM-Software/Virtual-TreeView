@@ -29,6 +29,7 @@
 *.drc
 *.rc
 *.res
+*.local
 
 # Output Folders  #
 ###################
@@ -36,7 +37,3 @@
 /Win64
 /OSX32
 /__history
-
-
-
-
