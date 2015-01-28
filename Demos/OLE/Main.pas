@@ -9,7 +9,7 @@ interface
 uses 
   Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics, 
   VirtualTrees, ActnList, ComCtrls, ExtCtrls, StdCtrls, Controls, Classes,
-  ImgList;
+  ImgList, System.Actions;
 
 type
   TMainForm = class(TForm)
@@ -277,7 +277,7 @@ begin
             while Head^ <> #0 do
             begin
               Tail := Head;
-              while not (Tail^ in [WideChar(#0), WideChar(#13), WideChar(#10), WideChar(#9)]) do
+              while not CharInSet(Tail^, [WideChar(#0), WideChar(#13), WideChar(#10), WideChar(#9)]) do
                 Inc(Tail);
               if Head <> Tail then
               begin
@@ -334,7 +334,7 @@ begin
       while Head^ <> #0 do
       begin
         Tail := Head;
-        while not (Tail^ in [WideChar(#0), WideChar(#13), WideChar(#10)]) do
+        while not CharInSet(Tail^, [WideChar(#0), WideChar(#13), WideChar(#10)]) do
           Inc(Tail);
         if Head <> Tail then
         begin
