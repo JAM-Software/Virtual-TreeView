@@ -13822,7 +13822,13 @@ begin
     //cannot name any elements you add, which makes it useless.
     //To mitigate this, Hook up the OnPrepareButtonImages and draw them yourself.
     if Assigned(FOnPrepareButtonImages) then
-      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FMinusBM, FHotMinusBM, size)
+    begin
+      FillBitmap(FPlusBM);
+      FillBitmap(FHotPlusBM);
+      FillBitmap(FMinusBM);
+      FillBitmap(FHotMinusBM);
+      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FMinusBM, FHotMinusBM, size);
+    end
     else
     begin
       with FMinusBM, Canvas do
