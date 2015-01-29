@@ -24,6 +24,10 @@ unit VirtualTrees.Classes;
 
 interface
 
+{$WARN UNSAFE_TYPE OFF}
+{$WARN UNSAFE_CAST OFF}
+{$WARN UNSAFE_CODE OFF}
+
 uses
   Winapi.Windows;
 
