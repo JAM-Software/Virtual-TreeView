@@ -14,7 +14,7 @@ unit VTAccessibilityFactory;
 interface
 
 uses
-  Winapi.oleacc, System.Classes, VirtualTrees;
+  System.Classes, Winapi.oleacc, VirtualTrees;
 
 type
   IVTAccessibleProvider = interface
