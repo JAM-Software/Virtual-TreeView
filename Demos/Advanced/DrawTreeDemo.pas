@@ -72,7 +72,7 @@ var
 implementation
 
 uses
-  FileCtrl, ShellAPI, Mask, ShlObj, ActiveX, States;
+  FileCtrl, ShellAPI, Mask, ShlObj, ActiveX, States,VirtualTrees.Utils;
 
 {$R *.DFM}
 
