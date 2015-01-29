@@ -77,7 +77,7 @@ var
 implementation                          
 
 uses
-  TypInfo, ShlObj, UrlMon;
+  TypInfo, ShlObj, UrlMon, VirtualTrees.ClipBoard;
   
 {$R *.DFM}
 {$R Res\Extra.res}  // Contains a little rich text for the rich edit control and a XP manifest.
