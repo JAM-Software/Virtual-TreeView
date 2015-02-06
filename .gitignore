@@ -1,5 +1,39 @@
-Packages/RAD Studio XE7/VirtualTreesD.res
-Packages/RAD Studio XE7/VirtualTreesR.res
-Source/__history/
-*.local
+# Compiled source #
+###################
+*.dcu
+*.obj
+*.exe
+*.bpl
+*.bpi
+*.dcp
+*.rsm
+*.stat
+*.map
+
+# Generated source #
+###################
 *.hpp
+
+# Backup files    #
+###################
+*.~*
+
+# IDE Files	  #
+###################
+*.dproj.local
+*.groupproj.local
+*.identcache
+*.dsk
+*.tvsconfig
+*.otares
+*.drc
+*.rc
+*.res
+*.local
+
+# Output Folders  #
+###################
+/Win32
+/Win64
+/OSX32
+/__history

@@ -147,7 +147,6 @@ const
   CM_AUTOADJUST = CM_BASE + 2005;
 
 
-  CM_UPDATE_VCLSTYLE_SCROLLBARS = CM_BASE + 2050;
 
   // VT's own clipboard formats,
   // Note: The reference format is used internally to allow to link to a tree reference
@@ -559,18 +558,15 @@ type
     procedure SetPaintOptions(const Value: TVTPaintOptions);
     procedure SetSelectionOptions(const Value: TVTSelectionOptions);
   protected
-    property AnimationOptions: TVTAnimationOptions read FAnimationOptions write SetAnimationOptions
-      default DefaultAnimationOptions;
+  public
+    constructor Create(AOwner: TBaseVirtualTree); virtual;
+    procedure AssignTo(Dest: TPersistent); override;
+    property AnimationOptions: TVTAnimationOptions read FAnimationOptions write SetAnimationOptions  default DefaultAnimationOptions;
     property AutoOptions: TVTAutoOptions read FAutoOptions write SetAutoOptions default DefaultAutoOptions;
     property ExportMode: TVTExportMode read FExportMode write FExportMode default emAll;
     property MiscOptions: TVTMiscOptions read FMiscOptions write SetMiscOptions default DefaultMiscOptions;
     property PaintOptions: TVTPaintOptions read FPaintOptions write SetPaintOptions default DefaultPaintOptions;
-    property SelectionOptions: TVTSelectionOptions read FSelectionOptions write SetSelectionOptions
-      default DefaultSelectionOptions;
-  public
-    constructor Create(AOwner: TBaseVirtualTree); virtual;
-
-    procedure AssignTo(Dest: TPersistent); override;
+    property SelectionOptions: TVTSelectionOptions read FSelectionOptions write SetSelectionOptions  default DefaultSelectionOptions;
 
     property Owner: TBaseVirtualTree read FOwner;
   end;
@@ -660,7 +656,7 @@ type
     FFormatEtcArray: TFormatEtcArray;
     FCurrentIndex: Integer;
   public
-    constructor Create(Tree: TBaseVirtualTree; AFormatEtcArray: TFormatEtcArray);
+    constructor Create(Tree: TBaseVirtualTree; const AFormatEtcArray: TFormatEtcArray);
 
     function Clone(out Enum: IEnumFormatEtc): HResult; stdcall;
     function Next(celt: Integer; out elt; pceltFetched: PLongint): HResult; stdcall;
@@ -693,14 +689,14 @@ type
     FInternalStgMediumArray: TInternalStgMediumArray;  // The available formats in the DataObject
     FAdviseHolder: IDataAdviseHolder;  // Reference to an OLE supplied implementation for advising.
   protected
-    function CanonicalIUnknown(TestUnknown: IUnknown): IUnknown;
+    function CanonicalIUnknown(const TestUnknown: IUnknown): IUnknown;
     function EqualFormatEtc(FormatEtc1, FormatEtc2: TFormatEtc): Boolean;
     function FindFormatEtc(TestFormatEtc: TFormatEtc; const FormatEtcArray: TFormatEtcArray): integer;
     function FindInternalStgMedium(Format: TClipFormat): PStgMedium;
     function HGlobalClone(HGlobal: THandle): THandle;
     function RenderInternalOLEData(const FormatEtcIn: TFormatEtc; var Medium: TStgMedium; var OLEResult: HResult): Boolean;
     function StgMediumIncRef(const InStgMedium: TStgMedium; var OutStgMedium: TStgMedium;
-      CopyInMedium: Boolean; DataObject: IDataObject): HRESULT;
+      CopyInMedium: Boolean; const DataObject: IDataObject): HRESULT;
 
     property ForClipboard: Boolean read FForClipboard;
     property FormatEtcArray: TFormatEtcArray read FFormatEtcArray write FFormatEtcArray;
@@ -920,6 +916,7 @@ type
     FImageRect: TRect;
     FHasImage: Boolean;
     FDefaultSortDirection: TSortDirection;
+    fSplitterHitTolerance: Integer; // For property SplitterHitTolerance
     function GetCaptionAlignment: TAlignment;
     function GetLeft: Integer;
     function IsBiDiModeStored: Boolean;
@@ -1233,7 +1230,7 @@ type
     FDragStart: TPoint;                // initial mouse drag position
     FTrackStart: TPoint;               // client coordinates of the tracking start point
     FTrackPoint: TPoint;               // Client coordinate where the tracking started.
-    
+
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
     procedure ChangeScale(M, D: Integer); virtual;
@@ -1302,6 +1299,7 @@ type
     property Options: TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
     property ParentFont: Boolean read FParentFont write SetParentFont default False;
     property PopupMenu: TPopupMenu read FPopupMenu write FPopupMenu;
+    property SplitterHitTolerance: Integer read fSplitterHitTolerance write fSplitterHitTolerance default 8; // The area in pixels around a spliter which is sensitive for resizing
     property SortColumn: TColumnIndex read FSortColumn write SetSortColumn default NoColumn;
     property SortDirection: TSortDirection read FSortDirection write SetSortDirection default sdAscending;
     property Style: TVTHeaderStyle read FStyle write SetStyle default hsThickButtons;
@@ -1814,6 +1812,9 @@ type
   TVTMeasureItemEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     var NodeHeight: Integer) of object;
 
+  TVTPrepareButtonImagesEvent = procedure(Sender: TBaseVirtualTree; const APlusBM : TBitmap; const APlusHotBM :TBitmap;
+                                          const AMinusBM : TBitmap; const AMinusHotBM : TBitmap; var ASize : TSize) of object;
+
   // search, sort
   TVTCompareEvent = procedure(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
     var Result: Integer) of object;
@@ -1890,83 +1891,6 @@ type
     function GetNext(Node: PVirtualNode): PVirtualNode;
   end;
 
-
-  // XE2+ VCL Style
-  TVclStyleScrollBarsHook = class(TMouseTrackControlStyleHook)
-  strict private type
-  {$REGION 'TVclStyleScrollBarWindow'}
-      TVclStyleScrollBarWindow = class(TWinControl)strict private FScrollBarWindowOwner: TVclStyleScrollBarsHook;
-    FScrollBarVertical: Boolean;
-    FScrollBarVisible: Boolean;
-    FScrollBarEnabled: Boolean;
-    procedure WMNCHitTest(var Msg: TWMNCHitTest); message WM_NCHITTEST;
-    procedure WMEraseBkgnd(var Msg: TMessage); message WM_ERASEBKGND;
-    procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
-  strict protected
-    procedure CreateParams(var Params: TCreateParams);
-    override;
-  public
-    constructor Create(AOwner: TComponent);
-    override;
-    property ScrollBarWindowOwner: TVclStyleScrollBarsHook read FScrollBarWindowOwner write FScrollBarWindowOwner;
-    property ScrollBarVertical: Boolean read FScrollBarVertical write FScrollBarVertical;
-    property ScrollBarVisible: Boolean read FScrollBarVisible write FScrollBarVisible;
-    property ScrollBarEnabled: Boolean read FScrollBarEnabled write FScrollBarEnabled;
-    end;
-  {$ENDREGION}
-  private
-    FHorzScrollBarDownButtonRect: TRect;
-    FHorzScrollBarDownButtonState: TThemedScrollBar;
-    FHorzScrollBarRect: TRect;
-    FHorzScrollBarSliderState: TThemedScrollBar;
-    FHorzScrollBarSliderTrackRect: TRect;
-    FHorzScrollBarUpButtonRect: TRect;
-    FHorzScrollBarUpButtonState: TThemedScrollBar;
-    FHorzScrollBarWindow: TVclStyleScrollBarWindow;
-    FLeftMouseButtonDown: Boolean;
-    FPrevScrollPos: Integer;
-    FScrollPos: Single;
-    FVertScrollBarDownButtonRect: TRect;
-    FVertScrollBarDownButtonState: TThemedScrollBar;
-    FVertScrollBarRect: TRect;
-    FVertScrollBarSliderState: TThemedScrollBar;
-    FVertScrollBarSliderTrackRect: TRect;
-    FVertScrollBarUpButtonRect: TRect;
-    FVertScrollBarUpButtonState: TThemedScrollBar;
-    FVertScrollBarWindow: TVclStyleScrollBarWindow;
-
-    procedure CMUpdateVclStyleScrollbars(var Message: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
-    procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
-    procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
-    procedure WMLButtonDown(var Msg: TWMMouse);  message WM_LBUTTONDOWN;
-    procedure WMLButtonUp(var Msg: TWMMouse); message WM_LBUTTONUP;
-    procedure WMNCLButtonDown(var Msg: TWMMouse); message WM_NCLBUTTONDOWN;
-    procedure WMNCMouseMove(var Msg: TWMMouse); message WM_NCMOUSEMOVE;
-    procedure WMNCLButtonUp(var Msg: TWMMouse); message WM_NCLBUTTONUP;
-    procedure WMNCPaint(var Msg: TMessage); message WM_NCPAINT;
-    procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
-    procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
-    procedure WMVScroll(var Msg: TMessage); message WM_VSCROLL;
-    procedure WMHScroll(var Msg: TMessage); message WM_HSCROLL;
-    procedure WMCaptureChanged(var Msg: TMessage); message WM_CAPTURECHANGED;
-    procedure WMNCLButtonDblClk(var Msg: TWMMouse); message WM_NCLBUTTONDBLCLK;
-    procedure WMSize(var Msg: TMessage); message WM_SIZE;
-    procedure WMMove(var Msg: TMessage); message WM_MOVE;
-    procedure WMPosChanged(var Msg: TMessage); message WM_WINDOWPOSCHANGED;
-  protected
-    procedure CalcScrollBarsRect; virtual;
-    procedure DrawHorzScrollBar(DC: HDC); virtual;
-    procedure DrawVertScrollBar(DC: HDC); virtual;
-    function GetHorzScrollBarSliderRect: TRect;
-    function GetVertScrollBarSliderRect: TRect;
-    procedure MouseLeave; override;
-    procedure PaintScrollBars; virtual;
-    function PointInTreeHeader(const P: TPoint): Boolean;
-    procedure UpdateScrollBarWindow;
-  public
-    constructor Create(AControl: TWinControl); override;
-    destructor Destroy; override;
-  end;
 
   // ----- TBaseVirtualTree
   TBaseVirtualTree = class(TCustomControl)
@@ -2233,6 +2157,7 @@ type
     FOnBeforeCellPaint: TVTBeforeCellPaintEvent; // triggered when a column of an item is about to be painted
     FOnHeaderDraw: TVTHeaderPaintEvent;          // Used when owner draw is enabled for the header and a column is set
                                                  // to owner draw mode.
+    FOnPrepareButtonImages : TVTPrepareButtonImagesEvent; //allow use to customise plus/minus bitmap images
     FOnHeaderDrawQueryElements: TVTHeaderPaintQueryElementsEvent; // Used for advanced header painting to query the
                                                  // application for the elements, which are drawn by it and which should
                                                  // be drawn by the tree.
@@ -2338,7 +2263,6 @@ type
     procedure ImageListChange(Sender: TObject);
     procedure InitializeFirstColumnValues(var PaintInfo: TVTPaintInfo);
     procedure InitRootNode(OldSize: Cardinal = 0);
-    procedure InterruptValidation;
     function IsFirstVisibleChild(Parent, Node: PVirtualNode): Boolean;
     function IsLastVisibleChild(Parent, Node: PVirtualNode): Boolean;
     function MakeNewNode: PVirtualNode;
@@ -2399,7 +2323,7 @@ type
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
     procedure StaticBackground(Source: TBitmap; Target: TCanvas; OffsetPosition: TPoint; R: TRect);
     procedure StopTimer(ID: Integer);
-    procedure SetWindowTheme(Theme: string);
+    procedure SetWindowTheme(const Theme: string);
     procedure TileBackground(Source: TBitmap; Target: TCanvas; Offset: TPoint; R: TRect);
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
@@ -2460,11 +2384,10 @@ type
     function GetRangeX: Cardinal;
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
-    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
-   
+
     function GetIsSeBorderInStyleElement: Boolean;
-   
-    
+
+
 
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
@@ -2483,6 +2406,7 @@ type
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
+    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
     procedure ChangeScale(M, D: Integer); override;
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearTempCache; virtual;
@@ -2536,7 +2460,7 @@ type
     procedure DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: Integer); virtual;
     function DoDragOver(Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
       var Effect: Integer): Boolean; virtual;
-    procedure DoDragDrop(Source: TObject; DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
+    procedure DoDragDrop(Source: TObject; const DataObject: IDataObject; const Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
       var Effect: Integer; Mode: TDropMode); virtual;
     procedure DoDrawHint(Canvas: TCanvas; Node: PVirtualNode; R: TRect; Column:
         TColumnIndex);
@@ -2571,8 +2495,8 @@ type
     function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; virtual;
     function DoGetPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint): TPopupMenu; virtual;
     procedure DoGetUserClipboardFormats(var Formats: TFormatEtcArray); virtual;
-    procedure DoHeaderClick(HitInfo: TVTHeaderHitInfo); virtual;
-    procedure DoHeaderDblClick(HitInfo: TVTHeaderHitInfo); virtual;
+    procedure DoHeaderClick(const HitInfo: TVTHeaderHitInfo); virtual;
+    procedure DoHeaderDblClick(const HitInfo: TVTHeaderHitInfo); virtual;
     procedure DoHeaderDragged(Column: TColumnIndex; OldPosition: TColumnPosition); virtual;
     procedure DoHeaderDraggedOut(Column: TColumnIndex; DropPosition: TPoint); virtual;
     function DoHeaderDragging(Column: TColumnIndex): Boolean; virtual;
@@ -2620,8 +2544,7 @@ type
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
-    procedure DragAndDrop(AllowedEffects: DWord; DataObject: IDataObject;
-      var DragEffect: Integer); virtual;
+    procedure DragAndDrop(AllowedEffects: DWord; const DataObject: IDataObject; var DragEffect: Integer); virtual;
     procedure DragCanceled; override;
     function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
@@ -2672,6 +2595,7 @@ type
     function InternalData(Node: PVirtualNode): Pointer;
     procedure InternalDisconnectNode(Node: PVirtualNode; KeepFocus: Boolean; Reindex: Boolean = True); virtual;
     procedure InternalRemoveFromSelection(Node: PVirtualNode); virtual;
+    procedure InterruptValidation;
     procedure InvalidateCache;
     procedure Loaded; override;
     procedure MainColumnChanged; virtual;
@@ -2684,8 +2608,7 @@ type
     procedure PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean); virtual;
     procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect; ButtonX,
       ButtonY: Integer; BidiMode: TBiDiMode); virtual;
-    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer;
-      LineImage: TLineImage); virtual;
+    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer; const LineImage: TLineImage); virtual;
     procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: Integer; const SelectionRect: TRect;
       TargetRect: TRect); virtual;
     procedure PanningWindowProc(var Message: TMessage); virtual;
@@ -2912,6 +2835,7 @@ type
     property OnNodeMoved: TVTNodeMovedEvent read FOnNodeMoved write FOnNodeMoved;
     property OnNodeMoving: TVTNodeMovingEvent read FOnNodeMoving write FOnNodeMoving;
     property OnPaintBackground: TVTBackgroundPaintEvent read FOnPaintBackground write FOnPaintBackground;
+    property OnPrepareButtonBitmaps : TVTPrepareButtonImagesEvent read FOnPrepareButtonImages write FOnPrepareButtonImages;
     property OnRemoveFromSelection: TVTRemoveFromSelectionEvent read FOnRemoveFromSelection write FOnRemoveFromSelection;
     property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
@@ -3064,10 +2988,10 @@ type
     function PasteFromClipboard: Boolean; virtual;
     procedure PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
     procedure Print(Printer: TPrinter; PrintHeader: Boolean);
-    function ProcessDrop(DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
+    function ProcessDrop(const DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
       TVTNodeAttachMode): Boolean;
-    function ProcessOLEData(Source: TBaseVirtualTree; DataObject: IDataObject; TargetNode: PVirtualNode;
-      Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
+    function ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode;
+                            Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
     procedure RepaintNode(Node: PVirtualNode);
     procedure ReinitChildren(Node: PVirtualNode; Recursive: Boolean); virtual;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); virtual;
@@ -3332,7 +3256,7 @@ type
     procedure PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer; const Text: string); virtual; // [IPK] - private to protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
-    function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; Text: string): Integer; virtual;
+    function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer; virtual;
     function CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; override;
     procedure DefineProperties(Filer: TFiler); override;
@@ -3344,7 +3268,7 @@ type
     procedure DoGetText(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var Text: string); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: string): Integer; override;
-    procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; Text: string); virtual;
+    procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex;
       TextType: TVSTTextType); virtual;
@@ -3380,7 +3304,7 @@ type
     function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: string = ''): Integer; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
     procedure ContentToCustom(Source: TVSTTextSourceType);
-    function ContentToHTML(Source: TVSTTextSourceType; Caption: string = ''): RawByteString;
+    function ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): RawByteString;
     function ContentToRTF(Source: TVSTTextSourceType): RawByteString;
     function ContentToText(Source: TVSTTextSourceType; Separator: Char): AnsiString; overload;
     function ContentToText(Source: TVSTTextSourceType; const Separator: AnsiString): AnsiString; overload;
@@ -3404,8 +3328,6 @@ type
    
     function GetOptions: TStringTreeOptions;
     procedure SetOptions(const Value: TStringTreeOptions);
-    class constructor Create();
-
   protected
     function GetOptionsClass: TTreeOptionsClass; override;
   public
@@ -3623,6 +3545,7 @@ type
     property OnNodeMoved;
     property OnNodeMoving;
     property OnPaintBackground;
+    property OnPrepareButtonBitmaps;
     property OnRemoveFromSelection;
     property OnRenderOLEData;
     property OnResetNode;
@@ -3671,7 +3594,6 @@ type
   private
     function GetOptions: TVirtualTreeOptions;
     procedure SetOptions(const Value: TVirtualTreeOptions);
-    class constructor Create();
   protected
     function GetOptionsClass: TTreeOptionsClass; override;
   public
@@ -3874,6 +3796,7 @@ type
     property OnNodeMoved;
     property OnNodeMoving;
     property OnPaintBackground;
+    property OnPrepareButtonBitmaps;
     property OnRemoveFromSelection;
     property OnRenderOLEData;
     property OnResetNode;
@@ -3894,35 +3817,13 @@ type
     property StyleElements;
   end;
 
-type
-  // Describes the mode how to blend pixels.
-  TBlendMode = (
-    bmConstantAlpha,         // apply given constant alpha
-    bmPerPixelAlpha,         // use alpha value of the source pixel
-    bmMasterAlpha,           // use alpha value of source pixel and multiply it with the constant alpha value
-    bmConstantAlphaAndColor  // blend the destination color with the given constant color und the constant alpha value
-  );
 
-// OLE Clipboard and drag'n drop helper
-procedure EnumerateVTClipboardFormats(TreeClass: TVirtualTreeClass; const List: TStrings); overload;
-procedure EnumerateVTClipboardFormats(TreeClass: TVirtualTreeClass; var Formats: TFormatEtcArray); overload;
-function GetVTClipboardFormatDescription(AFormat: Word): string;
-procedure RegisterVTClipboardFormat(AFormat: Word; TreeClass: TVirtualTreeClass; Priority: Cardinal); overload;
-function RegisterVTClipboardFormat(Description: string; TreeClass: TVirtualTreeClass; Priority: Cardinal;
-  tymed: Integer = TYMED_HGLOBAL; ptd: PDVTargetDevice = nil; dwAspect: Integer = DVASPECT_CONTENT;
-  lindex: Integer = -1): Word; overload;
 
 // utility routines
-procedure AlphaBlend(Source, Destination: HDC; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
-procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
-function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
-procedure GetStringDrawRect(DC: HDC; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
-function WrapString(DC: HDC; const S: string; const Bounds: TRect; RTL: Boolean;
-  DrawFormat: Cardinal): string;
 
 function GetUtilityImages: TCustomImageList;
-procedure ShowError(Msg: string; HelpContext: Integer);  // [IPK] Surface this to interface
+procedure ShowError(const Msg: string; HelpContext: Integer);  // [IPK] Surface this to interface
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -3941,7 +3842,13 @@ uses
   System.AnsiStrings,
   System.StrUtils,
   VTAccessibilityFactory,
-  Vcl.GraphUtil;               // accessibility helper class
+  Vcl.GraphUtil,               // accessibility helper class
+  VirtualTrees.StyleHooks,
+  VirtualTrees.Classes,
+  VirtualTrees.WorkerThread,
+  VirtualTrees.ClipBoard,
+  VirtualTrees.Utils;
+
 
 resourcestring
   // Localizable strings.
@@ -4054,76 +3961,10 @@ const
   RTLFlag: array[Boolean] of Integer = (0, ETO_RTLREADING);
   AlignmentToDrawFlag: array[TAlignment] of Cardinal = (DT_LEFT, DT_RIGHT, DT_CENTER);
 
-  WideNull = WideChar(#0);
-  WideCR = WideChar(#13);
-  WideLF = WideChar(#10);
-  WideLineSeparator = WideChar(#2028);
-
-type
-  TCriticalSection = class(TObject)
-  protected
-    FSection: TRTLCriticalSection;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    procedure Enter;
-    procedure Leave;
-  end;
-
-  // internal worker thread
-  TWorkerThread = class(TThread)
-  private
-    FCurrentTree: TBaseVirtualTree;
-    FWaiterList: TThreadList;
-    FRefCount: Cardinal;
-  protected
-    procedure CancelValidation(Tree: TBaseVirtualTree);
-    procedure Execute; override;
-  public
-    constructor Create(CreateSuspended: Boolean);
-    destructor Destroy; override;
-
-    procedure AddTree(Tree: TBaseVirtualTree);
-    procedure RemoveTree(Tree: TBaseVirtualTree);
-
-    property CurrentTree: TBaseVirtualTree read FCurrentTree;
-  end;
-
-  // Helper classes to speed up rendering text formats for clipboard and drag'n drop transfers.
-  TBufferedAnsiString = class
-  private
-    FStart,
-    FPosition,
-    FEnd: PAnsiChar;
-    function GetAsString: RawByteString;
-  public
-    destructor Destroy; override;
-
-    procedure Add(const S: RawByteString);
-    procedure AddNewLine;
-
-    property AsString: RawByteString read GetAsString;
-  end;
-
-  TWideBufferedString = class
-  private
-    FStart,
-    FPosition,
-    FEnd: PWideChar;
-    function GetAsString: string;
-  public
-    destructor Destroy; override;
-
-    procedure Add(const S: string);
-    procedure AddNewLine;
-
-    property AsString: string read GetAsString;
-  end;
+  WideCR = Char(#13);
+  WideLF = Char(#10);
 
 var
-  WorkerThread: TWorkerThread;
-  WorkEvent: THandle;
   Watcher: TCriticalSection;
   LightCheckImages,                    // global light check images
   DarkCheckImages,                     // global heavy check images
@@ -4137,380 +3978,9 @@ var
   Initialized: Boolean;                // True if global structures have been initialized.
   NeedToUnitialize: Boolean;           // True if the OLE subsystem could be initialized successfully.
 
-//----------------- TClipboardFormats ----------------------------------------------------------------------------------
-
-type
-  PClipboardFormatListEntry = ^TClipboardFormatListEntry;
-  TClipboardFormatListEntry = record
-    Description: string;               // The string used to register the format with Winapi.Windows.
-    TreeClass: TVirtualTreeClass;      // The tree class which supports rendering this format.
-    Priority: Cardinal;                // Number which determines the order of formats used in IDataObject.
-    FormatEtc: TFormatEtc;             // The definition of the format in the IDataObject.
-  end;
-
-  TClipboardFormatList = class
-  private
-    FList: TList;
-    procedure Sort;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    procedure Add(FormatString: string; AClass: TVirtualTreeClass; Priority: Cardinal; AFormatEtc: TFormatEtc);
-    procedure Clear;
-    procedure EnumerateFormats(TreeClass: TVirtualTreeClass; var Formats: TFormatEtcArray;
-      const AllowedFormats: TClipboardFormats = nil); overload;
-    procedure EnumerateFormats(TreeClass: TVirtualTreeClass; const Formats: TStrings); overload;
-    function FindFormat(FormatString: string): PClipboardFormatListEntry; overload;
-    function FindFormat(FormatString: string; var Fmt: Word): TVirtualTreeClass; overload;
-    function FindFormat(Fmt: Word; var Description: string): TVirtualTreeClass; overload;
-  end;
-
-var
-  InternalClipboardFormats: TClipboardFormatList;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-constructor TClipboardFormatList.Create;
-
-begin
-  FList := TList.Create;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-destructor TClipboardFormatList.Destroy;
-
-begin
-  Clear;
-  FList.Free;
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TClipboardFormatList.Sort;
-
-// Sorts all entry for priority (increasing priority value).
-
-  //--------------- local function --------------------------------------------
-
-  procedure QuickSort(L, R: Integer);
-
-  var
-    I, J: Integer;
-    P, T: PClipboardFormatListEntry;
-
-  begin
-    repeat
-      I := L;
-      J := R;
-      P := FList[(L + R) shr 1];
-      repeat
-        while PClipboardFormatListEntry(FList[I]).Priority < P.Priority do
-          Inc(I);
-        while PClipboardFormatListEntry(FList[J]).Priority > P.Priority do
-          Dec(J);
-        if I <= J then
-        begin
-          T := FList[I];
-          FList[I] := FList[J];
-          FList[J] := T;
-          Inc(I);
-          Dec(J);
-        end;
-      until I > J;
-      if L < J then
-        QuickSort(L, J);
-      L := I;
-    until I >= R;
-  end;
-
-  //--------------- end local function ----------------------------------------
-
-begin
-  if FList.Count > 1 then
-    QuickSort(0, FList.Count - 1);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TClipboardFormatList.Add(FormatString: string; AClass: TVirtualTreeClass; Priority: Cardinal;
-  AFormatEtc: TFormatEtc);
-
-// Adds the given data to the internal list. The priority value is used to sort formats for importance. Larger priority
-// values mean less priority.
-
-var
-  Entry: PClipboardFormatListEntry;
-
-begin
-  New(Entry);
-  Entry.Description := FormatString;
-  Entry.TreeClass := AClass;
-  Entry.Priority := Priority;
-  Entry.FormatEtc := AFormatEtc;
-  FList.Add(Entry);
-
-  Sort;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TClipboardFormatList.Clear;
-
-var
-  I: Integer;
-
-begin
-  for I := 0 to FList.Count - 1 do
-    Dispose(PClipboardFormatListEntry(FList[I]));
-  FList.Clear;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TClipboardFormatList.EnumerateFormats(TreeClass: TVirtualTreeClass; var Formats: TFormatEtcArray;
-  const AllowedFormats: TClipboardFormats = nil);
-
-// Returns a list of format records for the given class. If assigned the AllowedFormats is used to limit the
-// enumerated formats to those described in the list.
-
-var
-  I, Count: Integer;
-  Entry: PClipboardFormatListEntry;
-
-begin
-  SetLength(Formats, FList.Count);
-  Count := 0;
-  for I := 0 to FList.Count - 1 do
-  begin
-    Entry := FList[I];
-    // Does the tree class support this clipboard format?
-    if TreeClass.InheritsFrom(Entry.TreeClass) then
-    begin
-      // Is this format allowed to be included?
-      if (AllowedFormats = nil) or (AllowedFormats.IndexOf(Entry.Description) > -1) then
-      begin
-        // The list could change before we use the FormatEtc so it is best not to pass a pointer to the true FormatEtc
-        // structure. Instead make a copy and send that.
-        Formats[Count] := Entry.FormatEtc;
-        Inc(Count);
-      end;
-    end;
-  end;
-  SetLength(Formats, Count);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TClipboardFormatList.EnumerateFormats(TreeClass: TVirtualTreeClass; const Formats: TStrings);
-
-// Returns a list of format descriptions for the given class.
-
-var
-  I: Integer;
-  Entry: PClipboardFormatListEntry;
-
-begin
-  for I := 0 to FList.Count - 1 do
-  begin
-    Entry := FList[I];
-    if TreeClass.InheritsFrom(Entry.TreeClass) then
-      Formats.Add(Entry.Description);
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TClipboardFormatList.FindFormat(FormatString: string): PClipboardFormatListEntry;
-
-var
-  I: Integer;
-  Entry: PClipboardFormatListEntry;
-
-begin
-  Result := nil;
-  for I := FList.Count - 1 downto 0 do
-  begin
-    Entry := FList[I];
-    if CompareText(Entry.Description, FormatString) = 0 then
-    begin
-      Result := Entry;
-      Break;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TClipboardFormatList.FindFormat(FormatString: string; var Fmt: Word): TVirtualTreeClass;
-
-var
-  I: Integer;
-  Entry: PClipboardFormatListEntry;
-
-begin
-  Result := nil;
-  for I := FList.Count - 1 downto 0 do
-  begin
-    Entry := FList[I];
-    if CompareText(Entry.Description, FormatString) = 0 then
-    begin
-      Result := Entry.TreeClass;
-      Fmt := Entry.FormatEtc.cfFormat;
-      Break;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TClipboardFormatList.FindFormat(Fmt: Word; var Description: string): TVirtualTreeClass;
-
-var
-  I: Integer;
-  Entry: PClipboardFormatListEntry;
-
-begin
-  Result := nil;
-  for I := FList.Count - 1 downto 0 do
-  begin
-    Entry := FList[I];
-    if Entry.FormatEtc.cfFormat = Fmt then
-    begin
-      Result := Entry.TreeClass;
-      Description := Entry.Description;
-      Break;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-type
-  TClipboardFormatEntry = record
-    ID: Word;
-    Description: string;
-  end;
-
-var
-  ClipboardDescriptions: array [1..CF_MAX - 1] of TClipboardFormatEntry = (
-    (ID: CF_TEXT; Description: 'Plain text'), // Do not localize
-    (ID: CF_BITMAP; Description: 'Windows bitmap'), // Do not localize
-    (ID: CF_METAFILEPICT; Description: 'Windows metafile'), // Do not localize
-    (ID: CF_SYLK; Description: 'Symbolic link'), // Do not localize
-    (ID: CF_DIF; Description: 'Data interchange format'), // Do not localize
-    (ID: CF_TIFF; Description: 'Tiff image'), // Do not localize
-    (ID: CF_OEMTEXT; Description: 'OEM text'), // Do not localize
-    (ID: CF_DIB; Description: 'DIB image'), // Do not localize
-    (ID: CF_PALETTE; Description: 'Palette data'), // Do not localize
-    (ID: CF_PENDATA; Description: 'Pen data'), // Do not localize
-    (ID: CF_RIFF; Description: 'Riff audio data'), // Do not localize
-    (ID: CF_WAVE; Description: 'Wav audio data'), // Do not localize
-    (ID: CF_UNICODETEXT; Description: 'Unicode text'), // Do not localize
-    (ID: CF_ENHMETAFILE; Description: 'Enhanced metafile image'), // Do not localize
-    (ID: CF_HDROP; Description: 'File name(s)'), // Do not localize
-    (ID: CF_LOCALE; Description: 'Locale descriptor'), // Do not localize
-    (ID: CF_DIBV5; Description: 'DIB image V5') // Do not localize
-  );
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure EnumerateVTClipboardFormats(TreeClass: TVirtualTreeClass; const List: TStrings);
-
-begin
-  if InternalClipboardFormats = nil then
-    InternalClipboardFormats := TClipboardFormatList.Create;
-  InternalClipboardFormats.EnumerateFormats(TreeClass, List);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure EnumerateVTClipboardFormats(TreeClass: TVirtualTreeClass; var Formats: TFormatEtcArray);
-
-begin
-  if InternalClipboardFormats = nil then
-    InternalClipboardFormats := TClipboardFormatList.Create;
-  InternalClipboardFormats.EnumerateFormats(TreeClass, Formats);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function GetVTClipboardFormatDescription(AFormat: Word): string;
-
-begin
-  if InternalClipboardFormats = nil then
-    InternalClipboardFormats := TClipboardFormatList.Create;
-  if InternalClipboardFormats.FindFormat(AFormat, Result) = nil then
-    Result := '';
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure RegisterVTClipboardFormat(AFormat: Word; TreeClass: TVirtualTreeClass; Priority: Cardinal);
-
-// Registers the given clipboard format for the given TreeClass.
-
-var
-  I: Integer;
-  Buffer: array[0..2048] of Char;
-  FormatEtc: TFormatEtc;
-
-begin
-  if InternalClipboardFormats = nil then
-    InternalClipboardFormats := TClipboardFormatList.Create;
-
-  // Assumes a HGlobal format.
-  FormatEtc.cfFormat := AFormat;
-  FormatEtc.ptd := nil;
-  FormatEtc.dwAspect := DVASPECT_CONTENT;
-  FormatEtc.lindex := -1;
-  FormatEtc.tymed := TYMED_HGLOBAL;
-
-  // Determine description string of the given format. For predefined formats we need the lookup table because they
-  // don't have a description string. For registered formats the description string is the string which was used
-  // to register them.
-  if AFormat < CF_MAX then
-  begin
-    for I := 1 to High(ClipboardDescriptions) do
-      if ClipboardDescriptions[I].ID = AFormat then
-      begin
-        InternalClipboardFormats.Add(ClipboardDescriptions[I].Description, TreeClass, Priority, FormatEtc);
-        Break;
-      end;
-  end
-  else
-  begin
-    GetClipboardFormatName(AFormat, Buffer, Length(Buffer));
-    InternalClipboardFormats.Add(Buffer, TreeClass, Priority, FormatEtc);
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function RegisterVTClipboardFormat(Description: string; TreeClass: TVirtualTreeClass; Priority: Cardinal;
-  tymed: Integer = TYMED_HGLOBAL; ptd: PDVTargetDevice = nil; dwAspect: Integer = DVASPECT_CONTENT;
-  lindex: Integer = -1): Word;
-
-// Alternative method to register a certain clipboard format for a given tree class. Registration with the
-// clipboard is done here too and the assigned ID returned by the function.
-// tymed may contain or'ed TYMED constants which allows to register several storage formats for one clipboard format.
-
-var
-  FormatEtc: TFormatEtc;
-
-begin
-  if InternalClipboardFormats = nil then
-    InternalClipboardFormats := TClipboardFormatList.Create;
-  Result := RegisterClipboardFormat(PChar(Description));
-  FormatEtc.cfFormat := Result;
-  FormatEtc.ptd := ptd;
-  FormatEtc.dwAspect := dwAspect;
-  FormatEtc.lindex := lindex;
-  FormatEtc.tymed := tymed;
-  InternalClipboardFormats.Add(Description, TreeClass, Priority, FormatEtc);
-end;
 
 //----------------- utility functions ----------------------------------------------------------------------------------
 
@@ -4522,7 +3992,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure ShowError(Msg: string; HelpContext: Integer);
+procedure ShowError(const Msg: string; HelpContext: Integer);
 
 begin
   raise EVirtualTreeError.CreateHelp(Msg, HelpContext);
@@ -4548,34 +4018,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function OrderRect(const R: TRect): TRect;
-
-// Converts the incoming rectangle so that left and top are always less than or equal to right and bottom.
-
-begin
-  if R.Left < R.Right then
-  begin
-    Result.Left := R.Left;
-    Result.Right := R.Right;
-  end
-  else
-  begin
-    Result.Left := R.Right;
-    Result.Right := R.Left;
-  end;
-  if R.Top < R.Bottom then
-  begin
-    Result.Top := R.Top;
-    Result.Bottom := R.Bottom;
-  end
-  else
-  begin
-    Result.Top := R.Bottom;
-    Result.Bottom := R.Top;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
 
 procedure QuickSort(const TheArray: TNodeArray; L, R: Integer);
 
@@ -4611,1022 +4053,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
 
-// Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
-// the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
-// For higher speed (and multiple entries to be shorted) specify this value explicitely.
-// Note: It is assumed that the string really needs shortage. Check this in advance.
 
-var
-  Size: TSize;
-  Len: Integer;
-  L, H, N, W: Integer;
-
-begin
-  Len := Length(S);
-  if (Len = 0) or (Width <= 0) then
-    Result := ''
-  else
-  begin
-    // Determine width of triple point using the current DC settings (if not already done).
-    if EllipsisWidth = 0 then
-    begin
-      GetTextExtentPoint32W(DC, '...', 3, Size);
-      EllipsisWidth := Size.cx;
-    end;
-
-    if Width <= EllipsisWidth then
-      Result := ''
-    else
-    begin
-      // Do a binary search for the optimal string length which fits into the given width.
-      L := 0;
-      H := Len - 1;
-      while L < H do
-      begin
-        N := (L + H + 1) shr 1;
-        GetTextExtentPoint32W(DC, PWideChar(S), N, Size);
-        W := Size.cx + EllipsisWidth;
-        if W <= Width then
-          L := N
-        else
-          H := N - 1;
-      end;
-      Result := Copy(S, 1, L) + '...';
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function WrapString(DC: HDC; const S: string; const Bounds: TRect; RTL: Boolean;
-  DrawFormat: Cardinal): string;
-
-// Wrap the given string S so that it fits into a space of given width.
-// RTL determines if right-to-left reading is active.
-
-var
-  Width,
-  Len,
-  WordCounter,
-  WordsInLine,
-  I, W: Integer;
-  Buffer,
-  Line: string;
-  Words: array of string;
-  R: TRect;
-
-begin
-  Result := '';
-  // Leading and trailing are ignored.
-  Buffer := Trim(S);
-  Len := Length(Buffer);
-  if Len < 1 then
-    Exit;
-
-  Width := Bounds.Right - Bounds.Left;
-  R := Rect(0, 0, 0, 0);
-
-  // Count the words in the string.
-  WordCounter := 1;
-  for I := 1 to Len do
-    if Buffer[I] = ' ' then
-      Inc(WordCounter);
-  SetLength(Words, WordCounter);
-
-  if RTL then
-  begin
-    // At first we split the string into words with the last word being the
-    // first element in Words.
-    W := 0;
-    for I := 1 to Len do
-      if Buffer[I] = ' ' then
-        Inc(W)
-      else
-        Words[W] := Words[W] + Buffer[I];
-
-    // Compose Result.
-    while WordCounter > 0 do
-    begin
-      WordsInLine := 0;
-      Line := '';
-
-      while WordCounter > 0 do
-      begin
-        GetStringDrawRect(DC, Line + IfThen(WordsInLine > 0, ' ', '') + Words[WordCounter - 1], R, DrawFormat);
-        if R.Right > Width then
-        begin
-          // If at least one word fits into this line then continue with the next line.
-          if WordsInLine > 0 then
-            Break;
-
-          Buffer := Words[WordCounter - 1];
-          if Len > 1 then
-          begin
-            for Len := Length(Buffer) - 1 downto 2 do
-            begin
-              GetStringDrawRect(DC, RightStr(Buffer, Len), R, DrawFormat);
-              if R.Right <= Width then
-                Break;
-            end;
-          end
-          else
-            Len := Length(Buffer);
-
-          Line := Line + RightStr(Buffer, Max(Len, 1));
-          Words[WordCounter - 1] := LeftStr(Buffer, Length(Buffer) - Max(Len, 1));
-          if Words[WordCounter - 1] = '' then
-            Dec(WordCounter);
-          Break;
-        end
-        else
-        begin
-          Dec(WordCounter);
-          Line := Words[WordCounter] + IfThen(WordsInLine > 0, ' ', '') + Line;
-          Inc(WordsInLine);
-        end;
-      end;
-
-      Result := Result + Line + WideLF;
-    end;
-  end
-  else
-  begin
-    // At first we split the string into words with the last word being the
-    // first element in Words.
-    W := WordCounter - 1;
-    for I := 1 to Len do
-      if Buffer[I] = ' ' then
-        Dec(W)
-      else
-        Words[W] := Words[W] + Buffer[I];
-
-    // Compose Result.
-    while WordCounter > 0 do
-    begin
-      WordsInLine := 0;
-      Line := '';
-
-      while WordCounter > 0 do
-      begin
-        GetStringDrawRect(DC, Line + IfThen(WordsInLine > 0, ' ', '') + Words[WordCounter - 1], R, DrawFormat);
-        if R.Right > Width then
-        begin
-          // If at least one word fits into this line then continue with the next line.
-          if WordsInLine > 0 then
-            Break;
-
-          Buffer := Words[WordCounter - 1];
-          if Len > 1 then
-          begin
-            for Len := Length(Buffer) - 1 downto 2 do
-            begin
-              GetStringDrawRect(DC, LeftStr(Buffer, Len), R, DrawFormat);
-              if R.Right <= Width then
-                Break;
-            end;
-          end
-          else
-            Len := Length(Buffer);
-
-          Line := Line + LeftStr(Buffer, Max(Len, 1));
-          Words[WordCounter - 1] := RightStr(Buffer, Length(Buffer) - Max(Len, 1));
-          if Words[WordCounter - 1] = '' then
-            Dec(WordCounter);
-          Break;
-        end
-        else
-        begin
-          Dec(WordCounter);
-          Line := Line + IfThen(WordsInLine > 0, ' ', '') + Words[WordCounter];
-          Inc(WordsInLine);
-        end;
-      end;
-
-      Result := Result + Line + WideLF;
-    end;
-  end;
-
-  Len := Length(Result);
-  if Result[Len] = WideLF then
-    SetLength(Result, Len - 1);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure GetStringDrawRect(DC: HDC; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
-
-// Calculates bounds of a drawing rectangle for the given string
-
-begin
-  Bounds.Right := Bounds.Left + 1;
-  Bounds.Bottom := Bounds.Top + 1;
-
-  Winapi.Windows.DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure FillDragRectangles(DragWidth, DragHeight, DeltaX, DeltaY: Integer; var RClip, RScroll, RSamp1, RSamp2, RDraw1,
-  RDraw2: TRect);
-
-// Fills the given rectangles with values which can be used while dragging around an image
-// (used in DragMove of the drag manager and DragTo of the header columns).
-
-begin
-  // ScrollDC limits
-  RClip := Rect(0, 0, DragWidth, DragHeight);
-  if DeltaX > 0 then
-  begin
-    // move to the left
-    if DeltaY = 0 then
-    begin
-      // move only to the left
-      // background movement
-      RScroll := Rect(0, 0, DragWidth - DeltaX, DragHeight);
-      RSamp1 := Rect(0, 0, DeltaX, DragHeight);
-      RDraw1 := Rect(DragWidth - DeltaX, 0, DeltaX, DragHeight);
-    end
-    else
-      if DeltaY < 0 then
-      begin
-        // move to bottom left
-        RScroll := Rect(0, -DeltaY, DragWidth - DeltaX, DragHeight);
-        RSamp1 := Rect(0, 0, DeltaX, DragHeight);
-        RSamp2 := Rect(DeltaX, DragHeight + DeltaY, DragWidth - DeltaX, -DeltaY);
-        RDraw1 := Rect(0, 0, DragWidth - DeltaX, -DeltaY);
-        RDraw2 := Rect(DragWidth - DeltaX, 0, DeltaX, DragHeight);
-      end
-      else
-      begin
-        // move to upper left
-        RScroll := Rect(0, 0, DragWidth - DeltaX, DragHeight - DeltaY);
-        RSamp1 := Rect(0, 0, DeltaX, DragHeight);
-        RSamp2 := Rect(DeltaX, 0, DragWidth - DeltaX, DeltaY);
-        RDraw1 := Rect(0, DragHeight - DeltaY, DragWidth - DeltaX, DeltaY);
-        RDraw2 := Rect(DragWidth - DeltaX, 0, DeltaX, DragHeight);
-      end;
-  end
-  else
-    if DeltaX = 0 then
-    begin
-      // vertical movement only
-      if DeltaY < 0 then
-      begin
-        // move downwards
-        RScroll := Rect(0, -DeltaY, DragWidth, DragHeight);
-        RSamp2 := Rect(0, DragHeight + DeltaY, DragWidth, -DeltaY);
-        RDraw2 := Rect(0, 0, DragWidth, -DeltaY);
-      end
-      else
-      begin
-        // move upwards
-        RScroll := Rect(0, 0, DragWidth, DragHeight - DeltaY);
-        RSamp2 := Rect(0, 0, DragWidth, DeltaY);
-        RDraw2 := Rect(0, DragHeight - DeltaY, DragWidth, DeltaY);
-      end;
-    end
-    else
-    begin
-      // move to the right
-      if DeltaY > 0 then
-      begin
-        // move up right
-        RScroll := Rect(-DeltaX, 0, DragWidth, DragHeight);
-        RSamp1 := Rect(0, 0, DragWidth + DeltaX, DeltaY);
-        RSamp2 := Rect(DragWidth + DeltaX, 0, -DeltaX, DragHeight);
-        RDraw1 := Rect(0, 0, -DeltaX, DragHeight);
-        RDraw2 := Rect(-DeltaX, DragHeight - DeltaY, DragWidth + DeltaX, DeltaY);
-      end
-      else
-        if DeltaY = 0 then
-        begin
-          // to the right only
-          RScroll := Rect(-DeltaX, 0, DragWidth, DragHeight);
-          RSamp1 := Rect(DragWidth + DeltaX, 0, -DeltaX, DragHeight);
-          RDraw1 := Rect(0, 0, -DeltaX, DragHeight);
-        end
-        else
-        begin
-          // move down right
-          RScroll := Rect(-DeltaX, -DeltaY, DragWidth, DragHeight);
-          RSamp1 := Rect(0, DragHeight + DeltaY, DragWidth + DeltaX, -DeltaY);
-          RSamp2 := Rect(DragWidth + DeltaX, 0, -DeltaX, DragHeight);
-          RDraw1 := Rect(0, 0, -DeltaX, DragHeight);
-          RDraw2 := Rect(-DeltaX, 0, DragWidth + DeltaX, -DeltaY);
-        end;
-    end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure AlphaBlendLineConstant(Source, Destination: Pointer; Count: Integer; ConstantAlpha, Bias: Integer);
-
-// Blends a line of Count pixels from Source to Destination using a constant alpha value.
-// The layout of a pixel must be BGRA where A is ignored (but is calculated as the other components).
-// ConstantAlpha must be in the range 0..255 where 0 means totally transparent (destination pixel only)
-// and 255 totally opaque (source pixel only).
-// Bias is an additional value which gets added to every component and must be in the range -128..127
-//
-{$ifdef CPUX64}
-// RCX contains Source
-// RDX contains Destination
-// R8D contains Count
-// R9D contains ConstantAlpha
-// Bias is on the stack
-
-asm
-        //.NOFRAME
-
-        // Load XMM3 with the constant alpha value (replicate it for every component).
-        // Expand it to word size.
-        MOVD        XMM3, R9D  // ConstantAlpha
-        PUNPCKLWD   XMM3, XMM3
-        PUNPCKLDQ   XMM3, XMM3
-
-        // Load XMM5 with the bias value.
-        MOVD        XMM5, [Bias]
-        PUNPCKLWD   XMM5, XMM5
-        PUNPCKLDQ   XMM5, XMM5
-
-        // Load XMM4 with 128 to allow for saturated biasing.
-        MOV         R10D, 128
-        MOVD        XMM4, R10D
-        PUNPCKLWD   XMM4, XMM4
-        PUNPCKLDQ   XMM4, XMM4
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        // Note: The pixel byte values are expanded into the higher bytes of a word due
-        //       to the way unpacking works. We compensate for this with an extra shift.
-        MOVD        XMM1, DWORD PTR [RCX]   // data is unaligned
-        MOVD        XMM2, DWORD PTR [RDX]   // data is unaligned
-        PXOR        XMM0, XMM0    // clear source pixel register for unpacking
-        PUNPCKLBW   XMM0, XMM1{[RCX]}    // unpack source pixel byte values into words
-        PSRLW       XMM0, 8       // move higher bytes to lower bytes
-        PXOR        XMM1, XMM1    // clear target pixel register for unpacking
-        PUNPCKLBW   XMM1, XMM2{[RDX]}    // unpack target pixel byte values into words
-        MOVQ        XMM2, XMM1    // make a copy of the shifted values, we need them again
-        PSRLW       XMM1, 8       // move higher bytes to lower bytes
-
-        // calculation is: target = (alpha * (source - target) + 256 * target) / 256
-        PSUBW       XMM0, XMM1    // source - target
-        PMULLW      XMM0, XMM3    // alpha * (source - target)
-        PADDW       XMM0, XMM2    // add target (in shifted form)
-        PSRLW       XMM0, 8       // divide by 256
-
-        // Bias is accounted for by conversion of range 0..255 to -128..127,
-        // doing a saturated add and convert back to 0..255.
-        PSUBW     XMM0, XMM4
-        PADDSW    XMM0, XMM5
-        PADDW     XMM0, XMM4
-        PACKUSWB  XMM0, XMM0      // convert words to bytes with saturation
-        MOVD      DWORD PTR [RDX], XMM0     // store the result
-@3:
-        ADD       RCX, 4
-        ADD       RDX, 4
-        DEC       R8D
-        JNZ       @1
-end;
-{$else}
-// EAX contains Source
-// EDX contains Destination
-// ECX contains Count
-// ConstantAlpha and Bias are on the stack
-
-asm
-        PUSH    ESI                    // save used registers
-        PUSH    EDI
-
-        MOV     ESI, EAX               // ESI becomes the actual source pointer
-        MOV     EDI, EDX               // EDI becomes the actual target pointer
-
-        // Load MM6 with the constant alpha value (replicate it for every component).
-        // Expand it to word size.
-        MOV     EAX, [ConstantAlpha]
-        DB      $0F, $6E, $F0          /// MOVD      MM6, EAX
-        DB      $0F, $61, $F6          /// PUNPCKLWD MM6, MM6
-        DB      $0F, $62, $F6          /// PUNPCKLDQ MM6, MM6
-
-        // Load MM5 with the bias value.
-        MOV     EAX, [Bias]
-        DB      $0F, $6E, $E8          /// MOVD      MM5, EAX
-        DB      $0F, $61, $ED          /// PUNPCKLWD MM5, MM5
-        DB      $0F, $62, $ED          /// PUNPCKLDQ MM5, MM5
-
-        // Load MM4 with 128 to allow for saturated biasing.
-        MOV     EAX, 128
-        DB      $0F, $6E, $E0          /// MOVD      MM4, EAX
-        DB      $0F, $61, $E4          /// PUNPCKLWD MM4, MM4
-        DB      $0F, $62, $E4          /// PUNPCKLDQ MM4, MM4
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        // Note: The pixel byte values are expanded into the higher bytes of a word due
-        //       to the way unpacking works. We compensate for this with an extra shift.
-        DB      $0F, $EF, $C0          /// PXOR      MM0, MM0,   clear source pixel register for unpacking
-        DB      $0F, $60, $06          /// PUNPCKLBW MM0, [ESI], unpack source pixel byte values into words
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8,     move higher bytes to lower bytes
-        DB      $0F, $EF, $C9          /// PXOR      MM1, MM1,   clear target pixel register for unpacking
-        DB      $0F, $60, $0F          /// PUNPCKLBW MM1, [EDI], unpack target pixel byte values into words
-        DB      $0F, $6F, $D1          /// MOVQ      MM2, MM1,   make a copy of the shifted values, we need them again
-        DB      $0F, $71, $D1, $08     /// PSRLW     MM1, 8,     move higher bytes to lower bytes
-
-        // calculation is: target = (alpha * (source - target) + 256 * target) / 256
-        DB      $0F, $F9, $C1          /// PSUBW     MM0, MM1,   source - target
-        DB      $0F, $D5, $C6          /// PMULLW    MM0, MM6,   alpha * (source - target)
-        DB      $0F, $FD, $C2          /// PADDW     MM0, MM2,   add target (in shifted form)
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8,     divide by 256
-
-        // Bias is accounted for by conversion of range 0..255 to -128..127,
-        // doing a saturated add and convert back to 0..255.
-        DB      $0F, $F9, $C4          /// PSUBW     MM0, MM4
-        DB      $0F, $ED, $C5          /// PADDSW    MM0, MM5
-        DB      $0F, $FD, $C4          /// PADDW     MM0, MM4
-        DB      $0F, $67, $C0          /// PACKUSWB  MM0, MM0,   convert words to bytes with saturation
-        DB      $0F, $7E, $07          /// MOVD      [EDI], MM0, store the result
-@3:
-        ADD     ESI, 4
-        ADD     EDI, 4
-        DEC     ECX
-        JNZ     @1
-        POP     EDI
-        POP     ESI
-end;
-{$endif CPUX64}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure AlphaBlendLinePerPixel(Source, Destination: Pointer; Count, Bias: Integer);
-
-// Blends a line of Count pixels from Source to Destination using the alpha value of the source pixels.
-// The layout of a pixel must be BGRA.
-// Bias is an additional value which gets added to every component and must be in the range -128..127
-//
-{$ifdef CPUX64}
-// RCX contains Source
-// RDX contains Destination
-// R8D contains Count
-// R9D contains Bias
-
-asm
-        //.NOFRAME
-
-        // Load XMM5 with the bias value.
-        MOVD        XMM5, R9D   // Bias
-        PUNPCKLWD   XMM5, XMM5
-        PUNPCKLDQ   XMM5, XMM5
-
-        // Load XMM4 with 128 to allow for saturated biasing.
-        MOV         R10D, 128
-        MOVD        XMM4, R10D
-        PUNPCKLWD   XMM4, XMM4
-        PUNPCKLDQ   XMM4, XMM4
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        // Note: The pixel byte values are expanded into the higher bytes of a word due
-        //       to the way unpacking works. We compensate for this with an extra shift.
-        MOVD        XMM1, DWORD PTR [RCX]   // data is unaligned
-        MOVD        XMM2, DWORD PTR [RDX]   // data is unaligned
-        PXOR        XMM0, XMM0    // clear source pixel register for unpacking
-        PUNPCKLBW   XMM0, XMM1{[RCX]}    // unpack source pixel byte values into words
-        PSRLW       XMM0, 8       // move higher bytes to lower bytes
-        PXOR        XMM1, XMM1    // clear target pixel register for unpacking
-        PUNPCKLBW   XMM1, XMM2{[RDX]}    // unpack target pixel byte values into words
-        MOVQ        XMM2, XMM1    // make a copy of the shifted values, we need them again
-        PSRLW       XMM1, 8       // move higher bytes to lower bytes
-
-        // Load XMM3 with the source alpha value (replicate it for every component).
-        // Expand it to word size.
-        MOVQ        XMM3, XMM0
-        PUNPCKHWD   XMM3, XMM3
-        PUNPCKHDQ   XMM3, XMM3
-
-        // calculation is: target = (alpha * (source - target) + 256 * target) / 256
-        PSUBW       XMM0, XMM1    // source - target
-        PMULLW      XMM0, XMM3    // alpha * (source - target)
-        PADDW       XMM0, XMM2    // add target (in shifted form)
-        PSRLW       XMM0, 8       // divide by 256
-
-        // Bias is accounted for by conversion of range 0..255 to -128..127,
-        // doing a saturated add and convert back to 0..255.
-        PSUBW       XMM0, XMM4
-        PADDSW      XMM0, XMM5
-        PADDW       XMM0, XMM4
-        PACKUSWB    XMM0, XMM0    // convert words to bytes with saturation
-        MOVD        DWORD PTR [RDX], XMM0   // store the result
-@3:
-        ADD         RCX, 4
-        ADD         RDX, 4
-        DEC         R8D
-        JNZ         @1
-end;
-{$else}
-// EAX contains Source
-// EDX contains Destination
-// ECX contains Count
-// Bias is on the stack
-
-asm
-        PUSH    ESI                    // save used registers
-        PUSH    EDI
-
-        MOV     ESI, EAX               // ESI becomes the actual source pointer
-        MOV     EDI, EDX               // EDI becomes the actual target pointer
-
-        // Load MM5 with the bias value.
-        MOV     EAX, [Bias]
-        DB      $0F, $6E, $E8          /// MOVD      MM5, EAX
-        DB      $0F, $61, $ED          /// PUNPCKLWD MM5, MM5
-        DB      $0F, $62, $ED          /// PUNPCKLDQ MM5, MM5
-
-        // Load MM4 with 128 to allow for saturated biasing.
-        MOV     EAX, 128
-        DB      $0F, $6E, $E0          /// MOVD      MM4, EAX
-        DB      $0F, $61, $E4          /// PUNPCKLWD MM4, MM4
-        DB      $0F, $62, $E4          /// PUNPCKLDQ MM4, MM4
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        // Note: The pixel byte values are expanded into the higher bytes of a word due
-        //       to the way unpacking works. We compensate for this with an extra shift.
-        DB      $0F, $EF, $C0          /// PXOR      MM0, MM0,   clear source pixel register for unpacking
-        DB      $0F, $60, $06          /// PUNPCKLBW MM0, [ESI], unpack source pixel byte values into words
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8,     move higher bytes to lower bytes
-        DB      $0F, $EF, $C9          /// PXOR      MM1, MM1,   clear target pixel register for unpacking
-        DB      $0F, $60, $0F          /// PUNPCKLBW MM1, [EDI], unpack target pixel byte values into words
-        DB      $0F, $6F, $D1          /// MOVQ      MM2, MM1,   make a copy of the shifted values, we need them again
-        DB      $0F, $71, $D1, $08     /// PSRLW     MM1, 8,     move higher bytes to lower bytes
-
-        // Load MM6 with the source alpha value (replicate it for every component).
-        // Expand it to word size.
-        DB      $0F, $6F, $F0          /// MOVQ MM6, MM0
-        DB      $0F, $69, $F6          /// PUNPCKHWD MM6, MM6
-        DB      $0F, $6A, $F6          /// PUNPCKHDQ MM6, MM6
-
-        // calculation is: target = (alpha * (source - target) + 256 * target) / 256
-        DB      $0F, $F9, $C1          /// PSUBW     MM0, MM1,   source - target
-        DB      $0F, $D5, $C6          /// PMULLW    MM0, MM6,   alpha * (source - target)
-        DB      $0F, $FD, $C2          /// PADDW     MM0, MM2,   add target (in shifted form)
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8,     divide by 256
-
-        // Bias is accounted for by conversion of range 0..255 to -128..127,
-        // doing a saturated add and convert back to 0..255.
-        DB      $0F, $F9, $C4          /// PSUBW     MM0, MM4
-        DB      $0F, $ED, $C5          /// PADDSW    MM0, MM5
-        DB      $0F, $FD, $C4          /// PADDW     MM0, MM4
-        DB      $0F, $67, $C0          /// PACKUSWB  MM0, MM0,   convert words to bytes with saturation
-        DB      $0F, $7E, $07          /// MOVD      [EDI], MM0, store the result
-@3:
-        ADD     ESI, 4
-        ADD     EDI, 4
-        DEC     ECX
-        JNZ     @1
-        POP     EDI
-        POP     ESI
-end;
-{$endif CPUX64}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure AlphaBlendLineMaster(Source, Destination: Pointer; Count: Integer; ConstantAlpha, Bias: Integer);
-
-// Blends a line of Count pixels from Source to Destination using the source pixel and a constant alpha value.
-// The layout of a pixel must be BGRA.
-// ConstantAlpha must be in the range 0..255.
-// Bias is an additional value which gets added to every component and must be in the range -128..127
-//
-{$ifdef CPUX64}
-// RCX contains Source
-// RDX contains Destination
-// R8D contains Count
-// R9D contains ConstantAlpha
-// Bias is on the stack
-
-asm
-        .SAVENV XMM6
-
-        // Load XMM3 with the constant alpha value (replicate it for every component).
-        // Expand it to word size.
-        MOVD        XMM3, R9D    // ConstantAlpha
-        PUNPCKLWD   XMM3, XMM3
-        PUNPCKLDQ   XMM3, XMM3
-
-        // Load XMM5 with the bias value.
-        MOV         R10D, [Bias]
-        MOVD        XMM5, R10D
-        PUNPCKLWD   XMM5, XMM5
-        PUNPCKLDQ   XMM5, XMM5
-
-        // Load XMM4 with 128 to allow for saturated biasing.
-        MOV         R10D, 128
-        MOVD        XMM4, R10D
-        PUNPCKLWD   XMM4, XMM4
-        PUNPCKLDQ   XMM4, XMM4
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        // Note: The pixel byte values are expanded into the higher bytes of a word due
-        //       to the way unpacking works. We compensate for this with an extra shift.
-        MOVD        XMM1, DWORD PTR [RCX]   // data is unaligned
-        MOVD        XMM2, DWORD PTR [RDX]   // data is unaligned
-        PXOR        XMM0, XMM0    // clear source pixel register for unpacking
-        PUNPCKLBW   XMM0, XMM1{[RCX]}     // unpack source pixel byte values into words
-        PSRLW       XMM0, 8       // move higher bytes to lower bytes
-        PXOR        XMM1, XMM1    // clear target pixel register for unpacking
-        PUNPCKLBW   XMM1, XMM2{[RCX]}     // unpack target pixel byte values into words
-        MOVQ        XMM2, XMM1    // make a copy of the shifted values, we need them again
-        PSRLW       XMM1, 8       // move higher bytes to lower bytes
-
-        // Load XMM6 with the source alpha value (replicate it for every component).
-        // Expand it to word size.
-        MOVQ        XMM6, XMM0
-        PUNPCKHWD   XMM6, XMM6
-        PUNPCKHDQ   XMM6, XMM6
-        PMULLW      XMM6, XMM3    // source alpha * master alpha
-        PSRLW       XMM6, 8       // divide by 256
-
-        // calculation is: target = (alpha * master alpha * (source - target) + 256 * target) / 256
-        PSUBW       XMM0, XMM1    // source - target
-        PMULLW      XMM0, XMM6    // alpha * (source - target)
-        PADDW       XMM0, XMM2    // add target (in shifted form)
-        PSRLW       XMM0, 8       // divide by 256
-
-        // Bias is accounted for by conversion of range 0..255 to -128..127,
-        // doing a saturated add and convert back to 0..255.
-        PSUBW       XMM0, XMM4
-        PADDSW      XMM0, XMM5
-        PADDW       XMM0, XMM4
-        PACKUSWB    XMM0, XMM0    // convert words to bytes with saturation
-        MOVD        DWORD PTR [RDX], XMM0   // store the result
-@3:
-        ADD         RCX, 4
-        ADD         RDX, 4
-        DEC         R8D
-        JNZ         @1
-end;
-{$else}
-// EAX contains Source
-// EDX contains Destination
-// ECX contains Count
-// ConstantAlpha and Bias are on the stack
-
-asm
-        PUSH    ESI                    // save used registers
-        PUSH    EDI
-
-        MOV     ESI, EAX               // ESI becomes the actual source pointer
-        MOV     EDI, EDX               // EDI becomes the actual target pointer
-
-        // Load MM6 with the constant alpha value (replicate it for every component).
-        // Expand it to word size.
-        MOV     EAX, [ConstantAlpha]
-        DB      $0F, $6E, $F0          /// MOVD      MM6, EAX
-        DB      $0F, $61, $F6          /// PUNPCKLWD MM6, MM6
-        DB      $0F, $62, $F6          /// PUNPCKLDQ MM6, MM6
-
-        // Load MM5 with the bias value.
-        MOV     EAX, [Bias]
-        DB      $0F, $6E, $E8          /// MOVD      MM5, EAX
-        DB      $0F, $61, $ED          /// PUNPCKLWD MM5, MM5
-        DB      $0F, $62, $ED          /// PUNPCKLDQ MM5, MM5
-
-        // Load MM4 with 128 to allow for saturated biasing.
-        MOV     EAX, 128
-        DB      $0F, $6E, $E0          /// MOVD      MM4, EAX
-        DB      $0F, $61, $E4          /// PUNPCKLWD MM4, MM4
-        DB      $0F, $62, $E4          /// PUNPCKLDQ MM4, MM4
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        // Note: The pixel byte values are expanded into the higher bytes of a word due
-        //       to the way unpacking works. We compensate for this with an extra shift.
-        DB      $0F, $EF, $C0          /// PXOR      MM0, MM0,   clear source pixel register for unpacking
-        DB      $0F, $60, $06          /// PUNPCKLBW MM0, [ESI], unpack source pixel byte values into words
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8,     move higher bytes to lower bytes
-        DB      $0F, $EF, $C9          /// PXOR      MM1, MM1,   clear target pixel register for unpacking
-        DB      $0F, $60, $0F          /// PUNPCKLBW MM1, [EDI], unpack target pixel byte values into words
-        DB      $0F, $6F, $D1          /// MOVQ      MM2, MM1,   make a copy of the shifted values, we need them again
-        DB      $0F, $71, $D1, $08     /// PSRLW     MM1, 8,     move higher bytes to lower bytes
-
-        // Load MM7 with the source alpha value (replicate it for every component).
-        // Expand it to word size.
-        DB      $0F, $6F, $F8          /// MOVQ      MM7, MM0
-        DB      $0F, $69, $FF          /// PUNPCKHWD MM7, MM7
-        DB      $0F, $6A, $FF          /// PUNPCKHDQ MM7, MM7
-        DB      $0F, $D5, $FE          /// PMULLW    MM7, MM6,   source alpha * master alpha
-        DB      $0F, $71, $D7, $08     /// PSRLW     MM7, 8,     divide by 256
-
-        // calculation is: target = (alpha * master alpha * (source - target) + 256 * target) / 256
-        DB      $0F, $F9, $C1          /// PSUBW     MM0, MM1,   source - target
-        DB      $0F, $D5, $C7          /// PMULLW    MM0, MM7,   alpha * (source - target)
-        DB      $0F, $FD, $C2          /// PADDW     MM0, MM2,   add target (in shifted form)
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8,     divide by 256
-
-        // Bias is accounted for by conversion of range 0..255 to -128..127,
-        // doing a saturated add and convert back to 0..255.
-        DB      $0F, $F9, $C4          /// PSUBW     MM0, MM4
-        DB      $0F, $ED, $C5          /// PADDSW    MM0, MM5
-        DB      $0F, $FD, $C4          /// PADDW     MM0, MM4
-        DB      $0F, $67, $C0          /// PACKUSWB  MM0, MM0,   convert words to bytes with saturation
-        DB      $0F, $7E, $07          /// MOVD      [EDI], MM0, store the result
-@3:
-        ADD     ESI, 4
-        ADD     EDI, 4
-        DEC     ECX
-        JNZ     @1
-        POP     EDI
-        POP     ESI
-end;
-{$endif CPUX64}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure AlphaBlendLineMasterAndColor(Destination: Pointer; Count: Integer; ConstantAlpha, Color: Integer);
-
-// Blends a line of Count pixels in Destination against the given color using a constant alpha value.
-// The layout of a pixel must be BGRA and Color must be rrggbb00 (as stored by a COLORREF).
-// ConstantAlpha must be in the range 0..255.
-//
-{$ifdef CPUX64}
-// RCX contains Destination
-// EDX contains Count
-// R8D contains ConstantAlpha
-// R9D contains Color
-
-asm
-        //.NOFRAME
-
-        // The used formula is: target = (alpha * color + (256 - alpha) * target) / 256.
-        // alpha * color (factor 1) and 256 - alpha (factor 2) are constant values which can be calculated in advance.
-        // The remaining calculation is therefore: target = (F1 + F2 * target) / 256
-
-        // Load XMM3 with the constant alpha value (replicate it for every component).
-        // Expand it to word size. (Every calculation here works on word sized operands.)
-        MOVD        XMM3, R8D   // ConstantAlpha
-        PUNPCKLWD   XMM3, XMM3
-        PUNPCKLDQ   XMM3, XMM3
-
-        // Calculate factor 2.
-        MOV         R10D, $100
-        MOVD        XMM2, R10D
-        PUNPCKLWD   XMM2, XMM2
-        PUNPCKLDQ   XMM2, XMM2
-        PSUBW       XMM2, XMM3             // XMM2 contains now: 255 - alpha = F2
-
-        // Now calculate factor 1. Alpha is still in XMM3, but the r and b components of Color must be swapped.
-        BSWAP       R9D  // Color
-        ROR         R9D, 8
-        MOVD        XMM1, R9D              // Load the color and convert to word sized values.
-        PXOR        XMM4, XMM4
-        PUNPCKLBW   XMM1, XMM4
-        PMULLW      XMM1, XMM3             // XMM1 contains now: color * alpha = F1
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        MOVD        XMM0, DWORD PTR [RCX]
-        PUNPCKLBW   XMM0, XMM4
-
-        PMULLW      XMM0, XMM2             // calculate F1 + F2 * target
-        PADDW       XMM0, XMM1
-        PSRLW       XMM0, 8                // divide by 256
-
-        PACKUSWB    XMM0, XMM0             // convert words to bytes with saturation
-        MOVD        DWORD PTR [RCX], XMM0            // store the result
-
-        ADD         RCX, 4
-        DEC         EDX
-        JNZ         @1
-end;
-{$else}
-// EAX contains Destination
-// EDX contains Count
-// ECX contains ConstantAlpha
-// Color is passed on the stack
-
-asm
-        // The used formula is: target = (alpha * color + (256 - alpha) * target) / 256.
-        // alpha * color (factor 1) and 256 - alpha (factor 2) are constant values which can be calculated in advance.
-        // The remaining calculation is therefore: target = (F1 + F2 * target) / 256
-
-        // Load MM3 with the constant alpha value (replicate it for every component).
-        // Expand it to word size. (Every calculation here works on word sized operands.)
-        DB      $0F, $6E, $D9          /// MOVD      MM3, ECX
-        DB      $0F, $61, $DB          /// PUNPCKLWD MM3, MM3
-        DB      $0F, $62, $DB          /// PUNPCKLDQ MM3, MM3
-
-        // Calculate factor 2.
-        MOV     ECX, $100
-        DB      $0F, $6E, $D1          /// MOVD      MM2, ECX
-        DB      $0F, $61, $D2          /// PUNPCKLWD MM2, MM2
-        DB      $0F, $62, $D2          /// PUNPCKLDQ MM2, MM2
-        DB      $0F, $F9, $D3          /// PSUBW     MM2, MM3             // MM2 contains now: 255 - alpha = F2
-
-        // Now calculate factor 1. Alpha is still in MM3, but the r and b components of Color must be swapped.
-        MOV     ECX, [Color]
-        BSWAP   ECX
-        ROR     ECX, 8
-        DB      $0F, $6E, $C9          /// MOVD      MM1, ECX             // Load the color and convert to word sized values.
-        DB      $0F, $EF, $E4          /// PXOR      MM4, MM4
-        DB      $0F, $60, $CC          /// PUNPCKLBW MM1, MM4
-        DB      $0F, $D5, $CB          /// PMULLW    MM1, MM3             // MM1 contains now: color * alpha = F1
-
-@1:     // The pixel loop calculates an entire pixel in one run.
-        DB      $0F, $6E, $00          /// MOVD      MM0, [EAX]
-        DB      $0F, $60, $C4          /// PUNPCKLBW MM0, MM4
-
-        DB      $0F, $D5, $C2          /// PMULLW    MM0, MM2             // calculate F1 + F2 * target
-        DB      $0F, $FD, $C1          /// PADDW     MM0, MM1
-        DB      $0F, $71, $D0, $08     /// PSRLW     MM0, 8               // divide by 256
-
-        DB      $0F, $67, $C0          /// PACKUSWB  MM0, MM0             // convert words to bytes with saturation
-        DB      $0F, $7E, $00          /// MOVD      [EAX], MM0           // store the result
-
-        ADD     EAX, 4
-        DEC     EDX
-        JNZ     @1
-end;
-{$endif CPUX64}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure EMMS;
-
-// Reset MMX state to use the FPU for other tasks again.
-
-{$ifdef CPUX64}
-  inline;
-begin
-end;
-{$else}
-asm
-        DB      $0F, $77               /// EMMS
-end;
-{$endif CPUX64}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function GetBitmapBitsFromDeviceContext(DC: HDC; var Width, Height: Integer): Pointer;
-
-// Helper function used to retrieve the bitmap selected into the given device context. If there is a bitmap then
-// the function will return a pointer to its bits otherwise nil is returned.
-// Additionally the dimensions of the bitmap are returned.
-
-var
-  Bitmap: HBITMAP;
-  DIB: TDIBSection;
-
-begin
-  Result := nil;
-  Width := 0;
-  Height := 0;
-
-  Bitmap := GetCurrentObject(DC, OBJ_BITMAP);
-  if Bitmap <> 0 then
-  begin
-    if GetObject(Bitmap, SizeOf(DIB), @DIB) = SizeOf(DIB) then
-    begin
-      Assert(DIB.dsBm.bmPlanes * DIB.dsBm.bmBitsPixel = 32, 'Alpha blending error: bitmap must use 32 bpp.');
-      Result := DIB.dsBm.bmBits;
-      Width := DIB.dsBmih.biWidth;
-      Height := DIB.dsBmih.biHeight;
-    end;
-  end;
-  Assert(Result <> nil, 'Alpha blending DC error: no bitmap available.');
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function CalculateScanline(Bits: Pointer; Width, Height, Row: Integer): Pointer;
-
-// Helper function to calculate the start address for the given row.
-
-begin
-  if Height > 0 then  // bottom-up DIB
-    Row := Height - Row - 1;
-  // Return DWORD aligned address of the requested scanline.
-  Result := PAnsiChar(Bits) + Row * ((Width * 32 + 31) and not 31) div 8;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure AlphaBlend(Source, Destination: HDC; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
-
-// Optimized alpha blend procedure using MMX instructions to perform as quick as possible.
-// For this procedure to work properly it is important that both source and target bitmap use the 32 bit color format.
-// R describes the source rectangle to work on.
-// Target is the place (upper left corner) in the target bitmap where to blend to. Note that source width + X offset
-// must be less or equal to the target width. Similar for the height.
-// If Mode is bmConstantAlpha then the blend operation uses the given ConstantAlpha value for all pixels.
-// If Mode is bmPerPixelAlpha then each pixel is blended using its individual alpha value (the alpha value of the source).
-// If Mode is bmMasterAlpha then each pixel is blended using its individual alpha value multiplied by ConstantAlpha.
-// If Mode is bmConstantAlphaAndColor then each destination pixel is blended using ConstantAlpha but also a constant
-// color which will be obtained from Bias. In this case no offset value is added, otherwise Bias is used as offset.
-// Blending of a color into target only (bmConstantAlphaAndColor) ignores Source (the DC) and Target (the position).
-// CAUTION: This procedure does not check whether MMX instructions are actually available! Call it only if MMX is really
-//          usable.
-
-var
-  Y: Integer;
-  SourceRun,
-  TargetRun: PByte;
-
-  SourceBits,
-  DestBits: Pointer;
-  SourceWidth,
-  SourceHeight,
-  DestWidth,
-  DestHeight: Integer;
-
-begin
-  if not IsRectEmpty(R) then
-  begin
-    // Note: it is tempting to optimize the special cases for constant alpha 0 and 255 by just ignoring soure
-    //       (alpha = 0) or simply do a blit (alpha = 255). But this does not take the bias into account.
-    case Mode of
-      bmConstantAlpha:
-        begin
-          // Get a pointer to the bitmap bits for the source and target device contexts.
-          // Note: this supposes that both contexts do actually have bitmaps assigned!
-          SourceBits := GetBitmapBitsFromDeviceContext(Source, SourceWidth, SourceHeight);
-          DestBits := GetBitmapBitsFromDeviceContext(Destination, DestWidth, DestHeight);
-          if Assigned(SourceBits) and Assigned(DestBits) then
-          begin
-            for Y := 0 to R.Bottom - R.Top - 1 do
-            begin
-              SourceRun := CalculateScanline(SourceBits, SourceWidth, SourceHeight, Y + R.Top);
-              Inc(SourceRun, 4 * R.Left);
-              TargetRun := CalculateScanline(DestBits, DestWidth, DestHeight, Y + Target.Y);
-              Inc(TargetRun, 4 * Target.X);
-              AlphaBlendLineConstant(SourceRun, TargetRun, R.Right - R.Left, ConstantAlpha, Bias);
-            end;
-          end;
-          EMMS;
-        end;
-      bmPerPixelAlpha:
-        begin
-          SourceBits := GetBitmapBitsFromDeviceContext(Source, SourceWidth, SourceHeight);
-          DestBits := GetBitmapBitsFromDeviceContext(Destination, DestWidth, DestHeight);
-          if Assigned(SourceBits) and Assigned(DestBits) then
-          begin
-            for Y := 0 to R.Bottom - R.Top - 1 do
-            begin
-              SourceRun := CalculateScanline(SourceBits, SourceWidth, SourceHeight, Y + R.Top);
-              Inc(SourceRun, 4 * R.Left);
-              TargetRun := CalculateScanline(DestBits, DestWidth, DestHeight, Y + Target.Y);
-              Inc(TargetRun, 4 * Target.X);
-              AlphaBlendLinePerPixel(SourceRun, TargetRun, R.Right - R.Left, Bias);
-            end;
-          end;
-          EMMS;
-        end;
-      bmMasterAlpha:
-        begin
-          SourceBits := GetBitmapBitsFromDeviceContext(Source, SourceWidth, SourceHeight);
-          DestBits := GetBitmapBitsFromDeviceContext(Destination, DestWidth, DestHeight);
-          if Assigned(SourceBits) and Assigned(DestBits) then
-          begin
-            for Y := 0 to R.Bottom - R.Top - 1 do
-            begin
-              SourceRun := CalculateScanline(SourceBits, SourceWidth, SourceHeight, Y + R.Top);
-              Inc(SourceRun, 4 * Target.X);
-              TargetRun := CalculateScanline(DestBits, DestWidth, DestHeight, Y + Target.Y);
-              AlphaBlendLineMaster(SourceRun, TargetRun, R.Right - R.Left, ConstantAlpha, Bias);
-            end;
-          end;
-          EMMS;
-        end;
-      bmConstantAlphaAndColor:
-        begin
-          // Source is ignored since there is a constant color value.
-          DestBits := GetBitmapBitsFromDeviceContext(Destination, DestWidth, DestHeight);
-          if Assigned(DestBits) then
-          begin
-            for Y := 0 to R.Bottom - R.Top - 1 do
-            begin
-              TargetRun := CalculateScanline(DestBits, DestWidth, DestHeight, Y + R.Top);
-              Inc(TargetRun, 4 * R.Left);
-              AlphaBlendLineMasterAndColor(TargetRun, R.Right - R.Left, ConstantAlpha, Bias);
-            end;
-          end;
-          EMMS;
-        end;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function GetRGBColor(Value: TColor): DWORD;
-
-// Little helper to convert a Delphi color to an image list color.
-
-begin
-  Result := ColorToRGB(Value);
-  case Result of
-    clNone:
-      Result := CLR_NONE;
-    clDefault:
-      Result := CLR_DEFAULT;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
 
 const
   Grays: array[0..3] of TColor = (clWhite, clSilver, clGray, clBlack);
@@ -5793,129 +4221,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function HasMMX: Boolean;
 
-// Helper method to determine whether the current processor supports MMX.
 
-{$ifdef CPUX64}
-begin
-  // We use SSE2 in the "MMX-functions"
-  Result := True;
-end;
-{$else}
-asm
-        PUSH    EBX
-        XOR     EAX, EAX     // Result := False
-        PUSHFD               // determine if the processor supports the CPUID command
-        POP     EDX
-        MOV     ECX, EDX
-        XOR     EDX, $200000
-        PUSH    EDX
-        POPFD
-        PUSHFD
-        POP     EDX
-        XOR     ECX, EDX
-        JZ      @1           // no CPUID support so we can't even get to the feature information
-        PUSH    EDX
-        POPFD
 
-        MOV     EAX, 1
-        DW      $A20F        // CPUID, EAX contains now version info and EDX feature information
-        MOV     EBX, EAX     // free EAX to get the result value
-        XOR     EAX, EAX     // Result := False
-        CMP     EBX, $50
-        JB      @1           // if processor family is < 5 then it is not a Pentium class processor
-        TEST    EDX, $800000
-        JZ      @1           // if the MMX bit is not set then we don't have MMX
-        INC     EAX          // Result := True
-@1:
-        POP     EBX
-end;
-{$endif CPUX64}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
-
-// Stretch draw on to the new canvas.
-
-var
-  Header,
-  Bits: Pointer;
-  HeaderSize,
-  BitsSize: Cardinal;
-
-begin
-  GetDIBSizes(ABitmap.Handle, HeaderSize, BitsSize);
-
-  GetMem(Header, HeaderSize);
-  GetMem(Bits, BitsSize);
-  try
-    GetDIB(ABitmap.Handle, ABitmap.Palette, Header^, Bits^);
-    StretchDIBits(Canvas.Handle, DestRect.Left, DestRect.Top, DestRect.Right - DestRect.Left, DestRect.Bottom -
-      DestRect.Top, 0, 0, ABitmap.Width, ABitmap.Height, Bits, TBitmapInfo(Header^), DIB_RGB_COLORS, SRCCOPY);
-  finally
-    FreeMem(Header);
-    FreeMem(Bits);
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure ClipCanvas(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
-
-// Clip a given canvas to ClipRect while transforming the given rect to device coordinates.
-
-var
-  ClipRegion: HRGN;
-
-begin
-  // Regions expect their coordinates in device coordinates, hence we have to transform the region rectangle.
-  LPtoDP(Canvas.Handle, ClipRect, 2);
-  ClipRegion := CreateRectRgnIndirect(ClipRect);
-  if VisibleRegion <> 0 then
-    CombineRgn(ClipRegion, ClipRegion, VisibleRegion, RGN_AND);
-  SelectClipRgn(Canvas.Handle, ClipRegion);
-  DeleteObject(ClipRegion);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer);
-
-// Set the coordinate space origin of a given canvas.
-
-var
-  P: TPoint;
-
-begin
-  // Reset origin as otherwise we would accumulate the origin shifts when calling LPtoDP.
-  SetWindowOrgEx(Canvas.Handle, 0, 0, nil);
-
-  // The shifting is expected in physical points, so we have to transform them accordingly.
-  P := Point(X, Y);
-  LPtoDP(Canvas.Handle, P, 1);
-
-  // Do the shift.
-  SetWindowOrgEx(Canvas.Handle, P.X, P.Y, nil);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
-
-// Set the brush origin of a given canvas.
-
-var
-  P: TPoint;
-
-begin
-  P := Point(X, Y);
-  LPtoDP(Canvas.Handle, P, 1);
-  SetBrushOrgEx(Canvas.Handle, P.X, P.Y, nil);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
 
 procedure InitializeGlobalStructures;
 
@@ -6040,357 +4348,8 @@ begin
   end;
 end;
 
-//----------------- TCriticalSection -----------------------------------------------------------------------------------
 
-constructor TCriticalSection.Create;
 
-begin
-  inherited Create;
-  InitializeCriticalSection(FSection);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-destructor TCriticalSection.Destroy;
-
-begin
-  DeleteCriticalSection(FSection);
-
-  inherited Destroy;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCriticalSection.Enter;
-
-begin
-  EnterCriticalSection(FSection);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCriticalSection.Leave;
-
-begin
-  LeaveCriticalSection(FSection);
-end;
-
-//----------------- TWorkerThread --------------------------------------------------------------------------------------
-
-procedure AddThreadReference;
-begin
-  if not Assigned(WorkerThread) then
-  begin
-    // Create an event used to trigger our worker thread when something is to do.
-    WorkEvent := CreateEvent(nil, False, False, nil);
-    if WorkEvent = 0 then
-      RaiseLastOSError;
-
-    // Create worker thread, initialize it and send it to its wait loop.
-    WorkerThread := TWorkerThread.Create(False);
-  end;
-  Inc(WorkerThread.FRefCount);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure ReleaseThreadReference(Tree: TBaseVirtualTree);
-
-begin
-  if Assigned(WorkerThread) then
-  begin
-    Dec(WorkerThread.FRefCount);
-
-    // Make sure there is no reference remaining to the releasing tree.
-    Tree.InterruptValidation;
-
-    if WorkerThread.FRefCount = 0 then
-    begin
-      with WorkerThread do
-      begin
-        Terminate;
-        SetEvent(WorkEvent);
-      end;
-      FreeAndNil(WorkerThread);
-      CloseHandle(WorkEvent);
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-constructor TWorkerThread.Create(CreateSuspended: Boolean);
-
-begin
-  inherited Create(CreateSuspended);
-  FWaiterList := TThreadList.Create;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-destructor TWorkerThread.Destroy;
-
-begin
-  // First let the ancestor stop the thread before freeing our resources.
-  inherited;
-
-  FWaiterList.Free;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TWorkerThread.CancelValidation(Tree: TBaseVirtualTree);
-
-var
-  Msg: TMsg;
-
-begin
-  // Wait for any references to this tree to be released.
-  // Pump WM_CHANGESTATE messages so the thread doesn't block on SendMessage calls.
-  while FCurrentTree = Tree do
-  begin
-    if Tree.HandleAllocated and PeekMessage(Msg, Tree.Handle, WM_CHANGESTATE, WM_CHANGESTATE, PM_REMOVE) then
-    begin
-      TranslateMessage(Msg);
-      DispatchMessage(Msg);
-      Continue;
-    end;
-    if (toVariableNodeHeight in Tree.TreeOptions.MiscOptions) then
-      CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TWorkerThread.Execute;
-
-// Does some background tasks, like validating tree caches.
-
-var
-  EnterStates,
-  LeaveStates: TChangeStates;
-  lCurrentTree: TBaseVirtualTree;
-
-begin
-  TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');
-  while not Terminated do
-  begin
-    WaitForSingleObject(WorkEvent, INFINITE);
-    if not Terminated then
-    begin
-      // Get the next waiting tree.
-      with FWaiterList.LockList do
-      try
-        if Count > 0 then
-        begin
-          FCurrentTree := Items[0];
-          // Remove this tree from waiter list.
-          Delete(0);
-          // If there is yet another tree to work on then set the work event to keep looping.
-          if Count > 0 then
-            SetEvent(WorkEvent);
-        end
-        else
-          FCurrentTree := nil;
-      finally
-        FWaiterList.UnlockList;
-      end;
-
-      // Something to do?
-      if Assigned(FCurrentTree) then
-      begin
-        try
-          FCurrentTree.ChangeTreeStatesAsync([csValidating], [csUseCache, csValidationNeeded]);
-          EnterStates := [];
-          if not (tsStopValidation in FCurrentTree.FStates) and FCurrentTree.DoValidateCache then
-            EnterStates := [csUseCache];
-
-        finally
-          LeaveStates := [csValidating, csStopValidation];
-          FCurrentTree.ChangeTreeStatesAsync(EnterStates, LeaveStates);
-          lCurrentTree := FCurrentTree; // Save reference in a local variable for later use
-          FCurrentTree := nil; //Clear variable to prevent deadlock in CancelValidation. See #434
-          Queue(lCurrentTree.UpdateEditBounds);
-        end;
-      end;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TWorkerThread.AddTree(Tree: TBaseVirtualTree);
-
-begin
-  Assert(Assigned(Tree), 'Tree must not be nil.');
-
-  // Remove validation stop flag, just in case it is still set.
-  Tree.DoStateChange([], [tsStopValidation]);
-  with FWaiterList.LockList do
-  try
-    if IndexOf(Tree) = -1 then
-      Add(Tree);
-  finally
-    FWaiterList.UnlockList;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TWorkerThread.RemoveTree(Tree: TBaseVirtualTree);
-
-begin
-  Assert(Assigned(Tree), 'Tree must not be nil.');
-
-  with FWaiterList.LockList do
-  try
-    Remove(Tree);
-  finally
-    FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
-  end;
-  CancelValidation(Tree);
-end;
-
-//----------------- TBufferedAnsiString ------------------------------------------------------------------------------------
-
-const
-  AllocIncrement = 2 shl 11;  // Must be a power of 2.
-
-destructor TBufferedAnsiString.Destroy;
-
-begin
-  FreeMem(FStart);
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBufferedAnsiString.GetAsString: RawByteString;
-
-begin
-  SetString(Result, FStart, FPosition - FStart);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBufferedAnsiString.Add(const S: RawByteString);
-
-var
-  NewLen,
-  LastOffset,
-  Len: NativeInt;
-
-begin
-  Len := Length(S);
-  // Make room for the new string.
-  if FEnd - FPosition <= Len then
-  begin
-    // Round up NewLen so it is always a multiple of AllocIncrement.
-    NewLen := FEnd - FStart + (Len + AllocIncrement - 1) and not (AllocIncrement - 1);
-    // Keep last offset to restore it correctly in the case that FStart gets a new memory block assigned.
-    LastOffset := FPosition - FStart;
-    ReallocMem(FStart, NewLen);
-    FPosition := FStart + LastOffset;
-    FEnd := FStart + NewLen;
-  end;
-  Move(PAnsiChar(S)^, FPosition^, Len);
-  Inc(FPosition, Len);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBufferedAnsiString.AddNewLine;
-
-var
-  NewLen,
-  LastOffset: NativeInt;
-
-begin
-  // Make room for the CR/LF characters.
-  if FEnd - FPosition <= 2 then
-  begin
-    // Round up NewLen so it is always a multiple of AllocIncrement.
-    NewLen := FEnd - FStart + (2 + AllocIncrement - 1) and not (AllocIncrement - 1);
-    // Keep last offset to restore it correctly in the case that FStart gets a new memory block assigned.
-    LastOffset := FPosition - FStart;
-    ReallocMem(FStart, NewLen);
-    FPosition := FStart + LastOffset;
-    FEnd := FStart + NewLen;
-  end;
-  FPosition^ := #13;
-  Inc(FPosition);
-  FPosition^ := #10;
-  Inc(FPosition);
-end;
-
-//----------------- TWideBufferedString --------------------------------------------------------------------------------
-
-destructor TWideBufferedString.Destroy;
-
-begin
-  FreeMem(FStart);
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TWideBufferedString.GetAsString: string;
-
-begin
-  SetString(Result, FStart, FPosition - FStart);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TWideBufferedString.Add(const S: string);
-
-var
-  NewLen,
-  LastOffset,
-  Len: Integer;
-
-begin
-  Len := Length(S);
-  // Make room for the new string.
-  if FEnd - FPosition <= Len then
-  begin
-    // Round up NewLen so it is always a multiple of AllocIncrement.
-    NewLen := FEnd - FStart + (Len + AllocIncrement - 1) and not (AllocIncrement - 1);
-    // Keep last offset to restore it correctly in the case that FStart gets a new memory block assigned.
-    LastOffset := FPosition - FStart;
-    ReallocMem(FStart, 2 * NewLen);
-    FPosition := FStart + LastOffset;
-    FEnd := FStart + NewLen;
-  end;
-  Move(PWideChar(S)^, FPosition^, 2 * Len);
-  Inc(FPosition, Len);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TWideBufferedString.AddNewLine;
-
-var
-  NewLen,
-  LastOffset: Integer;
-
-begin
-  // Make room for the CR/LF characters.
-  if FEnd - FPosition <= 4 then
-  begin
-    // Round up NewLen so it is always a multiple of AllocIncrement.
-    NewLen := FEnd - FStart + (2 + AllocIncrement - 1) and not (AllocIncrement - 1);
-    // Keep last offset to restore it correctly in the case that FStart gets a new memory block assigned.
-    LastOffset := FPosition - FStart;
-    ReallocMem(FStart, 2 * NewLen);
-    FPosition := FStart + LastOffset;
-    FEnd := FStart + NewLen;
-  end;
-  FPosition^ := #13;
-  Inc(FPosition);
-  FPosition^ := #10;
-  Inc(FPosition);
-end;
 
 //----------------- TCustomVirtualTreeOptions --------------------------------------------------------------------------
 
@@ -6525,6 +4484,7 @@ begin
         if IsWinVistaOrAbove and ((tsUseThemes in FStates) or
            ((toThemeAware in ToBeSet) and StyleServices.Enabled)) and
            (toUseExplorerTheme in (ToBeSet + ToBeCleared)) and not VclStyleEnabled then
+        begin
           if (toUseExplorerTheme in ToBeSet) then
           begin
             SetWindowTheme('explorer');
@@ -6536,6 +4496,7 @@ begin
               SetWindowTheme('');
               DoStateChange([], [tsUseExplorerTheme]);
             end;
+        end;
 
         if not (csLoading in ComponentState) then
         begin
@@ -6629,7 +4590,7 @@ end;
 
 //----------------- TEnumFormatEtc -------------------------------------------------------------------------------------
 
-constructor TEnumFormatEtc.Create(Tree: TBaseVirtualTree; AFormatEtcArray: TFormatEtcArray);
+constructor TEnumFormatEtc.Create(Tree: TBaseVirtualTree; const AFormatEtcArray: TFormatEtcArray);
 
 var
   I: Integer;
@@ -6747,7 +4708,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDataObject.CanonicalIUnknown(TestUnknown: IUnknown): IUnknown;
+function TVTDataObject.CanonicalIUnknown(const TestUnknown: IUnknown): IUnknown;
 
 // Uses COM object identity: An explicit call to the IUnknown::QueryInterface method, requesting the IUnknown
 // interface, will always return the same pointer.
@@ -6861,7 +4822,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTDataObject.StgMediumIncRef(const InStgMedium: TStgMedium; var OutStgMedium: TStgMedium;
-  CopyInMedium: Boolean; DataObject: IDataObject): HRESULT;
+  CopyInMedium: Boolean; const DataObject: IDataObject): HRESULT;
 
 // InStgMedium is the data that is requested, OutStgMedium is the data that we are to return either a copy of or
 // increase the IDataObject's reference and send ourselves back as the data (unkForRelease). The InStgMedium is usually
@@ -9081,19 +7042,16 @@ begin
     FLastWidth := FWidth;
     if not (hsResizing in Owner.Header.States) then
       FBonusPixel := False;
-    with Owner, Header do
+    if not (hoAutoResize in Owner.Header.Options) or (Index <> Owner.Header.AutoSizeIndex) then
     begin
-      if not (hoAutoResize in FOptions) or (Index <> FAutoSizeIndex) then
-      begin
-        FWidth := Value;
-        UpdatePositions;
-      end;
-      if not (csLoading in Treeview.ComponentState) and (UpdateCount = 0) then
-      begin
-        if hoAutoResize in FOptions then
-          AdjustAutoSize(Index);
-        Treeview.DoColumnResize(Index);
-      end;
+      FWidth := Value;
+      Owner.UpdatePositions;
+    end;
+    if not (csLoading in Owner.Header.Treeview.ComponentState) and (Owner.UpdateCount = 0) then
+    begin
+      if hoAutoResize in Owner.Header.Options then
+        Owner.AdjustAutoSize(Index);
+      Owner.Header.Treeview.DoColumnResize(Index);
     end;
   end;
 end;
@@ -11554,6 +9512,7 @@ begin
     Transparency := 140;
   end;
 
+  fSplitterHitTolerance := 8;
   FFixedAreaConstraints := TVTFixedAreaConstraints.Create(Self);
   FFixedAreaConstraints.OnChange := FixedAreaConstraintsChanged;
 end;
@@ -11934,7 +9893,6 @@ function TVTHeader.DetermineSplitterIndex(P: TPoint): Boolean;
 //       columns possible.
 
 var
-  I,
   VisibleFixedWidth: Integer;
   SplitPoint: Integer;
 
@@ -11951,14 +9909,17 @@ var
 
   //--------------- end local function ----------------------------------------
 
+var
+  I: Integer;
+  LeftTolerance: Integer; // The area left of the column divider which allows column resizing
 begin
   Result := False;
-  FColumns.FTrackIndex := NoColumn;
-
-  VisibleFixedWidth := FColumns.GetVisibleFixedWidth;
 
   if FColumns.Count > 0 then
   begin
+    FColumns.FTrackIndex := NoColumn;
+    VisibleFixedWidth := FColumns.GetVisibleFixedWidth;
+    LeftTolerance := Round(SplitterHitTolerance * 0.6);
     if Treeview.UseRightToLeftAlignment then
     begin
       SplitPoint := -Treeview.FEffectiveOffsetX;
@@ -11969,7 +9930,7 @@ begin
         with FColumns, Items[FPositionToIndex[I]] do
           if coVisible in FOptions then
           begin
-            if IsNearBy(coFixed in FOptions, 5, 3) then
+            if IsNearBy(coFixed in FOptions, LeftTolerance, SplitterHitTolerance - LeftTolerance) then
             begin
               if CanSplitterResize(P, FPositionToIndex[I]) then
               begin
@@ -11994,7 +9955,7 @@ begin
         with FColumns, Items[FPositionToIndex[I]] do
           if coVisible in FOptions then
           begin
-            if IsNearBy(coFixed in FOptions, 3, 5) then
+            if IsNearBy(coFixed in FOptions, SplitterHitTolerance - LeftTolerance, LeftTolerance) then
             begin
               if CanSplitterResize(P, FPositionToIndex[I]) then
               begin
@@ -13932,7 +11893,7 @@ var
   RegisteredClass: TVirtualTreeClass;
 
 begin
-  RegisteredClass := InternalClipboardFormats.FindFormat(S, Format);
+  RegisteredClass := TClipboardFormatList.FindFormat(S, Format);
   if Assigned(RegisteredClass) and FOwner.ClassType.InheritsFrom(RegisteredClass) then
     Result := inherited Add(S)
   else
@@ -13951,7 +11912,7 @@ var
   RegisteredClass: TVirtualTreeClass;
 
 begin
-  RegisteredClass := InternalClipboardFormats.FindFormat(S, Format);
+  RegisteredClass := TClipboardFormatList.FindFormat(S, Format);
   if Assigned(RegisteredClass) and FOwner.ClassType.InheritsFrom(RegisteredClass) then
     inherited Insert(Index, S);
 end;
@@ -15861,104 +13822,119 @@ begin
 
   if NeedButtons then
   begin
-     with FMinusBM, Canvas do
-     begin
-      // box is always of odd size
-      FillBitmap(FMinusBM);
-      FillBitmap(FHotMinusBM);
-      // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiﬂe aus
-      if (not VclStyleEnabled) or (Theme = 0) then
-      begin
-        if not(tsUseExplorerTheme in FStates) then
-        begin
-          if FButtonStyle = bsTriangle then
-          begin
-            Brush.Color := clBlack;
-            Pen.Color := clBlack;
-            Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
-          end
-          else
-          begin
-            // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
-            if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
-            begin
-              case FButtonFillMode of
-                fmTreeColor:
-                  Brush.Color := FColors.BackGroundColor;
-                fmWindowColor:
-                  Brush.Color := clWindow;
-              end;
-              Pen.Color := FColors.TreeLineColor;
-              Rectangle(0, 0, Width, Height);
-              Pen.Color := FColors.NodeFontColor;
-              MoveTo(2, Width div 2);
-              LineTo(Width - 2, Width div 2);
-            end
-            else
-              FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
-            FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
-          end;
-        end;
-      end;
-    end;
-
-    with FPlusBM, Canvas do
+    //VCL Themes do not really have ability to provide tree plus/minus images when not using the
+    //windows theme. The bitmap style designer doesn't have any elements for for them, and you
+    //cannot name any elements you add, which makes it useless.
+    //To mitigate this, Hook up the OnPrepareButtonImages and draw them yourself.
+    if Assigned(FOnPrepareButtonImages) then
     begin
       FillBitmap(FPlusBM);
       FillBitmap(FHotPlusBM);
-      if (not VclStyleEnabled) or (Theme = 0) then
+      FillBitmap(FMinusBM);
+      FillBitmap(FHotMinusBM);
+      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FMinusBM, FHotMinusBM, size);
+    end
+    else
+    begin
+      with FMinusBM, Canvas do
       begin
-        if not(tsUseExplorerTheme in FStates) then
+        // box is always of odd size
+        FillBitmap(FMinusBM);
+        FillBitmap(FHotMinusBM);
+        // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiﬂe aus
+        // Because the self-drawn bitmaps view Vcl Style shit
+        if (not VclStyleEnabled) or (Theme = 0) then
         begin
-          if FButtonStyle = bsTriangle then
+          if not(tsUseExplorerTheme in FStates) then
           begin
-            Brush.Color := clBlack;
-            Pen.Color := clBlack;
-            Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
-          end
-          else
-          begin
-            // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
-            if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
+            if FButtonStyle = bsTriangle then
             begin
-              case FButtonFillMode of
-                fmTreeColor:
-                  Brush.Color := FColors.BackGroundColor;
-                fmWindowColor:
-                  Brush.Color := clWindow;
-              end;
-
-              Pen.Color := FColors.TreeLineColor;
-              Rectangle(0, 0, Width, Height);
-              Pen.Color := FColors.NodeFontColor;
-              MoveTo(2, Width div 2);
-              LineTo(Width - 2, Width div 2);
-              MoveTo(Width div 2, 2);
-              LineTo(Width div 2, Width - 2);
+              Brush.Color := clBlack;
+              Pen.Color := clBlack;
+              Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
             end
             else
-              FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
-            FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+            begin
+              // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
+              if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
+              begin
+                case FButtonFillMode of
+                  fmTreeColor:
+                    Brush.Color := FColors.BackGroundColor;
+                  fmWindowColor:
+                    Brush.Color := clWindow;
+                end;
+                Pen.Color := FColors.TreeLineColor;
+                Rectangle(0, 0, Width, Height);
+                Pen.Color := FColors.NodeFontColor;
+                MoveTo(2, Width div 2);
+                LineTo(Width - 2, Width div 2);
+              end
+              else
+                FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
+              FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+            end;
           end;
         end;
       end;
-    end;
+      with FPlusBM, Canvas do
+      begin
+        FillBitmap(FPlusBM);
+        FillBitmap(FHotPlusBM);
+        if (not VclStyleEnabled) or (Theme = 0) then
+        begin
+          if not(tsUseExplorerTheme in FStates) then
+          begin
+            if FButtonStyle = bsTriangle then
+            begin
+              Brush.Color := clBlack;
+              Pen.Color := clBlack;
+              Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
+            end
+            else
+            begin
+              // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
+              if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
+              begin
+                case FButtonFillMode of
+                  fmTreeColor:
+                    Brush.Color := FColors.BackGroundColor;
+                  fmWindowColor:
+                    Brush.Color := clWindow;
+                end;
 
-    // Overwrite glyph images if theme is active.
-    if (tsUseThemes in FStates) and (Theme <> 0) then
-    begin
-      R := Rect(0, 0, Size.cx, Size.cy);
-      DrawThemeBackground(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_CLOSED, R, nil);
-      DrawThemeBackground(Theme, FMinusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, R, nil);
-      if tsUseExplorerTheme in FStates then
+                Pen.Color := FColors.TreeLineColor;
+                Rectangle(0, 0, Width, Height);
+                Pen.Color := FColors.NodeFontColor;
+                MoveTo(2, Width div 2);
+                LineTo(Width - 2, Width div 2);
+                MoveTo(Width div 2, 2);
+                LineTo(Width div 2, Width - 2);
+              end
+              else
+                FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
+              FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+            end;
+          end;
+        end;
+      end;
+
+      // Overwrite glyph images if theme is active.
+      if (tsUseThemes in FStates) and (Theme <> 0) then
       begin
-        DrawThemeBackground(Theme, FHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
-        DrawThemeBackground(Theme, FHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
-      end
-      else
-      begin
-        FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-        FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+        R := Rect(0, 0, Size.cx, Size.cy);
+        DrawThemeBackground(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_CLOSED, R, nil);
+        DrawThemeBackground(Theme, FMinusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, R, nil);
+        if tsUseExplorerTheme in FStates then
+        begin
+          DrawThemeBackground(Theme, FHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
+          DrawThemeBackground(Theme, FHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
+        end
+        else
+        begin
+          FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+          FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+        end;
       end;
     end;
   end;
@@ -17174,7 +15150,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetWindowTheme(Theme: string);
+procedure TBaseVirtualTree.SetWindowTheme(const Theme: string);
 
 begin
   FChangingTheme := True;
@@ -20062,6 +18038,7 @@ begin
   if (M <> D) and (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
     SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+    Indent := MulDiv(Indent, M, D);
     FHeader.ChangeScale(M, D);
   end;
 end;
@@ -21445,7 +19422,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoDragDrop(Source: TObject; DataObject: IDataObject; Formats: TFormatArray;
+procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: IDataObject; const Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 
 begin
@@ -21900,7 +19877,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoHeaderClick(HitInfo: TVTHeaderHitInfo);
+procedure TBaseVirtualTree.DoHeaderClick(const HitInfo: TVTHeaderHitInfo);
 
 begin
   if Assigned(FOnHeaderClick) then
@@ -21909,7 +19886,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoHeaderDblClick(HitInfo: TVTHeaderHitInfo);
+procedure TBaseVirtualTree.DoHeaderDblClick(const HitInfo: TVTHeaderHitInfo);
 
 begin
   if Assigned(FOnHeaderDblClick) then
@@ -22720,7 +20697,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; DataObject: IDataObject; var DragEffect: Integer);
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: IDataObject; var DragEffect: Integer);
 var
   lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
 begin
@@ -23566,7 +21543,7 @@ procedure TBaseVirtualTree.GetNativeClipboardFormats(var Formats: TFormatEtcArra
 // Returns the supported clipboard formats of the tree.
 
 begin
-  InternalClipboardFormats.EnumerateFormats(TVirtualTreeClass(ClassType), Formats, FClipboardFormats);
+  TClipboardFormatList.EnumerateFormats(TVirtualTreeClass(ClassType), Formats, FClipboardFormats);
   // Ask application/descendants for self defined formats.
   DoGetUserClipboardFormats(Formats);
 end;
@@ -25516,34 +23493,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-type
-  TCustomImageListCast = class(TCustomImageList);
-
-procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
-
-  procedure DrawDisabledImage(ImageList: TCustomImageList; Canvas: TCanvas; X, Y, Index: Integer);
-  var
-    Params: TImageListDrawParams;
-  begin
-    FillChar(Params, SizeOf(Params), 0);
-    Params.cbSize := SizeOf(Params);
-    Params.himl := ImageList.Handle;
-    Params.i := Index;
-    Params.hdcDst := Canvas.Handle;
-    Params.x := X;
-    Params.y := Y;
-    Params.fState := ILS_SATURATE;
-    ImageList_DrawIndirect(@Params);
-  end;
-
-begin
-  if Enabled then
-    TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style, Enabled)
-  else
-    DrawDisabledImage(ImageList, Canvas, X, Y, Index);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean);
 const
@@ -25671,8 +23620,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer;
-  LineImage: TLineImage);
+procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer; const LineImage: TLineImage);
 
 var
   I: Integer;
@@ -31325,7 +29273,9 @@ begin
   begin
     Result := GetDisplayRect(Node, NoColumn, False);
     InvalidateRect(Handle, @Result, False);
-  end;
+  end
+  else
+    result := Rect(-1,-1,-1,-1);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32761,7 +30711,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ProcessDrop(DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer;
+function TBaseVirtualTree.ProcessDrop(const DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer;
   Mode: TVTNodeAttachMode): Boolean;
 
 // Recreates the (sub) tree structure serialized into memory and provided by DataObject. The new nodes are attached to
@@ -32868,7 +30818,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ProcessOLEData(Source: TBaseVirtualTree; DataObject: IDataObject; TargetNode: PVirtualNode;
+function TBaseVirtualTree.ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode;
   Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
 
 // Recreates the (sub) tree structure serialized into memory and provided by DataObject. The new nodes are attached to
@@ -35308,8 +33258,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  Text: string): Integer;
+function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer;
 
 begin
   Result := 0;
@@ -35491,7 +33440,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCustomVirtualStringTree.DoNewText(Node: PVirtualNode; Column: TColumnIndex; Text: string);
+procedure TCustomVirtualStringTree.DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string);
 
 begin
   if Assigned(FOnNewText) then
@@ -35968,7 +33917,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; Caption: string = ''): RawByteString;
+function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): RawByteString;
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
@@ -36110,7 +34059,7 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure WriteStyle(Name: AnsiString; Font: TFont);
+  procedure WriteStyle(const Name: AnsiString; Font: TFont);
 
   // Creates a CSS style entry with the given name for the given font.
   // If Name is empty then the entry is created as inline style.
@@ -36553,7 +34502,7 @@ var
 
   //--------------- local functions -------------------------------------------
 
-  procedure SelectFont(Font: string);
+  procedure SelectFont(const Font: string);
 
   var
     I: Integer;
@@ -36609,7 +34558,7 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure TextPlusFont(Text: string; Font: TFont);
+  procedure TextPlusFont(const Text: string; Font: TFont);
 
   var
     UseUnderline,
@@ -37386,13 +35335,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class constructor TVirtualStringTree.Create();
-begin
-  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function TCustomVirtualDrawTree.DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
   CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint;
 
@@ -37457,965 +35399,8 @@ begin
   Result := TVirtualTreeOptions;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-class constructor TVirtualDrawTree.Create();
-begin
-  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-
-// XE2+ VCL Style
-{ TVclStyleScrollBarsHook }
-
-procedure TVclStyleScrollBarsHook.CalcScrollBarsRect;
-var
-  P: TPoint;
-  BorderValue: TSize;
-  BarInfo: TScrollBarInfo;
-  I: Integer;
-
-  procedure CalcVerticalRects;
-  begin
-    BarInfo.cbSize := SizeOf(BarInfo);
-    GetScrollBarInfo(Handle, Integer(OBJID_VSCROLL), BarInfo);
-    FVertScrollBarWindow.Visible := not(STATE_SYSTEM_INVISIBLE and BarInfo.rgstate[0] <> 0);
-    FVertScrollBarWindow.Enabled := not(STATE_SYSTEM_UNAVAILABLE and BarInfo.rgstate[0] <> 0);
-    if FVertScrollBarWindow.Visible then
-    begin
-      // ScrollBar Rect
-      P := BarInfo.rcScrollBar.TopLeft;
-      ScreenToClient(Handle, P);
-      FVertScrollBarRect.TopLeft := P;
-      P := BarInfo.rcScrollBar.BottomRight;
-      ScreenToClient(Handle, P);
-      FVertScrollBarRect.BottomRight := P;
-      OffsetRect(FVertScrollBarRect, BorderValue.cx, BorderValue.cy);
-
-      I := GetSystemMetrics(SM_CYVTHUMB);
-      // Down Button
-      FVertScrollBarDownButtonRect := FVertScrollBarRect;
-      FVertScrollBarDownButtonRect.Top := FVertScrollBarDownButtonRect.Bottom - I;
-
-      // UP Button
-      FVertScrollBarUpButtonRect := FVertScrollBarRect;
-      FVertScrollBarUpButtonRect.Bottom := FVertScrollBarUpButtonRect.Top + I;
-
-      FVertScrollBarSliderTrackRect := FVertScrollBarRect;
-      Inc(FVertScrollBarSliderTrackRect.Top, I);
-      Dec(FVertScrollBarSliderTrackRect.Bottom, I);
-    end;
-  end;
-
-  procedure CalcHorizontalRects;
-  begin
-    BarInfo.cbSize := SizeOf(BarInfo);
-    GetScrollBarInfo(Handle, Integer(OBJID_HSCROLL), BarInfo);
-    FHorzScrollBarWindow.Visible := not(STATE_SYSTEM_INVISIBLE and BarInfo.rgstate[0] <> 0);
-    FHorzScrollBarWindow.Enabled := not(STATE_SYSTEM_UNAVAILABLE and BarInfo.rgstate[0] <> 0);
-    if FHorzScrollBarWindow.Visible then
-    begin
-      // ScrollBar Rect
-      P := BarInfo.rcScrollBar.TopLeft;
-      ScreenToClient(Handle, P);
-      FHorzScrollBarRect.TopLeft := P;
-      P := BarInfo.rcScrollBar.BottomRight;
-      ScreenToClient(Handle, P);
-      FHorzScrollBarRect.BottomRight := P;
-      OffsetRect(FHorzScrollBarRect, BorderValue.cx, BorderValue.cy);
-
-      I := GetSystemMetrics(SM_CXHTHUMB);
-      // Down Button
-      FHorzScrollBarDownButtonRect := FHorzScrollBarRect;
-      FHorzScrollBarDownButtonRect.Left := FHorzScrollBarDownButtonRect.Right - I;
-
-      // UP Button
-      FHorzScrollBarUpButtonRect := FHorzScrollBarRect;
-      FHorzScrollBarUpButtonRect.Right := FHorzScrollBarUpButtonRect.Left + I;
-
-      FHorzScrollBarSliderTrackRect := FHorzScrollBarRect;
-      Inc(FHorzScrollBarSliderTrackRect.Left, I);
-      Dec(FHorzScrollBarSliderTrackRect.Right, I);
-    end;
-  end;
-
-begin
-  BorderValue.cx := 0;
-  BorderValue.cy := 0;
-  if HasBorder then
-    if HasClientEdge then
-    begin
-      BorderValue.cx := GetSystemMetrics(SM_CXEDGE);
-      BorderValue.cy := GetSystemMetrics(SM_CYEDGE);
-    end;
-  CalcVerticalRects;
-  CalcHorizontalRects;
-
-end;
-
-constructor TVclStyleScrollBarsHook.Create(AControl: TWinControl);
-begin
-  inherited;
-  FVertScrollBarWindow := TVclStyleScrollBarWindow.CreateParented(GetParent(Control.Handle));
-  FVertScrollBarWindow.ScrollBarWindowOwner := Self;
-  FVertScrollBarWindow.ScrollBarVertical := True;
-
-  FHorzScrollBarWindow := TVclStyleScrollBarWindow.CreateParented(GetParent(Control.Handle));
-  FHorzScrollBarWindow.ScrollBarWindowOwner := Self;
-
-  FVertScrollBarSliderState := tsThumbBtnVertNormal;
-  FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-  FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-  FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-  FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-  FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-end;
-
-destructor TVclStyleScrollBarsHook.Destroy;
-begin
-  FVertScrollBarWindow.ScrollBarWindowOwner := nil;
-  FreeAndNil(FVertScrollBarWindow);
-  FHorzScrollBarWindow.ScrollBarWindowOwner := nil;
-  FreeAndNil(FHorzScrollBarWindow);
-  inherited;
-end;
-
-procedure TVclStyleScrollBarsHook.DrawHorzScrollBar(DC: HDC);
-var
-  B: TBitmap;
-  Details: TThemedElementDetails;
-  R: TRect;
-begin
-  if ((Handle = 0) or (DC = 0)) then
-    Exit;
-  if FHorzScrollBarWindow.Visible and StyleServices.Available and TBaseVirtualTree(Control).IsSeBorderInStyleElement then
-  begin
-    B := TBitmap.Create;
-    try
-      B.Width := FHorzScrollBarRect.Width;
-      B.Height := FHorzScrollBarRect.Height;
-      MoveWindowOrg(B.Canvas.Handle, -FHorzScrollBarRect.Left, -FHorzScrollBarRect.Top);
-      R := FHorzScrollBarRect;
-      R.Left := FHorzScrollBarUpButtonRect.Right;
-      R.Right := FHorzScrollBarDownButtonRect.Left;
-
-      Details := StyleServices.GetElementDetails(tsUpperTrackHorzNormal);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, R);
-
-      if FHorzScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FHorzScrollBarSliderState);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, GetHorzScrollBarSliderRect);
-
-      if FHorzScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FHorzScrollBarUpButtonState)
-      else
-        Details := StyleServices.GetElementDetails(tsArrowBtnLeftDisabled);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, FHorzScrollBarUpButtonRect);
-
-      if FHorzScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FHorzScrollBarDownButtonState)
-      else
-        Details := StyleServices.GetElementDetails(tsArrowBtnRightDisabled);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, FHorzScrollBarDownButtonRect);
-
-      MoveWindowOrg(B.Canvas.Handle, FHorzScrollBarRect.Left, FHorzScrollBarRect.Top);
-      with FHorzScrollBarRect do
-        BitBlt(DC, Left, Top, B.Width, B.Height, B.Canvas.Handle, 0, 0, SRCCOPY);
-    finally
-      B.Free;
-    end;
-  end;
-end;
-
-procedure TVclStyleScrollBarsHook.DrawVertScrollBar(DC: HDC);
-var
-  B: TBitmap;
-  Details: TThemedElementDetails;
-  R: TRect;
-begin
-  if ((Handle = 0) or (DC = 0)) then
-    Exit;
-  if FVertScrollBarWindow.Visible and StyleServices.Available and TBaseVirtualTree(Control).IsSeBorderInStyleElement then
-  begin
-    B := TBitmap.Create;
-    try
-      B.Width := FVertScrollBarRect.Width;
-      B.Height := FVertScrollBarWindow.Height;
-      MoveWindowOrg(B.Canvas.Handle, -FVertScrollBarRect.Left, -FVertScrollBarRect.Top);
-      R := FVertScrollBarRect;
-      R.Bottom := B.Height + FVertScrollBarRect.Top;
-      Details := StyleServices.GetElementDetails(tsUpperTrackVertNormal);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, R);
-      R.Top := FVertScrollBarUpButtonRect.Bottom;
-      R.Bottom := FVertScrollBarDownButtonRect.Top;
-       
-      Details := StyleServices.GetElementDetails(tsUpperTrackVertNormal);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, R);
-       
-      if FVertScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FVertScrollBarSliderState);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, GetVertScrollBarSliderRect);
-       
-      if FVertScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FVertScrollBarUpButtonState)
-      else
-        Details := StyleServices.GetElementDetails(tsArrowBtnUpDisabled);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, FVertScrollBarUpButtonRect);
-       
-      if FVertScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FVertScrollBarDownButtonState)
-      else
-        Details := StyleServices.GetElementDetails(tsArrowBtnDownDisabled);
-      StyleServices.DrawElement(B.Canvas.Handle, Details, FVertScrollBarDownButtonRect);
-       
-      MoveWindowOrg(B.Canvas.Handle, FVertScrollBarRect.Left, FVertScrollBarRect.Top);
-      with FVertScrollBarRect do
-        BitBlt(DC, Left, Top, B.Width, B.Height- TBaseVirtualTree(Control).BorderWidth, B.Canvas.Handle, 0, 0, SRCCOPY);
-   finally
-     B.Free;
-  end;
-  end;
-end;
-
-function TVclStyleScrollBarsHook.GetHorzScrollBarSliderRect: TRect;
-var
-  P: TPoint;
-  BarInfo: TScrollBarInfo;
-begin
-  if FHorzScrollBarWindow.Visible and FHorzScrollBarWindow.Enabled then
-  begin
-    BarInfo.cbSize := SizeOf(BarInfo);
-    GetScrollBarInfo(Handle, Integer(OBJID_HSCROLL), BarInfo);
-    P := BarInfo.rcScrollBar.TopLeft;
-    ScreenToClient(Handle, P);
-    Result.TopLeft := P;
-    P := BarInfo.rcScrollBar.BottomRight;
-    ScreenToClient(Handle, P);
-    Result.BottomRight := P;
-    Result.Left := BarInfo.xyThumbTop;
-    Result.Right := BarInfo.xyThumbBottom;
-    if HasBorder then
-      if HasClientEdge then
-        OffsetRect(Result, 2, 2)
-      else
-        OffsetRect(Result, 1, 1);
-  end
-  else
-    Result := Rect(0, 0, 0, 0);
-end;
-
-function TVclStyleScrollBarsHook.GetVertScrollBarSliderRect: TRect;
-var
-  P: TPoint;
-  BarInfo: TScrollBarInfo;
-begin
-  if FVertScrollBarWindow.Visible and FVertScrollBarWindow.Enabled then
-  begin
-    BarInfo.cbSize := SizeOf(BarInfo);
-    GetScrollBarInfo(Handle, Integer(OBJID_VSCROLL), BarInfo);
-    P := BarInfo.rcScrollBar.TopLeft;
-    ScreenToClient(Handle, P);
-    Result.TopLeft := P;
-    P := BarInfo.rcScrollBar.BottomRight;
-    ScreenToClient(Handle, P);
-    Result.BottomRight := P;
-    Result.Top := BarInfo.xyThumbTop;
-    Result.Bottom := BarInfo.xyThumbBottom;
-    if HasBorder then
-      if HasClientEdge then
-        OffsetRect(Result, 2, 2)
-      else
-        OffsetRect(Result, 1, 1);
-  end
-  else
-    Result := Rect(0, 0, 0, 0);
-end;
-
-procedure TVclStyleScrollBarsHook.MouseLeave;
-begin
-   inherited;
-  if FVertScrollBarSliderState = tsThumbBtnVertHot then
-    FVertScrollBarSliderState := tsThumbBtnVertNormal;
-
-  if FHorzScrollBarSliderState = tsThumbBtnHorzHot then
-    FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-
-  if FVertScrollBarUpButtonState = tsArrowBtnUpHot then
-    FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-
-  if FVertScrollBarDownButtonState = tsArrowBtnDownHot then
-    FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-
-  if FHorzScrollBarUpButtonState = tsArrowBtnLeftHot then
-    FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-
-  if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
-    FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-
-  PaintScrollBars;
-end;
-
-procedure TVclStyleScrollBarsHook.PaintScrollBars;
-begin
-  FVertScrollBarWindow.Repaint;
-  FHorzScrollBarWindow.Repaint;
-end;
-
-function TVclStyleScrollBarsHook.PointInTreeHeader(const P: TPoint): Boolean;
-begin
-  Result := TBaseVirtualTree(Control).FHeader.InHeader(P);
-end;
-
-procedure TVclStyleScrollBarsHook.UpdateScrollBarWindow;
-var
-  R: TRect;
-  Owner: TBaseVirtualTree;
-  HeaderHeight: Integer;
-  BorderWidth: Integer;
-begin
-  Owner := TBaseVirtualTree(Control);
-  if (hoVisible in Owner.Header.Options) then
-    HeaderHeight := Owner.FHeader.Height
-  else
-    HeaderHeight := 0;
-  BorderWidth := 0;
-  // VertScrollBarWindow
-    
-  if FVertScrollBarWindow.Visible and TBaseVirtualTree(Control).IsSeBorderInStyleElement then
-  begin
-    R := FVertScrollBarRect;
-    if Control.BidiMode = bdRightToLeft then
-    begin
-      OffsetRect(R, -R.Left, 0);
-      if HasBorder then
-        OffsetRect(R, GetSystemMetrics(SM_CXEDGE), 0);
-    end;
-    if HasBorder then
-      BorderWidth := GetSystemMetrics(SM_CYEDGE) * 2;
-    ShowWindow(FVertScrollBarWindow.Handle, SW_SHOW);
-    SetWindowPos(FVertScrollBarWindow.Handle, HWND_TOP, Control.Left + R.Left + TBaseVirtualTree(Control).BorderWidth, Control.Top + R.Top + HeaderHeight+ TBaseVirtualTree(Control).BorderWidth, R.Right - R.Left,
-      Control.Height - HeaderHeight  - BorderWidth- TBaseVirtualTree(Control).BorderWidth, SWP_SHOWWINDOW);
-  end
-  else
-    ShowWindow(FVertScrollBarWindow.Handle, SW_HIDE);
-
-  // HorzScrollBarWindow
-  if FHorzScrollBarWindow.Visible and TBaseVirtualTree(Control).IsSeBorderInStyleElement then
-  begin
-    R := FHorzScrollBarRect;
-    if Control.BidiMode = bdRightToLeft then
-      OffsetRect(R, FVertScrollBarRect.Width, 0);
-    ShowWindow(FHorzScrollBarWindow.Handle, SW_SHOW);
-    SetWindowPos(FHorzScrollBarWindow.Handle, HWND_TOP, Control.Left + R.Left + TBaseVirtualTree(Control).BorderWidth, Control.Top + R.Top + TBaseVirtualTree(Control).BorderWidth + HeaderHeight, R.Right - R.Left,
-      R.Bottom - R.Top, SWP_SHOWWINDOW);
-  end
-  else
-    ShowWindow(FHorzScrollBarWindow.Handle, SW_HIDE);
-end;
-
-procedure TVclStyleScrollBarsHook.WMCaptureChanged(var Msg: TMessage);
-begin
-   if FVertScrollBarWindow.Visible and FVertScrollBarWindow.Enabled then
-  begin
-    if FVertScrollBarUpButtonState = tsArrowBtnUpPressed then
-    begin
-      FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-      PaintScrollBars;
-    end;
-
-    if FVertScrollBarDownButtonState = tsArrowBtnDownPressed then
-    begin
-      FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-      PaintScrollBars;
-    end;
-  end;
-
-  if FHorzScrollBarWindow.Visible and FHorzScrollBarWindow.Enabled then
-  begin
-    if FHorzScrollBarUpButtonState = tsArrowBtnLeftPressed then
-    begin
-      FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-      PaintScrollBars;
-    end;
-
-    if FHorzScrollBarDownButtonState = tsArrowBtnRightPressed then
-    begin
-      FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-      PaintScrollBars;
-    end;
-  end;
-
-  CallDefaultProc(TMessage(Msg));
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMHScroll(var Msg: TMessage);
-begin
-  CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollBars(var Message: TMessage);
-begin
-   CalcScrollBarsRect;
-   PaintScrollBars;
-end;
-
-procedure TVclStyleScrollBarsHook.WMKeyDown(var Msg: TMessage);
-begin
-  CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMKeyUp(var Msg: TMessage);
-begin
-  CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMLButtonDown(var Msg: TWMMouse);
-begin
-  CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMLButtonUp(var Msg: TWMMouse);
-var
-  P: TPoint;
-begin
-  P := Point(Msg.XPos, Msg.YPos);
-  ScreenToClient(Handle, P);
-  if not PointInTreeHeader(P) then
-  begin
-    if FVertScrollBarWindow.Visible then
-    begin
-      if FVertScrollBarSliderState = tsThumbBtnVertPressed then
-      begin
-        PostMessage(Handle, WM_VSCROLL, Integer(SmallPoint(SB_ENDSCROLL, 0)), 0);
-        FLeftMouseButtonDown := False;
-        FVertScrollBarSliderState := tsThumbBtnVertNormal;
-        PaintScrollBars;
-        Handled := True;
-        ReleaseCapture;
-        Exit;
-      end;
-
-      if FVertScrollBarUpButtonState = tsArrowBtnUpPressed then
-        FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-
-      if FVertScrollBarDownButtonState = tsArrowBtnDownPressed then
-        FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-    end;
-
-    if FHorzScrollBarWindow.Visible then
-    begin
-      if FHorzScrollBarSliderState = tsThumbBtnHorzPressed then
-      begin
-        PostMessage(Handle, WM_HSCROLL, Integer(SmallPoint(SB_ENDSCROLL, 0)), 0);
-        FLeftMouseButtonDown := False;
-        FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-        PaintScrollBars;
-        Handled := True;
-        ReleaseCapture;
-        Exit;
-      end;
-
-      if FHorzScrollBarUpButtonState = tsArrowBtnLeftPressed then
-        FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-
-      if FHorzScrollBarDownButtonState = tsArrowBtnRightPressed then
-        FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-    end;
-    PaintScrollBars;
-  end;
-  FLeftMouseButtonDown := False;
-end;
-
-procedure TVclStyleScrollBarsHook.WMMouseMove(var Msg: TWMMouse);
-var
-  SF: TScrollInfo;
-begin
-  inherited;
-  if FVertScrollBarSliderState = tsThumbBtnVertPressed then
-  begin
-    SF.fMask := SIF_ALL;
-    SF.cbSize := SizeOf(SF);
-    GetScrollInfo(Handle, SB_VERT, SF);
-    if SF.nPos <> Round(FScrollPos) then
-      FScrollPos := SF.nPos;
-
-    FScrollPos := FScrollPos + (SF.nMax - SF.nMin) * ((Mouse.CursorPos.Y - FPrevScrollPos) / FVertScrollBarSliderTrackRect.Height);
-    if FScrollPos < SF.nMin then
-      FScrollPos := SF.nMin;
-    if FScrollPos > SF.nMax then
-      FScrollPos := SF.nMax;
-    if SF.nPage <> 0 then
-      if Round(FScrollPos) > SF.nMax - Integer(SF.nPage) + 1 then
-        FScrollPos := SF.nMax - Integer(SF.nPage) + 1;
-    FPrevScrollPos := Mouse.CursorPos.Y;
-    SF.nPos := Round(FScrollPos);
-
-    SetScrollInfo(Handle, SB_VERT, SF, False);
-    PostMessage(Handle, WM_VSCROLL, Integer(SmallPoint(SB_THUMBPOSITION, Min(Round(FScrollPos), High(SmallInt)))), 0); // Min() prevents range check error
-
-    PaintScrollBars;
-    Handled := True;
-    Exit;
-  end;
-
-  if FHorzScrollBarSliderState = tsThumbBtnHorzPressed then
-  begin
-    SF.fMask := SIF_ALL;
-    SF.cbSize := SizeOf(SF);
-    GetScrollInfo(Handle, SB_HORZ, SF);
-    if SF.nPos <> Round(FScrollPos) then
-      FScrollPos := SF.nPos;
-
-    FScrollPos := FScrollPos + (SF.nMax - SF.nMin) * ((Mouse.CursorPos.X - FPrevScrollPos) / FHorzScrollBarSliderTrackRect.Width);
-    if FScrollPos < SF.nMin then
-      FScrollPos := SF.nMin;
-    if FScrollPos > SF.nMax then
-      FScrollPos := SF.nMax;
-    if SF.nPage <> 0 then
-      if Round(FScrollPos) > SF.nMax - Integer(SF.nPage) + 1 then
-        FScrollPos := SF.nMax - Integer(SF.nPage) + 1;
-    FPrevScrollPos := Mouse.CursorPos.X;
-    SF.nPos := Round(FScrollPos);
-
-    SetScrollInfo(Handle, SB_HORZ, SF, False);
-    PostMessage(Handle, WM_HSCROLL, Integer(SmallPoint(SB_THUMBPOSITION, Round(FScrollPos))), 0);
-
-    PaintScrollBars;
-    Handled := True;
-    Exit;
-  end;
-
-  if FHorzScrollBarSliderState = tsThumbBtnHorzHot then
-  begin
-    FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-    PaintScrollBars;
-  end
-  else
-    if FVertScrollBarSliderState = tsThumbBtnVertHot then
-     begin
-       FVertScrollBarSliderState := tsThumbBtnVertNormal;
-       PaintScrollBars;
-     end
-     else
-       if FHorzScrollBarUpButtonState = tsArrowBtnLeftHot then
-       begin
-         FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-         PaintScrollBars;
-       end
-       else
-         if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
-         begin
-           FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-           PaintScrollBars;
-         end
-         else
-          if FVertScrollBarUpButtonState = tsArrowBtnUpHot then
-          begin
-            FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-            PaintScrollBars;
-          end
-          else
-            if FVertScrollBarDownButtonState = tsArrowBtnDownHot then
-            begin
-              FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-              PaintScrollBars;
-            end;
-
-  CallDefaultProc(TMessage(Msg));
-  if FLeftMouseButtonDown then
-    PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMMouseWheel(var Msg: TMessage);
-begin
-   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMNCLButtonDblClk(var Msg: TWMMouse);
-begin
-  WMNCLButtonDown(Msg);
-end;
-
-procedure TVclStyleScrollBarsHook.WMNCLButtonDown(var Msg: TWMMouse);
-var
-  P: TPoint;
-  SF: TScrollInfo;
-begin
-  P := Point(Msg.XPos, Msg.YPos);
-  ScreenToClient(Handle, P);
-
-  if HasBorder then
-    if HasClientEdge then
-    begin
-      P.X := P.X + 2;
-      P.Y := P.Y + 2;
-    end
-    else
-    begin
-      P.X := P.X + 1;
-      P.Y := P.Y + 1;
-    end;
-
-  if not PointInTreeHeader(P) then
-  begin
-    if FVertScrollBarWindow.Visible then
-    begin
-      if PtInRect(GetVertScrollBarSliderRect, P) then
-      begin
-        FLeftMouseButtonDown := True;
-        SF.fMask := SIF_ALL;
-        SF.cbSize := SizeOf(SF);
-        GetScrollInfo(Handle, SB_VERT, SF);
-        // FListPos := SF.nPos;
-        FScrollPos := SF.nPos;
-        FPrevScrollPos := Mouse.CursorPos.Y;
-        FVertScrollBarSliderState := tsThumbBtnVertPressed;
-        PaintScrollBars;
-        SetCapture(Handle);
-        Handled := True;
-        Exit;
-      end;
-
-      if FVertScrollBarWindow.Enabled then
-      begin
-        if PtInRect(FVertScrollBarDownButtonRect, P) then
-          FVertScrollBarDownButtonState := tsArrowBtnDownPressed;
-        if PtInRect(FVertScrollBarUpButtonRect, P) then
-          FVertScrollBarUpButtonState := tsArrowBtnUpPressed;
-      end;
-    end;
-
-    if FHorzScrollBarWindow.Visible then
-    begin
-      if PtInRect(GetHorzScrollBarSliderRect, P) then
-      begin
-        FLeftMouseButtonDown := True;
-        SF.fMask := SIF_ALL;
-        SF.cbSize := SizeOf(SF);
-        GetScrollInfo(Handle, SB_HORZ, SF);
-        // FListPos := SF.nPos;
-        FScrollPos := SF.nPos;
-        FPrevScrollPos := Mouse.CursorPos.X;
-        FHorzScrollBarSliderState := tsThumbBtnHorzPressed;
-        PaintScrollBars;
-        SetCapture(Handle);
-        Handled := True;
-        Exit;
-      end;
-
-      if FHorzScrollBarWindow.Enabled then
-      begin
-        if PtInRect(FHorzScrollBarDownButtonRect, P) then
-          FHorzScrollBarDownButtonState := tsArrowBtnRightPressed;
-        if PtInRect(FHorzScrollBarUpButtonRect, P) then
-          FHorzScrollBarUpButtonState := tsArrowBtnLeftPressed;
-      end;
-    end;
-    FLeftMouseButtonDown := True;
-    PaintScrollBars;
-  end;
-end;
-
-procedure TVclStyleScrollBarsHook.WMNCLButtonUp(var Msg: TWMMouse);
-var
-  P: TPoint;
-  B: Boolean;
-begin
-  P := Point(Msg.XPos, Msg.YPos);
-  ScreenToClient(Handle, P);
-
-  if HasBorder then
-    if HasClientEdge then
-    begin
-      P.X := P.X + 2;
-      P.Y := P.Y + 2;
-    end
-    else
-    begin
-      P.X := P.X + 1;
-      P.Y := P.Y + 1;
-    end;
-
-  B := PointInTreeHeader(P);
-
-  if not B then
-  begin
-    if FVertScrollBarWindow.Visible then
-      if FVertScrollBarWindow.Enabled then
-      begin
-        if FVertScrollBarSliderState = tsThumbBtnVertPressed then
-        begin
-          FLeftMouseButtonDown := False;
-          FVertScrollBarSliderState := tsThumbBtnVertNormal;
-          PaintScrollBars;
-          Handled := True;
-          Exit;
-        end;
-
-        if PtInRect(FVertScrollBarDownButtonRect, P) then
-          FVertScrollBarDownButtonState := tsArrowBtnDownHot
-        else
-          FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-
-        if PtInRect(FVertScrollBarUpButtonRect, P) then
-          FVertScrollBarUpButtonState := tsArrowBtnUpHot
-        else
-          FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-      end;
-
-    if FHorzScrollBarWindow.Visible then
-      if FHorzScrollBarWindow.Enabled then
-      begin
-        if FHorzScrollBarSliderState = tsThumbBtnHorzPressed then
-        begin
-          FLeftMouseButtonDown := False;
-          FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-          PaintScrollBars;
-          Handled := True;
-          Exit;
-        end;
-
-        if PtInRect(FHorzScrollBarDownButtonRect, P) then
-          FHorzScrollBarDownButtonState := tsArrowBtnRightHot
-        else
-          FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-
-        if PtInRect(FHorzScrollBarUpButtonRect, P) then
-          FHorzScrollBarUpButtonState := tsArrowBtnLeftHot
-        else
-          FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-      end;
-    CallDefaultProc(TMessage(Msg));
-  end;
-
-  if not B and (FHorzScrollBarWindow.Visible) or (FVertScrollBarWindow.Visible) then
-    PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMNCMouseMove(var Msg: TWMMouse);
-var
-  P: TPoint;
-  MustUpdateScroll: Boolean;
-  B: Boolean;
-begin
-  inherited;
-  P := Point(Msg.XPos, Msg.YPos);
-  ScreenToClient(Handle, P);
-
-  if PointInTreeHeader(P) then
-  begin
-    CallDefaultProc(TMessage(Msg));
-    PaintScrollBars;
-    Handled := True;
-    Exit;
-  end;
-
-  if HasBorder then
-    if HasClientEdge then
-    begin
-      P.X := P.X + 2;
-      P.Y := P.Y + 2;
-    end
-    else
-    begin
-      P.X := P.X + 1;
-      P.Y := P.Y + 1;
-    end;
-
-  MustUpdateScroll := False;
-  if FVertScrollBarWindow.Enabled then
-  begin
-    B := PtInRect(GetVertScrollBarSliderRect, P);
-    if B and (FVertScrollBarSliderState = tsThumbBtnVertNormal) then
-    begin
-      FVertScrollBarSliderState := tsThumbBtnVertHot;
-      MustUpdateScroll := True;
-    end
-    else if not B and (FVertScrollBarSliderState = tsThumbBtnVertHot) then
-    begin
-      FVertScrollBarSliderState := tsThumbBtnVertNormal;
-      MustUpdateScroll := True;
-    end;
-
-    B := PtInRect(FVertScrollBarDownButtonRect, P);
-    if B and (FVertScrollBarDownButtonState = tsArrowBtnDownNormal) then
-    begin
-      FVertScrollBarDownButtonState := tsArrowBtnDownHot;
-      MustUpdateScroll := True;
-    end
-    else if not B and (FVertScrollBarDownButtonState = tsArrowBtnDownHot) then
-    begin
-      FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-      MustUpdateScroll := True;
-    end;
-    B := PtInRect(FVertScrollBarUpButtonRect, P);
-    if B and (FVertScrollBarUpButtonState = tsArrowBtnUpNormal) then
-    begin
-      FVertScrollBarUpButtonState := tsArrowBtnUpHot;
-      MustUpdateScroll := True;
-    end
-    else if not B and (FVertScrollBarUpButtonState = tsArrowBtnUpHot) then
-    begin
-      FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-      MustUpdateScroll := True;
-    end;
-  end;
-
-  if FHorzScrollBarWindow.Enabled then
-  begin
-    B := PtInRect(GetHorzScrollBarSliderRect, P);
-    if B and (FHorzScrollBarSliderState = tsThumbBtnHorzNormal) then
-    begin
-      FHorzScrollBarSliderState := tsThumbBtnHorzHot;
-      MustUpdateScroll := True;
-    end
-    else if not B and (FHorzScrollBarSliderState = tsThumbBtnHorzHot) then
-    begin
-      FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-      MustUpdateScroll := True;
-    end;
-
-    B := PtInRect(FHorzScrollBarDownButtonRect, P);
-    if B and (FHorzScrollBarDownButtonState = tsArrowBtnRightNormal) then
-    begin
-      FHorzScrollBarDownButtonState := tsArrowBtnRightHot;
-      MustUpdateScroll := True;
-    end
-    else if not B and (FHorzScrollBarDownButtonState = tsArrowBtnRightHot) then
-    begin
-      FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-      MustUpdateScroll := True;
-    end;
-
-    B := PtInRect(FHorzScrollBarUpButtonRect, P);
-    if B and (FHorzScrollBarUpButtonState = tsArrowBtnLeftNormal) then
-    begin
-      FHorzScrollBarUpButtonState := tsArrowBtnLeftHot;
-      MustUpdateScroll := True;
-    end
-    else if not B and (FHorzScrollBarUpButtonState = tsArrowBtnLeftHot) then
-    begin
-      FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-      MustUpdateScroll := True;
-    end;
-  end;
-
-  if MustUpdateScroll then
-    PaintScrollBars;
-end;
-
-procedure TVclStyleScrollBarsHook.WMNCPaint(var Msg: TMessage);
-begin
-  CalcScrollBarsRect;
-  UpdateScrollBarWindow;
-end;
-
-procedure TVclStyleScrollBarsHook.WMSize(var Msg: TMessage);
-begin
-  CallDefaultProc(TMessage(Msg));
-  CalcScrollBarsRect;
-  UpdateScrollBarWindow;
-  PaintScrollBars;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMMove(var Msg: TMessage);
-begin
-  CallDefaultProc(TMessage(Msg));
-  if not (tsWindowCreating in TBaseVirtualTree(Control).FStates) then
-  begin
-    CalcScrollBarsRect;
-    UpdateScrollBarWindow;
-    PaintScrollBars;
-  end;
-  Handled := True;
-end;
-
-procedure TVclStyleScrollBarsHook.WMPosChanged(var Msg: TMessage);
-begin
-  WMMove(Msg);
-end;
-
-procedure TVclStyleScrollBarsHook.WMVScroll(var Msg: TMessage);
-begin
-  CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
-  Handled := True;
-end;
-
-{ TVclStyleScrollBarsHook.TVclStyleScrollBarWindow }
-
-constructor TVclStyleScrollBarsHook.TVclStyleScrollBarWindow.Create(AOwner: TComponent);
-begin
-  inherited;
-  ControlStyle := ControlStyle + [csOverrideStylePaint];
-  FScrollBarWindowOwner := nil;
-  FScrollBarVertical := False;
-  FScrollBarVisible := False;
-  FScrollBarEnabled := False;
-end;
-
-procedure TVclStyleScrollBarsHook.TVclStyleScrollBarWindow.CreateParams(var Params: TCreateParams);
-begin
-  inherited;
-  Params.Style := Params.Style or WS_CHILDWINDOW or WS_CLIPCHILDREN or WS_CLIPSIBLINGS;
-  Params.ExStyle := Params.ExStyle or WS_EX_NOPARENTNOTIFY;
-end;
-
-procedure TVclStyleScrollBarsHook.TVclStyleScrollBarWindow.WMEraseBkgnd(var Msg: TMessage);
-begin
-   Msg.Result := 1;
-end;
-
-procedure TVclStyleScrollBarsHook.TVclStyleScrollBarWindow.WMNCHitTest(var Msg: TWMNCHitTest);
-begin
-   Msg.Result := HTTRANSPARENT;
-end;
-
-procedure TVclStyleScrollBarsHook.TVclStyleScrollBarWindow.WMPaint(var Msg: TWMPaint);
-var
-  PS: TPaintStruct;
-  DC: HDC;
-begin
-  BeginPaint(Handle, PS);
-  try
-    if FScrollBarWindowOwner <> nil then
-    begin
-      DC := GetWindowDC(Handle);
-      try
-        if FScrollBarVertical then
-        begin
-          MoveWindowOrg(DC, -FScrollBarWindowOwner.FVertScrollBarRect.Left, -FScrollBarWindowOwner.FVertScrollBarRect.Top);
-          FScrollBarWindowOwner.DrawVertScrollBar(DC);
-        end
-        else
-        begin
-          MoveWindowOrg(DC, -FScrollBarWindowOwner.FHorzScrollBarRect.Left, -FScrollBarWindowOwner.FHorzScrollBarRect.Top);
-          FScrollBarWindowOwner.DrawHorzScrollBar(DC);
-        end;
-      finally
-        ReleaseDC(Handle, DC);
-      end;
-    end;
-  finally
-    EndPaint(Handle, PS);
-  end;
-end;
 
 initialization
   // Necessary for dynamic package loading.
@@ -38425,12 +35410,14 @@ initialization
   // This watcher is used whenever a global structure could be modified by more than one thread.
   Watcher := TCriticalSection.Create;
 
+//Note - not using class constructors as they are not supported on C++ Builder.
+  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
+  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
+
 finalization
   if Initialized then
     FinalizeGlobalStructures;
 
-  InternalClipboardFormats.Free;
-  InternalClipboardFormats := nil;
   Watcher.Free;
   Watcher := nil;
 

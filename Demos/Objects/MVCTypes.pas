@@ -55,7 +55,8 @@ unit MVCTypes;
 interface
 
 uses Windows,Messages,SysUtils,Graphics,VirtualTrees,Classes,StdCtrls,
-     Controls,Forms,ImgList;
+     Controls,Forms,ImgList,
+     System.Types, System.UITypes;
 
 type { TMVCNode is the encapsulation of a single Node in the structure.
        This implementation is a bit bloated because in my project
@@ -214,7 +215,7 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
            details on what they do and why they are overridden. }
          function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
          procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
-         function DoInitChildren(Node:PVirtualNode;var ChildCount:Cardinal): Boolean; override;
+         function DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean; override;
          procedure DoInitNode(aParent,aNode:PVirtualNode;
                               var aInitStates:TVirtualNodeInitStates); override;
          procedure DoFreeNode(aNode:PVirtualNode); override;
@@ -287,8 +288,6 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
 
 
 implementation
-
-uses UITypes;
 
 { Let's go }
 
@@ -729,9 +728,9 @@ begin
   inherited DoFreeNode(aNode);
 end;
 
-function TMVCTreeView.DoInitChildren(Node:PVirtualNode;var ChildCount:Cardinal): Boolean;
+function TMVCTreeView.DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean;
 begin
-  Result := inherited DoInitChildren(Node,ChildCount);
+  result := inherited DoInitChildren(Node,ChildCount);
   ChildCount:=MVCNode[Node].ChildCount;
 end;
 
