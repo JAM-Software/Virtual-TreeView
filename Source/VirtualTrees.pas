@@ -18033,6 +18033,7 @@ begin
   if (M <> D) and (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
     SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+    Indent := MulDiv(Indent, M, D);
     FHeader.ChangeScale(M, D);
   end;
 end;
