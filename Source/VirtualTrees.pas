@@ -916,7 +916,6 @@ type
     FImageRect: TRect;
     FHasImage: Boolean;
     FDefaultSortDirection: TSortDirection;
-    fSplitterHitTolerance: Integer; // For property SplitterHitTolerance
     function GetCaptionAlignment: TAlignment;
     function GetLeft: Integer;
     function IsBiDiModeStored: Boolean;
@@ -1201,6 +1200,7 @@ type
     FFixedAreaConstraints: TVTFixedAreaConstraints; // Percentages for the fixed area (header, fixed columns).
     FImages: TCustomImageList;
     FImageChangeLink: TChangeLink;     // connections to the image list to get notified about changes
+    fSplitterHitTolerance: Integer; // For property SplitterHitTolerance
     FSortColumn: TColumnIndex;
     FSortDirection: TSortDirection;
     FDragImage: TVTDragImage;          // drag image management during header drag
@@ -1299,9 +1299,9 @@ type
     property Options: TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
     property ParentFont: Boolean read FParentFont write SetParentFont default False;
     property PopupMenu: TPopupMenu read FPopupMenu write FPopupMenu;
-    property SplitterHitTolerance: Integer read fSplitterHitTolerance write fSplitterHitTolerance default 8; // The area in pixels around a spliter which is sensitive for resizing
     property SortColumn: TColumnIndex read FSortColumn write SetSortColumn default NoColumn;
     property SortDirection: TSortDirection read FSortDirection write SetSortDirection default sdAscending;
+    property SplitterHitTolerance: Integer read fSplitterHitTolerance write fSplitterHitTolerance default 8; // The area in pixels around a spliter which is sensitive for resizing
     property Style: TVTHeaderStyle read FStyle write SetStyle default hsThickButtons;
   end;
 
