@@ -1,12 +1,20 @@
 V6.0 (under development)
-  * Fixed #506: Autosort is being triggered at design-time.
-  * Fixed issue #486: AutoScroll is performed although toAutoScroll is not set.
+  * Issue #514: The splitter area in the column header should be configurable
+  * Issue #515: The value for Indent should get scaled too if the toAutoScale flag is set
+  * Issue #511: From the unit VirtualTres new units have been extracted to reduce its size.
+  * Issue #483 for TVTOperationKind.okExport: All exports can now be cancelled using CancelOperation()
+  * Issue #507: Added to TBaseVirtualTree:
+    function GetNodeData<T>(pNode: PVirtualNode): T;
+    function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
+    function GetFirstSelectedNodeData<T>(): T; overload;
+  * Issue #506: Autosort is being triggered at design-time.
+  * Issue #486: AutoScroll is performed although toAutoScroll is not set.
   * DoMeasureItem() now ensures that the node was initialized.
-  * Fixed issue #493: Editing with DblClick should always open editor immediately.
+  * Issue #493: Editing with DblClick should always open editor immediately.
   * TVirtualTreeColumns.UpdatePositions() now exists immediately if the control is destroying, ths prevents AVs.
   * Added support for CBuilder XE7.  
   * Supporting only Delphi / C++ Builder XE3 and higher
-  * A larger patch from Diemtar Rösler was applied which addresses various issue regarding VCL styles (especially #478 and #491).
+  * A larger patch from Diemtar RÃ¶sler was applied which addresses various issue regarding VCL styles (especially #478 and #491).
   * Improved support for C++ Builder  
 
 V5.5.3: (08 Jan 2015)
@@ -218,7 +226,7 @@ V5.1.1 (07 Feb 2013):
 
 V5.1.0 (05 Nov 2012):
  - Fixed issue #291: Empty hint strings are shown when using custom hint window classes
- - Added support for VCl styles of RAD Studio XE2 and higher. (Thanks to Dietmar Rösler, issue #288)
+ - Added support for VCl styles of RAD Studio XE2 and higher. (Thanks to Dietmar RÃ¶sler, issue #288)
  - Fixed issue #285: access violation when mouse down over checkbox sometimes
  - Fixed issue #293: OnAdvancedHeaderDraw is called with wrong PaintInfo.PaintRectangle
  - Improved creation of IDragSourceHelper and added support for IDragSourceHelper2
