@@ -1813,7 +1813,8 @@ type
     var NodeHeight: Integer) of object;
 
   TVTPrepareButtonImagesEvent = procedure(Sender: TBaseVirtualTree; const APlusBM : TBitmap; const APlusHotBM :TBitmap;
-                                          const AMinusBM : TBitmap; const AMinusHotBM : TBitmap; var ASize : TSize) of object;
+                                          const APlusSelectedHotBM :TBitmap; const AMinusBM : TBitmap; const AMinusHotBM : TBitmap;
+                                          const AMinusSelectedHotBM :TBitmap; var ASize : TSize) of object;
 
   // search, sort
   TVTCompareEvent = procedure(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
@@ -1966,7 +1967,9 @@ type
     FPlusBM,
     FMinusBM,                                    // small bitmaps used for tree buttons
     FHotPlusBM,
-    FHotMinusBM: TBitmap;                        // small bitmaps used for hot tree buttons 
+    FHotMinusBM,
+    FSelectedHotPlusBM,
+    FSelectedHotMinusBM: TBitmap;                // small bitmaps used for hot tree buttons
     FImages,                                     // normal images in the tree
     FStateImages,                                // state images in the tree
     FCustomCheckImages: TCustomImageList;        // application defined check images
@@ -11951,6 +11954,8 @@ begin
   FHotPlusBM := TBitmap.Create;
   FMinusBM := TBitmap.Create;
   FHotMinusBM := TBitmap.Create;
+  FSelectedHotPlusBM := TBitmap.Create;
+  FSelectedHotMinusBM := TBitmap.Create;
 
   FBorderStyle := bsSingle;
   FButtonStyle := bsRectangle;
@@ -12063,6 +12068,8 @@ begin
   FHotPlusBM.Free;
   FMinusBM.Free;
   FHotMinusBM.Free;
+  FSelectedHotPlusBM.Free;
+  FSelectedHotMinusBM.Free;
 
   inherited;
 end;
@@ -13830,9 +13837,11 @@ begin
     begin
       FillBitmap(FPlusBM);
       FillBitmap(FHotPlusBM);
+      FillBitmap(FSelectedHotPlusBM);
       FillBitmap(FMinusBM);
       FillBitmap(FHotMinusBM);
-      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FMinusBM, FHotMinusBM, size);
+      FillBitmap(FSelectedHotMinusBM);
+      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
     end
     else
     begin
@@ -13841,6 +13850,7 @@ begin
         // box is always of odd size
         FillBitmap(FMinusBM);
         FillBitmap(FHotMinusBM);
+        FillBitmap(FSelectedHotMinusBM);
         // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiﬂe aus
         // Because the self-drawn bitmaps view Vcl Style shit
         if (not VclStyleEnabled) or (Theme = 0) then
@@ -13873,6 +13883,7 @@ begin
               else
                 FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
               FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+              FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
             end;
           end;
         end;
@@ -13881,6 +13892,7 @@ begin
       begin
         FillBitmap(FPlusBM);
         FillBitmap(FHotPlusBM);
+        FillBitmap(FSelectedHotMinusBM);
         if (not VclStyleEnabled) or (Theme = 0) then
         begin
           if not(tsUseExplorerTheme in FStates) then
@@ -13914,6 +13926,7 @@ begin
               else
                 FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
               FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+              FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
             end;
           end;
         end;
@@ -13928,12 +13941,16 @@ begin
         if tsUseExplorerTheme in FStates then
         begin
           DrawThemeBackground(Theme, FHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
+          DrawThemeBackground(Theme, FSelectedHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
           DrawThemeBackground(Theme, FHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
+          DrawThemeBackground(Theme, FSelectedHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
         end
         else
         begin
           FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+          FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
           FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+          FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
         end;
       end;
     end;
@@ -21605,9 +21622,10 @@ var
   CheckPositions: THitPositions;
   ButtonIsHit,
   DoInvalidate: Boolean;
-
+  oldHotNode : PVirtualNode;
 begin
   DoInvalidate := False;
+  oldHotNode := FCurrentHotNode;
   // Get information about the hit.
   GetHitTestInfoAt(X, Y, True, HitInfo);
 
@@ -21631,15 +21649,19 @@ begin
     FCurrentHotColumn := HitInfo.HitColumn;
   end;
 
-  ButtonIsHit := (hiOnItemButtonExact in HitInfo.HitPositions) and (toHotTrack in FOptions.FPaintOptions);
+  ButtonIsHit := (hiOnItemButtonExact in HitInfo.HitPositions);
   if Assigned(FCurrentHotNode) and ((FHotNodeButtonHit <> ButtonIsHit) or DoInvalidate) then
   begin
-    FHotNodeButtonHit := ButtonIsHit and (toHotTrack in FOptions.FPaintOptions);
+    FHotNodeButtonHit := ButtonIsHit;
     InvalidateNode(FCurrentHotNode);
   end
   else
     if not Assigned(FCurrentHotNode) then
       FHotNodeButtonHit := False;
+
+  if (oldHotNode <> FCurrentHotNode) and (oldHotNode <> nil) then
+    InvalidateNode(oldHotNode);
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23574,13 +23596,15 @@ var
   Bitmap: TBitmap;
   XPos: Integer;
   IsHot: Boolean;
+  IsSelected : boolean;
   Theme: HTHEME;
   Glyph: Integer;
   State: Integer;
   Pos: TRect;
 
 begin
-  IsHot := (toHotTrack in FOptions.FPaintOptions) and (FCurrentHotNode = Node) and FHotNodeButtonHit;
+  IsHot := (FCurrentHotNode = Node) and FHotNodeButtonHit;
+  IsSelected := (vsSelected in Node.States);
 
   // Draw the node's plus/minus button according to the directionality.
   if BidiMode = bdLeftToRight then
@@ -23602,14 +23626,24 @@ begin
     if vsExpanded in Node.States then
     begin
       if IsHot then
-        Bitmap := FHotMinusBM
+      begin
+        if IsSelected then
+          BitMap := FSelectedHotMinusBM
+        else
+          Bitmap := FHotMinusBM;
+      end
       else
         Bitmap := FMinusBM;
     end
     else
     begin
       if IsHot then
-        Bitmap := FHotPlusBM
+      begin
+        if IsSelected then
+          BitMap := FSelectedHotPlusBM
+        else
+          Bitmap := FHotPlusBM;
+      end
       else
         Bitmap := FPlusBM;
     end;
