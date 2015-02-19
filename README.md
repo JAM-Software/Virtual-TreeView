@@ -21,7 +21,7 @@ We currently focus on reducing the number of reported bugs and getting Virtual T
 If you want to contribute, you are welcome. We always look for help, not only for the development of the Virtual Treeview control itself, but also for maintaining the sample projects, the help or the wiki. Please post to Developer Group in case you like to join our team.
 
 ###License
-Virtual Treeview is published under a double license: MPL 1.1 and GPL 2.0.
+Virtual Treeview is published under a double license: MPL 1.1 and LGPL 2.1.
 
 ###New project owner
 JAM Software took Virtual Treeview under its wing, but not much will change besides the homepage and download location. Please read this press release for further details.
