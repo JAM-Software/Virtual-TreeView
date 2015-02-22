@@ -444,8 +444,9 @@ type
     toAutoChangeScale,          // Change default node height automatically if the system's font scale is set to big fonts.
     toAutoFreeOnCollapse,       // Frees any child node after a node has been collapsed (HasChildren flag stays there).
     toDisableAutoscrollOnEdit,  // Do not center a node horizontally when it is edited.
-    toAutoBidiColumnOrdering    // When set then columns (if any exist) will be reordered from lowest index to highest index
+    toAutoBidiColumnOrdering,   // When set then columns (if any exist) will be reordered from lowest index to highest index
                                 // and vice versa when the tree's bidi mode is changed.
+    toAutoUnCheckParentNode     // Uncheck parent node, if it haven't checked child nodes
   );
   TVTAutoOptions = set of TVTAutoOption;
 
@@ -517,7 +518,7 @@ type
 const
   DefaultPaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
   DefaultAnimationOptions = [];
-  DefaultAutoOptions = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort];
+  DefaultAutoOptions = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort, toAutoUnCheckParentNode];
   DefaultSelectionOptions = [];
   DefaultMiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning,
     toEditOnClick];
@@ -18112,7 +18113,7 @@ begin
     Run := Run.NextSibling;
   end;
 
-  if (CheckCount = 0) and not PartialCheck then
+  if (toAutoUnCheckParentNode in FOptions.FAutoOptions) and (CheckCount = 0) and not PartialCheck then
     NewCheckState := csUncheckedNormal
   else
     if CheckCount < BoxCount then
