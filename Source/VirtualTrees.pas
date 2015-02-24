@@ -16,7 +16,7 @@ unit VirtualTrees;
 // The original code is VirtualTrees.pas, released September 30, 2000.
 //
 // The initial developer of the original code is digital publishing AG (Munich, Germany, www.digitalpublishing.de),
-// written by Mike Lischke (public@soft-gems.net, www.soft-gems.net).
+// most code was written by Mike Lischke 2000-2009 (public@soft-gems.net, www.soft-gems.net)
 //
 // Portions created by digital publishing AG are Copyright
 // (C) 1999-2001 digital publishing AG. All Rights Reserved.
@@ -30,7 +30,7 @@ unit VirtualTrees;
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen, Joachim Marder
+//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret
 // Beta testers:
 //   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
@@ -510,7 +510,8 @@ type
     okGetMaxColumnWidth,
     okSortNode,
     okSortTree,
-    okExport
+    okExport,
+    okExpand
   );
   TVTOperationKinds = set of TVTOperationKind;
 
@@ -26372,6 +26373,7 @@ begin
   if FRoot.TotalCount > 1 then
   begin
     DoStateChange([tsExpanding]);
+    StartOperation(TVTOperationKind.okExpand);
     BeginUpdate;
     try
       if Node = nil then
@@ -26403,8 +26405,9 @@ begin
         if not (vsExpanded in Node.States) then
           ToggleNode(Node);
         Node := GetNext(Node);
-      until Node = Stop;
+      until (Node = Stop) or OperationCanceled;
     finally
+      StartOperation(TVTOperationKind.okExpand);
       EndUpdate;
       DoStateChange([], [tsExpanding]);
     end;
