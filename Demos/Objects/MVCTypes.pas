@@ -730,8 +730,9 @@ end;
 
 function TMVCTreeView.DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean;
 begin
-  result := inherited DoInitChildren(Node,ChildCount);
+  inherited DoInitChildren(Node,ChildCount);
   ChildCount:=MVCNode[Node].ChildCount;
+  Result := True;
 end;
 
 procedure TMVCTreeView.DoInitNode(aParent,aNode:PVirtualNode;
