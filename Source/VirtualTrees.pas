@@ -1897,6 +1897,8 @@ type
   // ----- TBaseVirtualTree
   TBaseVirtualTree = class(TCustomControl)
   private
+    class var FTotalInternalDataSize: Cardinal;            // Cache of the sum of the necessary internal data size for all tree
+  private
     FBorderStyle: TBorderStyle;
     FHeader: TVTHeader;
     FRoot: PVirtualNode;
@@ -2038,8 +2040,6 @@ type
     FSearchStart: TVTSearchStart;                // Where to start iteration on each key press.
 
     // miscellanous
-    FTotalInternalDataSize: Cardinal;            // Cache of the sum of the necessary internal data size for all tree
-                                                 // classes derived from this base class.
     FPanningWindow: HWND;                        // Helper window for wheel panning
     FPanningCursor: HCURSOR;                     // Current wheel panning cursor.
     FPanningImage: TBitmap;                      // A little 32x32 bitmap to indicate the panning reference point.
@@ -2403,7 +2403,7 @@ type
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: Integer); virtual;
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
-    function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
+    class function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
     function CalculateSelectionRect(X, Y: Integer): Boolean; virtual;
     function CanAutoScroll: Boolean; virtual;
@@ -2651,6 +2651,7 @@ type
 
     procedure VclStyleChanged;
     property VclStyleEnabled: Boolean read FVclStyleEnabled;
+    class property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
 
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
     property AnimationDuration: Cardinal read FAnimationDuration write SetAnimationDuration default 200;
@@ -2719,7 +2720,6 @@ type
     property SelectionCurveRadius: Cardinal read FSelectionCurveRadius write SetSelectionCurveRadius default 0;
     property StateImages: TCustomImageList read FStateImages write SetStateImages;
     property TextMargin: Integer read FTextMargin write SetTextMargin default 4;
-    property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
 
@@ -3223,10 +3223,12 @@ type
 
   TCustomVirtualStringTree = class(TBaseVirtualTree)
   private
+    class var FInternalDataOffset: Cardinal;        // offset to the internal data of the string tree
+    class constructor Create();
+  private
     FDefaultText: string;                   // text to show if there's no OnGetText event handler (e.g. at design time)
     FTextHeight: Integer;                          // true size of the font
     FEllipsisWidth: Integer;                       // width of '...' for the current font
-    FInternalDataOffset: Cardinal;                 // offset to the internal data of the string tree
 
     FOnPaintText: TVTPaintText;                    // triggered before either normal or fixed text is painted to allow
                                                    // even finer customization (kind of sub cell painting)
@@ -11933,7 +11935,6 @@ begin
 
   ControlStyle := ControlStyle - [csSetCaption] + [csCaptureMouse, csOpaque, csReplicatable, csDisplayDragImage,
     csReflector];
-  FTotalInternalDataSize := 0;
   FNodeDataSize := -1;
   Width := 200;
   Height := 100;
@@ -13572,6 +13573,7 @@ begin
     FRoot := AllocMem(NewSize)
   else
   begin
+    //TODO: It seems that this code is never executed
     ReallocMem(FRoot, NewSize);
     ZeroMemory(PByte(FRoot) + OldSize, NewSize - OldSize);
   end;
@@ -17850,17 +17852,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
+class function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
 
 // Simple registration method to be called by each descendant to claim their internal data area.
 // Result is the offset from the begin of the node to the internal data area of the calling tree class.
 
 begin
-  Assert((FRoot = nil) or (FRoot.ChildCount = 0), 'Internal data allocation must be done before any node is created.');
-
-  Result := TreeNodeSize + FTotalInternalDataSize;
-  Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
-  InitRootNode(Result);
+  Result := TreeNodeSize;
+  FTotalInternalDataSize := (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25402,7 +25401,7 @@ begin
   inherited;
 
   if FRoot = nil then
-    InitRootNode;
+    InitRootNode;//TODO: It seems that this line is never executed
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32788,6 +32787,13 @@ begin
   inherited;
   FPreviouslySelected := nil;
   FDefaultText := 'Node';
+  InitRootNode(FInternalDataOffset);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class constructor TCustomVirtualStringTree.Create();
+begin
   FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
 end;
 
