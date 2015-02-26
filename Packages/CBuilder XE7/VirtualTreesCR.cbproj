@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{FE6B0D67-74B6-4E30-8AED-CB2B3E77A51F}</ProjectGuid>
         <MainSource>VirtualTreesCR.cpp</MainSource>
-        <ProjectVersion>16.0</ProjectVersion>
+        <ProjectVersion>16.1</ProjectVersion>
         <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
@@ -57,6 +57,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
         <ILINK_Description>VirtualTree CBuilder runtime package</ILINK_Description>
         <DCC_HppOutput>..\..\source</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCR</SanitizedProjectName>
@@ -68,7 +69,6 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <BCC_InstructionSet>6</BCC_InstructionSet>
-        <DesignOnlyPackage>true</DesignOnlyPackage>
         <OutputExt>bpl</OutputExt>
         <ProjectType>CppPackage</ProjectType>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
@@ -157,8 +157,23 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>6</BuildOrder>
         </PackageImport>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
+            <BuildOrder>10</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
+            <BuildOrder>11</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
             <BuildOrder>9</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
+            <BuildOrder>12</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
+            <BuildOrder>13</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
+            <BuildOrder>14</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VTAccessibility.pas">
             <BuildOrder>8</BuildOrder>
@@ -262,6 +277,7 @@
                     <Excluded_Packages Name="$(BDSBIN)\bcbofficexp210.bpl">Embarcadero C++Builder-Package für Office XP-Server</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k210.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp210.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Program Files (x86)\Raize\CS5\Bin\CodeSiteExpressPkg_Design210.bpl">Datei C:\Program Files (x86)\Raize\CS5\Bin\CodeSiteExpressPkg_Design210.bpl nicht gefunden</Excluded_Packages>
                 </Excluded_Packages>
                 <ProjectProperties>
                     <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
