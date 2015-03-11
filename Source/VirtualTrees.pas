@@ -611,8 +611,14 @@ type
     NextSibling,             // link to the node's next sibling or nil if it is the last node
     FirstChild,              // link to the node's first child...
     LastChild: PVirtualNode; // link to the node's last child...
+  private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
+  public
+    function IsAssigned(): Boolean; inline;
+    function GetData(): Pointer; overload; inline;
+    function GetData<T:class>(): T; overload; inline;
   end;
+
 
   // Structure used when info about a certain position in the header is needed.
   TVTHeaderHitInfo = record
@@ -1582,6 +1588,7 @@ type
     YPos: Integer;            // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
     Images: TCustomImageList; // The image list to be used for painting.
+    function Equals(const pImageInfo2: TVTImageInfo): Boolean;
   end;
 
   TVTImageInfoIndex = (
@@ -2944,9 +2951,9 @@ type
     function GetNodeAt(X, Y: Integer): PVirtualNode; overload;
     function GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode; overload;
     function GetNodeData(Node: PVirtualNode): Pointer; overload;
-    function GetNodeData<T>(pNode: PVirtualNode): T; overload; inline;
+    function GetNodeData<T:class>(pNode: PVirtualNode): T; overload; inline;
     function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
-    function GetFirstSelectedNodeData<T>(): T;
+    function GetFirstSelectedNodeData<T:class>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
@@ -3981,8 +3988,8 @@ var
   UtilityImages,                       // some small additional images (e.g for header dragging)
   SystemCheckImages,                   // global system check images
   SystemFlatCheckImages: TImageList;   // global flat system check images
-  Initialized: Boolean;                // True if global structures have been initialized.
-  NeedToUnitialize: Boolean;           // True if the OLE subsystem could be initialized successfully.
+  Initialized: Boolean = False;        // True if global structures have been initialized.
+  NeedToUnitialize: Boolean = False;   // True if the OLE subsystem could be initialized successfully.
 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23533,8 +23540,13 @@ begin
 
     // Since the overlay image must be specified together with the image to draw
     // it is meaningfull to retrieve it in advance.
-    if DoOverlay then
-      GetImageIndex(PaintInfo, ikOverlay, iiOverlay, Images)
+    if DoOverlay then begin
+      GetImageIndex(PaintInfo, ikOverlay, iiOverlay, Images);
+      // If the overlay image is the same as the normal image, don't paint it.
+      // Users often forgot to respect the Kind parameter and ended up opening bugs.
+      if PaintInfo.ImageInfo[iiOverlay].Equals(PaintInfo.ImageInfo[iiNormal]) then
+        PaintInfo.ImageInfo[iiOverlay].Index := -1;
+    end
     else
       PaintInfo.ImageInfo[iiOverlay].Index := -1;
 
@@ -28143,6 +28155,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+
 function TBaseVirtualTree.GetNodeData(Node: PVirtualNode): Pointer;
 
 // Returns the address of the user defined data area in the node.
@@ -28162,7 +28175,7 @@ end;
 
 function TBaseVirtualTree.GetNodeData<T>(pNode: PVirtualNode): T;
 
-// Returns associated data converted to the type given in the generic part of the function.
+// Returns the associated data converted to the class given in the generic part of the function.
 
 begin
   if Assigned(pNode) then
@@ -28175,7 +28188,7 @@ end;
 
 function TBaseVirtualTree.GetNodeDataAt<T>(pXCoord, pYCoord: Integer): T;
 
-// Returns associated data at the specified coordinates converted to the type given in the generic part of the function.
+// Returns the associated data at the specified coordinates converted to the type given in the generic part of the function.
 
 var
   lNode: PVirtualNode;
@@ -28183,11 +28196,9 @@ begin
   lNode := GetNodeAt(pXCoord, pYCoord);
 
   if not Assigned(lNode) then
-  begin
     Exit(nil);
-  end;
 
-  Result := T(Self.GetNodeData(lNode)^);
+  Result := Self.GetNodeData<T>(lNode);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35445,11 +35456,45 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-initialization
-  // Necessary for dynamic package loading.
-  Initialized := False;
-  NeedToUnitialize := False;
+{ PVirtualNodeHelper }
 
+function TVirtualNode.GetData(): Pointer;
+
+// Returns the associated data converted to the class given in the generic part of the function.
+
+begin
+  Result := PByte(@Self.Data) + TBaseVirtualTree.FTotalInternalDataSize;
+  Include(States, vsOnFreeNodeCallRequired);
+end;
+
+function TVirtualNode.GetData<T>: T;
+
+// Returns the associated data converted to the class given in the generic part of the function.
+
+begin
+  Result := T(Pointer((PByte(@(Self.Data)) + TBaseVirtualTree.FTotalInternalDataSize))^);
+  Include(States, vsOnFreeNodeCallRequired);
+end;
+
+function TVirtualNode.IsAssigned: Boolean;
+
+// Returns False if this node is nil, True otherwise
+
+begin
+  Exit(@Self <> nil);
+end;
+
+{ TVTImageInfo }
+
+function TVTImageInfo.Equals(const pImageInfo2: TVTImageInfo): Boolean;
+
+  // Returns true if both images are the same, does not regard Ghosted and position.
+
+begin
+  Result := (Self.Index = pImageInfo2.Index) and (Self.Images = pImageInfo2.Images);
+end;
+
+initialization
   // This watcher is used whenever a global structure could be modified by more than one thread.
   Watcher := TCriticalSection.Create;
 
