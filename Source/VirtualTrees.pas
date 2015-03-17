@@ -22806,10 +22806,6 @@ begin
             Inc(Run.Index);
             Run := Run.NextSibling;
           end;
-
-          Inc(Destination.Parent.ChildCount);
-          Include(Destination.Parent.States, vsHasChildren);
-          AdjustTotalCount(Destination.Parent, Node.TotalCount, True);
         end;
       amInsertAfter:
         begin
@@ -22830,10 +22826,6 @@ begin
             Inc(Run.Index);
             Run := Run.NextSibling;
           end;
-
-          Inc(Destination.Parent.ChildCount);
-          Include(Destination.Parent.States, vsHasChildren);
-          AdjustTotalCount(Destination.Parent, Node.TotalCount, True);
         end;
       amAddChildFirst:
         begin
@@ -22861,10 +22853,6 @@ begin
             Inc(Run.Index);
             Run := Run.NextSibling;
           end;
-
-          Inc(Destination.ChildCount);
-          Include(Destination.States, vsHasChildren);
-          AdjustTotalCount(Destination, Node.TotalCount, True);
         end;
       amAddChildLast:
         begin
@@ -22888,9 +22876,6 @@ begin
             Node.Index := Node.PrevSibling.Index + 1
           else
             Node.Index := 0;
-          Inc(Destination.ChildCount);
-          Include(Destination.States, vsHasChildren);
-          AdjustTotalCount(Destination, Node.TotalCount, True);
         end;
     else
       // amNoWhere: do nothing
@@ -22899,6 +22884,10 @@ begin
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsClearing];
 
     if (Mode <> amNoWhere) then begin
+      Inc(Node.Parent.ChildCount);
+      Include(Node.Parent.States, vsHasChildren);
+      AdjustTotalCount(Node.Parent, Node.TotalCount, True);
+
       // Add the new node's height only if its parent is expanded.
       if (vsExpanded in Node.Parent.States) and (vsVisible in Node.States) then begin
         AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
