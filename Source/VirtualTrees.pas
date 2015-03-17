@@ -22810,13 +22810,6 @@ begin
           Inc(Destination.Parent.ChildCount);
           Include(Destination.Parent.States, vsHasChildren);
           AdjustTotalCount(Destination.Parent, Node.TotalCount, True);
-
-          // Add the new node's height only if its parent is expanded.
-          if FullyVisible[Node] then
-          begin
-            AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
-            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
-          end;
         end;
       amInsertAfter:
         begin
@@ -22841,13 +22834,6 @@ begin
           Inc(Destination.Parent.ChildCount);
           Include(Destination.Parent.States, vsHasChildren);
           AdjustTotalCount(Destination.Parent, Node.TotalCount, True);
-
-          // Add the new node's height only if its parent is expanded.
-          if FullyVisible[Node] then
-          begin
-            AdjustTotalHeight(Destination.Parent, Node.TotalHeight, True);
-            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
-          end;
         end;
       amAddChildFirst:
         begin
@@ -22879,12 +22865,6 @@ begin
           Inc(Destination.ChildCount);
           Include(Destination.States, vsHasChildren);
           AdjustTotalCount(Destination, Node.TotalCount, True);
-          // Add the new node's height only if its parent is expanded.
-          if FullyVisible[Node] then
-          begin
-            AdjustTotalHeight(Destination, Node.TotalHeight, True);
-            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
-          end;
         end;
       amAddChildLast:
         begin
@@ -22911,34 +22891,36 @@ begin
           Inc(Destination.ChildCount);
           Include(Destination.States, vsHasChildren);
           AdjustTotalCount(Destination, Node.TotalCount, True);
-          // Add the new node's height only if its parent is expanded.
-          if FullyVisible[Node] then
-          begin
-            AdjustTotalHeight(Destination, Node.TotalHeight, True);
-            Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
-          end;
         end;
     else
       // amNoWhere: do nothing
     end;
-
     // Remove temporary states.
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsClearing];
 
-    // Update the hidden children flag of the parent.
-    if (Mode <> amNoWhere) and (Node.Parent <> FRoot) then
-    begin
-      // If we have added a visible node then simply remove the all-children-hidden flag.
-      if IsEffectivelyVisible[Node] then
-        Exclude(Node.Parent.States, vsAllChildrenHidden)
-      else
-        // If we have added an invisible node and this is the only child node then
-        // make sure the all-children-hidden flag is in a determined state.
-        // If there were child nodes before then no action is needed.
-        if Node.Parent.ChildCount = 1 then
-          Include(Node.Parent.States, vsAllChildrenHidden);
-    end;
-  end;
+    // Add the new node's height only if its parent is expanded.
+    if (Mode <> amNoWhere) then begin
+      if FullyVisible[Node] then begin
+        AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
+        Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+      end;//if
+
+      // Update the hidden children flag of the parent.
+      if (Node.Parent <> FRoot) then
+      begin
+        // If we have added a visible node then simply remove the all-children-hidden flag.
+        if IsEffectivelyVisible[Node] then
+          Exclude(Node.Parent.States, vsAllChildrenHidden)
+        else begin
+          // If we have added an invisible node and this is the only child node then
+          // make sure the all-children-hidden flag is in a determined state.
+          // If there were child nodes before then no action is needed.
+          if Node.Parent.ChildCount = 1 then
+            Include(Node.Parent.States, vsAllChildrenHidden);
+        end;//else
+      end; //if Node.Parent <> FRoot
+    end;//if Mode <> amNoWhere
+  end;//With
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
