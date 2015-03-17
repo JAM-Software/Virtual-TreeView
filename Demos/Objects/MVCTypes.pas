@@ -505,9 +505,10 @@ function TMVCTreeView.GetMVCNode(VirtualNode:PVirtualNode):TMVCNode;
 begin
   { Return the reference to the TMVCNode that is represented by
     Virtualnode }
-  if VirtualNode=NIL
-    then Result:=NIL
-    else Result:=PMyNodeData(InternalData(VirtualNode)).Node;
+  if VirtualNode.IsAssigned() then
+    Result := PMyNodeData(InternalData(VirtualNode)).Node
+  else
+    Result := nil;
 end;
 
 procedure TMVCTreeView.SetMVCNode(VirtualNode:PVirtualNode;aNode:TMVCNode);
