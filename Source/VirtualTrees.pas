@@ -221,6 +221,7 @@ type
     vsSelected,          // Set if the node is in the current selection.
     vsOnFreeNodeCallRequired,   // Set if user data has been set which requires OnFreeNode.
     vsAllChildrenHidden, // Set if vsHasChildren is set and no child node has the vsVisible flag set.
+    //vsReleaseCallOnUserDataRequired, // Indicates that the user data is a reference to an interface which should be released.
     vsClearing,          // A node's children are being deleted. Don't register structure change event.
     vsMultiline,         // Node text is wrapped at the cell boundaries instead of being shorted.
     vsHeightMeasured,    // Node height has been determined and does not need a recalculation.
@@ -2952,6 +2953,7 @@ type
     function GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode; overload;
     function GetNodeData(Node: PVirtualNode): Pointer; overload;
     function GetNodeData<T:class>(pNode: PVirtualNode): T; overload; inline;
+    function GetInterfaceFromNodeData<T:IInterface>(pNode: PVirtualNode): T; overload; inline;
     function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
     function GetFirstSelectedNodeData<T:class>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
@@ -3012,6 +3014,9 @@ type
     function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
+    procedure SetNodeData(pNode: PVirtualNode; pUserData: Pointer); overload; inline;
+    procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); overload;
+    procedure SetNodeData<T:class>(pNode: PVirtualNode; pUserData: T); overload;
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
@@ -14757,6 +14762,42 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.SetNodeData(pNode: PVirtualNode; pUserData: Pointer);
+
+  // Can be used to set user data of a PVirtualNode with the size of a pointer, useful for setting
+  // A pointer to a record or a reference to a class instance.
+
+var
+  NodeData: ^Pointer;
+begin
+  // Check if there is initial user data and there is also enough user data space allocated.
+  Assert(FNodeDataSize >= SizeOf(Pointer), SCannotSetUserData);
+  NodeData := Pointer(PByte(@pNode.Data) + FTotalInternalDataSize);
+  NodeData^ := pUserData;
+  Include(pNode.States, vsOnFreeNodeCallRequired);
+end;
+
+procedure TBaseVirtualTree.SetNodeData<T>(pNode: PVirtualNode; pUserData: T);
+
+  // Can be used to set user data of a PVirtualNode to a class instance.
+
+begin
+  SetNodeData(pNode, Pointer(pUserData));
+end;
+
+procedure TBaseVirtualTree.SetNodeData(pNode: PVirtualNode; const pUserData: IInterface);
+
+  // Can be used to set user data of a PVirtualNode to a class instance,
+  // will take care about reference counting.
+
+begin
+  pUserData._AddRef();
+  SetNodeData(pNode, Pointer(pUserData));
+  //Include(pNode.States, vsReleaseCallOnUserDataRequired);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.SetNodeDataSize(Value: Integer);
 
 var
@@ -19679,6 +19720,11 @@ begin
   // fire event
   if Assigned(FOnFreeNode) and ([vsInitialized, vsOnFreeNodeCallRequired] * Node.States <> []) then
     FOnFreeNode(Self, Node);
+
+  //TODO: make this work by removing vsClearing and substituting it by a paramter in DeleteNode. Currently TNodeStates would exceed 16 flags which causes a lot of trouble.
+  //if vsReleaseCallOnUserDataRequired in Node.States then
+  //  GetInterfaceFromNodeData<IInterface>(Node)._Release();
+
   FreeMem(Node);
   if Self.UpdateCount = 0 then
     EnsureNodeSelected();
@@ -21463,8 +21509,6 @@ begin
       ImageInfo[InfoIndex].Images := DefaultImages;
   end;
 end;
-
-
 
 function TBaseVirtualTree.GetIsSeBorderInStyleElement: Boolean;
 begin
@@ -25260,9 +25304,6 @@ function TBaseVirtualTree.AddChild(Parent: PVirtualNode; UserData: Pointer = nil
 // AddChild is a compatibility method and will implicitly validate the parent node. This is however
 // against the virtual paradigm and hence I dissuade from its usage.
 
-var
-  NodeData: ^Pointer;
-
 begin
   if not (toReadOnly in FOptions.FMiscOptions) then
   begin
@@ -25284,18 +25325,10 @@ begin
       Dec(FUpdateCount);
     end;
     Result := Parent.LastChild;
-
     //TODO: The above code implicitely triggers OnMeasureItem, but the NodeData is not set then. Consider doing this similar to InsertNode() with a combination of MakeNewNode and InternalConnectNode()
-    // Check if there is initial user data and there is also enough user data space allocated.
+
     if Assigned(UserData) then
-      if FNodeDataSize >= SizeOf(Pointer) then
-      begin
-        NodeData := Pointer(PByte(@Result.Data) + FTotalInternalDataSize);
-        NodeData^ := UserData;
-        Include(Result.States, vsOnFreeNodeCallRequired);
-      end
-      else
-        ShowError(SCannotSetUserData, hcTFCannotSetUserData);
+      SetNodeData(Result, UserData);
 
     InvalidateCache;
     if FUpdateCount = 0 then
@@ -28157,6 +28190,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetInterfaceFromNodeData<T>(pNode: PVirtualNode): T;
+begin
+  if Assigned(pNode) then
+    Result := T(Self.GetNodeData(pNode)^)
+  else
+    Result := nil;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetNodeDataAt<T>(pXCoord, pYCoord: Integer): T;
 
 // Returns the associated data at the specified coordinates converted to the type given in the generic part of the function.
@@ -29191,14 +29234,7 @@ begin
 
     // Check if there is initial user data and there is also enough user data space allocated.
     if Assigned(UserData) then
-      if FNodeDataSize >= SizeOf(Pointer) then
-      begin
-        NodeData := Pointer(PByte(@Result.Data) + FTotalInternalDataSize);
-        NodeData^ := UserData;
-        Include(Result.States, vsOnFreeNodeCallRequired);
-      end
-      else
-        ShowError(SCannotSetUserData, hcTFCannotSetUserData);
+      SetNodeData(Result, UserData);
 
     if FUpdateCount = 0 then
     begin
