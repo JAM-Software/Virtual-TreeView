@@ -3878,7 +3878,6 @@ resourcestring
   SCorruptStream1 = 'Stream data corrupt. A node''s anchor chunk is missing.';
   SCorruptStream2 = 'Stream data corrupt. Unexpected data after node''s end position.';
   SClipboardFailed = 'Clipboard operation failed.';
-  SCannotSetUserData = 'Cannot set initial user data because there is not enough user data space allocated.';
 
 const
   ClipboardStates = [tsCopyPending, tsCutPending];
@@ -14771,7 +14770,7 @@ var
   NodeData: ^Pointer;
 begin
   // Check if there is initial user data and there is also enough user data space allocated.
-  Assert(FNodeDataSize >= SizeOf(Pointer), SCannotSetUserData);
+  Assert(FNodeDataSize >= SizeOf(Pointer), Self.Classname + ': Cannot set initial user data because there is not enough user data space allocated.');
   NodeData := Pointer(PByte(@pNode.Data) + FTotalInternalDataSize);
   NodeData^ := pUserData;
   Include(pNode.States, vsOnFreeNodeCallRequired);
@@ -29203,9 +29202,6 @@ function TBaseVirtualTree.InsertNode(Node: PVirtualNode; Mode: TVTNodeAttachMode
 // "officially" initialized.
 // InsertNode is a compatibility method and will implicitly validate the given node if the new node
 // is to be added as child node. This is however against the virtual paradigm and hence I dissuade from its usage.
-
-var
-  NodeData: ^Pointer;
 
 begin
   if Mode <> amNoWhere then
