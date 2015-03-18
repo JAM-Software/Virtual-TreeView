@@ -617,6 +617,9 @@ type
     function IsAssigned(): Boolean; inline;
     function GetData(): Pointer; overload; inline;
     function GetData<T:class>(): T; overload; inline;
+    procedure SetData(pUserData: Pointer); overload;
+    procedure SetData<T:class>(pUserData: T); overload;
+    procedure SetData(const pUserData: IInterface); overload;
   end;
 
 
@@ -3015,7 +3018,7 @@ type
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
     procedure SetNodeData(pNode: PVirtualNode; pUserData: Pointer); overload; inline;
-    procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); overload;
+    procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); overload; inline;
     procedure SetNodeData<T:class>(pNode: PVirtualNode; pUserData: T); overload;
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
@@ -14790,9 +14793,7 @@ procedure TBaseVirtualTree.SetNodeData(pNode: PVirtualNode; const pUserData: IIn
   // will take care about reference counting.
 
 begin
-  pUserData._AddRef();
-  SetNodeData(pNode, Pointer(pUserData));
-  Include(pNode.States, vsReleaseCallOnUserDataRequired);
+  pNode.SetData(pUserData);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35485,6 +35486,35 @@ function TVirtualNode.IsAssigned: Boolean;
 
 begin
   Exit(@Self <> nil);
+end;
+
+procedure TVirtualNode.SetData(pUserData: Pointer);
+
+  // Can be used to set user data of a PVirtualNode with the size of a pointer, useful for setting
+  // A pointer to a record or a reference to a class instance.
+
+var
+  NodeData: ^Pointer;
+begin
+  NodeData := Pointer(PByte(@Self.Data) + TBaseVirtualTree.FTotalInternalDataSize);
+  NodeData^ := pUserData;
+  Include(Self.States, vsOnFreeNodeCallRequired);
+end;
+
+procedure TVirtualNode.SetData(const pUserData: IInterface);
+
+  // Can be used to set user data of a PVirtualNode to a class instance,
+  // will take care about reference counting.
+
+begin
+  pUserData._AddRef();
+  SetData(Pointer(pUserData));
+  Include(Self.States, vsReleaseCallOnUserDataRequired);
+end;
+
+procedure TVirtualNode.SetData<T>(pUserData: T);
+begin
+  SetData(Pointer(pUserData));
 end;
 
 { TVTImageInfo }
