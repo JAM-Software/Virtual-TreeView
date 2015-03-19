@@ -221,8 +221,7 @@ type
     vsSelected,          // Set if the node is in the current selection.
     vsOnFreeNodeCallRequired,   // Set if user data has been set which requires OnFreeNode.
     vsAllChildrenHidden, // Set if vsHasChildren is set and no child node has the vsVisible flag set.
-    //vsReleaseCallOnUserDataRequired, // Indicates that the user data is a reference to an interface which should be released.
-    vsClearing,          // A node's children are being deleted. Don't register structure change event.
+    vsReleaseCallOnUserDataRequired, // Indicates that the user data is a reference to an interface which should be released.
     vsMultiline,         // Node text is wrapped at the cell boundaries instead of being shorted.
     vsHeightMeasured,    // Node height has been determined and does not need a recalculation.
     vsToggling,          // Set when a node is expanded/collapsed to prevent recursive calls.
@@ -618,6 +617,9 @@ type
     function IsAssigned(): Boolean; inline;
     function GetData(): Pointer; overload; inline;
     function GetData<T:class>(): T; overload; inline;
+    procedure SetData(pUserData: Pointer); overload;
+    procedure SetData<T:class>(pUserData: T); overload;
+    procedure SetData(const pUserData: IInterface); overload;
   end;
 
 
@@ -2429,6 +2431,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWnd; override;
     procedure DefineProperties(Filer: TFiler); override;
+    procedure DeleteNode(Node: PVirtualNode; Reindex: Boolean; ParentClearing: Boolean); overload;
     function DetermineDropMode(const P: TPoint; var HitInfo: THitInfo; var NodeRect: TRect): TDropMode; virtual;
     procedure DetermineHiddenChildrenFlag(Node: PVirtualNode); virtual;
     procedure DetermineHiddenChildrenFlagAllNodes; virtual;
@@ -2605,7 +2608,7 @@ type
     procedure InternalClearSelection; virtual;
     procedure InternalConnectNode(Node, Destination: PVirtualNode; Target: TBaseVirtualTree; Mode: TVTNodeAttachMode); virtual;
     function InternalData(Node: PVirtualNode): Pointer;
-    procedure InternalDisconnectNode(Node: PVirtualNode; KeepFocus: Boolean; Reindex: Boolean = True); virtual;
+    procedure InternalDisconnectNode(Node: PVirtualNode; KeepFocus: Boolean; Reindex: Boolean = True; ParentClearing: Boolean = False); virtual;
     procedure InternalRemoveFromSelection(Node: PVirtualNode); virtual;
     procedure InterruptValidation;
     procedure InvalidateCache;
@@ -2705,7 +2708,7 @@ type
     property IncrementalSearchStart: TVTSearchStart read FSearchStart write FSearchStart default ssFocusedNode;
     property IncrementalSearchTimeout: Cardinal read FSearchTimeout write FSearchTimeout default 1000;
     property Indent: Cardinal read FIndent write SetIndent default 18;
-     property IsSeBorderInStyleElement : Boolean read GetIsSeBorderInStyleElement;//TODO: Make this a private function
+    property IsSeBorderInStyleElement : Boolean read GetIsSeBorderInStyleElement;//TODO: Make this a private function
     property LastClickPos: TPoint read FLastClickPos write FLastClickPos;
     property LastDropMode: TDropMode read FLastDropMode write FLastDropMode;
     property LastHintRect: TRect read FLastHintRect write FLastHintRect;
@@ -2885,7 +2888,7 @@ type
     procedure CopyToClipboard; virtual;
     procedure CutToClipboard; virtual;
     procedure DeleteChildren(Node: PVirtualNode; ResetHasChildren: Boolean = False);
-    procedure DeleteNode(Node: PVirtualNode; Reindex: Boolean = True);
+    procedure DeleteNode(Node: PVirtualNode); overload; inline;
     procedure DeleteSelectedNodes; virtual;
     function Dragging: Boolean;
     function EditNode(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
@@ -3015,7 +3018,7 @@ type
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
     procedure SetNodeData(pNode: PVirtualNode; pUserData: Pointer); overload; inline;
-    procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); overload;
+    procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); overload; inline;
     procedure SetNodeData<T:class>(pNode: PVirtualNode; pUserData: T); overload;
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
@@ -14790,9 +14793,7 @@ procedure TBaseVirtualTree.SetNodeData(pNode: PVirtualNode; const pUserData: IIn
   // will take care about reference counting.
 
 begin
-  pUserData._AddRef();
-  SetNodeData(pNode, Pointer(pUserData));
-  //Include(pNode.States, vsReleaseCallOnUserDataRequired);
+  pNode.SetData(pUserData);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19720,9 +19721,8 @@ begin
   if Assigned(FOnFreeNode) and ([vsInitialized, vsOnFreeNodeCallRequired] * Node.States <> []) then
     FOnFreeNode(Self, Node);
 
-  //TODO: make this work by removing vsClearing and substituting it by a paramter in DeleteNode. Currently TNodeStates would exceed 16 flags which causes a lot of trouble.
-  //if vsReleaseCallOnUserDataRequired in Node.States then
-  //  GetInterfaceFromNodeData<IInterface>(Node)._Release();
+  if vsReleaseCallOnUserDataRequired in Node.States then
+    GetInterfaceFromNodeData<IInterface>(Node)._Release();
 
   FreeMem(Node);
   if Self.UpdateCount = 0 then
@@ -22924,7 +22924,7 @@ begin
       // amNoWhere: do nothing
     end;
     // Remove temporary states.
-    Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsClearing];
+    Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsReleaseCallOnUserDataRequired];
 
     if (Mode <> amNoWhere) then begin
       Inc(Node.Parent.ChildCount);
@@ -22965,7 +22965,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.InternalDisconnectNode(Node: PVirtualNode; KeepFocus: Boolean; Reindex: Boolean = True);
+procedure TBaseVirtualTree.InternalDisconnectNode(Node: PVirtualNode; KeepFocus: Boolean; Reindex: Boolean = True; ParentClearing: Boolean = False);
 
 // Disconnects the given node from its parent and siblings. The node's pointer are not reset so they can still be used
 // after return from this method (probably a very short time only!).
@@ -22992,7 +22992,7 @@ begin
     ResetRangeAnchor;
 
   // Update the hidden children flag of the parent.
-  if (Node.Parent <> FRoot) and not (vsClearing in Node.Parent.States) then
+  if (Node.Parent <> FRoot) and not (ParentClearing) then
     if FUpdateCount = 0 then
       DetermineHiddenChildrenFlag(Node.Parent)
     else
@@ -25944,7 +25944,6 @@ begin
         ParentVisible := FullyVisible[Node] and (vsExpanded in Node.States);
 
       // Show that we are clearing the child list, to avoid registering structure change events.
-      Include(Node.States, vsClearing);
       Run := Node.LastChild;
       while Assigned(Run) do
       begin
@@ -25957,9 +25956,8 @@ begin
         // Important, to avoid exchange of invalid pointers while disconnecting the node.
         if Assigned(Run) then
           Run.NextSibling := nil;
-        DeleteNode(Mark);
+        DeleteNode(Mark, False, True);
       end;
-      Exclude(Node.States, vsClearing);
       if ResetHasChildren then
         Exclude(Node.States, vsHasChildren);
       if Node <> FRoot then
@@ -26008,14 +26006,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode; Reindex: Boolean = True);
+procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode; Reindex: Boolean; ParentClearing: Boolean);
 
 var
   LastTop,
   LastLeft: Integer;
   LastParent: PVirtualNode;
   WasInSynchMode: Boolean;
-  ParentClearing: Boolean;
 
 begin
   if Assigned(Node) and (Node <> FRoot) and not (toReadOnly in FOptions.FMiscOptions) then
@@ -26023,7 +26020,6 @@ begin
     Assert(not (tsIterating in FStates), 'Deleting nodes during tree iteration leads to invalid pointers.');
 
     // Determine parent node for structure change notification.
-    ParentClearing := vsClearing in Node.Parent.States;
     LastParent := Node.Parent;
 
     if not ParentClearing then
@@ -26086,6 +26082,11 @@ begin
   end;
 end;
 
+procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode);
+begin
+  DeleteNode(Node, False, False);
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DeleteSelectedNodes;
@@ -26107,7 +26108,7 @@ begin
       for I := High(Nodes) downto 1 do
       begin
         LevelChange := Nodes[I].Parent <> Nodes[I - 1].Parent;
-        DeleteNode(Nodes[I], LevelChange);
+        DeleteNode(Nodes[I], LevelChange, False);
       end;
       DeleteNode(Nodes[0]);
     finally
@@ -35485,6 +35486,35 @@ function TVirtualNode.IsAssigned: Boolean;
 
 begin
   Exit(@Self <> nil);
+end;
+
+procedure TVirtualNode.SetData(pUserData: Pointer);
+
+  // Can be used to set user data of a PVirtualNode with the size of a pointer, useful for setting
+  // A pointer to a record or a reference to a class instance.
+
+var
+  NodeData: ^Pointer;
+begin
+  NodeData := Pointer(PByte(@Self.Data) + TBaseVirtualTree.FTotalInternalDataSize);
+  NodeData^ := pUserData;
+  Include(Self.States, vsOnFreeNodeCallRequired);
+end;
+
+procedure TVirtualNode.SetData(const pUserData: IInterface);
+
+  // Can be used to set user data of a PVirtualNode to a class instance,
+  // will take care about reference counting.
+
+begin
+  pUserData._AddRef();
+  SetData(Pointer(pUserData));
+  Include(Self.States, vsReleaseCallOnUserDataRequired);
+end;
+
+procedure TVirtualNode.SetData<T>(pUserData: T);
+begin
+  SetData(Pointer(pUserData));
 end;
 
 { TVTImageInfo }
