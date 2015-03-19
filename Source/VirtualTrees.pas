@@ -3325,7 +3325,7 @@ type
     function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: string = ''): Integer; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
     procedure ContentToCustom(Source: TVSTTextSourceType);
-    function ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): RawByteString;
+    function ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): String;
     function ContentToRTF(Source: TVSTTextSourceType): RawByteString;
     function ContentToText(Source: TVSTTextSourceType; Separator: Char): AnsiString; overload;
     function ContentToText(Source: TVSTTextSourceType; const Separator: AnsiString): AnsiString; overload;
@@ -33876,7 +33876,7 @@ function TCustomVirtualStringTree.ContentToClipboard(Format: Word; Source: TVSTT
 
   //--------------- local function --------------------------------------------
 
-  procedure MakeFragment(var HTML: AnsiString);
+  procedure MakeFragment(var HTML: String);
 
   // Helper routine to build a properly-formatted HTML fragment.
 
@@ -33897,7 +33897,7 @@ function TCustomVirtualStringTree.ContentToClipboard(Format: Word; Source: TVSTT
       Length(EndFragment) + 4 * NumberLengthAndCR;
 
   var
-    Description: AnsiString;
+    Description: String;
     StartHTMLIndex,
     EndHTMLIndex,
     StartFragmentIndex,
@@ -33933,6 +33933,8 @@ var
 
 begin
   Result := 0;
+  DataSize := 0;
+  Data := nil;
   case Format of
     CF_TEXT:
       begin
@@ -33948,20 +33950,26 @@ begin
       end;
   else
     if Format = CF_CSV then
-      S := ContentToText(Source, AnsiChar (FormatSettings.ListSeparator)) + #0
-    else
-      if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
-        S := ContentToRTF(Source) + #0
-      else
-        if Format = CF_HTML then
-        begin
-          S := ContentToHTML(Source);
-          // Build a valid HTML clipboard fragment.
-          MakeFragment(S);
-          S := S + #0;
-        end;
-    Data := PAnsiChar(S);
-    DataSize := Length(S);
+    begin
+      S := ContentToText(Source, AnsiChar (FormatSettings.ListSeparator)) + #0;
+      Data := PAnsiChar(S);
+      DataSize := Length(S);
+    end// CF_CSV
+    else if (Format = CF_VRTF) or (Format = CF_VRTFNOOBJS) then
+    begin
+      S := ContentToRTF(Source) + #0;
+      Data := PAnsiChar(S);
+      DataSize := Length(S);
+    end
+    else if Format = CF_HTML then
+    begin
+      WS := ContentToHTML(Source);
+      // Build a valid HTML clipboard fragment.
+      MakeFragment(WS);
+      S := S + #0;
+      Data := PChar(WS);
+      DataSize := Length(WS) * Sizeof(char);
+    end;
   end;
 
   if DataSize > 0 then
@@ -33975,113 +33983,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): RawByteString;
+function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): String;
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
 // Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
 
-type
-  UCS2 = Word;
-  UCS4 = Cardinal;
-
-const
-  MaximumUCS4: UCS4 = $7FFFFFFF;
-  ReplacementCharacter: UCS4 = $0000FFFD;
-
 var
-  Buffer: TBufferedAnsiString;
+  Buffer: TWideBufferedString;
 
   //--------------- local functions -------------------------------------------
-
-  function ConvertSurrogate(S1, S2: UCS2): UCS4;
-
-  // Converts a pair of high and low surrogate into the corresponding UCS4 character.
-
-  const
-    SurrogateOffset = ($D800 shl 10) + $DC00 - $10000;
-
-  begin
-    Result := Word(S1) shl 10 + Word(S2) - SurrogateOffset;
-  end;
-
-  //---------------------------------------------------------------------------
-
-  function UTF16ToUTF8(const S: string): AnsiString;
-
-  // Converts the given Unicode text (which may contain surrogates) into
-  // the UTF-8 encoding used for the HTML clipboard format.
-
-  const
-    FirstByteMark: array[0..6] of Byte = ($00, $00, $C0, $E0, $F0, $F8, $FC);
-
-  var
-    Ch: UCS4;
-    I, J, T: Integer;
-    BytesToWrite: Cardinal;
-
-  begin
-    if Length(S) = 0 then
-      Result := ''
-    else
-    begin
-      // Make room for the result. Assume worst case, there are only short texts to convert.
-      SetLength(Result, 6 * Length(S));
-      T := 1;
-      I := 1;
-      while I <= Length(S) do
-      begin
-        Ch := UCS4(S[I]);
-
-        // Is the character a surrogate?
-        if (Ch and $FFFFF800) = $D800 then
-        begin
-          Inc(I);
-          // Check the following char whether it forms a valid surrogate pair with the first character.
-          if (I <= Length(S)) and ((UCS4(S[I]) and $FFFFFC00) = $DC00) then
-            Ch := ConvertSurrogate(UCS2(Ch), UCS2(S[I]))
-          else // Skip invalid surrogate value.
-            Continue;
-        end;
-
-        if Ch < $80 then
-          BytesToWrite := 1
-        else
-          if Ch < $800 then
-            BytesToWrite := 2
-          else
-            if Ch < $10000 then
-              BytesToWrite := 3
-            else
-              if Ch < $200000 then
-                BytesToWrite := 4
-              else
-                if Ch < $4000000 then
-                  BytesToWrite := 5
-                else
-                  if Ch <= MaximumUCS4 then
-                    BytesToWrite := 6
-                  else
-                  begin
-                    BytesToWrite := 2;
-                    Ch := ReplacementCharacter;
-                  end;
-
-        for J := BytesToWrite downto 2 do
-        begin
-          Result[T + J - 1] := AnsiChar((Ch or $80) and $BF);
-          Ch := Ch shr 6;
-        end;
-        Result[T] := AnsiChar(Ch or FirstByteMark[BytesToWrite]);
-        Inc(T, BytesToWrite);
-
-        Inc(I);
-      end;
-      SetLength(Result, T - 1); // set to actual length
-    end;
-  end;
-
-  //---------------------------------------------------------------------------
 
   procedure WriteColorAsHex(Color: TColor);
 
@@ -34117,7 +34028,7 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure WriteStyle(const Name: AnsiString; Font: TFont);
+  procedure WriteStyle(const Name: String; Font: TFont);
 
   // Creates a CSS style entry with the given name for the given font.
   // If Name is empty then the entry is created as inline style.
@@ -34154,25 +34065,25 @@ var
 var
   I, J : Integer;
   Level, MaxLevel: Cardinal;
-  AddHeader: AnsiString;
+  AddHeader: String;
   Save, Run: PVirtualNode;
   GetNextNode: TGetNextNodeProc;
   Text: string;
 
   RenderColumns: Boolean;
   Columns: TColumnsArray;
-  ColumnColors: array of AnsiString;
+  ColumnColors: array of String;
   Index: Integer;
   IndentWidth,
-  LineStyleText: AnsiString;
+  LineStyleText: String;
   Alignment: TAlignment;
   BidiMode: TBidiMode;
 
-  CellPadding: AnsiString;
+  CellPadding: String;
 
 begin
   StartOperation(TVTOperationKind.okExport);
-  Buffer := TBufferedAnsiString.Create;
+  Buffer := TWideBufferedString.Create;
   try
     // For customization by the application or descendants we use again the redirected font change event.
     RedirectFontChangeEvent(Canvas);
@@ -34183,7 +34094,7 @@ begin
     AddHeader := ' ';
     // Add title if adviced so by giving a caption.
     if Length(Caption) > 0 then
-      AddHeader := AddHeader + 'caption="' + UTF16ToUTF8(Caption) + '"';
+      AddHeader := AddHeader + 'caption="' + Caption + '"';
     if Borderstyle <> bsNone then
       AddHeader := AddHeader + Format(' border="%d" frame=box', [BorderWidth + 1]);
 
@@ -34322,7 +34233,7 @@ begin
         Buffer.Add('px">');
 
         if Length(Columns[I].Text) > 0 then
-          Buffer.Add(UTF16ToUTF8(Columns[I].Text));
+          Buffer.Add(Columns[I].Text);
         Buffer.Add('</th>');
         if Assigned(FOnAfterColumnExport) then
             FOnAfterColumnExport(Self, etHTML, Columns[I]);
@@ -34452,7 +34363,6 @@ begin
           Text := Self.Text[Run, Index];
           if Length(Text) > 0 then
           begin
-            Text := UTF16ToUTF8(Text);
             Buffer.Add(Text);
           end;
           Buffer.Add('</td>');
@@ -34966,7 +34876,7 @@ end;
 function TCustomVirtualStringTree.ContentToText(Source: TVSTTextSourceType; Separator: Char): AnsiString;
 
 begin
-  Result := ContentToText(Source, AnsiString(Separator));
+  Result := ContentToText(Source, AnsiString(AnsiChar(Separator)));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

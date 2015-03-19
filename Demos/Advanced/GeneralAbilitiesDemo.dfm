@@ -955,9 +955,9 @@ object GeneralForm: TGeneralForm
   object SaveDialog: TSaveDialog
     Filter = 
       'HTML file in UTF-8 (*.htm; *.html)|*.htm;*.html|Unicode UTF-16 t' +
-      'ext file (*.uni)|*.uni|Rich text UTF-16 file (*.rtf)|*.rtf|Comma' +
-      ' separated values ANSI text file (*.csv)|*.csv|Plain ANSI text f' +
-      'ile (*.txt)|*.txt'
+      'ext file (*.uni)|*.uni|Rich text file (*.rtf)|*.rtf|Comma separa' +
+      'ted values ANSI text file (*.csv)|*.csv|Plain ANSI text file (*.' +
+      'txt)|*.txt'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofExtensionDifferent, ofEnableSizing]
     Left = 148
     Top = 148

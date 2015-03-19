@@ -486,11 +486,22 @@ const
     '<body>'#13#10;
 
 var
-  S: string;
-  WS: UnicodeString;
+  S: Ansistring;
+  WS: String;
   Data: Pointer;
   DataSize: Cardinal;
   TargetName: string;
+
+  procedure Save(pEconding: TEncoding);
+  begin
+    With TStreamWriter.Create(Targetname, False, pEconding) do
+      try
+        Write(WS);
+      finally
+        Free;
+      end;
+  end;
+
 
 begin
   with SaveDialog do
@@ -503,39 +514,35 @@ begin
           begin
             if Pos('.', TargetName) = 0 then
               TargetName := TargetName + '.html';
-            S := HTMLHead + VST2.ContentToHTML(tstVisible) + '</body></html>';
-            Data := PChar(S);
-            DataSize := Length(S);
-          end;
+            WS := HTMLHead + VST2.ContentToHTML(tstVisible) + '</body></html>';
+            Save(TEncoding.UTF8);
+            exit;
+          end;//HTML
         2: // Unicode UTF-16 text file
           begin
             TargetName := ChangeFileExt(TargetName, '.uni');
             WS := VST2.ContentToUnicode(tstVisible, #9);
-            Data := PWideChar(WS);
-            DataSize := 2 * Length(WS);
+            Save(TEncoding.Unicode);
+            exit;
           end;
-        3: // Rich text UTF-16 file
+        3: // Rich text file
           begin
             TargetName := ChangeFileExt(TargetName, '.rtf');
             S := VST2.ContentToRTF(tstVisible);
-            Data := PChar(S);
-            DataSize := Length(S);
           end;
         4: // Comma separated values ANSI text file
           begin
             TargetName := ChangeFileExt(TargetName, '.csv');
-            S := VST2.ContentToText(tstVisible, {$if CompilerVersion>=23}FormatSettings.{$ifend}ListSeparator);
-            Data := PChar(S);
-            DataSize := Length(S);
+            S := VST2.ContentToText(tstVisible, FormatSettings.ListSeparator);
           end;
       else
         // Plain text file
         TargetName := ChangeFileExt(TargetName, '.txt');
         S := VST2.ContentToText(tstVisible, #9);
-        Data := PChar(S);
-        DataSize := Length(S);
       end;
 
+      Data := PChar(S);
+      DataSize := Length(S);
       with TFileStream.Create(TargetName, fmCreate) do
       try
         WriteBuffer(Data^, DataSize);
