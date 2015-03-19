@@ -22173,7 +22173,7 @@ begin
     ((hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
 
   IsCellHit := not AltPressed and not IsLabelHit and Assigned(HitInfo.HitNode) and
-    ([hiOnItemButton, hiOnItemCheckBox] * HitInfo.HitPositions = []) and
+    ([hiOnItemButton, hiOnItemCheckBox, hiNoWhere] * HitInfo.HitPositions = []) and
     ((toFullRowSelect in FOptions.FSelectionOptions) or
     ((toGridExtensions in FOptions.FMiscOptions) and (HitInfo.HitColumn > NoColumn)));
 
@@ -22314,11 +22314,11 @@ begin
   end;
 
   if not (toDisableDrawSelection in FOptions.FSelectionOptions)
-    and not (IsLabelHit or FullRowDrag) and MultiSelect then
+    and not (IsLabelHit or FullRowDrag) and (MultiSelect or (hiNowhere in HitInfo.HitPositions)) then
   begin
     // The original code here was moved up to fix issue #187.
     // In order not to break the semantics of this procedure, we are leaving these if statements here
-    if not IsCellHit or (hiNowhere in HitInfo.HitPositions) then
+    if not IsCellHit then
       Exit;
   end;
 
