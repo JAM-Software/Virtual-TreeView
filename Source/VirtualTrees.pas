@@ -2701,7 +2701,6 @@ type
     property EditColumn: TColumnIndex read FEditColumn write FEditColumn;
     property EditDelay: Cardinal read FEditDelay write FEditDelay default 1000;
     property EffectiveOffsetX: Integer read FEffectiveOffsetX;
-    property Header: TVTHeader read FHeader write SetHeader;
     property HeaderRect: TRect read FHeaderRect;
     property HintAnimation: THintAnimationType read FAnimationType write FAnimationType default hatSystemDefault;
     property HintMode: TVTHintMode read FHintMode write FHintMode default hmDefault;
@@ -3079,6 +3078,7 @@ type
     property Font;
     property FullyVisible[Node: PVirtualNode]: Boolean read GetFullyVisible write SetFullyVisible;
     property HasChildren[Node: PVirtualNode]: Boolean read GetHasChildren write SetHasChildren;
+    property Header: TVTHeader read FHeader write SetHeader;
     property HotNode: PVirtualNode read FCurrentHotNode;
     property IsDisabled[Node: PVirtualNode]: Boolean read GetDisabled write SetDisabled;
     property IsEffectivelyFiltered[Node: PVirtualNode]: Boolean read GetEffectivelyFiltered;
