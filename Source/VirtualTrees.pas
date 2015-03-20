@@ -8217,14 +8217,18 @@ begin
 
   if (Button = mbRight) and (hoAutoColumnPopupMenu in Header.Options) then begin
     lColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
-    TVTHeaderPopupMenu(lColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
-    lColumnPopupMenu.PopupComponent := Header.Treeview;
-    if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
-      lColumnPopupMenu.Options := lColumnPopupMenu.Options + [poResizeToFitItem]
-    else
-      lColumnPopupMenu.Options := lColumnPopupMenu.Options - [poResizeToFitItem];
-    With Header.Treeview.ClientToScreen(P) do
-      lColumnPopupMenu.Popup(X, Y);
+    try
+      TVTHeaderPopupMenu(lColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
+      lColumnPopupMenu.PopupComponent := Header.Treeview;
+      if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
+        lColumnPopupMenu.Options := lColumnPopupMenu.Options + [poResizeToFitItem]
+      else
+        lColumnPopupMenu.Options := lColumnPopupMenu.Options - [poResizeToFitItem];
+      With Header.Treeview.ClientToScreen(P) do
+        lColumnPopupMenu.Popup(X, Y);
+    finally
+      FreeAndNil(lColumnPopupMenu);
+    end;
   end;//if hoShowColumnPopupMenu
 
   if DblClick then
