@@ -2639,6 +2639,7 @@ type
     procedure RestoreFontChangeEvent(Canvas: TCanvas); virtual;
     procedure SelectNodes(StartNode, EndNode: PVirtualNode; AddOnly: Boolean); virtual;
     procedure SetFocusedNodeAndColumn(Node: PVirtualNode; Column: TColumnIndex); virtual;
+    procedure SetCheckStateForAll(aCheckState: TCheckState; pSelectedOnly: Boolean);
     procedure SkipNode(Stream: TStream); virtual;
     procedure StartOperation(OperationKind: TVTOperationKind);
     procedure StartWheelPanning(Position: TPoint); virtual;
@@ -14227,6 +14228,41 @@ procedure TBaseVirtualTree.SetCheckState(Node: PVirtualNode; Value: TCheckState)
 begin
   if (Node.CheckState <> Value) and not (vsDisabled in Node.States) and DoChecking(Node, Value) then
     DoCheckClick(Node, Value);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetCheckStateForAll(aCheckState: TCheckState; pSelectedOnly: Boolean);
+
+// Changes the check state for all or for all seledcted nodes.
+// aCheckState: The new check state.
+// pSelectedOnly: If passed True, only the selected nodes will bechnaged, I f apssed Falsee all nodes in the control will be changed.
+
+var
+  lItem : PVirtualNode;
+begin
+  Inherited;
+  With Self do begin
+    Screen.Cursor := crHourGlass;
+    BeginUpdate;
+    try
+      if pSelectedOnly then
+        lItem := GetFirstSelected
+      else
+        lItem := GetFirst;
+      //for i:=0 to List.Items.Count-1 do begin
+      while Assigned(lItem) do begin
+        CheckState[lItem] := aCheckState;
+        if pSelectedOnly then
+          lItem := GetNextSelected(lItem)
+        else
+          lItem := GetNext(lItem);
+      end;//while
+    finally
+      Screen.Cursor := crDefault;
+      EndUpdate;
+    end;//try..finally
+  end;//With
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
