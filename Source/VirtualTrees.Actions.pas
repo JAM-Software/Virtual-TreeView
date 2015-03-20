@@ -61,9 +61,6 @@ procedure Register;
 
 implementation
 
-uses
-  Jam.UI.VirtualTree;
-
 procedure Register;
 begin
   RegisterActions('VirtualTree', [TVirtualStringTreeCheckAll,TVirtualStringTreeUncheckAll], nil);
