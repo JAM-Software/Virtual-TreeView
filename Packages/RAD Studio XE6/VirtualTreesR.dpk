@@ -42,7 +42,8 @@ contains
   VirtualTrees.Classes in '..\..\Source\VirtualTrees.Classes.pas',
   VirtualTrees.WorkerThread in '..\..\Source\VirtualTrees.WorkerThread.pas',
   VirtualTrees.ClipBoard in '..\..\Source\VirtualTrees.ClipBoard.pas',
-  VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas';
+  VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
+  VirtualTrees.Actions in '..\..\Source\VirtualTrees.Actions.pas';
 
 end.
 
