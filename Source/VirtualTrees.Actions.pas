@@ -71,11 +71,13 @@ type
 
   TVirtualTreeSelectAll = class(TVirtualTreeAction)
   public
+    procedure UpdateTarget(Target: TObject); override;
     procedure ExecuteTarget(Target: TObject); override;
   end;
 
   TVirtualTreeCopy = class(TVirtualTreeAction)
   public
+    procedure UpdateTarget(Target: TObject); override;
     procedure ExecuteTarget(Target: TObject); override;
   end;
 
@@ -115,14 +117,9 @@ end;
 
 procedure TVirtualTreeAction.UpdateTarget(Target: TObject);
 begin
-  if Assigned(Self.Control) and not fTreeAutoDetect then begin
-    Enabled := (Self.Control.ChildCount[nil]>0)
-  end//if
-  else begin
-    Enabled := (Target is TBaseVirtualTree) and ((Target as TBaseVirtualTree).ChildCount[nil]>0);
-    if (Target is TBaseVirtualTree) then
-      fTree := (Target as TBaseVirtualTree);
-  end;//else
+  if fTreeAutoDetect and (Target is TBaseVirtualTree) then
+    fTree := (Target as TBaseVirtualTree);
+  Enabled := Assigned(Control) and not Control.IsEmpty;
 end;
 
 procedure TVirtualTreeAction.ExecuteTarget(Target: TObject);
@@ -226,6 +223,13 @@ end;
 
 { TVirtualStringSelectAll }
 
+procedure TVirtualTreeSelectAll.UpdateTarget(Target: TObject);
+begin
+  Inherited;
+  //Enabled := Enabled and (toMultiSelect in Control.TreeOptions.SelectionOptions)  // TreeOptions is protected  :-(
+end;
+
+
 procedure TVirtualTreeSelectAll.ExecuteTarget(Target: TObject);
 begin
   Control.SelectAll(False);
@@ -233,6 +237,12 @@ begin
 end;
 
 { TVirtualTreeCopy }
+
+procedure TVirtualTreeCopy.UpdateTarget(Target: TObject);
+begin
+  Inherited;
+  Enabled := Enabled and (Control.VisibleCount > 0);
+end;
 
 procedure TVirtualTreeCopy.ExecuteTarget(Target: TObject);
 begin
