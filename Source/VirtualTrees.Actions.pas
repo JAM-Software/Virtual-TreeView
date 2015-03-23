@@ -10,24 +10,22 @@ uses
 
 type
   TVirtualTreeAction = class(TCustomAction)
-  private
+  strict private
     fTree: TBaseVirtualTree;
-    fTreeAutoDetect: Boolean;
-    fOnBeforeExecute: TNotifyEvent;
+    fTreeAutoDetect: Boolean; // True if a potential Virtual TreeView should be detected automatically, false if a specific Tree was assigned to the property "Tree"
     fOnAfterExecute: TNotifyEvent;
-  protected
+  strict protected
     procedure SetTree(Value: TBaseVirtualTree);
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure DoBeforeExecute;
     procedure DoAfterExecute;
   public
     function HandlesTarget(Target: TObject): Boolean; override;
     procedure UpdateTarget(Target: TObject); override;
+    procedure ExecuteTarget(Target: TObject); override;
   published
     constructor Create(AOwner: TComponent); override;
-    property Tree: TBaseVirtualTree read fTree write SetTree;
-    property OnBeforeExecute: TNotifyEvent read fOnBeforeExecute write fOnBeforeExecute;
-    property OnAfterExecute: TNotifyEvent read fOnAfterExecute write fOnAfterExecute;
+    property Control: TBaseVirtualTree read fTree write SetTree;
+    property OnAfterExecute: TNotifyEvent read fOnAfterExecute write fOnAfterExecute; // Executed after the action was performed
     property Caption;
     property Enabled;
     property HelpContext;
@@ -40,21 +38,40 @@ type
     property OnHint;
   end;
 
-  TVirtualStringTreeCheckAll = class(TVirtualTreeAction)
-  protected
-    fDesiredCheckState: TCheckState;
-    fSelectedOnly: Boolean;
-    procedure SetCheckState(VT: TBaseVirtualTree; aCheckState: TCheckState); virtual;
+  TVirtualTreePerItemAction = class(TVirtualTreeAction)
+  strict private
+    fOnBeforeExecute: TNotifyEvent;
+    function GetSelectedOnly: Boolean;
+    procedure SetSelectedOnly(const Value: Boolean);
+  strict protected
+    fToExecute: TVTGetNodeProc; // method which is executed per item to perform this action
+    fFilter: TVirtualNodeStates; // Apply only of nodes which match these states
+    procedure DoBeforeExecute;
+    property SelectedOnly: Boolean read GetSelectedOnly write SetSelectedOnly default False;
   public
     constructor Create(AOwner: TComponent); override;
     procedure ExecuteTarget(Target: TObject); override;
   published
-    property SelectedOnly: Boolean read fSelectedOnly write fSelectedOnly default False;
+    property OnBeforeExecute: TNotifyEvent read fOnBeforeExecute write fOnBeforeExecute;
+  end;
+
+  TVirtualStringTreeCheckAll = class(TVirtualTreePerItemAction)
+  protected
+    fDesiredCheckState: TCheckState;
+  public
+    constructor Create(AOwner: TComponent); override;
+  published
+    property SelectedOnly;
   end;
 
   TVirtualStringTreeUncheckAll = class(TVirtualStringTreeCheckAll)
   public
     constructor Create(AOwner: TComponent); override;
+  end;
+
+  TVirtualStringSelectAll = class(TVirtualTreeAction)
+  public
+    procedure ExecuteTarget(Target: TObject); override;
   end;
 
 procedure Register;
@@ -72,22 +89,14 @@ constructor TVirtualTreeAction.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   fTree := nil;
-  fOnBeforeExecute := nil;
   fOnAfterExecute := nil;
   fTreeAutoDetect := True;
-  Hint := 'Copy the content to the Clipboard';
 end;
 
 procedure TVirtualTreeAction.DoAfterExecute;
 begin
   if Assigned(fOnAfterExecute) then
     fOnAfterExecute(Self);
-end;
-
-procedure TVirtualTreeAction.DoBeforeExecute;
-begin
-  if Assigned(fOnBeforeExecute) then
-    fOnBeforeExecute(Self);
 end;
 
 function TVirtualTreeAction.HandlesTarget(Target: TObject): Boolean;
@@ -97,14 +106,19 @@ end;
 
 procedure TVirtualTreeAction.UpdateTarget(Target: TObject);
 begin
-  if Assigned(Self.Tree) and not fTreeAutoDetect then begin
-    Enabled := (Self.Tree.ChildCount[nil]>0)
+  if Assigned(Self.Control) and not fTreeAutoDetect then begin
+    Enabled := (Self.Control.ChildCount[nil]>0)
   end//if
   else begin
-    Enabled := (Target is TVirtualStringTree) and ((Target as TVirtualStringTree).ChildCount[nil]>0);
-    if (Target is TVirtualStringTree) then
+    Enabled := (Target is TBaseVirtualTree) and ((Target as TBaseVirtualTree).ChildCount[nil]>0);
+    if (Target is TBaseVirtualTree) then
       fTree := (Target as TVirtualStringTree);
   end;//else
+end;
+
+procedure TVirtualTreeAction.ExecuteTarget(Target: TObject);
+begin
+  DoAfterExecute();
 end;
 
 procedure TVirtualTreeAction.Notification(AComponent: TComponent; Operation: TOperation);
@@ -126,6 +140,45 @@ begin
   end;//if
 end;
 
+
+{ TVirtualTreePerItemAction }
+
+constructor TVirtualTreePerItemAction.Create(AOwner: TComponent);
+begin
+  inherited;
+  fFilter := [];
+  fToExecute := nil;
+  fOnBeforeExecute := nil;
+end;
+
+function TVirtualTreePerItemAction.GetSelectedOnly: Boolean;
+begin
+  exit(TVirtualNodeState.vsSelected in fFilter);
+end;
+
+procedure TVirtualTreePerItemAction.SetSelectedOnly(const Value: Boolean);
+begin
+  if Value then
+    Include(fFilter, TVirtualNodeState.vsSelected)
+  else
+    Exclude(fFilter, TVirtualNodeState.vsSelected);
+end;
+
+procedure TVirtualTreePerItemAction.DoBeforeExecute;
+begin
+  if Assigned(fOnBeforeExecute) then
+    fOnBeforeExecute(Self);
+end;
+
+procedure TVirtualTreePerItemAction.ExecuteTarget(Target: TObject);
+begin
+  if Assigned(Self.Control) then
+    Target := Self.Control;
+  DoBeforeExecute();
+  Control.IterateSubtree(nil, Self.fToExecute, nil, fFilter);
+  Inherited ExecuteTarget(Target);
+end;
+
 { TVirtualStringTreeCheckAll }
 
 constructor TVirtualStringTreeCheckAll.Create(AOwner: TComponent);
@@ -133,24 +186,13 @@ begin
   inherited Create(AOwner);
   Hint := 'Check all items in the list';
   Caption := 'Check &All';
-  fSelectedOnly := False;
   fDesiredCheckState := csCheckedNormal;
+  fToExecute := procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean)
+                begin
+                  Control.CheckState[Node] := fDesiredCheckState;
+                end;
 end;
 
-procedure TVirtualStringTreeCheckAll.ExecuteTarget(Target: TObject);
-begin
-  if Assigned(Self.Tree) then Target := Self.Tree;
-  DoBeforeExecute();
-  Inherited ExecuteTarget(Target);
-  SetCheckState((Target as TVirtualStringTree), fDesiredCheckState);
-  DoAfterExecute();
-end;
-
-procedure TVirtualStringTreeCheckAll.SetCheckState(VT: TBaseVirtualTree; aCheckState: TCheckState);
-begin
-  Inherited;
-  VT.SetCheckStateForAll(aCheckState, Self.SelectedOnly);
-end;
 
 { TVirtualStringTreeUncheckAll }
 
@@ -160,6 +202,15 @@ begin
   Hint := 'Uncheck all items in the list';
   Caption := '&Uncheck All';
   fDesiredCheckState := csUncheckedNormal;
+end;
+
+
+{ TVirtualStringSelectAll }
+
+procedure TVirtualStringSelectAll.ExecuteTarget(Target: TObject);
+begin
+  Control.SelectAll(False);
+  inherited;
 end;
 
 
