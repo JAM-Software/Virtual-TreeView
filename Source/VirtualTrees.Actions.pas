@@ -55,7 +55,7 @@ type
     property OnBeforeExecute: TNotifyEvent read fOnBeforeExecute write fOnBeforeExecute;
   end;
 
-  TVirtualStringTreeCheckAll = class(TVirtualTreePerItemAction)
+  TVirtualTreeCheckAll = class(TVirtualTreePerItemAction)
   protected
     fDesiredCheckState: TCheckState;
   public
@@ -64,26 +64,35 @@ type
     property SelectedOnly;
   end;
 
-  TVirtualStringTreeUncheckAll = class(TVirtualStringTreeCheckAll)
+  TVirtualTreeUncheckAll = class(TVirtualTreeCheckAll)
   public
     constructor Create(AOwner: TComponent); override;
   end;
 
-  TVirtualStringSelectAll = class(TVirtualTreeAction)
+  TVirtualTreeSelectAll = class(TVirtualTreeAction)
+  public
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TVirtualTreeCopy = class(TVirtualTreeAction)
   public
     procedure ExecuteTarget(Target: TObject); override;
   end;
 
 procedure Register;
 
+
 implementation
+
+uses
+  Controls, Forms;
 
 procedure Register;
 begin
-  RegisterActions('VirtualTree', [TVirtualStringTreeCheckAll,TVirtualStringTreeUncheckAll], nil);
+  RegisterActions('VirtualTree', [TVirtualTreeCheckAll, TVirtualTreeUncheckAll, TVirtualTreeSelectAll, TVirtualTreeCopy], nil);
 end;
 
-{ TVirtualStringTreeAction }
+{ TVirtualTreeAction }
 
 constructor TVirtualTreeAction.Create(AOwner: TComponent);
 begin
@@ -101,7 +110,7 @@ end;
 
 function TVirtualTreeAction.HandlesTarget(Target: TObject): Boolean;
 begin
-  Result := (Target is TVirtualStringTree);
+  Result := (Target is TBaseVirtualTree);
 end;
 
 procedure TVirtualTreeAction.UpdateTarget(Target: TObject);
@@ -112,7 +121,7 @@ begin
   else begin
     Enabled := (Target is TBaseVirtualTree) and ((Target as TBaseVirtualTree).ChildCount[nil]>0);
     if (Target is TBaseVirtualTree) then
-      fTree := (Target as TVirtualStringTree);
+      fTree := (Target as TBaseVirtualTree);
   end;//else
 end;
 
@@ -171,17 +180,27 @@ begin
 end;
 
 procedure TVirtualTreePerItemAction.ExecuteTarget(Target: TObject);
+var
+  lOldCursor: TCursor;
 begin
   if Assigned(Self.Control) then
     Target := Self.Control;
   DoBeforeExecute();
-  Control.IterateSubtree(nil, Self.fToExecute, nil, fFilter);
+  lOldCursor := Screen.Cursor;
+  Screen.Cursor := crHourGlass;
+  Control.BeginUpdate();
+  try
+    Control.IterateSubtree(nil, Self.fToExecute, nil, fFilter);
+  finally
+    Control.EndUpdate;
+    Screen.Cursor := lOldCursor;
+  end;
   Inherited ExecuteTarget(Target);
 end;
 
-{ TVirtualStringTreeCheckAll }
+{ TVirtualTreeCheckAll }
 
-constructor TVirtualStringTreeCheckAll.Create(AOwner: TComponent);
+constructor TVirtualTreeCheckAll.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Hint := 'Check all items in the list';
@@ -194,9 +213,9 @@ begin
 end;
 
 
-{ TVirtualStringTreeUncheckAll }
+{ TVirtualTreeUncheckAll }
 
-constructor TVirtualStringTreeUncheckAll.Create(AOwner: TComponent);
+constructor TVirtualTreeUncheckAll.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Hint := 'Uncheck all items in the list';
@@ -207,12 +226,18 @@ end;
 
 { TVirtualStringSelectAll }
 
-procedure TVirtualStringSelectAll.ExecuteTarget(Target: TObject);
+procedure TVirtualTreeSelectAll.ExecuteTarget(Target: TObject);
 begin
   Control.SelectAll(False);
   inherited;
 end;
 
+{ TVirtualTreeCopy }
 
+procedure TVirtualTreeCopy.ExecuteTarget(Target: TObject);
+begin
+  Control.CopyToClipboard();
+  Inherited;
+end;
 
 end.
