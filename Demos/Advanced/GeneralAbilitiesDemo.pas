@@ -541,7 +541,7 @@ begin
         S := VST2.ContentToText(tstVisible, #9);
       end;
 
-      Data := PChar(S);
+      Data := PAnsiChar(S);
       DataSize := Length(S);
       with TFileStream.Create(TargetName, fmCreate) do
       try
