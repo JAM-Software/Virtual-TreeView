@@ -11,20 +11,24 @@ uses
 type
   TVirtualTreeAction = class(TCustomAction)
   strict private
-    fTree: TBaseVirtualTree;
+    fTree: TBaseVirtualTree; // Member variable for the property "Control"
     fTreeAutoDetect: Boolean; // True if a potential Virtual TreeView should be detected automatically, false if a specific Tree was assigned to the property "Tree"
-    fOnAfterExecute: TNotifyEvent;
+    fOnAfterExecute: TNotifyEvent; // Member variable for the OnAfterExecute event
+    function GetSelectedOnly: Boolean; // Setter for the property "SelectedOnly"
+    procedure SetSelectedOnly(const Value: Boolean); // Getter for the property "SelectedOnly"
   strict protected
-    procedure SetTree(Value: TBaseVirtualTree);
+    fFilter: TVirtualNodeStates; // Apply only of nodes which match these states
+    procedure SetControl(Value: TBaseVirtualTree); // Setter for the property "Control"
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure DoAfterExecute;
+    procedure DoAfterExecute; // Fires the event "OnAfterExecute"
+    property SelectedOnly: Boolean read GetSelectedOnly write SetSelectedOnly default False;
   public
     function HandlesTarget(Target: TObject): Boolean; override;
     procedure UpdateTarget(Target: TObject); override;
     procedure ExecuteTarget(Target: TObject); override;
   published
     constructor Create(AOwner: TComponent); override;
-    property Control: TBaseVirtualTree read fTree write SetTree;
+    property Control: TBaseVirtualTree read fTree write SetControl;
     property OnAfterExecute: TNotifyEvent read fOnAfterExecute write fOnAfterExecute; // Executed after the action was performed
     property Caption;
     property Enabled;
@@ -41,13 +45,9 @@ type
   TVirtualTreePerItemAction = class(TVirtualTreeAction)
   strict private
     fOnBeforeExecute: TNotifyEvent;
-    function GetSelectedOnly: Boolean;
-    procedure SetSelectedOnly(const Value: Boolean);
   strict protected
     fToExecute: TVTGetNodeProc; // method which is executed per item to perform this action
-    fFilter: TVirtualNodeStates; // Apply only of nodes which match these states
     procedure DoBeforeExecute;
-    property SelectedOnly: Boolean read GetSelectedOnly write SetSelectedOnly default False;
   public
     constructor Create(AOwner: TComponent); override;
     procedure ExecuteTarget(Target: TObject); override;
@@ -55,6 +55,7 @@ type
     property OnBeforeExecute: TNotifyEvent read fOnBeforeExecute write fOnBeforeExecute;
   end;
 
+  // A standard action which checkmarks nodes in a virtual treeview
   TVirtualTreeCheckAll = class(TVirtualTreePerItemAction)
   protected
     fDesiredCheckState: TCheckState;
@@ -64,6 +65,7 @@ type
     property SelectedOnly;
   end;
 
+  // A standard action which unchecks nodes in a virtual treeview
   TVirtualTreeUncheckAll = class(TVirtualTreeCheckAll)
   public
     constructor Create(AOwner: TComponent); override;
@@ -75,9 +77,29 @@ type
     procedure ExecuteTarget(Target: TObject); override;
   end;
 
-  TVirtualTreeCopy = class(TVirtualTreeAction)
+  // Base class for actions that are applied to selected nodes only
+  TVirtualTreeForSelectedAction = class(TVirtualTreeAction)
   public
-    procedure UpdateTarget(Target: TObject); override;
+    constructor Create(AOwner: TComponent); override;
+  end;
+
+  TVirtualTreeCopy = class(TVirtualTreeForSelectedAction)
+  public
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TVirtualTreeCut = class(TVirtualTreeForSelectedAction)
+  public
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TVirtualTreePaste = class(TVirtualTreeForSelectedAction)
+  public
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TVirtualTreeDelete = class(TVirtualTreeForSelectedAction)
+  public
     procedure ExecuteTarget(Target: TObject); override;
   end;
 
@@ -91,7 +113,7 @@ uses
 
 procedure Register;
 begin
-  RegisterActions('VirtualTree', [TVirtualTreeCheckAll, TVirtualTreeUncheckAll, TVirtualTreeSelectAll, TVirtualTreeCopy], nil);
+  RegisterActions('VirtualTree', [TVirtualTreeCheckAll, TVirtualTreeUncheckAll, TVirtualTreeSelectAll, TVirtualTreeCopy, TVirtualTreeCut, TVirtualTreePaste, TVirtualTreeDelete], nil);
 end;
 
 { TVirtualTreeAction }
@@ -100,8 +122,22 @@ constructor TVirtualTreeAction.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   fTree := nil;
+  fFilter := [];
   fOnAfterExecute := nil;
   fTreeAutoDetect := True;
+end;
+
+function TVirtualTreeAction.GetSelectedOnly: Boolean;
+begin
+  exit(TVirtualNodeState.vsSelected in fFilter);
+end;
+
+procedure TVirtualTreeAction.SetSelectedOnly(const Value: Boolean);
+begin
+  if Value then
+    Include(fFilter, TVirtualNodeState.vsSelected)
+  else
+    Exclude(fFilter, TVirtualNodeState.vsSelected);
 end;
 
 procedure TVirtualTreeAction.DoAfterExecute;
@@ -119,7 +155,7 @@ procedure TVirtualTreeAction.UpdateTarget(Target: TObject);
 begin
   if fTreeAutoDetect and (Target is TBaseVirtualTree) then
     fTree := (Target as TBaseVirtualTree);
-  Enabled := Assigned(Control) and not Control.IsEmpty;
+  Enabled := Assigned(Control) and not Control.IsEmpty and (not SelectedOnly or (Control.SelectedCount > 0))
 end;
 
 procedure TVirtualTreeAction.ExecuteTarget(Target: TObject);
@@ -134,7 +170,7 @@ begin
     FTree := nil;
 end;
 
-procedure TVirtualTreeAction.SetTree(Value: TBaseVirtualTree);
+procedure TVirtualTreeAction.SetControl(Value: TBaseVirtualTree);
 begin
   if Value <> fTree then begin
     fTree := Value;
@@ -152,22 +188,8 @@ end;
 constructor TVirtualTreePerItemAction.Create(AOwner: TComponent);
 begin
   inherited;
-  fFilter := [];
   fToExecute := nil;
   fOnBeforeExecute := nil;
-end;
-
-function TVirtualTreePerItemAction.GetSelectedOnly: Boolean;
-begin
-  exit(TVirtualNodeState.vsSelected in fFilter);
-end;
-
-procedure TVirtualTreePerItemAction.SetSelectedOnly(const Value: Boolean);
-begin
-  if Value then
-    Include(fFilter, TVirtualNodeState.vsSelected)
-  else
-    Exclude(fFilter, TVirtualNodeState.vsSelected);
 end;
 
 procedure TVirtualTreePerItemAction.DoBeforeExecute;
@@ -229,25 +251,56 @@ begin
   //Enabled := Enabled and (toMultiSelect in Control.TreeOptions.SelectionOptions)  // TreeOptions is protected  :-(
 end;
 
-
 procedure TVirtualTreeSelectAll.ExecuteTarget(Target: TObject);
 begin
   Control.SelectAll(False);
   inherited;
 end;
 
-{ TVirtualTreeCopy }
 
-procedure TVirtualTreeCopy.UpdateTarget(Target: TObject);
+{ TVirtualTreeForSelectedAction }
+
+constructor TVirtualTreeForSelectedAction.Create(AOwner: TComponent);
 begin
-  Inherited;
-  Enabled := Enabled and (Control.VisibleCount > 0);
+  inherited;
+  SelectedOnly := True;
 end;
+
+
+{ TVirtualTreeCopy }
 
 procedure TVirtualTreeCopy.ExecuteTarget(Target: TObject);
 begin
   Control.CopyToClipboard();
   Inherited;
 end;
+
+
+{ TVirtualTreeCut }
+
+procedure TVirtualTreeCut.ExecuteTarget(Target: TObject);
+begin
+  Control.CutToClipboard();
+  Inherited;
+end;
+
+
+{ TVirtualTreePaste }
+
+procedure TVirtualTreePaste.ExecuteTarget(Target: TObject);
+begin
+  Control.PasteFromClipboard();
+  Inherited;
+end;
+
+
+{ TVirtualTreeDelete }
+
+procedure TVirtualTreeDelete.ExecuteTarget(Target: TObject);
+begin
+  Control.DeleteSelectedNodes();
+  Inherited;
+end;
+
 
 end.

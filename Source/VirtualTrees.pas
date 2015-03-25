@@ -3029,7 +3029,6 @@ type
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
-    function UpdateAction(Action: TBasicAction): Boolean; override;
     procedure UpdateHorizontalRange;
     procedure UpdateHorizontalScrollBar(DoRepaint: Boolean);
     procedure UpdateRanges;
@@ -14272,7 +14271,6 @@ procedure TBaseVirtualTree.SetCheckStateForAll(aCheckState: TCheckState; pSelect
 var
   lItem : PVirtualNode;
 begin
-  Inherited;
   With Self do begin
     Screen.Cursor := crHourGlass;
     BeginUpdate;
@@ -32106,38 +32104,6 @@ begin
       Exclude(Node.States, vsToggling);
       if not TogglingTree then
         DoStateChange([], [tsToggling]);
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.UpdateAction(Action: TBasicAction): Boolean;
-
-// Support for standard actions.
-
-begin
-  if not Focused then
-    Result := inherited UpdateAction(Action)
-  else
-  begin
-    Result := (Action is TEditCut) or (Action is TEditCopy) or (Action is TEditDelete);
-
-    if Result then
-      TAction(Action).Enabled := (FSelectionCount > 0) and ((Action is TEditDelete) or (FClipboardFormats.Count > 0))
-    else
-    begin
-      Result := Action is TEditPaste;
-      if Result then
-        TAction(Action).Enabled := True
-      else
-      begin
-        Result := Action is TEditSelectAll;
-        if Result then
-          TAction(Action).Enabled := (toMultiSelect in FOptions.FSelectionOptions) and (FVisibleCount > 0)
-        else
-          Result := inherited UpdateAction(Action);
-      end;
     end;
   end;
 end;
