@@ -1,10 +1,8 @@
-V6.0 (under development)
-  * 
-  * Issue #519: Changed plus/minus buttons so that hot tracking of the buttons is always on, independent of toHotTrack.
-  * Issue #514: The splitter area in the column header should be configurable
-  * Issue #515: The value for Indent should get scaled too if the toAutoScale flag is set
-  * Issue #511: From the unit VirtualTres new units have been extracted to reduce its size.
-  * Issue #483 for TVTOperationKind.okExport: All exports can now be cancelled using CancelOperation()
+V6.0 (beta, scheduled for release on 10 Apr 2015)
+  * Issue #509: Added new option hoAutoColumnPopupMenu to TVTHeaderOption. 
+  * Issue #457: Virtual TreeView no longer reacta on standard actions for TEdit controls
+    We added standard actions for copy, cut, paste, delete, select all, check, uncheck in the new unit "VirtualTrees.Actions".  
+  * Issue #484: ContentToHTML() no longer pre-encodes the HTML in UTF-8 but returns a Unicodestring
   * Issue #507: Added to TBaseVirtualTree:
     function GetNodeData<T>(pNode: PVirtualNode): T;
     function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
@@ -15,15 +13,20 @@ V6.0 (under development)
     procedure SetNodeData<T:class>(pNode: PVirtualNode; pUserData: T);
     Similar functions have also been added to the TVirtualNode record.
   * The grid demo of the "Advanced" project now uses a class instead of a record and the new generic functions from issue #502.
+  * Issue #519: Changed plus/minus buttons so that hot tracking of the buttons is always on, independent of toHotTrack.
+  * Issue #514: The splitter area in the column header should be configurable
+  * Issue #515: The value for Indent should get scaled too if the toAutoScale flag is set
+  * Issue #511: From the unit VirtualTres new units have been extracted to reduce its size.
+  * Issue #483 for TVTOperationKind.okExport: All exports can now be cancelled using CancelOperation()
   * Issue #362: InternalConnectNode: AdjustTotalHeight not called if Node not FullyVisible
   * Issue #506: Autosort is being triggered at design-time.
   * Issue #486: AutoScroll is performed although toAutoScroll is not set.
   * DoMeasureItem() now ensures that the node was initialized.
   * Issue #493: Editing with DblClick should always open editor immediately.
-  * TVirtualTreeColumns.UpdatePositions() now exists immediately if the control is destroying, ths prevents AVs.
+  * TVirtualTreeColumns.UpdatePositions() now exits immediately if the control is destroying, ths prevents AVs.
   * Added support for CBuilder XE7.  
-  * Supporting only Delphi / C++ Builder XE3 and higher
   * A larger patch from Diemtar Rösler was applied which addresses various issue regarding VCL styles (especially #478 and #491).
+  * Supporting only Delphi / C++ Builder XE3 and higher
   * Improved support for C++ Builder  
 
 V5.5.3: (08 Jan 2015)

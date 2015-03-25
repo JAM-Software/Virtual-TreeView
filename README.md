@@ -2,7 +2,8 @@
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
 
 ###Downloads
-Official releases can be downloaded from: http://www.jam-software.de/virtual-treeview/ and the latest source from [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip).
+V5.5.3 official release for Delphi 7 to XE7: [JAM Softwarer](http://www.jam-software.de/virtual-treeview/)
+V6.0 beta for Delphi XE3 and higher: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip).
 
 **[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)**
 
