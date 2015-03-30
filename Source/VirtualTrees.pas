@@ -26158,7 +26158,7 @@ end;
 
 procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode);
 begin
-  DeleteNode(Node, False, False);
+  DeleteNode(Node, True, False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
