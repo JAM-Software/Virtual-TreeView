@@ -43,6 +43,7 @@ contains
   VirtualTrees.WorkerThread in '..\..\Source\VirtualTrees.WorkerThread.pas',
   VirtualTrees.ClipBoard in '..\..\Source\VirtualTrees.ClipBoard.pas',
   VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
+  VirtualTrees.Export in '..\..\Source\VirtualTrees.Export.pas',
   VirtualTrees.Actions in '..\..\Source\VirtualTrees.Actions.pas';
 
 end.

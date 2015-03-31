@@ -175,6 +175,12 @@
         <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
             <BuildOrder>14</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
+            <BuildOrder>15</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
+            <BuildOrder>16</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VTAccessibility.pas">
             <BuildOrder>8</BuildOrder>
         </DelphiCompile>
