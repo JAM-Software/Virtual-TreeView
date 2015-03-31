@@ -1,7 +1,8 @@
 ﻿unit VirtualTrees.Export;
 
-{$WARN IMPLICIT_STRING_CAST       OFF}
-{$WARN IMPLICIT_STRING_CAST_LOSS  OFF}
+{$WARN UNSAFE_CODE OFF}
+{$WARN IMPLICIT_STRING_CAST OFF}
+{$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 
 interface
 
@@ -17,6 +18,9 @@ function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source
 procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType);
 
 implementation
+
+uses
+  UITypes;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree)
