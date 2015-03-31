@@ -35081,8 +35081,6 @@ function TCustomVirtualStringTree.ContentToUnicode(Source: TVSTTextSourceType; c
 
 // Renders the current tree content (depending on Source) as Unicode text.
 // If an entry contains the separator char then it is wrapped with double quotation marks.
-// Note: There is no QuotedStr function for Unicode in the VCL (like AnsiQuotedStr) so we have the limitation here
-//       that an entry must not contain double quotation marks, otherwise import into other programs might fail!
 
 const
   WideCRLF: string = #13#10;
@@ -35167,22 +35165,14 @@ begin
               Buffer.Add(Copy(Tabs, 1, Integer(Level) * Length(Separator)));
               // Wrap the text with quotation marks if it contains the separator character.
               if Pos(Separator, Text) > 0 then
-              begin
-                Buffer.Add('"');
-                Buffer.Add(Text);
-                Buffer.Add('"');
-              end
+                Buffer.Add(AnsiQuotedStr(Text, '"'))
               else
                 Buffer.Add(Text);
               Buffer.Add(Copy(Tabs, 1, Integer(MaxLevel - Level) * Length(Separator)));
             end
             else
               if Pos(Separator, Text) > 0 then
-              begin
-                Buffer.Add('"');
-                Buffer.Add(Text);
-                Buffer.Add('"');
-              end
+                Buffer.Add(AnsiQuotedStr(Text, '"'))
               else
                 Buffer.Add(Text);
 
