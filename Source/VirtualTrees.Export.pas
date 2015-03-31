@@ -1,4 +1,7 @@
-unit VirtualTrees.Export;
+﻿unit VirtualTrees.Export;
+
+{$WARN IMPLICIT_STRING_CAST       OFF}
+{$WARN IMPLICIT_STRING_CAST_LOSS  OFF}
 
 interface
 

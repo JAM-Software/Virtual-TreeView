@@ -1,6 +1,6 @@
 V6.0 (beta, scheduled for release on 10 Apr 2015)
   * Issue #509: Added new option hoAutoColumnPopupMenu to TVTHeaderOption. 
-  * Issue #457: Virtual TreeView no longer reacta on standard actions for TEdit controls
+  * Issue #457: Virtual TreeView no longer react on standard actions for TEdit controls
     We added standard actions for copy, cut, paste, delete, select all, check, uncheck in the new unit "VirtualTrees.Actions".  
   * Issue #484: ContentToHTML() no longer pre-encodes the HTML in UTF-8 but returns a Unicodestring
   * Issue #507: Added to TBaseVirtualTree:
