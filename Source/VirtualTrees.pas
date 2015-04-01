@@ -3242,7 +3242,6 @@ type
   TCustomVirtualStringTree = class(TBaseVirtualTree)
   private
     class var FInternalDataOffset: Cardinal;        // offset to the internal data of the string tree
-    class constructor Create();
   private
     FDefaultText: string;                   // text to show if there's no OnGetText event handler (e.g. at design time)
     FTextHeight: Integer;                          // true size of the font
@@ -32843,13 +32842,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class constructor TCustomVirtualStringTree.Create();
-begin
-  FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TCustomVirtualStringTree.GetRenderStartValues(Source: TVSTTextSourceType; var Node: PVirtualNode;
   var NextNodeProc: TGetNextNodeProc);
 
@@ -34321,6 +34313,7 @@ initialization
   Watcher := TCriticalSection.Create;
 
 //Note - not using class constructors as they are not supported on C++ Builder.
+  TCustomVirtualStringTree.FInternalDataOffset := TBaseVirtualTree.AllocateInternalDataArea(SizeOf(Cardinal));
   TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
   TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
 
