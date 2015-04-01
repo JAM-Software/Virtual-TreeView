@@ -26489,7 +26489,7 @@ begin
         Node := GetNext(Node);
       until (Node = Stop) or OperationCanceled;
     finally
-      StartOperation(TVTOperationKind.okExpand);
+      EndOperation(TVTOperationKind.okExpand);
       EndUpdate;
       DoStateChange([], [tsExpanding]);
     end;
@@ -34270,7 +34270,8 @@ begin
 end;
 
 procedure TVirtualNode.SetData(pUserData: Pointer);
-
+
+
   // Can be used to set user data of a PVirtualNode with the size of a pointer, useful for setting
   // A pointer to a record or a reference to a class instance.
 
@@ -34283,7 +34284,8 @@ begin
 end;
 
 procedure TVirtualNode.SetData(const pUserData: IInterface);
-
+
+
   // Can be used to set user data of a PVirtualNode to a class instance,
   // will take care about reference counting.
 
@@ -34294,7 +34296,8 @@ begin
 end;
 
 procedure TVirtualNode.SetData<T>(pUserData: T);
-begin
+
+begin
   SetData(Pointer(pUserData));
 end;
 
@@ -34312,7 +34315,7 @@ initialization
   // This watcher is used whenever a global structure could be modified by more than one thread.
   Watcher := TCriticalSection.Create;
 
-//Note - not using class constructors as they are not supported on C++ Builder.
+  //Note - not using class constructors as they are not supported on C++ Builder.
   TCustomVirtualStringTree.FInternalDataOffset := TBaseVirtualTree.AllocateInternalDataArea(SizeOf(Cardinal));
   TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
   TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
