@@ -1127,4 +1127,10 @@ begin
   end;
 end;
 
+initialization
+
+  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
+  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
+
 end.
+

@@ -34317,8 +34317,6 @@ initialization
 
   //Note - not using class constructors as they are not supported on C++ Builder.
   TCustomVirtualStringTree.FInternalDataOffset := TBaseVirtualTree.AllocateInternalDataArea(SizeOf(Cardinal));
-  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
-  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
 
 finalization
   if Initialized then
