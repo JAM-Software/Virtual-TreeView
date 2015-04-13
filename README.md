@@ -2,16 +2,16 @@
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
 
 ###Downloads
-V6.0.0 official release for Delphi XE3 to XE8: [JAM Software](http://www.jam-software.com/virtual-treeview/)
+**V6.0.0** official release for **RAD Studio XE3 to XE8**: [JAM Software](http://www.jam-software.com/virtual-treeview/)
 
-V5.5.3 for Delphi 7 to XE2: [GitHub](http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip)
+**V5.5.3*** for **Delphi 7 to XE2**: [GitHub](http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip)
 
 V6 latest code: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip)
 
 
-**[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)**
+###[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)
 
-**V6.0** has been officially released. It supports **RAD Studio XE3 to XE8**. For installation instruction see the "INSTALL.TXT" file in the ZIP.
+**V6.0** has been officially released. For installation instruction see the "INSTALL.TXT" file in the ZIP.
 
 ###Technical Support
 Please do not contact the developers directly for technical support. Please try to get support from the community e.g. at [Stack Overflow](http://stackoverflow.com/search?q=%22virtual+treeview%22) , [Delphi Pages](http://www.delphipages.com/), [Delphi Praxis](http://www.delphipraxis.net/141465-virtual-treeview-tutorials-mit-beispielen.html) or [Embarcadero forums](https://forums.embarcadero.com/). Please do not use issue reporting for getting support.
