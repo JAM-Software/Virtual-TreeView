@@ -4524,7 +4524,7 @@ begin
         begin
           if ((toThemeAware in ToBeSet + ToBeCleared) or (toUseExplorerTheme in ToBeSet + ToBeCleared) or VclStyleEnabled) then
           begin
-            if ((toThemeAware in ToBeSet) and StyleServices.Enabled) or VclStyleEnabled then
+            if ((toThemeAware in ToBeSet) and StyleServices.Enabled) then
               DoStateChange([tsUseThemes])
             else
               if (toThemeAware in ToBeCleared) then
@@ -9086,7 +9086,7 @@ var
   var
     BackgroundRect: TRect;
     Details: TThemedElementDetails;
-
+    Theme: HTheme;
   begin
     BackgroundRect := Rect(Target.X, Target.Y, Target.X + R.Right - R.Left, Target.Y + FHeader.Height);
 
@@ -9099,10 +9099,17 @@ var
       end  
       else
       begin
-        if ((tsUseThemes in FHeader.Treeview.FStates) or (FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements))) then
+        if (FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements)) then
         begin
           Details := StyleServices.GetElementDetails(thHeaderItemRightNormal);
           StyleServices.DrawElement(Handle, Details, BackgroundRect, @BackgroundRect);
+        end
+        else
+        if tsUseThemes in FHeader.Treeview.FStates then
+        begin
+          Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
+          DrawThemeBackground(Theme, Handle, HP_HEADERITEM, HIS_NORMAL, BackgroundRect, nil);
+          CloseThemeData(THeme);
         end
         else
         begin
@@ -9134,6 +9141,8 @@ var
     Pos: TRect;
     DrawHot: Boolean;
     ImageWidth: Integer;
+    Theme: HTheme;
+    IdState: Integer;
   begin
     ColImageInfo.Ghosted := False;
     PaintInfo.Column := Items[AColumn];
@@ -9179,7 +9188,7 @@ var
           FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground])
         else
         begin
-          if (tsUseThemes in FHeader.Treeview.FStates) or ((FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements))) then
+          if FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements)  then
           begin
             if IsDownIndex then
               Details := StyleServices.GetElementDetails(thHeaderItemPressed)
@@ -9191,18 +9200,32 @@ var
             StyleServices.DrawElement(TargetCanvas.Handle, Details, PaintRectangle, @PaintRectangle);
           end
           else
-          begin
-            if IsDownIndex then
-              DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
-            else
-              // Plates have the special case of raising on mouse over.
-              if (FHeader.Style = hsPlates) and IsHoverIndex and
-                (coAllowClick in FOptions) and (coEnabled in FOptions) then
-                DrawEdge(TargetCanvas.Handle, PaintRectangle, RaisedButtonStyle,
-                         RaisedButtonFlags or RightBorderFlag)
+            begin
+              if tsUseThemes in FHeader.Treeview.FStates then
+              begin
+                Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
+                if IsDownIndex then
+                  IdState := HIS_PRESSED
+                else
+                  if IsHoverIndex then
+                    IdState := HIS_HOT
+                  else
+                    IdState := HIS_NORMAL;
+                DrawThemeBackground(Theme, TargetCanvas.Handle, HP_HEADERITEM, IdState, PaintRectangle, nil);
+                CloseThemeData(Theme);
+              end
               else
-                DrawEdge(TargetCanvas.Handle, PaintRectangle, NormalButtonStyle,
-                         NormalButtonFlags or RightBorderFlag);
+                if IsDownIndex then
+                  DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
+                else
+                  // Plates have the special case of raising on mouse over.
+                  if (FHeader.Style = hsPlates) and IsHoverIndex and
+                     (coAllowClick in FOptions) and (coEnabled in FOptions) then
+                    DrawEdge(TargetCanvas.Handle, PaintRectangle, RaisedButtonStyle,
+                             RaisedButtonFlags or RightBorderFlag)
+                  else
+                    DrawEdge(TargetCanvas.Handle, PaintRectangle, NormalButtonStyle,
+                             NormalButtonFlags or RightBorderFlag);
           end;
         end;
 
@@ -17305,7 +17328,7 @@ var
   TempRgn: HRGN;
   BorderWidth,
   BorderHeight: Integer;
-
+ 
 begin
   if tsUseThemes in FStates then
   begin
@@ -17350,11 +17373,11 @@ begin
     OriginalWMNCPaint(DC);
     ReleaseDC(Handle, DC);
   end;
-    if (((tsUseThemes in FStates) and not VclStyleEnabled) or (VclStyleEnabled and (seBorder in StyleElements))) then
+  if (((tsUseThemes in FStates) and not VclStyleEnabled) or (VclStyleEnabled and (seBorder in StyleElements))) then
       StyleServices.PaintBorder(Self, False)
-    else
-      if (VclStyleEnabled and not (seBorder in StyleElements)) then
-        TStyleManager.SystemStyle.PaintBorder(Self, False)
+  else
+    if (VclStyleEnabled and not (seBorder in StyleElements)) then
+      TStyleManager.SystemStyle.PaintBorder(Self, False)
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18395,17 +18418,16 @@ begin
   inherited;
   DoStateChange([], [tsWindowCreating]);
 
-  if (StyleServices.Enabled and (toThemeAware in TreeOptions.PaintOptions)) or VclStyleEnabled then
+  if ((StyleServices.Enabled ) and (toThemeAware in TreeOptions.PaintOptions)  ) then
   begin
     DoStateChange([tsUseThemes]);
-    if not VclStyleEnabled then
-      if (toUseExplorerTheme in FOptions.FPaintOptions) and IsWinVistaOrAbove then
-      begin
-        DoStateChange([tsUseExplorerTheme]);
-         SetWindowTheme('explorer');
-      end
-      else
-        DoStateChange([], [tsUseExplorerTheme]);
+    if (toUseExplorerTheme in FOptions.FPaintOptions) and IsWinVistaOrAbove then
+    begin
+      DoStateChange([tsUseExplorerTheme]);
+      SetWindowTheme('explorer');
+    end
+    else
+      DoStateChange([], [tsUseExplorerTheme]);
   end
   else
     DoStateChange([], [tsUseThemes, tsUseExplorerTheme]);
