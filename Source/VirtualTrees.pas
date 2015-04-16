@@ -12076,16 +12076,7 @@ begin
   FOptions := GetOptionsClass.Create(Self);
 
   AddThreadReference;
-
-  FVclStyleEnabled := False;
-
-  // XE2+ VCL Style
-  (*
-     FSetOrRestoreBevelKindAndBevelWidth := False;
-     FSavedBevelKind := bkNone;
-     FSavedBorderWidth := 0;
-
-  *)
+  VclStyleChanged();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23207,11 +23198,6 @@ begin
     if HandleAllocated then
       RegisterDragDrop(Handle, DragManager as IDropTarget);
 
-  (*
-       FSavedBorderWidth := BorderWidth;
-       FSavedBevelKind := BevelKind;
- *)
-  VclStyleChanged;
   // If a root node count has been set during load of the tree then update its child structure now
   // as this hasn't been done yet in this case.
   if (tsNeedRootCountUpdate in FStates) and (FRoot.ChildCount > 0) then
@@ -25203,6 +25189,9 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.VclStyleChanged;
+
+  // Updates the member FVclStyleEnabled, should be called initially and when the VCL style changes
+
 begin
   FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle;
 end;
