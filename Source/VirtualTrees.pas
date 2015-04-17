@@ -13947,7 +13947,7 @@ begin
       begin
         FillBitmap(FPlusBM);
         FillBitmap(FHotPlusBM);
-        FillBitmap(FSelectedHotMinusBM);
+        FillBitmap(FSelectedHotPlusBM);
         if (not VclStyleEnabled) or (Theme = 0) then
         begin
           if not(tsUseExplorerTheme in FStates) then
