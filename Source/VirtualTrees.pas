@@ -13870,152 +13870,174 @@ var
   //--------------- end local function ----------------------------------------
 
 begin
-  Size.cx := 9;
-  Size.cy := 9;
-
-  if tsUseThemes in FStates then
+  if VclStyleEnabled and (seClient in StyleElements) then
   begin
-    R := Rect(0, 0, 100, 100);
-    Theme := OpenThemeData(Handle, 'TREEVIEW');
-    GetThemePartSize(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, @R, TS_TRUE, Size);
+    Size.cx := 11;
+    Size.cy := 11;
+    FillBitmap(FPlusBM);
+    FillBitmap(FHotPlusBM);
+    FillBitmap(FSelectedHotPlusBM);
+    FillBitmap(FMinusBM);
+    FillBitmap(FHotMinusBM);
+    FillBitmap(FSelectedHotMinusBM);
+    R := Rect(0,0,Size. cx,Size.cy);
+    // tcbCategoryGlyphClosed, tcbCategoryGlyphOpened from CategoryButtons
+    StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R);
+    StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R);
+    FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+    FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+    FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+    FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
   end
-  else
-    Theme := 0;
-
-  if NeedButtons then
-  begin
-    //VCL Themes do not really have ability to provide tree plus/minus images when not using the
-    //windows theme. The bitmap style designer doesn't have any elements for for them, and you
-    //cannot name any elements you add, which makes it useless.
-    //To mitigate this, Hook up the OnPrepareButtonImages and draw them yourself.
-    if Assigned(FOnPrepareButtonImages) then
-    begin
-      FillBitmap(FPlusBM);
-      FillBitmap(FHotPlusBM);
-      FillBitmap(FSelectedHotPlusBM);
-      FillBitmap(FMinusBM);
-      FillBitmap(FHotMinusBM);
-      FillBitmap(FSelectedHotMinusBM);
-      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
-    end
     else
-    begin
-      with FMinusBM, Canvas do
       begin
-        // box is always of odd size
-        FillBitmap(FMinusBM);
-        FillBitmap(FHotMinusBM);
-        FillBitmap(FSelectedHotMinusBM);
-        // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiﬂe aus
-        // Because the self-drawn bitmaps view Vcl Style shit
-        if (not VclStyleEnabled) or (Theme = 0) then
+        Size.cx := 9;
+        Size.cy := 9;
+        if tsUseThemes in FStates then
         begin
-          if not(tsUseExplorerTheme in FStates) then
-          begin
-            if FButtonStyle = bsTriangle then
-            begin
-              Brush.Color := clBlack;
-              Pen.Color := clBlack;
-              Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
-            end
-            else
-            begin
-              // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
-              if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
-              begin
-                case FButtonFillMode of
-                  fmTreeColor:
-                    Brush.Color := FColors.BackGroundColor;
-                  fmWindowColor:
-                    Brush.Color := clWindow;
-                end;
-                Pen.Color := FColors.TreeLineColor;
-                Rectangle(0, 0, Width, Height);
-                Pen.Color := FColors.NodeFontColor;
-                MoveTo(2, Width div 2);
-                LineTo(Width - 2, Width div 2);
-              end
-              else
-                FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
-              FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
-              FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
-            end;
-          end;
-        end;
-      end;
-      with FPlusBM, Canvas do
-      begin
-        FillBitmap(FPlusBM);
-        FillBitmap(FHotPlusBM);
-        FillBitmap(FSelectedHotPlusBM);
-        if (not VclStyleEnabled) or (Theme = 0) then
-        begin
-          if not(tsUseExplorerTheme in FStates) then
-          begin
-            if FButtonStyle = bsTriangle then
-            begin
-              Brush.Color := clBlack;
-              Pen.Color := clBlack;
-              Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
-            end
-            else
-            begin
-              // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
-              if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
-              begin
-                case FButtonFillMode of
-                  fmTreeColor:
-                    Brush.Color := FColors.BackGroundColor;
-                  fmWindowColor:
-                    Brush.Color := clWindow;
-                end;
-
-                Pen.Color := FColors.TreeLineColor;
-                Rectangle(0, 0, Width, Height);
-                Pen.Color := FColors.NodeFontColor;
-                MoveTo(2, Width div 2);
-                LineTo(Width - 2, Width div 2);
-                MoveTo(Width div 2, 2);
-                LineTo(Width div 2, Width - 2);
-              end
-              else
-                FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
-              FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-              FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-            end;
-          end;
-        end;
-      end;
-
-      // Overwrite glyph images if theme is active.
-      if (tsUseThemes in FStates) and (Theme <> 0) then
-      begin
-        R := Rect(0, 0, Size.cx, Size.cy);
-        DrawThemeBackground(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_CLOSED, R, nil);
-        DrawThemeBackground(Theme, FMinusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, R, nil);
-        if tsUseExplorerTheme in FStates then
-        begin
-          DrawThemeBackground(Theme, FHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
-          DrawThemeBackground(Theme, FSelectedHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
-          DrawThemeBackground(Theme, FHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
-          DrawThemeBackground(Theme, FSelectedHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
+          R := Rect(0, 0, 100, 100);
+          Theme := OpenThemeData(Handle, 'TREEVIEW');
+          GetThemePartSize(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, @R, TS_TRUE, Size);
         end
-        else
+          else
+            Theme := 0;
+
+        if NeedButtons then
         begin
-          FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-          FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-          FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
-          FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+          //VCL Themes do not really have ability to provide tree plus/minus images when not using the
+          //windows theme. The bitmap style designer doesn't have any elements for for them, and you
+          //cannot name any elements you add, which makes it useless.
+          //To mitigate this, Hook up the OnPrepareButtonImages and draw them yourself.
+          if Assigned(FOnPrepareButtonImages) then
+          begin
+            FillBitmap(FPlusBM);
+            FillBitmap(FHotPlusBM);
+            FillBitmap(FSelectedHotPlusBM);
+            FillBitmap(FMinusBM);
+            FillBitmap(FHotMinusBM);
+            FillBitmap(FSelectedHotMinusBM);
+            FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
+          end
+            else
+              begin
+                with FMinusBM, Canvas do
+                begin
+                  // box is always of odd size
+                  FillBitmap(FMinusBM);
+                  FillBitmap(FHotMinusBM);
+                  FillBitmap(FSelectedHotMinusBM);
+                  // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiﬂe aus
+                  // Because the self-drawn bitmaps view Vcl Style shit
+                  if Theme = 0 then
+                  begin
+                    if not(tsUseExplorerTheme in FStates) then
+                    begin
+                      if FButtonStyle = bsTriangle then
+                      begin
+                        Brush.Color := clBlack;
+                        Pen.Color := clBlack;
+                        Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
+                      end
+                        else
+                          begin
+                            // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
+                            if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
+                            begin
+                              case FButtonFillMode of
+                                fmTreeColor:
+                                  Brush.Color := FColors.BackGroundColor;
+                                fmWindowColor:
+                                  Brush.Color := clWindow;
+                              end;
+                              Pen.Color := FColors.TreeLineColor;
+                              Rectangle(0, 0, Width, Height);
+                              Pen.Color := FColors.NodeFontColor;
+                              MoveTo(2, Width div 2);
+                              LineTo(Width - 2, Width div 2);
+                            end
+                              else
+                                FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
+                          end;
+                      FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+                      FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+                    end;
+                  end;
+                end;
+                with FPlusBM, Canvas do
+                begin
+                  FillBitmap(FPlusBM);
+                  FillBitmap(FHotPlusBM);
+                  FillBitmap(FSelectedHotPlusBM);
+                  if Theme = 0 then
+                  begin
+                    if not(tsUseExplorerTheme in FStates) then
+                    begin
+                      if FButtonStyle = bsTriangle then
+                      begin
+                        Brush.Color := clBlack;
+                        Pen.Color := clBlack;
+                        Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
+                      end
+                        else
+                          begin
+                            // Button style is rectangular. Now ButtonFillMode determines how to fill the interior.
+                            if FButtonFillMode in [fmTreeColor, fmWindowColor, fmTransparent] then
+                            begin
+                              case FButtonFillMode of
+                                fmTreeColor:
+                                  Brush.Color := FColors.BackGroundColor;
+                                fmWindowColor:
+                                  Brush.Color := clWindow;
+                              end;
+                              Pen.Color := FColors.TreeLineColor;
+                              Rectangle(0, 0, Width, Height);
+                              Pen.Color := FColors.NodeFontColor;
+                              MoveTo(2, Width div 2);
+                              LineTo(Width - 2, Width div 2);
+                              MoveTo(Width div 2, 2);
+                              LineTo(Width div 2, Width - 2);
+                            end
+                              else
+                                FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
+                          end;
+                       FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+                       FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+                     end;
+                  end;
+                end;
+
+
+          // Overwrite glyph images if theme is active.
+          if (tsUseThemes in FStates) and (Theme <> 0) then
+          begin
+            R := Rect(0, 0, Size.cx, Size.cy);
+            DrawThemeBackground(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_CLOSED, R, nil);
+            DrawThemeBackground(Theme, FMinusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, R, nil);
+            if tsUseExplorerTheme in FStates then
+            begin
+              DrawThemeBackground(Theme, FHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
+              DrawThemeBackground(Theme, FSelectedHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
+              DrawThemeBackground(Theme, FHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
+              DrawThemeBackground(Theme, FSelectedHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
+             end
+               else
+                 begin
+                   FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+                   FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+                   FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+                   FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+                 end;
+          end;
         end;
+        if tsUseThemes in FStates then
+          CloseThemeData(Theme);
       end;
-    end;
   end;
 
   if NeedLines then
   begin
     if FDottedBrush <> 0 then
       DeleteObject(FDottedBrush);
-
     case FLineStyle of
       lsDotted:
         Bits := @LineBitsDotted;
@@ -14029,9 +14051,6 @@ begin
     FDottedBrush := CreatePatternBrush(PatternBitmap);
     DeleteObject(PatternBitmap);
   end;
-
-  if tsUseThemes in FStates then
-    CloseThemeData(Theme);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23713,7 +23732,7 @@ begin
   else
     XPos := R.Right - ButtonX - FPlusBM.Width;
 
-  if tsUseExplorerTheme in FStates then
+  if (tsUseExplorerTheme in FStates) and not VclStyleEnabled then
   begin
     Glyph := IfThen(IsHot, TVP_HOTGLYPH, TVP_GLYPH);
     State := IfThen(vsExpanded in Node.States, GLPS_OPENED, GLPS_CLOSED);
