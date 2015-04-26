@@ -1199,7 +1199,7 @@ type
     FParentFont: Boolean;
     FOptions: TVTHeaderOptions;
     FStyle: TVTHeaderStyle;            // button style
-    FBackground: TColor;
+    FBackgroundColor: TColor;
     FAutoSizeIndex: TColumnIndex;
     FPopupMenu: TPopupMenu;
     FMainColumn: TColumnIndex;         // the column which holds the tree
@@ -1295,7 +1295,7 @@ type
     property UseColumns: Boolean read GetUseColumns;
   published
     property AutoSizeIndex: TColumnIndex read FAutoSizeIndex write SetAutoSizeIndex;
-    property Background: TColor read FBackground write SetBackground default clBtnFace;
+    property Background: TColor read FBackgroundColor write SetBackground default clBtnFace;
     property Columns: TVirtualTreeColumns read FColumns write SetColumns stored False; // Stored by the owner tree to support VFI.
     property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default 19;
     property Font: TFont read FFont write SetFont stored IsFontStored;
@@ -1323,7 +1323,7 @@ type
     ['{2BE3EAFA-5ACB-45B4-9D9A-B58BCC496E17}']
     function BeginEdit: Boolean; stdcall;                  // Called when editing actually starts.
     function CancelEdit: Boolean; stdcall;                 // Called when editing has been cancelled by the tree.
-    function EndEdit: Boolean; stdcall;                    // Called when editing has been finished by the tree.
+    function EndEdit: Boolean; stdcall;                    // Called when editing has been finished by the tree. Returns True if successful, False if edit mode is still active.
     function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
                                                            // Called after creation to allow a setup.
     function GetBounds: TRect; stdcall;                    // Called to get the current size of the edit window
@@ -9113,7 +9113,7 @@ var
         end
         else
         begin
-          Brush.Color := FHeader.FBackground;
+          Brush.Color := FHeader.FBackgroundColor;
           FillRect(BackgroundRect);
         end;
       end;
@@ -9563,7 +9563,7 @@ begin
   FFont := TFont.Create;
   FFont.OnChange := FontChanged;
   FParentFont := False;
-  FBackground := clBtnFace;
+  FBackgroundColor := clBtnFace;
   FOptions := [hoColumnResize, hoDrag, hoShowSortGlyphs];
 
   FImageChangeLink := TChangeLink.Create;
@@ -9675,9 +9675,9 @@ end;
 procedure TVTHeader.SetBackground(Value: TColor);
 
 begin
-  if FBackground <> Value then
+  if FBackgroundColor <> Value then
   begin
-    FBackground := Value;
+    FBackgroundColor := Value;
     Invalidate(nil);
   end;
 end;
@@ -11660,7 +11660,7 @@ begin
 
     Dummy := FAutoSizeIndex;
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := FBackground;
+    Dummy := FBackgroundColor;
     WriteBuffer(Dummy, SizeOf(Dummy));
     Dummy := FHeight;
     WriteBuffer(Dummy, SizeOf(Dummy));
@@ -19654,6 +19654,10 @@ end;
 
 function TBaseVirtualTree.DoEndEdit: Boolean;
 
+// Called to finish a current edit action or stop the edit timer if an edit operation is pending.
+// Returns True if editing was successfully ended or the control was not in edit mode
+// Returns False if the control could not leave the edit mode e.g. due to an invalid value that was entered.
+
 begin
   StopTimer(EditTimer);
   Result := (tsEditing in FStates) and FEditLink.EndEdit;
@@ -22216,7 +22220,7 @@ begin
   end;
 
   if (tsEditing in FStates) then
-    DoEndEdit;
+      DoEndEdit;
 
   // Focus change. Don't use the SetFocus method as this does not work for MDI Winapi.Windows.
   if not Focused and CanFocus then
@@ -26258,6 +26262,8 @@ end;
 function TBaseVirtualTree.EndEditNode: Boolean;
 
 // Called to finish a current edit action or stop the edit timer if an edit operation is pending.
+// Returns True if editing was successfully ended or the control was not in edit mode
+// Returns False if the control could not leave the edit mode e.g. due to an invalid value that was entered.
 
 begin
   if [tsEditing, tsEditPending] * FStates <> [] then
@@ -32867,7 +32873,6 @@ begin
   inherited;
   FPreviouslySelected := nil;
   FDefaultText := 'Node';
-  InitRootNode(FInternalDataOffset);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
