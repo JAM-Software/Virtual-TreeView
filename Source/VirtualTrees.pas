@@ -16713,7 +16713,8 @@ begin
 
                 if Assigned(Node) then
                 begin
-                  EndEditNode;
+                  if not EndEditNode then
+                    exit;
                   if HandleMultiSelect and (CompareNodePositions(LastFocused, FRangeAnchor) < 0) and
                     Assigned(FFocusedNode) then
                     RemoveFromSelection(FFocusedNode);
@@ -22219,8 +22220,10 @@ begin
     DoStateChange([], [tsEditPending]);
   end;
 
-  if (tsEditing in FStates) then
-      DoEndEdit;
+  if (tsEditing in FStates) then begin
+    if not DoEndEdit then
+      exit;
+  end;//if tsEditing
 
   // Focus change. Don't use the SetFocus method as this does not work for MDI Winapi.Windows.
   if not Focused and CanFocus then
