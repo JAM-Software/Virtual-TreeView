@@ -16686,7 +16686,8 @@ begin
 
                 if Assigned(Node) then
                 begin
-                  EndEditNode;
+                  if not EndEditNode then
+                    exit;
                   if HandleMultiSelect and (CompareNodePositions(LastFocused, FRangeAnchor) > 0) and
                     Assigned(FFocusedNode) then
                     RemoveFromSelection(FFocusedNode);
