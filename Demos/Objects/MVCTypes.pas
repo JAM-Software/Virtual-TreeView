@@ -1012,7 +1012,7 @@ end;
 constructor TMVCTreeView.Create(AOwner: TComponent);
 begin
   inherited;
-  FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
+  FInternalDataOffset := AllocateInternalDataArea(SizeOf(Pointer));
 end;
 
 function TMVCTreeView.GetOptions: TVirtualTreeOptions;

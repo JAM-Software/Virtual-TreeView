@@ -1,4 +1,13 @@
-V6.0 (beta, scheduled for release on 13 Apr 2015)
+V6.1 (beta)
+ * Fixed issue #542: AllocateInternalDataArea() was broken for derived classes
+   This was a result of issue #507. Now the user node data come before the internal data.
+   Therefore it is important to use the function InternalData() to access the internla data of a node.  
+ * Fixed issue #541: Duplicate call of EndEdit()
+ * Fixed issue #123: Triangle button is not shown for hot node
+ * Fixed issue #347: With VCL-Themes: No expand-pluses seen under Windows classic theme
+ * Fixed copy&paste error related to issue #519
+
+V6.0 (13 Apr 2015)
   * Issue #509: Added new option hoAutoColumnPopupMenu to TVTHeaderOption. 
   * Issue #457: Virtual TreeView no longer react on standard actions for TEdit controls
     We added standard actions for copy, cut, paste, delete, select all, check, uncheck in the new unit "VirtualTrees.Actions".  

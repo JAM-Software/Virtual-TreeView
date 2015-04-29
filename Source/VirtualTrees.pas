@@ -1907,8 +1907,7 @@ type
   // ----- TBaseVirtualTree
   TBaseVirtualTree = class(TCustomControl)
   private
-    class var FTotalInternalDataSize: Cardinal;            // Cache of the sum of the necessary internal data size for all tree
-  private
+    FTotalInternalDataSize: Cardinal;            // Cache of the sum of the necessary internal data size for all tree
     FBorderStyle: TBorderStyle;
     FHeader: TVTHeader;
     FRoot: PVirtualNode;
@@ -2414,7 +2413,7 @@ type
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: Integer); virtual;
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
-    class function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
+    function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
     function CalculateSelectionRect(X, Y: Integer): Boolean; virtual;
     function CanAutoScroll: Boolean; virtual;
@@ -2664,7 +2663,7 @@ type
 
     procedure VclStyleChanged;
     property VclStyleEnabled: Boolean read FVclStyleEnabled;
-    class property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
+    property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
 
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
     property AnimationDuration: Cardinal read FAnimationDuration write SetAnimationDuration default 200;
@@ -3241,8 +3240,7 @@ type
 
   TCustomVirtualStringTree = class(TBaseVirtualTree)
   private
-    class var FInternalDataOffset: Cardinal;        // offset to the internal data of the string tree
-  private
+    FInternalDataOffset: Cardinal;        // offset to the internal data of the string tree
     FDefaultText: string;                   // text to show if there's no OnGetText event handler (e.g. at design time)
     FTextHeight: Integer;                          // true size of the font
     FEllipsisWidth: Integer;                       // width of '...' for the current font
@@ -11996,6 +11994,7 @@ begin
 
   ControlStyle := ControlStyle - [csSetCaption] + [csCaptureMouse, csOpaque, csReplicatable, csDisplayDragImage,
     csReflector];
+  FTotalInternalDataSize := 0;
   FNodeDataSize := -1;
   Width := 200;
   Height := 100;
@@ -14865,7 +14864,7 @@ var
 begin
   // Check if there is initial user data and there is also enough user data space allocated.
   Assert(FNodeDataSize >= SizeOf(Pointer), Self.Classname + ': Cannot set initial user data because there is not enough user data space allocated.');
-  NodeData := Pointer(PByte(@pNode.Data) + FTotalInternalDataSize);
+  NodeData := @pNode.Data;
   NodeData^ := pUserData;
   Include(pNode.States, vsOnFreeNodeCallRequired);
 end;
@@ -17993,14 +17992,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
+function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
 
 // Simple registration method to be called by each descendant to claim their internal data area.
 // Result is the offset from the begin of the node to the internal data area of the calling tree class.
 
 begin
-  Result := TreeNodeSize;
-  FTotalInternalDataSize := (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1);
+  Assert((FRoot = nil) or (FRoot.ChildCount = 0), 'Internal data allocation must be done before any node is created.');
+  Result := TreeNodeSize + FTotalInternalDataSize;
+  Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
+  InitRootNode(Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28277,7 +28278,7 @@ begin
     Result := nil
   else
   begin
-    Result := PByte(@Node.Data) + FTotalInternalDataSize;
+    Result := @Node.Data;
     Include(Node.States, vsOnFreeNodeCallRequired); // We now need to call OnFreeNode, see bug #323
   end;
 end;
@@ -32877,6 +32878,7 @@ begin
   inherited;
   FPreviouslySelected := nil;
   FDefaultText := 'Node';
+  FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33697,10 +33699,11 @@ end;
 function TCustomVirtualStringTree.InternalData(Node: PVirtualNode): Pointer;
 
 begin
-  if (Node = FRoot) or (Node = nil) then
+  //TODO -oMarder: Move to base class, this code is generic for all classes
+  if (Node = FRoot) or (Node = nil) or (FInternalDataOffset = 0) then
     Result := nil
   else
-    Result := PByte(Node) + FInternalDataOffset;
+    Result := PByte(Node) + Self.NodeDataSize + FInternalDataOffset;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34287,7 +34290,7 @@ function TVirtualNode.GetData(): Pointer;
 // Returns the associated data converted to the class given in the generic part of the function.
 
 begin
-  Result := PByte(@Self.Data) + TBaseVirtualTree.FTotalInternalDataSize;
+  Result := @Self.Data;
   Include(States, vsOnFreeNodeCallRequired);
 end;
 
@@ -34296,7 +34299,7 @@ function TVirtualNode.GetData<T>: T;
 // Returns the associated data converted to the class given in the generic part of the function.
 
 begin
-  Result := T(Pointer((PByte(@(Self.Data)) + TBaseVirtualTree.FTotalInternalDataSize))^);
+  Result := T(Pointer((PByte(@(Self.Data))))^);
   Include(States, vsOnFreeNodeCallRequired);
 end;
 
@@ -34317,7 +34320,7 @@ procedure TVirtualNode.SetData(pUserData: Pointer);
 var
   NodeData: ^Pointer;
 begin
-  NodeData := Pointer(PByte(@Self.Data) + TBaseVirtualTree.FTotalInternalDataSize);
+  NodeData := @Self.Data;
   NodeData^ := pUserData;
   Include(Self.States, vsOnFreeNodeCallRequired);
 end;
@@ -34353,9 +34356,6 @@ end;
 initialization
   // This watcher is used whenever a global structure could be modified by more than one thread.
   Watcher := TCriticalSection.Create;
-
-  //Note - not using class constructors as they are not supported on C++ Builder.
-  TCustomVirtualStringTree.FInternalDataOffset := TBaseVirtualTree.AllocateInternalDataArea(SizeOf(Cardinal));
 
 finalization
   if Initialized then
