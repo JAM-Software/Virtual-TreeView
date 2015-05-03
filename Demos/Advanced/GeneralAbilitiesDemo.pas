@@ -477,7 +477,7 @@ end;
 procedure TGeneralForm.SaveButtonClick(Sender: TObject);
 
 const
-  HTMLHead : AnsiString = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">'#13#10 +
+  HTMLHead : String = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">'#13#10 +
     '<html>'#13#10 +
     '  <head>'#13#10 +
     '    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'#13#10 +
@@ -486,17 +486,14 @@ const
     '<body>'#13#10;
 
 var
-  S: Ansistring;
-  WS: String;
-  Data: Pointer;
-  DataSize: Cardinal;
-  TargetName: string;
+  lText: String;
+  lTargetName: string;
 
   procedure Save(pEconding: TEncoding);
   begin
-    With TStreamWriter.Create(Targetname, False, pEconding) do
+    With TStreamWriter.Create(lTargetName, False, pEconding) do
       try
-        Write(WS);
+        Write(lText);
       finally
         Free;
       end;
@@ -508,49 +505,45 @@ begin
   begin
     if Execute then
     begin
-      TargetName := FileName;
+      lTargetName := FileName;
       case FilterIndex of
-        1: // HTML
-          begin
-            if Pos('.', TargetName) = 0 then
-              TargetName := TargetName + '.html';
-            WS := HTMLHead + VST2.ContentToHTML(tstVisible) + '</body></html>';
-            Save(TEncoding.UTF8);
-            exit;
-          end;//HTML
-        2: // Unicode UTF-16 text file
-          begin
-            TargetName := ChangeFileExt(TargetName, '.uni');
-            WS := VST2.ContentToUnicode(tstVisible, #9);
-            Save(TEncoding.Unicode);
-            exit;
-          end;
-        3: // Rich text file
-          begin
-            TargetName := ChangeFileExt(TargetName, '.rtf');
-            S := VST2.ContentToRTF(tstVisible);
-          end;
-        4: // Comma separated values ANSI text file
-          begin
-            TargetName := ChangeFileExt(TargetName, '.csv');
-            S := VST2.ContentToText(tstVisible, FormatSettings.ListSeparator);
-          end;
+      1: // HTML
+        begin
+          if Pos('.', lTargetName) = 0 then
+            lTargetName := lTargetName + '.html';
+          lText := HTMLHead + VST2.ContentToHTML(tstVisible) + '</body></html>';
+          Save(TEncoding.UTF8);
+        end;//HTML
+      2: // Unicode UTF-16 text file
+        begin
+          lTargetName := ChangeFileExt(lTargetName, '.uni');
+          lText := VST2.ContentToText(tstVisible, #9);
+          Save(TEncoding.Unicode);
+        end;
+      3: // Rich text file
+        begin
+          lTargetName := ChangeFileExt(lTargetName, '.rtf');
+          With TStreamWriter.Create(lTargetName, False, TEncoding.ASCII) do
+            try
+              Write(VST2.ContentToRTF(tstVisible));
+            finally
+              Free;
+            end;
+        end;
+      4: // Comma separated values ANSI text file
+        begin
+          lTargetName := ChangeFileExt(lTargetName, '.csv');
+          lText := VST2.ContentToText(tstVisible, FormatSettings.ListSeparator);
+          Save(TEncoding.UTF8);
+        end;
       else
         // Plain text file
-        TargetName := ChangeFileExt(TargetName, '.txt');
-        S := VST2.ContentToText(tstVisible, #9);
-      end;
-
-      Data := PAnsiChar(S);
-      DataSize := Length(S);
-      with TFileStream.Create(TargetName, fmCreate) do
-      try
-        WriteBuffer(Data^, DataSize);
-      finally
-        Free;
-      end;
-    end;
-  end;
+        lTargetName := ChangeFileExt(lTargetName, '.txt');
+        lText := VST2.ContentToText(tstVisible, #9);
+        Save(TEncoding.ANSI);
+      end;//case
+    end;//if
+  end;//With
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
