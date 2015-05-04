@@ -22771,8 +22771,9 @@ var
   CurrentEnd: Integer;
   Constrained,
   SiblingConstrained: Boolean;
-
+  lPreviousSelectedCount: Integer;
 begin
+  lPreviousSelectedCount := FSelectionCount;
   // The idea behind this code is to use a kind of reverse merge sort. QuickSort is quite fast
   // and would do the job here too but has a serious problem with already sorted lists like FSelection.
 
@@ -22782,6 +22783,7 @@ begin
     for I := 0 to NewLength - 1 do
     begin
       Include(NewItems[I].States, vsSelected);
+      Inc(FSelectionCount);
       if Assigned(FOnAddToSelection) then
         FOnAddToSelection(Self, NewItems[I]);
     end;
@@ -22803,7 +22805,8 @@ begin
       else
       begin
         Include(NewItems[I].States, vsSelected);
-        if Assigned(FOnAddToSelection) then
+      Inc(FSelectionCount);
+      if Assigned(FOnAddToSelection) then
           FOnAddToSelection(Self, NewItems[I]);
       end;
   end;
@@ -22819,12 +22822,12 @@ begin
     if NewLength > 1 then
       QuickSort(NewItems, 0, NewLength - 1);
     // 3) Make room in FSelection for the new items.
-    if FSelectionCount + NewLength >= Length(FSelection) then
-      SetLength(FSelection, FSelectionCount + NewLength);
+    if lPreviousSelectedCount + NewLength >= Length(FSelection) then
+      SetLength(FSelection, lPreviousSelectedCount + NewLength);
 
     // 4) Merge in new items
     J := NewLength - 1;
-    CurrentEnd := FSelectionCount - 1;
+    CurrentEnd := lPreviousSelectedCount - 1;
 
     while J >= 0 do
     begin
@@ -22860,7 +22863,7 @@ begin
       CurrentEnd := I;
     end;
 
-    Inc(FSelectionCount, NewLength);
+    Assert(FSelectionCount = (lPreviousSelectedCount + NewLength), 'Fixing issue #487 seems to ahve caused a problem here.')
   end;
 end;
 
