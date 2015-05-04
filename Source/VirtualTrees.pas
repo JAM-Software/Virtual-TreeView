@@ -2399,10 +2399,6 @@ type
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
 
-    function GetIsSeBorderInStyleElement: Boolean;
-
-
-
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
     procedure AutoScale(); virtual;
@@ -2708,7 +2704,6 @@ type
     property IncrementalSearchStart: TVTSearchStart read FSearchStart write FSearchStart default ssFocusedNode;
     property IncrementalSearchTimeout: Cardinal read FSearchTimeout write FSearchTimeout default 1000;
     property Indent: Cardinal read FIndent write SetIndent default 18;
-    property IsSeBorderInStyleElement : Boolean read GetIsSeBorderInStyleElement;//TODO: Make this a private function
     property LastClickPos: TPoint read FLastClickPos write FLastClickPos;
     property LastDropMode: TDropMode read FLastDropMode write FLastDropMode;
     property LastHintRect: TRect read FLastHintRect write FLastHintRect;
@@ -13622,7 +13617,6 @@ begin
     FRoot := AllocMem(NewSize)
   else
   begin
-    //TODO: It seems that this code is never executed
     ReallocMem(FRoot, NewSize);
     ZeroMemory(PByte(FRoot) + OldSize, NewSize - OldSize);
   end;
@@ -21613,11 +21607,6 @@ begin
   end;
 end;
 
-function TBaseVirtualTree.GetIsSeBorderInStyleElement: Boolean;
-begin
-  Result := (seBorder in StyleElements);
-end;
-
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsEmpty: Boolean;
@@ -25523,7 +25512,7 @@ begin
   inherited;
 
   if FRoot = nil then
-    InitRootNode;//TODO: It seems that this line is never executed
+    InitRootNode;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
