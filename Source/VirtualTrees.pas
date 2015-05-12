@@ -21339,6 +21339,7 @@ begin
       Selected[FNextNodeToSelect] := True
     else if Self.Focused then
       Selected[GetFirstVisible] := True;
+    EnsureNodeFocused();
   end;//if
 end;
 
