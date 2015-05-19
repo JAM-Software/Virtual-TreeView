@@ -19327,8 +19327,8 @@ begin
     if Assigned(lFirstSelected) and not FullyVisible[lFirstSelected] then
     begin
       lParent := GetVisibleParent(lFirstSelected);
-      Selected[lParent] := True;
       Selected[lFirstSelected] := False;
+      Selected[lParent] := True;
     end;//if
     //if there is (still) no selected node, then use FNextNodeToSelect to select one
     if SelectedCount = 0 then
@@ -21347,12 +21347,13 @@ end;
 
 procedure TBaseVirtualTree.EnsureNodeSelected;
 begin
-  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked then
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
   begin
     if Assigned(FNextNodeToSelect) then
       Selected[FNextNodeToSelect] := True
     else if Self.Focused then
       Selected[GetFirstVisible] := True;
+    EnsureNodeFocused();
   end;//if
 end;
 
@@ -33353,7 +33354,7 @@ begin
         Exclude(FStates, tsPreviouslySelectedLocked);
       end;
       // if a there is a selected node now, then make sure that it is visible
-      if Self.GetFirstSelected <> nil then
+      if (Self.GetFirstSelected <> nil) and (UpdateCount = 0) then
         Self.ScrollIntoView(Self.GetFirstSelected, True);
     end;
   end;
