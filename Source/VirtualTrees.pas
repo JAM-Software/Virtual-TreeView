@@ -1508,6 +1508,7 @@ type
 
   // Export type
   TVTExportType = (
+    etNone,  // No export, normal displaying on the screen
     etRTF,   // contentToRTF
     etHTML,  // contentToHTML
     etText,  // contentToText
@@ -3233,6 +3234,19 @@ type
   TVTDrawTextEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean) of object;
 
+  /// Event arguments of the OnGetCellText event
+  TVSTGetCellTextEventArgs = record
+    Node: PVirtualNode;
+    Column: TColumnIndex;
+    CellText: string;
+    StaticText: string;
+    ExportType: TVTExportType;
+    constructor Create(pNode: PVirtualNode; pColumn: TColumnIndex; pExportType: TVTExportType = TVTExportType.etNone);
+  end;
+
+  /// Event signature which is called when text is painted on the canvas or needed for the export.
+  TVSTGetCellTextEvent = procedure(Sender: TCustomVirtualStringTree; var E: TVSTGetCellTextEventArgs) of object;
+
   TCustomVirtualStringTree = class(TBaseVirtualTree)
   private
     FInternalDataOffset: Cardinal;        // offset to the internal data of the string tree
@@ -3243,13 +3257,13 @@ type
     FOnPaintText: TVTPaintText;                    // triggered before either normal or fixed text is painted to allow
                                                    // even finer customization (kind of sub cell painting)
     FOnGetText: TVSTGetTextEvent;                  // used to retrieve the string to be displayed for a specific node
+    fOnGetCellText: TVSTGetCellTextEvent;             // used to retrieve the normal and static text of a tree node
     FOnGetHint: TVSTGetHintEvent;                  // used to retrieve the hint to be displayed for a specific node
     FOnNewText: TVSTNewTextEvent;                  // used to notify the application about an edited node caption
     FOnShortenString: TVSTShortenStringEvent;      // used to allow the application a customized string shortage
     FOnMeasureTextWidth: TVTMeasureTextEvent;      // used to adjust the width of the cells
     FOnMeasureTextHeight: TVTMeasureTextEvent;
     FOnDrawText: TVTDrawTextEvent;                 // used to custom draw the node text
-
     function GetImageText(Node: PVirtualNode; Kind: TVTImageKind;
       Column: TColumnIndex): string;
     function GetOptions: TCustomStringTreeOptions;
@@ -3279,8 +3293,7 @@ type
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
     function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
     function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
-    procedure DoGetText(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var Text: string); virtual;
+    procedure DoGetText(var pEventArgs: TVSTGetCellTextEventArgs); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: string): Integer; override;
     procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
@@ -3307,6 +3320,7 @@ type
 
     property OnGetHint: TVSTGetHintEvent read FOnGetHint write FOnGetHint;
     property OnGetText: TVSTGetTextEvent read FOnGetText write FOnGetText;
+    property OnGetCellText: TVSTGetCellTextEvent read fOnGetCellText write fOnGetCellText;
     property OnNewText: TVSTNewTextEvent read FOnNewText write FOnNewText;
     property OnPaintText: TVTPaintText read FOnPaintText write FOnPaintText;
     property OnShortenString: TVSTShortenStringEvent read FOnShortenString write FOnShortenString;
@@ -3328,7 +3342,7 @@ type
     procedure GetTextInfo(Node: PVirtualNode; Column: TColumnIndex; const AFont: TFont; var R: TRect;
       var Text: string); override;
     function InvalidateNode(Node: PVirtualNode): TRect; override;
-    function Path(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; Delimiter: WideChar): string;
+    function Path(Node: PVirtualNode; Column: TColumnIndex; Delimiter: Char): string;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
     procedure AddToSelection(Node: PVirtualNode); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
@@ -32982,14 +32996,14 @@ end;
 
 function TCustomVirtualStringTree.GetStaticText(Node: PVirtualNode; Column: TColumnIndex): string;
 
+var
+  lEventArgs: TVSTGetCellTextEventArgs;
+
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
-
-  if not (vsInitialized in Node.States) then
-    InitNode(Node);
-  Result := '';
-
-  DoGetText(Node, Column, ttStatic, Result);
+  lEventArgs := TVSTGetCellTextEventArgs.Create(Node, Column);
+  DoGetText(lEventArgs);
+  Exit(lEventArgs.StaticText);
 end;
 
 
@@ -32997,14 +33011,15 @@ end;
 
 function TCustomVirtualStringTree.GetText(Node: PVirtualNode; Column: TColumnIndex): string;
 
+var
+  lEventArgs: TVSTGetCellTextEventArgs;
+
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
-
-  if not (vsInitialized in Node.States) then
-    InitNode(Node);
-  Result := FDefaultText;
-
-  DoGetText(Node, Column, ttNormal, Result);
+  lEventArgs := TVSTGetCellTextEventArgs.Create(Node, Column);
+  lEventArgs.CellText := FDefaultText;
+  DoGetText(lEventArgs);
+  Exit(lEventArgs.CellText)
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33379,8 +33394,7 @@ function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node
 
 begin
   Result := 0;
-  if (Length(Text) > 0) and (Alignment <> taCenter) and not
-     (vsMultiline in Node.States) and (toShowStaticText in TreeOptions.FStringOptions) then
+  if (Length(Text) > 0) and (Alignment <> taCenter) and not (vsMultiline in Node.States) then
   begin
     DoPaintText(Node, Canvas, Column, ttStatic);
 
@@ -33483,9 +33497,11 @@ function TCustomVirtualStringTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column
   Canvas: TCanvas = nil): Integer;
 
 begin
-    if Canvas = nil then
-      Canvas := Self.Canvas;
-    Result := CalculateStaticTextWidth(Canvas, Node, Column, StaticText[Node, Column]);
+  if not (toShowStaticText in TreeOptions.FStringOptions) then
+    Exit(0);
+  if Canvas = nil then
+    Canvas := Self.Canvas;
+  Result := CalculateStaticTextWidth(Canvas, Node, Column, StaticText[Node, Column]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33530,12 +33546,19 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCustomVirtualStringTree.DoGetText(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var Text: string);
+procedure TCustomVirtualStringTree.DoGetText(var pEventArgs: TVSTGetCellTextEventArgs);
 
 begin
-  if Assigned(FOnGetText) then
-    FOnGetText(Self, Node, Column, TextType, Text);
+  if not (vsInitialized in pEventArgs.Node.States) then
+    InitNode(pEventArgs.Node);
+  if Assigned(OnGetCellText) then
+  begin
+    OnGetCellText(Self, pEventArgs);
+  end
+  else if Assigned(FOnGetText) then begin
+    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttNormal, pEventArgs.CellText);
+    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33575,7 +33598,7 @@ procedure TCustomVirtualStringTree.DoPaintNode(var PaintInfo: TVTPaintInfo);
 // Main output routine to print the text of the given node using the space provided in PaintInfo.ContentRect.
 
 var
-  S: string;
+  lEventArgs: TVSTGetCellTextEventArgs;
   TextOutFlags: Integer;
 
 begin
@@ -33587,27 +33610,23 @@ begin
 
     // Determine main text direction as well as other text properties.
     TextOutFlags := ETO_CLIPPED or RTLFlag[PaintInfo.BidiMode <> bdLeftToRight];
-    S := Text[PaintInfo.Node, PaintInfo.Column];
+    lEventArgs := TVSTGetCellTextEventArgs.Create(PaintInfo.Node, PaintInfo.Column);
+    DoGetText(lEventArgs);
 
     // Paint the normal text first...
-    if Length(S) > 0 then
-      PaintNormalText(PaintInfo, TextOutFlags, S);
+    if not lEventArgs.CellText.IsEmpty then
+      PaintNormalText(PaintInfo, TextOutFlags, lEventArgs.CellText);
 
     // ... and afterwards the static text if not centered and the node is not multiline enabled.
-    if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.FStringOptions) then
-    begin
-      S := '';
-      with PaintInfo do
-        DoGetText(Node, Column, ttStatic, S);
-      if Length(S) > 0 then
-        PaintStaticText(PaintInfo, TextOutFlags, S);
-    end;
+    if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.FStringOptions) and not lEventArgs.StaticText.IsEmpty then
+      PaintStaticText(PaintInfo, TextOutFlags, lEventArgs.StaticText);
   finally
     RestoreFontChangeEvent(PaintInfo.Canvas);
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
 
 procedure TCustomVirtualStringTree.DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex;
   TextType: TVSTTextType);
@@ -34124,14 +34143,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.Path(Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  Delimiter: WideChar): string;
+function TCustomVirtualStringTree.Path(Node: PVirtualNode; Column: TColumnIndex; Delimiter: Char): string;
 
 // Constructs a string containing the node and all its parents. The last character in the returned path is always the
 // given delimiter.
-
-var
-  S: string;
 
 begin
   if (Node = nil) or (Node = FRoot) then
@@ -34141,8 +34156,7 @@ begin
     Result := '';
     while Node <> FRoot do
     begin
-      DoGetText(Node, Column, TextType, S);
-      Result := S + Delimiter + Result;
+      Result := Text[Node, Column] + Delimiter + Result;
       Node := Node.Parent;
     end;
   end;
@@ -34329,6 +34343,15 @@ function TVTImageInfo.Equals(const pImageInfo2: TVTImageInfo): Boolean;
 
 begin
   Result := (Self.Index = pImageInfo2.Index) and (Self.Images = pImageInfo2.Images);
+end;
+
+{ TVSTGetCellTextEventArgs }
+
+constructor TVSTGetCellTextEventArgs.Create(pNode: PVirtualNode; pColumn: TColumnIndex; pExportType: TVTExportType);
+begin
+  Self.Node := pNode;
+  Self.Column := pColumn;
+  Self.ExportType := pExportType;
 end;
 
 initialization
