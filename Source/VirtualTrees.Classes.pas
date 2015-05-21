@@ -178,6 +178,8 @@ var
 
 begin
   Len := Length(S);
+  if Len = 0 then
+    exit;//Nothing to do
   // Make room for the new string.
   if FEnd - FPosition <= Len then
   begin

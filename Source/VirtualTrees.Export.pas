@@ -115,7 +115,6 @@ var
   AddHeader: String;
   Save, Run: PVirtualNode;
   GetNextNode: TGetNextNodeProc;
-  Text: string;
 
   RenderColumns: Boolean;
   Columns: TColumnsArray;
@@ -128,11 +127,13 @@ var
 
   CellPadding: String;
   CrackTree: TCustomVirtualStringTreeCracker;
+  lGetCellTextEventArgs: TVSTGetCellTextEventArgs;
 begin
   CrackTree := TCustomVirtualStringTreeCracker(Tree);
 
   CrackTree.StartOperation(TVTOperationKind.okExport);
   Buffer := TBufferedString.Create;
+  lGetCellTextEventArgs.ExportType := TVTExportType.etHtml;
   try
     // For customization by the application or descendants we use again the redirected font change event.
     CrackTree.RedirectFontChangeEvent(CrackTree.Canvas);
@@ -409,11 +410,13 @@ begin
             WriteColorAsHex(Columns[I].Color);
           end;
           Buffer.Add('>');
-          Text := CrackTree.Text[Run, Index];
-          if Length(Text) > 0 then
-          begin
-            Buffer.Add(Text);
-          end;
+          // Get the text
+          lGetCellTextEventArgs.Node := Run;
+          lGetCellTextEventArgs.Column := Index;
+          CrackTree.DoGetText(lGetCellTextEventArgs);
+          Buffer.Add(lGetCellTextEventArgs.CellText);
+          if not lGetCellTextEventArgs.StaticText.IsEmpty and (toShowStaticText in TStringTreeOptions(CrackTree.TreeOptions).StringOptions) then
+            Buffer.Add(' ' + lGetCellTextEventArgs.StaticText);
           Buffer.Add('</td>');
         end;
 
