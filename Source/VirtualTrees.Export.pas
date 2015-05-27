@@ -818,7 +818,6 @@ var
   Level, MaxLevel: Cardinal;
   Index,
   I: Integer;
-  CellText: String;
   CrackTree: TCustomVirtualStringTreeCracker;
   lGetCellTextEventArgs: TVSTGetCellTextEventArgs;
 begin
@@ -887,16 +886,13 @@ begin
             lGetCellTextEventArgs.Column := Index;
             CrackTree.DoGetText(lGetCellTextEventArgs);
             if Index = CrackTree.Header.MainColumn then
-            begin
-              Level := CrackTree.GetNodeLevel(Run);
-              Buffer.Add(Copy(Tabs, 1, Integer(Level) * Length(Separator)));
-            end;
+              Buffer.Add(Copy(Tabs, 1, Integer(CrackTree.GetNodeLevel(Run)) * Length(Separator)));
             if not lGetCellTextEventArgs.StaticText.IsEmpty and (toShowStaticText in TStringTreeOptions(CrackTree.TreeOptions).StringOptions) then
               CheckQuotingAndAppend(lGetCellTextEventArgs.CellText + ' ' + lGetCellTextEventArgs.StaticText)
             else
               CheckQuotingAndAppend(lGetCellTextEventArgs.CellText);
             if Index = CrackTree.Header.MainColumn then
-              Buffer.Add(Copy(Tabs, 1, Integer(MaxLevel - Level) * Length(Separator)));
+              Buffer.Add(Copy(Tabs, 1, Integer(MaxLevel - CrackTree.GetNodeLevel(Run)) * Length(Separator)));
 
             if Columns[I] <> LastColumn then
               Buffer.Add(Separator);
