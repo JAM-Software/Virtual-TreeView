@@ -49,7 +49,7 @@ unit VirtualTrees;
 
 interface
 
-{$if CompilerVersion < 24}{$MESSAGE FATAL 'This version supports only RAD Studio XE3 and higher. Please use V5 or:  https://virtual-treeview.googlecode.com/svn/branches/V5_stable'}{$ifend}
+{$if CompilerVersion < 24}{$MESSAGE FATAL 'This version supports only RAD Studio XE3 and higher. Please use V5 from  http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip  or  https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V5_stable.zip'}{$ifend}
 
 {$booleval off} // Use fastest possible boolean evaluation
 
@@ -1586,7 +1586,7 @@ type
 
   // For painting a node and its columns/cells a lot of information must be passed frequently around.
   TVTImageInfo = record
-    Index: Integer;           // Index in the associated image list.
+    Index: TImageIndex;           // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
     YPos: Integer;            // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
@@ -1720,9 +1720,9 @@ type
   TVTAddToSelectionEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
   TVTRemoveFromSelectionEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
   TVTGetImageEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-    var Ghosted: Boolean; var ImageIndex: Integer) of object;
+    var Ghosted: Boolean; var ImageIndex: TImageIndex) of object;
   TVTGetImageExEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-    var Ghosted: Boolean; var ImageIndex: Integer; var ImageList: TCustomImageList) of object;
+    var Ghosted: Boolean; var ImageIndex: TImageIndex; var ImageList: TCustomImageList) of object;
   TVTGetImageTextEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
     var ImageText: string) of object;
   TVTHotNodeChangeEvent = procedure(Sender: TBaseVirtualTree; OldNode, NewNode: PVirtualNode) of object;
@@ -2498,7 +2498,7 @@ type
     procedure DoGetHintKind(Node: PVirtualNode; Column: TColumnIndex; var Kind:
         TVTHintKind);
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-      var Ghosted: Boolean; var Index: Integer): TCustomImageList; virtual;
+      var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList; virtual;
     procedure DoGetImageText(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var ImageText: string); virtual;
     procedure DoGetLineStyle(var Bits: Pointer); virtual;
@@ -16105,7 +16105,7 @@ var
   Item: PTVItemEx;
   Node: PVirtualNode;
   Ghosted: Boolean;
-  ImageIndex: Integer;
+  ImageIndex: TImageIndex;
   R: TRect;
   Text: string;
 begin
@@ -16121,14 +16121,16 @@ begin
     // Index for normal image requested?
     if (Item.mask and TVIF_IMAGE) <> 0 then
     begin
-      Item.iImage := -1;
-      DoGetImageIndex(Node, ikNormal, -1, Ghosted, Item.iImage);
+      ImageIndex := -1;
+      DoGetImageIndex(Node, ikNormal, -1, Ghosted, ImageIndex);
+      Item.iImage := ImageIndex;
     end;
     // Index for selected image requested?
     if (Item.mask and TVIF_SELECTEDIMAGE) <> 0 then
     begin
-      Item.iSelectedImage := -1;
-      DoGetImageIndex(Node, ikSelected, -1, Ghosted, Item.iSelectedImage);
+      ImageIndex := -1;
+      DoGetImageIndex(Node, ikSelected, -1, Ghosted, ImageIndex);
+      Item.iSelectedImage := ImageIndex;
     end;
     // State info requested?
     if (Item.mask and TVIF_STATE) <> 0 then
@@ -19941,13 +19943,13 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-  var Ghosted: Boolean; var Index: Integer): TCustomImageList;
+  var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList;
 
 // Queries the application/descendant about certain image properties for a node.
 // Returns a custom image list if given by the callee, otherwise nil.
 
 begin
-  Result := nil;
+  Result := Self.Images;
 
   // First try the enhanced event to allow for custom image lists.
   if Assigned(FOnGetImageEx) then
@@ -22580,7 +22582,7 @@ function TBaseVirtualTree.HasImage(Node: PVirtualNode; Kind: TVTImageKind; Colum
 
 var
   Ghosted: Boolean;
-  Index: Integer;
+  Index: TImageIndex;
 
 begin
   if not (vsInitialized in Node.States) then
@@ -23713,10 +23715,12 @@ begin
       // anything larger will be truncated by the ILD_OVERLAYMASK).
       // However this will only be done if the overlay image index is > 15, to avoid breaking code that relies
       // on overlay image indices (e.g. when using system image lists).
-      if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then
+      if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then begin
+        ExtraStyle := ExtraStyle and not ILD_BLEND50; // Fixes issue #551
         // Note: XPos and YPos are those of the normal images.
         DrawImage(ImageInfo[iiOverlay].Images, ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
           Style[ImageInfo[iiOverlay].Images.ImageType] or ExtraStyle, DrawEnabled);
+      end;//if
     end;
   end;
 end;
