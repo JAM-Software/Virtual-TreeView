@@ -19949,11 +19949,11 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 // Returns a custom image list if given by the callee, otherwise nil.
 
 begin
-  Result := Self.Images;
-
   // First try the enhanced event to allow for custom image lists.
-  if Assigned(FOnGetImageEx) then
-    FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result)
+  if Assigned(FOnGetImageEx) then begin
+    Result := Self.Images;
+    FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result);
+  end
   else
     if Assigned(FOnGetImage) then
       FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
