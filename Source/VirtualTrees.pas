@@ -19951,12 +19951,17 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 begin
   // First try the enhanced event to allow for custom image lists.
   if Assigned(FOnGetImageEx) then begin
-    Result := Self.Images;
+    if Kind = ikState then //TODO -oMarder: Remove paramter DefaultImages() from GetImageIndex() and do this stuff only here. That way consumers of the OnGetImageEx can check the fefault imagelist.
+      Result := Self.StateImages
+    else
+      Result := Self.Images;
     FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result);
   end
-  else
+  else begin
+    Result := nil;
     if Assigned(FOnGetImage) then
       FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20935,12 +20940,12 @@ begin
     begin
       try
         Shift := KeysToShiftState(KeyState);
-        if tsLeftButtonDown in FStates then
-          Include(Shift, ssLeft);
-        if tsMiddleButtonDown in FStates then
-          Include(Shift, ssMiddle);
         if tsRightButtonDown in FStates then
-          Include(Shift, ssRight);
+          Include(Shift, ssRight)
+        else if tsMiddleButtonDown in FStates then
+          Include(Shift, ssMiddle)
+        else
+          Include(Shift, ssLeft);
         Pt := ScreenToClient(Pt);
         // Determine which formats we can get and pass them along with the data object to the drop handler.
         Result := DataObject.EnumFormatEtc(DATADIR_GET, EnumFormat);
