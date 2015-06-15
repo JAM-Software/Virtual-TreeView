@@ -3516,6 +3516,7 @@ type
     property OnFocusChanged;
     property OnFocusChanging;
     property OnFreeNode;
+    property OnGetCellText;
     property OnGetCellIsEmpty;
     property OnGetCursor;
     property OnGetHeaderCursor;
