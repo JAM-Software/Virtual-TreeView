@@ -2863,7 +2863,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function AbsoluteIndex(Node: PVirtualNode): Cardinal;
-    function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; virtual;
+    function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; overload; virtual;
+    function AddChild(Parent: PVirtualNode; const UserData: IInterface): PVirtualNode; overload;
     procedure AddFromStream(Stream: TStream; TargetNode: PVirtualNode);
     procedure AfterConstruction; override;
     procedure Assign(Source: TPersistent); override;
@@ -25471,6 +25472,13 @@ begin
   end
   else
     Result := nil;
+end;
+
+function TBaseVirtualTree.AddChild(Parent: PVirtualNode; const UserData: IInterface): PVirtualNode;
+begin
+  UserData._AddRef();
+  Result := AddChild(Parent, Pointer(UserData));
+  Include(Result.States, vsReleaseCallOnUserDataRequired);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
