@@ -2865,6 +2865,7 @@ type
     function AbsoluteIndex(Node: PVirtualNode): Cardinal;
     function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; overload; virtual;
     function AddChild(Parent: PVirtualNode; const UserData: IInterface): PVirtualNode; overload;
+    function AddChild(Parent: PVirtualNode; const UserData: TObject): PVirtualNode; overload;
     procedure AddFromStream(Stream: TStream; TargetNode: PVirtualNode);
     procedure AfterConstruction; override;
     procedure Assign(Source: TPersistent); override;
@@ -25479,6 +25480,11 @@ begin
   UserData._AddRef();
   Result := AddChild(Parent, Pointer(UserData));
   Include(Result.States, vsReleaseCallOnUserDataRequired);
+end;
+
+function TBaseVirtualTree.AddChild(Parent: PVirtualNode; const UserData: TObject): PVirtualNode;
+begin
+  Result := AddChild(Parent, Pointer(UserData));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
