@@ -24,7 +24,7 @@ First of all, please make sure you are using the **latest official version**. Wh
 We currently focus on reducing the number of reported bugs and getting Virtual Treeview stable. Feature Requests will most likely not processed at the moment. We are only going to process enhancement requests if the new feature is of general interest and a source code patch based on the latest SVN revision is attached to the report. Please mark feature requests with the flag "Enhancement".
 
 ###Contributors
-If you want to contribute, you are welcome. We always look for help, not only for the development of the Virtual Treeview control itself, but also for maintaining the sample projects, the help or the wiki. Please post to Developer Group in case you like to join our team.
+If you want to contribute, you are welcome. We always look for help, not only for the development of the Virtual Treeview control itself, but also for maintaining the sample projects, the help or the wiki. Please send an email to: joachim(dot)marder(a)gmail.com
 
 ###License
 Virtual Treeview is published under a double license: MPL 1.1 and LGPL 2.1.
