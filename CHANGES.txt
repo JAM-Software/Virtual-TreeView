@@ -1,3 +1,4 @@
+
 V6.1 (02 June 2015)
  * Implemented Issue #530: Removed all AnsiString code from export routines. Breaking changes:
    - TCustomVirtualStringTree.ContentToText() is now based on (Unicode)string and no longer on AnsiString.
