@@ -19814,7 +19814,7 @@ begin
     FLastStructureChangeNode := nil;
 
   if Node = FNextNodeToSelect then
-    FNextNodeToSelect := nil;
+    FNextNodeToSelect := Node.Parent;
   if Self.UpdateCount = 0 then
   begin
     // Omit this stuff if the control is in a BeginUpdate/EndUpdate bracket to increase performance
@@ -21355,7 +21355,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.EnsureNodeSelected;
+procedure TBaseVirtualTree.EnsureNodeSelected();
 begin
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
   begin
@@ -26132,6 +26132,10 @@ begin
         Invalidate
       else
         InvalidateToBottom(Node);
+      if tsChangePending in FStates then begin
+        DoChange(FLastChangedNode);
+        EnsureNodeSelected();
+      end;
     end;
     StructureChange(Node, crChildDeleted);
   end
