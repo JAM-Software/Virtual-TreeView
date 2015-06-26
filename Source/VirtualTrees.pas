@@ -33737,7 +33737,6 @@ end;
 function TCustomVirtualStringTree.InternalData(Node: PVirtualNode): Pointer;
 
 begin
-  //TODO -oMarder: Move to base class, this code is generic for all classes
   if (Node = FRoot) or (Node = nil) or (FInternalDataOffset = 0) then
     Result := nil
   else
