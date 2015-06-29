@@ -1024,6 +1024,7 @@ type
     FDefaultWidth: Integer;               // the width columns are created with
     FNeedPositionsFix: Boolean;           // True if FixPositions must still be called after DFM loading or Bidi mode change.
     FClearing: Boolean;                   // True if columns are being deleted entirely.
+    FColumnPopupMenu: TPopupMenu; // Member for storing the TVTHeaderPopupMenu
 
     function GetCount: Integer;
     function GetItem(Index: TColumnIndex): TVirtualTreeColumn;
@@ -7836,6 +7837,7 @@ begin
   FDropTarget := NoColumn;
   FTrackIndex := NoColumn;
   FDefaultWidth := 50;
+  Self.FColumnPopupMenu := nil;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7843,7 +7845,8 @@ end;
 destructor TVirtualTreeColumns.Destroy;
 
 begin
-  FHeaderBitmap.Free;
+  FreeAndNil(FColumnPopupMenu);
+  FreeAndNil(FHeaderBitmap);
   inherited;
 end;
 
@@ -8156,8 +8159,6 @@ procedure TVirtualTreeColumns.HandleClick(P: TPoint; Button: TMouseButton; Force
 var
   HitInfo: TVTHeaderHitInfo;
   NewClickIndex: Integer;
-  lColumnPopupMenu: TVTHeaderPopupMenu;
-
 begin
   if (csDesigning in Header.Treeview.ComponentState) then
     exit;
@@ -8199,45 +8200,42 @@ begin
     HitInfo.HitPosition := [hhiNoWhere];
   end;
 
-  if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not DblClick and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
-  begin
-    // handle automatic setting of SortColumn and toggling of the sort order
-    if HitInfo.Column <> Header.SortColumn then
-    begin
-      // set sort column
-      Header.SortColumn := HitInfo.Column;
-      Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection;
-    end//if
-    else
-    begin
-      // toggle sort direction
-      if Header.SortDirection = sdDescending then
-        Header.SortDirection := sdAscending
-      else
-        Header.SortDirection := sdDescending;
-    end;//else
-  end;//if
-
-  if (Button = mbRight) and (hoAutoColumnPopupMenu in Header.Options) then begin
-    lColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
-    try
-      TVTHeaderPopupMenu(lColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
-      lColumnPopupMenu.PopupComponent := Header.Treeview;
-      if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
-        lColumnPopupMenu.Options := lColumnPopupMenu.Options + [poResizeToFitItem]
-      else
-        lColumnPopupMenu.Options := lColumnPopupMenu.Options - [poResizeToFitItem];
-      With Header.Treeview.ClientToScreen(P) do
-        lColumnPopupMenu.Popup(X, Y);
-    finally
-      FreeAndNil(lColumnPopupMenu);
-    end;
-  end;//if hoShowColumnPopupMenu
-
   if DblClick then
     FHeader.Treeview.DoHeaderDblClick(HitInfo)
-  else
+  else begin
+    if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
+    begin
+      // handle automatic setting of SortColumn and toggling of the sort order
+      if HitInfo.Column <> Header.SortColumn then
+      begin
+        // set sort column
+        Header.SortColumn := HitInfo.Column;
+        Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection;
+      end//if
+      else
+      begin
+        // toggle sort direction
+        if Header.SortDirection = sdDescending then
+          Header.SortDirection := sdAscending
+        else
+          Header.SortDirection := sdDescending;
+      end;//else
+    end;//if
+
+    if (Button = mbRight) and (hoAutoColumnPopupMenu in Header.Options) then begin
+      FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
+      fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
+      TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
+      fColumnPopupMenu.PopupComponent := Header.Treeview;
+      if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
+        TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options + [poResizeToFitItem]
+      else
+        TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options - [poResizeToFitItem];
+      With Header.Treeview.ClientToScreen(P) do
+        fColumnPopupMenu.Popup(X, Y);
+    end;//if hoShowColumnPopupMenu
     FHeader.Treeview.DoHeaderClick(HitInfo);
+  end;//else (not DblClick)
 
   if not (hhiNoWhere in HitInfo.HitPosition) then
     FHeader.Invalidate(Items[NewClickIndex]);
@@ -19964,7 +19962,7 @@ begin
     Result := nil;
     if Assigned(FOnGetImage) then
       FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
-end;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
