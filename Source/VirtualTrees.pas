@@ -14397,6 +14397,8 @@ begin
             Include(Node.States, vsHasChildren);
           end;
           Node.States := Node.States - [vsAllChildrenHidden, vsHeightMeasured];
+          if (vsExpanded in Node.States) and FullyVisible[Node] then
+            Inc(FVisibleCount, Count); // Do this before a possible init of the sub-nodes in DoMeasureItem()
 
           // New nodes are by default always visible, so we don't need to check the visibility.
           while Remaining > 0 do
@@ -14423,11 +14425,7 @@ begin
           end;
 
           if vsExpanded in Node.States then
-          begin
             AdjustTotalHeight(Node, NewHeight, True);
-            if FullyVisible[Node] then
-              Inc(Integer(FVisibleCount), Count);
-          end;
 
           AdjustTotalCount(Node, Count, True);
           Node.ChildCount := NewChildCount;
@@ -14435,7 +14433,7 @@ begin
             Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, True);
 
           InvalidateCache;
-        end
+        end//if NewChildCount > Node.ChildCount
         else
         begin
           // Nodes have to be deleted.
@@ -22673,7 +22671,8 @@ begin
         AdjustTotalHeight(Node, -NodeHeight, True);
         if FullyVisible[Node] then
           Dec(FVisibleCount);
-        UpdateScrollBars(True);
+        if FUpdateCount = 0 then
+          UpdateScrollBars(True);
       end;
     end;
 
