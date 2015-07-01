@@ -220,7 +220,7 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
                               var aInitStates:TVirtualNodeInitStates); override;
          procedure DoFreeNode(aNode:PVirtualNode); override;
          function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-           var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
+           var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList; override;
          procedure DoChecked(aNode:PVirtualNode); override;
          function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; override;
          function InternalData(Node: PVirtualNode): Pointer;
@@ -765,7 +765,7 @@ begin
 end;
 
 function TMVCTreeView.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-  var Ghosted: Boolean; var Index: Integer): TCustomImageList;
+  var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList;
 { The tree requests the image-index for a Node and column. }
 var N:TMVCNode;
 begin
