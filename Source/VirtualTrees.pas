@@ -3493,6 +3493,7 @@ type
     property OnColumnDblClick;
     property OnColumnExport;
     property OnColumnResize;
+    property OnColumnVisibilityChanged;
     property OnColumnWidthDblClickResize;
     property OnColumnWidthTracking;
     property OnCompareNodes;
@@ -3754,6 +3755,7 @@ type
     property OnColumnDblClick;
     property OnColumnExport;
     property OnColumnResize;
+    property OnColumnVisibilityChanged;
     property OnColumnWidthDblClickResize;
     property OnColumnWidthTracking;
     property OnCompareNodes;
