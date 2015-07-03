@@ -1,4 +1,4 @@
-﻿unit VirtualTrees.Export;
+unit VirtualTrees.Export;
 
 {$WARN UNSAFE_CODE OFF}
 {$WARN IMPLICIT_STRING_CAST OFF}
@@ -741,7 +741,8 @@ begin
           begin
             TextPlusFont(lGetCellTextEventArgs.CellText, CrackTree.Canvas.Font);
           end;
-          if not lGetCellTextEventArgs.StaticText.IsEmpty and (toShowStaticText in TStringTreeOptions(CrackTree.TreeOptions).StringOptions) then begin
+          if not lGetCellTextEventArgs.StaticText.IsEmpty and (toShowStaticText in TStringTreeOptions(CrackTree.TreeOptions).StringOptions) then
+          begin
             CrackTree.DoPaintText(Run, CrackTree.Canvas, Index, ttStatic);
             TextPlusFont(' ' + lGetCellTextEventArgs.StaticText, CrackTree.Canvas.Font);
           end;//if static text
