@@ -32286,9 +32286,7 @@ procedure TBaseVirtualTree.UpdateVerticalRange;
 
 begin
   // Total node height includes the height of the invisible root node.
-  if FRoot.TotalHeight < FDefaultNodeHeight then
-    FRoot.TotalHeight := FDefaultNodeHeight;
-  FRangeY := FRoot.TotalHeight - FRoot.NodeHeight + FBottomSpace;
+  FRangeY := Cardinal(Int64(FRoot.TotalHeight) - FRoot.NodeHeight + FBottomSpace);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
