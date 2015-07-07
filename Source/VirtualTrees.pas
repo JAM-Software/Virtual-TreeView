@@ -14700,7 +14700,10 @@ begin
       Include(Node.States, vsFiltered);
       if not (toShowFilteredNodes in FOptions.FPaintOptions) then
       begin
-        AdjustTotalHeight(Node, -Integer(NodeHeight[Node]), True);
+        if vsInitializing in Node.States then
+          AdjustTotalHeight(Node, 0, False)
+        else
+          AdjustTotalHeight(Node, -Integer(NodeHeight[Node]), True);
         if FullyVisible[Node] then
         begin
           Dec(FVisibleCount);
