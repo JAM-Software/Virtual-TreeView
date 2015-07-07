@@ -14366,7 +14366,6 @@ var
   Child: PVirtualNode;
   Count: Integer;
   NewHeight: Integer;
-  lNodeHeight: Integer;
 begin
   if not (toReadOnly in FOptions.FMiscOptions) then
   begin
@@ -14416,11 +14415,7 @@ begin
             Inc(Index);
 
             if (toVariableNodeHeight in FOptions.FMiscOptions) then
-            begin
-              lNodeHeight := Child.NodeHeight;
-              DoMeasureItem(Canvas, Child, lNodeHeight);
-              Child.NodeHeight := lNodeHeight;
-            end;
+              GetNodeHeight(Child);
             Inc(NewHeight, Child.NodeHeight);
           end;
 
