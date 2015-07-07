@@ -222,7 +222,8 @@ type
     vsMultiline,         // Node text is wrapped at the cell boundaries instead of being shorted.
     vsHeightMeasured,    // Node height has been determined and does not need a recalculation.
     vsToggling,          // Set when a node is expanded/collapsed to prevent recursive calls.
-    vsFiltered           // Indicates that the node should not be painted (without effecting its children).
+    vsFiltered,          // Indicates that the node should not be painted (without effecting its children).
+    vsInitializing       // Set when the node is being initialized
   );
   TVirtualNodeStates = set of TVirtualNodeState;
 
@@ -22639,48 +22640,53 @@ var
 begin
   with Node^ do
   begin
-    InitStates := [];
-    if vsInitialized in States then
-      Include(InitStates, ivsReInit);
-    Include(States, vsInitialized);
-    if Parent = FRoot then
-      DoInitNode(nil, Node, InitStates)
-    else
-      DoInitNode(Parent, Node, InitStates);
-    if ivsDisabled in InitStates then
-      Include(States, vsDisabled);
-    if ivsHasChildren in InitStates then
-      Include(States, vsHasChildren);
-    if ivsSelected in InitStates then
-    begin
-      FSingletonNodeArray[0] := Node;
-      InternalAddToSelection(FSingletonNodeArray, 1, False);
-    end;
-    if ivsMultiline in InitStates then
-      Include(States, vsMultiline);
-    if ivsFiltered in InitStates then
-    begin
-      Include(States, vsFiltered);
-      if not (toShowFilteredNodes in FOptions.FPaintOptions) then
-      begin
-        AdjustTotalHeight(Node, -NodeHeight, True);
-        if FullyVisible[Node] then
-          Dec(FVisibleCount);
-        if FUpdateCount = 0 then
-          UpdateScrollBars(True);
-      end;
-    end;
-
-    // Expanded may already be set (when called from ReinitNode) or be set in DoInitNode, allow both.
-    if (vsExpanded in Node.States) xor (ivsExpanded in InitStates) then
-    begin
-      // Expand node if not yet done (this will automatically initialize child nodes).
-      if ivsExpanded in InitStates then
-        ToggleNode(Node)
+    Include(States, vsInitializing);
+    try
+      InitStates := [];
+      if vsInitialized in States then
+        Include(InitStates, ivsReInit);
+      Include(States, vsInitialized);
+      if Parent = FRoot then
+        DoInitNode(nil, Node, InitStates)
       else
-        // If the node already was expanded then explicitly trigger child initialization.
-        if vsHasChildren in Node.States then
-          InitChildren(Node);
+        DoInitNode(Parent, Node, InitStates);
+      if ivsDisabled in InitStates then
+        Include(States, vsDisabled);
+      if ivsHasChildren in InitStates then
+        Include(States, vsHasChildren);
+      if ivsSelected in InitStates then
+      begin
+        FSingletonNodeArray[0] := Node;
+        InternalAddToSelection(FSingletonNodeArray, 1, False);
+      end;
+      if ivsMultiline in InitStates then
+        Include(States, vsMultiline);
+      if ivsFiltered in InitStates then
+      begin
+        Include(States, vsFiltered);
+        if not (toShowFilteredNodes in FOptions.FPaintOptions) then
+        begin
+          AdjustTotalHeight(Node, -NodeHeight, True);
+          if FullyVisible[Node] then
+            Dec(FVisibleCount);
+          if FUpdateCount = 0 then
+            UpdateScrollBars(True);
+        end;
+      end;
+
+      // Expanded may already be set (when called from ReinitNode) or be set in DoInitNode, allow both.
+      if (vsExpanded in Node.States) xor (ivsExpanded in InitStates) then
+      begin
+        // Expand node if not yet done (this will automatically initialize child nodes).
+        if ivsExpanded in InitStates then
+          ToggleNode(Node)
+        else
+          // If the node already was expanded then explicitly trigger child initialization.
+          if vsHasChildren in Node.States then
+            InitChildren(Node);
+      end;
+    finally
+      Exclude(States, vsInitializing);
     end;
   end;
 end;
