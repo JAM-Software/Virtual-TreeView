@@ -9287,6 +9287,8 @@ var
             with Header.Treeview do
             begin
               ColImageInfo.Images := GetCheckImageListFor(CheckImageKind);
+              if not Assigned(ColImageInfo.Images) then
+                ColImageInfo.Images := CustomCheckImages;
               ColImageInfo.Index := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
               ColImageInfo.XPos := GlyphPos.X;
               ColImageInfo.YPos := GlyphPos.Y;
