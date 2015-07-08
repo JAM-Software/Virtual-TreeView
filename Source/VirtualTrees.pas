@@ -415,7 +415,8 @@ type
     toFixedIndent,             // Draw the tree with a fixed indent.
     toUseExplorerTheme,        // Use the explorer theme if run under Windows Vista (or above).
     toHideTreeLinesIfThemed,   // Do not show tree lines if theming is used.
-    toShowFilteredNodes        // Draw nodes even if they are filtered out.
+    toShowFilteredNodes,       // Draw nodes even if they are filtered out.
+    toVCLStyleAware            // Draw UI elements according to the current VCL style, if not a system one.
   );
   TVTPaintOptions = set of TVTPaintOption;
 
@@ -514,7 +515,7 @@ type
   TVTOperationKinds = set of TVTOperationKind;
 
 const
-  DefaultPaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
+  DefaultPaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages, toVCLStyleAware];
   DefaultAnimationOptions = [];
   DefaultAutoOptions = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort];
   DefaultSelectionOptions = [];
@@ -25244,7 +25245,7 @@ procedure TBaseVirtualTree.VclStyleChanged;
   // Updates the member FVclStyleEnabled, should be called initially and when the VCL style changes
 
 begin
-  FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle;
+  FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle and (toVCLStyleAware in TreeOptions.PaintOptions);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
