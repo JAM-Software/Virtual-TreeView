@@ -2660,7 +2660,7 @@ type
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); virtual;
     procedure WriteNode(Stream: TStream; Node: PVirtualNode); virtual;
 
-    procedure VclStyleChanged;
+    procedure VclStyleChanged; virtual;
     property VclStyleEnabled: Boolean read FVclStyleEnabled;
     property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
 
