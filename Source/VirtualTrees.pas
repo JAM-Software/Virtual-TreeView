@@ -33925,7 +33925,7 @@ var
 begin
   if Length(S) = 0 then
     S := Text[Node, Column];
-  DrawFormat := DT_TOP or DT_NOPREFIX or DT_CALCRECT or DT_WORDBREAK;
+
   if Column <= NoColumn then
   begin
     BidiMode := Self.BidiMode;
@@ -33939,6 +33939,12 @@ begin
 
   if BidiMode <> bdLeftToRight then
     ChangeBidiModeAlignment(Alignment);
+
+  if vsMultiline in Node.States then
+    DrawFormat := DT_NOPREFIX or DT_TOP or DT_WORDBREAK or DT_EDITCONTROL
+  else
+    DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
+  DrawFormat := DrawFormat or DT_CALCRECT;
 
   // Allow for autospanning.
   PaintInfo.Node := Node;
