@@ -93,7 +93,7 @@ begin
         CellText := DemoText[Node.Index mod 30];
     1:
       if (Node.Index mod 3) = 0 then
-        CellText := DemoText[Node.Index mod 30]
+        CellText := IntToStr(Node.Index div 3 + 1) + '. ' + DemoText[Node.Index mod 30] // Add a sequence numer before the heading
       else
         CellText := '';
   end;
@@ -136,10 +136,10 @@ procedure TNodeForm.MLTreeMeasureItem(Sender: TBaseVirtualTree; TargetCanvas: TC
   var NodeHeight: Integer);
 
 begin
-  if Sender.MultiLine[Node] and AutoAdjustCheckBox.Checked then
+  if Sender.MultiLine[Node] then
   begin
     TargetCanvas.Font := Sender.Font;
-    NodeHeight := MLTree.ComputeNodeHeight(TargetCanvas, Node, 0);
+    NodeHeight := MLTree.ComputeNodeHeight(TargetCanvas, Node, 0) + 10;
   end;
   // ...else use what's set by default.
 end;
@@ -149,8 +149,10 @@ end;
 procedure TNodeForm.AutoAdjustCheckBoxClick(Sender: TObject);
 
 begin
-  MLTree.ReinitNode(nil, True);
-  MLTree.Invalidate;
+  if AutoAdjustCheckBox.Checked then
+    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions + [toVariablenodeHeight]
+  else
+    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions - [toVariablenodeHeight];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
