@@ -14429,15 +14429,11 @@ begin
 
             if (toVariableNodeHeight in FOptions.FMiscOptions) then
               GetNodeHeight(Child);
-            Inc(NewHeight, Child.TotalHeight);
+            Inc(NewHeight, Child.NodeHeight);
           end;
 
           if vsExpanded in Node.States then
-          begin
-            if Node = FRoot then
-              Inc(NewHeight, Node.NodeHeight);
-            AdjustTotalHeight(Node, NewHeight, False);
-          end;
+            AdjustTotalHeight(Node, NewHeight, True);
 
           AdjustTotalCount(Node, Count, True);
           Node.ChildCount := NewChildCount;
