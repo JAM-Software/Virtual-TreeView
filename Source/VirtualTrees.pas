@@ -22643,6 +22643,7 @@ procedure TBaseVirtualTree.InitNode(Node: PVirtualNode);
 
 var
   InitStates: TVirtualNodeInitStates;
+  MustAdjustInternalVariables: Boolean;
 
 begin
   with Node^ do
@@ -22670,8 +22671,11 @@ begin
         Include(States, vsMultiline);
       if ivsFiltered in InitStates then
       begin
+        MustAdjustInternalVariables := not ((ivsReInit in InitStates) and (vsFiltered in States));
+
         Include(States, vsFiltered);
-        if not (toShowFilteredNodes in FOptions.FPaintOptions) then
+
+        if not (toShowFilteredNodes in FOptions.FPaintOptions) and MustAdjustInternalVariables then
         begin
           AdjustTotalHeight(Node, -NodeHeight, True);
           if FullyVisible[Node] then
