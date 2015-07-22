@@ -2956,7 +2956,8 @@ type
     function GetNodeAt(X, Y: Integer): PVirtualNode; overload;
     function GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode; overload;
     function GetNodeData(Node: PVirtualNode): Pointer; overload;
-    function GetNodeData<T:class>(pNode: PVirtualNode): T; overload; inline;
+    function GetNodeData<T>(pNode: PVirtualNode): T; overload; inline;
+    function GetSelectedData<T>(): TArray<T>; overload;
     function GetInterfaceFromNodeData<T:IInterface>(pNode: PVirtualNode): T; overload; inline;
     function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
     function GetFirstSelectedNodeData<T:class>(): T;
@@ -13353,6 +13354,20 @@ begin
   Result := Assigned(Node) and (vsSelected in Node.States);
 end;
 
+function TBaseVirtualTree.GetSelectedData<T>: TArray<T>;
+var
+  lItem: PVirtualNode;
+  i: Integer;
+begin
+  SetLEngth(Result, Self.SelectedCount);
+  lItem := Self.GetFirstSelected;
+  for i := 0 to SelectedCount - 1 do
+  begin
+    Result[i] := Self.GetNodeData<T>(lItem);
+    lItem := Self.GetNextSelected(lItem);
+  end;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetTopNode: PVirtualNode;
@@ -13909,6 +13924,8 @@ begin
     FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
     FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
     FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+    if Assigned(FOnPrepareButtonImages) then
+      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
   end
     else
       begin
