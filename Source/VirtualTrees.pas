@@ -21377,6 +21377,8 @@ end;
 procedure TBaseVirtualTree.EnsureNodeFocused();
 begin
   if FocusedNode = nil then
+    FocusedNode := Self.GetFirstSelected();
+  if FocusedNode = nil then
     FocusedNode := Self.GetFirstVisible();
 end;
 
