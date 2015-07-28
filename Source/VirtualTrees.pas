@@ -14395,7 +14395,7 @@ var
   Index: Cardinal;
   Child: PVirtualNode;
   Count: Integer;
-  NewHeight: Integer;
+  NewHeight: Cardinal;
 begin
   if not (toReadOnly in FOptions.FMiscOptions) then
   begin
@@ -16500,7 +16500,7 @@ var
   ActAsGrid: Boolean;
   ForceSelection: Boolean;
   NewWidth,
-  NewHeight: Integer;
+  NewHeight: Cardinal;
   RTLFactor: Integer;
 
   // for tabulator handling
