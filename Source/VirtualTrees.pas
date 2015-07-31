@@ -614,7 +614,7 @@ type
   public
     function IsAssigned(): Boolean; inline;
     function GetData(): Pointer; overload; inline;
-    function GetData<T:class>(): T; overload; inline;
+    function GetData<T>(): T; overload; inline;
     procedure SetData(pUserData: Pointer); overload;
     procedure SetData<T:class>(pUserData: T); overload;
     procedure SetData(const pUserData: IInterface); overload;
