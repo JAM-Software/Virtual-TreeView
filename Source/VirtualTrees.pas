@@ -30216,8 +30216,8 @@ begin
               else
               begin
                 SetCanvasOrigin(PaintInfo.Canvas, -TargetRect.Left + Window.Left, -TargetRect.Top);
-                ClipCanvas(PaintInfo.Canvas, Rect(TargetRect.Left, TargetRect.Top, TargetRect.Right,
-                                                  Min(TargetRect.Bottom, MaximumBottom)));
+                ClipCanvas(PaintInfo.Canvas, Rect(0, 0, TargetRect.Right - TargetRect.Left,
+                                                  Min(TargetRect.Bottom - TargetRect.Top, MaximumBottom - TargetRect.Top))); // See issue #579
               end;
 
               // Set the origin of the canvas' brush. This depends on the node heights.
