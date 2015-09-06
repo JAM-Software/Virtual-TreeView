@@ -6,6 +6,7 @@
             "platforms": "Win32;Win64"
         }
     ],
+	
     "browsing_pathes": 
     [
         {
@@ -27,7 +28,7 @@
     "projects":
     [
         {
-            "project": "Packages\RAD Studio XE3\RAD Studio XE3.groupproj"
+            "project": "Packages\\RAD Studio XE3\\RAD Studio XE3.groupproj"
         }
     ]
 }
