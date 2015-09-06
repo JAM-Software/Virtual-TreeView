@@ -8,7 +8,7 @@ Virtual Treeview is a Delphi treeview control built from ground up. Many years o
 
 **V6 latest unstable version**: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip)
 
-For installation instruction see the "INSTALL.TXT" file in the ZIP.
+For installation instruction see the "INSTALL.TXT" file in the ZIP. Delphinus-Support was added.
 
 ###[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)
 
