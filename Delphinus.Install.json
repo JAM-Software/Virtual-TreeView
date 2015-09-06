@@ -1,0 +1,33 @@
+{
+        "search_pathes": 
+    [
+        {
+            "pathes": "Source",
+            "platforms": "Win32;Win64"
+        }
+    ],
+    "browsing_pathes": 
+    [
+        {
+            "pathes": "Source",
+            "platforms": "Win32;Win64"
+        }
+    ],
+
+    "source_folders":
+    [
+        {
+            "folder": "source",
+            "base": "source",
+            "recursive": true,
+            "filter": "*;*.*"
+        }
+    ],
+
+    "projects":
+    [
+        {
+            "project": "Packages\RAD Studio XE3\RAD Studio XE3.groupproj"
+        }
+    ]
+}
