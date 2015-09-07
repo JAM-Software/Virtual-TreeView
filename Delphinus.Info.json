@@ -5,5 +5,5 @@
     "license_type": "MPL-1.1",
     "platforms": "Win32;Win64",
     "package_compiler_min": 24,
-    "compiler_min": 24,
+    "compiler_min": 24
 }
