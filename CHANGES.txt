@@ -1,3 +1,21 @@
+V6.2 (07 Sep 2015)
+  * Issue #582: Added support and packages for RAD Studio 10 Seattle
+  * Issue #580: Added support for Delphi package manager Delphinus
+  * Fixed issue #571: Grid mode and extended selection leads to drawing inconsistencies
+  * Fixed issue #569 which includes a fix for AddChild().
+  * Fixed issue #568: Integer overflow when reiniting nodes and using ivsFiltered
+  * Merged pull request #564 which includes a fix for ComputeNodeHeight() and single line nodes     
+  * Merged pull request #563 which prevents an access violation when using custom check images in column headers     
+  * Merged pull request #561 which makes VclStyleChanged() virtual
+  * Fixed issue #557: Using isFiltered in InitNode leads to integer overflows or bogus rendering
+  * Fixed issue #556: Variable height and more than 1 level results in incorrect RangeY
+  * Fixed issue #555: The OnChange event is not fired in case the selected node is deleted through DeleteChildren(). Although no the option toAlwaysSelectNode is set, the parent node was not selected afterwards.
+  * Fixed issue #553: painting failure with variable NodeHeight
+  * Fixed issue #551: Some overlay images were drawn ghosted like the main image, some not. 
+  * TBaseVirtualTree.PrepareBitmaps() now fires the OnPrepareButtonImages event also in case VCL styles are used.          
+  * Added implementation for TVirtualTreeAccessibility.accSelect() so that screen readers and especially UI testing tools can use MSAA to select specific elements in the control.
+  * Property OnColumnVisibilityChanged is now published.
+  * Now using type TImageIndex instead of integer for variables and parameters that store an image index4
 
 V6.1 (02 June 2015)
  * Implemented Issue #530: Removed all AnsiString code from export routines. Breaking changes:
