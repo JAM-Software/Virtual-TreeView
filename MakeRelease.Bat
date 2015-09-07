@@ -7,5 +7,5 @@ ZIP -9 -r .\VirtualTreeView.zip  INSTALL.txt Changes.txt Source Design Packages 
 ECHO Source code zip archive "VirtualTreeView.zip" created. 
 ECHO !!!Please ensure that the const TVTVersion is correct!!!
 ECHO !!!Please add version number to ZIP file name!!!
-ECHO !!!Please create SVN tag!!!
+ECHO !!!Please create release at: https://github.com/Virtual-TreeView/Virtual-TreeView/releases
 pause
