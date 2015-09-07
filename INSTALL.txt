@@ -8,7 +8,7 @@ Extract the entire(!) ZIP file and follow the instructions below.
 
 Delphi / RAD Studio XE3 and higher Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. Open the project group "Packages\RAD Studio XE*\RAD Studio XE*.groupproj"
+1. Open the project group "Packages\RAD Studio XE*\VirtualTreeView.groupproj"
 2. Right click on "VirtualTreesD*.bpl" and click "Install"
 3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
    Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
@@ -32,5 +32,5 @@ I recommand using UltraSearch for this task: http://www.jam-software.de/ultrasea
   
   
 Please send comments and suggestions regarding the packages and the install
-instructions to joachim.marder@gmail.com
+instructions to joachim.marder@gmail.com or open an issue.
 
