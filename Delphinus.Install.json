@@ -19,7 +19,19 @@
     [
         {
             "folder": "source",
-            "base": "source",
+            "base": "",
+            "recursive": true,
+            "filter": "*;*.*"
+        },
+        {
+            "folder": "Packages",
+            "base": "",
+            "recursive": true,
+            "filter": "*;*.*"
+        },
+        {
+            "folder": "Design",
+            "base": "",
             "recursive": true,
             "filter": "*;*.*"
         }
@@ -28,7 +40,24 @@
     "projects":
     [
         {
-            "project": "Packages\\RAD Studio XE3\\RAD Studio XE3.groupproj"
+            "project": "Packages\\RAD Studio XE3\\VirtualTreeView.groupproj"
+            "compiler_max": 26			
+        },
+        {
+            "project": "Packages\\RAD Studio XE6\\VirtualTreeView.groupproj"
+            "compiler": 27			
+        },
+        {
+            "project": "Packages\\RAD Studio XE7\\VirtualTreeView.groupproj"
+            "compiler": 28			
+        },
+        {
+            "project": "Packages\\RAD Studio XE8\\VirtualTreeView.groupproj"
+            "compiler": 29			
+        },
+        {
+            "project": "Packages\\RAD Studio 10\\VirtualTreeView.groupproj"
+            "compiler_min": 30			
         }
     ]
 }
