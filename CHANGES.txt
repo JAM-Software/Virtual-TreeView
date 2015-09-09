@@ -1,4 +1,4 @@
-V6.2 (07 Sep 2015)
+V6.2 (09 Sep 2015)
   * Issue #582: Added support and packages for RAD Studio 10 Seattle
   * Issue #580: Added support for Delphi package manager Delphinus
   * Fixed issue #571: Grid mode and extended selection leads to drawing inconsistencies
@@ -15,7 +15,7 @@ V6.2 (07 Sep 2015)
   * TBaseVirtualTree.PrepareBitmaps() now fires the OnPrepareButtonImages event also in case VCL styles are used.          
   * Added implementation for TVirtualTreeAccessibility.accSelect() so that screen readers and especially UI testing tools can use MSAA to select specific elements in the control.
   * Property OnColumnVisibilityChanged is now published.
-  * Now using type TImageIndex instead of integer for variables and parameters that store an image index4
+  * Now using type TImageIndex instead of integer for variables and parameters that store an image index.
 
 V6.1 (02 June 2015)
  * Implemented Issue #530: Removed all AnsiString code from export routines. Breaking changes:
