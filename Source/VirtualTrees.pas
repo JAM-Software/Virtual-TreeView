@@ -2959,8 +2959,8 @@ type
     function GetNodeData<T>(pNode: PVirtualNode): T; overload; inline;
     function GetSelectedData<T>(): TArray<T>; overload;
     function GetInterfaceFromNodeData<T:IInterface>(pNode: PVirtualNode): T; overload; inline;
-    function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
-    function GetFirstSelectedNodeData<T:class>(): T;
+    function GetNodeDataAt<T>(pXCoord: Integer; pYCoord: Integer): T;
+    function GetFirstSelectedNodeData<T>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
@@ -28388,10 +28388,6 @@ var
   lNode: PVirtualNode;
 begin
   lNode := GetNodeAt(pXCoord, pYCoord);
-
-  if not Assigned(lNode) then
-    Exit(nil);
-
   Result := Self.GetNodeData<T>(lNode);
 end;
 
@@ -28402,7 +28398,7 @@ function TBaseVirtualTree.GetFirstSelectedNodeData<T>(): T;
 // Returns of the first selected node associated data converted to the type given in the generic part of the function.
 
 begin
-  Result := T(Self.GetNodeData(GetFirstSelected())^);
+  Result := Self.GetNodeData<T>(GetFirstSelected());
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
