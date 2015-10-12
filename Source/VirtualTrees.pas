@@ -15084,6 +15084,8 @@ begin
 
       AddToSelection(Node);
 
+      if not (toMultiSelect in FOptions.FSelectionOptions) then
+        FocusedNode := Node; // if only one node can be selected, make sure the focused node changes with the selected node
       // Make sure there is a valid column selected (if there are columns at all).
       if ((FFocusedColumn < 0) or not (coVisible in FHeader.Columns[FFocusedColumn].Options)) and
         (FHeader.MainColumn > NoColumn) then
