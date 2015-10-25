@@ -19844,24 +19844,6 @@ begin
 
   if Node = FNextNodeToSelect then
     FNextNodeToSelect := Node.Parent;
-  if Self.UpdateCount = 0 then
-  begin
-    // Omit this stuff if the control is in a BeginUpdate/EndUpdate bracket to increase performance
-    // We now try
-    // Make sure that CurrentNode does not point to an invalid node
-    if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (Node = GetFirstSelected()) then
-    begin
-      if Assigned(FNextNodeToSelect) then
-        // Select a new node if the currently selected node gets freed
-        Selected[FNextNodeToSelect] := True
-      else
-      begin
-        FNextNodeToSelect := Self.NodeParent[GetFirstSelected()];
-        if Assigned(FNextNodeToSelect) then
-          Selected[FNextNodeToSelect] := True;
-      end;//else
-    end;//if
-  end;
 
   // fire event
   if Assigned(FOnFreeNode) and ([vsInitialized, vsOnFreeNodeCallRequired] * Node.States <> []) then
@@ -26222,6 +26204,7 @@ begin
         WasInSynchMode := tsSynchMode in FStates;
         Include(FStates, tsSynchMode);
         RemoveFromSelection(Node);
+        EnsureNodeSelected();
         if not WasInSynchMode then
           Exclude(FStates, tsSynchMode);
         InvalidateToBottom(LastParent);
