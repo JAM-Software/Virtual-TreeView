@@ -92,7 +92,7 @@ var
 implementation
 
 uses
-  ShellAPI, Main, States, UITypes;
+  ShellAPI, Main, States;
 
 {$R *.DFM}
 
