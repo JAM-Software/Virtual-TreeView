@@ -23618,7 +23618,6 @@ var
   ForegroundColor: COLORREF;
   R: TRect;
   Details: TThemedElementDetails;
-  lSize: Size;
 begin
   with ImageInfo do
   begin
