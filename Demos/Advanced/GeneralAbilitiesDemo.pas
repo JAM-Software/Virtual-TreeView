@@ -80,7 +80,7 @@ type
       Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
     procedure VST2GetImageIndexEx(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-      var Ghosted: Boolean; var ImageIndex: Integer;
+      var Ghosted: Boolean; var ImageIndex: TImageIndex;
       var ImageList: TCustomImageList);
   end;
 
@@ -280,7 +280,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TGeneralForm.VST2GetImageIndexEx(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
-  Column: TColumnIndex; var Ghosted: Boolean; var ImageIndex: Integer; var ImageList: TCustomImageList);
+  Column: TColumnIndex; var Ghosted: Boolean; var ImageIndex: TImageIndex; var ImageList: TCustomImageList);
 
 var
   Data: PNodeData2;
