@@ -126,6 +126,12 @@
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <ItemGroup>
+        <PackageImport Include="rtl.bpi">
+            <BuildOrder>4</BuildOrder>
+        </PackageImport>
+        <PackageImport Include="vcl.bpi">
+            <BuildOrder>5</BuildOrder>
+        </PackageImport>
         <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
             <BuildOrder>9</BuildOrder>
         </DelphiCompile>
