@@ -139,14 +139,8 @@
             <BuildOrder>9</BuildOrder>
             <IgnorePath>true</IgnorePath>
         </LibFiles>
-        <PackageImport Include="rtl.bpi">
-            <BuildOrder>1</BuildOrder>
-        </PackageImport>
         <PackageImport Include="vcl.bpi">
             <BuildOrder>4</BuildOrder>
-        </PackageImport>
-        <PackageImport Include="vclactnband.bpi">
-            <BuildOrder>7</BuildOrder>
         </PackageImport>
         <PackageImport Include="vclx.bpi">
             <BuildOrder>8</BuildOrder>
@@ -154,14 +148,17 @@
         <CppCompile Include="VirtualTreesCR.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
-        <PackageImport Include="xmlrtl.bpi">
-            <BuildOrder>6</BuildOrder>
-        </PackageImport>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
+            <BuildOrder>15</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
             <BuildOrder>10</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
             <BuildOrder>11</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
+            <BuildOrder>16</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
             <BuildOrder>9</BuildOrder>
@@ -174,12 +171,6 @@
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
             <BuildOrder>14</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
-            <BuildOrder>15</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
-            <BuildOrder>16</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VTAccessibility.pas">
             <BuildOrder>8</BuildOrder>
@@ -293,9 +284,6 @@
                 </ProjectProperties>
             </CPlusPlusBuilder.Personality>
             <Platforms>
-                <Platform value="Android">False</Platform>
-                <Platform value="iOSDevice">False</Platform>
-                <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
