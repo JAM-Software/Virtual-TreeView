@@ -139,6 +139,9 @@
             <BuildOrder>9</BuildOrder>
             <IgnorePath>true</IgnorePath>
         </LibFiles>
+        <PackageImport Include="rtl.bpi">
+            <BuildOrder>14</BuildOrder>
+        </PackageImport>
         <PackageImport Include="vcl.bpi">
             <BuildOrder>4</BuildOrder>
         </PackageImport>
