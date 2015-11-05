@@ -10,7 +10,6 @@ object DrawTreeForm: TDrawTreeForm
   Font.Name = 'Trebuchet MS'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   DesignSize = (
     710

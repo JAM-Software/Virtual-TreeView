@@ -10,7 +10,6 @@ object VisibilityForm: TVisibilityForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   OnHide = FormHide
   OnShow = FormShow

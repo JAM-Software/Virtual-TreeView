@@ -11,7 +11,6 @@ object AlignForm: TAlignForm
   Font.Name = 'Arial'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (

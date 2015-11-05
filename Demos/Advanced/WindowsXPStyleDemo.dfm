@@ -10,7 +10,6 @@ object WindowsXPForm: TWindowsXPForm
   Font.Name = 'Microsoft Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   DesignSize = (
     796

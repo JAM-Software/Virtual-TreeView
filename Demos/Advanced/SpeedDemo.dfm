@@ -10,7 +10,6 @@ object SpeedForm: TSpeedForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   Visible = True
   OnCreate = FormCreate
   DesignSize = (

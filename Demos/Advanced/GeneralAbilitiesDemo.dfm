@@ -11,7 +11,6 @@ object GeneralForm: TGeneralForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  Scaled = False
   ShowHint = True
   OnCreate = FormCreate
   DesignSize = (
