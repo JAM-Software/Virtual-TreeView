@@ -65,7 +65,11 @@ interface
 {$HPPEMIT '#include <oleidl.h>'}
 {$HPPEMIT '#include <oleacc.h>'}
 {$HPPEMIT '#include <ShlObj.hpp>'}
-{$HPPEMIT '#pragma link "VirtualTreesR.lib"'}
+{$ifdef BCB}
+  {$HPPEMIT '#pragma link "VirtualTreesCR.lib"'}
+{$else}
+  {$HPPEMIT '#pragma link "VirtualTreesR.lib"'}
+{$endif}
 
 uses
   Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
@@ -4218,7 +4222,7 @@ var
       ButtonState := ButtonState or DFCS_CHECKED;
     if Flat then
       ButtonState := ButtonState or DFCS_FLAT;
-    DrawFrameControl(BM.Canvas.Handle, Rect(1, 2, BM.Width - 2, BM.Height - 1), DFC_BUTTON, ButtonType or ButtonState);
+    DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
     IL.AddMasked(BM, MaskColor);
   end;
 
@@ -4228,8 +4232,8 @@ var
   I, Width, Height: Integer;
 
 begin
-  Width := GetSystemMetrics(SM_CXMENUCHECK) + 3;
-  Height := GetSystemMetrics(SM_CYMENUCHECK) + 3;
+  Width := GetSystemMetrics(SM_CXMENUCHECK);
+  Height := GetSystemMetrics(SM_CYMENUCHECK);
   IL := TImageList.CreateSize(Width, Height);
   with IL do
     Handle := ImageList_Create(Width, Height, Flags, 0, AllocBy);
@@ -17879,7 +17883,7 @@ procedure TBaseVirtualTree.AdjustImageBorder(Images: TCustomImageList; BidiMode:
 begin
   if BidiMode = bdLeftToRight then
   begin
-    ImageInfo.XPos := R.Left;
+    ImageInfo.XPos := R.Left-1;
     Inc(R.Left, Images.Width + 2);
   end
   else
@@ -23618,13 +23622,11 @@ var
   ForegroundColor: COLORREF;
   R: TRect;
   Details: TThemedElementDetails;
-
 begin
   with ImageInfo do
   begin
     if (tsUseThemes in FStates) and (FCheckImageKind = ckSystemDefault) then
     begin
-      R := Rect(XPos - 1, YPos + 1, XPos + 16, YPos + 16);
       Details.Element := teButton;
       case Index of
         // ctRadioButton
@@ -23657,9 +23659,11 @@ begin
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
+      //StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize);
+      R := Rect(XPos, YPos, XPos + Self.fCheckImages.Width, YPos + Self.fCheckImages.Height);
       StyleServices.DrawElement(Canvas.Handle, Details, R);
       if Index in [21..24] then
-        UtilityImages.Draw(Canvas, XPos - 1, YPos, 4);
+        UtilityImages.Draw(Canvas, XPos, YPos, 4);
     end
     else
       with FCheckImages do

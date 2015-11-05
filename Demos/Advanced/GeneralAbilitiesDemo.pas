@@ -27,7 +27,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
-  StdActns, ActnList, VTHeaderPopup;
+  StdActns, ActnList, VTHeaderPopup, UITypes;
 
 type
   TGeneralForm = class(TForm)
@@ -80,7 +80,7 @@ type
       Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
     procedure VST2GetImageIndexEx(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-      var Ghosted: Boolean; var ImageIndex: Integer;
+      var Ghosted: Boolean; var ImageIndex: TImageIndex;
       var ImageList: TCustomImageList);
   end;
 
@@ -92,7 +92,7 @@ var
 implementation
 
 uses
-  ShellAPI, Main, States, UITypes;
+  ShellAPI, Main, States;
 
 {$R *.DFM}
 
@@ -280,7 +280,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TGeneralForm.VST2GetImageIndexEx(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
-  Column: TColumnIndex; var Ghosted: Boolean; var ImageIndex: Integer; var ImageList: TCustomImageList);
+  Column: TColumnIndex; var Ghosted: Boolean; var ImageIndex: TImageIndex; var ImageList: TCustomImageList);
 
 var
   Data: PNodeData2;

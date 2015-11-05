@@ -12,7 +12,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, VirtualTrees, ImgList, ComCtrls, ToolWin, Menus, StdCtrls;
+  Dialogs, VirtualTrees, ImgList, ComCtrls, ToolWin, Menus, StdCtrls, UITypes;
 
 type
   TWindowsXPForm = class(TForm)
@@ -32,7 +32,7 @@ type
     ToolButton9: TToolButton;
     PrintDialog: TPrintDialog;
     procedure XPTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
-      Column: TColumnIndex; var Ghosted: Boolean; var Index: Integer);
+      Column: TColumnIndex; var Ghosted: Boolean; var Index: TImageIndex);
     procedure FormCreate(Sender: TObject);
     procedure XPTreeInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
@@ -94,7 +94,7 @@ var
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TWindowsXPForm.XPTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode;
-  Kind: TVTImageKind; Column: TColumnIndex; var Ghosted: Boolean; var Index: Integer);
+  Kind: TVTImageKind; Column: TColumnIndex; var Ghosted: Boolean; var Index: TImageIndex);
 
 var
   Data: PEntry;
