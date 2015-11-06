@@ -1,3 +1,11 @@
+V6.2.1 (06 Nov 2015)
+  * #585: Checkboxes now have the correct size and scale property on high dpi systems.
+  * #588: Fixed HTML clipboard export
+  * #586: TBaseVirtualTree.SetChildCount() no longer calls to ReInitNode(Node, True). This caused the OnInitChildren-Event to be fired twice. 
+  * Adjusted GetNodeDataAt<T>() and GetFirstSelectedNodeData<T>() to work with interfaces.
+  * If multi selection is not allowed and so only one node can be selected, make sure the focused node changes with the selected node in SetSelected()
+  * Added packages for the C++Builder 10.
+
 V6.2 (09 Sep 2015)
   * Issue #582: Added support and packages for RAD Studio 10 Seattle
   * Issue #580: Added support for Delphi package manager Delphinus
