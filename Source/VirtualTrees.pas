@@ -23622,6 +23622,7 @@ var
   ForegroundColor: COLORREF;
   R: TRect;
   Details: TThemedElementDetails;
+  lSize: TSize;
 begin
   with ImageInfo do
   begin
@@ -23659,8 +23660,8 @@ begin
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
-      //StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize);
-      R := Rect(XPos, YPos, XPos + Self.fCheckImages.Width, YPos + Self.fCheckImages.Height);
+      StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize);
+      R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
       StyleServices.DrawElement(Canvas.Handle, Details, R);
       if Index in [21..24] then
         UtilityImages.Draw(Canvas, XPos, YPos, 4);
