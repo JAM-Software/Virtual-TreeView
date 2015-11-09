@@ -1,5 +1,5 @@
 V6.2.1 (06 Nov 2015)
-  * #585: Checkboxes now have the correct size and scale property on high dpi systems.
+  * #585: Checkboxes now have the correct size and scale properly on high dpi systems.
   * #588: Fixed HTML clipboard export
   * #586: TBaseVirtualTree.SetChildCount() no longer calls to ReInitNode(Node, True). This caused the OnInitChildren-Event to be fired twice. 
   * Adjusted GetNodeDataAt<T>() and GetFirstSelectedNodeData<T>() to work with interfaces.
