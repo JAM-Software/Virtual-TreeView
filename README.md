@@ -12,7 +12,7 @@ For installation instruction see the "INSTALL.TXT" file in the ZIP. Delphinus-Su
 
 ###[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)
 
-**V6.2** has been officially released: [Download](https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN)
+**V6.2.1** has been officially released: [Download](https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN)
 
 ###Technical Support
 Please do not contact the developers directly for technical support. Please try to get support from the community e.g. at [Stack Overflow](http://stackoverflow.com/search?q=%22virtual+treeview%22) , [Delphi Pages](http://www.delphipages.com/), [Delphi Praxis](http://www.delphipraxis.net/141465-virtual-treeview-tutorials-mit-beispielen.html) or [Embarcadero forums](https://forums.embarcadero.com/). Please do not use issue reporting for getting support.
