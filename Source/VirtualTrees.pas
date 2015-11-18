@@ -33769,7 +33769,7 @@ end;
 function TCustomVirtualStringTree.InternalData(Node: PVirtualNode): Pointer;
 
 begin
-  if (Node = FRoot) or (Node = nil) or (FInternalDataOffset = 0) then
+  if (Node = nil) or (FInternalDataOffset = 0) then
     Result := nil
   else
     Result := PByte(Node) + Self.NodeDataSize + FInternalDataOffset;
