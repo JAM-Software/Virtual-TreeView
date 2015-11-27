@@ -2254,7 +2254,6 @@ type
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
     function GetBottomNode: PVirtualNode;
-    function GetCheckedCount: Integer;
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
     function GetChildCount(Node: PVirtualNode): Cardinal;
@@ -2579,6 +2578,7 @@ type
     procedure FinishChunkHeader(Stream: TStream; StartPos, EndPos: Integer); virtual;
     procedure FontChanged(AFont: TObject); virtual;
     function GetBorderDimensions: TSize; virtual;
+    function GetCheckedCount: Integer;
     function GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType = ctNone;
       ImgCheckState: TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer; virtual;
     class function GetCheckImageListFor(Kind: TCheckImageKind): TCustomImageList; virtual;
