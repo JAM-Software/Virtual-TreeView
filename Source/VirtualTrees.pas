@@ -18237,7 +18237,7 @@ begin
 
   if FUpdateCount = 0 then
   begin
-    if (FChangeDelay > 0) and not (tsSynchMode in FStates) then
+    if (FChangeDelay > 0) and HandleAllocated and not (tsSynchMode in FStates) then
       SetTimer(Handle, ChangeTimer, FChangeDelay, nil)
     else
       DoChange(Node);
@@ -24820,7 +24820,7 @@ begin
 
   if FUpdateCount = 0 then
   begin
-    if (FChangeDelay > 0) and not (tsSynchMode in FStates) then
+    if (FChangeDelay > 0) and HandleAllocated and not (tsSynchMode in FStates) then
       SetTimer(Handle, StructureChangeTimer, FChangeDelay, nil)
     else
       DoStructureChange(Node, Reason);
