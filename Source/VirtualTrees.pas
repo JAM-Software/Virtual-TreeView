@@ -17424,13 +17424,9 @@ begin
     DC := GetDCEx(Handle, Message.Rgn, Flags or DCX_INTERSECTRGN);
 
   if DC <> 0 then
-  begin
-    if hoVisible in FHeader.FOptions then
-    begin
-      R := FHeaderRect;
-      FHeader.FColumns.PaintHeader(DC, R, -FEffectiveOffsetX);
-    end;
+  try
     OriginalWMNCPaint(DC);
+  finally
     ReleaseDC(Handle, DC);
   end;
   if (((tsUseThemes in FStates) and not VclStyleEnabled) or (VclStyleEnabled and (seBorder in StyleElements))) then
@@ -17443,7 +17439,8 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.WMPaint(var Message: TWMPaint);
-
+var
+  DC: HDC;
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
@@ -17451,11 +17448,22 @@ begin
     FUpdateRect := ClientRect
   else
     GetUpdateRect(Handle, FUpdateRect, True);
-  
+
   inherited;
- 
+
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(True);
+
+  if hoVisible in FHeader.FOptions then
+  begin
+    DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
+    if DC <> 0 then
+      try
+        FHeader.FColumns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
+    finally
+      ReleaseDC(Handle, DC);
+    end;
+  end;//if header visible
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
