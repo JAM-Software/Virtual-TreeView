@@ -59,9 +59,8 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-        <BPILibOutputDir>$(BDSCOMMONDIR)\DCP</BPILibOutputDir>
         <ILINK_Description>VirtualTree CBuilder runtime package</ILINK_Description>
-        <DCC_HppOutput>$(BdsCommonDir)\Dcp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCR</SanitizedProjectName>
         <ILINK_DelayLoadDll>Shell32.dll;$(ILINK_DelayLoadDll)</ILINK_DelayLoadDll>
         <DCC_UnitSearchPath>$(BDS)\lib;$(BDS)\lib\$(Platform);$(BDS)\lib\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
@@ -95,8 +94,7 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <BPILibOutputDir>$(BDSCOMMONDIR)\DCP\$(Platform)</BPILibOutputDir>
-        <DCC_HppOutput>$(BdsCommponDir)\Dcp\$(Platform)</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
@@ -128,7 +126,7 @@
         <DCC_RangeChecking>true</DCC_RangeChecking>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-        <DCC_HppOutput>$(BdsCommonDir)\Dcp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <DCC_Inlining>off</DCC_Inlining>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_DebugDCUs>true</DCC_DebugDCUs>
@@ -138,7 +136,7 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
-        <DCC_HppOutput>$(BdsCommonDir)\Dcp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <IncludePath>Release\;$(IncludePath)</IncludePath>
         <IntermediateOutputDir>Release</IntermediateOutputDir>
         <ILINK_LibraryPath>$(BDS)\lib\release;$(ILINK_LibraryPath)</ILINK_LibraryPath>

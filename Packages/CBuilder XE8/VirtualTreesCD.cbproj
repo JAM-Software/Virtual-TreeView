@@ -46,9 +46,8 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <BPILibOutputDir>$(BdsCommonDir)\DCP</BPILibOutputDir>
         <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
-        <DCC_HppOutput>$(BdsCommonDir)\Dcp</DCC_HppOutput>
+        <DCC_HppOutput>..\..\Source</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_UnitSearchPath>..\..\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
