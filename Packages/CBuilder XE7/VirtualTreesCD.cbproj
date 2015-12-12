@@ -2,8 +2,8 @@
     <PropertyGroup>
         <ProjectGuid>{DE1FB54C-6852-4F59-B4A5-7718E6069FE8}</ProjectGuid>
         <MainSource>VirtualTreesCD.cpp</MainSource>
-        <ProjectVersion>16.1</ProjectVersion>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <ProjectVersion>18.0</ProjectVersion>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -11,11 +11,6 @@
         <AppType>Package</AppType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Android' and '$(Base)'=='true') or '$(Base_Android)'!=''">
-        <Base_Android>true</Base_Android>
-        <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
@@ -51,8 +46,9 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <BPILibOutputDir>$(BdsCommonDir)\DCP</BPILibOutputDir>
         <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
-        <DCC_HppOutput>..\..\source</DCC_HppOutput>
+        <DCC_HppOutput>$(BdsCommonDir)\Dcp</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_UnitSearchPath>..\..\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
@@ -70,19 +66,16 @@
         <Multithreaded>true</Multithreaded>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <UsePackages>true</UsePackages>
-        <IncludePath>..\..\..\..\EMBT\VirtualTree\Design\;..\..\..\..\SourceForge\VirtualTree\Packages\CBuilder XE7\;..\..\Source\;..\RAD Studio XE5\;..\..\Design\;..\..\Common\;$(CG_BOOST_ROOT)\boost\tr1\tr1;$(BDS)\include;$(BDS)\include\windows;$(BDS)\include\windows\rtl;$(BDS)\include\windows\vcl;$(BDS)\include\windows\crtl;$(BDS)\include\windows\sdk;$(CG_BOOST_ROOT);$(IncludePath)</IncludePath>
-        <ILINK_LibraryPath>..\..\..\..\EMBT\VirtualTree\Design\;..\..\..\..\SourceForge\VirtualTree\Packages\CBuilder XE7\;..\RAD Studio XE5\;..\..\Design\;$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;..\..\source;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <IncludePath>..\..\Source\;..\..\Design\;$(BDS)\include;$(BDS)\include\windows;$(BDS)\include\windows\rtl;$(BDS)\include\windows\vcl;$(BDS)\include\windows\crtl;$(BDS)\include\windows\sdk;$(IncludePath)</IncludePath>
+        <ILINK_LibraryPath>..\..\Source\;..\RAD Studio XE5\;..\..\Design\;$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;..\..\source;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <BCC_wpar>false</BCC_wpar>
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
         <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Android)'!=''">
-        <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_Keys>package=com.embarcadero.$(MSBuildProjectName);label=$(MSBuildProjectName);versionCode=1;versionName=1.0.0;persistent=False;restoreAnyVersion=False;installLocation=preferExternal;largeHeap=False;theme=TitleBar;hardwareAccelerated=true</VerInfo_Keys>
-        <VerInfo_IncludeVerInfo>false</VerInfo_IncludeVerInfo>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <ILINK_LibraryPath>C:\Program Files (x86)\Embarcadero\Studio\16.0\lib\win32\release\psdk\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -94,6 +87,11 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_RangeChecking>true</DCC_RangeChecking>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <DCC_DebugDCUs>true</DCC_DebugDCUs>
+        <DCC_Inlining>off</DCC_Inlining>
         <IncludePath>Debug\;$(IncludePath)</IncludePath>
         <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
         <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
@@ -112,6 +110,13 @@
         <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <Debugger_HostApplication>$(BDS)\Bin\BDS.EXE</Debugger_HostApplication>
+        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_RangeChecking>true</DCC_RangeChecking>
+        <DCC_Inlining>off</DCC_Inlining>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <DCC_DebugDCUs>true</DCC_DebugDCUs>
         <Defines>_DEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -121,29 +126,62 @@
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <Debugger_HostApplication>C:\Program Files (x86)\Embarcadero\Studio\16.0\bin\bds.exe</Debugger_HostApplication>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <ItemGroup>
-        <PackageImport Include="rtl.bpi">
-            <BuildOrder>4</BuildOrder>
-        </PackageImport>
-        <PackageImport Include="vcl.bpi">
-            <BuildOrder>5</BuildOrder>
-        </PackageImport>
+        <LibFiles Include="C:\Program Files (x86)\Embarcadero\Studio\16.0\lib\win32\release\psdk\shell32.lib" Condition="'$(Platform)'=='Win32'">
+            <BuildOrder>16</BuildOrder>
+            <IgnorePath>true</IgnorePath>
+        </LibFiles>
         <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
-            <BuildOrder>9</BuildOrder>
+            <BuildOrder>3</BuildOrder>
         </DelphiCompile>
         <PackageImport Include="designide.bpi">
             <BuildOrder>5</BuildOrder>
         </PackageImport>
+        <PackageImport Include="rtl.bpi">
+            <BuildOrder>1</BuildOrder>
+        </PackageImport>
+        <PackageImport Include="vcl.bpi">
+            <BuildOrder>4</BuildOrder>
+        </PackageImport>
         <CppCompile Include="VirtualTreesCD.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
-        <PackageImport Include="VirtualTreesCR.bpi">
-            <BuildOrder>9</BuildOrder>
-        </PackageImport>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
+            <BuildOrder>5</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
+            <BuildOrder>6</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
+            <BuildOrder>7</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
+            <BuildOrder>8</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
+            <BuildOrder>10</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
+            <BuildOrder>11</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
+            <BuildOrder>12</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
+            <BuildOrder>13</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VTAccessibility.pas">
+            <BuildOrder>14</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VTAccessibilityFactory.pas">
+            <BuildOrder>15</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VTHeaderPopup.pas">
+            <BuildOrder>16</BuildOrder>
+        </DelphiCompile>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -236,10 +274,10 @@
                     <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
                 </Parameters>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k210.bpl">Embarcadero C++Builder-Package für Office 2000-Server</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp210.bpl">Embarcadero C++Builder-Package für Office XP-Server</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k210.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp210.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k220.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp220.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k220.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp220.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
                 </Excluded_Packages>
                 <ProjectProperties>
                     <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
@@ -255,6 +293,11 @@
             <Deployment Version="1">
                 <DeployFile Condition="'$(UsingDelphiRTL)'=='true'" LocalName="$(BDS)\bin64\borlndmm.dll" Class="DependencyModule">
                     <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\iossim32\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="iOSSimulator">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -278,27 +321,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64160mt.dll" Class="DependencyModule">
-                    <Platform Name="Win64">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="OSX32">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64220mt.dll" Class="DependencyModule">
                     <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\16.0\BPL\VirtualTreesCD.bpl" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>VirtualTreesCD.bpl</RemoteName>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64160mt.dll" Class="DependencyModule">
+                    <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -312,13 +341,30 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="OSX32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile Condition="'$(UsingDelphiRTL)'=='true'" LocalName="$(BDS)\bin\borlndmm.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\16.0\BPL\VirtualTreesCD.tds" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win32">
+                        <RemoteName>VirtualTreesCD.tds</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32160.dll" Class="DependencyModule">
                     <Platform Name="Win32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\16.0\BPL\VirtualTreesCD.bpl" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>VirtualTreesCD.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -607,12 +653,14 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
