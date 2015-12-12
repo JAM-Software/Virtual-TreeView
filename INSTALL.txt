@@ -34,3 +34,17 @@ I recommand using UltraSearch for this task: http://www.jam-software.de/ultrasea
 Please send comments and suggestions regarding the packages and the install
 instructions to joachim.marder@gmail.com or open an issue.
 
+C++ Builder XE3 and higher Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Open the project group "Packages\CBullder XE*\VirtualTreeView.groupproj"
+   that is closest to your version.
+2. Right click on "VirtualTreesR*.bpl" and click "Build"
+3. Right click on "VirtualTreesD*.bpl" and click "Install"
+4. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+5. Go to "Tools > Options > Environment Options > C++ Options > Paths and Directories" 
+   a) Click "Library Path > [...]"                                                      
+      Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK"
+   b) Click "System Include path > [...]"                                                      
+      Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK""
+
