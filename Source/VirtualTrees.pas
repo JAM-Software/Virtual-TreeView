@@ -621,7 +621,7 @@ type
     function GetData(): Pointer; overload; inline;
     function GetData<T>(): T; overload; inline;
     procedure SetData(pUserData: Pointer); overload;
-    procedure SetData<T:class>(pUserData: T); overload;
+    procedure SetData<T>(pUserData: T); overload;
     procedure SetData(const pUserData: IInterface); overload;
   end;
 
@@ -3027,7 +3027,7 @@ type
     procedure SetCheckStateForAll(aCheckState: TCheckState; pSelectedOnly: Boolean);
     procedure SetNodeData(pNode: PVirtualNode; pUserData: Pointer); overload; inline;
     procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); overload; inline;
-    procedure SetNodeData<T:class>(pNode: PVirtualNode; pUserData: T); overload;
+    procedure SetNodeData<T>(pNode: PVirtualNode; pUserData: T); overload;
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
@@ -14934,7 +14934,7 @@ procedure TBaseVirtualTree.SetNodeData<T>(pNode: PVirtualNode; pUserData: T);
   // Can be used to set user data of a PVirtualNode to a class instance.
 
 begin
-  SetNodeData(pNode, Pointer(pUserData));
+  pNode.SetData<T>(pUserData);
 end;
 
 procedure TBaseVirtualTree.SetNodeData(pNode: PVirtualNode; const pUserData: IInterface);
@@ -34456,7 +34456,7 @@ end;
 procedure TVirtualNode.SetData<T>(pUserData: T);
 
 begin
-  SetData(Pointer(pUserData));
+  T(Pointer((PByte(@(Self.Data))))^) := pUserData;
 end;
 
 { TVTImageInfo }
