@@ -3017,6 +3017,7 @@ type
                             Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
     procedure RepaintNode(Node: PVirtualNode);
     procedure ReinitChildren(Node: PVirtualNode; Recursive: Boolean); virtual;
+    procedure InitRecursive(Node: PVirtualNode; Levels: Cardinal = MaxInt; pVisibleOnly: Boolean = True);
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); virtual;
     procedure ResetNode(Node: PVirtualNode); virtual;
     procedure SaveToFile(const FileName: TFileName);
@@ -13670,6 +13671,30 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.InitRecursive(Node: PVirtualNode; Levels: Cardinal = MaxInt; pVisibleOnly: Boolean = True);
+
+// Initializes a node and optionally its children up to a certain level.
+
+var
+  Run: PVirtualNode;
+begin
+  if Assigned(Node) then begin
+    if (Node <> FRoot) then
+      InitNode(Node);
+    if (Levels = 0) or (pVisibleOnly and not (vsExpanded in Node.States))  then
+      exit;
+    Run := Node.FirstChild;
+  end
+  else
+    Run := FRoot.FirstChild;
+
+  while Assigned(Run) do
+  begin
+    InitRecursive(Run, Levels - 1);
+    Run := Run.NextSibling;
+  end;
+end;
 
 procedure TBaseVirtualTree.InitRootNode(OldSize: Cardinal = 0);
 
