@@ -13680,7 +13680,7 @@ var
   Run: PVirtualNode;
 begin
   if Assigned(Node) then begin
-    if (Node <> FRoot) then
+    if (Node <> FRoot) and not (vsInitialized in Node.States) then
       InitNode(Node);
     if (Levels = 0) or (pVisibleOnly and not (vsExpanded in Node.States))  then
       exit;
@@ -13691,7 +13691,7 @@ begin
 
   while Assigned(Run) do
   begin
-    InitRecursive(Run, Levels - 1);
+    InitRecursive(Run, Levels - 1, pVisibleOnly);
     Run := Run.NextSibling;
   end;
 end;
