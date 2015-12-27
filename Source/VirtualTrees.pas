@@ -13679,15 +13679,14 @@ procedure TBaseVirtualTree.InitRecursive(Node: PVirtualNode; Levels: Cardinal = 
 var
   Run: PVirtualNode;
 begin
-  if Assigned(Node) then begin
-    if (Node <> FRoot) and not (vsInitialized in Node.States) then
-      InitNode(Node);
-    if (Levels = 0) or (pVisibleOnly and not (vsExpanded in Node.States))  then
-      exit;
-    Run := Node.FirstChild;
-  end
-  else
-    Run := FRoot.FirstChild;
+  if not Assigned(Node) then
+    Node := FRoot;
+
+  if (Node <> FRoot) and not (vsInitialized in Node.States) then
+    InitNode(Node);
+  if (Levels = 0) or (pVisibleOnly and not (vsExpanded in Node.States))  then
+    exit;
+  Run := Node.FirstChild;
 
   while Assigned(Run) do
   begin
