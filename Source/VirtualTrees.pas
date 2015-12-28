@@ -26264,7 +26264,7 @@ begin
         WasInSynchMode := tsSynchMode in FStates;
         Include(FStates, tsSynchMode);
         RemoveFromSelection(Node);
-        EnsureNodeSelected();
+        //EnsureNodeSelected(); // also done in  DoFreeNode()
         if not WasInSynchMode then
           Exclude(FStates, tsSynchMode);
         InvalidateToBottom(LastParent);
