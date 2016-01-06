@@ -34464,6 +34464,12 @@ procedure TVirtualNode.SetData<T>(pUserData: T);
 
 begin
   T(Pointer((PByte(@(Self.Data))))^) := pUserData;
+  case PTypeInfo(TypeInfo(T)).Kind of
+    tkClass:
+      Include(Self.States, vsOnFreeNodeCallRequired);
+    tkInterface:
+      Include(Self.States, vsReleaseCallOnUserDataRequired);
+  end;
 end;
 
 { TVTImageInfo }
