@@ -1,3 +1,19 @@
+﻿V6.2.2 (20 Jan 2016)
+  * IKssue #603: If the node already has children, then its nodeheight is valid and we must not remove its total height, but rather its height
+  * Fixed issue #599: Possible infinite loop in GetPreviousVisibleNoInit()
+  * Added new method TBaseVirtualTree.InitRecursive() as workaround for issue #597: Initializes a node and optionally its children up to a certain level.
+  * Issue #598: SetData, like GetData no longer forces the "class" constraint on its generic parameter
+  * Fixed issue #596 by moving initialization of global variable Watcher also to InitializeGlobalStructures()
+    Now ensuring using interlocked function that InitializeGlobalStructures() is executed only once
+  * Fixed issue #458: If the Virtual TreeView control is placed on a control that has the StyleEx flag WS_EX_COMPOSITED set, horizontal scrolloing does not update the header
+  * Fixed issue #595: Before using SetTimer, check for valid WindowHandle
+  * Fixed issue #594: Basic TVirtualStringTree Colors does not apply
+  * Fixed issue #591: Now calling UnRegisterStyleHook() for the style class in "VirtualTrees.StyleHooks".
+  * Fixed #590: Allow to store InternalData also for (internal) root node
+  * if only one node is selected, make sure the focused node changes with the selected node
+  * Added assertion that ensures that BeginUpdate() is called from main thread only.
+  * Getter function GetCheckedCount() is protected now instead of public
+
 V6.2.1 (06 Nov 2015)
   * #585: Checkboxes now have the correct size and scale properly on high dpi systems.
   * #588: Fixed HTML clipboard export
