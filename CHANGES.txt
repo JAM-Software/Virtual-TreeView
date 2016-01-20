@@ -1,5 +1,5 @@
 ﻿V6.2.2 (20 Jan 2016)
-  * IKssue #603: If the node already has children, then its nodeheight is valid and we must not remove its total height, but rather its height
+  * Issue #603: If the node already has children, then its nodeheight is valid and we must not remove its total height, but rather its height
   * Fixed issue #599: Possible infinite loop in GetPreviousVisibleNoInit()
   * Added new method TBaseVirtualTree.InitRecursive() as workaround for issue #597: Initializes a node and optionally its children up to a certain level.
   * Issue #598: SetData, like GetData no longer forces the "class" constraint on its generic parameter
