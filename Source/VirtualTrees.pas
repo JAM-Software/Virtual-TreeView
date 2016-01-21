@@ -23135,7 +23135,7 @@ begin
       // amNoWhere: do nothing
     end;
     // Remove temporary states.
-    Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsReleaseCallOnUserDataRequired];
+    Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting];
 
     if (Mode <> amNoWhere) then begin
       Inc(Node.Parent.ChildCount);
