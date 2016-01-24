@@ -14527,10 +14527,6 @@ begin
           StructureChange(nil, crChildAdded)
         else
           StructureChange(Node, crChildAdded);
-
-        // One may want to reinit the nodes here, especially to fix Issue #572 but that may trigger
-        // stack overflows in user code that calls AddChild inside the OnInitNode or OnInitChildren events.
-        //ReinitNode(Node, True);
       end;
     end;
   end;
@@ -34295,20 +34291,21 @@ begin
     Data := InternalData(Node);
     if Assigned(Data) then
       Data^ := 0;
-
-    Exclude(Node.States, vsHeightMeasured);
   end;
 
-  if Assigned(Node) then
-    Run := Node.FirstChild
-  else
-    Run := FRoot.FirstChild;
-
-  while Assigned(Run) do
+  if Recursive then
   begin
-    ResetInternalData(Run, Recursive);
-    Run := Run.NextSibling;
-  end;
+    if Assigned(Node) then
+      Run := Node.FirstChild
+    else
+      Run := FRoot.FirstChild;
+
+    while Assigned(Run) do
+    begin
+      ResetInternalData(Run, Recursive);
+      Run := Run.NextSibling;
+    end;
+  end;//if Recursive
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34318,7 +34315,7 @@ procedure TCustomVirtualStringTree.ReinitNode(Node: PVirtualNode; Recursive: Boo
 begin
   inherited;
 
-  ResetInternalData(Node, False);  // False because there already is a loop inside ReinitNode
+  ResetInternalData(Node, False);  // False because we are already in a loop inside ReinitNode
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34327,11 +34324,7 @@ procedure TCustomVirtualStringTree.SetChildCount(Node: PVirtualNode; NewChildCou
 
 begin
   inherited;
-
-  // See comment at the end of TBaseVirtualTree.SetChildCount
-  //ReinitChildren(Node, True);
-
-  ResetInternalData(Node, True);
+  ResetInternalData(Node, False);
 end;
 
 //----------------- TVirtualStringTree ---------------------------------------------------------------------------------
