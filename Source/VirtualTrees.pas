@@ -79,7 +79,7 @@ uses
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
 
 const
-  VTVersion = '6.2.2';
+  VTVersion = '6.2.3';
 
 const
   VTTreeStreamVersion = 2;
