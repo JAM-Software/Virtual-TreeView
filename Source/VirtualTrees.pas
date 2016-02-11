@@ -24424,6 +24424,7 @@ begin
   if not FSelectionLocked then
   begin
     Assert(Assigned(Node), 'Node must not be nil!');
+    Assert(GetCurrentThreadId = MainThreadId, Self.Classname + '.RemoveFromSelection() must only be called from UI thread.');
     if vsSelected in Node.States then
     begin
       Exclude(Node.States, vsSelected);
