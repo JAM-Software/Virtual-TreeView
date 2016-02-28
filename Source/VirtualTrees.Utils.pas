@@ -49,10 +49,10 @@ function GetRGBColor(Value: TColor): DWORD;
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
 function HasMMX: Boolean;
 
-procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
+procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
 
-procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer);
+procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
 // Clip a given canvas to ClipRect while transforming the given rect to device coordinates.
 procedure ClipCanvas(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
@@ -126,13 +126,14 @@ procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
 
 // Set the brush origin of a given canvas.
 
-var
-  P: TPoint;
+//var
+//  P: TPoint;
 
 begin
-  P := Point(X, Y);
-  LPtoDP(Canvas.Handle, P, 1);
-  SetBrushOrgEx(Canvas.Handle, P.X, P.Y, nil);
+  //P := Point(X, Y);
+  //LPtoDP(Canvas.Handle, P, 1);// No longer used, see issue #608
+  //SetBrushOrgEx(Canvas.Handle, P.X, P.Y, nil);
+  SetBrushOrgEx(Canvas.Handle, X, Y, nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
