@@ -17786,7 +17786,8 @@ begin
           DoTimerScroll;
         end;
       ChangeTimer:
-        DoChange(FLastChangedNode);
+        if tsChangePending in FStates then // see issue #602
+          DoChange(FLastChangedNode);
       StructureChangeTimer:
         DoStructureChange(FLastStructureChangeNode, FLastStructureChangeReason);
       SearchTimer:
