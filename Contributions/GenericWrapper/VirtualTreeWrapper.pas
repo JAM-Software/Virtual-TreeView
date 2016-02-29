@@ -15,7 +15,7 @@ unit VirtualTreeWrapper;
 
 interface
 
-uses SysUtils, Classes, Controls, VirtualTrees, Generics.Collections.Static,
+uses SysUtils, Classes, Controls, VirtualTrees, Generics.Collections,
      RTLConsts, UITypes;
 
 type
@@ -536,19 +536,23 @@ var AParent	: PVirtualNode;
 	i		: Integer;
 begin
 	with Tree.Tree do begin
-		List.Init;
-		AParent:=FNode.Parent;
-		// The root node is marked by having its NextSibling (and PrevSibling) pointing to itself.
-		while (AParent <> nil) and (AParent^.NextSibling <> AParent) do begin
-			if (vsExpanded in AParent^.States) then Break;
-			List.Add(AParent);
-			AParent:=AParent^.Parent;
-		end;
-		for i:=List.Count - 1 downto 0 do Expanded[List[i]]:=true;
+		List:=TList<PVirtualNode>.Create;
+		try
+			AParent:=FNode.Parent;
+			// The root node is marked by having its NextSibling (and PrevSibling) pointing to itself.
+			while (AParent <> nil) and (AParent^.NextSibling <> AParent) do begin
+				if (vsExpanded in AParent^.States) then Break;
+				List.Add(AParent);
+				AParent:=AParent^.Parent;
+			end;
+			for i:=List.Count - 1 downto 0 do Expanded[List[i]]:=true;
 
-		if (Recursive) then FullExpand(FNode)
-		else Expanded[FNode]:=true;
-    end;
+			if (Recursive) then FullExpand(FNode)
+			else Expanded[FNode]:=true;
+		finally
+			List.Free;
+		end;
+	end;
 end;
 
 function TVirtualNode<T>.NextSibling: TVirtualNode<T>;
