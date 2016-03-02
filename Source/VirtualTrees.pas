@@ -30586,7 +30586,7 @@ begin
             // Avoid unnecessary copying of bitmap content. This will destroy the DC handle too.
             NodeBitmap.Height := 0;
             NodeBitmap.PixelFormat := pf32Bit;
-            Width := TargetRect.Right - TargetRect.Left;
+            NodeBitmap.Width := TargetRect.Right - TargetRect.Left;
             NodeBitmap.Height := TargetRect.Bottom - TargetRect.Top;
           end;
 
