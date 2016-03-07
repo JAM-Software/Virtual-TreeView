@@ -275,7 +275,11 @@ begin
         end;
     end;
     Node.CheckType := LevelToCheckType[Data.Level];
-    Sender.CheckState[Node] := csCheckedNormal;
+    // use enabled and disabled checkboxes
+    case (Data.Level mod 5) of
+      0,1,2,3: Sender.CheckState[Node] := csCheckedNormal;
+      4: Sender.CheckState[Node] := csCheckedDisabled;
+    end;//case
   end;
 end;
 

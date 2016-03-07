@@ -316,8 +316,18 @@ type
     csCheckedNormal,    // checked and not pressed
     csCheckedPressed,   // checked and pressed
     csMixedNormal,      // 3-state check box and not pressed
-    csMixedPressed      // 3-state check box and pressed
+    csMixedPressed,     // 3-state check box and pressed
+    csUncheckedDisabled,// disabled checkbox, not checkable
+    csCheckedDisabled,  // disbaled checkbox, not uncheckable
+    csMixedDiabled      // disabled 3-stae checbox
   );
+
+  TCheckStateHelper = record helper for TCheckState
+    procedure SetPressed();
+    procedure SetUnpressed();
+    procedure Toggle();
+    function IsDisabled(): Boolean;
+  end;
 
   TCheckImageKind = (
     ckLightCheck,     // gray cross
@@ -3911,18 +3921,11 @@ const
   DefaultScrollUpdateFlags = [suoRepaintHeader, suoRepaintScrollBars, suoScrollClientArea, suoUpdateNCArea];
   TreeNodeSize = (SizeOf(TVirtualNode) + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1); // used for node allocation and access to internal data
 
-  // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
-  PressedState: array[TCheckState] of TCheckState = (
-    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed
-  );
-  UnpressedState: array[TCheckState] of TCheckState = (
-    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal
-  );
   MouseButtonDown = [tsLeftButtonDown, tsMiddleButtonDown, tsRightButtonDown];
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
-  Copyright: string = 'Virtual Treeview © 1999, 2010 Mike Lischke';
+  Copyright: string = 'Virtual Treeview © 1999, 2010, 2016 Mike Lischke, Joachim Marder';
 
 var
   StandardOLEFormat: TFormatEtc = (
@@ -12367,15 +12370,16 @@ begin
                     begin
                       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
                       begin
-                        SetCheckState(Run, csUncheckedNormal);
+                        if not Run.CheckState.IsDisabled() then
+                          SetCheckState(Run, csUncheckedNormal);
                         // Check if the new child state was set successfully, otherwise we have to adjust the
                         // node's new check state accordingly.
                         case Run.CheckState of
-                          csCheckedNormal:
+                          csCheckedNormal, csCheckedDisabled:
                             Inc(CheckedCount);
                           csMixedNormal:
                             Inc(MixedCheckCount);
-                          csUncheckedNormal:
+                          csUncheckedNormal, csUncheckedDisabled:
                             Inc(UncheckedCount);
                         end;
                       end;
@@ -12405,7 +12409,8 @@ begin
                     begin
                       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
                       begin
-                        SetCheckState(Run, csCheckedNormal);
+                        if not Run.CheckState.IsDisabled() then
+                          SetCheckState(Run, csCheckedNormal);
                         // Check if the new child state was set successfully, otherwise we have to adjust the
                         // node's new check state accordingly.
                         case Run.CheckState of
@@ -12454,7 +12459,7 @@ begin
       if Result then
         CheckState := Value // Set new check state
       else
-        CheckState := UnpressedState[CheckState]; // Reset dynamic check state.
+        CheckState.SetUnpressed(); // Reset dynamic check state.
 
       // Propagate state up to the parent.
       if not (vsInitialized in Parent.States) then
@@ -14419,10 +14424,13 @@ begin
     begin
       if not (vsInitialized in Node.Parent.States) then
         InitNode(Node.Parent);
-      if (Node.Parent.CheckType = ctTriStateCheckBox) and
-        (Node.Parent.CheckState in [csUncheckedNormal, csCheckedNormal]) then
-        CheckState[Node] := Node.Parent.CheckState;
-    end;
+      if (Node.Parent.CheckType = ctTriStateCheckBox) then begin
+        if (Node.Parent.CheckState in [csUncheckedNormal, csUncheckedDisabled]) then
+          CheckState[Node] := csUncheckedNormal
+        else if (Node.Parent.CheckState in [csCheckedNormal, csCheckedDisabled]) then
+          CheckState[Node] := csCheckedNormal;
+      end;//if
+    end;//if
     InvalidateNode(Node);
   end;
 end;
@@ -16569,7 +16577,7 @@ begin
       if (tsKeyCheckPending in FStates) and (CharCode <> VK_SPACE) then
       begin
         DoStateChange([], [tskeyCheckPending]);
-        FCheckNode.CheckState := UnpressedState[FCheckNode.CheckState];
+        FCheckNode.CheckState.SetUnpressed();
         RepaintNode(FCheckNode);
         FCheckNode := nil;
       end;
@@ -17073,7 +17081,7 @@ begin
                   DoStateChange([tsKeyCheckPending]);
                   FCheckNode := FFocusedNode;
                   FPendingCheckState := NewCheckState;
-                  FCheckNode.CheckState := PressedState[FCheckNode.CheckState];
+                  FCheckNode.CheckState.SetPressed();
                   RepaintNode(FCheckNode);
                 end;
               end;
@@ -18334,7 +18342,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if NewCheckState in [csCheckedNormal, csCheckedPressed] then
+        if NewCheckState in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (NewCheckState = csMixedNormal);
       end;
@@ -18343,7 +18351,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if Run.CheckState in [csCheckedNormal, csCheckedPressed] then
+        if Run.CheckState in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (Run.CheckState = csMixedNormal);
       end;
@@ -19094,11 +19102,10 @@ function TBaseVirtualTree.DetermineNextCheckState(CheckType: TCheckType; CheckSt
 begin
   case CheckType of
     ctTriStateCheckBox,
-    ctCheckBox:
-      if CheckState = csCheckedNormal then
-        Result := csUncheckedNormal
-      else
-        Result := csCheckedNormal;
+    ctCheckBox: begin
+      Result := CheckState;
+      Result.Toggle();
+    end;//ctCheckbox
     ctRadioButton:
       Result := csCheckedNormal;
     ctButton:
@@ -21616,7 +21623,21 @@ begin
   begin
     ImgCheckType := Node.CheckType;
     ImgCheckState := Node.CheckState;
-    ImgEnabled := not (vsDisabled in Node.States) and Enabled;
+    if ImgCheckState >= TCheckState.csUncheckedDisabled then begin // disabled image?
+      // Use disbaled images, map ImgCheckState value from disabled to normal
+      ImgEnabled := False;
+      case ImgCheckState of
+        TCheckState.csUncheckedDisabled:
+          ImgCheckState := TCheckState.csUncheckedNormal;
+        TCheckState.csCheckedDisabled:
+          ImgCheckState := TCheckState.csCheckedNormal;
+        TCheckState.csMixedDiabled:
+          ImgCheckState := TCheckState.csMixedPressed;
+      end;//case
+    end//if
+    else
+      ImgEnabled := not (vsDisabled in Node.States) and Enabled;
+
     IsHot := Node = FCurrentHotNode;
   end
   else
@@ -22231,7 +22252,7 @@ begin
             DoStateChange([tsMouseCheckPending]);
             FCheckNode := HitInfo.HitNode;
             FPendingCheckState := NewCheckState;
-            FCheckNode.CheckState := PressedState[FCheckNode.CheckState];
+            FCheckNode.CheckState.SetPressed();
             InvalidateNode(HitInfo.HitNode);
             MayEdit := False;
           end;
@@ -22440,7 +22461,7 @@ begin
         DoStateChange([tsMouseCheckPending]);
         FCheckNode := HitInfo.HitNode;
         FPendingCheckState := NewCheckState;
-        FCheckNode.CheckState := PressedState[FCheckNode.CheckState];
+        FCheckNode.CheckState.SetPressed();
         InvalidateNode(HitInfo.HitNode);
       end;
     end;
@@ -22630,7 +22651,7 @@ begin
        if (HitInfo.HitNode = FCheckNode) and (hiOnItem in HitInfo.HitPositions) then
           DoCheckClick(FCheckNode, FPendingCheckState)
         else
-          FCheckNode.CheckState := UnpressedState[FCheckNode.CheckState];
+          FCheckNode.CheckState.SetUnpressed();
         InvalidateNode(FCheckNode);
       end;
       FCheckNode := nil;
@@ -34515,6 +34536,41 @@ begin
   Self.Node := pNode;
   Self.Column := pColumn;
   Self.ExportType := pExportType;
+end;
+
+{ TCheckStateHelper }
+
+function TCheckStateHelper.IsDisabled: Boolean;
+begin
+  Result := Self >= TCheckState.csUncheckedDisabled;
+end;
+
+procedure TCheckStateHelper.SetPressed();
+const
+  // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
+  PressedState: array[TCheckState] of TCheckState = (
+    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDiabled
+  );
+begin
+  Self := PressedState[Self];
+end;
+
+procedure TCheckStateHelper.SetUnpressed();
+const
+  UnpressedState: array[TCheckState] of TCheckState = (
+    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDiabled
+  );
+begin
+  Self := UnpressedState[Self];
+end;
+
+
+procedure TCheckStateHelper.Toggle;
+begin
+  if Self = csCheckedNormal then
+    Self := csUncheckedNormal
+  else if Self < csUncheckedDisabled then // do not modify disbaled checkboxes
+    Self := csCheckedNormal;
 end;
 
 initialization
