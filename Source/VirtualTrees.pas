@@ -21623,25 +21623,25 @@ begin
   begin
     ImgCheckType := Node.CheckType;
     ImgCheckState := Node.CheckState;
-    if ImgCheckState >= TCheckState.csUncheckedDisabled then begin // disabled image?
-      // Use disbaled images, map ImgCheckState value from disabled to normal
-      ImgEnabled := False;
-      case ImgCheckState of
-        TCheckState.csUncheckedDisabled:
-          ImgCheckState := TCheckState.csUncheckedNormal;
-        TCheckState.csCheckedDisabled:
-          ImgCheckState := TCheckState.csCheckedNormal;
-        TCheckState.csMixedDiabled:
-          ImgCheckState := TCheckState.csMixedPressed;
-      end;//case
-    end//if
-    else
-      ImgEnabled := not (vsDisabled in Node.States) and Enabled;
+    ImgEnabled := not (vsDisabled in Node.States) and Self.Enabled;
 
     IsHot := Node = FCurrentHotNode;
   end
   else
     IsHot := False;
+
+  if ImgCheckState >= TCheckState.csUncheckedDisabled then begin // disabled image?
+    // Use disbaled images, map ImgCheckState value from disabled to normal
+    ImgEnabled := False;
+    case ImgCheckState of
+      TCheckState.csUncheckedDisabled:
+        ImgCheckState := TCheckState.csUncheckedNormal;
+      TCheckState.csCheckedDisabled:
+        ImgCheckState := TCheckState.csCheckedNormal;
+      TCheckState.csMixedDiabled:
+        ImgCheckState := TCheckState.csMixedPressed;
+    end;//case
+  end;//if
 
   if ImgCheckType = ctTriStateCheckBox then
     ImgCheckType := ctCheckBox;
