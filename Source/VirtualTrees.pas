@@ -1599,6 +1599,10 @@ type
     property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clBtnFace;
   end;
 
+  /// Alias definitions for convenience and to keep other uses clause smaller
+  TImageIndex = System.UITypes.TImageIndex;
+  TCustomImageList = Vcl.ImgList.TCustomImageList;
+
   // For painting a node and its columns/cells a lot of information must be passed frequently around.
   TVTImageInfo = record
     Index: TImageIndex;           // Index in the associated image list.
