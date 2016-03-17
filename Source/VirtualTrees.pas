@@ -907,6 +907,11 @@ type
     sdDescending
   );
 
+  TSortDirectionHelper = record helper for VirtualTrees.TSortDirection //TODO -oMarder -c11/2015: Move to VirtutalTrees.pas in delphiLib
+    /// Returns +1 for Ascending and -1 for descending.
+    function ToInt(): Integer;
+  end;
+
   TVirtualTreeColumn = class(TCollectionItem)
   private
     FText,
@@ -1598,10 +1603,6 @@ type
     property UnfocusedSelectionColor: TColor index 6 read GetColor write SetColor default clBtnFace;
     property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clBtnFace;
   end;
-
-  /// Alias definitions for convenience and to keep other uses clause smaller
-  TImageIndex = System.UITypes.TImageIndex;
-  TCustomImageList = Vcl.ImgList.TCustomImageList;
 
   // For painting a node and its columns/cells a lot of information must be passed frequently around.
   TVTImageInfo = record
@@ -12136,6 +12137,16 @@ end;
 destructor TBaseVirtualTree.Destroy;
 
 begin
+  // Disconnect all remote MSAA connections
+  if Assigned(FAccessibleItem) then begin
+    CoDisconnectObject(FAccessibleItem, 0);
+    FAccessibleItem := nil;
+  end;
+  if Assigned(fAccessible) then begin
+    CoDisconnectObject(fAccessible, 0);
+    fAccessible := nil;
+  end;
+
   InterruptValidation();
   Exclude(FOptions.FMiscOptions, toReadOnly);
   ReleaseThreadReference(Self);
@@ -34576,6 +34587,17 @@ begin
   else if Self < csUncheckedDisabled then // do not modify disbaled checkboxes
     Self := csCheckedNormal;
 end;
+
+{ TSortDirectionHelper }
+
+function TSortDirectionHelper.ToInt: Integer;
+begin
+  if Self = sdAscending then
+    Exit(1)
+  else
+    Exit(-1);
+end;
+
 
 initialization
 
