@@ -1,6 +1,9 @@
 # Virtual-TreeView
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
 
+Homebrew fast-and-ugly XE2 backport.
+For XE1 backport consider https://github.com/sglienke/Virtual-TreeView
+
 ###Downloads
 **V6** official release for **RAD Studio XE3 to XE8**: [JAM Software](http://www.jam-software.com/virtual-treeview/)
 
