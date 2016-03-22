@@ -4,7 +4,9 @@ interface
 
 uses
   System.Classes,
+{$if CompilerVersion >= 24}
   System.Actions,
+{$ifend}
   Vcl.Controls,
   Vcl.ActnList,
   VirtualTrees;

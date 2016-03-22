@@ -47,7 +47,7 @@ unit VirtualTrees;
 
 interface
 
-{$if CompilerVersion < 24}{$MESSAGE FATAL 'This version supports only RAD Studio XE3 and higher. Please use V5 from  http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip  or  https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V5_stable.zip'}{$ifend}
+{$if CompilerVersion < 23}{$MESSAGE FATAL 'This version supports only RAD Studio XE3 and higher. Please use V5 from  http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip  or  https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V5_stable.zip'}{$ifend}
 
 {$booleval off} // Use fastest possible boolean evaluation
 
@@ -56,7 +56,10 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 
-{$LEGACYIFEND ON}
+{$WARN SYMBOL_PLATFORM OFF}  // only interested in VCL on Windows
+{$WARN UNIT_PLATFORM OFF}
+
+{$if CompilerVersion >= 24}{$LEGACYIFEND ON}{$ifend}
 {$WARN UNSUPPORTED_CONSTRUCT      OFF}
 
 {$HPPEMIT '#include <objidl.h>'}
@@ -308,9 +311,11 @@ type
     ctButton
   );
 
+  (*** XE2 backport start **)
+  
   // The check states include both, transient and fluent (temporary) states. The only temporary state defined so
   // far is the pressed state.
-  TCheckState = (
+  TCheckStateEnum = (
     csUncheckedNormal,  // unchecked and not pressed
     csUncheckedPressed, // unchecked and pressed
     csCheckedNormal,    // checked and not pressed
@@ -319,16 +324,44 @@ type
     csMixedPressed,     // 3-state check box and pressed
     csUncheckedDisabled,// disabled checkbox, not checkable
     csCheckedDisabled,  // disbaled checkbox, not uncheckable
-    csMixedDiabled      // disabled 3-stae checbox
+    csMixedDisabled     // disabled 3-state checkbox
   );
 
-  TCheckStateHelper = record helper for TCheckState
+  TCheckStateSet = set of TCheckStateEnum;
+
+  TCheckState = record
+    value: TCheckStateEnum;
     procedure SetPressed();
     procedure SetUnpressed();
     procedure Toggle();
     function IsDisabled(): Boolean;
+
+    class operator Implicit(const from: TCheckStateEnum): TCheckState; inline;
+    class operator Implicit(const from: TCheckState): TCheckStateEnum; inline;
+
+    class operator Equal(const a: TCheckState; const b: TCheckStateEnum): boolean; inline;  
+    class operator NotEqual(const a: TCheckState; const b: TCheckStateEnum): boolean; inline;  
+
+    // gotcha - http://stackoverflow.com/questions/8045635/delphi-in-operator-overload-on-a-set
+    // class operator In(a: TCheckState; b: TCheckStateSet): boolean; inline;  
+
+    const csUncheckedNormal   = csUncheckedNormal;
+    const csUncheckedPressed  = csUncheckedPressed;
+    const csCheckedNormal     = csCheckedNormal;
+    const csCheckedPressed    = csCheckedPressed;
+    const csMixedNormal       = csMixedNormal;
+    const csMixedPressed      = csMixedPressed;
+    const csUncheckedDisabled = csUncheckedDisabled;
+    const csCheckedDisabled   = csCheckedDisabled;
+    const csMixedDisabled     = csMixedDisabled;
   end;
 
+  TScrollStyle = 
+{$if CompilerVersion >= 24} System.UITypes {$else} Vcl.StdCtrls {$ifend}
+   .TScrollStyle;
+
+  (*** XE2 backport start end **)
+  
   TCheckImageKind = (
     ckLightCheck,     // gray cross
     ckDarkCheck,      // black cross
@@ -946,7 +979,7 @@ type
     procedure SetBiDiMode(Value: TBiDiMode);
     procedure SetCaptionAlignment(const Value: TAlignment);
     procedure SetCheckBox(Value: Boolean);
-    procedure SetCheckState(Value: TCheckState);
+    procedure SetCheckState(Value: TCheckStateEnum);
     procedure SetCheckType(Value: TCheckType);
     procedure SetColor(const Value: TColor);
     procedure SetImageIndex(Value: TImageIndex);
@@ -998,7 +1031,7 @@ type
       stored IsCaptionAlignmentStored default taLeftJustify;
     property CaptionText: string read FCaptionText stored False;
     property CheckType: TCheckType read FCheckType write SetCheckType default ctCheckBox;
-    property CheckState: TCheckState read FCheckState write SetCheckState default csUncheckedNormal;
+    property CheckState: TCheckStateEnum read FCheckState.Value write SetCheckState default TCheckStateEnum.csUncheckedNormal;
     property CheckBox: Boolean read FCheckBox write SetCheckBox default False;
     property Color: TColor read FColor write SetColor stored IsColorStored;
     property DefaultSortDirection: TSortDirection read FDefaultSortDirection write FDefaultSortDirection default sdAscending;
@@ -1919,6 +1952,9 @@ type
     function GetNext(Node: PVirtualNode): PVirtualNode;
   end;
 
+{$if CompilerVersion < 24}
+  TStyleElements = set of (seFont, seClient, seBorder);
+{$ifend}
 
   // ----- TBaseVirtualTree
   TBaseVirtualTree = class(TCustomControl)
@@ -2590,7 +2626,7 @@ type
     function GetBorderDimensions: TSize; virtual;
     function GetCheckedCount: Integer;
     function GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType = ctNone;
-      ImgCheckState: TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer; virtual;
+      ImgCheckState: TCheckStateEnum = TCheckStateEnum.csUncheckedNormal; ImgEnabled: Boolean = True): Integer; virtual;
     class function GetCheckImageListFor(Kind: TCheckImageKind): TCustomImageList; virtual;
     function GetColumnClass: TVirtualTreeColumnClass; virtual;
     function GetDefaultHintKind: TVTHintKind; virtual;
@@ -2665,7 +2701,7 @@ type
     procedure UpdateDesigner; virtual;
     procedure UpdateEditBounds; virtual;
     procedure UpdateHeaderRect; virtual;
-    procedure UpdateStyleElements; override;
+    procedure UpdateStyleElements; {$if CompilerVersion >= 24} override; {$ifend}
     procedure UpdateWindowAndDragImage(const Tree: TBaseVirtualTree; TreeRect: TRect; UpdateNCArea,
       ReshowDragImage: Boolean); virtual;
     procedure ValidateCache; virtual;
@@ -2922,7 +2958,7 @@ type
     function GetEffectivelyFiltered(Node: PVirtualNode): Boolean;
     function GetEffectivelyVisible(Node: PVirtualNode): Boolean;
     function GetFirst(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
-    function GetFirstChecked(State: TCheckState = csCheckedNormal; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
+    function GetFirstChecked(State: TCheckStateEnum = csCheckedNormal; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetFirstChild(Node: PVirtualNode): PVirtualNode;
     function GetFirstChildNoInit(Node: PVirtualNode): PVirtualNode;
     function GetFirstCutCopy(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -2951,7 +2987,7 @@ type
       IncludeFiltered: Boolean = False): PVirtualNode;
     function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer; virtual;
     function GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
-    function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
+    function GetNextChecked(Node: PVirtualNode; State: TCheckStateEnum = csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode; overload;
     function GetNextChecked(Node: PVirtualNode; ConsiderChildrenAbove: Boolean): PVirtualNode; overload;
     function GetNextCutCopy(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -2977,7 +3013,7 @@ type
     function GetFirstSelectedNodeData<T>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
-    function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
+    function GetPreviousChecked(Node: PVirtualNode; State: TCheckStateEnum = TCheckStateEnum.csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousCutCopy(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousInitialized(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -3053,7 +3089,7 @@ type
 
     { Enumerations }
     function Nodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
-    function CheckedNodes(State: TCheckState = csCheckedNormal; ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
+    function CheckedNodes(State: TCheckStateEnum = TCheckStateEnum.csCheckedNormal; ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
     function ChildNodes(Node: PVirtualNode): TVTVirtualNodeEnumeration;
     function CutCopyNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
     function InitializedNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
@@ -3116,6 +3152,9 @@ type
     property VisiblePath[Node: PVirtualNode]: Boolean read GetVisiblePath write SetVisiblePath;
     property UpdateCount: Cardinal read FUpdateCount;
     property DoubleBuffered: Boolean read GetDoubleBuffered write SetDoubleBuffered default True;
+{$if CompilerVersion < 24} 
+    public const StyleElements = [seFont, seClient, seBorder];     
+{$ifend}    
   end;
 
 
@@ -3254,15 +3293,27 @@ type
   TVTDrawTextEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean) of object;
 
+  (*** XE2 backport start **)
+  StringHelper = record
+    value: string;
+    class operator implicit(const from: String):StringHelper ; inline;
+    class operator implicit(const from: StringHelper):String ; inline;
+    class operator Add(a: char; b: StringHelper): StringHelper ; inline;
+    class operator Add(a: StringHelper; b: char): StringHelper ; inline;
+    class operator Add(a, b: StringHelper): StringHelper ; inline;
+    function IsEmpty: boolean; inline;
+  end;
+
   /// Event arguments of the OnGetCellText event
   TVSTGetCellTextEventArgs = record
     Node: PVirtualNode;
     Column: TColumnIndex;
-    CellText: string;
-    StaticText: string;
+    CellText: StringHelper;
+    StaticText: StringHelper;
     ExportType: TVTExportType;
     constructor Create(pNode: PVirtualNode; pColumn: TColumnIndex; pExportType: TVTExportType = TVTExportType.etNone);
   end;
+  (*** XE2 backport end **)
 
   /// Event signature which is called when text is painted on the canvas or needed for the export.
   TVSTGetCellTextEvent = procedure(Sender: TCustomVirtualStringTree; var E: TVSTGetCellTextEventArgs) of object;
@@ -3463,7 +3514,9 @@ type
     property SelectionCurveRadius;
     property ShowHint;
     property StateImages;
+{$if CompilerVersion >= 24}
     property StyleElements;
+{$ifend}
     property TabOrder;
     property TabStop default True;
     property TextMargin;
@@ -3870,7 +3923,9 @@ type
     property OnCanResize;
     property OnGesture;
     property Touch;
-    property StyleElements;
+{$if CompilerVersion >= 24} 
+    property StyleElements; 
+{$ifend}
   end;
 
 
@@ -6834,10 +6889,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetCheckState(Value: TCheckState);
+procedure TVirtualTreeColumn.SetCheckState(Value: TCheckStateEnum);
 
 begin
-  if Value <> FCheckState then
+  if Value <> FCheckState.value then
   begin
     FCheckState := Value;
     Changed(False);
@@ -12358,7 +12413,7 @@ begin
           begin
             // Propagate state down to the children.
             if toAutoTristateTracking in FOptions.FAutoOptions then
-              case Value of
+              case TCheckStateEnum(Value) of
                 csUncheckedNormal:
                   if Node.ChildCount > 0 then
                   begin
@@ -12374,7 +12429,7 @@ begin
                           SetCheckState(Run, csUncheckedNormal);
                         // Check if the new child state was set successfully, otherwise we have to adjust the
                         // node's new check state accordingly.
-                        case Run.CheckState of
+                        case TCheckStateEnum(Run.CheckState) of
                           csCheckedNormal, csCheckedDisabled:
                             Inc(CheckedCount);
                           csMixedNormal:
@@ -12413,7 +12468,7 @@ begin
                           SetCheckState(Run, csCheckedNormal);
                         // Check if the new child state was set successfully, otherwise we have to adjust the
                         // node's new check state accordingly.
-                        case Run.CheckState of
+                        case TCheckStateEnum(Run.CheckState) of
                           csCheckedNormal:
                             Inc(CheckedCount);
                           csMixedNormal:
@@ -14416,7 +14471,7 @@ begin
   if (Node.CheckType <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
     Node.CheckType := Value;
-    if (Value <> ctTriStateCheckBox) and (Node.CheckState in [csMixedNormal, csMixedPressed]) then
+    if (Value <> ctTriStateCheckBox) and (Node.CheckState.value in [csMixedNormal, csMixedPressed]) then
       Node.CheckState := csUncheckedNormal;// reset check state if it doesn't fit the new check type
     // For check boxes with tri-state check box parents we have to initialize differently.
     if (toAutoTriStateTracking in FOptions.FAutoOptions) and (Value in [ctCheckBox, ctTriStateCheckBox]) and
@@ -14425,9 +14480,9 @@ begin
       if not (vsInitialized in Node.Parent.States) then
         InitNode(Node.Parent);
       if (Node.Parent.CheckType = ctTriStateCheckBox) then begin
-        if (Node.Parent.CheckState in [csUncheckedNormal, csUncheckedDisabled]) then
+        if (Node.Parent.CheckState.value in [csUncheckedNormal, csUncheckedDisabled]) then
           CheckState[Node] := csUncheckedNormal
-        else if (Node.Parent.CheckState in [csCheckedNormal, csCheckedDisabled]) then
+        else if (Node.Parent.CheckState.value in [csCheckedNormal, csCheckedDisabled]) then
           CheckState[Node] := csCheckedNormal;
       end;//if
     end;//if
@@ -14951,7 +15006,7 @@ var
 begin
   // Check if there is initial user data and there is also enough user data space allocated.
   Assert(FNodeDataSize >= SizeOf(Pointer), Self.Classname + ': Cannot set initial user data because there is not enough user data space allocated.');
-  NodeData := @pNode.Data;
+  NodeData := pointer(@pNode.Data);
   NodeData^ := pUserData;
   Include(pNode.States, vsOnFreeNodeCallRequired);
 end;
@@ -18342,7 +18397,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if NewCheckState in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
+        if NewCheckState.value in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (NewCheckState = csMixedNormal);
       end;
@@ -18351,7 +18406,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if Run.CheckState in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
+        if Run.CheckState.value in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (Run.CheckState = csMixedNormal);
       end;
@@ -20632,7 +20687,7 @@ begin
         begin
           if (suoRepaintHeader in Options) and (hoVisible in FHeader.FOptions) then
             FHeader.Invalidate(nil);
-          if not (tsSizing in FStates) and (FScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssHorizontal, System.UITypes.TScrollStyle.ssBoth]) then
+          if not (tsSizing in FStates) and (FScrollBarOptions.ScrollBars in [TScrollStyle.ssHorizontal, TScrollStyle.ssBoth]) then
             UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
         end;
 
@@ -20640,7 +20695,7 @@ begin
         begin
           UpdateVerticalScrollBar(suoRepaintScrollBars in Options);
           if not (FHeader.UseColumns or IsMouseSelecting) and
-            (FScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssHorizontal, System.UITypes.TScrollStyle.ssBoth]) then
+            (FScrollBarOptions.ScrollBars in [TScrollStyle.ssHorizontal, TScrollStyle.ssBoth]) then
             UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
         end;
       end;
@@ -21558,8 +21613,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType = ctNone; ImgCheckState:
-  TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer;
+function TBaseVirtualTree.GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType; ImgCheckState:
+  TCheckStateEnum; ImgEnabled: Boolean): Integer;
 
 // Determines the index into the check image list for the given node depending on the check type
 // and enabled state.
@@ -21638,7 +21693,7 @@ begin
         ImgCheckState := TCheckState.csUncheckedNormal;
       TCheckState.csCheckedDisabled:
         ImgCheckState := TCheckState.csCheckedNormal;
-      TCheckState.csMixedDiabled:
+      TCheckState.csMixedDisabled:
         ImgCheckState := TCheckState.csMixedPressed;
     end;//case
   end;//if
@@ -25724,7 +25779,9 @@ begin
       Self.ScrollBarOptions := ScrollBarOptions;
       Self.ShowHint := ShowHint;
       Self.StateImages := StateImages;
+{$if CompilerVersion >= 24}
       Self.StyleElements := StyleElements;
+{$ifend}
       Self.TabOrder := TabOrder;
       Self.TabStop := TabStop;
       Self.Visible := Visible;
@@ -26961,8 +27018,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetFirstChecked(State: TCheckState = csCheckedNormal;
-  ConsiderChildrenAbove: Boolean = False): PVirtualNode;
+function TBaseVirtualTree.GetFirstChecked(State: TCheckStateEnum;
+  ConsiderChildrenAbove: Boolean): PVirtualNode;
 
 // Returns the first node in the tree with the given check state.
 
@@ -27848,8 +27905,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
-  ConsiderChildrenAbove: Boolean = False): PVirtualNode;
+function TBaseVirtualTree.GetNextChecked(Node: PVirtualNode; State: TCheckStateEnum;
+  ConsiderChildrenAbove: Boolean): PVirtualNode;
 
 begin
   if (Node = nil) or (Node = FRoot) then
@@ -28579,7 +28636,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
+function TBaseVirtualTree.GetPreviousChecked(Node: PVirtualNode; State: TCheckStateEnum = csCheckedNormal;
   ConsiderChildrenAbove: Boolean = False): PVirtualNode;
 
 begin
@@ -29087,7 +29144,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CheckedNodes(State: TCheckState; ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
+function TBaseVirtualTree.CheckedNodes(State: TCheckStateEnum; ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
 
 // Enumeration for all checked nodes
 
@@ -31465,7 +31522,7 @@ begin
     else
       if (R.Bottom > ClientHeight) or Center then
       begin
-        HScrollBarVisible := (ScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssBoth, System.UITypes.TScrollStyle.ssHorizontal]) and
+        HScrollBarVisible := (ScrollBarOptions.ScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssHorizontal]) and
           (ScrollBarOptions.AlwaysVisible or (Integer(FRangeX) > ClientWidth));
         if Center then
           SetOffsetY(FOffsetY - R.Bottom + ClientHeight div 2)
@@ -32322,7 +32379,7 @@ begin
   else
     FEffectiveOffsetX := -FOffsetX;
 
-  if FScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssHorizontal, System.UITypes.TScrollStyle.ssBoth] then
+  if FScrollBarOptions.ScrollBars in [TScrollStyle.ssHorizontal, TScrollStyle.ssBoth] then
   begin
     ZeroMemory (@ScrollInfo, SizeOf(ScrollInfo));
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
@@ -33700,8 +33757,8 @@ begin
     OnGetCellText(Self, pEventArgs);
   end
   else if Assigned(FOnGetText) then begin
-    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttNormal, pEventArgs.CellText);
-    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText);
+    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttNormal, pEventArgs.CellText.value);
+    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText.value);
   end;
 end;
 
@@ -34493,7 +34550,7 @@ procedure TVirtualNode.SetData(pUserData: Pointer);
 var
   NodeData: ^Pointer;
 begin
-  NodeData := @Self.Data;
+  NodeData := pointer(@Self.Data);
   NodeData^ := pUserData;
   Include(Self.States, vsOnFreeNodeCallRequired);
 end;
@@ -34540,37 +34597,91 @@ end;
 
 { TCheckStateHelper }
 
-function TCheckStateHelper.IsDisabled: Boolean;
+function TCheckState.IsDisabled: Boolean;
 begin
-  Result := Self >= TCheckState.csUncheckedDisabled;
+  Result := Value >= csUncheckedDisabled;
 end;
 
-procedure TCheckStateHelper.SetPressed();
+procedure TCheckState.SetPressed();
 const
   // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
-  PressedState: array[TCheckState] of TCheckState = (
-    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDiabled
+  PressedState: array[TCheckStateEnum] of TCheckStateEnum = (
+    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
 begin
-  Self := PressedState[Self];
+  Self := PressedState[TCheckStateEnum(Self)];
 end;
 
-procedure TCheckStateHelper.SetUnpressed();
+procedure TCheckState.SetUnpressed();
 const
-  UnpressedState: array[TCheckState] of TCheckState = (
-    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDiabled
+  UnpressedState: array[TCheckStateEnum] of TCheckStateEnum = (
+    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
 begin
-  Self := UnpressedState[Self];
+  Self := UnpressedState[TCheckStateEnum(Self)];
 end;
 
 
-procedure TCheckStateHelper.Toggle;
+procedure TCheckState.Toggle;
 begin
   if Self = csCheckedNormal then
     Self := csUncheckedNormal
-  else if Self < csUncheckedDisabled then // do not modify disbaled checkboxes
+  else if TCheckStateEnum(Self) < csUncheckedDisabled then // do not modify disabled checkboxes
     Self := csCheckedNormal;
+end;
+
+class operator TCheckState.Implicit(const from: TCheckState): TCheckStateEnum;
+begin
+  Result := from.value;
+end;
+
+class operator TCheckState.Implicit(const from: TCheckStateEnum): TCheckState;
+begin
+  Result.Value := from;
+end;
+
+{ StringHelper }
+
+class operator StringHelper.implicit(const from: StringHelper): String;
+begin
+  Result := from.value;
+end;
+
+class operator StringHelper.implicit(const from: String): StringHelper;
+begin
+  Result.Value := from;
+end;
+
+function StringHelper.IsEmpty: boolean;
+begin
+  Result := value = '';
+end;
+
+class operator TCheckState.Equal(const a: TCheckState;
+  const b: TCheckStateEnum): boolean;
+begin
+  Result := TCheckStateEnum(a) = b;
+end;
+
+class operator TCheckState.NotEqual(const a: TCheckState;
+  const b: TCheckStateEnum): boolean;
+begin
+  Result := TCheckStateEnum(a) <> b;
+end;
+
+class operator StringHelper.Add(a, b: StringHelper): StringHelper;
+begin
+  Result := a.value + b.value;
+end;
+
+class operator StringHelper.Add(a: StringHelper; b: char): StringHelper;
+begin
+  Result := a.value + b;
+end;
+
+class operator StringHelper.Add(a: char; b: StringHelper): StringHelper;
+begin
+  Result := a + b.value;
 end;
 
 initialization
