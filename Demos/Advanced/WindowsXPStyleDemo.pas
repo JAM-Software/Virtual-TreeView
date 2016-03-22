@@ -175,7 +175,7 @@ begin
       if Node.Parent = Sender.RootNode then
         CellText := Data.Caption
       else
-        Text := 'More entries';
+        CellText := 'More entries';
     1:
       if Node.Parent = Sender.RootNode then
         CellText := FloatToStr(Data.Size / 1000) + ' MB';
