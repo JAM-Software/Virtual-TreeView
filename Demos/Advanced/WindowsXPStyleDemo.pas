@@ -215,7 +215,7 @@ begin
 
         if SortColumn <> NoColumn then
           Columns[SortColumn].Color := $F7F7F7;
-        SortTree(SortColumn, SortDirection, False);
+        SortTree(SortColumn, SortDirection, True);
 
       end;
     end;
