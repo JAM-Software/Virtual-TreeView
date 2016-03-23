@@ -7,6 +7,8 @@ For XE1 backport consider https://github.com/sglienke/Virtual-TreeView
 ###Downloads
 **V6** official release for **RAD Studio XE3 to XE8**: [JAM Software](http://www.jam-software.com/virtual-treeview/)
 
+For a **Delphi XE and XE2** compatible fork see: [sglienke/Virtual-TreeView](https://github.com/sglienke/Virtual-TreeView)
+
 **V5.5.3** for **Delphi 7 to XE2**: [Download](http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip)
 
 **V6 latest unstable version**: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip)
