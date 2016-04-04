@@ -63,7 +63,6 @@ procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas
 // Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
 // the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
 // For higher speed (and multiple entries to be shorted) specify this value explicitely.
-// Note: It is assumed that the string really needs shortage. Check this in advance.
 function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
 
 // Wrap the given string S so that it fits into a space of given width.
@@ -209,9 +208,6 @@ begin
       EllipsisWidth := Size.cx;
     end;
 
-    if Width <= EllipsisWidth then
-      Result := ''
-    else
     begin
       // Do a binary search for the optimal string length which fits into the given width.
       L := 0;
@@ -226,7 +222,13 @@ begin
         else
           H := N - 1;
       end;
-      Result := Copy(S, 1, L) + '...';
+      Inc(L);
+      if L >= Len then
+        Result := S
+      else if Width <= EllipsisWidth then
+        Result := ''
+      else
+        Result := Copy(S, 1, L) + '...';
     end;
   end;
 end;
