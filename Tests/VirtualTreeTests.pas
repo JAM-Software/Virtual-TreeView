@@ -28,11 +28,11 @@ type
     /// <param name="pWidth">The width in pixels that is availbale, based on 96dpi == 100% dpi scaling.</param>
     /// <param name="pShortString">The expected shortened string.</param>
     [Test]
-    [TestCase('Test1', 'A,100,A')]
+    [TestCase('Test1', 'Abc,20,A...')]
     [TestCase('Test2', 'Abc,100,Abc')]
     [TestCase('Test3', 'Abc,10,')]
-    [TestCase('Test4', 'Abc,20,A...')]
-    [TestCase('Test5', 'ii,14,ii')]
+    [TestCase('Test4', 'A,100,A')]
+    [TestCase('Test5', 'ii,16,ii')]
     procedure TestShortenString(const pLongString : string; const pWidth: Integer; const pShortString: string);
   end;
 
@@ -65,6 +65,7 @@ end;
 procedure TVirtualTreeUtilsTests.Setup;
 begin
   fBitmap := TBitmap.Create;
+  fBitmap.Canvas.Font.Name := 'Tahoma';
 end;
 
 procedure TVirtualTreeUtilsTests.TearDown;

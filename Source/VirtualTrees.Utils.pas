@@ -211,7 +211,7 @@ begin
     begin
       // Do a binary search for the optimal string length which fits into the given width.
       L := 0;
-      H := Len - 1;
+      H := Len;
       while L < H do
       begin
         N := (L + H + 1) shr 1;
@@ -222,7 +222,8 @@ begin
         else
           H := N - 1;
       end;
-      Inc(L);
+      if W <= Width then
+        L := N;
       if L >= Len then
         Result := S
       else if Width <= EllipsisWidth then
