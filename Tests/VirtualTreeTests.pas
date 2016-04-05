@@ -66,6 +66,8 @@ procedure TVirtualTreeUtilsTests.Setup;
 begin
   fBitmap := TBitmap.Create;
   fBitmap.Canvas.Font.Name := 'Tahoma';
+  fBitmap.Canvas.Font.Size := 8;
+  Assert.AreEqual(fBitmap.Canvas.Font.PixelsPerInch, 96, 'PixelsPerInch of font does not have th expected value of 96 dpi')
 end;
 
 procedure TVirtualTreeUtilsTests.TearDown;
