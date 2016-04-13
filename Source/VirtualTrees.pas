@@ -909,7 +909,7 @@ type
 
   TSortDirectionHelper = record helper for VirtualTrees.TSortDirection //TODO -oMarder -c11/2015: Move to VirtutalTrees.pas in delphiLib
     /// Returns +1 for Ascending and -1 for descending.
-    function ToInt(): Integer;
+    function ToInt(): Integer; inline;
   end;
 
   TVirtualTreeColumn = class(TCollectionItem)
