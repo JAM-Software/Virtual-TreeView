@@ -327,7 +327,10 @@ type
     function GetPressed(): TCheckState;
     function GetUnpressed(): TCheckState;
     function GetToggled(): TCheckState;
-    function IsDisabled(): Boolean;
+    function IsDisabled(): Boolean; inline;
+    function IsChecked():   Boolean; inline;
+    function IsUnChecked(): Boolean; inline;
+    function IsMixed():     Boolean; inline;
   end;
 
   TCheckImageKind = (
@@ -18358,7 +18361,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if NewCheckState in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
+        if NewCheckState.IsChecked then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (NewCheckState = csMixedNormal);
       end;
@@ -18367,7 +18370,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if Run.CheckState in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
+        if Run.CheckState.IsChecked then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (Run.CheckState = csMixedNormal);
       end;
@@ -34564,6 +34567,21 @@ begin
   Result := Self >= TCheckState.csUncheckedDisabled;
 end;
 
+function TCheckStateHelper.IsChecked: Boolean;
+begin
+  Result := Self in [csCheckedNormal, csCheckedPressed, csCheckedDisabled];
+end;
+
+function TCheckStateHelper.IsUnChecked: Boolean;
+begin
+  Result := Self in [csUnCheckedNormal, csUnCheckedPressed, csUnCheckedDisabled];
+end;
+
+function TCheckStateHelper.IsMixed: Boolean;
+begin
+  Result := Self in [csMixedNormal, csMixedPressed, csMixedDisabled];
+end;
+
 function TCheckStateHelper.GetPressed(): TCheckState;
 const
   // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
@@ -34586,12 +34604,12 @@ end;
 
 function TCheckStateHelper.GetToggled(): TCheckState;
 begin
-  if Self = csCheckedNormal then
+  if IsChecked then
     Result := csUncheckedNormal
-  else if Self < csUncheckedDisabled then // do not modify disbaled checkboxes
-    Result := csCheckedNormal
+  else if IsDisabled then // do not modify disbaled checkboxes
+    Result := Self
   else
-    Result := Self;
+    Result := csCheckedNormal;
 end;
 
 { TSortDirectionHelper }
