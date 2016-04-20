@@ -324,9 +324,19 @@ type
 
   /// Adds some convenience methods to type TCheckState
   TCheckStateHelper = record helper for TCheckState
-    function GetPressed(): TCheckState;
-    function GetUnpressed(): TCheckState;
-    function GetToggled(): TCheckState;
+  strict private
+  const
+    // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
+    cPressedState: array[TCheckState] of TCheckState = (
+      csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
+    cUnpressedState: array[TCheckState] of TCheckState = (
+      csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
+    cToggledState: array[TCheckState] of TCheckState = (
+      csCheckedNormal, csCheckedPressed, csUnCheckedNormal, csUnCheckedPressed, csCheckedNormal, csCheckedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
+  public
+    function GetPressed(): TCheckState; inline;
+    function GetUnpressed(): TCheckState; inline;
+    function GetToggled(): TCheckState; inline;
     function IsDisabled(): Boolean; inline;
     function IsChecked():   Boolean; inline;
     function IsUnChecked(): Boolean; inline;
@@ -34583,33 +34593,18 @@ begin
 end;
 
 function TCheckStateHelper.GetPressed(): TCheckState;
-const
-  // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
-  PressedState: array[TCheckState] of TCheckState = (
-    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
-  );
 begin
-  Result := PressedState[Self];
+  Result := cPressedState[Self];
 end;
 
 function TCheckStateHelper.GetUnpressed(): TCheckState;
-const
-  UnpressedState: array[TCheckState] of TCheckState = (
-    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
-  );
 begin
-  Result := UnpressedState[Self];
+  Result := cUnpressedState[Self];
 end;
-
 
 function TCheckStateHelper.GetToggled(): TCheckState;
 begin
-  if IsChecked then
-    Result := csUncheckedNormal
-  else if IsDisabled then // do not modify disbaled checkboxes
-    Result := Self
-  else
-    Result := csCheckedNormal;
+  Result := cToggledState[Self];
 end;
 
 { TSortDirectionHelper }
