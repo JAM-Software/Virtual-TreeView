@@ -21658,8 +21658,8 @@ begin
   else
     IsHot := False;
 
-  if ImgCheckState >= TCheckState.csUncheckedDisabled then begin // disabled image?
-    // Use disbaled images, map ImgCheckState value from disabled to normal
+  if ImgCheckState.IsDisabled then begin // disabled image?
+    // UWe need to ue disabled images, map ImgCheckState value from disabled to normal, as disbaled state is expressed by ImgEnabled.
     ImgEnabled := False;
     case ImgCheckState of
       TCheckState.csUncheckedDisabled:
