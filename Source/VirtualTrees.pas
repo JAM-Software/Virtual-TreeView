@@ -319,7 +319,7 @@ type
     csMixedPressed,     // 3-state check box and pressed
     csUncheckedDisabled,// disabled checkbox, not checkable
     csCheckedDisabled,  // disbaled checkbox, not uncheckable
-    csMixedDisabled      // disabled 3-state checkbox
+    csMixedDisabled     // disabled 3-state checkbox
   );
 
   /// Adds some convenience methods to type TCheckState
@@ -331,11 +331,14 @@ type
       csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
     cUnpressedState: array[TCheckState] of TCheckState = (
       csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
+    cEnabledState: array[TCheckState] of TCheckState = (
+      csUncheckedNormal, csUncheckedPressed, csCheckedNormal, csCheckedPressed, csMixedNormal, csMixedPressed, csUncheckedNormal, csCheckedNormal, csMixedNormal);
     cToggledState: array[TCheckState] of TCheckState = (
       csCheckedNormal, csCheckedPressed, csUnCheckedNormal, csUnCheckedPressed, csCheckedNormal, csCheckedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
   public
     function GetPressed(): TCheckState; inline;
     function GetUnpressed(): TCheckState; inline;
+    function GetEnabled(): TCheckState; inline;
     function GetToggled(): TCheckState; inline;
     function IsDisabled(): Boolean; inline;
     function IsChecked():   Boolean; inline;
@@ -21659,16 +21662,9 @@ begin
     IsHot := False;
 
   if ImgCheckState.IsDisabled then begin // disabled image?
-    // UWe need to ue disabled images, map ImgCheckState value from disabled to normal, as disbaled state is expressed by ImgEnabled.
+    // We need to use disabled images, so map ImgCheckState value from disabled to normal, as disabled state is expressed by ImgEnabled.
     ImgEnabled := False;
-    case ImgCheckState of
-      TCheckState.csUncheckedDisabled:
-        ImgCheckState := TCheckState.csUncheckedNormal;
-      TCheckState.csCheckedDisabled:
-        ImgCheckState := TCheckState.csCheckedNormal;
-      TCheckState.csMixedDisabled:
-        ImgCheckState := TCheckState.csMixedPressed;
-    end;//case
+    ImgCheckState := ImgCheckState.GetEnabled();
   end;//if
 
   if ImgCheckType = ctTriStateCheckBox then
@@ -34590,6 +34586,11 @@ end;
 function TCheckStateHelper.IsMixed: Boolean;
 begin
   Result := Self in [csMixedNormal, csMixedPressed, csMixedDisabled];
+end;
+
+function TCheckStateHelper.GetEnabled: TCheckState;
+begin
+  Result := cEnabledState[Self];
 end;
 
 function TCheckStateHelper.GetPressed(): TCheckState;
