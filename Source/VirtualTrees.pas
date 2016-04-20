@@ -319,7 +319,7 @@ type
     csMixedPressed,     // 3-state check box and pressed
     csUncheckedDisabled,// disabled checkbox, not checkable
     csCheckedDisabled,  // disbaled checkbox, not uncheckable
-    csMixedDiabled      // disabled 3-state checkbox
+    csMixedDisabled      // disabled 3-state checkbox
   );
 
   /// Adds some convenience methods to type TCheckState
@@ -21653,7 +21653,7 @@ begin
         ImgCheckState := TCheckState.csUncheckedNormal;
       TCheckState.csCheckedDisabled:
         ImgCheckState := TCheckState.csCheckedNormal;
-      TCheckState.csMixedDiabled:
+      TCheckState.csMixedDisabled:
         ImgCheckState := TCheckState.csMixedPressed;
     end;//case
   end;//if
@@ -34568,7 +34568,7 @@ function TCheckStateHelper.GetPressed(): TCheckState;
 const
   // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
   PressedState: array[TCheckState] of TCheckState = (
-    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDiabled
+    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
 begin
   Result := PressedState[Self];
@@ -34577,7 +34577,7 @@ end;
 function TCheckStateHelper.GetUnpressed(): TCheckState;
 const
   UnpressedState: array[TCheckState] of TCheckState = (
-    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDiabled
+    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
 begin
   Result := UnpressedState[Self];
