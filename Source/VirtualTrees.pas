@@ -331,9 +331,9 @@ type
 
   TCheckState = record
     value: TCheckStateEnum;
-    procedure SetPressed();
-    procedure SetUnpressed();
-    procedure Toggle();
+    function GetPressed(): TCheckState;
+    function GetUnpressed(): TCheckState;
+    function GetToggled(): TCheckState;
     function IsDisabled(): Boolean;
 
     class operator Implicit(const from: TCheckStateEnum): TCheckState; inline;
@@ -12177,7 +12177,7 @@ begin
   FClipboardFormats := TClipboardFormats.Create(Self);
   FOptions := GetOptionsClass.Create(Self);
 
-  if not (csDesigning in ComponentState) then //Don't cerate worker thread in IDE, there is no use for it
+  if not (csDesigning in ComponentState) then //Don't create worker thread in IDE, there is no use for it
     AddThreadReference;
   VclStyleChanged();
 end;
@@ -12514,7 +12514,7 @@ begin
       if Result then
         CheckState := Value // Set new check state
       else
-        CheckState.SetUnpressed(); // Reset dynamic check state.
+        CheckState := CheckState.GetUnpressed(); // Reset dynamic check state.
 
       // Propagate state up to the parent.
       if not (vsInitialized in Parent.States) then
@@ -16632,7 +16632,7 @@ begin
       if (tsKeyCheckPending in FStates) and (CharCode <> VK_SPACE) then
       begin
         DoStateChange([], [tskeyCheckPending]);
-        FCheckNode.CheckState.SetUnpressed();
+        FCheckNode.CheckState := FCheckNode.CheckState.GetUnpressed();
         RepaintNode(FCheckNode);
         FCheckNode := nil;
       end;
@@ -17136,7 +17136,7 @@ begin
                   DoStateChange([tsKeyCheckPending]);
                   FCheckNode := FFocusedNode;
                   FPendingCheckState := NewCheckState;
-                  FCheckNode.CheckState.SetPressed();
+                  FCheckNode.CheckState := FCheckNode.CheckState.GetPressed();
                   RepaintNode(FCheckNode);
                 end;
               end;
@@ -19158,8 +19158,7 @@ begin
   case CheckType of
     ctTriStateCheckBox,
     ctCheckBox: begin
-      Result := CheckState;
-      Result.Toggle();
+      Result := CheckState.GetToggled();
     end;//ctCheckbox
     ctRadioButton:
       Result := csCheckedNormal;
@@ -22307,7 +22306,7 @@ begin
             DoStateChange([tsMouseCheckPending]);
             FCheckNode := HitInfo.HitNode;
             FPendingCheckState := NewCheckState;
-            FCheckNode.CheckState.SetPressed();
+            FCheckNode.CheckState := FCheckNode.CheckState.GetPressed();
             InvalidateNode(HitInfo.HitNode);
             MayEdit := False;
           end;
@@ -22516,7 +22515,7 @@ begin
         DoStateChange([tsMouseCheckPending]);
         FCheckNode := HitInfo.HitNode;
         FPendingCheckState := NewCheckState;
-        FCheckNode.CheckState.SetPressed();
+        FCheckNode.CheckState := FCheckNode.CheckState.GetPressed();
         InvalidateNode(HitInfo.HitNode);
       end;
     end;
@@ -22706,7 +22705,7 @@ begin
        if (HitInfo.HitNode = FCheckNode) and (hiOnItem in HitInfo.HitPositions) then
           DoCheckClick(FCheckNode, FPendingCheckState)
         else
-          FCheckNode.CheckState.SetUnpressed();
+          FCheckNode.CheckState := FCheckNode.CheckState.GetUnpressed();
         InvalidateNode(FCheckNode);
       end;
       FCheckNode := nil;
@@ -23793,7 +23792,11 @@ begin
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
-      StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize);
+      if not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
+        // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. Siee issue #615
+        if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
+          lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
+      end;//if
       R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
       StyleServices.DrawElement(Canvas.Handle, Details, R);
       if Index in [21..24] then
@@ -34595,39 +34598,41 @@ begin
   Self.ExportType := pExportType;
 end;
 
-{ TCheckStateHelper }
+{ TCheckState }
 
 function TCheckState.IsDisabled: Boolean;
 begin
   Result := Value >= csUncheckedDisabled;
 end;
 
-procedure TCheckState.SetPressed();
+function TCheckState.GetPressed(): TCheckState;
 const
   // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
   PressedState: array[TCheckStateEnum] of TCheckStateEnum = (
     csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
 begin
-  Self := PressedState[TCheckStateEnum(Self)];
+  Result := PressedState[TCheckStateEnum(Self)];
 end;
 
-procedure TCheckState.SetUnpressed();
+function TCheckState.GetUnpressed(): TCheckState;
 const
   UnpressedState: array[TCheckStateEnum] of TCheckStateEnum = (
     csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
 begin
-  Self := UnpressedState[TCheckStateEnum(Self)];
+  Result := UnpressedState[TCheckStateEnum(Self)];
 end;
 
 
-procedure TCheckState.Toggle;
+function TCheckState.GetToggled(): TCheckState;
 begin
   if Self = csCheckedNormal then
-    Self := csUncheckedNormal
+    Result := csUncheckedNormal
   else if TCheckStateEnum(Self) < csUncheckedDisabled then // do not modify disabled checkboxes
-    Self := csCheckedNormal;
+    Result := csCheckedNormal
+  else
+    Result := Self;
 end;
 
 class operator TCheckState.Implicit(const from: TCheckState): TCheckStateEnum;
