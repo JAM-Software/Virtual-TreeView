@@ -211,6 +211,8 @@ begin
     begin
       // Do a binary search for the optimal string length which fits into the given width.
       L := 0;
+      N := 0;
+      W := Width;
       H := Len;
       while L < H do
       begin
