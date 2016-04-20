@@ -323,45 +323,96 @@ type
     csMixedNormal,      // 3-state check box and not pressed
     csMixedPressed,     // 3-state check box and pressed
     csUncheckedDisabled,// disabled checkbox, not checkable
-    csCheckedDisabled,  // disbaled checkbox, not uncheckable
+    csCheckedDisabled,  // disabled checkbox, not uncheckable
     csMixedDisabled     // disabled 3-state checkbox
   );
+
+  TCheckStateMarkKind = (csmUnchecked, csmChecked, csmMixed);
+  TCheckStateUIState  = (csuDisabled,  csuNormal,  csuPressed);
 
   TCheckStateSet = set of TCheckStateEnum;
 
   TCheckState = record
-    value: TCheckStateEnum;
-    function GetPressed(): TCheckState;
-    function GetUnpressed(): TCheckState;
-    function GetToggled(): TCheckState;
-    function IsDisabled(): Boolean;
-
+    Value: TCheckStateEnum;
     class operator Implicit(const from: TCheckStateEnum): TCheckState; inline;
     class operator Implicit(const from: TCheckState): TCheckStateEnum; inline;
 
-    class operator Equal(const a: TCheckState; const b: TCheckStateEnum): boolean; inline;  
-    class operator NotEqual(const a: TCheckState; const b: TCheckStateEnum): boolean; inline;  
+    class operator Equal(const a: TCheckState; const b: TCheckStateEnum): boolean; inline;
+    class operator NotEqual(const a: TCheckState; const b: TCheckStateEnum): boolean; inline;
 
     // gotcha - http://stackoverflow.com/questions/8045635/delphi-in-operator-overload-on-a-set
-    // class operator In(a: TCheckState; b: TCheckStateSet): boolean; inline;  
+    // class operator In(a: TCheckState; b: TCheckStateSet): boolean; inline;
 
-    const csUncheckedNormal   = csUncheckedNormal;
-    const csUncheckedPressed  = csUncheckedPressed;
-    const csCheckedNormal     = csCheckedNormal;
-    const csCheckedPressed    = csCheckedPressed;
-    const csMixedNormal       = csMixedNormal;
-    const csMixedPressed      = csMixedPressed;
-    const csUncheckedDisabled = csUncheckedDisabled;
-    const csCheckedDisabled   = csCheckedDisabled;
-    const csMixedDisabled     = csMixedDisabled;
+//    const UncheckedNormal   = csUncheckedNormal; // compatibility with TBaseVirtualTree.GetCheckImage
+//    const csUncheckedPressed  = csUncheckedPressed;
+//    const csCheckedNormal     = csCheckedNormal;
+//    const csCheckedPressed    = csCheckedPressed;
+//    const csMixedNormal       = csMixedNormal;
+//    const csMixedPressed      = csMixedPressed;
+//    const csUncheckedDisabled = csUncheckedDisabled;
+//    const csCheckedDisabled   = csCheckedDisabled;
+//    const csMixedDisabled     = csMixedDisabled;
+
+    function GetPressed(): TCheckState;   inline;
+    function GetUnpressed(): TCheckState; inline;
+    function GetToggled(): TCheckState;   inline;
+
+    function IsDisabled(): Boolean; inline;
+    function IsNormal():   Boolean; inline;
+    function IsPressed():  Boolean; inline;
+
+    function IsChecked():   Boolean; inline;
+    function IsUnChecked(): Boolean; inline;
+    function IsMixed():     Boolean; inline;
+
+    constructor Create(const Mark: TCheckStateMarkKind; const State: TCheckStateUIState);
+
+    function GetWithMarkKind(const Value: TCheckStateMarkKind): TCheckState;
+    function GetWithUIState(const Value: TCheckStateUIState): TCheckState;
+    function MarkKind: TCheckStateMarkKind; inline;
+    function UIState:  TCheckStateUIState;  inline;
+
+  strict private const
+  // Lookup to quickly convert a specific check state into its (un-)pressed counterpart and vice versa.
+  PressedState: array[TCheckStateEnum] of TCheckStateEnum = (
+    csUncheckedPressed, csUncheckedPressed, csCheckedPressed,
+    csCheckedPressed, csMixedPressed, csMixedPressed,
+    csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
+  );
+  UnpressedState: array[TCheckStateEnum] of TCheckStateEnum = (
+    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal,
+    csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
+  );
+  ToggledState: array[TCheckStateEnum] of TCheckStateEnum = (
+    csCheckedNormal,   csCheckedNormal   { csCheckedPressed???? },
+    csUnCheckedNormal, csUnCheckedNormal { csUnCheckedPressed???? },
+    csCheckedNormal,   csCheckedNormal   { csCheckedPressed???? },
+    csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
+  );
+  MarkKinds: array[TCheckStateEnum] of TCheckStateMarkKind = (
+    csmUnchecked, csmUnchecked,
+    csmChecked,   csmChecked,
+    csmMixed,     csmMixed,
+    csmUnchecked, csmChecked, csmMixed
+  );
+  UIStates: array[TCheckStateEnum] of TCheckStateUIState = (
+    csuNormal, csuPressed,
+    csuNormal, csuPressed,
+    csuNormal, csuPressed,
+    csuDisabled, csuDisabled, csuDisabled
+  );
+  PackSets: array[TCheckStateMarkKind,TCheckStateUIState] of TCheckStateEnum =
+    ((csUncheckedDisabled, csUncheckedNormal, csUncheckedPressed),
+     (csCheckedDisabled,   csCheckedNormal,   csCheckedPressed),
+     (csMixedDisabled,     csMixedNormal,     csMixedPressed));
   end;
 
-  TScrollStyle = 
+  TScrollStyle =
 {$if CompilerVersion >= 24} System.UITypes {$else} Vcl.StdCtrls {$ifend}
    .TScrollStyle;
 
   (*** XE2 backport start end **)
-  
+
   TCheckImageKind = (
     ckLightCheck,     // gray cross
     ckDarkCheck,      // black cross
@@ -2002,7 +2053,7 @@ type
     FStartIndex: Cardinal;                       // index to start validating cache from
     FSelection: TNodeArray;                      // list of currently selected nodes
     FSelectionCount: Integer;                    // number of currently selected nodes (size of FSelection might differ)
-    FSelectionLocked: Boolean;                   // prevents the tree from changing the selection 
+    FSelectionLocked: Boolean;                   // prevents the tree from changing the selection
     FRangeAnchor: PVirtualNode;                  // anchor node for selection with the keyboard, determines start of a
                                                  // selection range
     FCheckNode: PVirtualNode;                    // node which "captures" a check event
@@ -3152,9 +3203,9 @@ type
     property VisiblePath[Node: PVirtualNode]: Boolean read GetVisiblePath write SetVisiblePath;
     property UpdateCount: Cardinal read FUpdateCount;
     property DoubleBuffered: Boolean read GetDoubleBuffered write SetDoubleBuffered default True;
-{$if CompilerVersion < 24} 
-    public const StyleElements = [seFont, seClient, seBorder];     
-{$ifend}    
+{$if CompilerVersion < 24}
+    public const StyleElements = [seFont, seClient, seBorder];
+{$ifend}
   end;
 
 
@@ -3248,7 +3299,7 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     property Node  : PVirtualNode read FNode; // [IPK] Make FNode accessible
-    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible 
+    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible
 
     function BeginEdit: Boolean; virtual; stdcall;
     function CancelEdit: Boolean; virtual; stdcall;
@@ -3428,7 +3479,7 @@ type
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   TVirtualStringTree = class(TCustomVirtualStringTree)
   private
-   
+
     function GetOptions: TStringTreeOptions;
     procedure SetOptions(const Value: TStringTreeOptions);
   protected
@@ -3923,8 +3974,8 @@ type
     property OnCanResize;
     property OnGesture;
     property Touch;
-{$if CompilerVersion >= 24} 
-    property StyleElements; 
+{$if CompilerVersion >= 24}
+    property StyleElements;
 {$ifend}
   end;
 
@@ -4089,8 +4140,8 @@ var
 function GetUtilityImages: TCustomImageList; // [IPK]
 
 begin
-  Result := UtilityImages; 
-end; 
+  Result := UtilityImages;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -9062,7 +9113,7 @@ var
   RTLOffset: Integer;
 
   procedure PaintFixedArea;
-  
+
   begin
     if VisibleFixedWidth > 0 then
       PaintHeader(FHeaderBitmap.Canvas,
@@ -9085,7 +9136,7 @@ begin
     RTLOffset := FHeader.Treeview.ComputeRTLOffset
   else
     RTLOffset := 0;
-    
+
   if RTLOffset = 0 then
     PaintFixedArea;
 
@@ -9097,7 +9148,7 @@ begin
   // In case of right-to-left directionality we paint the fixed part last.
   if RTLOffset <> 0 then
     PaintFixedArea;
-  
+
   // Blit the result to target.
   with TWithSafeRect(R) do
     BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
@@ -9190,7 +9241,7 @@ var
       begin
         PaintInfo.PaintRectangle := BackgroundRect;
         FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground]);
-      end  
+      end
       else
       begin
         if (FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements)) then
@@ -9518,7 +9569,7 @@ begin
       PaintColumnHeader(Run, TargetRect);
 
       SelectClipRgn(Handle, 0);
-      
+
       TargetRect.Left := TargetRect.Right;
       Run := GetNextVisibleColumn(Run);
     end;
@@ -17485,7 +17536,7 @@ var
   TempRgn: HRGN;
   BorderWidth,
   BorderHeight: Integer;
- 
+
 begin
   if tsUseThemes in FStates then
   begin
@@ -18554,7 +18605,7 @@ const
 
 begin
   inherited CreateParams(Params);
- 
+
   with Params do
   begin
     Style := Style or WS_CLIPCHILDREN or WS_CLIPSIBLINGS or ScrollBar[ScrollBarOptions.FScrollBars];
@@ -21684,16 +21735,17 @@ begin
   else
     IsHot := False;
 
-  if ImgCheckState >= TCheckState.csUncheckedDisabled then begin // disabled image?
-    // Use disbaled images, map ImgCheckState value from disabled to normal
+//  if ImgCheckState >= csUncheckedDisabled then begin // disabled image?
+  if TCheckState(ImgCheckState).IsDisabled then begin
+    // Use disabled images, map ImgCheckState value from disabled to normal
     ImgEnabled := False;
     case ImgCheckState of
-      TCheckState.csUncheckedDisabled:
-        ImgCheckState := TCheckState.csUncheckedNormal;
-      TCheckState.csCheckedDisabled:
-        ImgCheckState := TCheckState.csCheckedNormal;
-      TCheckState.csMixedDisabled:
-        ImgCheckState := TCheckState.csMixedPressed;
+      csUncheckedDisabled:
+        ImgCheckState := csUncheckedNormal;
+      csCheckedDisabled:
+        ImgCheckState := csCheckedNormal;
+      csMixedDisabled:
+        ImgCheckState := csMixedPressed;
     end;//case
   end;//if
 
@@ -29943,7 +29995,7 @@ begin
     if (toVariableNodeHeight in FOptions.FMiscOptions) then
     begin
       NewNodeHeight := Node.NodeHeight;
-      // Anonymous methods help to make this thread safe easily. 
+      // Anonymous methods help to make this thread safe easily.
       if (MainThreadId <> GetCurrentThreadId) then
         TThread.Synchronize(nil,
           procedure
@@ -30363,7 +30415,7 @@ begin
 
               CurrentNodeHeight := PaintInfo.Node.NodeHeight;
               R.Bottom := CurrentNodeHeight;
-              
+
               CalculateVerticalAlignments(ShowImages, ShowStateImages, PaintInfo.Node, VAlign, ButtonY);
 
               // Let application decide whether the node should normally be drawn or by the application itself.
@@ -30794,7 +30846,7 @@ begin
         else
           NodeBitmap.Free;
       end;//try..finally
-      
+
       if (ChildCount[nil] = 0) and (FEmptyListMessage <> '') then
       begin
         // output a message if no items are to display
@@ -30845,7 +30897,7 @@ begin
           Source.FinishCutOrCopy
         else
           DoStateChange([], [tsCutPending]);
-      end;    
+      end;
     end;
   end;
 end;
@@ -31890,7 +31942,7 @@ begin
         DoSort(FRoot);
       finally
         EndOperation(okSortTree);
-      end; 
+      end;
     end;
     InvalidateCache;
   finally
@@ -32003,7 +32055,7 @@ begin
           NeedUpdate := True;
 
           // Calculate the height delta right now as we need it for toChildrenAbove anyway.
-          HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]); 
+          HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]);
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
@@ -34605,34 +34657,51 @@ begin
   Result := Value >= csUncheckedDisabled;
 end;
 
-function TCheckState.GetPressed(): TCheckState;
-const
-  // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
-  PressedState: array[TCheckStateEnum] of TCheckStateEnum = (
-    csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
-  );
+function TCheckState.IsNormal: Boolean;
 begin
-  Result := PressedState[TCheckStateEnum(Self)];
+  Result := Value in [csCheckedNormal, csUncheckedNormal, csMixedNormal];
+end;
+
+function TCheckState.IsPressed: Boolean;
+begin
+  Result := Value in [csCheckedPressed, csUncheckedPressed, csMixedPressed];
+end;
+
+function TCheckState.IsChecked: Boolean;
+begin
+  Result := Value in [csCheckedNormal, csCheckedPressed, csCheckedDisabled];
+end;
+
+function TCheckState.IsUnChecked: Boolean;
+begin
+  Result := Value in [csUnCheckedNormal, csUnCheckedPressed, csUnCheckedDisabled];
+end;
+
+function TCheckState.IsMixed: Boolean;
+begin
+  Result := Value in [csMixedNormal, csMixedPressed, csMixedDisabled];
+end;
+
+function TCheckState.GetPressed(): TCheckState;
+begin
+  Result := Self.PressedState[TCheckStateEnum(Self)];
 end;
 
 function TCheckState.GetUnpressed(): TCheckState;
-const
-  UnpressedState: array[TCheckStateEnum] of TCheckStateEnum = (
-    csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
-  );
 begin
-  Result := UnpressedState[TCheckStateEnum(Self)];
+  Result := Self.UnpressedState[TCheckStateEnum(Self)];
 end;
 
 
 function TCheckState.GetToggled(): TCheckState;
 begin
-  if Self = csCheckedNormal then
-    Result := csUncheckedNormal
-  else if TCheckStateEnum(Self) < csUncheckedDisabled then // do not modify disabled checkboxes
-    Result := csCheckedNormal
-  else
-    Result := Self;
+  Result := Self.ToggledState[TCheckStateEnum(Self)];
+//  if Self = csCheckedNormal then
+//    Result := csUncheckedNormal
+//  else if not IsDisabled() then // do not modify disabled checkboxes
+//    Result := csCheckedNormal
+//  else
+//    Result := Self;
 end;
 
 class operator TCheckState.Implicit(const from: TCheckState): TCheckStateEnum;
@@ -34643,6 +34712,34 @@ end;
 class operator TCheckState.Implicit(const from: TCheckStateEnum): TCheckState;
 begin
   Result.Value := from;
+end;
+
+function TCheckState.MarkKind: TCheckStateMarkKind;
+begin
+  Result := Self.MarkKinds[TCheckStateEnum(Self)];
+end;
+
+function TCheckState.UIState: TCheckStateUIState;
+begin
+  Result := Self.uiStates[TCheckStateEnum(Self)];
+end;
+
+constructor TCheckState.Create(const Mark: TCheckStateMarkKind;
+  const State: TCheckStateUIState);
+begin
+  Self.Value := Self.PackSets[Mark,State];
+end;
+
+function TCheckState.GetWithMarkKind(
+  const Value: TCheckStateMarkKind): TCheckState;
+begin
+  Result := TCheckState.Create( Value, Self.UIState);
+end;
+
+function TCheckState.GetWithUIState(
+  const Value: TCheckStateUIState): TCheckState;
+begin
+  Result := TCheckState.Create( Self.MarkKind, Value);
 end;
 
 { StringHelper }
