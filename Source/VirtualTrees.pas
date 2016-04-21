@@ -318,7 +318,7 @@ type
     csMixedNormal,      // 3-state check box and not pressed
     csMixedPressed,     // 3-state check box and pressed
     csUncheckedDisabled,// disabled checkbox, not checkable
-    csCheckedDisabled,  // disbaled checkbox, not uncheckable
+    csCheckedDisabled,  // disabled checkbox, not uncheckable
     csMixedDisabled     // disabled 3-state checkbox
   );
 
@@ -924,8 +924,11 @@ type
     sdDescending
   );
 
-  TSortDirectionHelper = record helper for VirtualTrees.TSortDirection //TODO -oMarder -c11/2015: Move to VirtutalTrees.pas in delphiLib
-    /// Returns +1 for Ascending and -1 for descending.
+  TSortDirectionHelper = record helper for VirtualTrees.TSortDirection
+  strict private
+    const cSortDirectionToInt: Array [TSortDirection] of Integer = (1, -1);
+  public
+    /// Returns +1 for ascending and -1 for descending sort order.
     function ToInt(): Integer; inline;
   end;
 
@@ -34610,12 +34613,9 @@ end;
 
 { TSortDirectionHelper }
 
-function TSortDirectionHelper.ToInt: Integer;
+function TSortDirectionHelper.ToInt(): Integer;
 begin
-  if Self = sdAscending then
-    Exit(1)
-  else
-    Exit(-1);
+  Result := cSortDirectionToInt[Self];
 end;
 
 
