@@ -343,19 +343,10 @@ type
     // gotcha - http://stackoverflow.com/questions/8045635/delphi-in-operator-overload-on-a-set
     // class operator In(a: TCheckState; b: TCheckStateSet): boolean; inline;
 
-//    const UncheckedNormal   = csUncheckedNormal; // compatibility with TBaseVirtualTree.GetCheckImage
-//    const csUncheckedPressed  = csUncheckedPressed;
-//    const csCheckedNormal     = csCheckedNormal;
-//    const csCheckedPressed    = csCheckedPressed;
-//    const csMixedNormal       = csMixedNormal;
-//    const csMixedPressed      = csMixedPressed;
-//    const csUncheckedDisabled = csUncheckedDisabled;
-//    const csCheckedDisabled   = csCheckedDisabled;
-//    const csMixedDisabled     = csMixedDisabled;
-
     function GetPressed(): TCheckState;   inline;
     function GetUnpressed(): TCheckState; inline;
     function GetToggled(): TCheckState;   inline;
+//    function GetEnabled(): TCheckState; inline;  // stub, if VTV upstream would actually use it
 
     function IsDisabled(): Boolean; inline;
     function IsNormal():   Boolean; inline;
@@ -389,6 +380,11 @@ type
     csCheckedNormal,   csCheckedNormal   { csCheckedPressed???? },
     csUncheckedDisabled, csCheckedDisabled, csMixedDisabled
   );
+//  EnabledState: array[TCheckStateEnum] of TCheckState = (  // stub, if VTV upstream would actually use it
+//    csUncheckedNormal, csUncheckedPressed,
+//    csCheckedNormal, csCheckedPressed,
+//    csMixedNormal, csMixedPressed,
+//    csUncheckedNormal, csCheckedNormal, csMixedNormal);
   MarkKinds: array[TCheckStateEnum] of TCheckStateMarkKind = (
     csmUnchecked, csmUnchecked,
     csmChecked,   csmChecked,
@@ -21735,18 +21731,10 @@ begin
   else
     IsHot := False;
 
-//  if ImgCheckState >= csUncheckedDisabled then begin // disabled image?
   if TCheckState(ImgCheckState).IsDisabled then begin
-    // Use disabled images, map ImgCheckState value from disabled to normal
+    // We need to use disabled images, so map ImgCheckState value from disabled to normal, as disabled state is expressed by ImgEnabled.
     ImgEnabled := False;
-    case ImgCheckState of
-      csUncheckedDisabled:
-        ImgCheckState := csUncheckedNormal;
-      csCheckedDisabled:
-        ImgCheckState := csCheckedNormal;
-      csMixedDisabled:
-        ImgCheckState := csMixedPressed;
-    end;//case
+    ImgCheckState := TCheckState(ImgCheckState).GetWithUIState( csuNormal );
   end;//if
 
   if ImgCheckType = ctTriStateCheckBox then
@@ -34692,17 +34680,15 @@ begin
   Result := Self.UnpressedState[TCheckStateEnum(Self)];
 end;
 
-
 function TCheckState.GetToggled(): TCheckState;
 begin
   Result := Self.ToggledState[TCheckStateEnum(Self)];
-//  if Self = csCheckedNormal then
-//    Result := csUncheckedNormal
-//  else if not IsDisabled() then // do not modify disabled checkboxes
-//    Result := csCheckedNormal
-//  else
-//    Result := Self;
 end;
+
+//function TCheckState.GetEnabled(): TCheckState;
+//begin
+//  Result := Self.EnabledState[TCheckStateEnum(Self)];
+//end;
 
 class operator TCheckState.Implicit(const from: TCheckState): TCheckStateEnum;
 begin
