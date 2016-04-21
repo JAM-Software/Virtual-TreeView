@@ -987,6 +987,21 @@ type
     sdDescending
   );
 
+//  TSortDirectionHelper = record helper for VirtualTrees.TSortDirection //TODO -oMarder -c11/2015: Move to VirtutalTrees.pas in delphiLib
+//    /// Returns +1 for Ascending and -1 for descending.
+//    function ToInt(): Integer; inline;
+//  end;
+//
+// stub from upstream, maybe would be needed - but then to be implemented without if-then-else branching
+//    Ord( sdAscending )  = 0 => +1
+//    Ord( sdDescending ) = 1 => -1
+// ( NEG 0) OR (1) = +1    and  ( NEG 1) OR (1) = -1   which gives as immediate and lazy
+//       ToInt as ShortInt := (-(Ord(Value))) or 1;
+//
+// given Pascal definition of boolean as false/true enum having True = +1 ( apart from MC VC++ where TRUE = -1)
+// we may yet harden it against "memory garbage values" as
+//       ToInt as ShortInt := (-(Ord(Value=sdDescending))) or 1;
+
   TVirtualTreeColumn = class(TCollectionItem)
   private
     FText,
@@ -18444,7 +18459,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if NewCheckState.value in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
+        if NewCheckState.IsChecked then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (NewCheckState = csMixedNormal);
       end;
@@ -18453,7 +18468,7 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if Run.CheckState.value in [csCheckedNormal, csCheckedPressed, csCheckedDisabled] then
+        if Run.CheckState.IsChecked then
           Inc(CheckCount);
         PartialCheck := PartialCheck or (Run.CheckState = csMixedNormal);
       end;
