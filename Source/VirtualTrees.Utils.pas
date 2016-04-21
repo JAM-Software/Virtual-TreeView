@@ -143,17 +143,22 @@ procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer);
 
 var
   P: TPoint;
-
+  HC: THandle;
 begin
+  HC := Canvas.Handle;
+
   // Reset origin as otherwise we would accumulate the origin shifts when calling LPtoDP.
-  SetWindowOrgEx(Canvas.Handle, 0, 0, nil);
+  SetWindowOrgEx( HC , 0, 0, nil);
+
+  // only need re-mapping and re-shifting if there is non-center point to make new center out of it,
+  if (X=0) and (Y=0) then exit;
 
   // The shifting is expected in physical points, so we have to transform them accordingly.
   P := Point(X, Y);
-  LPtoDP(Canvas.Handle, P, 1);
+  LPtoDP( HC , P, 1);
 
   // Do the shift.
-  SetWindowOrgEx(Canvas.Handle, P.X, P.Y, nil);
+  SetWindowOrgEx( HC , P.X, P.Y, nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
