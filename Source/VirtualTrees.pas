@@ -3031,7 +3031,7 @@ type
     procedure InvertSelection(VisibleOnly: Boolean);
     function IsEditing: Boolean;
     function IsMouseSelecting: Boolean;
-    function IsEmpty: Boolean;
+    function IsEmpty: Boolean; inline;
     function IterateSubtree(Node: PVirtualNode; Callback: TVTGetNodeProc; Data: Pointer; Filter: TVirtualNodeStates = [];
       DoInit: Boolean = False; ChildNodesOnly: Boolean = False): PVirtualNode;
     procedure LoadFromFile(const FileName: TFileName); virtual;
@@ -14431,7 +14431,7 @@ begin
         lItem := GetFirst;
       //for i:=0 to List.Items.Count-1 do begin
       while Assigned(lItem) do begin
-        if not pExcludeDisabled or not aCheckState.IsDisabled() then
+        if not pExcludeDisabled or not CheckState[lItem].IsDisabled() then
           CheckState[lItem] := aCheckState;
         if pSelectedOnly then
           lItem := GetNextSelected(lItem)
@@ -25953,7 +25953,7 @@ end;
 procedure TBaseVirtualTree.Clear;
 
 begin
-  if not (toReadOnly in FOptions.FMiscOptions) or (csDestroying in ComponentState) then
+  if not IsEmpty and not (toReadOnly in FOptions.FMiscOptions) or (csDestroying in ComponentState) then
   begin
     BeginUpdate;
     try
