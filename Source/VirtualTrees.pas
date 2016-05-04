@@ -21476,13 +21476,17 @@ end;
 
 procedure TBaseVirtualTree.EnsureNodeSelected();
 begin
-  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
-    if Assigned(FNextNodeToSelect) then
-      Selected[FNextNodeToSelect] := True
-    else if Self.Focused then
-      Selected[GetFirstVisible] := True;
+    if (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
+    begin
+      if Assigned(FNextNodeToSelect) then
+        Selected[FNextNodeToSelect] := True
+      else if Self.Focused then
+        Selected[GetFirstVisible] := True;
+    end;// if nothing selected
     EnsureNodeFocused();
+    Self.ScrollIntoView(Self.GetFirstSelected, True);
   end;//if
 end;
 
