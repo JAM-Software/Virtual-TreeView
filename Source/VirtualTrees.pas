@@ -2456,7 +2456,7 @@ type
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
     procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
-    procedure ChangeScale(M, D: Integer); override;
+    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); override;
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearSelection(pFireChangeEvent: Boolean); overload; virtual;
     procedure ClearTempCache; virtual;
@@ -18328,7 +18328,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ChangeScale(M, D: Integer);
+procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
 
 begin
   if (M <> D) and (toAutoChangeScale in FOptions.FAutoOptions) then
@@ -18340,7 +18340,7 @@ begin
     if sfHeight in ScalingFlags then
       Indent := MulDiv(Indent, M, D);
   end;
-  inherited ChangeScale(M, D);
+  inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21479,11 +21479,11 @@ begin
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
     if (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
-    begin
-      if Assigned(FNextNodeToSelect) then
-        Selected[FNextNodeToSelect] := True
-      else if Self.Focused then
-        Selected[GetFirstVisible] := True;
+  begin
+    if Assigned(FNextNodeToSelect) then
+      Selected[FNextNodeToSelect] := True
+    else if Self.Focused then
+      Selected[GetFirstVisible] := True;
     end;// if nothing selected
     EnsureNodeFocused();
     Self.ScrollIntoView(Self.GetFirstSelected, True);
