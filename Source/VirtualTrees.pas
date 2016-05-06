@@ -21479,15 +21479,15 @@ begin
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
     if (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
-  begin
-    if Assigned(FNextNodeToSelect) then
-      Selected[FNextNodeToSelect] := True
-    else if Self.Focused then
-      Selected[GetFirstVisible] := True;
+    begin
+      if Assigned(FNextNodeToSelect) then
+        Selected[FNextNodeToSelect] := True
+      else if Self.Focused then
+        Selected[GetFirstVisible] := True;
     end;// if nothing selected
     EnsureNodeFocused();
     Self.ScrollIntoView(Self.GetFirstSelected, False);
-  end;//if
+  end;//if toAlwaysSelectNode
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
