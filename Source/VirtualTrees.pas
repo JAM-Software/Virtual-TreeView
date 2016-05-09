@@ -21476,9 +21476,9 @@ end;
 
 procedure TBaseVirtualTree.EnsureNodeSelected();
 begin
-  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and not IsEmpty then
   begin
-    if (GetFirstSelected() = nil) and not SelectionLocked and not IsEmpty then
+    if (GetFirstSelected() = nil) and not SelectionLocked then
     begin
       if Assigned(FNextNodeToSelect) then
         Selected[FNextNodeToSelect] := True
