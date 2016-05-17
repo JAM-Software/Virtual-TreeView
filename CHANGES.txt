@@ -1,3 +1,16 @@
+V6.3: (17 May 2016)
+  * Added support for RAD Studio 10.1 Berlin
+  * Implemented #607: Disabled checkbox images should be available 
+  * Fixed #612: hotkey handing and toReverseFullExpandHotKey 
+  * Fixed #602: Dangling WM_Timer and doubled OnChange calls 
+  * Fixed #606: High DPI Inheritance of Form. TBaseVirtualTree.ChangeScale() now respects inherited property ScalingFlags
+  * Fixed #608: Horizontal lines paint bug on scroll.  
+  * Fixed #605 : If a new node is selected by left click, OnChange event should not fire with `nil` in-between.
+  * TBaseVirtualTree.EnsureNodeSelected() no longer changes scroll position unless necessary to make the selected node visible.  
+  * Pull request #609: Updated unit "Contributions/GenericWrapper/VirtualTreeWrapper.pas"  
+  * Started adding unit tests with DUnitX.
+  * Minor tweaks.      
+   
 V6.2.3 (11 Feb 2016)
   * Fixed accidental remove of vsReleaseCallOnUserDataRequired flag which can cause mem leaks.
   * TVirtualNode.SetData() now sets the vsOnFreeNodeCallRequired flag for all types of user data and so is consisted with other SetData / GetData methods.
