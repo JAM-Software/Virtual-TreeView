@@ -12,7 +12,7 @@ For a **Delphi XE and XE2** compatible fork see: [sglienke/Virtual-TreeView](htt
 
 For installation instruction see the "INSTALL.TXT" file in the ZIP. [Delphinus](http://memnarch.bplaced.net/blog/2015/08/delphinus-packagemanager-for-delphi-xe-and-newer/)-Support was added.
 
-###[Recent Changes and Latest News](https://github.com/Virtual-TreeView/Virtual-TreeView/wiki/Latest-News)
+###[Recent Changes and Latest News](https://raw.githubusercontent.com/Virtual-TreeView/Virtual-TreeView/master/CHANGES.txt)
 
 **V6.3** has been officially released: [Download](https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN)
 
