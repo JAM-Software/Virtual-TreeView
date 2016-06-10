@@ -12564,8 +12564,8 @@ begin
   DoSwitch := ssCtrl in FDrawSelShiftState;
   WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
-  WithImages := Assigned(FImages);
-  WithStateImages := Assigned(FStateImages);
+  WithImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
+  WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   if WithStateImages then
     StateImageOffset := FStateImages.Width + 2
   else
@@ -12741,8 +12741,8 @@ begin
   DoSwitch := ssCtrl in FDrawSelShiftState;
   WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
-  WithImages := Assigned(FImages);
-  WithStateImages := Assigned(FStateImages);
+  WithImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
+  WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   if WithStateImages then
     StateImageOffset := FStateImages.Width + 2
   else
@@ -27715,7 +27715,7 @@ begin
     if Assigned(FOnBeforeGetMaxColumnWidth) then
       FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
 
-    WithStateImages := Assigned(FStateImages);
+    WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
     if WithStateImages then
       StateImageOffset := FStateImages.Width + 2
     else
@@ -30245,8 +30245,9 @@ begin
         // For quick checks some intermediate variables are used.
         UseBackground := (toShowBackground in FOptions.FPaintOptions) and (FBackground.Graphic is TBitmap) and
           (poBackground in PaintOptions);
-        ShowImages := Assigned(FImages);
-        ShowStateImages := Assigned(FStateImages);
+        ShowImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
+        ShowStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
+
         ShowCheckImages := Assigned(FCheckImages) and (toCheckSupport in FOptions.FMiscOptions);
         UseColumns := FHeader.UseColumns;
 
