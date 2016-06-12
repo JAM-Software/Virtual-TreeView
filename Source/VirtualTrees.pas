@@ -2443,8 +2443,7 @@ type
     procedure AutoScale(); virtual;
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
-    procedure AdjustImageBorder(pImages: TCustomImageList; BidiMode: TBidiMode; VAlign: Integer; var R: TRect;
-      var ImageInfo: TVTImageInfo); virtual;
+    procedure AdjustImageBorder(BidiMode: TBidiMode; VAlign: Integer; var R: TRect; var ImageInfo: TVTImageInfo); virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: Integer); virtual;
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
@@ -2621,8 +2620,7 @@ type
     function GetDefaultHintKind: TVTHintKind; virtual;
     function GetHeaderClass: TVTHeaderClass; virtual;
     function GetHintWindowClass: THintWindowClass; virtual;
-    procedure GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex;
-      DefaultImages: TCustomImageList); virtual;
+    procedure GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex); virtual;
     function GetImageSize(Node: PVirtualNode; Kind: TVTImageKind = TVTImageKind.ikNormal; Column: TColumnIndex = 0; IncludePadding: Boolean = True): TSize; virtual;
     function GetNodeImageSize(Node: PVirtualNode): TSize; virtual; deprecated 'Use GetImageWidth instead';
     function GetMaxRightExtend: Cardinal; virtual;
@@ -17951,7 +17949,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustImageBorder(pImages: TCustomImageList; BidiMode: TBidiMode; VAlign: Integer; var R: TRect;
+procedure TBaseVirtualTree.AdjustImageBorder(BidiMode: TBidiMode; VAlign: Integer; var R: TRect;
   var ImageInfo: TVTImageInfo);
 
 // Depending on the width of the image list as well as the given bidi mode R must be adjusted.
@@ -17960,14 +17958,14 @@ begin
   if BidiMode = bdLeftToRight then
   begin
     ImageInfo.XPos := R.Left-1;
-    Inc(R.Left, pImages.Width + 2);
+    Inc(R.Left, ImageInfo.Images.Width + 2);
   end
   else
   begin
-    ImageInfo.XPos := R.Right - pImages.Width;
-    Dec(R.Right, pImages.Width + 2);
+    ImageInfo.XPos := R.Right - ImageInfo.Images.Width;
+    Dec(R.Right, ImageInfo.Images.Width + 2);
   end;
-  ImageInfo.YPos := R.Top + VAlign - pImages.Height div 2;
+  ImageInfo.YPos := R.Top + VAlign - ImageInfo.Images.Height div 2;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21728,8 +21726,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex;
-  DefaultImages: TCustomImageList);
+procedure TBaseVirtualTree.GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex);
 
 // Retrieves the image index and an eventual customized image list for drawing.
 
@@ -21745,8 +21742,6 @@ begin
     CustomImages := DoGetImageIndex(Node, Kind, Column, ImageInfo[InfoIndex].Ghosted, ImageInfo[InfoIndex].Index);
     if Assigned(CustomImages) then
       ImageInfo[InfoIndex].Images := CustomImages
-    else
-      ImageInfo[InfoIndex].Images := DefaultImages;
   end;
 end;
 
@@ -23835,7 +23830,7 @@ begin
     // Since the overlay image must be specified together with the image to draw
     // it is meaningfull to retrieve it in advance.
     if DoOverlay then begin
-      GetImageIndex(PaintInfo, ikOverlay, iiOverlay, Images);
+      GetImageIndex(PaintInfo, ikOverlay, iiOverlay);
       // If the overlay image is the same as the normal image, don't paint it.
       // Users often forgot to respect the Kind parameter and ended up opening bugs.
       if PaintInfo.ImageInfo[iiOverlay].Equals(PaintInfo.ImageInfo[iiNormal]) then
@@ -30424,9 +30419,10 @@ begin
                           if ShowCheckImages and IsMainColumn then
                           begin
                             ImageInfo[iiCheck].Index := GetCheckImage(Node);
+                            ImageInfo[iiCheck].Images := FCheckImages;
                             if ImageInfo[iiCheck].Index > -1 then
                             begin
-                              AdjustImageBorder(FCheckImages, BidiMode, VAlign, ContentRect, ImageInfo[iiCheck]);
+                              AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiCheck]);
                               ImageInfo[iiCheck].Ghosted := False;
                             end;
                           end
@@ -30434,17 +30430,17 @@ begin
                             ImageInfo[iiCheck].Index := -1;
                           if ShowStateImages then
                           begin
-                            GetImageIndex(PaintInfo, ikState, iiState, FStateImages);
+                            GetImageIndex(PaintInfo, ikState, iiState);
                             if ImageInfo[iiState].Index > -1 then
-                              AdjustImageBorder(FStateImages, BidiMode, VAlign, ContentRect, ImageInfo[iiState]);
+                              AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiState]);
                           end
                           else
                             ImageInfo[iiState].Index := -1;
                           if ShowImages then
                           begin
-                            GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal, FImages);
+                            GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal);
                             if ImageInfo[iiNormal].Index > -1 then
-                              AdjustImageBorder(ImageInfo[iiNormal].Images, BidiMode, VAlign, ContentRect, ImageInfo[iiNormal]);
+                              AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiNormal]);
                           end
                           else
                             ImageInfo[iiNormal].Index := -1;
