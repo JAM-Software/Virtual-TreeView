@@ -2537,8 +2537,7 @@ type
         TVTHintKind);
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList; virtual;
-    procedure DoGetImageText(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-      var ImageText: string); virtual;
+    procedure DoGetImageText(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex; var ImageText: string); virtual;
     procedure DoGetLineStyle(var Bits: Pointer); virtual;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; virtual;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; virtual;
@@ -20051,7 +20050,7 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 begin
   // First try the enhanced event to allow for custom image lists.
   if Assigned(FOnGetImageEx) then begin
-    if Kind = ikState then //TODO -oMarder: Remove paramter DefaultImages() from GetImageIndex() and do this stuff only here. That way consumers of the OnGetImageEx can check the fefault imagelist.
+    if Kind = ikState then
       Result := Self.StateImages
     else
       Result := Self.Images;
@@ -20060,7 +20059,7 @@ begin
   else begin
     if Assigned(FOnGetImage) then begin
       FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
-      if Kind = ikState then //TODO -oMarder: Remove paramter DefaultImages() from GetImageIndex() and do this stuff only here. That way consumers of the OnGetImageEx can check the fefault imagelist.
+      if Kind = ikState then
         Result := Self.StateImages
       else
         Result := Self.Images;
