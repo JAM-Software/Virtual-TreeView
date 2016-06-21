@@ -11,7 +11,8 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  VirtualTreeTests in 'VirtualTreeTests.pas';
+  VirtualTreeTests in 'VirtualTreeTests.pas',
+  VirtualStringTreeTests in 'VirtualStringTreeTests.pas';
 
 var
   runner : ITestRunner;
