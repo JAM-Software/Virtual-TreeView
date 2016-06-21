@@ -102,8 +102,6 @@ begin
   Assert.AreEqual(lShortenedString, pShortString);
 end;
 
-{ TRectHelper }
-
 initialization
   TDUnitX.RegisterTestFixture(TVirtualTreeUtilsTests);
 end.
