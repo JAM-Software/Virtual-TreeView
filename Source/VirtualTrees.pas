@@ -14258,8 +14258,36 @@ end;
 
 procedure TBaseVirtualTree.SetBackground(const Value: TPicture);
 
+var
+  bmp: TBitmap;
+
 begin
-  FBackground.Assign(Value);
+  // Fixesissue #148
+  //If it is a regular bitmap or if graphic is nil or empty,
+  //do original code
+  //otherwise, make the bitmap from the graphic assigned.
+  //tested with PNG file.
+  if (value = nil)
+     or (value.Graphic = nil)
+     or (Value.Graphic is TBitmap)
+  then
+  begin
+    FBackground.Assign(Value);  //original code was only this
+  end
+  else
+  begin
+    bmp:= TBitmap.Create;
+    try
+      //SZ 2014-09-23 Avoid using B.SetSize in order to keep D7 compatibility!
+      bmp.Width := Value.Graphic.Width;
+      bmp.Height := Value.Graphic.Height;
+      bmp.Canvas.Draw(0,0, Value.Graphic);
+      Value.assign(bmp);
+      FBackground.Assign(Value);
+    finally
+      bmp.Free
+    end;
+  end;
   Invalidate;
 end;
 
