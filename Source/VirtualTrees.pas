@@ -390,6 +390,17 @@ type
     ikOverlay
   );
 
+  {
+    Fine points: Observed when fixing issue #623
+    -- hmHint allows multiline hints automatically if provided through OnGetHint event.
+       This is irresptive of whether node itself is multi-line or not.
+
+    -- hmToolTip shows a hint only when node text is not fully shown. It's meant to
+       fully show node text when not visible. It will show multi-line hint only if
+       the node itself is multi-line. If you provide a custom multi-line hint then
+       you msut force linebreak style to hlbForceMultiLine in the OnGetHint event 
+	   in order to show the complete hint.
+  }
   TVTHintMode = (
     hmDefault,            // show the hint of the control
     hmHint,               // show node specific hint string returned by the application
@@ -5928,6 +5939,29 @@ begin
             else
             begin
               Result := Tree.FLastHintRect; // = Tree.GetDisplayRect(Node, Column, True, True, True); see TBaseVirtualTree.CMHintShow
+
+              { Fixes issue #623
+
+                Measure the rectangle to draw the text. The width of the result
+                is always adjusted according to the hint text because it may
+                be a custom hint coming in which can be larger or smaller than
+                the node text.
+                Earlier logic was using the current width of the node that was
+                either cutting off the hint text or producing undesired space
+                on the right.
+              }
+              R := Rect(0, 0, MaxWidth, FTextHeight);
+              Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_TOP or DT_NOPREFIX or DT_WORDBREAK);
+              if R.Right <> result.right - result.left then
+              begin
+                result.Right := result.Left + r.Right;
+
+                //Space on right--taken from the code in the hmHint branch below.
+                if Assigned(Tree) then
+                  Inc(Result.Right, Tree.FTextMargin + Tree.FMargin);
+              end;
+              // Fix ends.
+
               if toShowHorzGridLines in Tree.TreeOptions.PaintOptions then
                 Dec(Result.Bottom);
             end;
@@ -5951,7 +5985,13 @@ begin
             // The text is centered horizontally with usual text margin for left and right borders (plus border).
             if not Assigned(Tree) then
               Exit; // Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
-            Inc(Result.Right, Tree.FTextMargin + FTextHeight); // We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
+            { Issue #623 Fix for strange space on the right.
+              Original logic was adding FTextHeight. Changed it to add FMargin instead and
+              it looks OK even if the hint font is larger.
+            }
+            Inc(Result.Right, Tree.FTextMargin
+                + Tree.FMargin); //Issue #623 space on right
+                //+ FTextHeight); // Old code: We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
           end;
         end;
       end;
@@ -14262,11 +14302,15 @@ var
   bmp: TBitmap;
 
 begin
-  // Fixesissue #148
-  //If it is a regular bitmap or if graphic is nil or empty,
-  //do original code
-  //otherwise, make the bitmap from the graphic assigned.
-  //tested with PNG file.
+  { Fixes issue #148
+    If it is a regular bitmap or if graphic is nil or empty,
+    perform original code
+    otherwise, make the bitmap from the graphic assigned.
+    Tested with PNG, JPG and GIF files. Note that it doesn't
+    support transparency yet. For example, if you make the
+    background color yellow and then load the PNG, it doesn't
+    show the background color in the transparent parts.
+  }
   if (value = nil)
      or (value.Graphic = nil)
      or (Value.Graphic is TBitmap)
@@ -14278,14 +14322,14 @@ begin
   begin
     bmp:= TBitmap.Create;
     try
-      //SZ 2014-09-23 Avoid using B.SetSize in order to keep D7 compatibility!
+      //Avoid using SetSize in order to keep D7 compatibility!
       bmp.Width := Value.Graphic.Width;
       bmp.Height := Value.Graphic.Height;
       bmp.Canvas.Draw(0,0, Value.Graphic);
       Value.assign(bmp);
       FBackground.Assign(Value);
     finally
-      bmp.Free
+      bmp.Free;
     end;
   end;
   Invalidate;

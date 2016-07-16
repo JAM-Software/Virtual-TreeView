@@ -149,7 +149,19 @@ procedure TPropertiesForm.VST3GetHint(Sender: TBaseVirtualTree; Node: PVirtualNo
 begin
   // Add a dummy hint to the normal hint to demonstrate multiline hints.
   if (Column = 0) and (Node.Parent <> Sender.RootNode) then
-    HintText := PropertyTexts[Node.Parent.Index, Node.Index, ptkHint] + #13 + '(Multiline hints are supported too).';
+  begin
+    HintText := PropertyTexts[Node.Parent.Index, Node.Index, ptkHint];
+    { Related to #Issue 623
+      Observed when solving issue #623. For hmToolTip, the multi-line mode
+      depends on the node's multi-lin emode. Hence, append a line only
+      if not hmToolTip. Otherwise, if you must append lines, force the
+      lineBreakStyle := hlbForceMultiLine for hmToolTip.
+    }
+    if (Sender as TVirtualStringTree).Hintmode <> hmTooltip then
+       HintText := HintText
+          + #13 + '(Multiline hints are supported too).'
+          ;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
