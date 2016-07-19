@@ -15849,10 +15849,11 @@ begin
 
   if not (csLoading in ComponentState) then
   begin
-    AutoScale();
     PrepareBitmaps(True, False);
-    if HandleAllocated then
+    if HandleAllocated then begin
+      AutoScale();
       Invalidate;
+    end
   end;
 
   HeaderMessage.Msg := CM_PARENTFONTCHANGED;
@@ -18386,15 +18387,19 @@ end;
 procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
 
 begin
-  if (M <> D) and (toAutoChangeScale in FOptions.FAutoOptions) then
+  if (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
-    if sfHeight in ScalingFlags then begin
-      FHeader.ChangeScale(M, D);
-      SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
-    end;
-    if sfHeight in ScalingFlags then
-      Indent := MulDiv(Indent, M, D);
-  end;
+    if (M <> D) then
+    begin
+      if sfHeight in ScalingFlags then begin
+        FHeader.ChangeScale(M, D);
+        SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+      end;
+      if sfHeight in ScalingFlags then
+        Indent := MulDiv(Indent, M, D);
+    end;// if M<>D
+    AutoScale();
+  end;//if toAutoChangeScale
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
 end;
 
@@ -18641,7 +18646,6 @@ begin
   else
     DoStateChange([], [tsUseThemes, tsUseExplorerTheme]);
 
-  AutoScale();
   // Because of the special recursion and update stopper when creating the window (or resizing it)
   // we have to manually trigger the auto size calculation here.
   if hsNeedScaling in FHeader.FStates then
