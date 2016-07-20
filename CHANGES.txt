@@ -1,8 +1,10 @@
-V6.4: (under developement)
+﻿V6.4: (under developement)
   *  Fixed #627: It should be possible to use OnGetImageIndexEx without having imagelists assigned.
   *  Added assertion that verifies if an imageindex is supplied but no valid imagelist is available for this imageindex.   
   *  Fixed #148: Background Images now support other formats than just bitmaps.
-  *  Fixed #623: GetHint calculates wrong width for HintText    
+  *  Fixed #623: GetHint calculates wrong width for HintText   
+  *  Fixed #633: High dpi scaling was performed two times    
+  *  Fixed #544, #427: Header painting problem with BiDiMode right to left  
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin

@@ -9500,7 +9500,9 @@ begin
     R := Rect(Max(R.Left, 0), Max(R.Top, 0), Min(R.Right, TotalWidth), Min(R.Bottom, Header.Height));
 
     // Determine where to stop.
-    MaxX := Target.X + R.Right - R.Left;
+    MaxX := Target.X + R.Right - R.Left
+    //Fixes issues #544, #427 -- MaxX should also shift on BidiMode bdRightToLeft
+            + RTLOffset; //added for fix
 
     // Determine the start column.
     Run := ColumnFromPosition(Point(R.Left + RTLOffset, 0), False);
