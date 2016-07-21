@@ -399,7 +399,7 @@ type
        fully show node text when not visible. It will show multi-line hint only if
        the node itself is multi-line. If you provide a custom multi-line hint then
        you msut force linebreak style to hlbForceMultiLine in the OnGetHint event 
-	   in order to show the complete hint.
+       in order to show the complete hint.
   }
   TVTHintMode = (
     hmDefault,            // show the hint of the control
@@ -460,9 +460,13 @@ type
   );
   TVTPaintOptions = set of TVTPaintOption;
 
-  // Options to toggle animation support:
+  { Options to toggle animation support:
+    **Do not use toAnimatedToggle when a background image is used for the tree.
+	The animation does not look good as the image splits and moves with it.
+  }
   TVTAnimationOption = (
-    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll).
+    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll). 
+	                           // **See note above.
     toAdvancedAnimatedToggle   // Do some advanced animation effects when toggling a node.
   );
   TVTAnimationOptions = set of TVTAnimationOption;
