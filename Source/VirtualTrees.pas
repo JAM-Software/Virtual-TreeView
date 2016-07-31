@@ -4287,8 +4287,7 @@ begin
   BM := TBitmap.Create;
   try
     // Make the bitmap the same size as the image list is to avoid problems when adding.
-    BM.Width := IL.Width;
-    BM.Height := IL.Height;
+    BM.SetSize(IL.Width, IL.Height);
     BM.Canvas.Brush.Color := MaskColor;
     BM.Canvas.Brush.Style := bsSolid;
     BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
@@ -5785,12 +5784,9 @@ begin
       Rect.Left := Screen.DesktopLeft + Screen.DesktopLeft;
 
     // adjust sizes of bitmaps
-    FDrawBuffer.Width := Width;
-    FDrawBuffer.Height := Height;
-    FBackground.Width := Width;
-    FBackground.Height := Height;
-    FTarget.Width := Width;
-    FTarget.Height := Height;
+    FDrawBuffer.SetSize(Width, Height);
+    FBackground.SetSize(Width, Height);
+    FTarget.SetSize(Width, Height);
 
     FHintData.Tree.Update;
 
@@ -6400,18 +6396,15 @@ begin
 
     FDragImage := TBitmap.Create;
     FDragImage.PixelFormat := pf32Bit;
-    FDragImage.Width := Width;
-    FDragImage.Height := Height;
+    FDragImage.SetSize(Width, Height);
 
     FAlphaImage := TBitmap.Create;
     FAlphaImage.PixelFormat := pf32Bit;
-    FAlphaImage.Width := Width;
-    FAlphaImage.Height := Height;
+    FAlphaImage.SetSize(Width, Height);
 
     FBackImage := TBitmap.Create;
     FBackImage.PixelFormat := pf32Bit;
-    FBackImage.Width := Width;
-    FBackImage.Height := Height;
+    FBackImage.SetSize(Width, Height);
 
     // Copy the given drag image and apply pre blend bias if required.
     if FPreBlendBias = 0 then
@@ -9087,8 +9080,7 @@ begin
   // Adjust size of the header bitmap
   with TWithSafeRect(FHeader.Treeview.FHeaderRect) do
   begin
-    FHeaderBitmap.Width := Max(Right, R.Right - R.Left);
-    FHeaderBitmap.Height := Bottom;
+    FHeaderBitmap.SetSize(Max(Right, R.Right - R.Left), Bottom);
   end;
 
   VisibleFixedWidth := GetVisibleFixedWidth;
@@ -10998,8 +10990,7 @@ begin
   with Image do
   try
     PixelFormat := pf32Bit;
-    Width := DragColumn.Width;
-    Height := FHeight;
+    SetSize(DragColumn.Width, FHeight);
 
     // Erase the entire image with the color key value, for the case not everything
     // in the image is covered by the header image.
@@ -13997,8 +13988,7 @@ var
   begin
     with ABitmap, Canvas do
     begin
-      Width := Size.cx;
-      Height := Size.cy;
+      SetSize(Size.cx, Size.cy);
 
       if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) or VclStyleEnabled then
       begin
@@ -14328,9 +14318,7 @@ begin
   begin
     bmp:= TBitmap.Create;
     try
-      //Avoid using SetSize in order to keep D7 compatibility!
-      bmp.Width := Value.Graphic.Width;
-      bmp.Height := Value.Graphic.Height;
+      bmp.SetSize(Value.Graphic.Width, Value.Graphic.Height);
       bmp.Canvas.Draw(0,0, Value.Graphic);
       Value.assign(bmp);
       FBackground.Assign(Value);
@@ -30725,8 +30713,7 @@ begin
             // Avoid unnecessary copying of bitmap content. This will destroy the DC handle too.
             NodeBitmap.Height := 0;
             NodeBitmap.PixelFormat := pf32Bit;
-            NodeBitmap.Width := TargetRect.Right - TargetRect.Left;
-            NodeBitmap.Height := TargetRect.Bottom - TargetRect.Top;
+            NodeBitmap.SetSize(TargetRect.Right - TargetRect.Left, TargetRect.Bottom - TargetRect.Top);
           end;
 
           // Call back application/descendants whether they want to erase this area.
@@ -30957,8 +30944,7 @@ begin
     with Image do
     try
       PixelFormat := pf32Bit;
-      Width := TreeRect.Right - TreeRect.Left;
-      Height := TreeRect.Bottom - TreeRect.Top;
+      SetSize(TreeRect.Right - TreeRect.Left, TreeRect.Bottom - TreeRect.Top);
       // Erase the entire image with the color key value, for the case not everything
       // in the image is covered by the tree image.
       Canvas.Brush.Color := FColors.BackGroundColor;
@@ -31092,8 +31078,7 @@ begin
       xPageNum := Trunc(Image.Width / vPageWidth);
       yPageNum := Trunc(Image.Height / vPageHeight);
 
-      PrinterImage.Width := vPageWidth;
-      PrinterImage.Height := vPageHeight;
+      PrinterImage.SetSize(vPageWidth, vPageHeight);
 
       // Split vertically:
       for yPage := 0 to yPageNum do
