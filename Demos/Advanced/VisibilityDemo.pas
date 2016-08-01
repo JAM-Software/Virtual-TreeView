@@ -90,7 +90,7 @@ end;
 procedure TVisibilityForm.VST1InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
 
 begin
-  ChildCount := Random(5);
+  ChildCount := Random(5) + 1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
