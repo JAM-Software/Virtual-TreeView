@@ -33048,17 +33048,17 @@ begin
       FEdit := TVTEdit.Create(Self);
       FEdit.Visible := False;
       FEdit.BorderStyle := bsSingle;
-      FEdit.AutoSize := False;
     end;
+    FEdit.AutoSize := True;
     FTree := Tree as TCustomVirtualStringTree;
     FNode := Node;
     FColumn := Column;
+    FEdit.Parent := Tree;
     // Initial size, font and text of the node.
     FTree.GetTextInfo(Node, Column, FEdit.Font, FTextBounds, Text);
     FEdit.Font.Color := clWindowText;
-    FEdit.Parent := Tree;
     FEdit.RecreateWnd;
-    FEdit.HandleNeeded;
+    FEdit.AutoSize := False;
     FEdit.Text := Text;
 
     if Column <= NoColumn then
