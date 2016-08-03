@@ -9344,7 +9344,12 @@ var
           SortGlyphPos, SortGlyphSize, TextRectangle, DrawFormat);
 
         // Move glyph and text one pixel to the right and down to simulate a pressed button.
-        if IsDownIndex then
+        if IsDownIndex 
+          // Fix for distorted column caption during dragging of the column header.
+          // During the drag, keep painting the pressed state of column header
+          // so that the slice of header caption image copied for backup by FDragImage
+          // object matches and aligns with the non-sliced header caption part.
+          or ((hsDragging in FHeader.States) and (FDragIndex = AColumn)) then
         begin
           OffsetRect(TextRectangle, 1, 1);
           Inc(GlyphPos.X);
