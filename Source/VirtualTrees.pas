@@ -146,7 +146,7 @@ const
   // Decoupling message for auto-adjusting the internal edit window.
   CM_AUTOADJUST = CM_BASE + 2005;
 
-
+  
 
   // VT's own clipboard formats,
   // Note: The reference format is used internally to allow to link to a tree reference
@@ -25867,7 +25867,7 @@ procedure TBaseVirtualTree.AutoScale();
 var
   lTextHeight: Cardinal;
 begin
-  if (toAutoChangeScale in TreeOptions.AutoOptions) then
+  if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) then
   begin
     Canvas.Font.Assign(Self.Font);
     lTextHeight := Canvas.TextHeight('Tg');
