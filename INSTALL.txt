@@ -47,4 +47,4 @@ C++ Builder XE3 and higher Installation
       Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK"
    b) Click "System Include path > [...]"                                                      
       Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK""
-
+6. If you target Win64 you need to build VirtualTreesR*.bpl also for the platform "Win64"
