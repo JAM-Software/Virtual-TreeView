@@ -196,7 +196,7 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <ItemGroup>
-        <LibFiles Include="C:\Program Files (x86)\Embarcadero\DelphiXE5\lib\win32\release\psdk\shell32.lib" Condition="'$(Platform)'=='Win32'">
+        <LibFiles Include="shell32.lib" Condition="'$(Platform)'=='Win32'">
             <BuildOrder>9</BuildOrder>
             <IgnorePath>true</IgnorePath>
         </LibFiles>
