@@ -1,5 +1,5 @@
 V6.4: (under developement)
-  * Fixed issue #640: Edit control for in-place editing wrongly scaled in high-dpi scenarios
+  * Fixed #640: Edit control for in-place editing wrongly scaled in high-dpi scenarios
   * Fixed #627: It should be possible to use OnGetImageIndexEx without having imagelists assigned
   * Added assertion that verifies if an imageindex is supplied but no valid imagelist is available for this imageindex
   * Fixed #148: Background Images now support other formats than just bitmaps.
@@ -7,6 +7,7 @@ V6.4: (under developement)
   * Fixed #633: High dpi scaling was performed two times    
   * Fixed #544, #427: Header painting problem with BiDiMode right to left
   * TBaseVirtualTree.EnsureNodeSelected() only scrolls the selected node into the view, if no one was previously selected.    
+  * Fixed #248: VT Header draws smudged
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin
