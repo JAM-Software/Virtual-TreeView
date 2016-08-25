@@ -64,11 +64,11 @@ interface
 {$HPPEMIT '#include <oleacc.h>'}
 {$HPPEMIT '#include <ShlObj.hpp>'}
 {$ifdef BCB}
-  {$HPPEMIT '#pragma link "VirtualTreesCR.lib"'}
+  {$HPPEMIT '#pragma comment(lib, "VirtualTreesCR")'}
 {$else}
-  {$HPPEMIT '#pragma link "VirtualTreesR.lib"'}
+  {$HPPEMIT '#pragma comment(lib, "VirtualTreesR")'}
 {$endif}
-{$HPPEMIT '#pragma link "Shell32.lib"'}
+{$HPPEMIT '#pragma comment(lib, "Shell32")'}
 
 uses
   Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
