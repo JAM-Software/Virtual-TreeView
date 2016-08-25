@@ -80,9 +80,9 @@ type
   end;
 
   TClipboardFormatList = class
-  private
-    class var
-      FList : TList;
+  strict private
+    class function GetList(): TList; static;
+    class property List: TList read GetList;
   protected
    class procedure Sort;
   public
@@ -101,6 +101,8 @@ implementation
 uses
   System.SysUtils;
 
+var
+  _List: TList = nil;  //Note - not using class constructors as they are not supported on C++ Builder. See also issue #
 
 procedure EnumerateVTClipboardFormats(TreeClass: TVirtualTreeClass; const List: TStrings);
 
@@ -204,17 +206,17 @@ class procedure TClipboardFormatList.Sort;
     repeat
       I := L;
       J := R;
-      P := FList[(L + R) shr 1];
+      P := _List[(L + R) shr 1];
       repeat
-        while PClipboardFormatListEntry(FList[I]).Priority < P.Priority do
+        while PClipboardFormatListEntry(_List[I]).Priority < P.Priority do
           Inc(I);
-        while PClipboardFormatListEntry(FList[J]).Priority > P.Priority do
+        while PClipboardFormatListEntry(_List[J]).Priority > P.Priority do
           Dec(J);
         if I <= J then
         begin
-          T := FList[I];
-          FList[I] := FList[J];
-          FList[J] := T;
+          T := List[I];
+          _List[I] := _List[J];
+          _List[J] := T;
           Inc(I);
           Dec(J);
         end;
@@ -227,8 +229,8 @@ class procedure TClipboardFormatList.Sort;
   //--------------- end local function ----------------------------------------
 
 begin
-  if FList.Count > 1 then
-    QuickSort(0, FList.Count - 1);
+  if List.Count > 1 then
+    QuickSort(0, List.Count - 1);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -247,7 +249,7 @@ begin
   Entry.TreeClass := AClass;
   Entry.Priority := Priority;
   Entry.FormatEtc := AFormatEtc;
-  FList.Add(Entry);
+  List.Add(Entry);
 
   Sort;
 end;
@@ -260,9 +262,9 @@ var
   I: Integer;
 
 begin
-  for I := 0 to FList.Count - 1 do
-    Dispose(PClipboardFormatListEntry(FList[I]));
-  FList.Clear;
+  for I := 0 to List.Count - 1 do
+    Dispose(PClipboardFormatListEntry(List[I]));
+  List.Clear;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -277,11 +279,11 @@ var
   Entry: PClipboardFormatListEntry;
 
 begin
-  SetLength(Formats, FList.Count);
+  SetLength(Formats, List.Count);
   Count := 0;
-  for I := 0 to FList.Count - 1 do
+  for I := 0 to List.Count - 1 do
   begin
-    Entry := FList[I];
+    Entry := List[I];
     // Does the tree class support this clipboard format?
     if TreeClass.InheritsFrom(Entry.TreeClass) then
     begin
@@ -309,9 +311,9 @@ var
   Entry: PClipboardFormatListEntry;
 
 begin
-  for I := 0 to FList.Count - 1 do
+  for I := 0 to List.Count - 1 do
   begin
-    Entry := FList[I];
+    Entry := List[I];
     if TreeClass.InheritsFrom(Entry.TreeClass) then
       Formats.Add(Entry.Description);
   end;
@@ -327,9 +329,9 @@ var
 
 begin
   Result := nil;
-  for I := FList.Count - 1 downto 0 do
+  for I := List.Count - 1 downto 0 do
   begin
-    Entry := FList[I];
+    Entry := List[I];
     if CompareText(Entry.Description, FormatString) = 0 then
     begin
       Result := Entry;
@@ -348,9 +350,9 @@ var
 
 begin
   Result := nil;
-  for I := FList.Count - 1 downto 0 do
+  for I := List.Count - 1 downto 0 do
   begin
-    Entry := FList[I];
+    Entry := List[I];
     if CompareText(Entry.Description, FormatString) = 0 then
     begin
       Result := Entry.TreeClass;
@@ -370,9 +372,9 @@ var
 
 begin
   Result := nil;
-  for I := FList.Count - 1 downto 0 do
+  for I := List.Count - 1 downto 0 do
   begin
-    Entry := FList[I];
+    Entry := List[I];
     if Entry.FormatEtc.cfFormat = Fmt then
     begin
       Result := Entry.TreeClass;
@@ -383,10 +385,16 @@ begin
 end;
 
 
-//Note - not using class constructors as they are not supported on C++ Builder.
+class function TClipboardFormatList.GetList: TList;
+begin
+  if not Assigned(_List) then
+    _List :=  TList.Create;
+  Exit(_List);
+end;
+
 initialization
-  TClipboardFormatList.FList := TList.Create;
+
 finalization
-  TClipboardFormatList.Clear;
-  TClipboardFormatList.FList.Free;
+  FreeAndNil(_List);
+
 end.
