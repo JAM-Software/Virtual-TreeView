@@ -516,6 +516,12 @@ type
   );
   TVTSelectionOptions = set of TVTSelectionOption;
 
+  TVTEditOptions = (
+    toDefaultEdit,
+    toVerticalEdit,
+    toHorizontalEdit
+  );
+
   // Options which do not fit into any of the other groups:
   TVTMiscOption = (
     toAcceptOLEDrop,            // Register tree as OLE accepting drop target
@@ -599,6 +605,7 @@ type
     FSelectionOptions: TVTSelectionOptions;
     FMiscOptions: TVTMiscOptions;
     FExportMode: TVTExportMode;
+    FEditOptions: TVTEditOptions;
     procedure SetAnimationOptions(const Value: TVTAnimationOptions);
     procedure SetAutoOptions(const Value: TVTAutoOptions);
     procedure SetMiscOptions(const Value: TVTMiscOptions);
@@ -614,6 +621,7 @@ type
     property MiscOptions: TVTMiscOptions read FMiscOptions write SetMiscOptions default DefaultMiscOptions;
     property PaintOptions: TVTPaintOptions read FPaintOptions write SetPaintOptions default DefaultPaintOptions;
     property SelectionOptions: TVTSelectionOptions read FSelectionOptions write SetSelectionOptions  default DefaultSelectionOptions;
+    property EditOptions: TVTEditOptions read FEditOptions write FEditOptions;
 
     property Owner: TBaseVirtualTree read FOwner;
   end;
@@ -966,6 +974,8 @@ type
     FMargin,
     FSpacing: Integer;
     FOptions: TVTColumnOptions;
+    FEditOptions: TVTEditOptions;
+    FEditNextColumn: Integer;
     FTag: NativeInt;
     FAlignment: TAlignment;
     FCaptionAlignment: TAlignment;     // Alignment of the caption.
@@ -1052,6 +1062,8 @@ type
     property MaxWidth: Integer read FMaxWidth write SetMaxWidth default 10000;
     property MinWidth: Integer read FMinWidth write SetMinWidth default 10;
     property Options: TVTColumnOptions read FOptions write SetOptions default DefaultColumnOptions;
+    property EditOptions: TVTEditOptions read FEditOptions write FEditOptions default toDefaultEdit;
+    property EditNextColumn: Integer read FEditNextColumn write FEditNextColumn default -1;
     property Position: TColumnPosition read FPosition write SetPosition;
     property Spacing: Integer read FSpacing write SetSpacing default 3;
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
@@ -3199,6 +3211,7 @@ type
     property PaintOptions;
     property SelectionOptions;
     property StringOptions;
+    property EditOptions;
   end;
 
   TCustomVirtualStringTree = class;
@@ -6710,6 +6723,7 @@ begin
   FCheckBox := False;
   FHasImage := False;
   FDefaultSortDirection := sdAscending;
+  fEditNextColumn := -1;
 
   inherited Create(Collection);
 
@@ -7651,6 +7665,8 @@ begin
     CaptionAlignment := TVirtualTreeColumn(Source).CaptionAlignment;
     Color := TVirtualTreeColumn(Source).Color;
     Tag := TVirtualTreeColumn(Source).Tag;
+    EditOptions := TVirtualTreeColumn(Source).EditOptions;
+    EditNextColumn := TVirtualTreeColumn(Source).EditNextColumn;
 
     // Order is important. Assign options last.
     FOptions := OldOptions;
@@ -32682,7 +32698,10 @@ begin
   if Dest is TCustomStringTreeOptions then
   begin
     with Dest as TCustomStringTreeOptions do
+    begin
       StringOptions := Self.StringOptions;
+      EditOptions := Self.EditOptions;
+    end;
   end;
 
   // Let ancestors assign their options to the destination class.
@@ -32801,6 +32820,9 @@ var
   EndEdit: Boolean;
   Tree: TBaseVirtualTree;
   NextNode: PVirtualNode;
+  ColumnCandidate: Integer;
+  EditOptions: TVTEditOptions;
+  Column: TVirtualTreeColumn;
 begin
   Tree := FLink.FTree;
   case Message.CharCode of
@@ -32823,8 +32845,58 @@ begin
         begin
           Tree := FLink.FTree;
           FLink.FTree.InvalidateNode(FLink.FNode);
+          NextNode := Tree.GetNextVisible(FLink.FNode, True);
           FLink.FTree.DoEndEdit;
-          Tree.SetFocus;
+
+          Column := Tree.Header.Columns[Tree.FocusedColumn];
+          if Column.EditOptions <> toDefaultEdit then
+            EditOptions := Column.EditOptions
+          else
+            EditOptions := Tree.TreeOptions.EditOptions;
+
+          if Column.EditNextColumn <> -1 then
+            ColumnCandidate := Column.EditNextColumn
+          else
+            ColumnCandidate := -1;
+
+          case EditOptions of
+            toDefaultEdit: Tree.SetFocus;
+            toVerticalEdit:
+              if NextNode <> nil then
+              begin
+                Tree.FocusedNode := NextNode;
+
+                if ColumnCandidate <> -1 then
+                begin
+                  Tree.FocusedColumn := ColumnCandidate;
+                  Tree.EditColumn := ColumnCandidate;
+                end;
+
+                if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
+                  Tree.DoEdit;
+              end;
+            toHorizontalEdit:
+              begin
+                if ColumnCandidate = -1 then
+                begin
+                  ColumnCandidate := Tree.FocusedColumn+1;
+                  while (ColumnCandidate < Tree.Header.Columns.Count)
+                    and not Tree.CanEdit(Tree.FocusedNode, ColumnCandidate)
+                  do
+                    Inc(ColumnCandidate);
+                end
+                else
+                  if not Tree.CanEdit(Tree.FocusedNode, ColumnCandidate) then
+                    ColumnCandidate := Tree.Header.Columns.Count; // omit
+
+                if ColumnCandidate < Tree.Header.Columns.Count then
+                begin
+                  Tree.FocusedColumn := ColumnCandidate;
+                  Tree.EditColumn := ColumnCandidate;
+                  Tree.DoEdit;
+                end;
+              end;
+          end;
         end;
       end;
     VK_UP:
