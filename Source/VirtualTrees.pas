@@ -32846,9 +32846,12 @@ begin
           Tree.InvalidateNode(FLink.FNode);
           NextNode := Tree.GetNextVisible(FLink.FNode, True);
           Tree.EndEditNode;
-          Tree.FocusedNode := NextNode;
-          if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
-            Tree.DoEdit;
+          if NextNode <> nil then
+          begin
+            Tree.FocusedNode := NextNode;
+            if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
+              Tree.DoEdit;
+          end;
         end;
       end;
     Ord('A'):
