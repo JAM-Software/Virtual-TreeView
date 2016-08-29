@@ -197,6 +197,9 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   {$MinEnumSize 1, make enumerations as small as possible}
 
 type
+  // Alias defintions for convenience
+  TImageIndex = System.UITypes.TImageIndex;
+
   // The exception used by the trees.
   EVirtualTreeError = class(Exception);
 
