@@ -71,8 +71,7 @@ function RegisterVTClipboardFormat(const Description: string; TreeClass: TVirtua
 //----------------- TClipboardFormats ----------------------------------------------------------------------------------
 
 type
-  PClipboardFormatListEntry = ^TClipboardFormatListEntry;
-  TClipboardFormatListEntry = record
+  TClipboardFormatListEntry = class
     Description: string;               // The string used to register the format with Winapi.Windows.
     TreeClass: TVirtualTreeClass;      // The tree class which supports rendering this format.
     Priority: Cardinal;                // Number which determines the order of formats used in IDataObject.
@@ -90,7 +89,7 @@ type
     class procedure Clear;
     class procedure EnumerateFormats(TreeClass: TVirtualTreeClass; var Formats: TFormatEtcArray;  const AllowedFormats: TClipboardFormats = nil); overload;
     class procedure EnumerateFormats(TreeClass: TVirtualTreeClass; const Formats: TStrings); overload;
-    class function FindFormat(const FormatString: string): PClipboardFormatListEntry; overload;
+    class function FindFormat(const FormatString: string): TClipboardFormatListEntry; overload;
     class function FindFormat(const FormatString: string; var Fmt: Word): TVirtualTreeClass; overload;
     class function FindFormat(Fmt: Word; var Description: string): TVirtualTreeClass; overload;
   end;
@@ -200,7 +199,7 @@ class procedure TClipboardFormatList.Sort;
 
   var
     I, J: Integer;
-    P, T: PClipboardFormatListEntry;
+    P, T: TClipboardFormatListEntry;
 
   begin
     repeat
@@ -208,9 +207,9 @@ class procedure TClipboardFormatList.Sort;
       J := R;
       P := _List[(L + R) shr 1];
       repeat
-        while PClipboardFormatListEntry(_List[I]).Priority < P.Priority do
+        while TClipboardFormatListEntry(_List[I]).Priority < P.Priority do
           Inc(I);
-        while PClipboardFormatListEntry(_List[J]).Priority > P.Priority do
+        while TClipboardFormatListEntry(_List[J]).Priority > P.Priority do
           Dec(J);
         if I <= J then
         begin
@@ -241,10 +240,10 @@ class procedure TClipboardFormatList.Add(const FormatString: string; AClass: TVi
 // values mean less priority.
 
 var
-  Entry: PClipboardFormatListEntry;
+  Entry: TClipboardFormatListEntry;
 
 begin
-  New(Entry);
+  Entry := TClipboardFormatListEntry.Create;
   Entry.Description := FormatString;
   Entry.TreeClass := AClass;
   Entry.Priority := Priority;
@@ -263,7 +262,7 @@ var
 
 begin
   for I := 0 to List.Count - 1 do
-    Dispose(PClipboardFormatListEntry(List[I]));
+    TClipboardFormatListEntry(List[I]).Free;
   List.Clear;
 end;
 
@@ -276,7 +275,7 @@ class procedure TClipboardFormatList.EnumerateFormats(TreeClass: TVirtualTreeCla
 
 var
   I, Count: Integer;
-  Entry: PClipboardFormatListEntry;
+  Entry: TClipboardFormatListEntry;
 
 begin
   SetLength(Formats, List.Count);
@@ -308,7 +307,7 @@ class procedure TClipboardFormatList.EnumerateFormats(TreeClass: TVirtualTreeCla
 
 var
   I: Integer;
-  Entry: PClipboardFormatListEntry;
+  Entry: TClipboardFormatListEntry;
 
 begin
   for I := 0 to List.Count - 1 do
@@ -321,11 +320,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class function TClipboardFormatList.FindFormat(const FormatString: string): PClipboardFormatListEntry;
+class function TClipboardFormatList.FindFormat(const FormatString: string): TClipboardFormatListEntry;
 
 var
   I: Integer;
-  Entry: PClipboardFormatListEntry;
+  Entry: TClipboardFormatListEntry;
 
 begin
   Result := nil;
@@ -346,7 +345,7 @@ class function TClipboardFormatList.FindFormat(const FormatString: string; var F
 
 var
   I: Integer;
-  Entry: PClipboardFormatListEntry;
+  Entry: TClipboardFormatListEntry;
 
 begin
   Result := nil;
@@ -368,7 +367,7 @@ class function TClipboardFormatList.FindFormat(Fmt: Word; var Description: strin
 
 var
   I: Integer;
-  Entry: PClipboardFormatListEntry;
+  Entry: TClipboardFormatListEntry;
 
 begin
   Result := nil;
@@ -395,6 +394,7 @@ end;
 initialization
 
 finalization
+  TClipboardFormatList.Clear;
   FreeAndNil(_List);
 
 end.
