@@ -517,9 +517,9 @@ type
   TVTSelectionOptions = set of TVTSelectionOption;
 
   TVTEditOptions = (
-    toDefaultEdit,
-    toVerticalEdit,
-    toHorizontalEdit
+    toDefaultEdit,             // Standard behaviour for end of editing (after VK_RETURN stay on edited cell).
+    toVerticalEdit,            // After VK_RETURN switch to next column.
+    toHorizontalEdit           // After VK_RETURN switch to next row.
   );
 
   // Options which do not fit into any of the other groups:
@@ -32848,12 +32848,15 @@ begin
           NextNode := Tree.GetNextVisible(FLink.FNode, True);
           FLink.FTree.DoEndEdit;
 
+          // get edit options for column as priority. If column has toDefaultEdit
+          // use global edit options for tree
           Column := Tree.Header.Columns[Tree.FocusedColumn];
           if Column.EditOptions <> toDefaultEdit then
             EditOptions := Column.EditOptions
           else
             EditOptions := Tree.TreeOptions.EditOptions;
 
+          // next column candidate for toVerticalEdit and toHorizontalEdit
           if Column.EditNextColumn <> -1 then
             ColumnCandidate := Column.EditNextColumn
           else
@@ -32866,6 +32869,8 @@ begin
               begin
                 Tree.FocusedNode := NextNode;
 
+                // for toVerticalEdit ColumnCandidate is also proper,
+                // select ColumnCandidate column in row below
                 if ColumnCandidate <> -1 then
                 begin
                   Tree.FocusedColumn := ColumnCandidate;
@@ -32879,6 +32884,8 @@ begin
               begin
                 if ColumnCandidate = -1 then
                 begin
+                  // for toHorizontalEdit if property EditNextColumn is not used 
+                  // try to use just next column
                   ColumnCandidate := Tree.FocusedColumn+1;
                   while (ColumnCandidate < Tree.Header.Columns.Count)
                     and not Tree.CanEdit(Tree.FocusedNode, ColumnCandidate)
@@ -32887,7 +32894,7 @@ begin
                 end
                 else
                   if not Tree.CanEdit(Tree.FocusedNode, ColumnCandidate) then
-                    ColumnCandidate := Tree.Header.Columns.Count; // omit
+                    ColumnCandidate := Tree.Header.Columns.Count; // omit "focus/edit column" (see below)
 
                 if ColumnCandidate < Tree.Header.Columns.Count then
                 begin
@@ -32918,6 +32925,7 @@ begin
           Tree.InvalidateNode(FLink.FNode);
           NextNode := Tree.GetNextVisible(FLink.FNode, True);
           Tree.EndEditNode;
+          // check NextNode, otherwise we got AV
           if NextNode <> nil then
           begin
             Tree.FocusedNode := NextNode;
