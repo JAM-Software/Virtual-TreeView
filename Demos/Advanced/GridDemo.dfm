@@ -85,6 +85,7 @@ object GridForm: TGridForm
     HintMode = hmTooltip
     ParentFont = False
     ParentShowHint = False
+    PopupMenu = PopupMenu
     RootNodeCount = 100
     ScrollBarOptions.AlwaysVisible = True
     ShowHint = True
@@ -817,5 +818,13 @@ object GridForm: TGridForm
       E00380078001C001E007807F87E10001E00F80FF80018003E01F81FFC0038007
       FFFFFFFFFC3F240FFFFFFFFFFFFF661F00000000000000000000000000000000
       000000000000}
+  end
+  object PopupMenu: TPopupMenu
+    Left = 83
+    Top = 36
+    object Edit1: TMenuItem
+      Caption = 'Edit'
+      OnClick = Edit1Click
+    end
   end
 end

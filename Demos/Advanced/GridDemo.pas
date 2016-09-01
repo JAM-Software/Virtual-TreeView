@@ -11,7 +11,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList;
+  StdCtrls, VirtualTrees, ImgList, Menus;
 
 type
   TGridForm = class(TForm)
@@ -20,6 +20,8 @@ type
     Label15: TLabel;
     TreeImages: TImageList;
     Label1: TLabel;
+    PopupMenu: TPopupMenu;
+    Edit1: TMenuItem;
     procedure VST5BeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
       Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure VST5BeforeItemErase(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect;
@@ -39,6 +41,7 @@ type
       CellRect: TRect);
     procedure VST5StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure VST5FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure Edit1Click(Sender: TObject);
   end;
 
 var
@@ -54,6 +57,11 @@ uses
 {$R *.DFM}
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TGridForm.Edit1Click(Sender: TObject);
+begin
+   VST5.EditNode(VST5.GetFirstSelected, VST5.FocusedColumn);
+end;
 
 procedure TGridForm.FormCreate(Sender: TObject);
 
