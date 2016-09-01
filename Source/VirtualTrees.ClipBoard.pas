@@ -25,6 +25,9 @@ unit VirtualTrees.ClipBoard;
 
 interface
 
+{$WARN UNSAFE_TYPE OFF}
+{$WARN UNSAFE_CAST OFF}
+
 uses
   Winapi.Windows,
   Winapi.ActiveX,
@@ -261,9 +264,11 @@ var
   I: Integer;
 
 begin
-  for I := 0 to List.Count - 1 do
-    TClipboardFormatListEntry(List[I]).Free;
-  List.Clear;
+  if Assigned(_List) then begin
+    for I := 0 to _List.Count - 1 do
+      TClipboardFormatListEntry(List[I]).Free;
+    _List.Clear;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -394,6 +399,7 @@ end;
 initialization
 
 finalization
+
   TClipboardFormatList.Clear;
   FreeAndNil(_List);
 
