@@ -75,6 +75,7 @@ function RegisterVTClipboardFormat(const Description: string; TreeClass: TVirtua
 
 type
   TClipboardFormatListEntry = class
+  public
     Description: string;               // The string used to register the format with Winapi.Windows.
     TreeClass: TVirtualTreeClass;      // The tree class which supports rendering this format.
     Priority: Cardinal;                // Number which determines the order of formats used in IDataObject.
