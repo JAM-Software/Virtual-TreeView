@@ -6484,11 +6484,17 @@ begin
       ClipRect.TopLeft := PaintTarget;
       ClipRect.Right := ClipRect.Left + R.Right - R.Left;
       ClipRect.Bottom := ClipRect.Top + R.Bottom - R.Top;
+      // TODO: somehow with clipping, the background image is not drawn on the
+      // backup image. Need to be diagnosed and fixed. For now, we have coded
+      // a work around in DragTo where this is used by using the condition
+      // IsInHeader. (found when solving issue 248)
       ClipCanvas(Canvas, ClipRect, VisibleRegion);
       Tree.PaintTree(Canvas, R, PaintTarget, PaintOptions);
 
       if CaptureNCArea then
       begin
+        // Header is painted in this part only so when you use this routine and want
+        // to capture the header in backup image, this flag should be ON.
         // For the non-client area we only need the visible region of the window as limit for painting.
         SelectClipRgn(Canvas.Handle, VisibleRegion);
         // Since WM_PRINT cannot be given a position where to draw we simply move the window origin and
@@ -9279,6 +9285,8 @@ var
       else
         DropMark := dmmNone;
 
+      
+
       IsEnabled := (coEnabled in FOptions) and (FHeader.Treeview.Enabled);
       ShowHeaderGlyph := (hoShowImages in FHeader.FOptions) and ((Assigned(Images) and (FImageIndex > -1)) or FCheckBox);
       ShowSortGlyph := (AColumn = FHeader.FSortColumn) and (hoShowSortGlyphs in FHeader.FOptions);
@@ -10367,13 +10375,30 @@ begin
     end;
   end;
 
-  FDragImage.DragTo(P, NeedRepaint);
+  // Fix for various problems mentioned in issue 248.
+  if NeedRepaint then
+  begin
+    UpdateWindow(FOwner.Handle);
+    // The new routine recaptures the backup image after the updatewindow
+    // Note: We could have called this unconditionally but when called
+    // over the tree, doesn't capture the background image. Since our
+    // problems are in painting of the header, we call it only when the
+    // drag image is over the header.
+    if
+      // determine the case when the drag image is or was on the header area
+      (InHeader(FOwner.ScreenToClient(FDragImage.FLastPosition))
+       or InHeader(FOwner.ScreenToClient(FDragImage.FImagePosition))
+      ) then
+    begin
+      GDIFlush;
+      FOwner.UpdateWindowAndDragImage(FOwner, FOwner.HeaderRect, True, true);
+    end;
+    // since we took care of UpdateWindow above, there is no need to do an
+    // update window again by sending NeedRepaint. So switch off the second parameter.
+    NeedRepaint := false;
+  end;
 
-  //Issue #248: Fix for all column header dragging problems. Since a drag disturbs
-  //the header, better to repaint just the header rect after the drag unless a
-  //repaint has already been done above.
-  if not NeedRepaint then
-    Invalidate(nil); //nil means just the header rect
+  FDragImage.DragTo(P, NeedRepaint);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25402,6 +25427,9 @@ var
 
   DC: HDC;
 
+  //This function was originally designed only for tree's drag image. But we modified
+  //it for reusing it with header's drag image too for solving issue 248.
+  useDragImage: TVTDragImage;
 begin
   if IntersectRect(TreeRect, TreeRect, ClientRect) then
   begin
@@ -25412,13 +25440,21 @@ begin
     GetRandomRgn(DC, VisibleTreeRegion, SYSRGN);
     ReleaseDC(Handle, DC);
 
+   //Take proper drag image depending on whether the drag is being done in the tree
+   //or in the header.
+   useDragImage := Tree.FDragImage;
+    if (not useDragImage.Visible)
+       and (Tree.FHeader.DragImage <> nil) and (Tree.FHeader.DragImage.Visible)
+    then
+      useDragImage := Tree.FHeader.DragImage;
+
     // The drag image will figure out itself what part of the rectangle can be recaptured.
     // Recapturing is not done by taking a snapshot of the screen, but by letting the tree draw itself
     // into the back bitmap of the drag image. So the order here is unimportant.
-    Tree.FDragImage.RecaptureBackground(Self, TreeRect, VisibleTreeRegion, UpdateNCArea, ReshowDragImage);
+    useDragImage.RecaptureBackground(Self, TreeRect, VisibleTreeRegion, UpdateNCArea, ReshowDragImage);
 
     // Calculate the screen area not covered by the drag image and which needs an update.
-    DragRect := Tree.FDragImage.GetDragImageRect;
+    DragRect := useDragImage.GetDragImageRect;
     MapWindowPoints(0, Handle, DragRect, 2);
     DragRegion := CreateRectRgnIndirect(DragRect);
 
