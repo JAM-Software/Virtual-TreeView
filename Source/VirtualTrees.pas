@@ -9285,7 +9285,18 @@ var
       else
         DropMark := dmmNone;
 
-      
+      //Fix for issue 643
+      //Do not show the left drop mark if the position to drop is just preceding the target which means
+      //the dragged column will stay where it is
+      if (DropMark = dmmLeft) and (Items[FDragIndex].Position = Max(0, Items[FDropTarget].Position - 1))
+      then
+        DropMark := dmmNone
+      else
+      //Do not show the right drop mark if the position to drop is just following the target which means
+      //the dragged column will stay where it is
+      if (DropMark = dmmRight) and (Items[FDragIndex].Position = Items[FDropTarget].Position + 1)
+      then
+        DropMark := dmmNone;      
 
       IsEnabled := (coEnabled in FOptions) and (FHeader.Treeview.Enabled);
       ShowHeaderGlyph := (hoShowImages in FHeader.FOptions) and ((Assigned(Images) and (FImageIndex > -1)) or FCheckBox);
