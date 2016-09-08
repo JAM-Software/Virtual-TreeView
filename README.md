@@ -32,4 +32,4 @@ If you want to contribute, you are welcome. We always look for help, not only fo
 Virtual Treeview is published under a double license: MPL 1.1 and LGPL 2.1.
 
 ###New project owner
-JAM Software took Virtual Treeview under its wing, but not much will change besides the homepage and download location. Please read this press release for further details.
+JAM Software took Virtual Treeview under its wing in 2014, but not much will change besides the homepage and download location.
