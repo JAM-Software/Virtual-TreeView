@@ -8,6 +8,8 @@ V6.4: (under developement)
   * Fixed #544, #427: Header painting problem with BiDiMode right to left
   * TBaseVirtualTree.EnsureNodeSelected() only scrolls the selected node into the view, if no one was previously selected.    
   * Fixed #248: VT Header draws smudged
+  * Fixed #643: VT Header dropmark appears even if dragged column won't change position
+  * Fixed #310: Incorrect selection paint when toAutoSpanColumns, toGridExtensions and toExtendedFocus are set
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin

@@ -465,11 +465,11 @@ type
 
   { Options to toggle animation support:
     **Do not use toAnimatedToggle when a background image is used for the tree.
-	The animation does not look good as the image splits and moves with it.
+    The animation does not look good as the image splits and moves with it.
   }
   TVTAnimationOption = (
     toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll). 
-	                           // **See note above.
+                               // **See note above.
     toAdvancedAnimatedToggle   // Do some advanced animation effects when toggling a node.
   );
   TVTAnimationOptions = set of TVTAnimationOption;
@@ -22492,6 +22492,37 @@ var
   FullRowDrag: Boolean;  // Start dragging anywhere within a node's bound.
   NodeRect: TRect;
 
+//Fix for issue: 310 whenever there is a need to invalidate a column, consider
+//auto spanned columns if applicable
+procedure invalidateWithAutoSpan(acolumn: TColumnIndex; anode: PVirtualNode);
+var
+  NextColumn: Integer;
+  Dummy: TColumnIndex;
+begin
+  if (not FHeader.UseColumns) or (not (toAutoSpanColumns in FOptions.FAutoOptions))
+     or (acolumn = FHeader.MainColumn) then
+  begin
+    //no need to find auto spanned next columns
+    InvalidateColumn(acolumn);
+    exit;
+  end;
+  //invalidate auto spanned columns too
+  with FHeader.FColumns do //standard loop for auto span
+  begin
+    NextColumn := acolumn;
+    repeat
+      InvalidateColumn(NextColumn);
+      Dummy := GetNextVisibleColumn(NextColumn);
+      if (Dummy = InvalidColumn) or
+         not ColumnIsEmpty(anode, Dummy)
+         or
+         (Items[Dummy].BidiMode <> bdLeftToRight) then
+        Break;
+      NextColumn := Dummy;
+    until False;
+  end;
+end;
+
 begin
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
   begin
@@ -22722,8 +22753,15 @@ begin
   begin
     if NewColumn then
     begin
-      InvalidateColumn(FFocusedColumn);
-      InvalidateColumn(Column);
+
+      if not Assigned(FFocusedNode) then
+        InvalidateColumn(FFocusedColumn)
+      else
+        invalidateWithAutoSpan(FFocusedColumn, FFocusedNode); //fix: issue 310
+      if not Assigned(HitInfo.HitNode) then
+        InvalidateColumn(Column)
+      else
+        invalidateWithAutoSpan(Column, HitInfo.HitNode); //fix: issue 310
       FFocusedColumn := Column;
     end;
     if DragKind = dkDock then
