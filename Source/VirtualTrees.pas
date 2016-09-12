@@ -350,14 +350,7 @@ type
   end;
 
   TCheckImageKind = (
-    ckLightCheck,     // gray cross
-    ckDarkCheck,      // black cross
-    ckLightTick,      // gray tick mark
-    ckDarkTick,       // black tick mark
-    ckFlat,           // flat images (no 3D border)
-    ckXP,             // Windows XP style
     ckCustom,         // application defined check images
-    ckSystemFlat,     // Flat system defined check images.
     ckSystemDefault   // Uses the system check images, theme aware.
   );
 
@@ -2644,7 +2637,6 @@ type
     function GetCheckedCount: Integer;
     function GetCheckImage(Node: PVirtualNode; ImgCheckType: TCheckType = ctNone;
       ImgCheckState: TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer; virtual;
-    class function GetCheckImageListFor(Kind: TCheckImageKind): TCustomImageList; virtual;
     function GetColumnClass: TVirtualTreeColumnClass; virtual;
     function GetDefaultHintKind: TVTHintKind; virtual;
     function GetHeaderClass: TVTHeaderClass; virtual;
@@ -2744,7 +2736,7 @@ type
     property ButtonFillMode: TVTButtonFillMode read FButtonFillMode write SetButtonFillMode default fmTreeColor;
     property ButtonStyle: TVTButtonStyle read FButtonStyle write SetButtonStyle default bsRectangle;
     property ChangeDelay: Cardinal read FChangeDelay write FChangeDelay default 0;
-    property CheckImageKind: TCheckImageKind read FCheckImageKind write SetCheckImageKind default ckSystemDefault;
+    property CheckImageKind: TCheckImageKind read FCheckImageKind write SetCheckImageKind stored False default ckSystemDefault; // deprecated, see issue #622
     property ClipboardFormats: TClipboardFormats read FClipboardFormats write SetClipboardFormats;
     property Colors: TVTColors read FColors write SetColors;
     property CustomCheckImages: TCustomImageList read FCustomCheckImages write SetCustomCheckImages;
@@ -4068,15 +4060,9 @@ const
 
 var
   gWatcher: TCriticalSection = nil;
-  LightCheckImages,                    // global light check images
-  DarkCheckImages,                     // global heavy check images
-  LightTickImages,                     // global light tick images
-  DarkTickImages,                      // global heavy check images
-  FlatImages,                          // global flat check images
-  XPImages,                            // global XP style check images
-  UtilityImages,                       // some small additional images (e.g for header dragging)
-  SystemCheckImages,                   // global system check images
-  SystemFlatCheckImages: TImageList;   // global flat system check images
+  UtilityImages: TImageList;           // some small additional images (e.g for header dragging)
+  NodeImages: TImageList;              // Additional node images
+  SystemCheckImages: TImageList;       // global system check images
   gInitialized: Integer = 0;           // >0 if global structures have been initialized; otherwise 0
   NeedToUnitialize: Boolean = False;   // True if the OLE subsystem could be initialized successfully.
 
@@ -4237,15 +4223,12 @@ var
 
   begin
     // The offsets are used to center the node images in case the sizes differ.
-    OffsetX := (IL.Width - DarkCheckImages.Width) div 2;
-    OffsetY := (IL.Height - DarkCheckImages.Height) div 2;
-    for I := 21 to 24 do
+    OffsetX := (IL.Width - NodeImages.Width) div 2;
+    OffsetY := (IL.Height - NodeImages.Height) div 2;
+    for I := 0 to 3 do
     begin
       BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
-      if Flat then
-        FlatImages.Draw(BM.Canvas, OffsetX, OffsetY, I)
-      else
-        DarkCheckImages.Draw(BM.Canvas, OffsetX, OffsetY, I);
+      NodeImages.Draw(BM.Canvas, OffsetX, OffsetY, I);
       IL.AddMasked(BM, MaskColor);
     end;
   end;
@@ -4280,7 +4263,7 @@ var
     if Index in [4..7, 12..19] then
       ButtonState := ButtonState or DFCS_CHECKED;
     if Flat then
-      ButtonState := ButtonState or DFCS_FLAT;
+    ButtonState := ButtonState or DFCS_FLAT;
     DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
     IL.AddMasked(BM, MaskColor);
   end;
@@ -4312,7 +4295,7 @@ begin
     // Add the 20 system checkbox and radiobutton images.
     for I := 0 to 19 do
       AddSystemImage(IL, I);
-    // Add the 4 node images from the dark check set.
+    // Add the 4 node images
     AddNodeImages(IL);
 
   finally
@@ -4353,35 +4336,11 @@ begin
   // Load all internal image lists and convert their colors to current desktop color scheme.
   // In order to use high color images we have to create the image list handle ourselves.
   Flags := ILC_COLOR32 or ILC_MASK;
-  LightCheckImages := TImageList.Create(nil);
-  with LightCheckImages do
-    Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
-  ConvertImageList(LightCheckImages, 'VT_CHECK_LIGHT');
 
-  DarkCheckImages := TImageList.CreateSize(16, 16);
-  with DarkCheckImages do
+  NodeImages := TImageList.CreateSize(16, 16);
+  with NodeImages do
     Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
-  ConvertImageList(DarkCheckImages, 'VT_CHECK_DARK');
-
-  LightTickImages := TImageList.CreateSize(16, 16);
-  with LightTickImages do
-    Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
-  ConvertImageList(LightTickImages, 'VT_TICK_LIGHT');
-
-  DarkTickImages := TImageList.CreateSize(16, 16);
-  with DarkTickImages do
-    Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
-  ConvertImageList(DarkTickImages, 'VT_TICK_DARK');
-
-  FlatImages := TImageList.CreateSize(16, 16);
-  with FlatImages do
-    Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
-  ConvertImageList(FlatImages, 'VT_FLAT');
-
-  XPImages := TImageList.CreateSize(16, 16);
-  with XPImages do
-    Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
-  ConvertImageList(XPImages, 'VT_XP', False);
+  ConvertImageList(NodeImages, 'VT_NODEIMAGES');
 
   UtilityImages := TImageList.CreateSize(UtilityImageSize, UtilityImageSize);
   with UtilityImages do
@@ -4389,7 +4348,6 @@ begin
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
 
   CreateSystemImageSet(SystemCheckImages, Flags, False);
-  CreateSystemImageSet(SystemFlatCheckImages, Flags, True);
 
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
@@ -4422,24 +4380,9 @@ begin
   if gInitialized = 0 then
     exit; // Was not initialized
 
-  LightCheckImages.Free;
-  LightCheckImages := nil;
-  DarkCheckImages.Free;
-  DarkCheckImages := nil;
-  LightTickImages.Free;
-  LightTickImages := nil;
-  DarkTickImages.Free;
-  DarkTickImages := nil;
-  FlatImages.Free;
-  FlatImages := nil;
-  XPImages.Free;
-  XPImages := nil;
-  UtilityImages.Free;
-  UtilityImages := nil;
-  SystemCheckImages.Free;
-  SystemCheckImages := nil;
-  SystemFlatCheckImages.Free;
-  SystemFlatCheckImages := nil;
+  FreeAndNil(NodeImages);
+  FreeAndNil(UtilityImages);
+  FreeAndNil(SystemCheckImages);
 
   if NeedToUnitialize then
     OleUninitialize;
@@ -9414,9 +9357,11 @@ var
           begin
             with Header.Treeview do
             begin
-              ColImageInfo.Images := GetCheckImageListFor(CheckImageKind);
+              if (CheckImageKind = ckCustom) then
+                ColImageInfo.Images := CustomCheckImages
+              else
+                ColImageInfo.Images := SystemCheckImages;
               if not Assigned(ColImageInfo.Images) then
-                ColImageInfo.Images := CustomCheckImages;
               ColImageInfo.Index := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
               ColImageInfo.XPos := GlyphPos.X;
               ColImageInfo.YPos := GlyphPos.Y;
@@ -14499,12 +14444,16 @@ end;
 procedure TBaseVirtualTree.SetCheckImageKind(Value: TCheckImageKind);
 
 begin
+  if (Value < Low(Value)) or (Value> High(Value)) then
+    Value := ckSystemDefault;
+  // property is deprected. See issue #622
   if FCheckImageKind <> Value then
   begin
     FCheckImageKind := Value;
-    FCheckImages := GetCheckImageListFor(Value);
-    if not Assigned(FCheckImages) then
-      FCheckImages := FCustomCheckImages;
+    if Value = ckCustom then
+      FCheckImages := FCustomCheckImages
+    else
+      FCheckImages := SystemCheckImages;
     if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
       InvalidateRect(Handle, nil, False);
   end;
@@ -14729,10 +14678,14 @@ begin
     begin
       FCustomCheckImages.RegisterChanges(FCustomCheckChangeLink);
       FCustomCheckImages.FreeNotification(Self);
-    end;
-    // Check if currently custom check images are active.
-    if FCheckImageKind = ckCustom then
+      // If custom check images are assigned, we switch the property CheckImageKind to ckCustom so that they are actually used
+      FCheckImageKind := ckCustom;
       FCheckImages := Value;
+    end
+    else begin
+      FCheckImageKind := ckSystemDefault;
+      FCheckImages := SystemCheckImages;
+    end;
     if not (csLoading in ComponentState) then
       Invalidate;
   end;
@@ -16310,11 +16263,7 @@ procedure TBaseVirtualTree.CMSysColorChange(var Message: TMessage);
 begin
   inherited;
 
-  ConvertImageList(LightCheckImages, 'VT_CHECK_LIGHT');
-  ConvertImageList(DarkCheckImages, 'VT_CHECK_DARK');
-  ConvertImageList(LightTickImages, 'VT_TICK_LIGHT');
-  ConvertImageList(DarkTickImages, 'VT_TICK_DARK');
-  ConvertImageList(FlatImages, 'VT_FLAT');
+  ConvertImageList(NodeImages, 'VT_NODEIMAGES');
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
   // XP images do not need to be converted.
   // System check images do not need to be converted.
@@ -21801,33 +21750,6 @@ begin
     Result := -1
   else
     Result := CheckStateToCheckImage[ImgCheckType, ImgCheckState, ImgEnabled, IsHot];
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-class function TBaseVirtualTree.GetCheckImageListFor(Kind: TCheckImageKind): TCustomImageList;
-
-begin
-  case Kind of
-    ckDarkCheck:
-      Result := DarkCheckImages;
-    ckLightTick:
-      Result := LightTickImages;
-    ckDarkTick:
-      Result := DarkTickImages;
-    ckLightCheck:
-      Result := LightCheckImages;
-    ckFlat:
-      Result := FlatImages;
-    ckXP:
-      Result := XPImages;
-    ckSystemDefault:
-      Result := SystemCheckImages;
-    ckSystemFlat:
-      Result := SystemFlatCheckImages;
-    else
-      Result := nil;
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
