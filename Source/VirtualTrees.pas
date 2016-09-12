@@ -621,7 +621,7 @@ type
     property MiscOptions: TVTMiscOptions read FMiscOptions write SetMiscOptions default DefaultMiscOptions;
     property PaintOptions: TVTPaintOptions read FPaintOptions write SetPaintOptions default DefaultPaintOptions;
     property SelectionOptions: TVTSelectionOptions read FSelectionOptions write SetSelectionOptions  default DefaultSelectionOptions;
-    property EditOptions: TVTEditOptions read FEditOptions write FEditOptions;
+    property EditOptions: TVTEditOptions read FEditOptions write FEditOptions default toDefaultEdit;
 
     property Owner: TBaseVirtualTree read FOwner;
   end;
