@@ -68,7 +68,7 @@ object GeneralForm: TGeneralForm
     Colors.UnfocusedSelectionBorderColor = clBtnShadow
     Ctl3D = True
     CustomCheckImages = TreeImages
-    DefaultNodeHeight = 24
+    DefaultNodeHeight = 20
     DragCursor = crHelp
     DragMode = dmAutomatic
     DrawSelectionMode = smBlendedRectangle
