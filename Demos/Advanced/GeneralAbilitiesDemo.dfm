@@ -80,7 +80,6 @@ object GeneralForm: TGeneralForm
     Font.Style = []
     Header.AutoSizeIndex = -1
     Header.Background = clBtnShadow
-    Header.Height = 20
     Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoShowHint, hoVisible]
     Header.ParentFont = True
     Header.PopupMenu = VTHPopup
@@ -116,7 +115,6 @@ object GeneralForm: TGeneralForm
         ImageIndex = 10
         Options = [coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible]
         Position = 1
-        Spacing = 20
         Width = 300
         WideText = 'Initial main column'
         WideHint = 'Column which initially contains the tree.'
@@ -135,7 +133,6 @@ object GeneralForm: TGeneralForm
         ImageIndex = 4
         Options = [coAllowClick, coEnabled, coParentColor, coResizable, coShowDropMark, coVisible]
         Position = 2
-        Spacing = 20
         Width = 300
         WideText = 'Language column'
         WideHint = 
