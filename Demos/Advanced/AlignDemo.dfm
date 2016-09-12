@@ -142,7 +142,6 @@ object AlignForm: TAlignForm
         ImageIndex = 20
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 0
-        Spacing = 10
         Width = 189
         WideText = 'English text column'
         WideHint = 
@@ -155,7 +154,6 @@ object AlignForm: TAlignForm
         ImageIndex = 35
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 1
-        Spacing = 10
         Width = 159
         WideText = 'Greek text column'
         WideHint = 
@@ -168,7 +166,6 @@ object AlignForm: TAlignForm
         ImageIndex = 32
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 2
-        Spacing = 10
         Width = 213
         WideText = 'Hebrew/arabic text column'
         WideHint = 
