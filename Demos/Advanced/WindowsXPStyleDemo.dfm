@@ -41,7 +41,6 @@ object WindowsXPForm: TWindowsXPForm
     AutoScrollDelay = 500
     BevelInner = bvNone
     ButtonFillMode = fmShaded
-    CheckImageKind = ckXP
     ClipboardFormats.Strings = (
       'CSV'
       'HTML Format')

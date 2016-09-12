@@ -44,7 +44,6 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
     Height = 301
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
-    CheckImageKind = ckDarkTick
     ClipboardFormats.Strings = (
       'CSV'
       'HTML Format'

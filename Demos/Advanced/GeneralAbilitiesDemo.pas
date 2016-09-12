@@ -27,13 +27,11 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
-  StdActns, ActnList, VTHeaderPopup, UITypes;
+  StdActns, ActnList, VTHeaderPopup, UITypes, System.ImageList;
 
 type
   TGeneralForm = class(TForm)
     VST2: TVirtualStringTree;
-    CheckMarkCombo: TComboBox;
-    Label18: TLabel;
     MainColumnUpDown: TUpDown;
     Label19: TLabel;
     BitBtn1: TBitBtn;
@@ -61,7 +59,6 @@ type
     procedure VST2PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure VST2GetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
-    procedure CheckMarkComboChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure MainColumnUpDownChanging(Sender: TObject; var AllowChange: Boolean);
     procedure VST2GetPopupMenu(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; const P: TPoint;
@@ -128,8 +125,6 @@ begin
   ThemeRadioGroup.Enabled := CheckWin32Version(5, 1);
   if ThemeRadioGroup.Enabled then
     ThemeRadioGroup.ItemIndex := 0;
-
-  CheckMarkCombo.ItemIndex := 3;
 
   // Add a second line of hint text for column headers (not possible in the object inspector).
   with VST2.Header do
@@ -364,14 +359,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TGeneralForm.CheckMarkComboChange(Sender: TObject);
-
-begin
-  VST2.CheckImageKind := TCheckImageKind(CheckMarkCombo.ItemIndex);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TGeneralForm.MainColumnUpDownChanging(Sender: TObject; var AllowChange: Boolean);
 
 begin
@@ -474,8 +461,6 @@ begin
 
   RadioGroup1.Enabled := ThemeRadioGroup.ItemIndex = 1;
   RadioGroup2.Enabled := ThemeRadioGroup.ItemIndex = 1;
-  Label18.Enabled := ThemeRadioGroup.ItemIndex = 1;
-  CheckMarkCombo.Enabled := ThemeRadioGroup.ItemIndex = 1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

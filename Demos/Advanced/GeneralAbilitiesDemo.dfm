@@ -1,8 +1,8 @@
 object GeneralForm: TGeneralForm
   Left = 611
   Top = 299
-  Width = 722
-  Height = 536
+  ClientHeight = 497
+  ClientWidth = 706
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -15,27 +15,19 @@ object GeneralForm: TGeneralForm
   OnCreate = FormCreate
   DesignSize = (
     706
-    498)
+    497)
   PixelsPerInch = 96
   TextHeight = 13
-  object Label18: TLabel
-    Left = 503
-    Top = 385
-    Width = 104
-    Height = 13
-    Anchors = [akRight, akBottom]
-    Caption = 'Switch check images:'
-  end
   object Label19: TLabel
-    Left = 507
-    Top = 433
-    Width = 97
+    Left = 491
+    Top = 343
+    Width = 96
     Height = 13
     Anchors = [akRight, akBottom]
     Caption = 'Switch main column:'
   end
   object Label8: TLabel
-    Left = 502
+    Left = 486
     Top = 40
     Width = 206
     Height = 77
@@ -50,13 +42,12 @@ object GeneralForm: TGeneralForm
   object VST2: TVirtualStringTree
     Left = 14
     Top = 6
-    Width = 474
-    Height = 485
+    Width = 458
+    Height = 446
     Anchors = [akLeft, akTop, akRight, akBottom]
     AutoExpandDelay = 300
     BiDiMode = bdLeftToRight
     ButtonFillMode = fmWindowColor
-    CheckImageKind = ckDarkTick
     ClipboardFormats.Strings = (
       'HTML Format'
       'Unicode text'
@@ -100,6 +91,7 @@ object GeneralForm: TGeneralForm
     TreeOptions.PaintOptions = [toHideSelection, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseBlendedSelection]
     TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect, toRightClickSelect]
     TreeOptions.StringOptions = [toSaveCaptions, toShowStaticText, toAutoAcceptEditChange]
+    TreeOptions.EditOptions = toDefaultEdit
     OnDragOver = VST2DragOver
     OnFocusChanging = VST2FocusChanging
     OnPaintText = VST2PaintText
@@ -140,30 +132,9 @@ object GeneralForm: TGeneralForm
           'xt.'
       end>
   end
-  object CheckMarkCombo: TComboBox
-    Left = 503
-    Top = 401
-    Width = 200
-    Height = 21
-    Style = csDropDownList
-    Anchors = [akRight, akBottom]
-    PopupMenu = PopupMenu1
-    TabOrder = 1
-    OnChange = CheckMarkComboChange
-    Items.Strings = (
-      'Light check marks'
-      'Dark check marks'
-      'Light tick marks'
-      'Dark tick marks'
-      'Flat tick marks'
-      'Windows XP style images'
-      'Custom check images'
-      'System check images'
-      'System flat check images')
-  end
   object MainColumnUpDown: TUpDown
-    Left = 507
-    Top = 455
+    Left = 593
+    Top = 341
     Width = 37
     Height = 16
     Anchors = [akRight, akBottom]
@@ -171,20 +142,18 @@ object GeneralForm: TGeneralForm
     Increment = 2
     Orientation = udHorizontal
     Position = 2
-    TabOrder = 2
+    TabOrder = 1
     Wrap = True
     OnChanging = MainColumnUpDownChanging
   end
   object BitBtn1: TBitBtn
-    Left = 504
+    Left = 488
     Top = 6
     Width = 91
     Height = 30
     Hint = 'Pick a font to be used by this tree.'
     Anchors = [akTop, akRight]
     Caption = 'Tree font'
-    TabOrder = 3
-    OnClick = BitBtn1Click
     Glyph.Data = {
       96010000424D9601000000000000760000002800000018000000180000000100
       0400000000002001000000000000000000001000000000000000000000000000
@@ -199,10 +168,12 @@ object GeneralForm: TGeneralForm
       CC000CC03333333333333330CCCCCCC03333333333333330C0330C0333333333
       33333300C000CC0333333333333330CCCCCCCC03333333333333300000000033
       3333333333333333333333333333333333333333333333333333}
+    TabOrder = 2
+    OnClick = BitBtn1Click
   end
   object RadioGroup1: TRadioGroup
-    Left = 501
-    Top = 209
+    Left = 485
+    Top = 170
     Width = 205
     Height = 77
     Anchors = [akRight, akBottom]
@@ -211,12 +182,12 @@ object GeneralForm: TGeneralForm
     Items.Strings = (
       'Usual +/- buttons and lines'
       'Little triangles without lines')
-    TabOrder = 4
+    TabOrder = 3
     OnClick = RadioGroup1Click
   end
   object RadioGroup2: TRadioGroup
-    Left = 501
-    Top = 297
+    Left = 485
+    Top = 258
     Width = 205
     Height = 77
     Anchors = [akRight, akBottom]
@@ -225,12 +196,12 @@ object GeneralForm: TGeneralForm
     Items.Strings = (
       'Dotted rectangle'
       'Alpha blended rectangle')
-    TabOrder = 5
+    TabOrder = 4
     OnClick = RadioGroup2Click
   end
   object ThemeRadioGroup: TRadioGroup
-    Left = 501
-    Top = 125
+    Left = 485
+    Top = 86
     Width = 205
     Height = 77
     Anchors = [akRight, akBottom]
@@ -238,17 +209,17 @@ object GeneralForm: TGeneralForm
     Items.Strings = (
       'Theme aware'
       'Not theme aware')
-    TabOrder = 6
+    TabOrder = 5
     OnClick = ThemeRadioGroupClick
   end
   object SaveButton: TBitBtn
-    Left = 611
+    Left = 595
     Top = 6
     Width = 91
     Height = 30
     Anchors = [akTop, akRight]
     Caption = 'Save as text...'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = SaveButtonClick
   end
   object TreeImages: TImageList
