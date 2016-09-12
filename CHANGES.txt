@@ -10,6 +10,9 @@ V6.4: (under developement)
   * Fixed #248: VT Header draws smudged
   * Fixed #643: VT Header dropmark appears even if dragged column won't change position
   * Fixed #310: Incorrect selection paint when toAutoSpanColumns, toGridExtensions and toExtendedFocus are set
+  * Fixed #653: GetFirstVisibleChild/NoInit check for wrong node if IncludeFiltered=True
+  * Fixed #647: New option to set the way of selecting next cell for editing in grid mode
+  * Fixed #645: Can't link 64 bit VCL app with VirtualTreeView in C++ Builder 10.1 Berlin    
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin
