@@ -770,7 +770,7 @@ function TMVCTreeView.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Co
 var N:TMVCNode;
 begin
   if (Column > 0) or (Kind <> TVTImageKind.ikNormal) then
-    exit;
+    exit(nil);
   case Column of
     -1,0:begin
            { We only want Icons in the first column. Ask the node which
