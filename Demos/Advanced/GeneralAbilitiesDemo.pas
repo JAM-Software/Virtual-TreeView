@@ -32,23 +32,25 @@ uses
 type
   TGeneralForm = class(TForm)
     VST2: TVirtualStringTree;
-    MainColumnUpDown: TUpDown;
-    Label19: TLabel;
-    BitBtn1: TBitBtn;
-    Label8: TLabel;
     TreeImages: TImageList;
     FontDialog1: TFontDialog;
     PopupMenu1: TPopupMenu;
     Onemenuitem1: TMenuItem;
     forrightclickselection1: TMenuItem;
     withpopupmenu1: TMenuItem;
-    RadioGroup1: TRadioGroup;
-    RadioGroup2: TRadioGroup;
     VTHPopup: TVTHeaderPopupMenu;
-    ThemeRadioGroup: TRadioGroup;
-    SaveButton: TBitBtn;
     SaveDialog: TSaveDialog;
     ImageList1: TImageList;
+    Panel1: TPanel;
+    Label8: TLabel;
+    BitBtn1: TBitBtn;
+    RadioGroup1: TRadioGroup;
+    RadioGroup2: TRadioGroup;
+    ThemeRadioGroup: TRadioGroup;
+    SaveButton: TBitBtn;
+    GroupBox1: TGroupBox;
+    Label19: TLabel;
+    MainColumnUpDown: TUpDown;
     procedure BitBtn1Click(Sender: TObject);
     procedure VST2InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);

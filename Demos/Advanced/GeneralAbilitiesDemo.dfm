@@ -13,38 +13,14 @@ object GeneralForm: TGeneralForm
   OldCreateOrder = False
   ShowHint = True
   OnCreate = FormCreate
-  DesignSize = (
-    706
-    497)
   PixelsPerInch = 96
   TextHeight = 13
-  object Label19: TLabel
-    Left = 491
-    Top = 343
-    Width = 96
-    Height = 13
-    Anchors = [akRight, akBottom]
-    Caption = 'Switch main column:'
-  end
-  object Label8: TLabel
-    Left = 486
-    Top = 40
-    Width = 206
-    Height = 77
-    Anchors = [akTop, akRight]
-    AutoSize = False
-    Caption = 
-      'This sample is an introduction to the general look and feel of V' +
-      'irtual Treeview. Note: you can change almost every visual aspect' +
-      ' of the control.'
-    WordWrap = True
-  end
   object VST2: TVirtualStringTree
-    Left = 14
-    Top = 6
-    Width = 458
-    Height = 446
-    Anchors = [akLeft, akTop, akRight, akBottom]
+    Left = 0
+    Top = 0
+    Width = 493
+    Height = 497
+    Align = alClient
     AutoExpandDelay = 300
     BiDiMode = bdLeftToRight
     ButtonFillMode = fmWindowColor
@@ -132,101 +108,184 @@ object GeneralForm: TGeneralForm
           'xt.'
       end>
   end
-  object MainColumnUpDown: TUpDown
-    Left = 593
-    Top = 341
-    Width = 37
-    Height = 16
-    Anchors = [akRight, akBottom]
-    Max = 2
-    Increment = 2
-    Orientation = udHorizontal
-    Position = 2
+  object Panel1: TPanel
+    Left = 493
+    Top = 0
+    Width = 213
+    Height = 497
+    Align = alRight
     TabOrder = 1
-    Wrap = True
-    OnChanging = MainColumnUpDownChanging
-  end
-  object BitBtn1: TBitBtn
-    Left = 488
-    Top = 6
-    Width = 91
-    Height = 30
-    Hint = 'Pick a font to be used by this tree.'
-    Anchors = [akTop, akRight]
-    Caption = 'Tree font'
-    Glyph.Data = {
-      96010000424D9601000000000000760000002800000018000000180000000100
-      0400000000002001000000000000000000001000000000000000000000000000
-      BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
-      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
-      3333333333333333333333333333380088333333333333333338007700833333
-      3333333333307700770333000333300003307033003333090833309903077033
-      3333330990000999030770333333333099999990330770833033333090000903
-      3330708807033330990309033330770077033333090090333333007707033333
-      099090333333330030333333309990338000033333333333309903300CCCC003
-      3333333333090330CC00CCC03333333333090330C0330CC03333333333303330
-      CC000CC03333333333333330CCCCCCC03333333333333330C0330C0333333333
-      33333300C000CC0333333333333330CCCCCCCC03333333333333300000000033
-      3333333333333333333333333333333333333333333333333333}
-    TabOrder = 2
-    OnClick = BitBtn1Click
-  end
-  object RadioGroup1: TRadioGroup
-    Left = 485
-    Top = 170
-    Width = 205
-    Height = 77
-    Anchors = [akRight, akBottom]
-    Caption = 'Tree button look: '
-    ItemIndex = 0
-    Items.Strings = (
-      'Usual +/- buttons and lines'
-      'Little triangles without lines')
-    TabOrder = 3
-    OnClick = RadioGroup1Click
-  end
-  object RadioGroup2: TRadioGroup
-    Left = 485
-    Top = 258
-    Width = 205
-    Height = 77
-    Anchors = [akRight, akBottom]
-    Caption = 'Draw selection mode: '
-    ItemIndex = 1
-    Items.Strings = (
-      'Dotted rectangle'
-      'Alpha blended rectangle')
-    TabOrder = 4
-    OnClick = RadioGroup2Click
-  end
-  object ThemeRadioGroup: TRadioGroup
-    Left = 485
-    Top = 86
-    Width = 205
-    Height = 77
-    Anchors = [akRight, akBottom]
-    Caption = ' Switch XP theme awareness: '
-    Items.Strings = (
-      'Theme aware'
-      'Not theme aware')
-    TabOrder = 5
-    OnClick = ThemeRadioGroupClick
-  end
-  object SaveButton: TBitBtn
-    Left = 595
-    Top = 6
-    Width = 91
-    Height = 30
-    Anchors = [akTop, akRight]
-    Caption = 'Save as text...'
-    TabOrder = 6
-    OnClick = SaveButtonClick
+    object Label8: TLabel
+      AlignWithMargins = True
+      Left = 11
+      Top = 96
+      Width = 191
+      Height = 52
+      Margins.Left = 10
+      Margins.Top = 5
+      Margins.Right = 10
+      Margins.Bottom = 10
+      Align = alTop
+      Caption = 
+        'This sample is an introduction to the general look and feel of V' +
+        'irtual Treeview. Note: you can change almost every visual aspect' +
+        ' of the control.'
+      WordWrap = True
+    end
+    object BitBtn1: TBitBtn
+      AlignWithMargins = True
+      Left = 11
+      Top = 11
+      Width = 191
+      Height = 30
+      Hint = 'Pick a font to be used by this tree.'
+      Margins.Left = 10
+      Margins.Top = 10
+      Margins.Right = 10
+      Margins.Bottom = 5
+      Align = alTop
+      Caption = 'Tree font'
+      Glyph.Data = {
+        96010000424D9601000000000000760000002800000018000000180000000100
+        0400000000002001000000000000000000001000000000000000000000000000
+        BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+        3333333333333333333333333333380088333333333333333338007700833333
+        3333333333307700770333000333300003307033003333090833309903077033
+        3333330990000999030770333333333099999990330770833033333090000903
+        3330708807033330990309033330770077033333090090333333007707033333
+        099090333333330030333333309990338000033333333333309903300CCCC003
+        3333333333090330CC00CCC03333333333090330C0330CC03333333333303330
+        CC000CC03333333333333330CCCCCCC03333333333333330C0330C0333333333
+        33333300C000CC0333333333333330CCCCCCCC03333333333333300000000033
+        3333333333333333333333333333333333333333333333333333}
+      TabOrder = 0
+      OnClick = BitBtn1Click
+    end
+    object RadioGroup1: TRadioGroup
+      AlignWithMargins = True
+      Left = 11
+      Top = 245
+      Width = 191
+      Height = 72
+      Margins.Left = 10
+      Margins.Top = 5
+      Margins.Right = 10
+      Margins.Bottom = 5
+      Align = alTop
+      Caption = 'Tree button look: '
+      ItemIndex = 0
+      Items.Strings = (
+        'Usual +/- buttons and lines'
+        'Little triangles without lines')
+      TabOrder = 1
+      OnClick = RadioGroup1Click
+    end
+    object RadioGroup2: TRadioGroup
+      AlignWithMargins = True
+      Left = 11
+      Top = 327
+      Width = 191
+      Height = 72
+      Margins.Left = 10
+      Margins.Top = 5
+      Margins.Right = 10
+      Margins.Bottom = 5
+      Align = alTop
+      Caption = 'Draw selection mode: '
+      ItemIndex = 1
+      Items.Strings = (
+        'Dotted rectangle'
+        'Alpha blended rectangle')
+      TabOrder = 2
+      OnClick = RadioGroup2Click
+      ExplicitLeft = 13
+    end
+    object ThemeRadioGroup: TRadioGroup
+      AlignWithMargins = True
+      Left = 11
+      Top = 163
+      Width = 191
+      Height = 72
+      Margins.Left = 10
+      Margins.Top = 5
+      Margins.Right = 10
+      Margins.Bottom = 5
+      Align = alTop
+      Caption = ' Switch XP theme awareness: '
+      Items.Strings = (
+        'Theme aware'
+        'Not theme aware')
+      TabOrder = 3
+      OnClick = ThemeRadioGroupClick
+    end
+    object SaveButton: TBitBtn
+      AlignWithMargins = True
+      Left = 11
+      Top = 56
+      Width = 191
+      Height = 30
+      Margins.Left = 10
+      Margins.Top = 10
+      Margins.Right = 10
+      Margins.Bottom = 5
+      Align = alTop
+      Caption = 'Save as text...'
+      TabOrder = 4
+      OnClick = SaveButtonClick
+    end
+    object GroupBox1: TGroupBox
+      AlignWithMargins = True
+      Left = 11
+      Top = 409
+      Width = 191
+      Height = 47
+      Margins.Left = 10
+      Margins.Top = 5
+      Margins.Right = 10
+      Margins.Bottom = 5
+      Align = alTop
+      Caption = 'Main Column'
+      TabOrder = 5
+      DesignSize = (
+        191
+        47)
+      object Label19: TLabel
+        AlignWithMargins = True
+        Left = 8
+        Top = 21
+        Width = 96
+        Height = 18
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
+        Align = alLeft
+        Caption = 'Switch main column:'
+        ExplicitHeight = 13
+      end
+      object MainColumnUpDown: TUpDown
+        Left = 112
+        Top = 20
+        Width = 35
+        Height = 16
+        AlignButton = udLeft
+        Anchors = [akLeft, akTop, akBottom]
+        Max = 2
+        Increment = 2
+        Orientation = udHorizontal
+        Position = 2
+        TabOrder = 0
+        Wrap = True
+        OnChanging = MainColumnUpDownChanging
+      end
+    end
   end
   object TreeImages: TImageList
     Left = 22
     Top = 148
     Bitmap = {
-      494C010112001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001300080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -935,7 +994,7 @@ object GeneralForm: TGeneralForm
     Left = 32
     Top = 200
     Bitmap = {
-      494C010151005400040018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010151005400080018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000060000000F8010000010020000000000000F4
       0200000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
