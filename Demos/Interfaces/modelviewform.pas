@@ -66,11 +66,10 @@ type
     VST: TVirtualStringTree;
     Label1: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure btDisplayStarsClick(Sender: TObject);
     procedure btDisplayAllClick(Sender: TObject);
   private
-    myEvents: IMyEvents;
+    myEvents: IEventPresenter;
   public
     { Public declarations }
   end;
@@ -88,15 +87,7 @@ uses System.DateUtils;
 procedure TFormModelView.FormCreate(Sender: TObject);
 begin
   //set up the presenter object
-  myEvents := TMyEvents.Create;
-  myEvents.setup(VST, imageList1);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-procedure TFormModelView.FormDestroy(Sender: TObject);
-begin
-  //do it explicitly so that all objects are released properly
-  VST.Clear;
+  myEvents := TEventPresenter.Create(VST, imageList1);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -104,14 +95,14 @@ procedure TFormModelView.btDisplayStarsClick(Sender: TObject);
 begin
   //display only star charity events that collected more than
   //a minimum amount
-  myEvents.displayOnlyStarEvents;
+  myEvents.displayOnlyStarEvents(True);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 procedure TFormModelView.btDisplayAllClick(Sender: TObject);
 begin
   //display all charity events
-  myEvents.displayAllEvents;
+  myEvents.displayOnlyStarEvents(False);
 end;
 
 

@@ -1,7 +1,7 @@
 unit myevents;
 
 {
-  IMyEvents:
+  IEventPresenter:
   The presenter object that connects to the Virtual Tree View passed
   in Setup method.
   -- Sets up the columns
@@ -12,7 +12,8 @@ unit myevents;
   Use of Interfaces:
   -- See OnInitNode for an example of how it sets the interface data
      object IMyEventData as the data for the node.
-  -- Even this object, IMyEvents, is designed as an interface for reuse
+  -- Interfaced objects are reference-counted, you don't need to free them.
+  -- Even this object, IEventPresenter, is designed as an interface for reuse
      by forms that need to display a similar Tree View. This is an
      example of a reuse without making a derived component of the
      Virtual Tree View.
@@ -20,19 +21,17 @@ unit myevents;
 
 interface
 
-uses VirtualTrees, Vcl.ImgList, System.Classes, Vcl.Controls;
+uses Vcl.ImgList, VirtualTrees, System.Classes, Vcl.Controls;
 
 type
-  IMyEvents = interface
+  IEventPresenter = interface
     ['{1984E951-24C5-4484-B470-BBADBDA70EEA}']
-    procedure setup(aVST: TVirtualStringTree; anImageList: TImageList); stdcall;
-    procedure displayOnlyStarEvents; stdcall;
-    procedure displayAllEvents; stdcall;
+    procedure displayOnlyStarEvents(aOnlyStarEvents: Boolean); stdcall;
   end;
 
   //With virtual methods that can be overridden by a derived
   //class.
-  TMyEvents = class(TInterfacedObject, IMyEvents)
+  TEventPresenter = class(TInterfacedObject, IEventPresenter)
   private
     fVST: TVirtualStringTree;
     fImageList: TImageList; //Just in case we need it
@@ -57,14 +56,12 @@ type
     function getDisplayDate(aDate: TDateTime): string;
     function getDisplayName(aName: string): string;
     function getDisplayAmount(anAmount: currency): string;
+    procedure setup(aVST: TVirtualStringTree; anImageList: TImageList); virtual; stdcall;
 
   public
-    constructor Create;
+    constructor Create(aVST: TVirtualStringTree; anImageList: TImageList);
     destructor Destroy; override;
-
-    procedure setup(aVST: TVirtualStringTree; anImageList: TImageList); virtual; stdcall;
-    procedure displayOnlyStarEvents; virtual; stdcall;
-    procedure displayAllEvents; virtual; stdcall;
+    procedure displayOnlyStarEvents(aOnlyStarEvents: Boolean); virtual; stdcall;
   end;
 
 implementation
@@ -72,22 +69,23 @@ implementation
 uses myeventdata, System.DateUtils, System.SysUtils, Winapi.Windows, System.Math;
 
 //----------------------------------------------------------------------------------------------------------------------
-constructor TMyEvents.Create;
+constructor TEventPresenter.Create(aVST: TVirtualStringTree; anImageList: TImageList);
 begin
-  inherited;
+  inherited Create();
   //initialize
   fOnlyStarEvents := false;
+  setup(aVST, anImageList);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-destructor TMyEvents.Destroy;
+destructor TEventPresenter.Destroy;
 begin
   //do cleanup
   inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.setup(aVST: TVirtualStringTree; anImageList: TImageList); stdcall;
+procedure TEventPresenter.setup(aVST: TVirtualStringTree; anImageList: TImageList); stdcall;
 var
   col: TVirtualTreeColumn;
 begin
@@ -135,7 +133,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.doOnInitNode(Sender: TBaseVirtualTree; ParentNode,
+procedure TEventPresenter.doOnInitNode(Sender: TBaseVirtualTree; ParentNode,
       Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 var
   myEvent: IMyEventData;
@@ -148,7 +146,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.doOnGetImageIndex(Sender: TBaseVirtualTree;
+procedure TEventPresenter.doOnGetImageIndex(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
   var Ghosted: Boolean; var ImageIndex: TImageIndex);
 var
@@ -166,7 +164,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.doOnCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
+procedure TEventPresenter.doOnCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
       var Result: Integer);
 var
   myEvent1, myEvent2: IMyEventData;
@@ -194,7 +192,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 //called for each node by next function displayOnlyStarEvents
-procedure TMyEvents.processForStarDisplay(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+procedure TEventPresenter.processForStarDisplay(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
 var
   myEvent: IMyEventData;
 begin
@@ -204,9 +202,9 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.displayOnlyStarEvents; stdcall;
+procedure TEventPresenter.displayOnlyStarEvents(aOnlyStarEvents: Boolean); stdcall;
 begin
-  fOnlyStarEvents := true;
+  fOnlyStarEvents := aOnlyStarEvents;
   fVST.BeginUpdate;
   try
     //iterate the tree setting the visiblity of the nodes based on the above flag
@@ -217,41 +215,25 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.displayAllEvents; stdcall;
-begin
-  fOnlyStarEvents := false;
-  fVST.BeginUpdate;
-  try
-    //iterate the tree setting the visiblity of the nodes based on the above flag
-    fVST.IterateSubtree(nil, processForStarDisplay, nil, [], True);
-  finally
-    fVST.EndUpdate;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-function TMyEvents.getDisplayDate(aDate: TDateTime): string;
+function TEventPresenter.getDisplayDate(aDate: TDateTime): string;
 begin
   result := FormatDateTime('c', aDate);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-function TMyEvents.getDisplayName(aName: string): string;
+function TEventPresenter.getDisplayName(aName: string): string;
 begin
   result := aName;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-function TMyEvents.getDisplayAmount(anAmount: currency): string;
-var
-  formatSettings : TFormatSettings;
+function TEventPresenter.getDisplayAmount(anAmount: currency): string;
 begin
-  GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, formatSettings);
-  result :=  CurrToStrF(anAmount, ffCurrency, 2, formatSettings);
+  result := CurrToStrF(anAmount, ffCurrency, 2, formatSettings);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-procedure TMyEvents.doOnGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+procedure TEventPresenter.doOnGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 var
   myEvent: IMyEventData;
