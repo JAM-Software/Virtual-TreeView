@@ -1,4 +1,4 @@
-V6.4: (under developement)
+﻿V6.4: (under developement)
   * Fixed #640: Edit control for in-place editing wrongly scaled in high-dpi scenarios
   * Fixed #627: It should be possible to use OnGetImageIndexEx without having imagelists assigned
   * Added assertion that verifies if an imageindex is supplied but no valid imagelist is available for this imageindex
@@ -15,6 +15,7 @@ V6.4: (under developement)
   * Fixed #645: Can't link 64 bit VCL app with VirtualTreeView in C++ Builder 10.1 Berlin    
   * Fixed #656: Fixed memory leaks in Advanced Demo
   * Enhancement #631: Added new Demo project CharityEvents to demonstrate the use of Interfaces for node's data and for data presentation
+  * Fixed #658: Column Header does not paint correctly after a drop in certain conditions
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin
