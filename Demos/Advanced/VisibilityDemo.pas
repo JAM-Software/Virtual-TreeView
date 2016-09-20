@@ -5,6 +5,7 @@ unit VisibilityDemo;
 //   - Synchronization between 2 trees (expand, scroll, selection).
 //   - Wheel scrolling and panning.
 // Written by Mike Lischke.
+{$WARN UNSAFE_CODE OFF} // Prevent warnins that are not applicable 
 
 interface
 

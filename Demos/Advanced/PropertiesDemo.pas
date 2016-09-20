@@ -4,6 +4,7 @@ unit PropertiesDemo;
 //   - Property page like string tree with individual node editors.
 //   - Incremental search.
 // Written by Mike Lischke.
+{$WARN UNSAFE_CODE OFF} // Prevent warnins that are not applicable 
 
 interface
 
