@@ -44,6 +44,9 @@ type
       var CellText: UnicodeString);
     procedure FormShow(Sender: TObject);
     procedure FormHide(Sender: TObject);
+    procedure VST3FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure VST2FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure VST1FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     FChanging: Boolean;
     procedure HideNodes(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
@@ -341,5 +344,38 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TVisibilityForm.VST1FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PLinkData;
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVisibilityForm.VST2FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PLinkData;
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVisibilityForm.VST3FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PLinkData;
+
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
+
 
 end.

@@ -63,6 +63,7 @@ type
     procedure LayoutComboChange(Sender: TObject);
     procedure AlignTreeFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
     procedure AlignTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure AlignTreeFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     FArabicFont,
     FHebrewFont: TFont;
@@ -616,5 +617,15 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TAlignForm.AlignTreeFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PAlignData;
+
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
 
 end.

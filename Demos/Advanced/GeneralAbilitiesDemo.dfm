@@ -67,9 +67,9 @@ object GeneralForm: TGeneralForm
     TreeOptions.PaintOptions = [toHideSelection, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseBlendedSelection]
     TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect, toRightClickSelect]
     TreeOptions.StringOptions = [toSaveCaptions, toShowStaticText, toAutoAcceptEditChange]
-    TreeOptions.EditOptions = toDefaultEdit
     OnDragOver = VST2DragOver
     OnFocusChanging = VST2FocusChanging
+    OnFreeNode = VST2FreeNode
     OnPaintText = VST2PaintText
     OnGetImageIndexEx = VST2GetImageIndexEx
     OnGetNodeDataSize = VST2GetNodeDataSize
@@ -199,7 +199,6 @@ object GeneralForm: TGeneralForm
         'Alpha blended rectangle')
       TabOrder = 2
       OnClick = RadioGroup2Click
-      ExplicitLeft = 13
     end
     object ThemeRadioGroup: TRadioGroup
       AlignWithMargins = True
@@ -285,7 +284,7 @@ object GeneralForm: TGeneralForm
     Left = 22
     Top = 148
     Bitmap = {
-      494C010112001300080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101120013000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -994,7 +993,7 @@ object GeneralForm: TGeneralForm
     Left = 32
     Top = 200
     Bitmap = {
-      494C010151005400080018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101510054000C0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000060000000F8010000010020000000000000F4
       0200000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
