@@ -4,6 +4,8 @@ unit myeventdata;
   IMyEventData:
   The data object for each event. For this particular demo, it also
   includes the method to generate a random event for creating test data.
+
+  Written by Joachim Marder, Sanjay Kanade
 }
 interface
 

@@ -14,6 +14,7 @@ V6.4: (under developement)
   * Fixed #647: New option to set the way of selecting next cell for editing in grid mode
   * Fixed #645: Can't link 64 bit VCL app with VirtualTreeView in C++ Builder 10.1 Berlin    
   * Fixed #656: Fixed memory leaks in Advanced Demo
+  * Enhancement #631: Added new Demo project CharityEvents to demonstrate the use of Interfaces for node's data and for data presentation
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin

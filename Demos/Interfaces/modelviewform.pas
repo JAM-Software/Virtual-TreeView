@@ -20,7 +20,7 @@ unit modelviewform;
   -- Another advantage is the better extensibility provided by interfaces
     (recall COM objects).
 
-  Uses a presenter Interface object IMyEvents (unit myevents) that:
+  Uses a presenter Interface object IEventPresenter (unit myevents) that:
   -- deals with the creation of Node Data objects IMyEventData (unit myeventdata)
   -- sets up the proper tree options
   -- handles Virtual Tree events inside it including the call backs for sorting
@@ -36,7 +36,7 @@ unit modelviewform;
   Advantage of a Presenter object:
   -- Simplifies the code of the application form where the form
      does not need to handle events. The form simply sets up the
-     presenter object IMyEvents that encapsulates the showing of
+     presenter object IEventPresenter that encapsulates the showing of
      the view (Tree View).
   -- Application also does not have to deal with tree options needed
      as they are handled by the presenter. For example, we deliberately
@@ -45,10 +45,12 @@ unit modelviewform;
   -- Custom application methods can be implemented in the presenter
      that change the behavior of the view in a model-view paradigm.
      For example, see the use of method displayOnlyStarEvents.
-  -- The presenter object IMyEvents can be reused easily in another
+  -- The presenter object IEventPresenter can be reused easily in another
      form that needs to show the same kind of Tree View. This is
      an alternative way of reuse as compared to making a derived
      Virtual Tree View component.
+
+  Written by Joachim Marder, Sanjay Kanade
 
 }
 

@@ -3,7 +3,7 @@ unit myevents;
 {
   IEventPresenter:
   The presenter object that connects to the Virtual Tree View passed
-  in Setup method.
+  in Setup method called in Create.
   -- Sets up the columns
   -- Sets up the events and callbacks, including those needed for
      sorting.
@@ -17,6 +17,8 @@ unit myevents;
      by forms that need to display a similar Tree View. This is an
      example of a reuse without making a derived component of the
      Virtual Tree View.
+
+  Written by Joachim Marder, Sanjay Kanade
 }
 
 interface
