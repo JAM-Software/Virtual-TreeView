@@ -4271,20 +4271,21 @@ var
   //--------------- end local functions ---------------------------------------
 
 var
-  I, Width, Height: Integer;
-
+  I: Integer;
+  lSize: TSize;
 begin
-  Width := GetSystemMetrics(SM_CXMENUCHECK);
-  Height := GetSystemMetrics(SM_CYMENUCHECK);
-  IL := TImageList.CreateSize(Width, Height);
-  with IL do
-    Handle := ImageList_Create(Width, Height, Flags, 0, AllocBy);
-  IL.Masked := True;
-  IL.BkColor := clWhite;
-
-  // Create a temporary bitmap, which holds the intermediate images.
-  BM := TBitmap.Create;
+  BM := TBitmap.Create; // Create a temporary bitmap, which holds the intermediate images.
   try
+    // Retrieve the checkbox image size, prefer theme if available, fall back to GetSystemMetrics() otherwise, but this returns odd results on Windows 8 and higher in high-dpi scenarios.
+    if not StyleServices.Enabled or not StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
+     lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
+
+    IL := TImageList.CreateSize(lSize.cx, lSize.cy);
+    with IL do
+      Handle := ImageList_Create(Width, Height, Flags, 0, AllocBy);
+    IL.Masked := True;
+    IL.BkColor := clWhite;
+
     // Make the bitmap the same size as the image list is to avoid problems when adding.
     BM.SetSize(IL.Width, IL.Height);
     BM.Canvas.Brush.Color := MaskColor;
