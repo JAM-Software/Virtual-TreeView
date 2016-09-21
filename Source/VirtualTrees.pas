@@ -268,7 +268,8 @@ type
     coDisableAnimatedResize, // Column resizing is not animated.
     coWrapCaption,           // Caption could be wrapped across several header lines to fit columns width.
     coUseCaptionAlignment,   // Column's caption has its own aligment.
-    coEditable               // Column can be edited
+    coEditable,              // Column can be edited
+    coStyleColor             // Prefer background color of VCL style over TVirtualTreeColumn.Color
   );
   TVTColumnOptions = set of TVTColumnOption;
 
@@ -1032,6 +1033,7 @@ type
     procedure ParentBiDiModeChanged;
     procedure ParentColorChanged;
     procedure RestoreLastWidth;
+    function GetEffectiveColor(): TColor;
     procedure SaveToStream(const Stream: TStream);
     function UseRightToLeftReading: Boolean;
 
@@ -6846,6 +6848,16 @@ begin
   end;
 end;
 
+function TVirtualTreeColumn.GetEffectiveColor(): TColor;
+// Returns the color that should effectively be used as background color for this
+// column considering all flags in the TVirtualTreeColumn.Options property
+begin
+  if (coParentColor in Options) or not (coStyleColor in Options) or not Owner.Header.TreeView.VclStyleEnabled then
+    Result := Self.Color
+  else
+    Result := Owner.Header.TreeView.FColors.BackGroundColor;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumn.SetCheckBox(Value: Boolean);
@@ -7684,32 +7696,6 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumn.LoadFromStream(const Stream: TStream; Version: Integer);
-
-  //--------------- local function --------------------------------------------
-
-  function ConvertOptions(Value: Cardinal): TVTColumnOptions;
-
-  // Converts the given raw value which represents column options for possibly older
-  // formats to the current format.
-
-  begin
-    if Version >= 3 then
-      Result := TVTColumnOptions(Word(Value and $FFFF))
-    else
-      if Version = 2 then
-        Result := TVTColumnOptions(Word(Value and $FF))
-      else
-      begin
-        // In version 2 coParentColor has been added. This needs an option shift for older stream formats.
-        // The first (lower) 4 options remain as they are.
-        Result := TVTColumnOptions(Word(Value) and $F);
-        Value := (Value and not $F) shl 1;
-        Result := Result + TVTColumnOptions(Word(Value and $FF));
-      end;
-  end;
-
-  //--------------- end local function ----------------------------------------
-
 var
   Dummy: Integer;
   S: string;
@@ -7744,7 +7730,8 @@ begin
     BiDiMode := TBiDiMode(Dummy);
 
     ReadBuffer(Dummy, SizeOf(Dummy));
-    Options := ConvertOptions(Dummy);
+    if Version >= 3 then
+      Options := TVTColumnOptions(Dummy);
 
     if Version > 0 then
     begin
@@ -7847,7 +7834,7 @@ begin
     WriteBuffer(FSpacing, SizeOf(FSpacing));
     Dummy := Ord(FBiDiMode);
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := Word(FOptions);
+    Dummy := Integer(FOptions);
     WriteBuffer(Dummy, SizeOf(Dummy));
 
     // parts introduced with stream version 1
@@ -14019,8 +14006,8 @@ var
 
       if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.FPaintOptions) or VclStyleEnabled then
       begin
-        if (FHeader.MainColumn > NoColumn) and not (coParentColor in FHeader.FColumns[FHeader.MainColumn].Options) then
-          Brush.Color := FHeader.FColumns[FHeader.MainColumn].Color
+        if (FHeader.MainColumn > NoColumn) then
+          Brush.Color := FHeader.FColumns[FHeader.MainColumn].GetEffectiveColor
         else
           Brush.Color := FColors.BackGroundColor;
       end
@@ -24299,10 +24286,7 @@ begin
     with FHeader.FColumns do
     if poColumnColor in PaintOptions then
     begin
-      if (VclStyleEnabled and (coParentColor in FHeader.FColumns[Column].FOptions)) then
-        Brush.Color := FColors.BackGroundColor
-      else
-        Brush.Color := Items[Column].Color;
+      Brush.Color := Items[Column].GetEffectiveColor;
       FillRect(CellRect);
      end;
 
@@ -30508,7 +30492,9 @@ begin
                       if not UseColumns or
                         ((vsSelected in Node.States) and (toFullRowSelect in FOptions.FSelectionOptions) and
                          (poDrawSelection in PaintOptions)) or
-                        (coParentColor in Items[PaintInfo.Column].Options) then
+                        (coParentColor in Items[PaintInfo.Column].Options) or
+                        ((coStyleColor in Items[PaintInfo.Column].Options) and VclStyleEnabled)
+                      then
                         Exclude(PaintOptions, poColumnColor);
                     end;
                     IsMainColumn := PaintInfo.Column = FHeader.MainColumn;
