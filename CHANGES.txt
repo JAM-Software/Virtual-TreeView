@@ -16,6 +16,7 @@
   * Fixed #656: Fixed memory leaks in Advanced Demo
   * Enhancement #631: Added new Demo project CharityEvents to demonstrate the use of Interfaces for node's data and for data presentation
   * Fixed #658: Column Header does not paint correctly after a drop in certain conditions
+  * Fixed #659: GetLastVisibleChild/NoInit checks wrong node
     
 V6.3: (17 May 2016)
   * Added support for RAD Studio 10.1 Berlin
