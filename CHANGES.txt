@@ -21,7 +21,8 @@ V6.4: (28 Sep 2016)
   * Fixed #658: Column Header does not paint correctly after a drop in certain conditions
   * Fixed #639: Scrolbars are not correctly themed under certain cirumstances when using a VCL theme.
   * Fixed #624: Wrong y-postion of checkboxes in high-dpi display mode  
-  * Fixed #548: Add flag coStyleColor to TVirtualTreeColumn.Options (prefer background color of VCL style over TVirtualTreeColumn.Color) 
+  * Fixed #548: Add flag coStyleColor to TVirtualTreeColumn.Options (prefer background color of VCL style over TVirtualTreeColumn.Color)
+  * Fixed #660: Fix AV when tree is modified in OnEdited event   
   * Some minor tweaks on Virtual TreeView source code and sample projects
   
 V6.3: (17 May 2016)
