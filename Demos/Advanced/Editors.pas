@@ -167,8 +167,7 @@ const
 //----------------------------------------------------------------------------------------------------------------------
 
 type
-  PGridData = ^TGridData;
-  TGridData = record
+  TGridData = class
     ValueType: array[0..3] of TValueType; // one for each column
     Value: array[0..3] of Variant;
     Changed: Boolean;
@@ -449,14 +448,14 @@ end;
 function TGridEditLink.EndEdit: Boolean;
 
 var
-  Data: PGridData;
+  Data: TGridData;
   Buffer: array[0..1024] of Char;
   S: UnicodeString;
   I: Integer;
-  
+
 begin
   Result := True;
-  Data := FTree.GetNodeData(FNode);
+  Data := FTree.GetNodeData<TGridData>(FNode);
   if FEdit is TComboBox then
   begin
     S := TComboBox(FEdit).Text;
@@ -497,7 +496,7 @@ end;
 function TGridEditLink.PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean;
 
 var
-  Data: PGridData;
+  Data: TGridData;
 begin
   Result := True;
   FTree := Tree as TVirtualStringTree;
@@ -507,7 +506,7 @@ begin
   // Determine what edit type actually is needed.
   FEdit.Free;
   FEdit := nil;
-  Data := FTree.GetNodeData(Node);
+  Data := FTree.GetNodeData<TGridData>(Node);
   case Data.ValueType[FColumn - 1] of
     vtString:
       begin

@@ -61,8 +61,6 @@ begin
   // We assign the OnGetText handler manually to keep the demo source code compatible
   // with older Delphi versions after using UnicodeString instead of WideString.
   VST5.OnGetText := VST5GetText;
-
-  VST5.NodeDataSize := SizeOf(TGridData);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -94,12 +92,8 @@ begin
 end;
 
 procedure TGridForm.VST5FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
-var
-  Data: PGridData;
 begin
-  Data := Sender.GetNodeData(Node);
-  Finalize(Data.Value[1]);
-  Finalize(Data.Value[2]);
+  Node.GetData<TGridData>().Free();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -108,11 +102,12 @@ procedure TGridForm.VST5InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVi
   var InitialStates: TVirtualNodeInitStates);
 
 var
-  Data: PGridData;
+  Data: TGridData;
   D: TDateTime;
 
 begin
-  Data := Sender.GetNodeData(Node);
+  Data := TGridData.Create();
+  Sender.SetNodeData(Node, Data);
 
   // These are the editor kinds used in the grid tree.
   Data.ValueType[0] := vtNumber;
@@ -130,24 +125,18 @@ begin
   D := Date + Random(14) - 7;
   Data.Value[3] := D;
 
+  Data.Changed := False;
+
   if Sender.FocusedColumn < 1 then
     Sender.FocusedColumn := 1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TGridForm.VST5GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: UnicodeString);
-
-var
-  Data: PGridData;
-
+procedure TGridForm.VST5GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: UnicodeString);
 begin
   if Column > 0 then
-  begin
-    Data := Sender.GetNodeData(Node);
-    CellText := Data.Value[Column - 1];
-  end
+    CellText := Sender.GetNodeData<TGridData>(Node).Value[Column - 1]
   else
     CellText := '';
 end;
@@ -156,13 +145,8 @@ end;
 
 procedure TGridForm.VST5PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode;
   Column: TColumnIndex; TextType: TVSTTextType);
-
-var
-  Data: PGridData;
-
 begin
-  Data := Sender.GetNodeData(Node);
-  if Data.Changed then
+  if Sender.GetNodeData<TGridData>(Node).Changed then
     TargetCanvas.Font.Style := [fsBold];
 end;
 

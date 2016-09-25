@@ -37,3 +37,6 @@
 /Win64
 /OSX32
 /__history
+*.bak
+*.Patch
+VirtualTreeView.zip

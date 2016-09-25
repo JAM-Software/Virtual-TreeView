@@ -87,6 +87,7 @@ type
     FVertScrollBarWindow: TVclStyleScrollBarWindow;
 
     procedure CMUpdateVclStyleScrollbars(var Message: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
+    procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
     procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
     procedure WMLButtonDown(var Msg: TWMMouse);  message WM_LBUTTONDOWN;
@@ -546,6 +547,14 @@ begin
   CallDefaultProc(TMessage(Msg));
   Handled := True;
 end;
+
+
+  procedure TVclStyleScrollBarsHook.WMEraseBkgnd(var Message: TWMEraseBkgnd);
+  begin
+
+     Handled := True;
+  end;
+
 
 procedure TVclStyleScrollBarsHook.WMHScroll(var Msg: TMessage);
 begin
@@ -1023,8 +1032,11 @@ end;
 
 procedure TVclStyleScrollBarsHook.WMNCPaint(var Msg: TMessage);
 begin
-  CalcScrollBarsRect;
-  UpdateScrollBarWindow;
+ if (tsWindowCreating in TBaseVirtualTree(Control).TreeStates) then
+  begin
+    CalcScrollBarsRect;
+    UpdateScrollBarWindow;
+ end;
 end;
 
 procedure TVclStyleScrollBarsHook.WMSize(var Msg: TMessage);
@@ -1127,4 +1139,10 @@ begin
   end;
 end;
 
+initialization
+
+  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
+  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
+
 end.
+

@@ -220,7 +220,7 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
                               var aInitStates:TVirtualNodeInitStates); override;
          procedure DoFreeNode(aNode:PVirtualNode); override;
          function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-           var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
+           var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList; override;
          procedure DoChecked(aNode:PVirtualNode); override;
          function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; override;
          function InternalData(Node: PVirtualNode): Pointer;
@@ -505,9 +505,10 @@ function TMVCTreeView.GetMVCNode(VirtualNode:PVirtualNode):TMVCNode;
 begin
   { Return the reference to the TMVCNode that is represented by
     Virtualnode }
-  if VirtualNode=NIL
-    then Result:=NIL
-    else Result:=PMyNodeData(InternalData(VirtualNode)).Node;
+  if VirtualNode.IsAssigned() then
+    Result := PMyNodeData(InternalData(VirtualNode)).Node
+  else
+    Result := nil;
 end;
 
 procedure TMVCTreeView.SetMVCNode(VirtualNode:PVirtualNode;aNode:TMVCNode);
@@ -730,8 +731,9 @@ end;
 
 function TMVCTreeView.DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean;
 begin
-  result := inherited DoInitChildren(Node,ChildCount);
+  inherited DoInitChildren(Node,ChildCount);
   ChildCount:=MVCNode[Node].ChildCount;
+  Result := True;
 end;
 
 procedure TMVCTreeView.DoInitNode(aParent,aNode:PVirtualNode;
@@ -763,7 +765,7 @@ begin
 end;
 
 function TMVCTreeView.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-  var Ghosted: Boolean; var Index: Integer): TCustomImageList;
+  var Ghosted: Boolean; var Index: TImageIndex): TCustomImageList;
 { The tree requests the image-index for a Node and column. }
 var N:TMVCNode;
 begin
@@ -1010,7 +1012,7 @@ end;
 constructor TMVCTreeView.Create(AOwner: TComponent);
 begin
   inherited;
-  FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
+  FInternalDataOffset := AllocateInternalDataArea(SizeOf(Pointer));
 end;
 
 function TMVCTreeView.GetOptions: TVirtualTreeOptions;

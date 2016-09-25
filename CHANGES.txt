@@ -1,20 +1,51 @@
-V6.0 (under development)
-  * Issue #514: The splitter area in the column header should be configurable
-  * Issue #515: The value for Indent should get scaled too if the toAutoScale flag is set
-  * Issue #511: From the unit VirtualTres new units have been extracted to reduce its size.
-  * Issue #483 for TVTOperationKind.okExport: All exports can now be cancelled using CancelOperation()
+
+V6.1 (02 June 2015)
+ * Implemented Issue #530: Removed all AnsiString code from export routines. Breaking changes:
+   - TCustomVirtualStringTree.ContentToText() is now based on (Unicode)string and no longer on AnsiString.
+   - TCustomVirtualStringTree.ContentToUnicode() is now deprecated, use ContentToText() instead.
+ * Implemented issue #536: Add export event that is triggered for each cell
+   - Added new event OnGetCellText which has new TVSTGetCellTextEventArgs record as parameter.
+     This event could supersede the OnGetText event in a future version.
+   - All export formats now also export static text, in case the toShowStaticText flag is set  
+ * Fixed issue #545: VCL Themes: Background of scrollbars is erased with wrong color
+ * Fixed issue #487: When OnAddToSelection is called, GetFirstSelected returns nil
+ * Fixed issue #542: AllocateInternalDataArea() was broken for derived classes
+   This was a result of issue #507. Now the user node data comes before the internal data.
+   Therefore it is important to use the function InternalData() to access the internal data of a node.  
+ * Fixed issue #541: Duplicate call of EndEdit()
+ * Fixed issue #123: Triangle button is not shown for hot node
+ * Fixed issue #347: With VCL-Themes: No expand-pluses seen under Windows classic theme
+ * Fixed copy&paste error is source code related to issue #519
+
+V6.0 (13 Apr 2015)
+  * Issue #509: Added new option hoAutoColumnPopupMenu to TVTHeaderOption. 
+  * Issue #457: Virtual TreeView no longer react on standard actions for TEdit controls
+    We added standard actions for copy, cut, paste, delete, select all, check, uncheck in the new unit "VirtualTrees.Actions".  
+  * Issue #484: ContentToHTML() no longer pre-encodes the HTML in UTF-8 but returns a Unicodestring
   * Issue #507: Added to TBaseVirtualTree:
     function GetNodeData<T>(pNode: PVirtualNode): T;
     function GetNodeDataAt<T:class>(pXCoord: Integer; pYCoord: Integer): T;
     function GetFirstSelectedNodeData<T>(): T; overload;
+    function GetInterfaceFromNodeData<T:IInterface>(pNode: PVirtualNode): T; 
+    procedure SetNodeData(pNode: PVirtualNode; pUserData: Pointer); 
+    procedure SetNodeData(pNode: PVirtualNode; const pUserData: IInterface); 
+    procedure SetNodeData<T:class>(pNode: PVirtualNode; pUserData: T);
+    Similar functions have also been added to the TVirtualNode record.
+  * The grid demo of the "Advanced" project now uses a class instead of a record and the new generic functions from issue #502.
+  * Issue #519: Changed plus/minus buttons so that hot tracking of the buttons is always on, independent of toHotTrack.
+  * Issue #514: The splitter area in the column header should be configurable
+  * Issue #515: The value for Indent should get scaled too if the toAutoScale flag is set
+  * Issue #511: From the unit VirtualTres new units have been extracted to reduce its size.
+  * Issue #483 for TVTOperationKind.okExport: All exports can now be cancelled using CancelOperation()
+  * Issue #362: InternalConnectNode: AdjustTotalHeight not called if Node not FullyVisible
   * Issue #506: Autosort is being triggered at design-time.
   * Issue #486: AutoScroll is performed although toAutoScroll is not set.
   * DoMeasureItem() now ensures that the node was initialized.
   * Issue #493: Editing with DblClick should always open editor immediately.
-  * TVirtualTreeColumns.UpdatePositions() now exists immediately if the control is destroying, ths prevents AVs.
+  * TVirtualTreeColumns.UpdatePositions() now exits immediately if the control is destroying, ths prevents AVs.
   * Added support for CBuilder XE7.  
-  * Supporting only Delphi / C++ Builder XE3 and higher
   * A larger patch from Diemtar Rösler was applied which addresses various issue regarding VCL styles (especially #478 and #491).
+  * Supporting only Delphi / C++ Builder XE3 and higher
   * Improved support for C++ Builder  
 
 V5.5.3: (08 Jan 2015)

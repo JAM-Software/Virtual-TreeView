@@ -28,7 +28,7 @@ implementation
 
 uses
   StrEdit, Dialogs, TypInfo, SysUtils, Graphics, CommCtrl, ImgList, Controls,
-  VirtualTrees.ClipBoard;
+  VirtualTrees.ClipBoard, VirtualTrees.Actions;
 
 type
   // The usual trick to make a protected property accessible in the ShowCollectionEditor call below.
