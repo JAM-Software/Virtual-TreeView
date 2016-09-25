@@ -4,12 +4,13 @@ unit PropertiesDemo;
 //   - Property page like string tree with individual node editors.
 //   - Incremental search.
 // Written by Mike Lischke.
+{$WARN UNSAFE_CODE OFF} // Prevent warnins that are not applicable 
 
 interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, ExtCtrls;
+  StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes;
 
 const
   // Helper message to decouple node change handling from edit handling.
@@ -29,7 +30,7 @@ type
     procedure VST3GetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
       var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: UnicodeString);
     procedure VST3GetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-      var Ghosted: Boolean; var Index: Integer);
+      var Ghosted: Boolean; var Index: TImageIndex);
     procedure VST3GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: UnicodeString);
     procedure VST3InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
@@ -41,6 +42,7 @@ type
       var Result: Integer);
     procedure RadioGroup1Click(Sender: TObject);
     procedure VST3StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure VST3FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     procedure WMStartEditing(var Message: TMessage); message WM_STARTEDITING;
   end;
@@ -149,13 +151,25 @@ procedure TPropertiesForm.VST3GetHint(Sender: TBaseVirtualTree; Node: PVirtualNo
 begin
   // Add a dummy hint to the normal hint to demonstrate multiline hints.
   if (Column = 0) and (Node.Parent <> Sender.RootNode) then
-    HintText := PropertyTexts[Node.Parent.Index, Node.Index, ptkHint] + #13 + '(Multiline hints are supported too).';
+  begin
+    HintText := PropertyTexts[Node.Parent.Index, Node.Index, ptkHint];
+    { Related to #Issue 623
+      Observed when solving issue #623. For hmToolTip, the multi-line mode
+      depends on the node's multi-lin emode. Hence, append a line only
+      if not hmToolTip. Otherwise, if you must append lines, force the
+      lineBreakStyle := hlbForceMultiLine for hmToolTip.
+    }
+    if (Sender as TVirtualStringTree).Hintmode <> hmTooltip then
+       HintText := HintText
+          + #13 + '(Multiline hints are supported too).'
+          ;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TPropertiesForm.VST3GetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
-  Column: TColumnIndex; var Ghosted: Boolean; var Index: Integer);
+  Column: TColumnIndex; var Ghosted: Boolean; var Index: TImageIndex);
 
 var
   Data: PPropertyData;
@@ -326,5 +340,15 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TPropertiesForm.VST3FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PPropertyData;
+
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
 
 end.

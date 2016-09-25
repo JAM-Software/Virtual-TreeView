@@ -7,10 +7,9 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
@@ -34,12 +33,7 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
       'ey are not handled by the application. This allows very flexible' +
       ' designs but avoids full custom draw if only a small details mus' +
       't be drawn differently.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
+    ParentFont = True
     ShowAccelChar = False
     WordWrap = True
   end
@@ -50,7 +44,6 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
     Height = 301
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
-    CheckImageKind = ckDarkTick
     ClipboardFormats.Strings = (
       'CSV'
       'HTML Format'

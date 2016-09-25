@@ -8,10 +8,9 @@ object NodeForm: TNodeForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   DesignSize = (
     757
@@ -71,7 +70,7 @@ object NodeForm: TNodeForm
       Header.Font.Charset = DEFAULT_CHARSET
       Header.Font.Color = clWindowText
       Header.Font.Height = -11
-      Header.Font.Name = 'MS Sans Serif'
+      Header.Font.Name = 'Tahoma'
       Header.Font.Style = []
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag]
       HintAnimation = hatNone

@@ -1,4 +1,4 @@
-unit VirtualTrees.Export;
+﻿unit VirtualTrees.Export;
 
 {$WARN UNSAFE_CODE OFF}
 {$WARN IMPLICIT_STRING_CAST OFF}
@@ -940,7 +940,7 @@ function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source
 
   //--------------- local function --------------------------------------------
 
-  procedure MakeFragment(var HTML: String);
+  procedure MakeFragment(var HTML: Utf8String);
 
   // Helper routine to build a properly-formatted HTML fragment.
 
@@ -961,7 +961,7 @@ function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source
       Length(EndFragment) + 4 * NumberLengthAndCR;
 
   var
-    Description: String;
+    Description: Utf8String;
     StartHTMLIndex,
     EndHTMLIndex,
     StartFragmentIndex,
@@ -993,6 +993,7 @@ var
   DataSize: Cardinal;
   S: AnsiString;
   WS: string;
+  lUtf8String: Utf8string;
   P: Pointer;
   CrackTree: TCustomVirtualStringTreeCracker;
 begin
@@ -1029,12 +1030,12 @@ begin
     end
     else if Format = CF_HTML then
     begin
-      WS := ContentToHTML(CrackTree, Source);
+      lUtf8String := ContentToHTML(CrackTree, Source);
       // Build a valid HTML clipboard fragment.
-      MakeFragment(WS);
-      S := S + #0;
-      Data := PChar(WS);
-      DataSize := Length(WS) * Sizeof(char);
+      MakeFragment(lUtf8String);
+      lUtf8String := lUtf8String + #0;
+      Data := PAnsiChar(lUtf8String);
+      DataSize := Length(lUtf8String);
     end;
   end;
 

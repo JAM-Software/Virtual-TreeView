@@ -26,7 +26,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VirtualTrees, StdCtrls, {$ifdef GraphicEx} GraphicEx, {$else} JPEG, {$endif}
-  ImgList, ComCtrls;
+  ImgList, ComCtrls, UITypes;
 
 type
   TDrawTreeForm = class(TForm)
@@ -44,7 +44,7 @@ type
     procedure VDT1FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure VDT1GetHintSize(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var R: TRect);
     procedure VDT1GetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-      var Ghosted: Boolean; var Index: Integer);
+      var Ghosted: Boolean; var Index: TImageIndex);
     procedure VDT1GetNodeWidth(Sender: TBaseVirtualTree; Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       var NodeWidth: Integer);
     procedure VDT1HeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
@@ -561,7 +561,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TDrawTreeForm.VDT1GetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
-  Column: TColumnIndex; var Ghosted: Boolean; var Index: Integer);
+  Column: TColumnIndex; var Ghosted: Boolean; var Index: TImageIndex);
 
 // Returns the proper node image which has been determine on initialization time. Also overlay images are
 // used properly for shared folders.

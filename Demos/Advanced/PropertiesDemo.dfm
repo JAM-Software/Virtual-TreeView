@@ -1,20 +1,19 @@
 object PropertiesForm: TPropertiesForm
   Left = 397
   Top = 294
-  Width = 637
-  Height = 421
+  ClientHeight = 382
+  ClientWidth = 621
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   DesignSize = (
     621
-    383)
+    382)
   PixelsPerInch = 96
   TextHeight = 16
   object Label9: TLabel
@@ -54,7 +53,7 @@ object PropertiesForm: TPropertiesForm
     Header.Font.Charset = DEFAULT_CHARSET
     Header.Font.Color = clWindowText
     Header.Font.Height = -11
-    Header.Font.Name = 'MS Sans Serif'
+    Header.Font.Name = 'Tahoma'
     Header.Font.Style = []
     Header.Height = 18
     Header.Options = [hoAutoResize, hoColumnResize, hoVisible, hoAutoSpring]
@@ -76,6 +75,7 @@ object PropertiesForm: TPropertiesForm
     OnChange = VST3Change
     OnCreateEditor = VST3CreateEditor
     OnEditing = VST3Editing
+    OnFreeNode = VST3FreeNode
     OnPaintText = VST3PaintText
     OnGetImageIndex = VST3GetImageIndex
     OnInitChildren = VST3InitChildren
@@ -113,7 +113,7 @@ object PropertiesForm: TPropertiesForm
     Left = 422
     Top = 224
     Bitmap = {
-      494C010112001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001300080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

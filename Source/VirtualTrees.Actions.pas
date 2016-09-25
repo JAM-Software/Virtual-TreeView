@@ -5,6 +5,7 @@ interface
 uses
   System.Classes,
   System.Actions,
+  Vcl.Controls,
   Vcl.ActnList,
   VirtualTrees;
 
@@ -20,7 +21,7 @@ type
     fFilter: TVirtualNodeStates; // Apply only of nodes which match these states
     procedure SetControl(Value: TBaseVirtualTree); // Setter for the property "Control"
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure DoAfterExecute; // Fires the event "OnAfterExecute"
+    procedure DoAfterExecute; virtual;// Fires the event "OnAfterExecute"
     property SelectedOnly: Boolean read GetSelectedOnly write SetSelectedOnly default False;
   public
     function HandlesTarget(Target: TObject): Boolean; override;
@@ -45,9 +46,11 @@ type
   TVirtualTreePerItemAction = class(TVirtualTreeAction)
   strict private
     fOnBeforeExecute: TNotifyEvent;
+    fOldCursor: TCursor;
   strict protected
     fToExecute: TVTGetNodeProc; // method which is executed per item to perform this action
-    procedure DoBeforeExecute;
+    procedure DoBeforeExecute();
+    procedure DoAfterExecute(); override;// Fires the event "OnAfterExecute"
   public
     constructor Create(AOwner: TComponent); override;
     procedure ExecuteTarget(Target: TObject); override;
@@ -109,7 +112,7 @@ procedure Register;
 implementation
 
 uses
-  Controls, Forms;
+  Vcl.Forms;
 
 procedure Register;
 begin
@@ -190,31 +193,36 @@ begin
   inherited;
   fToExecute := nil;
   fOnBeforeExecute := nil;
+  fOldCursor := crNone;
+end;
+
+procedure TVirtualTreePerItemAction.DoAfterExecute;
+begin
+  inherited;
+  Control.EndUpdate;
+  if fOldCursor <> crNone then
+    Screen.Cursor := fOldCursor;
 end;
 
 procedure TVirtualTreePerItemAction.DoBeforeExecute;
 begin
+  if Screen.Cursor <> crHourGlass then begin
+    fOldCursor := Screen.Cursor;
+    Screen.Cursor := crHourGlass;
+  end;//if
   if Assigned(fOnBeforeExecute) then
     fOnBeforeExecute(Self);
+  Control.BeginUpdate();
 end;
 
 procedure TVirtualTreePerItemAction.ExecuteTarget(Target: TObject);
-var
-  lOldCursor: TCursor;
 begin
-  if Assigned(Self.Control) then
-    Target := Self.Control;
   DoBeforeExecute();
-  lOldCursor := Screen.Cursor;
-  Screen.Cursor := crHourGlass;
-  Control.BeginUpdate();
   try
     Control.IterateSubtree(nil, Self.fToExecute, nil, fFilter);
   finally
-    Control.EndUpdate;
-    Screen.Cursor := lOldCursor;
+    DoAfterExecute();
   end;
-  Inherited ExecuteTarget(Target);
 end;
 
 { TVirtualTreeCheckAll }
@@ -227,7 +235,8 @@ begin
   fDesiredCheckState := csCheckedNormal;
   fToExecute := procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean)
                 begin
-                  Control.CheckState[Node] := fDesiredCheckState;
+                  if not Control.CheckState[Node].IsDisabled then
+                    Control.CheckState[Node] := fDesiredCheckState;
                 end;
 end;
 

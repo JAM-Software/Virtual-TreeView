@@ -12,7 +12,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, VirtualTrees, ImgList, ComCtrls, ToolWin, Menus, StdCtrls;
+  Dialogs, VirtualTrees, ImgList, ComCtrls, ToolWin, Menus, StdCtrls, UITypes;
 
 type
   TWindowsXPForm = class(TForm)
@@ -32,7 +32,7 @@ type
     ToolButton9: TToolButton;
     PrintDialog: TPrintDialog;
     procedure XPTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
-      Column: TColumnIndex; var Ghosted: Boolean; var Index: Integer);
+      Column: TColumnIndex; var Ghosted: Boolean; var Index: TImageIndex);
     procedure FormCreate(Sender: TObject);
     procedure XPTreeInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
@@ -47,6 +47,7 @@ type
     procedure Label4Click(Sender: TObject);
     procedure ToolButton9Click(Sender: TObject);
     procedure XPTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure XPTreeFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   end;
 
 var
@@ -94,7 +95,7 @@ var
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TWindowsXPForm.XPTreeGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode;
-  Kind: TVTImageKind; Column: TColumnIndex; var Ghosted: Boolean; var Index: Integer);
+  Kind: TVTImageKind; Column: TColumnIndex; var Ghosted: Boolean; var Index: TImageIndex);
 
 var
   Data: PEntry;
@@ -175,7 +176,7 @@ begin
       if Node.Parent = Sender.RootNode then
         CellText := Data.Caption
       else
-        Text := 'More entries';
+        CellText := 'More entries';
     1:
       if Node.Parent = Sender.RootNode then
         CellText := FloatToStr(Data.Size / 1000) + ' MB';
@@ -215,7 +216,7 @@ begin
 
         if SortColumn <> NoColumn then
           Columns[SortColumn].Color := $F7F7F7;
-        SortTree(SortColumn, SortDirection, False);
+        SortTree(SortColumn, SortDirection, True);
 
       end;
     end;
@@ -258,7 +259,7 @@ end;
 procedure TWindowsXPForm.Label4Click(Sender: TObject);
 
 begin
-  ShellExecute(0, 'open', 'http://groups.yahoo.com/group/VirtualExplorerTree', nil, nil, SW_SHOW);
+    ShellExecute(0, 'open', 'https://groups.google.com/forum/#!forum/virtual-treeview', nil, nil, SW_SHOW);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -280,5 +281,15 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TWindowsXPForm.XPTreeFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PEntry;
+
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
 
 end.

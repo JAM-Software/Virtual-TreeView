@@ -15,8 +15,8 @@ unit VirtualTreeWrapper;
 
 interface
 
-uses SysUtils, Classes, Controls, VirtualTrees, Generics.Collections.Static,
-     RTLConsts;
+uses SysUtils, Classes, Controls, VirtualTrees, Generics.Collections,
+     RTLConsts, UITypes;
 
 type
   ///<summary>
@@ -96,12 +96,16 @@ type
 	function GetIndex : Integer;
 	function GetItem(Index : Cardinal) : TVirtualNode<T>;
 	function GetChildCount : Cardinal;
-
+	function GetMultiLine: Boolean;
+	procedure SetMultiLine(const Value: Boolean);
+	function GetHasChildren: Boolean;
+	procedure SetHasChildren(const Value: Boolean);
   private
 	procedure Create(ATree : TVirtualTreeWrapper<T>; ANode : PVirtualNode);
 	function GetIsEmpty: Boolean;
   public
 	class function Empty : TVirtualNode<T>; static;
+	class operator Implicit(const Self: TVirtualNode<T>): PVirtualNode; inline;
 
 	function AddChild : TVirtualNode<T>; overload;
 	function AddChild(const ACaption : string) : TVirtualNode<T>; overload;
@@ -125,6 +129,8 @@ type
 	property ImageIndex	: Integer	read GetImageIndex	write SetImageIndex;
 	property CheckState	: TCheckState read GetCheckState write SetCheckState;
 	property CheckType	: TCheckType read GetCheckType	write SetCheckType;
+	property MultiLine	: Boolean	read GetMultiLine	write SetMultiLine;
+	property HasChildren: Boolean	read GetHasChildren	write SetHasChildren;
 	property Items[Index : Cardinal]	: TVirtualNode<T> read GetItem; default;
 	property IsEmpty	: Boolean	read GetIsEmpty;
   end;
@@ -158,7 +164,7 @@ type
 	procedure DoGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
 	  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: UnicodeString);
 	procedure DoGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-	  var Ghosted: Boolean; var ImageIndex: Integer);
+	  var Ghosted: Boolean; var ImageIndex: TImageIndex);
   public
 	constructor Create(AOwner : TComponent); override;
 
@@ -214,7 +220,7 @@ begin
 	Result:=Tree.AddChild(Parent);
 	//Treat the node as if it has some initial data which causes calling of
 	//OnFreeNode even if the node hasn't been already initialized
-	Include(Result^.States, vsInitialUserData);
+	Include(Result^.States, vsOnFreeNodeCallRequired);
 	Ptr:=Tree.GetNodeData(Result);
 	//Not needed as VirtualTree uses AllocMem which nils (it zeros the entire
 	//memory block) all pointers that Initialize nils (basically this is the
@@ -372,7 +378,7 @@ end;
 
 procedure TVirtualTreeWrapper<T>.DoGetImageIndex(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
-  var Ghosted: Boolean; var ImageIndex: Integer);
+  var Ghosted: Boolean; var ImageIndex: TImageIndex);
 begin
 	ImageIndex:=GetData(Node)^.ImageIndex;
 end;
@@ -468,6 +474,11 @@ begin
 	Result:=TVirtualNodeEnumerator<T>.Create(Tree, FNode);
 end;
 
+function TVirtualNode<T>.GetHasChildren: Boolean;
+begin
+	Result:=Tree.Tree.HasChildren[FNode];
+end;
+
 function TVirtualNode<T>.GetHint: string;
 begin
 	Result:=FData^.Hint;
@@ -508,25 +519,40 @@ begin
 	Result:=Tree.Tree.GetNodeLevel(FNode);
 end;
 
+function TVirtualNode<T>.GetMultiLine: Boolean;
+begin
+	Result:=Tree.Tree.MultiLine[FNode];
+end;
+
+class operator TVirtualNode<T>.Implicit(
+  const Self: TVirtualNode<T>): PVirtualNode;
+begin
+	Result:=Self.FNode;
+end;
+
 procedure TVirtualNode<T>.MakeVisible(Recursive: Boolean);
 var AParent	: PVirtualNode;
 	List	: TList<PVirtualNode>;
 	i		: Integer;
 begin
 	with Tree.Tree do begin
-		List.Init;
-		AParent:=FNode.Parent;
-		// The root node is marked by having its NextSibling (and PrevSibling) pointing to itself.
-		while (AParent <> nil) and (AParent^.NextSibling <> AParent) do begin
-			if (vsExpanded in AParent^.States) then Break;
-			List.Add(AParent);
-			AParent:=AParent^.Parent;
-		end;
-		for i:=List.Count - 1 downto 0 do Expanded[List[i]]:=true;
+		List:=TList<PVirtualNode>.Create;
+		try
+			AParent:=FNode.Parent;
+			// The root node is marked by having its NextSibling (and PrevSibling) pointing to itself.
+			while (AParent <> nil) and (AParent^.NextSibling <> AParent) do begin
+				if (vsExpanded in AParent^.States) then Break;
+				List.Add(AParent);
+				AParent:=AParent^.Parent;
+			end;
+			for i:=List.Count - 1 downto 0 do Expanded[List[i]]:=true;
 
-		if (Recursive) then FullExpand(FNode)
-		else Expanded[FNode]:=true;
-    end;
+			if (Recursive) then FullExpand(FNode)
+			else Expanded[FNode]:=true;
+		finally
+			List.Free;
+		end;
+	end;
 end;
 
 function TVirtualNode<T>.NextSibling: TVirtualNode<T>;
@@ -582,6 +608,11 @@ begin
 	Tree.Tree.CheckType[FNode]:=Value;
 end;
 
+procedure TVirtualNode<T>.SetHasChildren(const Value: Boolean);
+begin
+	Tree.Tree.HasChildren[FNode]:=Value;
+end;
+
 procedure TVirtualNode<T>.SetHint(const AHint: string);
 begin
 	FData^.Hint:=AHint;
@@ -592,6 +623,11 @@ procedure TVirtualNode<T>.SetImageIndex(const AImageIndex: Integer);
 begin
 	FData^.ImageIndex:=AImageIndex;
 	Tree.NodeUpdated(FNode);
+end;
+
+procedure TVirtualNode<T>.SetMultiLine(const Value: Boolean);
+begin
+	Tree.Tree.MultiLine[FNode]:=Value;
 end;
 
 { TVirtualNodeEnumerator<T> }

@@ -392,9 +392,35 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 function TVirtualTreeAccessibility.accSelect(flagsSelect: Integer; varChild: OleVariant): HResult;
-// since we're not supporting more than one item, this is not supported currently.
+var
+  lIndexToSelect: Cardinal;
+  i: Integer;
+  lNode: PVirtualNode;
 begin
-  Result := DISP_E_MEMBERNOTFOUND;
+  lIndexToSelect := varChild;
+  if lIndexToSelect >= Self.FVirtualTree.TotalCount then
+    Exit(E_INVALIDARG);
+  lNode := FVirtualTree.GetFirst();
+  for i := 0 to Integer(lIndexToSelect) - 1 do
+    lNode := FVirtualTree.GetNext(lNode);
+  Result := E_NOTIMPL;
+  if (flagsSelect and SELFLAG_TAKEFOCUS) <> 0then begin
+    FVirtualTree.FocusedNode := lNode;
+    Result := S_OK;
+  end;//if SELFLAG_TAKEFOCUS
+  if (flagsSelect and SELFLAG_TAKESELECTION) <> 0 then begin
+    FVirtualTree.ClearSelection();
+    FVirtualTree.Selected[lNode] := True;
+    Result := S_OK;
+  end;//if SELFLAG_TAKEFOCUS
+  if (flagsSelect and SELFLAG_ADDSELECTION) <> 0 then begin
+    FVirtualTree.Selected[lNode] := True;
+    Result := S_OK;
+  end;
+  if (flagsSelect and SELFLAG_REMOVESELECTION) <> 0 then begin
+    FVirtualTree.Selected[lNode] := False;
+    Result := S_OK;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

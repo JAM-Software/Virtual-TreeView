@@ -49,10 +49,10 @@ function GetRGBColor(Value: TColor): DWORD;
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
 function HasMMX: Boolean;
 
-procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
+procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
 
-procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer);
+procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
 // Clip a given canvas to ClipRect while transforming the given rect to device coordinates.
 procedure ClipCanvas(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
@@ -63,7 +63,6 @@ procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas
 // Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
 // the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
 // For higher speed (and multiple entries to be shorted) specify this value explicitely.
-// Note: It is assumed that the string really needs shortage. Check this in advance.
 function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
 
 // Wrap the given string S so that it fits into a space of given width.
@@ -126,13 +125,14 @@ procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
 
 // Set the brush origin of a given canvas.
 
-var
-  P: TPoint;
+//var
+//  P: TPoint;
 
 begin
-  P := Point(X, Y);
-  LPtoDP(Canvas.Handle, P, 1);
-  SetBrushOrgEx(Canvas.Handle, P.X, P.Y, nil);
+  //P := Point(X, Y);
+  //LPtoDP(Canvas.Handle, P, 1);// No longer used, see issue #608
+  //SetBrushOrgEx(Canvas.Handle, P.X, P.Y, nil);
+  SetBrushOrgEx(Canvas.Handle, X, Y, nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -208,13 +208,12 @@ begin
       EllipsisWidth := Size.cx;
     end;
 
-    if Width <= EllipsisWidth then
-      Result := ''
-    else
     begin
       // Do a binary search for the optimal string length which fits into the given width.
       L := 0;
-      H := Len - 1;
+      N := 0;
+      W := Width;
+      H := Len;
       while L < H do
       begin
         N := (L + H + 1) shr 1;
@@ -225,7 +224,14 @@ begin
         else
           H := N - 1;
       end;
-      Result := Copy(S, 1, L) + '...';
+      if W <= Width then
+        L := N;
+      if L >= Len then
+        Result := S
+      else if Width <= EllipsisWidth then
+        Result := ''
+      else
+        Result := Copy(S, 1, L) + '...';
     end;
   end;
 end;

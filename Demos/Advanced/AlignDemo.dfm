@@ -1,8 +1,8 @@
 object AlignForm: TAlignForm
   Left = 561
   Top = 278
-  Width = 825
-  Height = 499
+  ClientHeight = 460
+  ClientWidth = 809
   Color = clBtnFace
   Constraints.MinWidth = 590
   Font.Charset = ANSI_CHARSET
@@ -11,12 +11,11 @@ object AlignForm: TAlignForm
   Font.Name = 'Arial'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
     809
-    461)
+    460)
   PixelsPerInch = 96
   TextHeight = 16
   object Label8: TLabel
@@ -85,7 +84,6 @@ object AlignForm: TAlignForm
     Height = 335
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
-    CheckImageKind = ckDarkTick
     ClipboardFormats.Strings = (
       'CSV'
       'HTML Format'
@@ -128,6 +126,7 @@ object AlignForm: TAlignForm
     TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware]
     TreeOptions.SelectionOptions = [toExtendedFocus, toMultiSelect]
     OnFocusChanged = AlignTreeFocusChanged
+    OnFreeNode = AlignTreeFreeNode
     OnPaintText = AlignTreePaintText
     OnGetImageIndex = AlignTreeGetImageIndex
     OnGetNodeDataSize = AlignTreeGetNodeDataSize
@@ -143,7 +142,6 @@ object AlignForm: TAlignForm
         ImageIndex = 20
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 0
-        Spacing = 10
         Width = 189
         WideText = 'English text column'
         WideHint = 
@@ -156,7 +154,6 @@ object AlignForm: TAlignForm
         ImageIndex = 35
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 1
-        Spacing = 10
         Width = 159
         WideText = 'Greek text column'
         WideHint = 
@@ -169,7 +166,6 @@ object AlignForm: TAlignForm
         ImageIndex = 32
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible, coAutoSpring, coWrapCaption]
         Position = 2
-        Spacing = 10
         Width = 213
         WideText = 'Hebrew/arabic text column'
         WideHint = 
@@ -339,7 +335,7 @@ object AlignForm: TAlignForm
     Left = 554
     Top = 212
     Bitmap = {
-      494C010102000400040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000400080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       000000000000000000000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -484,7 +480,7 @@ object AlignForm: TAlignForm
     Left = 556
     Top = 244
     Bitmap = {
-      494C010141004500040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010141004500080020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000002002000001002000000000000040
       0400000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

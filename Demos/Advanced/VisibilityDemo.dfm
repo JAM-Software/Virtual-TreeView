@@ -1,22 +1,21 @@
 object VisibilityForm: TVisibilityForm
   Left = 573
   Top = 362
-  Width = 752
-  Height = 529
+  ClientHeight = 490
+  ClientWidth = 736
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   OnHide = FormHide
   OnShow = FormShow
   DesignSize = (
     736
-    491)
+    490)
   PixelsPerInch = 96
   TextHeight = 16
   object Label17: TLabel
@@ -4128,7 +4127,6 @@ object VisibilityForm: TVisibilityForm
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00}
       BorderStyle = bsNone
       ButtonStyle = bsTriangle
-      CheckImageKind = ckFlat
       Colors.BorderColor = clWindowText
       Colors.HotColor = clBlack
       Colors.UnfocusedSelectionColor = clHighlight
@@ -4166,6 +4164,7 @@ object VisibilityForm: TVisibilityForm
       OnChange = VST2Change
       OnCollapsed = VSTCollapsedExpanded
       OnExpanded = VSTCollapsedExpanded
+      OnFreeNode = VST2FreeNode
       OnInitChildren = VST2InitChildren
       OnInitNode = VST1InitNode
       OnScroll = VST2Scroll
@@ -8219,6 +8218,7 @@ object VisibilityForm: TVisibilityForm
       OnChange = VST2Change
       OnCollapsed = VSTCollapsedExpanded
       OnExpanded = VSTCollapsedExpanded
+      OnFreeNode = VST3FreeNode
       OnInitChildren = VST2InitChildren
       OnInitNode = VST1InitNode
       OnScroll = VST3Scroll
@@ -8266,7 +8266,7 @@ object VisibilityForm: TVisibilityForm
     Header.Font.Charset = DEFAULT_CHARSET
     Header.Font.Color = clWindowText
     Header.Font.Height = -11
-    Header.Font.Name = 'MS Sans Serif'
+    Header.Font.Name = 'Tahoma'
     Header.Font.Style = []
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
@@ -8279,6 +8279,7 @@ object VisibilityForm: TVisibilityForm
     TabOrder = 0
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons]
     TreeOptions.SelectionOptions = [toMultiSelect]
+    OnFreeNode = VST1FreeNode
     OnInitChildren = VST1InitChildren
     OnInitNode = VST1InitNode
     Columns = <>

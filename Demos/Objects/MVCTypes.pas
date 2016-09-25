@@ -769,7 +769,8 @@ function TMVCTreeView.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Co
 { The tree requests the image-index for a Node and column. }
 var N:TMVCNode;
 begin
-  Result := nil;
+  if (Column > 0) or (Kind <> TVTImageKind.ikNormal) then
+    exit(nil);
   case Column of
     -1,0:begin
            { We only want Icons in the first column. Ask the node which
@@ -781,6 +782,7 @@ begin
          end;
     else Index:=-1;
   end;
+  Result := Images;
 end;
 
 procedure TMVCTreeView.DoChecked(aNode:PVirtualNode);

@@ -1,0 +1,43 @@
+EMBARCADERO = $(PROGRAMFILES)\Embarcadero\RAD Studio
+STUDIO = $(PROGRAMFILES)\Embarcadero\Studio
+BDSCOMMONDIRMAIN = %PUBLIC%\Documents\Embarcadero\Studio\
+PROJECT = VirtualTrees
+
+
+clean: 
+	DEL /S Source\*.HPP
+	DEL /S Source\*.DCU
+#TODO: Add demos and package folders
+	
+_XE8: Lib\*.pas "Package\RAD Studio XE8\$(PROJECT)R.dpk" "Package\RAD Studio XE8\$(PROJECT)R.dproj" "Package\RAD Studio XE8\$(PROJECT)D.dpk" "Package\RAD Studio XE8\$(PROJECT)D.dproj"
+	SET BDS=$(STUDIO)\16.0
+	msbuild "Package\RAD Studio XE8\$(PROJECT)R.dproj"
+	msbuild "Package\RAD Studio XE8\$(PROJECT)D.dproj"
+	msbuild /property:Platform=Win64 "Package\RAD Studio XE8\$(PROJECT)R.dproj"
+	$(MAKE) _samples
+
+"Demos\Advanced\Advanced.exe": "Demos\Advanced\*.dproj" "Demos\Advanced\*.dpr" "Demos\Advanced\*.pas"
+	msbuild "Demos\Advanced\Advanced.dproj"
+
+"Demos\Minimal\Minimal.exe": "Demos\Minimal\*.dproj" "Demos\Minimal\*.dpr" "Demos\Minimal\*.pas"
+	msbuild "Demos\Minimal\Advanced.dproj"
+
+"Demos\Objects\Objects.exe": "Demos\Objects\*.dproj" "Demos\Objects\*.dpr" "Demos\Objects\*.pas"
+	msbuild "Demos\Objects\Objects.dproj"
+
+"Demos\OLE\OLE.exe": "Demos\OLE\*.dproj" "Demos\OLE\*.dpr" "Demos\OLE\*.pas"
+	msbuild "Demos\OLE\OLE.dproj"
+
+_samples: "Demos\Advanced\Advanced.exe" "Demos\Minimal\Minimal.exe" "Demos\Objects\Objects.exe" "Demos\OLE\OLE.exe"
+	
+_continuousbuilds: clean _XE8
+
+_release:
+#This small batch file is intended to create a source code release file of the VirtualTreeView as ZIP archive
+#It expects the ZIP.EXE from the InfoZip project V3.0 or higher to be in the system's search path
+#Download e.g. from: ftp://ftp.info-zip.org/pub/infozip/win32/
+	ZIP -9 -r .\VirtualTreeView.zip  INSTALL.txt Changes.txt Source Design Packages Demos Contributions Help\VirtualTreeview.chm -i *.pas -i *.dpk -i *.groupproj -i *.dproj -i *.cbproj -i *.hlp -i *.rc -i *.res -i *.cfg -i *.dpr -i *.dof -i *.bpr -i *.dfm -i *.cpp -i *.inc -i *.dcr -i *.chm -i *.png -i *.js -i *.txt -i *.bmp -i *.uni
+	ECHO Source code zip archive "VirtualTreeView.zip" created. 
+	ECHO !!!Please ensure that the const TVTVersion is correct!!!
+	ECHO !!!Please add version number to ZIP file name!!!
+	ECHO !!!Please create release at: https://github.com/Virtual-TreeView/Virtual-TreeView/releases

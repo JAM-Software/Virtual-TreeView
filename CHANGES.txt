@@ -1,3 +1,91 @@
+V6.4: (28 Sep 2016)
+  * Fixed #622: [BREAKING CHANGE] Removed all 16x16 fixed sized checkbox-imagelists. 
+    The property CheckImageKind supports the values ckSystemDefault and ckCustom only and should be considered deprecated.
+  * Fixed #640: Edit control for in-place editing wrongly scaled in high-dpi scenarios
+  * Fixed #627: It should be possible to use OnGetImageIndexEx without having imagelists assigned
+  * Added assertion that verifies if an imageindex is supplied but no valid imagelist is available for this imageindex
+  * Fixed #148: Background Images now support other formats than just bitmaps.
+  * Fixed #623: GetHint calculates wrong width for HintText   
+  * Fixed #633: High dpi scaling was performed two times    
+  * Fixed #544, #427: Header painting problem with BiDiMode right to left
+  * TBaseVirtualTree.EnsureNodeSelected() only scrolls the selected node into the view, if no one was previously selected.    
+  * Fixed #248: VT Header draws smudged
+  * Fixed #643: VT Header dropmark appears even if dragged column won't change position
+  * Fixed #310: Incorrect selection paint when toAutoSpanColumns, toGridExtensions and toExtendedFocus are set
+  * Fixed #653: GetFirstVisibleChild/NoInit check for wrong node if IncludeFiltered=True (thx to A. Hausladen)
+  * Fixed #659: GetLastVisibleChild/NoInit checks wrong node
+  * Fixed #647: New option to set the way of selecting next cell for editing in grid mode
+  * Fixed #645: Can't link 64 bit VCL app with VirtualTreeView in C++ Builder 10.1 Berlin    
+  * Fixed #656: Fixed memory leaks in Advanced Demo
+  * Enhancement #631: Added new Demo project CharityEvents to demonstrate the use of Interfaces for node's data and for data presentation
+  * Fixed #658: Column Header does not paint correctly after a drop in certain conditions
+  * Fixed #639: Scrolbars are not correctly themed under certain cirumstances when using a VCL theme.
+  * Fixed #624: Wrong y-postion of checkboxes in high-dpi display mode  
+  * Fixed #548: Add flag coStyleColor to TVirtualTreeColumn.Options (prefer background color of VCL style over TVirtualTreeColumn.Color)
+  * Fixed #660: Fix AV when tree is modified in OnEdited event   
+  * Some minor tweaks on Virtual TreeView source code and sample projects
+  
+V6.3: (17 May 2016)
+  * Added support for RAD Studio 10.1 Berlin
+  * Implemented #607: Disabled checkbox images should be available 
+  * Fixed #612: hotkey handing and toReverseFullExpandHotKey 
+  * Fixed #602: Dangling WM_Timer and doubled OnChange calls 
+  * Fixed #606: High DPI Inheritance of Form. TBaseVirtualTree.ChangeScale() now respects inherited property ScalingFlags
+  * Fixed #608: Horizontal lines paint bug on scroll.  
+  * Fixed #605 : If a new node is selected by left click, OnChange event should not fire with `nil` in-between.
+  * TBaseVirtualTree.EnsureNodeSelected() no longer changes scroll position unless necessary to make the selected node visible.  
+  * Pull request #609: Updated unit "Contributions/GenericWrapper/VirtualTreeWrapper.pas"  
+  * Started adding unit tests with DUnitX.
+  * Minor tweaks.      
+   
+V6.2.3 (11 Feb 2016)
+  * Fixed accidental remove of vsReleaseCallOnUserDataRequired flag which can cause mem leaks.
+  * TVirtualNode.SetData() now sets the vsOnFreeNodeCallRequired flag for all types of user data and so is consisted with other SetData / GetData methods.
+  * TCustomVirtualStringTree.SetChildCount() now calls ResetInternalData()= with Recurse = False to avoid that all siblings of the new children are reseted recursively. See isuue #576
+  * TCustomVirtualStringTree.ResetInternalData() now respects the Recursive parameter
+  
+V6.2.2 (20 Jan 2016)
+  * Issue #603: If the node already has children, then its nodeheight is valid and we must not remove its total height, but rather its height
+  * Fixed issue #599: Possible infinite loop in GetPreviousVisibleNoInit()
+  * Added new method TBaseVirtualTree.InitRecursive() as workaround for issue #597: Initializes a node and optionally its children up to a certain level.
+  * Issue #598: SetData, like GetData no longer forces the "class" constraint on its generic parameter
+  * Fixed issue #596 by moving initialization of global variable Watcher also to InitializeGlobalStructures()
+    Now ensuring using interlocked function that InitializeGlobalStructures() is executed only once
+  * Fixed issue #458: If the Virtual TreeView control is placed on a control that has the StyleEx flag WS_EX_COMPOSITED set, horizontal scrolloing does not update the header
+  * Fixed issue #595: Before using SetTimer, check for valid WindowHandle
+  * Fixed issue #594: Basic TVirtualStringTree Colors does not apply
+  * Fixed issue #591: Now calling UnRegisterStyleHook() for the style class in "VirtualTrees.StyleHooks".
+  * Fixed #590: Allow to store InternalData also for (internal) root node
+  * if only one node is selected, make sure the focused node changes with the selected node
+  * Added assertion that ensures that BeginUpdate() is called from main thread only.
+  * Getter function GetCheckedCount() is protected now instead of public
+
+V6.2.1 (06 Nov 2015)
+  * #585: Checkboxes now have the correct size and scale properly on high dpi systems.
+  * #588: Fixed HTML clipboard export
+  * #586: TBaseVirtualTree.SetChildCount() no longer calls to ReInitNode(Node, True). This caused the OnInitChildren-Event to be fired twice. 
+  * Adjusted GetNodeDataAt<T>() and GetFirstSelectedNodeData<T>() to work with interfaces.
+  * If multi selection is not allowed and so only one node can be selected, make sure the focused node changes with the selected node in SetSelected()
+  * Added packages for the C++Builder 10.
+
+V6.2 (09 Sep 2015)
+  * Issue #582: Added support and packages for RAD Studio 10 Seattle
+  * Issue #580: Added support for Delphi package manager Delphinus
+  * Fixed issue #571: Grid mode and extended selection leads to drawing inconsistencies
+  * Fixed issue #569 which includes a fix for AddChild().
+  * Fixed issue #568: Integer overflow when reiniting nodes and using ivsFiltered
+  * Merged pull request #564 which includes a fix for ComputeNodeHeight() and single line nodes     
+  * Merged pull request #563 which prevents an access violation when using custom check images in column headers     
+  * Merged pull request #561 which makes VclStyleChanged() virtual
+  * Fixed issue #557: Using isFiltered in InitNode leads to integer overflows or bogus rendering
+  * Fixed issue #556: Variable height and more than 1 level results in incorrect RangeY
+  * Fixed issue #555: The OnChange event is not fired in case the selected node is deleted through DeleteChildren(). Although no the option toAlwaysSelectNode is set, the parent node was not selected afterwards.
+  * Fixed issue #553: painting failure with variable NodeHeight
+  * Fixed issue #551: Some overlay images were drawn ghosted like the main image, some not. 
+  * TBaseVirtualTree.PrepareBitmaps() now fires the OnPrepareButtonImages event also in case VCL styles are used.          
+  * Added implementation for TVirtualTreeAccessibility.accSelect() so that screen readers and especially UI testing tools can use MSAA to select specific elements in the control.
+  * Property OnColumnVisibilityChanged is now published.
+  * Now using type TImageIndex instead of integer for variables and parameters that store an image index.
 
 V6.1 (02 June 2015)
  * Implemented Issue #530: Removed all AnsiString code from export routines. Breaking changes:

@@ -1,8 +1,8 @@
 object WindowsXPForm: TWindowsXPForm
   Left = 558
   Top = 277
-  Width = 812
-  Height = 526
+  ClientHeight = 487
+  ClientWidth = 796
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -10,11 +10,10 @@ object WindowsXPForm: TWindowsXPForm
   Font.Name = 'Microsoft Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   OnCreate = FormCreate
   DesignSize = (
     796
-    488)
+    487)
   PixelsPerInch = 96
   TextHeight = 16
   object Label1: TLabel
@@ -36,13 +35,12 @@ object WindowsXPForm: TWindowsXPForm
     Left = 0
     Top = 36
     Width = 493
-    Height = 452
+    Height = 451
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     AutoScrollDelay = 500
     BevelInner = bvNone
     ButtonFillMode = fmShaded
-    CheckImageKind = ckXP
     ClipboardFormats.Strings = (
       'CSV'
       'HTML Format')
@@ -77,6 +75,7 @@ object WindowsXPForm: TWindowsXPForm
     TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
     TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toSimpleDrawSelection]
     OnCompareNodes = XPTreeCompareNodes
+    OnFreeNode = XPTreeFreeNode
     OnGetImageIndex = XPTreeGetImageIndex
     OnHeaderClick = XPTreeHeaderClick
     OnInitChildren = XPTreeInitChildren
@@ -113,18 +112,18 @@ object WindowsXPForm: TWindowsXPForm
         Control = ToolBar1
         ImageIndex = -1
         MinHeight = 34
-        Width = 794
+        Width = 792
       end>
     EdgeInner = esLowered
     EdgeOuter = esNone
     object ToolBar1: TToolBar
-      Left = 9
+      Left = 11
       Top = 0
-      Width = 781
-      Height = 34
+      Width = 783
+      Height = 38
       AutoSize = True
-      ButtonHeight = 30
-      ButtonWidth = 213
+      ButtonHeight = 38
+      ButtonWidth = 219
       Caption = 'ToolBar1'
       Images = SmallImages
       List = True
@@ -133,54 +132,54 @@ object WindowsXPForm: TWindowsXPForm
       Transparent = True
       object ToolButton1: TToolButton
         Left = 0
-        Top = 2
+        Top = 0
         AutoSize = True
         ImageIndex = 9
         Style = tbsDropDown
       end
       object ToolButton2: TToolButton
-        Left = 57
-        Top = 2
+        Left = 63
+        Top = 0
         AutoSize = True
         ImageIndex = 10
         Style = tbsDropDown
       end
       object ToolButton3: TToolButton
-        Left = 114
-        Top = 2
+        Left = 126
+        Top = 0
         AutoSize = True
         ImageIndex = 18
       end
       object ToolButton4: TToolButton
-        Left = 156
-        Top = 2
+        Left = 168
+        Top = 0
         AutoSize = True
         ImageIndex = 14
       end
       object ToolButton5: TToolButton
-        Left = 198
-        Top = 2
+        Left = 210
+        Top = 0
         AutoSize = True
         ImageIndex = 21
       end
       object ToolButton6: TToolButton
-        Left = 240
-        Top = 2
+        Left = 252
+        Top = 0
         AutoSize = True
         ImageIndex = 8
         Style = tbsDropDown
       end
       object ToolButton8: TToolButton
-        Left = 297
-        Top = 2
+        Left = 315
+        Top = 0
         Width = 8
         Caption = 'ToolButton8'
         ImageIndex = 9
         Style = tbsSeparator
       end
       object ToolButton9: TToolButton
-        Left = 305
-        Top = 2
+        Left = 323
+        Top = 0
         AutoSize = True
         Caption = 'Click here to print the treeview.'
         ImageIndex = 24
@@ -194,7 +193,7 @@ object WindowsXPForm: TWindowsXPForm
     Left = 368
     Top = 304
     Bitmap = {
-      494C010112001300040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001300080020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000080000000A000000001002000000000000040
       0100000000000000000000000000000000000000000000000000000000000000
       000000000000FBFFFF00000000000000000000000000FFFBFF00D3D6D600A7A7
@@ -2847,7 +2846,7 @@ object WindowsXPForm: TWindowsXPForm
     Left = 368
     Top = 336
     Bitmap = {
-      494C01011B001D00040018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B001D00080018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000060000000A8000000010020000000000000FC
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000C4C4C4009996970099969700D1D1
