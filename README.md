@@ -14,7 +14,7 @@ For installation instruction see the "INSTALL.TXT" file in the ZIP. [Delphinus](
 
 ###[Recent Changes and Latest News](https://raw.githubusercontent.com/Virtual-TreeView/Virtual-TreeView/master/CHANGES.txt)
 
-**V6.3** has been officially released: [Download](https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN)
+**V6.4** has been officially released: [Download](https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN)
 
 ###Technical Support
 Please do not contact developers or JAM Software for technical support. Please try to get support from the community e.g. at [Stack Overflow](http://stackoverflow.com/search?q=%22virtual+treeview%22) , [Delphi Pages](http://www.delphipages.com/), [Delphi Praxis](http://www.delphipraxis.net/141465-virtual-treeview-tutorials-mit-beispielen.html) or [Embarcadero forums](https://forums.embarcadero.com/). Please do not use the issue tracker for getting support, only for reporting true bugs (see below).
