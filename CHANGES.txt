@@ -1,3 +1,6 @@
+V6.41: (under developement)
+  * Fixed #661: Minimal Demo 2 different problems, can't select on start up, multiple clicks causes error
+
 V6.4: (28 Sep 2016)
   * Fixed #622: [BREAKING CHANGE] Removed all 16x16 fixed sized checkbox-imagelists. 
     The property CheckImageKind supports the values ckSystemDefault and ckCustom only and should be considered deprecated.

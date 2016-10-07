@@ -48,7 +48,6 @@ object MainForm: TMainForm
     HintAnimation = hatNone
     IncrementalSearch = isAll
     ParentBiDiMode = False
-    RootNodeCount = 100
     TabOrder = 0
     TreeOptions.AnimationOptions = [toAnimatedToggle]
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoTristateTracking]
@@ -57,7 +56,6 @@ object MainForm: TMainForm
     TreeOptions.SelectionOptions = [toMultiSelect, toCenterScrollIntoView]
     OnFreeNode = VSTFreeNode
     OnInitNode = VSTInitNode
-    OnStartDrag = VSTStartDrag
     Columns = <>
   end
   object ClearButton: TButton

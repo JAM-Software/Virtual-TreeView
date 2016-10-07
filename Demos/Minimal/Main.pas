@@ -27,7 +27,6 @@ type
     procedure VSTInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure CloseButtonClick(Sender: TObject);
-    procedure VSTStartDrag(Sender: TObject; var DragObject: TDragObject);
   end;
 
 var
@@ -175,15 +174,6 @@ begin
   Close;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TMainForm.VSTStartDrag(Sender: TObject; var DragObject: TDragObject);
-
-begin
-  DragObject := TDragObject.Create;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
 
 end.
 
