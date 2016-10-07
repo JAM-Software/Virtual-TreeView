@@ -32861,17 +32861,18 @@ begin
 
           // get edit options for column as priority. If column has toDefaultEdit
           // use global edit options for tree
-          Column := Tree.Header.Columns[Tree.FocusedColumn];
-          if Column.EditOptions <> toDefaultEdit then
-            EditOptions := Column.EditOptions
-          else
-            EditOptions := Tree.TreeOptions.EditOptions;
+          EditOptions := Tree.TreeOptions.EditOptions; // default
+          ColumnCandidate := -1;
+          if Tree.Header.Columns.Count > 0 then  // are there any columns?
+          begin
+            Column := Tree.Header.Columns[Tree.FocusedColumn];
+            if Column.EditOptions <> toDefaultEdit then
+              EditOptions := Column.EditOptions;
 
-          // next column candidate for toVerticalEdit and toHorizontalEdit
-          if Column.EditNextColumn <> -1 then
-            ColumnCandidate := Column.EditNextColumn
-          else
-            ColumnCandidate := -1;
+            // next column candidate for toVerticalEdit and toHorizontalEdit
+            if Column.EditNextColumn <> -1 then
+              ColumnCandidate := Column.EditNextColumn;
+          end;
 
           case EditOptions of
             toDefaultEdit: Tree.SetFocus;
