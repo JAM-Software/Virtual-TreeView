@@ -21491,8 +21491,7 @@ begin
   begin
     Brush.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-    Winapi.Windows.FillRect(Handle, R, FDottedBrush
-    );
+    Winapi.Windows.FillRect(Handle, R, FDottedBrush);
   end;
 end;
 
@@ -21516,7 +21515,7 @@ begin
         Brush.Color := FColors.UnfocusedSelectionColor;
     end
     else
-      Brush.Color := FColors.BackGroundColor;
+    Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
     Winapi.Windows.FillRect(Handle, R, FDottedBrush);
   end;
@@ -23885,10 +23884,7 @@ begin
           lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
       end;//if
       R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
-
       StyleServices.DrawElement(Canvas.Handle, Details, R);
-      Canvas.Refresh;
-
       if Index in [21..24] then
         UtilityImages.Draw(Canvas, XPos, YPos, 4);  //Does anyone know what this was good for?
     end
@@ -24362,7 +24358,8 @@ begin
             begin
               Brush.Color := FColors.UnfocusedSelectionColor;
               Pen.Color := FColors.UnfocusedSelectionBorderColor;
-            end;
+          end;
+
             if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
@@ -32864,18 +32861,17 @@ begin
 
           // get edit options for column as priority. If column has toDefaultEdit
           // use global edit options for tree
-          EditOptions := Tree.TreeOptions.EditOptions; // default
-          ColumnCandidate := -1;
-          if Tree.Header.Columns.Count > 0 then  // are there any columns?
-          begin
-            Column := Tree.Header.Columns[Tree.FocusedColumn];
-            if Column.EditOptions <> toDefaultEdit then
-              EditOptions := Column.EditOptions;
+          Column := Tree.Header.Columns[Tree.FocusedColumn];
+          if Column.EditOptions <> toDefaultEdit then
+            EditOptions := Column.EditOptions
+          else
+            EditOptions := Tree.TreeOptions.EditOptions;
 
-            // next column candidate for toVerticalEdit and toHorizontalEdit
-            if Column.EditNextColumn <> -1 then
-              ColumnCandidate := Column.EditNextColumn;
-          end;
+          // next column candidate for toVerticalEdit and toHorizontalEdit
+          if Column.EditNextColumn <> -1 then
+            ColumnCandidate := Column.EditNextColumn
+          else
+            ColumnCandidate := -1;
 
           case EditOptions of
             toDefaultEdit: Tree.SetFocus;
