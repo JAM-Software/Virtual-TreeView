@@ -20009,7 +20009,8 @@ begin
     FDropTargetNode := nil;
   if Node = FLastStructureChangeNode then
     FLastStructureChangeNode := nil;
-
+  if Node = FFocusedNode then
+    FFocusedNode := nil;
   if Node = FNextNodeToSelect then
     FNextNodeToSelect := Node.Parent;
 
