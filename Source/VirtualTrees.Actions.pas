@@ -219,7 +219,7 @@ procedure TVirtualTreePerItemAction.ExecuteTarget(Target: TObject);
 begin
   DoBeforeExecute();
   try
-    Control.IterateSubtree(nil, Self.fToExecute, nil, fFilter);
+    Control.IterateSubtree(nil, Self.fToExecute, nil, fFilter, true);
   finally
     DoAfterExecute();
   end;
