@@ -1,5 +1,10 @@
-V6.41: (under developement)
+V6.4.1: (26 Oct 2016)
+  * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
+  * Fixed #663: Exception pressing return on an edited item with no columns)
   * Fixed #661: Minimal Demo 2 different problems, can't select on start up, multiple clicks causes error
+  * Fixed problem with wrongly drawn checkbox in column headers.
+  * VirtualTreePerItemAction now initializes all nodes before it works with them and changes e.g. the check state.
+  * TBaseVirtualTree.DoGetImageIndex() now always tries to assign a default image list as result, even if OnGetImage and OnGetImageEx are not assigned. So derived controls do not need to make this step.
 
 V6.4: (28 Sep 2016)
   * Fixed #622: [BREAKING CHANGE] Removed all 16x16 fixed sized checkbox-imagelists. 

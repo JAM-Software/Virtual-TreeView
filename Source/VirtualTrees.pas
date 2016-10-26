@@ -9349,7 +9349,6 @@ var
                 ColImageInfo.Images := CustomCheckImages
               else
                 ColImageInfo.Images := SystemCheckImages;
-              if not Assigned(ColImageInfo.Images) then
               ColImageInfo.Index := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
               ColImageInfo.XPos := GlyphPos.X;
               ColImageInfo.YPos := GlyphPos.Y;
