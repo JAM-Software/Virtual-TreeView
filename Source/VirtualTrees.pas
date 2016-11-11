@@ -30,7 +30,7 @@ unit VirtualTrees;
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret
+//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Rösler
 // Beta testers:
 //   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
@@ -2029,6 +2029,13 @@ type
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
     FBackground: TPicture;                       // A background image loadable at design and runtime.
+    FBackgroundBitmapTransparent: Boolean;       // The bitmap is transparent
+
+    FBackgroundTransparentExternalType: Boolean; // Set this flag if you are using third-party libraries that register
+                                                 // their own class for certain image types. The code in SetBackground procedure
+                                                 // already identifies certain external library classes. This code can be extended
+                                                 // in future. Or, you can set this flag explicitly when needed.
+
     FMargin: Integer;                            // horizontal border distance
     FTextMargin: Integer;                        // space between the node's text and its horizontal bounds
     FBackgroundOffsetX,
@@ -2351,6 +2358,8 @@ type
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
     procedure SetBackground(const Value: TPicture);
+    procedure SetBackGroundBitmapTransparent(const Value: Boolean);
+    procedure SetBackgroundTransparentExternalType(const Value: Boolean);
     procedure SetBackgroundOffset(const Index, Value: Integer);
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetBottomNode(Node: PVirtualNode);
@@ -2399,10 +2408,11 @@ type
     procedure SetVerticalAlignment(Node: PVirtualNode; Value: Byte);
     procedure SetVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
-    procedure StaticBackground(Source: TBitmap; Target: TCanvas; OffsetPosition: TPoint; R: TRect);
+    procedure PrepareBackGroundPicture(Source: TPicture; DrawBitmap: TBitmap; DrawBitmapWidth: Integer; DrawBitMapHeight: Integer; ABkgcolor: TColor);
+    procedure StaticBackground(Source: TPicture; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
     procedure StopTimer(ID: Integer);
     procedure SetWindowTheme(const Theme: string);
-    procedure TileBackground(Source: TBitmap; Target: TCanvas; Offset: TPoint; R: TRect);
+    procedure TileBackground(Source: TPicture; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
     procedure CMColorChange(var Message: TMessage); message CM_COLORCHANGED;
@@ -2731,6 +2741,8 @@ type
     property AutoScrollDelay: Cardinal read FAutoScrollDelay write FAutoScrollDelay default 1000;
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
     property Background: TPicture read FBackground write SetBackground;
+    property BackGroundBitmapTransparent: Boolean read FBackGroundBitmapTransparent write SetBackGroundBitmapTransparent default True;
+    property BackgroundTransparentExternalType: Boolean read FBackgroundTransparentExternalType write setBackgroundTransparentExternalType default False;
     property BackgroundOffsetX: Integer index 0 read FBackgroundOffsetX write SetBackgroundOffset default 0;
     property BackgroundOffsetY: Integer index 1 read FBackgroundOffsetY write SetBackgroundOffset default 0;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
@@ -3447,6 +3459,8 @@ type
     property AutoScrollDelay;
     property AutoScrollInterval;
     property Background;
+    property BackGroundBitmapTransparent;
+    property BackgroundTransparentExternalType;
     property BackgroundOffsetX;
     property BackgroundOffsetY;
     property BiDiMode;
@@ -3951,7 +3965,10 @@ uses
   VirtualTrees.Classes,
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
-  VirtualTrees.Utils, VTHeaderPopup, VirtualTrees.Export;
+  VirtualTrees.Utils, VTHeaderPopup, VirtualTrees.Export,
+  Vcl.Imaging.GIFImg,
+  Vcl.Imaging.jpeg,
+  Vcl.Imaging.pngimage;
 
 
 resourcestring
@@ -12165,6 +12182,8 @@ begin
   FAutoScrollInterval := 1;
 
   FBackground := TPicture.Create;
+  FBackGroundBitmapTransparent := True;
+  FBackgroundTransparentExternalType := False;
 
   FDefaultPasteMode := amAddChildLast;
   FMargin := 4;
@@ -12945,9 +12964,9 @@ begin
         if UseBackground then
         begin
           if toStaticBackground in TreeOptions.PaintOptions then
-            StaticBackground(FBackground.Bitmap, Canvas, Offset, R)
+            StaticBackground(FBackground, Canvas, Offset, R, FColors.BackGroundColor)
           else
-            TileBackground(FBackground.Bitmap, Canvas, Offset, R);
+            TileBackground(FBackground, Canvas, Offset, R, FColors.BackGroundColor);
         end
         else
         begin
@@ -14304,42 +14323,56 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{ New, Support for transparent background:
+  * Image types: BMP, PNG, GIF, ICO, EMF, TIFF and WMF are automatically identified to support transparent background
+  * Also detects certain third party image classes registered for PNG, GIF and other image types so that the
+    transparency related code is used for them. See the code below.
+  * If some other third party image class is registered that is not detected,
+    set the flag BackgroundTransparentExternalType explicitly in order to properly do
+    transparent painting.
+}
 procedure TBaseVirtualTree.SetBackground(const Value: TPicture);
 
-var
-  bmp: TBitmap;
+begin
+  FBackground.Assign(Value);
+  if (FBackground <> nil) and (FBackground.Graphic <> nil)
+     and
+     ( (FBackground.Graphic.ClassName = 'TJvGIFImage')
+       or (FBackground.Graphic.ClassName = 'TdxPNGImage')
+       or (FBackground.Graphic.ClassName = 'TdxSmartImage')
+     )
+  then
+    //give proper signal to our transparent painting code that a non-bitmap
+    //but transparent graphic is the background
+    FBackgroundTransparentExternalType := true
+  else
+    FBackgroundTransparentExternalType := false;
+
+  Invalidate;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBackGroundBitmapTransparent(const Value: Boolean);
 
 begin
-  { Fixes issue #148
-    If it is a regular bitmap or if graphic is nil or empty,
-    perform original code
-    otherwise, make the bitmap from the graphic assigned.
-    Tested with PNG, JPG and GIF files. Note that it doesn't
-    support transparency yet. For example, if you make the
-    background color yellow and then load the PNG, it doesn't
-    show the background color in the transparent parts.
-  }
-  if (value = nil)
-     or (value.Graphic = nil)
-     or (Value.Graphic is TBitmap)
-  then
+  if Value <> FBackGroundBitmapTransparent then
   begin
-    FBackground.Assign(Value);  //original code was only this
-  end
-  else
-  begin
-    bmp:= TBitmap.Create;
-    try
-      bmp.SetSize(Value.Graphic.Width, Value.Graphic.Height);
-      bmp.Canvas.Draw(0,0, Value.Graphic);
-      Value.assign(bmp);
-      FBackground.Assign(Value);
-    finally
-      bmp.Free;
-    end;
+    FBackGroundBitmapTransparent := Value;
+    Invalidate;
   end;
-  Invalidate;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBackgroundTransparentExternalType(const Value: Boolean);
+
+begin
+  if Value <> FBackgroundTransparentExternalType then
+  begin
+    FBackgroundTransparentExternalType := Value;
+    Invalidate;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15445,9 +15478,48 @@ begin
   end;
 end;
 
+// ----------------------------------------------------------------------------------------------------------------------
+procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: TPicture;
+  DrawBitmap: TBitmap; DrawBitmapWidth: Integer; DrawBitMapHeight: Integer; ABkgcolor: TColor);
+const
+  DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
+
+  procedure FillDrawBitmapWithBackGroundColor;
+  begin
+    DrawBitmap.Canvas.Brush.Color := ABkgcolor;
+    DrawBitmap.Canvas.FillRect(Rect(0, 0, DrawBitmap.Width, DrawBitmap.Height));
+  end;
+
+begin
+  DrawBitmap.SetSize(DrawBitmapWidth, DrawBitMapHeight);
+  if Source.Graphic.SupportsPartialTransparency or (Source.Graphic is TMetaFile)
+    or (Source.Graphic is TWICImage) or (Source.Graphic is TGifImage) or
+    (Source.Graphic is TIcon)
+    or FBackgroundTransparentExternalType
+    then
+  begin
+    FillDrawBitmapWithBackGroundColor;
+    DrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
+  end
+  else if Source.Graphic is TBitmap then
+  begin
+    if FBackGroundBitmapTransparent or Source.Bitmap.TRANSPARENT then
+    begin
+      FillDrawBitmapWithBackGroundColor;
+      MaskBlt(DrawBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
+        Source.Bitmap.Canvas.Handle, 0, 0, Source.Bitmap.MaskHandle, 0, 0,
+        MakeROP4(DST, SRCCOPY));
+    end
+    else
+      DrawBitmap.Assign(Source.Graphic);
+  end
+  else
+    DrawBitmap.Assign(Source.Graphic);
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.StaticBackground(Source: TBitmap; Target: TCanvas; OffsetPosition: TPoint; R: TRect);
+procedure TBaseVirtualTree.StaticBackground(Source: TPicture; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it stays static in the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -15460,11 +15532,13 @@ var
   PicRect: TRect;
   AreaRect: TRect;
   DrawRect: TRect;
-
+  DrawBitmap: TBitmap;
 begin
-  // clear background
-  Target.Brush.Color := Color;
-  Target.FillRect(R);
+  DrawBitmap := TBitmap.Create;
+  try
+    // clear background
+    Target.Brush.Color := aBkgColor;
+    Target.FillRect(R);
 
   // Picture rect in relation to client viewscreen.
   PicRect := Rect(FBackgroundOffsetX, FBackgroundOffsetY, FBackgroundOffsetX + Source.Width, FBackgroundOffsetY + Source.Height);
@@ -15475,21 +15549,14 @@ begin
   // If picture falls in AreaRect, return intersection (DrawRect).
   if IntersectRect(DrawRect, PicRect, AreaRect) then
   begin
-    // Draw portion of image which falls in canvas area.
-    if Source.Transparent then
-    begin
-      // Leave transparent area as destination unchanged (DST), copy non-transparent areas to canvas (SRCCOPY).
-      MaskBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
-        (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y), Source.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
-        Source.MaskHandle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, MakeROP4(DST, SRCCOPY));
-    end
-    else
-    begin
+      PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
       // copy image to destination
       BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
-        (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, Source.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
+      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, 
         SRCCOPY);
     end;
+  finally
+    DrawBitmap.Free;
   end;
 end;
 
@@ -15513,7 +15580,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.TileBackground(Source: TBitmap; Target: TCanvas; Offset: TPoint; R: TRect);
+procedure TBaseVirtualTree.TileBackground(Source: TPicture; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it tiles into the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -15524,38 +15591,44 @@ var
   SourceY,
   TargetX,
   DeltaY: Integer;
-
+  DrawBitmap: TBitmap;
 begin
-  with Target do
-  begin
-    SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
-    // Always wrap the source coordinates into positive range.
-    if SourceY < 0 then
-      SourceY := Source.Height + SourceY;
-
-    // Tile image vertically until target rect is filled.
-    while R.Top < R.Bottom do
+  DrawBitmap := TBitmap.Create;
+  try
+    PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
+    with Target do
     begin
-      SourceX := (R.Left + Offset.X + FBackgroundOffsetX) mod Source.Width;
-      // always wrap the source coordinates into positive range
-      if SourceX < 0 then
-        SourceX := Source.Width + SourceX;
+      SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
+      // Always wrap the source coordinates into positive range.
+      if SourceY < 0 then
+        SourceY := Source.Height + SourceY;
 
-      TargetX := R.Left;
-      // height of strip to draw
-      DeltaY := Min(R.Bottom - R.Top, Source.Height - SourceY);
-
-      // tile the image horizontally
-      while TargetX < R.Right do
+      // Tile image vertically until target rect is filled.
+      while R.Top < R.Bottom do
       begin
-        BitBlt(Handle, TargetX, R.Top, Min(R.Right - TargetX, Source.Width - SourceX), DeltaY,
-          Source.Canvas.Handle, SourceX, SourceY, SRCCOPY);
-        Inc(TargetX, Source.Width - SourceX);
-        SourceX := 0;
+        SourceX := (R.Left + Offset.X + FBackgroundOffsetX) mod Source.Width;
+        // always wrap the source coordinates into positive range
+        if SourceX < 0 then
+          SourceX := Source.Width + SourceX;
+
+        TargetX := R.Left;
+        // height of strip to draw
+        DeltaY := Min(R.Bottom - R.Top, Source.Height - SourceY);
+
+        // tile the image horizontally
+        while TargetX < R.Right do
+        begin
+          BitBlt(Handle, TargetX, R.Top, Min(R.Right - TargetX, Source.Width - SourceX), DeltaY,
+            DrawBitmap.Canvas.Handle, SourceX, SourceY, SRCCOPY);
+          Inc(TargetX, Source.Width - SourceX);
+          SourceX := 0;
+        end;
+        Inc(R.Top, Source.Height - SourceY);
+        SourceY := 0;
       end;
-      Inc(R.Top, Source.Height - SourceY);
-      SourceY := 0;
     end;
+  finally
+    DrawBitmap.Free;
   end;
 end;
 
@@ -20698,7 +20771,7 @@ begin
       if (suoScrollClientArea in Options) and not (tsToggling in FStates) then
       begin
         // Have to invalidate the entire window if there's a background.
-        if (toShowBackground in FOptions.FPaintOptions) and (FBackground.Graphic is TBitmap) then
+        if (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.Graphic) then
         begin
           // Since we don't use ScrollWindow here we have to move all client windows ourselves.
           DWPStructure := BeginDeferWindowPos(ControlCount);
@@ -30348,7 +30421,7 @@ begin
         R := Rect(0, 0, Max(FRangeX, ClientWidth), 0);
 
         // For quick checks some intermediate variables are used.
-        UseBackground := (toShowBackground in FOptions.FPaintOptions) and (FBackground.Graphic is TBitmap) and
+        UseBackground := (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.Graphic) and
           (poBackground in PaintOptions);
         ShowImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
         ShowStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
@@ -30763,9 +30836,9 @@ begin
             begin
               SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
               if toStaticBackground in TreeOptions.PaintOptions then
-                StaticBackground(FBackground.Bitmap, PaintInfo.Canvas, Target, TargetRect)
+                StaticBackground(FBackground, PaintInfo.Canvas, Target, TargetRect, FColors.BackGroundColor)
               else
-                TileBackground(FBackground.Bitmap, PaintInfo.Canvas, Target, TargetRect);
+                TileBackground(FBackground, PaintInfo.Canvas, Target, TargetRect, FColors.BackGroundColor);
             end
             else
             begin

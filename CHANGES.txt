@@ -1,3 +1,6 @@
+V6.5: (under development)
+  * Enhancement #662: Background image now supports transparency
+
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
   * Fixed #663: Exception pressing return on an edited item with no columns)
