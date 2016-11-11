@@ -3966,9 +3966,7 @@ uses
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
   VirtualTrees.Utils, VTHeaderPopup, VirtualTrees.Export,
-  Vcl.Imaging.GIFImg,
-  Vcl.Imaging.jpeg,
-  Vcl.Imaging.pngimage;
+  Vcl.Imaging.GIFImg;
 
 
 resourcestring
