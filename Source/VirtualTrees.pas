@@ -24664,6 +24664,7 @@ begin
     Assert(GetCurrentThreadId = MainThreadId, Self.Classname + '.RemoveFromSelection() must only be called from UI thread.');
     if vsSelected in Node.States then
     begin
+      Assert(FSelectionCount > 0, 'if one node has set the vsSelected flag, SelectionCount must be >0.');
       Exclude(Node.States, vsSelected);
       if FindNodeInSelection(Node, Index, -1, -1) and (Index < FSelectionCount - 1) then
         Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
