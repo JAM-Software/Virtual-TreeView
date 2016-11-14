@@ -26215,6 +26215,7 @@ var
   Counter: Integer;
 
 begin
+  Assert(GetCurrentThreadId = MainThreadId, Self.Classname + '.ClearSelection() must only be called from UI thread.');
   if not FSelectionLocked and (FSelectionCount > 0) and not (csDestroying in ComponentState) then
   begin
     if (FUpdateCount = 0) and HandleAllocated and (FVisibleCount > 0) then
