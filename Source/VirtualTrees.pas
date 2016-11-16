@@ -3965,9 +3965,9 @@ uses
   VirtualTrees.Classes,
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
-  VirtualTrees.Utils, VTHeaderPopup, VirtualTrees.Export,
-  Vcl.Imaging.GIFImg;
-
+  VirtualTrees.Utils, 
+  VirtualTrees.Export,
+  VTHeaderPopup;
 
 resourcestring
   // Localizable strings.
@@ -15491,7 +15491,7 @@ const
 begin
   DrawBitmap.SetSize(DrawBitmapWidth, DrawBitMapHeight);
   if Source.Graphic.SupportsPartialTransparency or (Source.Graphic is TMetaFile)
-    or (Source.Graphic is TWICImage) or (Source.Graphic is TGifImage) or
+    or (Source.Graphic is TWICImage) {or (Source.Graphic is TGifImage) }or
     (Source.Graphic is TIcon)
     or FBackgroundTransparentExternalType
     then
