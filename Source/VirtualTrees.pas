@@ -2031,11 +2031,6 @@ type
     FBackground: TPicture;                       // A background image loadable at design and runtime.
     FBackgroundBitmapTransparent: Boolean;       // The bitmap is transparent
 
-    FBackgroundTransparentExternalType: Boolean; // Set this flag if you are using third-party libraries that register
-                                                 // their own class for certain image types. The code in SetBackground procedure
-                                                 // already identifies certain external library classes. This code can be extended
-                                                 // in future. Or, you can set this flag explicitly when needed.
-
     FMargin: Integer;                            // horizontal border distance
     FTextMargin: Integer;                        // space between the node's text and its horizontal bounds
     FBackgroundOffsetX,
@@ -2359,7 +2354,6 @@ type
     procedure SetAnimationDuration(const Value: Cardinal);
     procedure SetBackground(const Value: TPicture);
     procedure SetBackGroundBitmapTransparent(const Value: Boolean);
-    procedure SetBackgroundTransparentExternalType(const Value: Boolean);
     procedure SetBackgroundOffset(const Index, Value: Integer);
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetBottomNode(Node: PVirtualNode);
@@ -2742,7 +2736,6 @@ type
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
     property Background: TPicture read FBackground write SetBackground;
     property BackGroundBitmapTransparent: Boolean read FBackGroundBitmapTransparent write SetBackGroundBitmapTransparent default True;
-    property BackgroundTransparentExternalType: Boolean read FBackgroundTransparentExternalType write setBackgroundTransparentExternalType default False;
     property BackgroundOffsetX: Integer index 0 read FBackgroundOffsetX write SetBackgroundOffset default 0;
     property BackgroundOffsetY: Integer index 1 read FBackgroundOffsetY write SetBackgroundOffset default 0;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
@@ -3460,7 +3453,6 @@ type
     property AutoScrollInterval;
     property Background;
     property BackGroundBitmapTransparent;
-    property BackgroundTransparentExternalType;
     property BackgroundOffsetX;
     property BackgroundOffsetY;
     property BiDiMode;
@@ -12181,7 +12173,6 @@ begin
 
   FBackground := TPicture.Create;
   FBackGroundBitmapTransparent := True;
-  FBackgroundTransparentExternalType := False;
 
   FDefaultPasteMode := amAddChildLast;
   FMargin := 4;
@@ -14333,19 +14324,6 @@ procedure TBaseVirtualTree.SetBackground(const Value: TPicture);
 
 begin
   FBackground.Assign(Value);
-  if (FBackground <> nil) and (FBackground.Graphic <> nil)
-     and
-     ( (FBackground.Graphic.ClassName = 'TJvGIFImage')
-       or (FBackground.Graphic.ClassName = 'TdxPNGImage')
-       or (FBackground.Graphic.ClassName = 'TdxSmartImage')
-     )
-  then
-    //give proper signal to our transparent painting code that a non-bitmap
-    //but transparent graphic is the background
-    FBackgroundTransparentExternalType := true
-  else
-    FBackgroundTransparentExternalType := false;
-
   Invalidate;
 end;
 
@@ -14357,18 +14335,6 @@ begin
   if Value <> FBackGroundBitmapTransparent then
   begin
     FBackGroundBitmapTransparent := Value;
-    Invalidate;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.SetBackgroundTransparentExternalType(const Value: Boolean);
-
-begin
-  if Value <> FBackgroundTransparentExternalType then
-  begin
-    FBackgroundTransparentExternalType := Value;
     Invalidate;
   end;
 end;
@@ -15490,29 +15456,23 @@ const
 
 begin
   DrawBitmap.SetSize(DrawBitmapWidth, DrawBitMapHeight);
-  if Source.Graphic.SupportsPartialTransparency or (Source.Graphic is TMetaFile)
-    or (Source.Graphic is TWICImage) {or (Source.Graphic is TGifImage) }or
-    (Source.Graphic is TIcon)
-    or FBackgroundTransparentExternalType
-    then
+
+  if (Source.Graphic is TBitmap) and
+     (FBackGroundBitmapTransparent or Source.Bitmap.TRANSPARENT)
+  then
   begin
+    FillDrawBitmapWithBackGroundColor;
+    MaskBlt(DrawBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
+        Source.Bitmap.Canvas.Handle, 0, 0, Source.Bitmap.MaskHandle, 0, 0,
+        MakeROP4(DST, SRCCOPY));
+  end
+  else
+  begin
+    //fill background will work for transparent images and
+    //will not disturb non-transparent ones
     FillDrawBitmapWithBackGroundColor;
     DrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
   end
-  else if Source.Graphic is TBitmap then
-  begin
-    if FBackGroundBitmapTransparent or Source.Bitmap.TRANSPARENT then
-    begin
-      FillDrawBitmapWithBackGroundColor;
-      MaskBlt(DrawBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
-        Source.Bitmap.Canvas.Handle, 0, 0, Source.Bitmap.MaskHandle, 0, 0,
-        MakeROP4(DST, SRCCOPY));
-    end
-    else
-      DrawBitmap.Assign(Source.Graphic);
-  end
-  else
-    DrawBitmap.Assign(Source.Graphic);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
