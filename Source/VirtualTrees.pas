@@ -2029,7 +2029,8 @@ type
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
     FBackground: TPicture;                       // A background image loadable at design and runtime.
-    FBackgroundBitmapTransparent: Boolean;       // The bitmap is transparent
+    FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
+                                                 // transparent by using the color of the component as transparent color
 
     FMargin: Integer;                            // horizontal border distance
     FTextMargin: Integer;                        // space between the node's text and its horizontal bounds
@@ -2353,7 +2354,7 @@ type
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
     procedure SetBackground(const Value: TPicture);
-    procedure SetBackGroundBitmapTransparent(const Value: Boolean);
+    procedure SetBackGroundImageTransparent(const Value: Boolean);
     procedure SetBackgroundOffset(const Index, Value: Integer);
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetBottomNode(Node: PVirtualNode);
@@ -2735,7 +2736,7 @@ type
     property AutoScrollDelay: Cardinal read FAutoScrollDelay write FAutoScrollDelay default 1000;
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
     property Background: TPicture read FBackground write SetBackground;
-    property BackGroundBitmapTransparent: Boolean read FBackGroundBitmapTransparent write SetBackGroundBitmapTransparent default True;
+    property BackGroundImageTransparent: Boolean read FBackGroundImageTransparent write SetBackGroundImageTransparent default False;
     property BackgroundOffsetX: Integer index 0 read FBackgroundOffsetX write SetBackgroundOffset default 0;
     property BackgroundOffsetY: Integer index 1 read FBackgroundOffsetY write SetBackgroundOffset default 0;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
@@ -3452,7 +3453,7 @@ type
     property AutoScrollDelay;
     property AutoScrollInterval;
     property Background;
-    property BackGroundBitmapTransparent;
+    property BackGroundImageTransparent;
     property BackgroundOffsetX;
     property BackgroundOffsetY;
     property BiDiMode;
@@ -12172,7 +12173,9 @@ begin
   FAutoScrollInterval := 1;
 
   FBackground := TPicture.Create;
-  FBackGroundBitmapTransparent := True;
+  // Similar to the Transparent property of TImage,
+  // this flag is Off by default.
+  FBackGroundImageTransparent := False;
 
   FDefaultPasteMode := amAddChildLast;
   FMargin := 4;
@@ -14329,12 +14332,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetBackGroundBitmapTransparent(const Value: Boolean);
+procedure TBaseVirtualTree.SetBackGroundImageTransparent(const Value: Boolean);
 
 begin
-  if Value <> FBackGroundBitmapTransparent then
+  if Value <> FBackGroundImageTransparent then
   begin
-    FBackGroundBitmapTransparent := Value;
+    FBackGroundImageTransparent := Value;
     Invalidate;
   end;
 end;
@@ -15448,6 +15451,8 @@ procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: TPicture;
 const
   DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
 
+  // fill background will work for transparent images and
+  // will not disturb non-transparent ones
   procedure FillDrawBitmapWithBackGroundColor;
   begin
     DrawBitmap.Canvas.Brush.Color := ABkgcolor;
@@ -15458,7 +15463,7 @@ begin
   DrawBitmap.SetSize(DrawBitmapWidth, DrawBitMapHeight);
 
   if (Source.Graphic is TBitmap) and
-     (FBackGroundBitmapTransparent or Source.Bitmap.TRANSPARENT)
+     (FBackGroundImageTransparent or Source.Bitmap.TRANSPARENT)
   then
   begin
     FillDrawBitmapWithBackGroundColor;
@@ -15468,9 +15473,10 @@ begin
   end
   else
   begin
-    //fill background will work for transparent images and
-    //will not disturb non-transparent ones
-    FillDrawBitmapWithBackGroundColor;
+    // Similar to TImage's Transparent property behavior, we don't want
+    // to draw transparent if the following flag is OFF.
+    if FBackGroundImageTransparent then
+      FillDrawBitmapWithBackGroundColor;
     DrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
   end
 end;
