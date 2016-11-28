@@ -1,6 +1,7 @@
 ﻿V6.5: (under development)
   * Enhancement #662: Background image now supports transparency
   * Fixed #289: HintMode hmHintAndDefault: Default Hint does not change to node specific hint when the mouse is moved to a node.
+  * Fixed #674: HintMode hmHintAndDefault: If the BidiMode is right to left, the Default Hint fails to appear
 
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
