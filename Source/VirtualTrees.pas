@@ -62,7 +62,6 @@ interface
 {$HPPEMIT '#include <objidl.h>'}
 {$HPPEMIT '#include <oleidl.h>'}
 {$HPPEMIT '#include <oleacc.h>'}
-{$HPPEMIT '#include <ShlObj.hpp>'}
 {$ifdef BCB}
   {$HPPEMIT '#pragma comment(lib, "VirtualTreesCR")'}
 {$else}
