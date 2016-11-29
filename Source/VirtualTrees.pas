@@ -2704,6 +2704,7 @@ type
     procedure SelectNodes(StartNode, EndNode: PVirtualNode; AddOnly: Boolean); virtual;
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); virtual;
     procedure SetFocusedNodeAndColumn(Node: PVirtualNode; Column: TColumnIndex); virtual;
+    procedure SetRangeX(value: Cardinal);
     procedure SkipNode(Stream: TStream); virtual;
     procedure StartOperation(OperationKind: TVTOperationKind);
     procedure StartWheelPanning(Position: TPoint); virtual;
@@ -3094,7 +3095,7 @@ type
     procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
-    procedure UpdateHorizontalRange;
+    procedure UpdateHorizontalRange; virtual;
     procedure UpdateHorizontalScrollBar(DoRepaint: Boolean);
     procedure UpdateRanges;
     procedure UpdateScrollBars(DoRepaint: Boolean); virtual;
@@ -15184,6 +15185,13 @@ procedure TBaseVirtualTree.SetOptions(const Value: TCustomVirtualTreeOptions);
 
 begin
   FOptions.Assign(Value);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetRangeX(value: Cardinal);
+begin
+  FRangeX := value;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32516,9 +32524,9 @@ procedure TBaseVirtualTree.UpdateHorizontalRange;
 
 begin
   if FHeader.UseColumns then
-    FRangeX := FHeader.FColumns.TotalWidth
+    SetRangeX(FHeader.FColumns.TotalWidth)
   else
-    FRangeX := GetMaxRightExtend;
+    SetRangeX(GetMaxRightExtend);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

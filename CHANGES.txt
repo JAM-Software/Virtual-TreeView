@@ -3,7 +3,8 @@ V6.5: (under development)
   * Fixed #289: HintMode hmHintAndDefault: Default Hint does not change to node specific hint when the mouse is moved to a node.
   * Fixed #674: HintMode hmHintAndDefault: If the BidiMode is right to left, the Default Hint fails to appear
   * Fixed #139: hoDblClickResize doesn't work correctly with InitalState ivsMultiline
-  * Fixed issue #668: Removed unnecessary #include <ShlObj.hpp>
+  * Fixed #668: Removed unnecessary #include <ShlObj.hpp>
+  * Fixed #670: Make it possible to override RangeX   
 
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
