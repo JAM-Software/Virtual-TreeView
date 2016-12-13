@@ -5,7 +5,8 @@ V6.5: (under development)
   * Fixed #139: hoDblClickResize doesn't work correctly with InitalState ivsMultiline
   * Fixed #668: Removed unnecessary #include <ShlObj.hpp>
   * Fixed #670: Make it possible to override RangeX   
-  * Fixed #676: VCL themed scrollbar does not update correctly after adding children   
+  * Fixed #676: VCL themed scrollbar does not update correctly after adding children
+  * License chnage dfrom LGPL to LGPL with static linking excpetion. See issue #673 for details.     
 
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
