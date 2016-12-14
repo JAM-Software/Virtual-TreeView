@@ -2469,7 +2469,7 @@ type
 
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
-    procedure AutoScale(); virtual;
+    procedure AutoScale(isDpiChange: Boolean); virtual;
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustImageBorder(BidiMode: TBidiMode; VAlign: Integer; var R: TRect; var ImageInfo: TVTImageInfo); virtual;
@@ -15918,7 +15918,7 @@ begin
   begin
     PrepareBitmaps(True, False);
     if HandleAllocated then begin
-      AutoScale();
+      AutoScale(False);
       Invalidate;
     end
   end;
@@ -18471,7 +18471,7 @@ begin
       if sfHeight in ScalingFlags then
         Indent := MulDiv(Indent, M, D);
     end;// if M<>D
-    AutoScale();
+    AutoScale(M <> D);
   end;//if toAutoChangeScale
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
 end;
@@ -25956,9 +25956,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AutoScale();
+procedure TBaseVirtualTree.AutoScale(isDpiChange: Boolean);
 
-// If toAutoChangeScale is set, this method ensures that the defaulz node height is set corectly.
+// If toAutoChangeScale is set, this method ensures that the defaulz node height is set correctly.
+// isDPIChnage isTrue, if the DPI of the form has changes
 
 var
   lTextHeight: Cardinal;
@@ -25967,7 +25968,9 @@ begin
   begin
     Canvas.Font.Assign(Self.Font);
     lTextHeight := Canvas.TextHeight('Tg');
-    if (lTextHeight > Self.DefaultNodeHeight) then
+    // By default, we only ensure that DefaultNodeHeight is large enough.
+    // If the form's dpi has changed, we scale up and down the DefaultNodeHeight, See issue #677.
+    if (lTextHeight > Self.DefaultNodeHeight) or (isDpiChange and (lTextHeight <> Self.DefaultNodeHeight)) then
       Self.DefaultNodeHeight := lTextHeight;
   end;
 end;
