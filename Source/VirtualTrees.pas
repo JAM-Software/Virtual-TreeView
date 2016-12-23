@@ -820,6 +820,8 @@ type
   end;
 
   // Determines the kind of animation when a hint is activated.
+  // Note: If toHotTrack is present, animation defaults to hatNone to avoid
+  // delays in hot tracking
   THintAnimationType = (
     hatNone,                 // no animation at all, just display hint/tooltip
     hatFade,                 // fade in the hint/tooltip, like in Windows 2000
@@ -20127,6 +20129,10 @@ begin
   // Check availability of MMX if fading is requested.
   if not MMXAvailable and (Result = hatFade) then
     Result := hatSlide;
+
+  //Disable animation if hot tracking is ON as it causes problems
+  if (toHotTrack in FOptions.PaintOptions) then
+    Result := hatNone;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
