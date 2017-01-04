@@ -17757,6 +17757,7 @@ procedure TBaseVirtualTree.WMRButtonDown(var Message: TWMRButtonDown);
 
 var
   HitInfo: THitInfo;
+  RemoveSynchMode: Boolean; // Needed to restore tsSynchMode correctly
 
 begin
   DoStateChange([tsRightButtonDown]);
@@ -17769,7 +17770,12 @@ begin
     if toRightClickSelect in FOptions.FSelectionOptions then
     begin
       GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+      // Go temporarily into sync mode to avoid a delayed change event for the node when selecting. #679
+      RemoveSynchMode := not (tsSynchMode in FStates);
+      Include(FStates, tsSynchMode);
       HandleMouseDown(Message, HitInfo);
+      if RemoveSynchMode then
+        Exclude(FStates, tsSynchMode);
     end;
   end;
 end;

@@ -1,13 +1,14 @@
-V6.5: (under development)
+﻿V6.5: (under development)
+  * License chnage dfrom LGPL to LGPL with static linking excpetion. See issue #673 for details.
   * Enhancement #662: Background image now supports transparency
   * Fixed #289: HintMode hmHintAndDefault: Default Hint does not change to node specific hint when the mouse is moved to a node.
   * Fixed #674: HintMode hmHintAndDefault: If the BidiMode is right to left, the Default Hint fails to appear
   * Fixed #139: hoDblClickResize doesn't work correctly with InitalState ivsMultiline
   * Fixed #668: Removed unnecessary #include <ShlObj.hpp>
-  * Fixed #670: Make it possible to override RangeX   
+  * Fixed #670: Make it possible to override RangeX
   * Fixed #676: VCL themed scrollbar does not update correctly after adding children
-  * License chnage dfrom LGPL to LGPL with static linking excpetion. See issue #673 for details.     
   * Fixed #626: Wrong hot node selection during mouse movement over different nodes
+  * Fixed #679: The OnChange event when right clicking a node should always be fired before the OnPopup event
 
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
