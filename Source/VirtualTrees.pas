@@ -26984,7 +26984,7 @@ begin
   begin
     while Temp <> FRoot do
     begin
-      if not (vsVisible in Temp.States) or not (vsExpanded in Temp.Parent.States) then
+      if (Temp = nil) or not (vsVisible in Temp.States) or not (vsExpanded in Temp.Parent.States) then
         Exit;
       Temp := Temp.Parent;
       if MainColumnHit and (Temp <> FRoot) then

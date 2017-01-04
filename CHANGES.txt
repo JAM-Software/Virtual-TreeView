@@ -9,7 +9,8 @@
   * Fixed #676: VCL themed scrollbar does not update correctly after adding children
   * Fixed #626: Wrong hot node selection during mouse movement over different nodes
   * Fixed #679: The OnChange event when right clicking a node should always be fired before the OnPopup event
-
+  * Fixed #678: Occasional Access Violation in GetDisplayRect
+  
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
   * Fixed #663: Exception pressing return on an edited item with no columns)
