@@ -18466,22 +18466,36 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
-
+var
+  Flags: TScalingFlags;
+  Run: PVirtualNode;
 begin
   if (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
     if (M <> D) then
     begin
-      if sfHeight in ScalingFlags then begin
+      // It is important to evaluate the TScalingFlags before calling inherited, becuase they are differetn afterwards!
+      if csLoading in ComponentState then
+        Flags := ScalingFlags
+      else
+        Flags := DefaultScalingFlags; // Important for #677
+      if (sfHeight in Flags) then begin
         FHeader.ChangeScale(M, D);
         SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
-      end;
-      if sfHeight in ScalingFlags then
         Indent := MulDiv(Indent, M, D);
+        // Scale also node heights
+        Run := GetFirstInitialized;
+        while Assigned(Run) do
+        begin
+          Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
+          Run := GetNextInitialized(Run);
+        end; // while
+      end;//if sfHeight
     end;// if M<>D
-    AutoScale(M <> D);
   end;//if toAutoChangeScale
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
+  // It is important to do this call after calling inherited, so that the Font has been updated.
+  AutoScale(M <> D);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19643,15 +19657,15 @@ var
 
 begin
   if not (csLoading in ComponentState) and HandleAllocated then
+begin
+  // Reset all vsHeightMeasured flags if we are in multiline mode.
+  Run := GetFirstInitialized;
+  while Assigned(Run) do
   begin
-    // Reset all vsHeightMeasured flags if we are in multiline mode.
-    Run := GetFirstInitialized;
-    while Assigned(Run) do
-    begin
       if vsMultiline in Run.States then
-        Exclude(Run.States, vsHeightMeasured);
-      Run := GetNextInitialized(Run);
-    end;
+      Exclude(Run.States, vsHeightMeasured);
+    Run := GetNextInitialized(Run);
+  end;
 
     UpdateHorizontalScrollBar(True);
     if Column > NoColumn then
@@ -25982,7 +25996,7 @@ begin
     lTextHeight := Canvas.TextHeight('Tg');
     // By default, we only ensure that DefaultNodeHeight is large enough.
     // If the form's dpi has changed, we scale up and down the DefaultNodeHeight, See issue #677.
-    if (lTextHeight > Self.DefaultNodeHeight) or (isDpiChange and (lTextHeight <> Self.DefaultNodeHeight)) then
+    if (lTextHeight > Self.DefaultNodeHeight) then
       Self.DefaultNodeHeight := lTextHeight;
   end;
 end;
