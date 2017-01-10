@@ -1,6 +1,7 @@
-﻿V6.5: (under development)
+V6.5: (under development)
   * License chnage dfrom LGPL to LGPL with static linking excpetion. See issue #673 for details.
   * Enhancement #662: Background image now supports transparency
+  * Fixed #677: Improved per monitor dpi awareness. NodeHeight is now scaled as well if toAutoScale is set. 
   * Fixed #289: HintMode hmHintAndDefault: Default Hint does not change to node specific hint when the mouse is moved to a node.
   * Fixed #674: HintMode hmHintAndDefault: If the BidiMode is right to left, the Default Hint fails to appear
   * Fixed #139: hoDblClickResize doesn't work correctly with InitalState ivsMultiline
