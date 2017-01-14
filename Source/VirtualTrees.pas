@@ -21172,7 +21172,7 @@ begin
   begin
     lDragEffect := DWord(DragEffect);
     SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
-    DragEffect := lDragEffect;
+    DragEffect := Integer(lDragEffect);
   end
   else
   Winapi.ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
