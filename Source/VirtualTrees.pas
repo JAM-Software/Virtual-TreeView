@@ -10084,8 +10084,8 @@ begin
     if Treeview.UseRightToLeftAlignment then
     begin
       SplitPoint := -Treeview.FEffectiveOffsetX;
-      if Integer(Treeview.FRangeX) < Treeview.ClientWidth then
-        Inc(SplitPoint, Treeview.ClientWidth - Integer(Treeview.FRangeX));
+      if FColumns.TotalWidth < Treeview.ClientWidth then
+        Inc(SplitPoint, Treeview.ClientWidth - FColumns.TotalWidth);
 
       for I := 0 to FColumns.Count - 1 do
         with FColumns, Items[FPositionToIndex[I]] do
@@ -10110,7 +10110,7 @@ begin
     end
     else
     begin
-      SplitPoint := -Treeview.FEffectiveOffsetX + Integer(Treeview.FRangeX);
+      SplitPoint := -Treeview.FEffectiveOffsetX + FColumns.TotalWidth;
 
       for I := FColumns.Count - 1 downto 0 do
         with FColumns, Items[FPositionToIndex[I]] do
