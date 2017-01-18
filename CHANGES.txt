@@ -1,4 +1,4 @@
-V6.5: (under development)
+V6.5: (18 Jan 2017)
   * License chnage dfrom LGPL to LGPL with static linking excpetion. See issue #673 for details.
   * Enhancement #662: Background image now supports transparency
   * Fixed #677: Improved per monitor dpi awareness. NodeHeight is now scaled as well if toAutoScale is set. 
