@@ -1,5 +1,5 @@
 V6.5: (18 Jan 2017)
-  * License chnage dfrom LGPL to LGPL with static linking excpetion. See issue #673 for details.
+  * License change from LGPL to "LGPL with static linking exception". See issue #673 for details.
   * Enhancement #662: Background image now supports transparency
   * Fixed #677: Improved per monitor dpi awareness. NodeHeight is now scaled as well if toAutoScale is set. 
   * Fixed #289: HintMode hmHintAndDefault: Default Hint does not change to node specific hint when the mouse is moved to a node.
@@ -11,7 +11,7 @@ V6.5: (18 Jan 2017)
   * Fixed #626: Wrong hot node selection during mouse movement over different nodes
   * Fixed #679: The OnChange event when right clicking a node should always be fired before the OnPopup event
   * Fixed #678: Occasional Access Violation in GetDisplayRect
-  * Fixed #682: Drag & Drop range exception  
+  * Fixed #682: Drag & Drop range exception 
   
 V6.4.1: (26 Oct 2016)
   * Fixed #549: Drawing issue with toCheckSupport an toExtendedFocus
