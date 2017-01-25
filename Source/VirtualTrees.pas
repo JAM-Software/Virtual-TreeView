@@ -25989,12 +25989,12 @@ end;
 procedure TBaseVirtualTree.AutoScale(isDpiChange: Boolean);
 
 // If toAutoChangeScale is set, this method ensures that the defaulz node height is set correctly.
-// isDPIChnage isTrue, if the DPI of the form has changes
+// isDPIChnage is True, if the DPI of the form has changed. In this case the font may not yet be adapted to this, so do not adjust DefualtNodeHeight.
 
 var
   lTextHeight: Cardinal;
 begin
-  if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) then
+  if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) and not isDpiChange then
   begin
     Canvas.Font.Assign(Self.Font);
     lTextHeight := Canvas.TextHeight('Tg');
