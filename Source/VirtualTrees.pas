@@ -31746,7 +31746,7 @@ function TBaseVirtualTree.ScaledPixels(pPixels: Integer): Integer;
 
    /// Returns the given pixels scaled to the current dpi assuming that we designed at 96dpi (100%)
 begin
-  Result := MulDiv(pPixels, Screen.PixelsPerInch, 96);
+  Result := MulDiv(pPixels, {$if CompilerVersion > 31}Self.FCurrentPPI{$else}Screen.PixelsPerInch{$ifend}, 96);
 end;
 
 function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean;
