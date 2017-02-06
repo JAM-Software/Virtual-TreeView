@@ -1,3 +1,6 @@
+V6.5.1 (Under developement)
+  * Fixed issue #687 by extracting new method DeleteNodes() from existing DeleteSelectedNodes().
+    
 V6.5: (18 Jan 2017)
   * License change from LGPL to "LGPL with static linking exception". See issue #673 for details.
   * Enhancement #662: Background image now supports transparency
