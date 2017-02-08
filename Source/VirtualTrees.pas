@@ -9238,7 +9238,7 @@ var
       //Fix for issue 643
       //Do not show the left drop mark if the position to drop is just preceding the target which means
       //the dragged column will stay where it is
-      if (DropMark = dmmLeft) and (Items[FDragIndex].Position = Max(0, Items[FDropTarget].Position - 1))
+      if (DropMark = dmmLeft) and (Items[FDragIndex].Position = TColumnPosition(Max(Integer(Items[FDropTarget].Position) - 1, 0)))
       then
         DropMark := dmmNone
       else
