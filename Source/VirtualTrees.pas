@@ -22709,17 +22709,17 @@ begin
     else
       FLastSelectionLevel := GetNodeLevel(GetLastVisibleNoInit(nil, True));
 
-  // pending clearance
-  if MultiSelect and ShiftEmpty and not (hiOnItemCheckbox in HitInfo.HitPositions) and IsAnyHit and AutoDrag and
-    NodeSelected and not FSelectionLocked then
-    DoStateChange([tsClearPending]);
-
   // immediate clearance
   // Determine for the right mouse button if there is a popup menu. In this case and if drag'n drop is pending
   // the current selection has to stay as it is.
   with HitInfo, Message do
     CanClear := not AutoDrag and
       (not (tsRightButtonDown in FStates) or not HasPopupMenu(HitNode, HitColumn, Point(XPos, YPos)));
+
+  // pending clearance
+  if MultiSelect and ShiftEmpty and not (hiOnItemCheckbox in HitInfo.HitPositions) and IsAnyHit and AutoDrag and
+    (not NodeSelected and CanClear) and not FSelectionLocked then
+    DoStateChange([tsClearPending]);
 
   // User starts a selection with a selection rectangle.
   if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
@@ -22759,7 +22759,9 @@ begin
       else
         if not (ssCtrl in ShiftState) then
           DoStateChange([tsClearOnNewSelection], []);
-    end;
+    end
+    else
+      ClearSelection(False);
   end;
 
   // pending node edit
@@ -22857,7 +22859,7 @@ begin
     // reset pending or persistent states
     if IsMouseSelecting then
     begin
-      DoStateChange([], [tsDrawSelecting, tsDrawSelPending, tsToggleFocusedSelection]);
+      DoStateChange([], [tsDrawSelecting, tsDrawSelPending, tsToggleFocusedSelection, tsClearOnNewSelection]);
       Invalidate;
     end;
 
