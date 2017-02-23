@@ -2,6 +2,7 @@ V6.5.1 (Under developement)
   * Fixed issue #687 by extracting new method DeleteNodes() from existing DeleteSelectedNodes().
   * Fixed issue #689: Possible Integer overflow in PaintColumnHeader() when dragging a column to first position.
   * Fixed issue #693: TVirtualTreeAccessibility.accSelect() should handle the flag SELFLAG_EXTENDSELECTION  
+  * Fixed issue #690: Tree shouldn't keep selected elements, if toAlwaysSelectNode is set and other elements are selected without ctrl-modifier
     
 V6.5: (18 Jan 2017)
   * License change from LGPL to "LGPL with static linking exception". See issue #673 for details.

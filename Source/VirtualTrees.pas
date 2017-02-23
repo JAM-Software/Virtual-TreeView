@@ -1452,6 +1452,7 @@ type
     tsCollapsing,             // A full collapse operation is in progress.
     tsToggleFocusedSelection, // Node selection was modifed using Ctrl-click. Change selection state on next mouse up.
     tsClearPending,           // Need to clear the current selection on next mouse move.
+    tsClearOnNewSelection,    // Need to clear the current selection before selecting a new node
     tsClipboardFlushing,      // Set during flushing the clipboard to avoid freeing the content.
     tsCopyPending,            // Indicates a pending copy operation which needs to be finished.
     tsCutPending,             // Indicates a pending cut operation which needs to be finished.
@@ -11308,13 +11309,14 @@ procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: T
   function GetUseSmartColumnWidth(ColumnIndex: TColumnIndex): Boolean;
 
   begin
+    Result := False;
     case SmartAutoFitType of
       smaAllColumns:
         Result := True;
+      smaNoColumn:
+        Result := False;
       smaUseColumnOption:
         Result := coSmartResize in FColumns.Items[ColumnIndex].FOptions;
-    else
-      Result := False;
     end;
   end;
 
@@ -13686,6 +13688,12 @@ begin
     end;
     if FTempNodeCount > 0 then
     begin
+      if tsClearOnNewSelection in fStates then
+      begin
+        DoStateChange([], [tsClearOnNewSelection]);
+        ClearSelection(False);
+      end;
+
       AddToSelection(FTempNodeCache, FTempNodeCount);
       ClearTempCache;
     end;
@@ -22744,8 +22752,14 @@ begin
         Change(nil);
       end;
     end
-    else if not ((hiNowhere in HitInfo.HitPositions) and (toAlwaysSelectNode in Self.TreeOptions.SelectionOptions)) then // When clicking in the free space we don't want the selection to be cleared in case toAlwaysSelectNode is set
-      ClearSelection(False);
+    else if (toAlwaysSelectNode in Self.TreeOptions.SelectionOptions) then
+    begin
+      if not (hiNowhere in HitInfo.HitPositions) then
+        ClearSelection(False)
+      else
+        if not (ssCtrl in ShiftState) then
+          DoStateChange([tsClearOnNewSelection], []);
+    end;
   end;
 
   // pending node edit
