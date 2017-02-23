@@ -11309,14 +11309,13 @@ procedure TVTHeader.AutoFitColumns(Animated: Boolean = True; SmartAutoFitType: T
   function GetUseSmartColumnWidth(ColumnIndex: TColumnIndex): Boolean;
 
   begin
-    Result := False;
     case SmartAutoFitType of
       smaAllColumns:
         Result := True;
-      smaNoColumn:
-        Result := False;
       smaUseColumnOption:
         Result := coSmartResize in FColumns.Items[ColumnIndex].FOptions;
+    else
+      Result := False;
     end;
   end;
 
