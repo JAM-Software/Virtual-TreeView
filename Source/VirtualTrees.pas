@@ -2006,6 +2006,7 @@ type
     FLastSelRect,
     FNewSelRect: TRect;                          // used while doing draw selection
     FHotCursor: TCursor;                         // can be set to additionally indicate the current hot node
+    FLastHitInfo: THitInfo;                      // The THitInfo of the last mouse-down event.
     FAnimationType: THintAnimationType;          // none, fade in, slide in animation (just like those animations used
                                                  // in Win98 (slide) and Windows 2000 (fade))
     FHintMode: TVTHintMode;                      // determines the kind of the hint window
@@ -22518,36 +22519,36 @@ var
   FullRowDrag: Boolean;  // Start dragging anywhere within a node's bound.
   NodeRect: TRect;
 
-//Fix for issue: 310 whenever there is a need to invalidate a column, consider
-//auto spanned columns if applicable
-procedure invalidateWithAutoSpan(acolumn: TColumnIndex; anode: PVirtualNode);
-var
-  NextColumn: Integer;
-  Dummy: TColumnIndex;
-begin
-  if (not FHeader.UseColumns) or (not (toAutoSpanColumns in FOptions.FAutoOptions))
-     or (acolumn = FHeader.MainColumn) then
+  //Fix for issue: 310 whenever there is a need to invalidate a column, consider
+  //auto spanned columns if applicable
+  procedure invalidateWithAutoSpan(acolumn: TColumnIndex; anode: PVirtualNode);
+  var
+    NextColumn: Integer;
+    Dummy: TColumnIndex;
   begin
-    //no need to find auto spanned next columns
-    InvalidateColumn(acolumn);
-    exit;
+    if (not FHeader.UseColumns) or (not (toAutoSpanColumns in FOptions.FAutoOptions))
+       or (acolumn = FHeader.MainColumn) then
+    begin
+      //no need to find auto spanned next columns
+      InvalidateColumn(acolumn);
+      exit;
+    end;
+    //invalidate auto spanned columns too
+    with FHeader.FColumns do //standard loop for auto span
+    begin
+      NextColumn := acolumn;
+      repeat
+        InvalidateColumn(NextColumn);
+        Dummy := GetNextVisibleColumn(NextColumn);
+        if (Dummy = InvalidColumn) or
+           not ColumnIsEmpty(anode, Dummy)
+           or
+           (Items[Dummy].BidiMode <> bdLeftToRight) then
+          Break;
+        NextColumn := Dummy;
+      until False;
+    end;
   end;
-  //invalidate auto spanned columns too
-  with FHeader.FColumns do //standard loop for auto span
-  begin
-    NextColumn := acolumn;
-    repeat
-      InvalidateColumn(NextColumn);
-      Dummy := GetNextVisibleColumn(NextColumn);
-      if (Dummy = InvalidColumn) or
-         not ColumnIsEmpty(anode, Dummy)
-         or
-         (Items[Dummy].BidiMode <> bdLeftToRight) then
-        Break;
-      NextColumn := Dummy;
-    until False;
-  end;
-end;
 
 begin
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
@@ -22562,6 +22563,7 @@ begin
     DoStateChange([], [tsEditPending]);
   end;
 
+  FLastHitInfo := HitInfo; // Save for later use in OnNodeClick event, see issue #692
   if (tsEditing in FStates) then begin
     if not DoEndEdit then
       exit;
@@ -22908,8 +22910,8 @@ begin
     if (FHeader.FColumns.FClickIndex > NoColumn) and (FHeader.FColumns.FClickIndex = HitInfo.HitColumn) then
       DoColumnClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
 
-    if HitInfo.HitNode <> nil then
-     DoNodeClick(HitInfo);
+    if FLastHitInfo.HitNode <> nil then  // Use THitInfo of mouse down here, see issue #692
+     DoNodeClick(FLastHitInfo);
 
     // handle a pending edit event
     if tsEditPending in FStates then
