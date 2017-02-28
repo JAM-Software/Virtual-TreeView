@@ -1,4 +1,5 @@
 V6.6 (Under developement)
+  * Fixed issue #161: Shift+End does not work as expected with toGridExtension + toFullRowSelect options set
   * Fixed issue #692: HitInfo for OnNodeClick event may differ much from HandleMouseDown
   * Fixed issue #687 by extracting new method DeleteNodes() from existing DeleteSelectedNodes().
   * Fixed issue #689: Possible Integer overflow in PaintColumnHeader() when dragging a column to first position.
