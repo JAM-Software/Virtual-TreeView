@@ -16007,7 +16007,7 @@ begin
             // Convert the cursor rectangle into real client coordinates.
             OffsetRect(CursorRect, 0, -Integer(FHeader.FHeight));
             HitInfo.HitColumn := FHeader.FColumns.GetColumnAndBounds(CursorPos, CursorRect.Left, CursorRect.Right);
-            if (HitInfo.HitColumn > -1) and not (csLButtonDown in ControlState) and
+            if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) and
               (FHeader.FColumns[HitInfo.HitColumn].FHint <> '') then
               HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
           end
@@ -16037,7 +16037,7 @@ begin
           // Note: the test for the left mouse button in ControlState might cause problems whenever the VCL does not
           //       realize when the button is released. This, for instance, happens when doing OLE drag'n drop and
           //       cancel this with ESC.
-          if (HitInfo.HitColumn > -1) and not (csLButtonDown in ControlState) then
+          if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) then
           begin
             FHintData.DefaultHint := FHeader.FColumns[HitInfo.HitColumn].FHint;
             if FHintData.DefaultHint <> '' then
@@ -16446,7 +16446,7 @@ begin
   if Message.Result <> 0 then
   begin
     TextOnly := Message.WParam <> 0;
-    PRect(Message.LParam)^ := GetDisplayRect(Node, -1, TextOnly);
+    PRect(Message.LParam)^ := GetDisplayRect(Node, NoColumn, TextOnly);
   end;
 end;
 
@@ -17010,7 +17010,7 @@ begin
                 if (toExtendedFocus in FOptions.FSelectionOptions) and (toGridExtensions in FOptions.FMiscOptions) then
                 begin
                   Context := FHeader.Columns.GetPreviousVisibleColumn(FFocusedColumn, True);
-                  if Context > -1 then
+                  if Context > NoColumn then
                     FocusedColumn := Context;
                 end
                 else
@@ -17056,7 +17056,7 @@ begin
                 if (toExtendedFocus in FOptions.FSelectionOptions) and (toGridExtensions in FOptions.FMiscOptions) then
                 begin
                   Context := FHeader.Columns.GetNextVisibleColumn(FFocusedColumn, True);
-                  if Context > -1 then
+                  if Context > NoColumn then
                     FocusedColumn := Context;
                 end
                 else
@@ -20346,7 +20346,7 @@ begin
       until (Run = FRoot) or Assigned(Result) or not AskParent;
     end
     else
-      FOnGetPopupMenu(Self, nil, -1, Position, AskParent, Result);
+      FOnGetPopupMenu(Self, nil, NoColumn, Position, AskParent, Result);
   end;
 end;
 
@@ -29887,7 +29887,7 @@ begin
     else
       if (vsInitialized in Node.States) and IsEffectivelyVisible[Node] then
       begin
-        R := GetDisplayRect(Node, -1, False);
+        R := GetDisplayRect(Node, NoColumn, False);
         if R.Top < ClientHeight then
         begin
           if (toChildrenAbove in FOptions.FPaintOptions) and (vsExpanded in Node.States) then
@@ -31612,7 +31612,7 @@ var
 begin
   if Assigned(Node) and (Node <> FRoot) then
   begin
-    R := GetDisplayRect(Node, -1, False);
+    R := GetDisplayRect(Node, NoColumn, False);
     RedrawWindow(Handle, @R, 0, RDW_INVALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_VALIDATE or RDW_NOCHILDREN);
   end;
 end;
@@ -33650,7 +33650,7 @@ begin
       if BidiMode <> bdLeftToRight then
         DrawFormat := DrawFormat or DT_RTLREADING;
       // Check if the text must be shortend.
-      if (Column > -1) and ((NodeWidth - 2 * FTextMargin) > R.Right - R.Left) then
+      if (Column > NoColumn) and ((NodeWidth - 2 * FTextMargin) > R.Right - R.Left) then
       begin
         Text := DoShortenString(Canvas, Node, Column, Text, R.Right - R.Left, TripleWidth);
         if Alignment = taRightJustify then
