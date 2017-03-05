@@ -22766,7 +22766,7 @@ begin
           DoStateChange([tsClearOnNewSelection], []);
     end
     else
-      ClearSelection(False);
+      ClearSelection(True);
   end;
 
   // pending node edit
