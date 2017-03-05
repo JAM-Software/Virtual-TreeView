@@ -16753,8 +16753,8 @@ begin
       if (tsKeyCheckPending in FStates) and (CharCode <> VK_SPACE) then
       begin
         DoStateChange([], [tskeyCheckPending]);
-        FCheckNode.CheckState := FCheckNode.CheckState.GetUnpressed();
-        RepaintNode(FCheckNode);
+        FCheckNode.CheckState := FCheckNode.CheckState.GetToggled().GetUnpressed();
+        InvalidateNode(FCheckNode);
         FCheckNode := nil;
       end;
 
