@@ -957,7 +957,6 @@ type
   private
     FText,
     FHint: string;
-    FLeft,
     FWidth: Integer;
     FPosition: TColumnPosition;
     FMinWidth: Integer;
@@ -1008,6 +1007,7 @@ type
     procedure SetStyle(Value: TVirtualTreeColumnStyle);
     procedure SetWidth(Value: Integer);
   protected
+    FLeft: Integer;
     procedure ComputeHeaderLayout(DC: HDC; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
       var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
       CalculateTextRect: Boolean = False);
