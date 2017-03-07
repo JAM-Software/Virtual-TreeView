@@ -32647,6 +32647,8 @@ begin
       ScrollInfo.nPage := 0;
       DoShowScrollBar(SB_HORZ, False);
       SetScrollInfo(Handle, SB_HORZ, ScrollInfo, False);
+      if DoRepaint then
+        RedrawWindow(Handle, 0, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
     end;
 
     // Since the position is automatically changed if it doesn't meet the range
