@@ -11992,7 +11992,7 @@ begin
       6, 10:
         // 6:UnfocusedSelectionColor 10:UnfocusedSelectionBorderColor
         if FColors[Index] = clBtnFace then
-          Result := StyleServices.GetSystemColor(clHighlight)
+          Result := StyleServices.GetSystemColor(clBtnFace)
         else
           Result := FColors[Index];
       4:
