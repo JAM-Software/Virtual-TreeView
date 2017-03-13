@@ -56,7 +56,7 @@ object MainForm: TMainForm
     TreeOptions.AnimationOptions = [toAnimatedToggle]
     TreeOptions.MiscOptions = [toEditable, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toShowButtons, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages]
-    TreeOptions.SelectionOptions = [toMultiSelect, toCenterScrollIntoView]
+    TreeOptions.SelectionOptions = [toMultiSelect]
     OnFreeNode = VSTFreeNode
     OnInitNode = VSTInitNode
     ExplicitWidth = 381
