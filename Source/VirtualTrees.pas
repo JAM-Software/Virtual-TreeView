@@ -1637,17 +1637,22 @@ type
     property DropMarkColor: TColor index 1 read GetColor write SetColor default clHighlight;
     property DropTargetColor: TColor index 2 read GetColor write SetColor default clHighLight;
     property DropTargetBorderColor: TColor index 11 read GetColor write SetColor default clHighLight;
+    /// The background color of selected nodes in case the tree has the focus, or the toPopupMode flag is set.
     property FocusedSelectionColor: TColor index 3 read GetColor write SetColor default clHighLight;
+    /// The border color of selected nodes when the tree has the focus.
     property FocusedSelectionBorderColor: TColor index 9 read GetColor write SetColor default clHighLight;
     property GridLineColor: TColor index 4 read GetColor write SetColor default clBtnFace;
     property HeaderHotColor: TColor index 14 read GetColor write SetColor default clBtnShadow;
     property HotColor: TColor index 8 read GetColor write SetColor default clWindowText;
     property SelectionRectangleBlendColor: TColor index 12 read GetColor write SetColor default clHighlight;
     property SelectionRectangleBorderColor: TColor index 13 read GetColor write SetColor default clHighlight;
+    /// The text color of selected nodes
     property SelectionTextColor: TColor index 15 read GetColor write SetColor default clHighlightText;
     property TreeLineColor: TColor index 5 read GetColor write SetColor default clBtnShadow;
     property UnfocusedColor: TColor index 16 read GetColor write SetColor default clBtnFace; // [IPK] Added
+    /// The background color of selected nodes in case the tree does not have the focus and the toPopupMode flag is not set.
     property UnfocusedSelectionColor: TColor index 6 read GetColor write SetColor default clBtnFace;
+    /// The border color of selected nodes in case the tree does not have the focus and the toPopupMode flag is not set.
     property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clBtnFace;
   end;
 
