@@ -17079,7 +17079,11 @@ begin
                              RemoveFromSelection(FFocusedNode);
                         end;
                         FocusedNode := Node;
-                      end;
+                      end
+                      else begin
+                        // If already a root node is selected, then scroll to the left as there is nothing else we could do. #691
+                        SetOffsetX(FOffsetX + RTLFactor * FHeader.Columns.GetScrollWidth);
+                      end;//else
                     end;
                   end;
               end;
@@ -17115,7 +17119,11 @@ begin
                         if PerformMultiSelect and (CompareNodePositions(Node, FRangeAnchor) < 0) then
                           RemoveFromSelection(FFocusedNode);
                         FocusedNode := Node;
-                      end;
+                      end
+                      else begin
+                        // If already a leaf node is selected, then scroll to the right as there is nothing else we could do. #691
+                        SetOffsetX(FOffsetX - RTLFactor * FHeader.Columns.GetScrollWidth);
+                      end;//else
                     end;
                   end;
               end;
