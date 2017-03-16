@@ -1,17 +1,19 @@
 ﻿V6.6 (Under developement)
+  * Fixed issue #703: Possibly wrong selection if nodes are selected during DeleteChildren()
   * Fixed issue #691: When the user uses Cursor-Left/Right, the Virtual TreeView should perform horizontal scrolling if there is no other operation
   * Fixed issue #699: TVTColors.GetColor: Honor user defined colors also when StyleServices are enabled (Thx to luebbe for PR)
   * Fixed issue #698: Horizontal scrollbar may not update when turning on or off columns
-  * Fixed issue #350: TVirtualTreeColumn.fLeft should be in protected part         
+  * Fixed issue #350: TVirtualTreeColumn.fLeft should be in protected part
   * Fixed issue #312: When unfocusing a node while the Spacebar is still pressed, the check state should be toggled
   * Fixed issue #161: Shift+End does not work as expected with toGridExtension + toFullRowSelect options set
   * Fixed issue #697: OnChange not fired when unselecting nodes
   * Fixed issue #692: HitInfo for OnNodeClick event may differ much from HandleMouseDown
   * Fixed issue #687 by extracting new method DeleteNodes() from existing DeleteSelectedNodes().
   * Fixed issue #689: Possible Integer overflow in PaintColumnHeader() when dragging a column to first position.
-  * Fixed issue #693: TVirtualTreeAccessibility.accSelect() should handle the flag SELFLAG_EXTENDSELECTION  
+  * Fixed issue #693: TVirtualTreeAccessibility.accSelect() should handle the flag SELFLAG_EXTENDSELECTION
   * Fixed issue #690: Tree shouldn't keep selected elements, if toAlwaysSelectNode is set and other elements are selected without ctrl-modifier
-    
+  * Some minor tweaks on Virtual TreeView source code and sample projects
+
 V6.5: (18 Jan 2017)
   * License change from LGPL to "LGPL with static linking exception". See issue #673 for details.
   * Enhancement #662: Background image now supports transparency

@@ -21707,7 +21707,7 @@ procedure TBaseVirtualTree.EnsureNodeSelected();
 begin
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and not IsEmpty then
   begin
-    if (GetFirstSelected() = nil) and not SelectionLocked then
+    if (SelectedCount = 0) and not SelectionLocked then
     begin
       if Assigned(FNextNodeToSelect) then
         Selected[FNextNodeToSelect] := True
@@ -26619,6 +26619,17 @@ begin
     LastLeft := -FEffectiveOffsetX;
     LastTop := FOffsetY;
 
+    if tsHint in FStates then
+    begin
+      Application.CancelHint;
+      DoStateChange([], [tsHint]);
+    end;
+
+    if not ParentClearing then
+      InterruptValidation;
+
+    DeleteChildren(Node);
+
     if vsSelected in Node.States then
     begin
       if FUpdateCount = 0 then
@@ -26639,16 +26650,6 @@ begin
     else
       InvalidateToBottom(LastParent);
 
-    if tsHint in FStates then
-    begin
-      Application.CancelHint;
-      DoStateChange([], [tsHint]);
-    end;
-
-    if not ParentClearing then
-      InterruptValidation;
-
-    DeleteChildren(Node);
     InternalDisconnectNode(Node, False, Reindex);
     DoFreeNode(Node);
 
