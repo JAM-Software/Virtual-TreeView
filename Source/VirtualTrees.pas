@@ -356,6 +356,8 @@ type
     function IsUnChecked(): Boolean; inline;
     function IsMixed():     Boolean; inline;
 
+    function IsIn(const AllowedStates: TCheckStateSet): Boolean; inline;
+
     constructor Create(const Mark: TCheckStateMarkKind; const State: TCheckStateUIState);
 
     function GetWithMarkKind(const Value: TCheckStateMarkKind): TCheckState;
@@ -408,6 +410,11 @@ type
    .TScrollStyle;
 
   (*** XE2 backport start end **)
+
+  // proxy-definition, so the legacy forms could have their event handlers 
+  // corrected from Integer to the new type without frantically searching 
+  // where that damn type was defined and swinging to USES section and back
+  TImageIndex = Vcl.ImgList.TImageIndex;
 
   TCheckImageKind = (
     ckLightCheck,     // gray cross
@@ -34685,6 +34692,11 @@ end;
 function TCheckState.IsMixed: Boolean;
 begin
   Result := Value in [csMixedNormal, csMixedPressed, csMixedDisabled];
+end;
+
+function TCheckState.IsIn(const AllowedStates: TCheckStateSet): Boolean;
+begin
+  Result := Value in AllowedStates;
 end;
 
 function TCheckState.GetPressed(): TCheckState;
