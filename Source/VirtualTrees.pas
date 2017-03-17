@@ -22776,7 +22776,8 @@ begin
 
   // pending clearance
   if MultiSelect and ShiftEmpty and not (hiOnItemCheckbox in HitInfo.HitPositions) and IsAnyHit and AutoDrag and
-    (not NodeSelected and CanClear) and not FSelectionLocked then
+    NodeSelected and not FSelectionLocked
+  then
     DoStateChange([tsClearPending]);
 
   // User starts a selection with a selection rectangle.
@@ -22818,14 +22819,12 @@ begin
         if not (ssCtrl in ShiftState) then
           DoStateChange([tsClearOnNewSelection], []);
     end
-    else
-      ClearSelection(True);
   end;
 
   // pending node edit
   if Focused and
     ((hiOnItemLabel in HitInfo.HitPositions) or ((toGridExtensions in FOptions.FMiscOptions) and
-    (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty then
+    (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty and (SelectedCount = 1) then
   begin
     DoStateChange([tsEditPending]);
   end;
