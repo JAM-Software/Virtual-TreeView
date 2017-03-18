@@ -13937,15 +13937,12 @@ var
 
 begin
   Size := TreeNodeSize;
-  if not (csDesigning in ComponentState) then
-  begin
-    // Make sure FNodeDataSize is valid.
-    if FNodeDataSize = -1 then
-      ValidateNodeDataSize(FNodeDataSize);
+  // Make sure FNodeDataSize is valid.
+  if FNodeDataSize = -1 then
+    ValidateNodeDataSize(FNodeDataSize);
 
-    // Take record alignment into account.
-    Inc(Size, FNodeDataSize);
-  end;
+  // Take record alignment into account.
+  Inc(Size, FNodeDataSize);
 
   Result := AllocMem(Size + FTotalInternalDataSize);
 
