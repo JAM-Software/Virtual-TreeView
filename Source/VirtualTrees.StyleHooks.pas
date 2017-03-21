@@ -450,7 +450,9 @@ end;
 procedure TVclStyleScrollBarsHook.PaintScrollBars;
 begin
   FVertScrollBarWindow.Repaint;
+  RedrawWindow(FVertScrollBarWindow.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
   FHorzScrollBarWindow.Repaint;
+  RedrawWindow(FHorzScrollBarWindow.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
 end;
 
 function TVclStyleScrollBarsHook.PointInTreeHeader(const P: TPoint): Boolean;
@@ -573,7 +575,8 @@ end;
 procedure TVclStyleScrollBarsHook.WMKeyDown(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  CalcScrollBarsRect;
+  UpdateScrollBarWindow;
   Handled := True;
 end;
 
@@ -587,7 +590,8 @@ end;
 procedure TVclStyleScrollBarsHook.WMLButtonDown(var Msg: TWMMouse);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  CalcScrollBarsRect;
+  UpdateScrollBarWindow;
   Handled := True;
 end;
 

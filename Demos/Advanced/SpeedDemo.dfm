@@ -1571,7 +1571,6 @@ object SpeedForm: TSpeedForm
     ScrollBarOptions.VerticalIncrement = 18
     ShowHint = True
     TabOrder = 0
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoTristateTracking]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.SelectionOptions = [toMultiSelect]
     OnChange = VST1Change

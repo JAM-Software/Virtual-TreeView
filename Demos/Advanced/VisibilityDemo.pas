@@ -5,6 +5,7 @@ unit VisibilityDemo;
 //   - Synchronization between 2 trees (expand, scroll, selection).
 //   - Wheel scrolling and panning.
 // Written by Mike Lischke.
+{$WARN UNSAFE_CODE OFF} // Prevent warnins that are not applicable 
 
 interface
 
@@ -44,6 +45,9 @@ type
       var CellText: UnicodeString);
     procedure FormShow(Sender: TObject);
     procedure FormHide(Sender: TObject);
+    procedure VST3FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure VST2FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure VST1FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     FChanging: Boolean;
     procedure HideNodes(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
@@ -90,7 +94,7 @@ end;
 procedure TVisibilityForm.VST1InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
 
 begin
-  ChildCount := Random(5);
+  ChildCount := Random(5) + 1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -341,5 +345,38 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TVisibilityForm.VST1FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PLinkData;
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVisibilityForm.VST2FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PLinkData;
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVisibilityForm.VST3FreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  Data: PLinkData;
+
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
+
 
 end.

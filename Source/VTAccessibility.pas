@@ -99,6 +99,12 @@ implementation
 uses
   System.SysUtils, Vcl.Forms, System.Variants, System.Math;
 
+type
+
+/// For getting access to protected members of this class
+THackVirtualStringTree = class(TVirtualStringTree)
+end;
+
 { TVirtualTreeAccessibility }
 //----------------------------------------------------------------------------------------------------------------------
 constructor TVirtualTreeAccessibility.Create(AVirtualTree: TVirtualStringTree);
@@ -419,6 +425,10 @@ begin
   end;
   if (flagsSelect and SELFLAG_REMOVESELECTION) <> 0 then begin
     FVirtualTree.Selected[lNode] := False;
+    Result := S_OK;
+  end;
+  if (flagsSelect and SELFLAG_EXTENDSELECTION) <> 0 then begin
+    THackVirtualStringTree(FVirtualTree).HandleClickSelection(FVirtualTree.FocusedNode, lNode, [ssShift], False);
     Result := S_OK;
   end;
 end;
