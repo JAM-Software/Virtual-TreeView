@@ -9,7 +9,7 @@ interface
 uses 
   Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics, 
   VirtualTrees, ActnList, ComCtrls, ExtCtrls, StdCtrls, Controls, Classes,
-  ImgList, System.Actions;
+  ImgList{, System.Actions};
 
 type
   TMainForm = class(TForm)
