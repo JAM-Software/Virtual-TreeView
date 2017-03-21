@@ -2434,6 +2434,7 @@ type
     function MakeNewNode: PVirtualNode;
     function PackArray({*}const TheArray: TNodeArray; Count: Integer): Integer;
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
+    procedure FakeReadImageKind(Reader: TReader);
     procedure ReadOldOptions(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
@@ -3544,6 +3545,7 @@ type
     property Canvas;
     property RangeX;
     property LastDragEffect;
+    property CheckImageKind; // should no more be published to make #622 fix working
   published
     property AccessibleName;
     property Action;
@@ -3570,7 +3572,6 @@ type
     property ButtonStyle;
     property BorderWidth;
     property ChangeDelay;
-    property CheckImageKind;
     property ClipboardFormats;
     property Color;
     property Colors;
@@ -3814,6 +3815,7 @@ type
   public
     property Canvas;
     property LastDragEffect;
+    property CheckImageKind; // should no more be published to make #622 fix working
   published
     property Action;
     property Align;
@@ -3838,7 +3840,6 @@ type
     property ButtonStyle;
     property BorderWidth;
     property ChangeDelay;
-    property CheckImageKind;
     property ClipboardFormats;
     property Color;
     property Colors;
@@ -18913,6 +18914,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.FakeReadImageKind(Reader: TReader);
+{$IfOpt D+}
+var k: TValueType; s: string;
+begin
+  k := Reader.NextValue;
+  Assert( k = vaIdent );
+  s := Reader.ReadIdent; // should be the name of that legacy enumeration value from the inherited DFM
+end;
+{$ELSE}
+begin
+  Reader.ReadIdent;
+end;
+{$EndIf}
+
 procedure TBaseVirtualTree.DefineProperties(Filer: TFiler);
 
 // There were heavy changes in some properties during development of VT. This method helps to make migration easier
@@ -18941,6 +18956,10 @@ begin
 
   Filer.DefineProperty('Columns', FHeader.ReadColumns, FHeader.WriteColumns, StoreIt);
   Filer.DefineProperty('Options', ReadOldOptions, nil, False);
+
+  // #622 made old DFMs incompatible with new VTW - so the program is compiled successfully
+  //    and then suddenly crashes at user site in runtime.
+  Filer.DefineProperty('CheckImageKind', FakeReadImageKind, nil, false);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
