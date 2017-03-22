@@ -15115,11 +15115,11 @@ procedure TBaseVirtualTree.SetNodeData(pNode: PVirtualNode; pUserData: Pointer);
   // A pointer to a record or a reference to a class instance.
 
 var
-  NodeData: ^Pointer;
+  NodeData: PPointer;
 begin
   // Check if there is initial user data and there is also enough user data space allocated.
   Assert(FNodeDataSize >= SizeOf(Pointer), Self.Classname + ': Cannot set initial user data because there is not enough user data space allocated.');
-  NodeData := @pNode.Data;
+  NodeData := PPointer(@pNode.Data);
   NodeData^ := pUserData;
   Include(pNode.States, vsOnFreeNodeCallRequired);
 end;
@@ -34919,11 +34919,10 @@ procedure TVirtualNode.SetData(pUserData: Pointer);
 
   // Can be used to set user data of a PVirtualNode with the size of a pointer, useful for setting
   // A pointer to a record or a reference to a class instance.
-
 var
-  NodeData: ^Pointer;
+  NodeData: PPointer;
 begin
-  NodeData := @Self.Data;
+  NodeData := PPointer(@Self.Data);
   NodeData^ := pUserData;
   Include(Self.States, vsOnFreeNodeCallRequired);
 end;
