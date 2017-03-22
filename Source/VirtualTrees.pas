@@ -3535,7 +3535,6 @@ type
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   TVirtualStringTree = class(TCustomVirtualStringTree)
   private
-
     function GetOptions: TStringTreeOptions;
     procedure SetOptions(const Value: TStringTreeOptions);
   protected
@@ -9147,7 +9146,6 @@ var
   RTLOffset: Integer;
 
   procedure PaintFixedArea;
-
   begin
     if VisibleFixedWidth > 0 then
       PaintHeader(FHeaderBitmap.Canvas,
@@ -9169,7 +9167,6 @@ begin
     RTLOffset := FHeader.Treeview.ComputeRTLOffset
   else
     RTLOffset := 0;
-
   if RTLOffset = 0 then
     PaintFixedArea;
 
@@ -9181,7 +9178,6 @@ begin
   // In case of right-to-left directionality we paint the fixed part last.
   if RTLOffset <> 0 then
     PaintFixedArea;
-
   // Blit the result to target.
   with TWithSafeRect(R) do
     BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
@@ -9618,7 +9614,6 @@ begin
       PaintColumnHeader(Run, TargetRect);
 
       SelectClipRgn(Handle, 0);
-
       TargetRect.Left := TargetRect.Right;
       Run := GetNextVisibleColumn(Run);
     end;
@@ -18915,18 +18910,11 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.FakeReadImageKind(Reader: TReader);
-{$IfOpt D+}
-var k: TValueType; s: string;
 begin
-  k := Reader.NextValue;
-  Assert( k = vaIdent );
-  s := Reader.ReadIdent; // should be the name of that legacy enumeration value from the inherited DFM
-end;
-{$ELSE}
-begin
+  Assert(Reader.NextValue = vaIdent);
   Reader.ReadIdent;
 end;
-{$EndIf}
+
 
 procedure TBaseVirtualTree.DefineProperties(Filer: TFiler);
 
