@@ -1952,7 +1952,7 @@ type
   TVTVirtualNodeEnumerator = record
   private
     FNode: PVirtualNode;
-    FCanModeNext: Boolean;
+    FCanMoveNext: Boolean;
     FEnumeration: PVTVirtualNodeEnumeration;
     function GetCurrent: PVirtualNode; inline;
   public
@@ -6551,12 +6551,12 @@ end;
 function TVTVirtualNodeEnumerator.MoveNext: Boolean;
 
 begin
-  Result := FCanModeNext;
+  Result := FCanMoveNext;
   if Result then
   begin
     FNode := FEnumeration.GetNext(FNode);
     Result := FNode <> nil;
-    FCanModeNext := Result;
+    FCanMoveNext := Result;
   end;
 end;
 
@@ -6566,7 +6566,7 @@ function TVTVirtualNodeEnumeration.GetEnumerator: TVTVirtualNodeEnumerator;
 
 begin
   Result.FNode := nil;
-  Result.FCanModeNext := True;
+  Result.FCanMoveNext := True;
   Result.FEnumeration := @Self;
 end;
 
