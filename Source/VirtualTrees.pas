@@ -14019,12 +14019,17 @@ var
 
 begin
   Size := TreeNodeSize;
-  // Make sure FNodeDataSize is valid.
-  if FNodeDataSize = -1 then
-    ValidateNodeDataSize(FNodeDataSize);
+  if not (csDesigning in ComponentState) then
+  begin  // Make sure FNodeDataSize is valid.
+    if FNodeDataSize <= 0 then
+      ValidateNodeDataSize(FNodeDataSize);
 
-  // Take record alignment into account.
-  Inc(Size, FNodeDataSize);
+    // Take record alignment into account.
+    Inc(Size, FNodeDataSize);
+  end//not csDesigning
+  else
+    Inc(Size, SizeOf(Pointer)); // Fixes #702
+
 
   Result := AllocMem(Size + FTotalInternalDataSize);
 
@@ -22909,7 +22914,9 @@ begin
         if not (ssCtrl in ShiftState) then
           DoStateChange([tsClearOnNewSelection], []);
     end
-  end;
+    else
+      ClearSelection(True);
+    end;
 
   // pending node edit
   if Focused and
