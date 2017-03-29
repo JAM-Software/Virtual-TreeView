@@ -2,6 +2,7 @@ V6.6 (Under developement)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo
   * Fixed issue #702: Access Violation at designtime when RootNodeCount is >0
   * Fixed issue #703: Possibly wrong selection if nodes are selected during DeleteChildren()
+  * Fixed issue #700: If the user clicked a node, we are no longer centering this node if the option toCenterScrollIntoView is set.
   * Fixed issue #691: When the user uses Cursor-Left/Right, the Virtual TreeView should perform horizontal scrolling if there is no other operation
   * Fixed issue #699: TVTColors.GetColor: Honor user defined colors also when StyleServices are enabled (Thx to luebbe for PR)
   * Fixed issue #698: Horizontal scrollbar may not update when turning on or off columns

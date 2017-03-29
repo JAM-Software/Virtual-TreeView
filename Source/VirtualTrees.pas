@@ -22898,7 +22898,7 @@ begin
 
     if NewNode or NewColumn then
     begin
-      ScrollIntoView(FFocusedNode, not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions) and (toCenterScrollIntoView in FOptions.SelectionOptions),
+      ScrollIntoView(FFocusedNode, False,
         not (toDisableAutoscrollOnFocus in FOptions.FAutoOptions)
         and not (toFullRowSelect in FOptions.SelectionOptions));
 
