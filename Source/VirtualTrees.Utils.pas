@@ -81,6 +81,8 @@ function OrderRect(const R: TRect): TRect;
 procedure FillDragRectangles(DragWidth, DragHeight, DeltaX, DeltaY: Integer; var RClip, RScroll, RSamp1, RSamp2, RDraw1, RDraw2: TRect);
 
 // Attaches a bitmap as drag image to an IDataObject, see issue #405
+// Usage: Set property DragImageKind to diNoImage, in your event handler OnCreateDataObject
+//        call VirtualTrees.Utils.ApplyDragImage() with your `IDataObject` and your bitmap.
 procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 
 
