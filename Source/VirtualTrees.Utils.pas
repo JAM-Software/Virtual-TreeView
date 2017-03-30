@@ -30,6 +30,7 @@ interface
 
 uses
   Winapi.Windows,
+  Winapi.ActiveX,
   System.Types,
   Vcl.Graphics,
   Vcl.ImgList;
@@ -79,18 +80,53 @@ function OrderRect(const R: TRect): TRect;
 // (used in DragMove of the drag manager and DragTo of the header columns).
 procedure FillDragRectangles(DragWidth, DragHeight, DeltaX, DeltaY: Integer; var RClip, RScroll, RSamp1, RSamp2, RDraw1, RDraw2: TRect);
 
+// Attaches a bitmap as drag image to an IDataObject, see issue #405
+// Usage: Set property DragImageKind to diNoImage, in your event handler OnCreateDataObject
+//        call VirtualTrees.Utils.ApplyDragImage() with your `IDataObject` and your bitmap.
+procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 
 
 implementation
 
 uses
   Winapi.CommCtrl,
+  Winapi.ShlObj,
   System.SysUtils,
   System.StrUtils,
   System.Math;
 
 const
   WideLF = Char(#10);
+
+procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
+var
+  DragSourceHelper: IDragSourceHelper;
+  DragInfo: SHDRAGIMAGE;
+  lDragSourceHelper2: IDragSourceHelper2;// Needed to get Windows Vista+ style drag hints.
+  lNullPoint: TPoint;
+begin
+
+  if Assigned(pDataObject) and Succeeded(CoCreateInstance(CLSID_DragDropHelper, nil, CLSCTX_INPROC_SERVER,
+    IID_IDragSourceHelper, DragSourceHelper)) then
+  begin
+    if Supports(DragSourceHelper, IDragSourceHelper2, lDragSourceHelper2) then
+      lDragSourceHelper2.SetFlags(DSH_ALLOWDROPDESCRIPTIONTEXT);// Show description texts
+    if not Succeeded(DragSourceHelper.InitializeFromWindow(0, lNullPoint, pDataObject)) then begin   // First let the system try to initialze the DragSourceHelper, this works fine e.g. for file system objects
+      // Create drag image
+
+      if not Assigned(pBitmap) then
+        Exit();
+      DragInfo.crColorKey := clBlack;
+      DragInfo.sizeDragImage.cx := pBitmap.Width;
+      DragInfo.sizeDragImage.cy := pBitmap.Height;
+      DragInfo.ptOffset.X := pBitmap.Width div 8;
+      DragInfo.ptOffset.Y := pBitmap.Height div 10;
+      DragInfo.hbmpDragImage := CopyImage(pBitmap.Handle, IMAGE_BITMAP, pBitmap.Width, pBitmap.Height, LR_COPYRETURNORG);
+      if not Succeeded(DragSourceHelper.InitializeFromBitmap(@DragInfo, pDataObject)) then
+        DeleteObject(DragInfo.hbmpDragImage);
+    end;//if not InitializeFromWindow
+  end;
+end;
 
 
 function OrderRect(const R: TRect): TRect;
