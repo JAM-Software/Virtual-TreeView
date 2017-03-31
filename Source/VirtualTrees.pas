@@ -20386,26 +20386,45 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 
 // Queries the application/descendant about certain image properties for a node.
 // Returns a custom image list if given by the callee, otherwise nil.
-const
-  cTVTImageKind2String: Array [TVTImageKind] of string = ('ikNormal', 'ikSelected', 'ikState', 'ikOverlay');
+
+//  Frankly, no need there was for this const, it is trivially fetched via RTTI if needed
+//const
+//  cTVTImageKind2String: Array [TVTImageKind] of string = ('ikNormal', 'ikSelected', 'ikState', 'ikOverlay');
+
+  procedure ReactToWrongImage;
+  begin
+    Index := -1;
+  end;
+// or another option, or both depending on checking some Self.TreeOptions flag
+//  begin
+//    raise EvirtualTreeViewException.Create( .....
+//  end;
+
 begin
+  if Kind = ikState then
+    Result := Self.StateImages
+  else
+    Result := Self.Images;
+
   // First try the enhanced event to allow for custom image lists.
   if Assigned(FOnGetImageEx) then begin
-    if Kind = ikState then
-      Result := Self.StateImages
-    else
-      Result := Self.Images;
     FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result);
   end
   else begin
-    if Kind = ikState then
-      Result := Self.StateImages
-    else
-      Result := Self.Images;
     if Assigned(FOnGetImage) then
       FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
   end;
-  Assert((Index < 0) or Assigned(Result), 'An image index was supplied for TVTImageKind.' + cTVTImageKind2String[Kind] + ' but no image list was supplied.');
+
+  if nil = Result
+    then ReactToWrongImage
+    else
+  if Index < 0
+    then Index := -1
+    else
+  if Index >= Result.Count
+     then ReactToWrongImage;
+
+//  Assert((Index < 0) or Assigned(Result), 'An image index was supplied for TVTImageKind.' + cTVTImageKind2String[Kind] + ' but no image list was supplied.');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22067,12 +22086,15 @@ var
   Index: TImageIndex;
   lImageList: TCustomImageList;
 begin
-  if not Assigned(OnGetImageIndexEx) and (((Kind = TVTImageKind.ikNormal) and not Assigned(fImages))
-    or ((Kind = TVTImageKind.ikNormal) and not Assigned(fImages))) then
-  begin
-    Result.cx := 0;
-    Result.cy := 0;
-  end;
+  // according to DoGetImageIndex it only matters if Kind is ikState or anything else.
+  if Kind = TVTImageKind.ikState 
+    then lImageList := FStateImages
+    else lImageList := FImages;
+ 
+  if not ( Assigned(lImageList) or Assigned(OnGetImageIndexEx) ) then
+     Exit( TSize.Create( 0, 0) );
+  // if the tree has no possible options to hope to achive the image - then bailing out. No means no. 
+  
   if not (vsInitialized in Node.States) then
     InitNode(Node);
   Index := -1;
