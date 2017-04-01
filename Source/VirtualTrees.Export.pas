@@ -1,4 +1,4 @@
-﻿unit VirtualTrees.Export;
+unit VirtualTrees.Export;
 
 {$WARN UNSAFE_CODE OFF}
 {$WARN IMPLICIT_STRING_CAST OFF}
