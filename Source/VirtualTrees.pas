@@ -3435,6 +3435,7 @@ type
     procedure AddToSelection(Node: PVirtualNode); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
+    /// Alternate text for images used in Accessibility.
     property ImageText[Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex]: string read GetImageText;
     property StaticText[Node: PVirtualNode; Column: TColumnIndex]: string read GetStaticText;
     property Text[Node: PVirtualNode; Column: TColumnIndex]: string read GetText write SetText;
@@ -23153,7 +23154,7 @@ begin
   FixupTotalCount(Node);
   AdjustTotalCount(Node.Parent, Node.TotalCount - 1, True); // -1 because Node itself was already set.
   FixupTotalHeight(Node);
-  AdjustTotalHeight(Node.Parent, Node.TotalHeight - LastTotalHeight, True);
+  AdjustTotalHeight(Node.Parent, Integer(Node.TotalHeight) - Integer(LastTotalHeight), True);
 
   // New nodes are always visible, so the visible node count has been increased already.
   // If Node is now invisible we have to take back this increment and don't need to add any visible child node.
