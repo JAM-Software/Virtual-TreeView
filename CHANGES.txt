@@ -1,3 +1,7 @@
+V6.7: (under development)
+  * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream
+  * Fixed issue #500: Issue with node selection "from code" for disabled nodes with toLevelSelectConstraint option  
+
 V6.6 (04 Apr 2017)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo
   * Fixed issue #702: Access Violation at designtime when RootNodeCount is >0
