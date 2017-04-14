@@ -23228,6 +23228,11 @@ begin
   // 1) Remove already selected items, mark all other as being selected.
   if ForceInsert then
   begin
+    //Fix: For already selected node when selected, this path
+    //is used that didn't contain the Constraint logic. Added.
+    Constrained := toLevelSelectConstraint in FOptions.FSelectionOptions;
+    if Constrained and (FLastSelectionLevel = -1) then
+      FLastSelectionLevel := GetNodeLevelForSelectConstraint(NewItems[0]);
     for I := 0 to NewLength - 1 do
     begin
       Include(NewItems[I].States, vsSelected);
