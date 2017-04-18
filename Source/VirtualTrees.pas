@@ -30,14 +30,15 @@ unit VirtualTrees;
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Rösler
+//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Rösler, Sanjay Kanade,
+//   and everyone that sent pull requests: https://github.com/Virtual-TreeView/Virtual-TreeView/pulls?q=
 // Beta testers:
 //   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
 // Indirect contribution (via publicly accessible work of those persons):
 //   Alex Denissov, Hiroyuki Hori (MMXAsm expert)
 // Documentation:
-//   Markus Spoettl and toolsfactory GbR (http://www.doc-o-matic.com/, sponsoring Soft Gems development
+//   Markus Spoettl and toolsfactory GbR (http://www.doc-o-matic.com/, sponsoring Virtual TreeView development
 //   with a free copy of the Doc-O-Matic help authoring system), Sven H. (Step by step tutorial)
 // Source repository:
 //   https://github.com/Virtual-TreeView/Virtual-TreeView
@@ -16790,6 +16791,70 @@ var
   KeyState: TKeyboardState;
   Buffer: array[0..1] of AnsiChar;
 
+  //--------------- local functions -------------------------------------------
+  function getPreviousVisibleAutoSpanColumn(acolumn: TColumnIndex; anode: PVirtualNode): TColumnIndex;
+  var
+    PrevColumn: Integer;
+  begin
+    if (not assigned(anode))
+       or (not FHeader.UseColumns)
+       or (not (toAutoSpanColumns in FOptions.FAutoOptions))
+       or (acolumn = FHeader.MainColumn) then
+    begin
+      //previously existing logic
+      result := FHeader.Columns.GetPreviousVisibleColumn(acolumn, True);
+      exit;
+    end;
+    //consider auto spanning
+    with FHeader.FColumns do //standard loop for auto span
+    begin
+      PrevColumn := acolumn;
+      repeat
+        result := FHeader.Columns.GetPreviousVisibleColumn(PrevColumn);
+        if (result = InvalidColumn) or
+           (not ColumnIsEmpty(anode, result))
+           //Any other BidiMode is not supported as already
+           //documented by original developer
+           or (Items[result].BidiMode <> bdLeftToRight) then
+          Break;
+        PrevColumn := result;
+      until False;
+    end;
+  end;
+
+  //---------------------------------------------------------------------------
+  function getNextVisibleAutoSpanColumn(acolumn: TColumnIndex; anode: PVirtualNode): TColumnIndex;
+  var
+    NextColumn: Integer;
+  begin
+    if (not assigned(anode))
+       or (not FHeader.UseColumns)
+       or (not (toAutoSpanColumns in FOptions.FAutoOptions))
+       or (acolumn = FHeader.MainColumn) then
+    begin
+      //previously existing logic
+      result := FHeader.Columns.GetNextVisibleColumn(acolumn, True);
+      exit;
+    end;
+    //consider auto spanning
+    with FHeader.FColumns do //standard loop for auto span
+    begin
+      NextColumn := acolumn;
+      repeat
+        result := FHeader.Columns.GetNextVisibleColumn(NextColumn);
+        if (result = InvalidColumn) or
+           not ColumnIsEmpty(anode, result)
+           //Any other BidiMode is not supported as already
+           //documented by original developer
+           or (Items[result].BidiMode <> bdLeftToRight) then
+          Break;
+        NextColumn := result;
+      until False;
+    end;
+  end;
+
+  //--------------- end local functions ---------------------------------------
+
 begin
   // Make form key preview work and let application modify the key if it wants this.
   inherited;
@@ -17059,7 +17124,7 @@ begin
                 Context := NoColumn;
                 if (toExtendedFocus in FOptions.FSelectionOptions) and (toGridExtensions in FOptions.FMiscOptions) then
                 begin
-                  Context := FHeader.Columns.GetPreviousVisibleColumn(FFocusedColumn, True);
+                  Context := getPreviousVisibleAutoSpanColumn(FFocusedColumn, FFocusedNode);
                   if Context > NoColumn then
                     FocusedColumn := Context;
                 end
@@ -17109,7 +17174,7 @@ begin
                 Context := NoColumn;
                 if (toExtendedFocus in FOptions.FSelectionOptions) and (toGridExtensions in FOptions.FMiscOptions) then
                 begin
-                  Context := FHeader.Columns.GetNextVisibleColumn(FFocusedColumn, True);
+                  Context := getNextVisibleAutoSpanColumn(FFocusedColumn, FFocusedNode);
                   if Context > NoColumn then
                     FocusedColumn := Context;
                 end
@@ -22592,6 +22657,8 @@ var
   FullRowDrag: Boolean;  // Start dragging anywhere within a node's bound.
   NodeRect: TRect;
 
+  //--------------- local functions -------------------------------------------
+
   //Fix for issue: 310 whenever there is a need to invalidate a column, consider
   //auto spanned columns if applicable
   procedure invalidateWithAutoSpan(acolumn: TColumnIndex; anode: PVirtualNode);
@@ -22622,6 +22689,8 @@ var
       until False;
     end;
   end;
+
+  //--------------- end local functions ---------------------------------------
 
 begin
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
