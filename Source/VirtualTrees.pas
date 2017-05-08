@@ -22883,7 +22883,7 @@ begin
   end;
 
   if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
-    (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect))) then
+    (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect or (tsRightButtonDown in FStates)))) then
   begin
     Assert(not (tsClearPending in FStates), 'Pending and direct clearance are mutual exclusive!');
 
@@ -22961,7 +22961,7 @@ begin
     if NewNode then
       DoFocusNode(HitInfo.HitNode, False);
 
-    if MultiSelect and not ShiftEmpty then
+    if MultiSelect and not ShiftEmpty and not (tsRightButtonDown in FStates) then
       HandleClickSelection(LastFocused, HitInfo.HitNode, ShiftState, AutoDrag)
     else
     begin

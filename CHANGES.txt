@@ -1,9 +1,10 @@
-﻿V6.7: (under development)
+V6.7: (under development)
   * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream
   * Fixed issue #500: Issue with node selection "from code" for disabled nodes with toLevelSelectConstraint option  
   * Fixed issue #499: Incorrect behavior with toLevelSelectConstraint and ctrl+A 
   * Fixed issue #649: Cell navigation problems with toAutoSpanColumns for left and right keys
   * Fixed issue #712: Strange behaviour of AutoFitColumns
+  * Fixed issue #718: Shift + Rght-Click should not extend selection  
   
 V6.6 (04 Apr 2017)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo
