@@ -5,7 +5,8 @@ V6.7: (under development)
   * Fixed issue #649: Cell navigation problems with toAutoSpanColumns for left and right keys
   * Fixed issue #712: Strange behaviour of AutoFitColumns
   * Fixed issue #718: Shift + Rght-Click should not extend selection
-  * Fixed issue #706: Integer overflow in DetermineScrollDirections when timeGetTime wraps    
+  * Fixed issue #706: Integer overflow in DetermineScrollDirections when timeGetTime wraps
+  * Fixed issue #407: TVirtualDrawTree.InvalidateNode does not clear vsHeightMeasured      
   
 V6.6 (04 Apr 2017)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo

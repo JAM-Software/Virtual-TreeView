@@ -30024,6 +30024,9 @@ function TBaseVirtualTree.InvalidateNode(Node: PVirtualNode): TRect;
 // Initiates repaint of the given node and returns the just invalidated rectangle.
 
 begin
+  Assert(Assigned(Node), 'Node must not be nil.');
+  // Reset height measured flag too to cause a re-issue of the OnMeasureItem event.
+  Exclude(Node.States, vsHeightMeasured);
   if (FUpdateCount = 0) and HandleAllocated then
   begin
     Result := GetDisplayRect(Node, NoColumn, False);
@@ -34813,14 +34816,9 @@ var
 begin
   Result := inherited InvalidateNode(Node);
   // Reset node width so changed text attributes are applied correctly.
-  if Assigned(Node) then
-  begin
-    Data := InternalData(Node);
-    if Assigned(Data) then
-      Data^ := 0;
-    // Reset height measured flag too to cause a re-issue of the OnMeasureItem event.
-    Exclude(Node.States, vsHeightMeasured);
-  end;
+  Data := InternalData(Node);
+  if Assigned(Data) then
+    Data^ := 0;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
