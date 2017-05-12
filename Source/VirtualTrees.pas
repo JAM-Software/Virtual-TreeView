@@ -505,8 +505,11 @@ type
                                // selection rectangle.
     toAlwaysSelectNode,        // If this flag is set to true, the tree view tries to always have a node selected.
                                // This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications.
-    toRestoreSelection         // Set to true if upon refill the previously selected nodes should be selected again.
+    toRestoreSelection,         // Set to true if upon refill the previously selected nodes should be selected again.
                                // The nodes will be identified by its caption only.
+    toSyncCheckboxesWithSelection  // If checkboxes are shown, they follow the change in selections. When checkboxes are
+                                   // changed, the selections follow them and vice-versa.
+                                   // **Only supported for ctCheckBox type checkboxes.
   );
   TVTSelectionOptions = set of TVTSelectionOption;
 
@@ -2333,6 +2336,7 @@ type
     function GetChildrenInitialized(Node: PVirtualNode): Boolean;
     function GetCutCopyCount: Integer;
     function GetDisabled(Node: PVirtualNode): Boolean;
+    function GetSyncCheckstateWithSelection(Node: PVirtualNode): Boolean;
     function GetDragManager: IVTDragManager;
     function GetExpanded(Node: PVirtualNode): Boolean;
     function GetFiltered(Node: PVirtualNode): Boolean;
@@ -2811,6 +2815,7 @@ type
     property TextMargin: Integer read FTextMargin write SetTextMargin default 4;
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
+    property SyncCheckstateWithSelection[Node: PVirtualNode]: Boolean read GetSyncCheckstateWithSelection;
 
     property OnAddToSelection: TVTAddToSelectionEvent read FOnAddToSelection write FOnAddToSelection;
     property OnAdvancedHeaderDraw: TVTAdvancedHeaderPaintEvent read FOnAdvancedHeaderDraw write FOnAdvancedHeaderDraw;
@@ -13399,6 +13404,17 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+// whether the sync of checkbox with selection is allowed for this node
+function TBaseVirtualTree.GetSyncCheckstateWithSelection(Node: PVirtualNode): Boolean;
+
+begin
+  Result := (toSyncCheckboxesWithSelection in FOptions.FSelectionOptions)
+            and (toCheckSupport in FOptions.FMiscOptions)
+            and Assigned(FCheckImages)
+            and (Node.CheckType = ctCheckBox);              ;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetDragManager: IVTDragManager;
 
@@ -19713,7 +19729,17 @@ procedure TBaseVirtualTree.DoCheckClick(Node: PVirtualNode; NewCheckState: TChec
 
 begin
   if ChangeCheckState(Node, NewCheckState) then
+  begin
     DoChecked(Node);
+    if SyncCheckstateWithSelection[Node] then
+    begin
+      // selection should follow check state
+      if (NewCheckState = csCheckedNormal) then
+        Selected[node] := true
+      else
+        Selected[node] := false;
+    end;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23310,10 +23336,13 @@ begin
       FLastSelectionLevel := GetNodeLevelForSelectConstraint(NewItems[0]);
     for I := 0 to NewLength - 1 do
     begin
+      //sync path note: when already selected node is clicked or selected again
       Include(NewItems[I].States, vsSelected);
       Inc(FSelectionCount);
       if Assigned(FOnAddToSelection) then
         FOnAddToSelection(Self, NewItems[I]);
+      if SyncCheckstateWithSelection[NewItems[I]] then
+        checkstate[NewItems[I]] := csCheckedNormal;
     end;
   end
   else
@@ -23332,10 +23361,13 @@ begin
         Inc(PAnsiChar(NewItems[I]))
       else
       begin
+        //sync path note: on click, multi-select ctrl-click and draw selection
         Include(NewItems[I].States, vsSelected);
-      Inc(FSelectionCount);
-      if Assigned(FOnAddToSelection) then
+        Inc(FSelectionCount);
+        if Assigned(FOnAddToSelection) then
           FOnAddToSelection(Self, NewItems[I]);
+        if SyncCheckstateWithSelection[NewItems[I]] then
+          checkstate[NewItems[I]] := csCheckedNormal;
       end;
   end;
 
@@ -23442,7 +23474,10 @@ begin
   while FSelectionCount > 0 do
   begin
     Dec(FSelectionCount);
+    //sync path note: deselect when click on another or on outside area
     Exclude(FSelection[FSelectionCount].States, vsSelected);
+    if SyncCheckstateWithSelection[FSelection[FSelectionCount]] then
+      checkstate[FSelection[FSelectionCount]] := csUncheckedNormal;
     DoRemoveFromSelection(FSelection[FSelectionCount]);
   end;
   ResetRangeAnchor;
@@ -23696,7 +23731,10 @@ begin
   // order in the list preserved.
   if FindNodeInSelection(Node, Index, -1, -1) then
   begin
+    //sync path note: deselect when overlapping drawselection is made
     Exclude(Node.States, vsSelected);
+    if SyncCheckstateWithSelection[Node] then
+      checkstate[Node] := csUncheckedNormal;
     Inc(PAnsiChar(FSelection[Index]));
     DoRemoveFromSelection(Node);
     AdviseChangeEvent(False, Node, crIgnore);
@@ -24733,6 +24771,7 @@ begin
             // vsVisible is now in the place where vsSelected was before, but every node was visible in the old version
             // so we need to fix this too.
             if vsVisible in States then
+              //sync path note: prior version stream reading, ignored for syncing
               Include(States, vsSelected)
             else
               Include(States, vsVisible);
@@ -24857,7 +24896,11 @@ begin
     if vsSelected in Node.States then
     begin
       Assert(FSelectionCount > 0, 'if one node has set the vsSelected flag, SelectionCount must be >0.');
+      //sync path note: deselect when a ctrl click removes a selection
       Exclude(Node.States, vsSelected);
+      if SyncCheckstateWithSelection[Node] then
+        checkstate[Node] := csUncheckedNormal;
+
       if FindNodeInSelection(Node, Index, -1, -1) and (Index < FSelectionCount - 1) then
         Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
       if FSelectionCount > 0 then
