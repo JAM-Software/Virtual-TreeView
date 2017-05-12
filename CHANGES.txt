@@ -8,8 +8,7 @@ V6.7: (under development)
   * Fixed issue #706: Integer overflow in DetermineScrollDirections when timeGetTime wraps
   * Fixed issue #407: TVirtualDrawTree.InvalidateNode does not clear vsHeightMeasured
   * Enhancement #669: Create sample project for C++ Builder
-  * Enhancement #708: Improve multi-selection for touch UI by adding option
-  that synchonizes selection and check-state  
+  * Enhancement #708: New option toSyncCheckboxesWithSelection improves multi-selection for touch UI that synchonizes selection and check-state  
   
 V6.6 (04 Apr 2017)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo
