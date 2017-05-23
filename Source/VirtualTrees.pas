@@ -19448,7 +19448,8 @@ begin
     end;
   end;
 
-  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) then
+  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0)
+       and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.FAutoOptions)) then
     LineImage[Indent] := ltNone;
 end;
 
