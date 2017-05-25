@@ -9,8 +9,8 @@ V6.7: (under development)
   * Fixed issue #407: TVirtualDrawTree.InvalidateNode does not clear vsHeightMeasured
   * Enhancement #669: Create sample project for C++ Builder
   * Enhancement #708: New option toSyncCheckboxesWithSelection improves multi-selection for touch UI that synchonizes selection and check-state  
-  * Fixed issue #717, changed title: toUseExplorerTheme does not draw lines
-  in place of buttons removed by toAutoHideButtons
+  * Fixed issue #717: The option toUseExplorerTheme does not draw lines in place of buttons removed by toAutoHideButtons
+  * Fixed issue #716: Tab key navigation does not work properly with Auto Span Columns
   
 V6.6 (04 Apr 2017)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo

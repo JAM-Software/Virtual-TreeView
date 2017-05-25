@@ -22,6 +22,8 @@ type
     Label1: TLabel;
     PopupMenu: TPopupMenu;
     Edit1: TMenuItem;
+    Label2: TLabel;
+    AutoSpanCheckBox: TCheckBox;
     procedure VST5BeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
       Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure VST5BeforeItemErase(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect;
@@ -42,6 +44,7 @@ type
     procedure VST5StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure VST5FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure Edit1Click(Sender: TObject);
+    procedure AutoSpanCheckBoxClick(Sender: TObject);
   end;
 
 var
@@ -125,7 +128,10 @@ begin
 
   // fill some default values
   Data.Value[0] := Variant(Node.Index);
-  Data.Value[1] := 'John';
+  if random(100) mod 3 <> 0 then
+    Data.Value[1] := 'John'
+  else
+    Data.Value[1] := 'Long First Name Auto Spanning 2 Columns';
   Data.Value[2] := 'Doe';
   // A date value slightly randomized around today. Need the way
   // using a local variable to tell the compiler we are not
@@ -143,10 +149,23 @@ end;
 
 procedure TGridForm.VST5GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: UnicodeString);
 begin
-  if Column > 0 then
-    CellText := Sender.GetNodeData<TGridData>(Node).Value[Column - 1]
+  if not AutoSpanCheckBox.Checked then
+  begin
+    //Normal code
+    if Column > 0 then
+      CellText := Sender.GetNodeData<TGridData>(Node).Value[Column - 1]
+    else
+      CellText := '';
+  end
   else
-    CellText := '';
+  begin
+    VST5.Header.Columns[0].Options := VST5.Header.Columns[1].Options - [coVisible]; //test:
+    //No text is shown for column 3 in addition to column 0 as in original code
+    if (Column > 0) and (Column <> 3) then
+      CellText := Sender.GetNodeData<TGridData>(Node).Value[Column - 1]
+    else
+      CellText := '';
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -228,5 +247,13 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TGridForm.AutoSpanCheckBoxClick(Sender: TObject);
+begin
+  if AutoSpanCheckBox.Checked then
+    VST5.TreeOptions.AutoOptions := VST5.TreeOptions.AutoOptions + [toAutoSpanColumns]
+  else
+    VST5.TreeOptions.AutoOptions := VST5.TreeOptions.AutoOptions - [toAutoSpanColumns];
+end;
 
 end.

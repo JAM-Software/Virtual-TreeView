@@ -16875,6 +16875,30 @@ var
     end;
   end;
 
+  //---------------------------------------------------------------------------
+  function isEmptyAutoSpanColumn(acolumn: TColumnIndex; anode: PVirtualNode): boolean;
+  var
+    previousColumn: Integer;
+  begin
+    result := false;
+    if (not assigned(anode))
+       or (not FHeader.UseColumns)
+       or (not (toAutoSpanColumns in FOptions.FAutoOptions))
+       or (acolumn = FHeader.MainColumn) then
+      exit;
+    with FHeader.FColumns do
+    begin
+      previousColumn := FHeader.Columns.GetPreviousVisibleColumn(acolumn);
+      if (previousColumn = InvalidColumn) //there is no previous column
+         //Any other BidiMode is not supported as already
+         //documented by original developer
+         or (Items[acolumn].BidiMode <> bdLeftToRight) then
+        exit; //returning false
+      result := ColumnIsEmpty(anode, acolumn);
+    end;
+  end;
+
+
   //--------------- end local functions ---------------------------------------
 
 begin
@@ -16973,7 +16997,13 @@ begin
                   if ActAsGrid and (toFullRowSelect in FOptions.FSelectionOptions) then
                     FocusedNode := Node;
                   if ActAsGrid and not (toFullRowSelect in FOptions.FSelectionOptions) then
+                  begin
                     FocusedColumn := NewColumn;
+                    // fix: If auto span is ON the last column may be a merged column. So take
+                    // care of selecting the whole merged column on END key.
+                    if (CharCode = VK_END) and isEmptyAutoSpanColumn(NewColumn, FFocusedNode) then
+                      FocusedColumn := getPreviousVisibleAutoSpanColumn(NewColumn, FFocusedNode);
+                  end;
                 end;
               end;
             end;
@@ -17254,8 +17284,10 @@ begin
               NewColumn := GetNextColumn(FFocusedColumn, True);
               repeat
                 // Find a column for the current node which can be focused.
-                while (NewColumn > NoColumn) and not DoFocusChanging(FFocusedNode, Node, FFocusedColumn, NewColumn) do
-                  NewColumn := GetNextColumn(NewColumn, True);
+                while (NewColumn > NoColumn) and not DoFocusChanging(FFocusedNode, Node, FFocusedColumn, NewColumn)
+                   //Fix: for Tab Key to properly skip the empty auto span column
+                   or isEmptyAutoSpanColumn(NewColumn, Node) do
+                   NewColumn := GetNextColumn(NewColumn, True);
 
                 if NewColumn > NoColumn then
                 begin
@@ -17267,6 +17299,12 @@ begin
                 // No next column was accepted for the current node. So advance to next node and try again.
                 Node := GetNextNode(Node);
                 NewColumn := GetStartColumn;
+
+				// fix: From last column, the Tab key should always go to next row irrespective of auto span
+				// Similarly the Shift-Tab key should go to previos row from first column
+                if (Node <> nil) and (NewColumn > NoColumn) then
+                  SetFocusedNodeAndColumn(Node, NewColumn);
+
               until Node = nil;
             end;
         end;
