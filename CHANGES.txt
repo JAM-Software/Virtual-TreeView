@@ -31,7 +31,7 @@ V6.6 (04 Apr 2017)
   * Fixed issue #693: TVirtualTreeAccessibility.accSelect() should handle the flag SELFLAG_EXTENDSELECTION
   * Fixed issue #690: Tree shouldn't keep selected elements, if toAlwaysSelectNode is set and other elements are selected without ctrl-modifier
   * Improved non-breaking implementation of #622: The deprecated property CheckImageKind is no longer written to DFM files, 
-    but read properly from old DFMs. Thx to the-Aroich for providing it.
+    but read properly from old DFMs. Thx to the-Arioch for providing it.
   * Some minor tweaks on Virtual TreeView source code and sample projects
 
 V6.5: (18 Jan 2017)

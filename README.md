@@ -1,13 +1,19 @@
 # Virtual-TreeView
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
 
+Homebrew fast-and-ugly XE2 backport.
+For XE1 backport consider https://github.com/sglienke/Virtual-TreeView
+
 ### Help Needed: Any volunteer that takes care about **C++ Builder** bugs and packages?
 I don't use C++ Builder and my experience with it is very limited. This makes it difficult to take care about bugs that are reported in C++ Builder and to maintain the C++ Builder packages. I would be great if someone would volunteer to do this. Please contact me at joachim.marder+CPP@gmail.com.
 
 ### Downloads
 **V6** official release for **RAD Studio XE3 to 10.1 Berlin**: [JAM Software](http://www.jam-software.com/virtual-treeview/)
 
-For a **Delphi XE2** compatible fork see: [Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2](https://github.com/Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2)
+Here - https://github.com/the-Arioch/Virtual-TreeView-XE2 - is a **Delphi XE2 fork** , aiming at source-level compatibility with XE3+ record-helpers-based approach taken by the mainstream by wrapping values into Advanced Records instead of those record-helpers, which i see being tools for ugly hacks that never should be used in RTL or regular library sources. Sadly, deficiencies of Delphi compiler (poor type inference and implicit typecasting) prevent 100% replacement, while most new code is now compiled as is and most legacy code with a brain-deadly simple change. However updates are sporadic due to lack of time.
+For some ratio (including features denied in the upstream) see: https://github.com/Virtual-TreeView/Virtual-TreeView/issues/612
+
+Another **Delphi XE2** compatible fork, using V5-style global functions instead of value methods: [Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2](https://github.com/Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2)
 
 For a **Delphi XE** compatible fork see: [sglienke/Virtual-TreeView](https://github.com/sglienke/Virtual-TreeView)
 
