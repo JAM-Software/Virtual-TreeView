@@ -32,13 +32,12 @@ type
     procedure VST5FocusChanging(Sender: TBaseVirtualTree; OldNode, NewNode: PVirtualNode; OldColumn,
       NewColumn: TColumnIndex; var Allowed: Boolean);
     procedure VST5GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
     procedure VST5InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure VST5PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType);
     procedure GridLineCheckBoxClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure VST5AfterCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       CellRect: TRect);
     procedure VST5StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
@@ -64,14 +63,6 @@ uses
 procedure TGridForm.Edit1Click(Sender: TObject);
 begin
    VST5.EditNode(VST5.GetFirstSelected, VST5.FocusedColumn);
-end;
-
-procedure TGridForm.FormCreate(Sender: TObject);
-
-begin
-  // We assign the OnGetText handler manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  VST5.OnGetText := VST5GetText;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -147,7 +138,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TGridForm.VST5GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: UnicodeString);
+procedure TGridForm.VST5GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 begin
   if not AutoSpanCheckBox.Checked then
   begin

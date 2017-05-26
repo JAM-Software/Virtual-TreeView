@@ -21,12 +21,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure ClearButtonClick(Sender: TObject);
     procedure AddButtonClick(Sender: TObject);
-    procedure VSTGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-      TextType: TVSTTextType; var Text: UnicodeString);
     procedure VSTFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure VSTInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure CloseButtonClick(Sender: TObject);
+    procedure VSTGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
   end;
 
 var
@@ -53,10 +53,6 @@ type
 procedure TMainForm.FormCreate(Sender: TObject);
 
 begin
-  // We assign the OnGetText handler manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  VST.OnGetText := VSTGetText;
-
   // Let the tree know how much data space we need.
   VST.NodeDataSize := SizeOf(TMyRec);
   // Set an initial number of nodes.
@@ -118,19 +114,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-
-procedure TMainForm.VSTGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var Text: UnicodeString);
+procedure TMainForm.VSTGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 
 var
   Data: PMyRec;
 
 begin
   // A handler for the OnGetText event is always needed as it provides the tree with the string data to display.
-  // Note that we are always using WideString.
   Data := Sender.GetNodeData(Node);
   if Assigned(Data) then
-    Text := Data.Caption;
+    CellText := Data.Caption;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

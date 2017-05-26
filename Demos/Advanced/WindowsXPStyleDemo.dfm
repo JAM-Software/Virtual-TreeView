@@ -33,9 +33,9 @@ object WindowsXPForm: TWindowsXPForm
   end
   object XPTree: TVirtualStringTree
     Left = 0
-    Top = 36
+    Top = 40
     Width = 493
-    Height = 451
+    Height = 447
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     AutoScrollDelay = 500
@@ -76,11 +76,15 @@ object WindowsXPForm: TWindowsXPForm
     TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toSimpleDrawSelection]
     OnCompareNodes = XPTreeCompareNodes
     OnFreeNode = XPTreeFreeNode
+    OnGetText = XPTreeGetText
     OnGetImageIndex = XPTreeGetImageIndex
+    OnGetHint = XPTreeGetHint
     OnHeaderClick = XPTreeHeaderClick
     OnInitChildren = XPTreeInitChildren
     OnInitNode = XPTreeInitNode
     OnStateChange = XPTreeStateChange
+    ExplicitTop = 36
+    ExplicitHeight = 451
     Columns = <
       item
         Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible]
@@ -104,14 +108,14 @@ object WindowsXPForm: TWindowsXPForm
     Left = 0
     Top = 0
     Width = 796
-    Height = 36
+    Height = 40
     AutoSize = True
     BandBorderStyle = bsNone
     Bands = <
       item
         Control = ToolBar1
         ImageIndex = -1
-        MinHeight = 34
+        MinHeight = 38
         Width = 792
       end>
     EdgeInner = esLowered
@@ -193,7 +197,7 @@ object WindowsXPForm: TWindowsXPForm
     Left = 368
     Top = 304
     Bitmap = {
-      494C010112001300080020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101120013000C0020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000080000000A000000001002000000000000040
       0100000000000000000000000000000000000000000000000000000000000000
       000000000000FBFFFF00000000000000000000000000FFFBFF00D3D6D600A7A7
@@ -2846,7 +2850,7 @@ object WindowsXPForm: TWindowsXPForm
     Left = 368
     Top = 336
     Bitmap = {
-      494C01011B001D00080018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B001D000C0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000060000000A8000000010020000000000000FC
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000C4C4C4009996970099969700D1D1

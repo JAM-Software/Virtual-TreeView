@@ -55,9 +55,9 @@ type
     procedure VST2InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure VST2InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
-    procedure VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
+    procedure VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
     procedure VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
     procedure VST2PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure VST2GetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -119,11 +119,6 @@ var
   I: Integer;
 
 begin
-  // We assign these handlers manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  VST2.OnGetText := VST2GetText;
-  VST2.OnNewText := VST2NewText;
-
   // Determine if we are running on Windows XP or higher.
   ThemeRadioGroup.Enabled := CheckWin32Version(5, 1);
   if ThemeRadioGroup.Enabled then
@@ -188,7 +183,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TGeneralForm.VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: UnicodeString);
+  TextType: TVSTTextType; var CellText: string);
 
 // Returns the text as it is stored in the nodes data record.
 
@@ -335,7 +330,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TGeneralForm.VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  Text: UnicodeString);
+  NewText: string);
 
 // The caption of a node has been changed, keep this in the node record.
 
@@ -344,7 +339,7 @@ var
 
 begin
   Data := Sender.GetNodeData(Node);
-  Data.Caption := Text;
+  Data.Caption := NewText;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

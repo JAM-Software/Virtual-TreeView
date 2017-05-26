@@ -1,9 +1,9 @@
 object NodeForm: TNodeForm
   Left = 573
   Top = 332
-  Width = 773
-  Height = 542
   Caption = 'NodeForm'
+  ClientHeight = 504
+  ClientWidth = 757
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -89,6 +89,7 @@ object NodeForm: TNodeForm
       TreeOptions.PaintOptions = [toHideFocusRect, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toMultiSelect]
       OnEditing = MLTreeEditing
+      OnGetText = MLTreeGetText
       OnPaintText = MLTreePaintText
       OnInitNode = MLTreeInitNode
       OnMeasureItem = MLTreeMeasureItem

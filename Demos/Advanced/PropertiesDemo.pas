@@ -28,17 +28,17 @@ type
     procedure VST3CreateEditor(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; out EditLink: IVTEditLink);
     procedure VST3Editing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
     procedure VST3GetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-      var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: UnicodeString);
+      var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
     procedure VST3GetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: TImageIndex);
     procedure VST3GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
     procedure VST3InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure VST3InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure VST3PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType);
-    procedure VST3IncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const Text: UnicodeString;
+    procedure VST3IncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string;
       var Result: Integer);
     procedure RadioGroup1Click(Sender: TObject);
     procedure VST3StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
@@ -66,9 +66,9 @@ procedure TPropertiesForm.FormCreate(Sender: TObject);
 begin
   // We assign these handlers manually to keep the demo source code compatible
   // with older Delphi versions after using UnicodeString instead of WideString.
-  VST3.OnGetText := VST3GetText;
-  VST3.OnGetHint := VST3GetHint;
-  VST3.OnIncrementalSearch := VST3IncrementalSearch;
+  //VST3.OnGetText := VST3GetText;
+  //VST3.OnGetHint := VST3GetHint;
+  //VST3.OnIncrementalSearch := VST3IncrementalSearch;
 
   // Always tell the tree how much data space per node it must allocated for us. We can do this here, in the
   // object inspector or in the OnGetNodeDataSize event.
@@ -116,7 +116,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TPropertiesForm.VST3GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: UnicodeString);
+  TextType: TVSTTextType; var CellText: string);
 
 var
   Data: PPropertyData;
@@ -146,7 +146,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TPropertiesForm.VST3GetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: UnicodeString);
+  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
 
 begin
   // Add a dummy hint to the normal hint to demonstrate multiline hints.
@@ -263,7 +263,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TPropertiesForm.VST3IncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const Text: UnicodeString;
+procedure TPropertiesForm.VST3IncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string;
   var Result: Integer);
 
 var
@@ -271,10 +271,7 @@ var
   PropText: string;
 
 begin
-  // Note: This code requires a proper Unicode/WideString comparation routine which I did not want to link here for
-  // size and clarity reasons. For now strings are (implicitely) converted to ANSI to make the comparation work.
-  // Search is not case sensitive.
-  S := Text;
+  S := SearchText;
   SetStatusbarText('Searching for: ' + S);
 
   if Node.Parent = Sender.RootNode then

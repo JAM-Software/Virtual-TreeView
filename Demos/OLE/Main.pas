@@ -47,14 +47,14 @@ type
     procedure CopyActionExecute(Sender: TObject);
     procedure PasteActionExecute(Sender: TObject);
     procedure Tree1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var Text: UnicodeString);
+      var CellText: string);
     procedure FormCreate(Sender: TObject);
     procedure TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
       Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
     procedure Button2Click(Sender: TObject);
     procedure TreeInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
-    procedure Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
+    procedure Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
     procedure Button3Click(Sender: TObject);
     procedure Tree2DragAllowed(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
     procedure TreeDragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState;
@@ -180,7 +180,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TMainForm.Tree1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var Text: UnicodeString);
+  var CellText: string);
 
 var
   Data: PNodeData;
@@ -189,7 +189,7 @@ begin
   if TextType = ttNormal then
   begin
     Data := Sender.GetNodeData(Node);
-    Text := Data.Caption;
+    CellText := Data.Caption;
   end
   else
     Text := '';
@@ -203,13 +203,6 @@ var
   Stream: TResourceStream;
 
 begin
-  // We assign these handlers manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  Tree1.OnGetText := Tree1GetText;
-  Tree1.OnNewText := Tree1NewText;
-  Tree2.OnGetText := Tree1GetText;
-  Tree2.OnNewText := Tree1NewText;
-
   Tree1.NodeDataSize := SizeOf(TNodeData);
   Tree1.RootNodeCount := 30;
   Tree2.NodeDataSize := SizeOf(TNodeData);
@@ -543,7 +536,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TMainForm.Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; Text: UnicodeString);
+procedure TMainForm.Tree1NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
 
 var
   Data: PNodeData;
@@ -555,7 +548,7 @@ var
 
 begin
   Data := Sender.GetNodeData(Node);
-  Data.Caption := Text;
+  Data.Caption := NewText;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

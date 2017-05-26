@@ -76,8 +76,11 @@ object PropertiesForm: TPropertiesForm
     OnCreateEditor = VST3CreateEditor
     OnEditing = VST3Editing
     OnFreeNode = VST3FreeNode
+    OnGetText = VST3GetText
     OnPaintText = VST3PaintText
     OnGetImageIndex = VST3GetImageIndex
+    OnGetHint = VST3GetHint
+    OnIncrementalSearch = VST3IncrementalSearch
     OnInitChildren = VST3InitChildren
     OnInitNode = VST3InitNode
     OnStateChange = VST3StateChange
@@ -113,7 +116,7 @@ object PropertiesForm: TPropertiesForm
     Left = 422
     Top = 224
     Bitmap = {
-      494C010112001300080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101120013000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

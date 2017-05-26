@@ -20,7 +20,7 @@ type
       var InitialStates: TVirtualNodeInitStates);
     procedure FormCreate(Sender: TObject);
     procedure MLTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-      TextType: TVSTTextType; var CellText: UnicodeString);
+      TextType: TVSTTextType; var CellText: string);
     procedure MLTreePaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType);
     procedure MLTreeEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
@@ -65,17 +65,13 @@ end;
 procedure TNodeForm.FormCreate(Sender: TObject);
 
 begin
-  // We assign the OnGetText handler manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  MLTree.OnGetText := MLTreeGetText;
-
   LoadUnicodeStrings('LoremIpsum', DemoText);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TNodeForm.MLTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: UnicodeString);
+  TextType: TVSTTextType; var CellText: string);
 
 // Returns the text for the given node. This text was loaded at form creation time from the application resource.
 

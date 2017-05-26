@@ -36,12 +36,11 @@ type
     procedure ClearButtonClick(Sender: TObject);
     procedure AddButtonClick(Sender: TObject);
     procedure VST1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
     procedure VST1Change(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure VST1StructureChange(Sender: TBaseVirtualTree; Node: PVirtualNode; Reason: TChangeReason);
     procedure DeleteSelectionButtonClick(Sender: TObject);
     procedure VST1StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
-    procedure FormCreate(Sender: TObject);
   end;
 
 var
@@ -142,7 +141,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TSpeedForm.VST1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: UnicodeString);
+  var CellText: string);
 
 begin
   CellText := Format('Level %d, Index %d', [Sender.GetNodeLevel(Node), Node.Index]);
@@ -181,16 +180,6 @@ begin
   finally
     Screen.Cursor := crDefault;
   end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TSpeedForm.FormCreate(Sender: TObject);
-
-begin
-  // We assign the OnGetText handler manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  VST1.OnGetText := VST1GetText;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

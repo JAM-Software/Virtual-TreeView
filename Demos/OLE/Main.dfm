@@ -1,9 +1,9 @@
 object MainForm: TMainForm
   Left = 1541
   Top = 196
-  Width = 798
-  Height = 602
   Caption = 'Demo for drag'#39'n drop and clipboard transfers'
+  ClientHeight = 564
+  ClientWidth = 782
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -144,7 +144,9 @@ object MainForm: TMainForm
     OnDragAllowed = Tree2DragAllowed
     OnDragOver = TreeDragOver
     OnDragDrop = TreeDragDrop
+    OnGetText = Tree1GetText
     OnInitNode = TreeInitNode
+    OnNewText = Tree1NewText
     Columns = <>
   end
   object Tree1: TVirtualStringTree
@@ -190,7 +192,9 @@ object MainForm: TMainForm
     TreeOptions.SelectionOptions = [toMultiSelect]
     OnDragOver = TreeDragOver
     OnDragDrop = TreeDragDrop
+    OnGetText = Tree1GetText
     OnInitNode = TreeInitNode
+    OnNewText = Tree1NewText
     Columns = <>
   end
   object PageControl1: TPageControl
@@ -204,6 +208,10 @@ object MainForm: TMainForm
     object RichTextTabSheet: TTabSheet
       Caption = 'Rich text'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         677
         215)
@@ -233,6 +241,10 @@ object MainForm: TMainForm
     end
     object LogTabSheet: TTabSheet
       Caption = 'Drag'#39'n drop operation log'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         677
         215)
@@ -275,6 +287,10 @@ object MainForm: TMainForm
     object TabSheet2: TTabSheet
       Caption = 'More info'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label4: TLabel
         Left = 12
         Top = 52
@@ -377,7 +393,7 @@ object MainForm: TMainForm
     Left = 706
     Top = 212
     Bitmap = {
-      494C010112001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101120013000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

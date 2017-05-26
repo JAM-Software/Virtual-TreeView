@@ -1,10 +1,10 @@
 object MainForm: TMainForm
   Left = 717
   Top = 268
-  Width = 425
-  Height = 481
   BiDiMode = bdLeftToRight
   Caption = 'Simple Virtual Treeview demo'
+  ClientHeight = 443
+  ClientWidth = 409
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -58,8 +58,8 @@ object MainForm: TMainForm
     TreeOptions.PaintOptions = [toShowButtons, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toMultiSelect]
     OnFreeNode = VSTFreeNode
+    OnGetText = VSTGetText
     OnInitNode = VSTInitNode
-    ExplicitWidth = 381
     Columns = <
       item
         Position = 0
@@ -94,7 +94,7 @@ object MainForm: TMainForm
     Height = 21
     Anchors = [akLeft, akBottom]
     TabOrder = 3
-    Text = '1'
+    Text = '3'
   end
   object Button1: TButton
     Tag = 1

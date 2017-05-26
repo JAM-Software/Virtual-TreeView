@@ -32,7 +32,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
     procedure VST3Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
     procedure VST2InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure VST2Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
@@ -42,7 +42,7 @@ type
       var Accept: Boolean);
     procedure Splitter2Paint(Sender: TObject);
     procedure VST1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
     procedure FormShow(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure VST3FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -106,12 +106,6 @@ var
   Data1, Data2: PLinkData;
 
 begin
-  // We assign the OnGetText handlers manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  VST1.OnGetText := VST1GetText;
-  VST2.OnGetText := VST2GetText;
-  VST3.OnGetText := VST2GetText;
-
   Randomize;
   VST1.RootNodeCount := 5;
 
@@ -175,7 +169,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVisibilityForm.VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: UnicodeString);
+  TextType: TVSTTextType; var CellText: string);
 
 var
   Data: PLinkData;

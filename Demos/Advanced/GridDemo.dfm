@@ -10,7 +10,6 @@ object GridForm: TGridForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnCreate = FormCreate
   DesignSize = (
     745
     474)
@@ -114,10 +113,10 @@ object GridForm: TGridForm
     OnCreateEditor = VST5CreateEditor
     OnFocusChanging = VST5FocusChanging
     OnFreeNode = VST5FreeNode
+    OnGetText = VST5GetText
     OnPaintText = VST5PaintText
     OnInitNode = VST5InitNode
     OnStateChange = VST5StateChange
-    ExplicitHeight = 354
     Columns = <
       item
         Color = clWindow
@@ -176,7 +175,7 @@ object GridForm: TGridForm
     Left = 22
     Top = 36
     Bitmap = {
-      494C010112001300240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001300280010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       000000000000000000000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF

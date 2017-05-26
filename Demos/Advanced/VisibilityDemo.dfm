@@ -4165,6 +4165,7 @@ object VisibilityForm: TVisibilityForm
       OnCollapsed = VSTCollapsedExpanded
       OnExpanded = VSTCollapsedExpanded
       OnFreeNode = VST2FreeNode
+      OnGetText = VST2GetText
       OnInitChildren = VST2InitChildren
       OnInitNode = VST1InitNode
       OnScroll = VST2Scroll
@@ -8219,6 +8220,7 @@ object VisibilityForm: TVisibilityForm
       OnCollapsed = VSTCollapsedExpanded
       OnExpanded = VSTCollapsedExpanded
       OnFreeNode = VST3FreeNode
+      OnGetText = VST2GetText
       OnInitChildren = VST2InitChildren
       OnInitNode = VST1InitNode
       OnScroll = VST3Scroll
@@ -8280,6 +8282,7 @@ object VisibilityForm: TVisibilityForm
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons]
     TreeOptions.SelectionOptions = [toMultiSelect]
     OnFreeNode = VST1FreeNode
+    OnGetText = VST1GetText
     OnInitChildren = VST1InitChildren
     OnInitNode = VST1InitNode
     Columns = <>

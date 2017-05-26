@@ -30,7 +30,7 @@ type
     procedure HeaderCustomDrawTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure HeaderCustomDrawTreeGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UnicodeString);
+      var CellText: string);
   private
     FBackBitmap1,
     FBackBitmap2,
@@ -233,10 +233,6 @@ end;
 procedure THeaderOwnerDrawForm.FormCreate(Sender: TObject);
 
 begin
-  // We assign the OnGetText handler manually to keep the demo source code compatible
-  // with older Delphi versions after using UnicodeString instead of WideString.
-  HeaderCustomDrawTree.OnGetText := HeaderCustomDrawTreeGetText;
-
   FBackBitmap1 := TBitmap.Create;
   FBackBitmap1.PixelFormat := pf32Bit;
   FBackBitmap2 := TBitmap.Create;
@@ -299,7 +295,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure THeaderOwnerDrawForm.HeaderCustomDrawTreeGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-  Column: TColumnIndex; TextType: TVSTTextType; var CellText: UnicodeString);
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 
 begin
   CellText := 'Some simple text.';

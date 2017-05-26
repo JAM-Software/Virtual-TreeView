@@ -11,6 +11,7 @@ V6.7: (under development)
   * Enhancement #708: New option toSyncCheckboxesWithSelection improves multi-selection for touch UI that synchonizes selection and check-state  
   * Fixed issue #717: The option toUseExplorerTheme does not draw lines in place of buttons removed by toAutoHideButtons
   * Fixed issue #716: Tab key navigation does not work properly with Auto Span Columns
+  * Fixed issue #720: A review of all Demos is needed to fix GetText, GetHint, etc to assign in DFM instead of assigning in FormCreate
   
 V6.6 (04 Apr 2017)
   * Fixed issue #705: Added support for RAD Studio 10.2 Tokyo
