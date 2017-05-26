@@ -2479,6 +2479,7 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+    procedure WMWindowPosChanged(var Message: TWMWindowPosChanged); message WM_WINDOWPOSCHANGED;
     function GetRangeX: Cardinal;
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
@@ -18239,6 +18240,45 @@ begin
       SetOffsetY(0);
   end;
   Message.Result := 0;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.WMWindowPosChanged(var Message: TWMWindowPosChanged);
+const
+  Flags = SWP_NOMOVE or SWP_NOOWNERZORDER or SWP_NOSIZE or SWP_NOZORDER;
+var
+  SavedConstraints: TSizeConstraints;
+begin
+  // TVTHeader.RescaleHeader calls TVTHeader.RecalculateHeader which triggers the WM_WINDOWPOSCHANGED
+  // message with "no change" flags set so that only the non client area is recomputed.
+  // Unfortunately, inside TControl.WMWindowPosChanged there is a code that changes the constraints
+  // values to the current size of the control, thus overriding what has been set for those properties
+  // at design time.
+  // If those conditions are met:
+  //   - tree is inside a frame that is created at runtime and not visible immediately
+  //   - tree has minheight/width constraints that conflict with other parts constraint
+  // then the tree constraints will be set to very small values instead of resizing the frame.
+  // To overcome this, we save the constraints and restore them afterwards
+  if (hsScaling in Header.FStates) and
+    (Message.WindowPos <> nil) and
+    (Message.WindowPos.Flags and Flags = Flags) then
+  begin
+    SavedConstraints := TSizeConstraints.Create(nil);
+    try
+      SavedConstraints.Assign(Constraints);
+
+      inherited;
+
+      Constraints := SavedConstraints;
+    finally
+      SavedConstraints.Free;
+    end;
+  end
+  else
+  begin
+    inherited;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
