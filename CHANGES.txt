@@ -1,4 +1,4 @@
-V6.7: (under development)
+V6.7: (29 May 2017)
   * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream
   * Fixed issue #500: Issue with node selection "from code" for disabled nodes with toLevelSelectConstraint option  
   * Fixed issue #499: Incorrect behavior with toLevelSelectConstraint and ctrl+A 
