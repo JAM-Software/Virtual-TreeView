@@ -13,7 +13,9 @@ For a **Delphi XE** compatible fork see: [sglienke/Virtual-TreeView](https://git
 
 **V5.5.3** for **Delphi 7 to XE2**: [Download](http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip)
 
-**V6 latest unstable version**: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip)
+**V6 latest stable version** with Windows XP/2003 support: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V6_stable.zip)
+
+**V7 unstable version** (untested on Windows XP/2003): [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/master.zip)
 
 For installation instruction see the "INSTALL.TXT" file in the ZIP. [Delphinus](http://memnarch.bplaced.net/blog/2015/08/delphinus-packagemanager-for-delphi-xe-and-newer/)-Support was added.
 
