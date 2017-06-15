@@ -1,3 +1,6 @@
+V7.0: (Under development)
+  * Fixed issue #722: Simplify custom header drawing while keeping default drawing
+
 V6.7: (29 May 2017)
   * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream
   * Fixed issue #500: Issue with node selection "from code" for disabled nodes with toLevelSelectConstraint option  

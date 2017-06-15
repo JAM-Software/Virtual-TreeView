@@ -1446,7 +1446,10 @@ type
     hpeDropMark,
     hpeHeaderGlyph,
     hpeSortGlyph,
-    hpeText
+    hpeText,
+    // New in 7.0: Use this in FOnHeaderDrawQueryElements and OnAdvancedHeaderDraw
+    // for additional custom header drawing while keeping the default drawing
+    hpeOverlay 
   );
 
   // Various events must be handled at different places than they were initiated or need
@@ -9361,7 +9364,7 @@ var
 
         // Advanced owner draw allows to paint elements, which would normally not be painted (because of space
         // limitations, empty captions etc.).
-        ActualElements := RequestedElements * [hpeHeaderGlyph, hpeSortGlyph, hpeDropMark, hpeText];
+        ActualElements := RequestedElements * [hpeHeaderGlyph, hpeSortGlyph, hpeDropMark, hpeText, hpeOverlay];
 
         // main glyph
         FHasImage := False;
