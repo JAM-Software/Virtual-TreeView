@@ -20320,7 +20320,8 @@ begin
     FFocusedNode := nil;
   if Node = FNextNodeToSelect then
     FNextNodeToSelect := Node.Parent;
-
+  if Node = FLastHitInfo.HitNode then
+    FLastHitInfo.HitNode := nil;
   // fire event
   if Assigned(FOnFreeNode) and ([vsInitialized, vsOnFreeNodeCallRequired] * Node.States <> []) then
     FOnFreeNode(Self, Node);
