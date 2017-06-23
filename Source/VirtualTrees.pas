@@ -14652,6 +14652,7 @@ begin
     if Node = nil then
       Node := FRoot;
 
+    Assert(GetCurrentThreadId = MainThreadId, 'UI controls may only be chnaged in UI thread.');
     if NewChildCount = 0 then
       DeleteChildren(Node)
     else
