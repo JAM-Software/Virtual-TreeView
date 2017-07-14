@@ -23227,6 +23227,19 @@ begin
         DoInitNode(nil, Node, InitStates)
       else
         DoInitNode(Parent, Node, InitStates);
+
+      // Fix: Any parent check state must be propagated here.
+	    // Because the CheckType is normally set in DoInitNode
+      // by the App.
+      if Node.CheckType in [ctTriStateCheckBox] then
+      begin
+        if ((Node.Parent.CheckState = csCheckedNormal)
+             or (Node.Parent.CheckState = csUncheckedNormal))
+            and (not Node.CheckState.IsDisabled())
+            and (Node.CheckState <> Node.Parent.CheckState) then
+          SetCheckState(Node, Node.Parent.CheckState);
+      end;
+
       if ivsDisabled in InitStates then
         Include(States, vsDisabled);
       if ivsHasChildren in InitStates then

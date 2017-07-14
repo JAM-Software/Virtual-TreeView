@@ -1,5 +1,6 @@
 V7.0: (Under development)
   * Fixed issue #722: Simplify custom header drawing while keeping default drawing
+  * Fixed issue #467: Multi level checkboxes and BeginUpdate/EndUpdate issue
 
 V6.7: (29 May 2017)
   * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream
