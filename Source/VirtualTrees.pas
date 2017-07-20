@@ -2394,6 +2394,7 @@ type
     procedure SetFullyVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetHasChildren(Node: PVirtualNode; Value: Boolean);
     procedure SetHeader(const Value: TVTHeader);
+    procedure SetHotNode(Value: PVirtualNode);
     procedure SetFiltered(Node: PVirtualNode; Value: Boolean);
     procedure SetImages(const Value: TCustomImageList);
     procedure SetIndent(Value: Cardinal);
@@ -3167,7 +3168,7 @@ type
     property FullyVisible[Node: PVirtualNode]: Boolean read GetFullyVisible write SetFullyVisible;
     property HasChildren[Node: PVirtualNode]: Boolean read GetHasChildren write SetHasChildren;
     property Header: TVTHeader read FHeader write SetHeader;
-    property HotNode: PVirtualNode read FCurrentHotNode;
+    property HotNode: PVirtualNode read FCurrentHotNode write SetHotNode;
     property IsDisabled[Node: PVirtualNode]: Boolean read GetDisabled write SetDisabled;
     property IsEffectivelyFiltered[Node: PVirtualNode]: Boolean read GetEffectivelyFiltered;
     property IsEffectivelyVisible[Node: PVirtualNode]: Boolean read GetEffectivelyVisible;
@@ -14958,6 +14959,15 @@ procedure TBaseVirtualTree.SetHeader(const Value: TVTHeader);
 begin
   FHeader.Assign(Value);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetHotNode(Value: PVirtualNode);
+
+begin
+  FCurrentHotNode := Value;
+end;
+
 
 //----------------------------------------------------------------------------------------------------------------------
 
