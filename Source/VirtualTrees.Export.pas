@@ -1,4 +1,4 @@
-unit VirtualTrees.Export;
+﻿unit VirtualTrees.Export;
 
 {$WARN UNSAFE_CODE OFF}
 {$WARN IMPLICIT_STRING_CAST OFF}
@@ -6,9 +6,9 @@ unit VirtualTrees.Export;
 
 interface
 
-uses Winapi.Windows, System.SysUtils, Vcl.Graphics, System.Classes, Vcl.Forms,
-     Vcl.Controls, System.StrUtils, System.Generics.Collections,
-     VirtualTrees, VirtualTrees.Classes;
+uses Winapi.Windows,
+     VirtualTrees,
+     VirtualTrees.Classes;
 
 function ContentToHTML(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Caption: string = ''): String;
 function ContentToRTF(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType): RawByteString;
@@ -19,7 +19,14 @@ procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSource
 implementation
 
 uses
-  UITypes;
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  System.Classes,
+  System.SysUtils,
+  System.StrUtils,
+  System.Generics.Collections,
+  System.UITypes;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree)
