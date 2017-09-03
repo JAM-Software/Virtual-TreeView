@@ -1,4 +1,5 @@
 V7.0: (Under development)
+  * Fixed issue #726: Incorrect header hot painting
   * Fixed issue #722: Simplify custom header drawing while keeping default drawing
   * Fixed issue #467: Multi level checkboxes and BeginUpdate/EndUpdate issue
   * Fixed issue #391: Change property HotNode: Add a setter 

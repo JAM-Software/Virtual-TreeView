@@ -10891,7 +10891,7 @@ begin
         FStates := FStates - [hsDragging, hsDragPending,
                               hsColumnWidthTracking, hsColumnWidthTrackPending,
                               hsHeightTracking, hsHeightTrackPending];
-      end;
+      end;// WM_NCLBUTTONUP
     // hovering, mouse leave detection
     WM_NCMOUSEMOVE:
       with TWMNCMouseMove(Message), FColumns do
@@ -11501,7 +11501,7 @@ begin
 
       // Expressed in client coordinates (because RedrawWindow wants them so, they will actually become negative).
       MapWindowPoints(0, Handle, R, 2);
-      RedrawWindow(Handle, @R, 0, RDW_FRAME or RDW_INVALIDATE or RDW_VALIDATE or RDW_NOINTERNALPAINT or
+      RedrawWindow(Handle, @R, 0, RDW_FRAME or RDW_INVALIDATE or RDW_UPDATENOW or RDW_VALIDATE or RDW_NOINTERNALPAINT or
         RDW_NOERASE or RDW_NOCHILDREN);
     end;
 end;
