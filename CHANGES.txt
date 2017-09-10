@@ -1,9 +1,11 @@
 V7.0: (Under development)
+  * Fixed issue #397: Horizontal autoscroll on focus does not properly scroll node into view if column width is larger than client width  
   * Fixed issue #727: Header not repainted after loading from stream
   * Fixed issue #726: Incorrect header hot painting
   * Fixed issue #722: Simplify custom header drawing while keeping default drawing
   * Fixed issue #467: Multi level checkboxes and BeginUpdate/EndUpdate issue
   * Fixed issue #391: Change property HotNode: Add a setter 
+  * Removed flag toDisableAutoscrollOnFocus from default configuration of a new Virtual TreeView to achieve a more common behavior with default properties.
 
 V6.7: (29 May 2017)
   * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream
