@@ -80,7 +80,7 @@ const
   VTVersion = '6.7.0';
 
 const
-  VTTreeStreamVersion = 2;
+  VTTreeStreamVersion = 3;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
   CacheThreshold = 2000;        // Number of nodes a tree must at least have to start caching and at the same
@@ -24813,8 +24813,19 @@ function TBaseVirtualTree.ReadChunk(Stream: TStream; Version: Integer; Node: PVi
 // The function handles the base and user chunks, any other chunk is marked as being unknown (result becomes False)
 // and skipped. descendants may handle them by overriding this method.
 // Returns True if the chunk could be handled, otherwise False.
+type
+  TAdvancedVersion2Identifier = packed record
+    ChildCount,
+    NodeHeight: Cardinal;
+    States: Word;
+    Align: Byte;
+    CheckState: TCheckState;
+    CheckType: TCheckType;
+    Reserved: Cardinal;
+  end;
 
 var
+  IdBody: TAdvancedVersion2Identifier;
   ChunkBody: TBaseChunkBody;
   Run: PVirtualNode;
   LastPosition: Integer;
@@ -24824,29 +24835,54 @@ begin
     BaseChunk:
       begin
         // Load base chunk's body (chunk header has already been consumed).
-        if Version > 1 then
-          Stream.Read(ChunkBody, SizeOf(ChunkBody))
-        else
-        begin
-          with ChunkBody do
-          begin
-            // In version prior to 2 there was a smaller chunk body. Hence we have to read it entry by entry now.
-            Stream.Read(ChildCount, SizeOf(ChildCount));
-            Stream.Read(NodeHeight, SizeOf(NodeHeight));
-            // TVirtualNodeStates was a byte sized type in version 1.
-            States := [];
-            Stream.Read(States, SizeOf(Byte));
-            // vsVisible is now in the place where vsSelected was before, but every node was visible in the old version
-            // so we need to fix this too.
-            if vsVisible in States then
-              //sync path note: prior version stream reading, ignored for syncing
-              Include(States, vsSelected)
-            else
-              Include(States, vsVisible);
-            Stream.Read(Align, SizeOf(Align));
-            Stream.Read(CheckState, SizeOf(CheckState));
-            Stream.Read(CheckType, SizeOf(CheckType));
-          end;
+        case Version of
+          1:
+            begin
+              with ChunkBody do
+              begin
+                // In version prior to 2 there was a smaller chunk body. Hence we have to read it entry by entry now.
+                Stream.Read(ChildCount, SizeOf(ChildCount));
+                Stream.Read(NodeHeight, SizeOf(NodeHeight));
+                // TVirtualNodeStates was a byte sized type in version 1.
+                States := [];
+                Stream.Read(States, SizeOf(Byte));
+                // vsVisible is now in the place where vsSelected was before, but every node was visible in the old version
+                // so we need to fix this too.
+                if vsVisible in States then
+                  //sync path note: prior version stream reading, ignored for syncing
+                  Include(States, vsSelected)
+                else
+                  Include(States, vsVisible);
+                Stream.Read(Align, SizeOf(Align));
+                Stream.Read(CheckState, SizeOf(CheckState));
+                Stream.Read(CheckType, SizeOf(CheckType));
+              end;
+            end;
+          2:
+            begin
+              ZeroMemory(@IdBody, SizeOf(IdBody));
+              Stream.Read(IdBody, SizeOf(IdBody));
+              // If Align is greater than zero, we have a stream prior to VT version 6.2
+              if IdBody.Align > 0 then
+                with ChunkBody do
+                begin
+                  ChildCount := IdBody.ChildCount;
+                  NodeHeight := IdBody.NodeHeight;
+                  States := [];
+                  Move(IdBody.States, States, SizeOf(IdBody.States));
+                  CheckState := IdBody.CheckState;
+                  CheckType := IdBody.CheckType;
+                  Reserved := IdBody.Reserved;
+                end
+              else
+                begin
+                  // Stream is compatible with current size of TBaseChunkBody
+                  Stream.Position := Stream.Position - SizeOf(IdBody);
+                  Stream.Read(ChunkBody, SizeOf(ChunkBody));
+                end;
+            end;
+          3:
+            Stream.Read(ChunkBody, SizeOf(ChunkBody));
         end;
 
         with Node^ do
