@@ -17617,12 +17617,16 @@ var
 
 begin
   DoStateChange([tsLeftDblClick]);
-  inherited;
-
-  // get information about the hit
-  GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
-  HandleMouseDblClick(Message, HitInfo);
-  DoStateChange([], [tsLeftDblClick]);
+  try
+    // get information about the hit
+    inherited;
+    if HandleAllocated then begin // If the double click event handler closed the form, we will get exceptions in the code below
+      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+      HandleMouseDblClick(Message, HitInfo);
+    end;
+  finally
+    DoStateChange([], [tsLeftDblClick]);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
