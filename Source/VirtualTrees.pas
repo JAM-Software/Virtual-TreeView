@@ -34442,6 +34442,8 @@ begin
     // Determine main text direction as well as other text properties.
     TextOutFlags := ETO_CLIPPED or RTLFlag[PaintInfo.BidiMode <> bdLeftToRight];
     lEventArgs := TVSTGetCellTextEventArgs.Create(PaintInfo.Node, PaintInfo.Column);
+
+    lEventArgs.CellText := FDefaultText;
     DoGetText(lEventArgs);
 
     // Paint the normal text first...
