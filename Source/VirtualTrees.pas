@@ -1042,6 +1042,7 @@ type
     procedure SaveToStream(const Stream: TStream);
     function UseRightToLeftReading: Boolean;
 
+    property CaptionText: string read FCaptionText;
     property Left: Integer read GetLeft;
     property Owner: TVirtualTreeColumns read GetOwner;
   published
@@ -1049,7 +1050,6 @@ type
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode stored IsBiDiModeStored;
     property CaptionAlignment: TAlignment read GetCaptionAlignment write SetCaptionAlignment
       stored IsCaptionAlignmentStored default taLeftJustify;
-    property CaptionText: string read FCaptionText stored False;
     property CheckType: TCheckType read FCheckType write SetCheckType default ctCheckBox;
     property CheckState: TCheckState read FCheckState write SetCheckState default csUncheckedNormal;
     property CheckBox: Boolean read FCheckBox write SetCheckBox default False;
