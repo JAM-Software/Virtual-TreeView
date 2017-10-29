@@ -39,7 +39,6 @@
         <DCC_RangeChecking>true</DCC_RangeChecking>
         <VerInfo_Keys>FileVersion=1.0.0.0</VerInfo_Keys>
         <VerInfo_Locale>1031</VerInfo_Locale>
-        <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
         <DCC_E>false</DCC_E>
         <DCC_UsePackage>C:\windows\microsoft.net\framework\v1.1.4322\system.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.data.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.drawing.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.windows.forms.dll;C:\windows\microsoft.net\framework\v1.1.4322\system.xml.dll;vcl;rtl;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_MinStackSize>4096</DCC_MinStackSize>
@@ -48,8 +47,6 @@
         <DCC_N>true</DCC_N>
         <DCC_K>false</DCC_K>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
-        <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
         <DCC_S>false</DCC_S>
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_UnitSearchPath>..\..\Source;..\..\Common;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
