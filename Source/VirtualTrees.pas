@@ -1593,7 +1593,7 @@ type
     etCustom // supported by external tools
   );
 
-  TVTNodeExportEvent   = function (Sender: TBaseVirtualTree; aExportType: TVTExportType; Node: PVirtualNode): Boolean of object;
+  TVTNodeExportEvent   = procedure (Sender: TBaseVirtualTree; aExportType: TVTExportType; Node: PVirtualNode) of object;
   TVTColumnExportEvent = procedure (Sender: TBaseVirtualTree; aExportType: TVTExportType; Column: TVirtualTreeColumn) of object;
   TVTTreeExportEvent   = procedure(Sender: TBaseVirtualTree; aExportType: TVTExportType) of object;
 

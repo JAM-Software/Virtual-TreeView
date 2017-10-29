@@ -305,11 +305,12 @@ begin
     Run := Save;
     while Assigned(Run) and not CrackTree.OperationCanceled do
     begin
-      if ((not CrackTree.CanExportNode(Run)) or (Assigned(CrackTree.OnBeforeNodeExport) and (not CrackTree.OnBeforeNodeExport(CrackTree, etHTML, Run)))) then
+      if ((not CrackTree.CanExportNode(Run)) or Assigned(CrackTree.OnBeforeNodeExport)) then
       begin
         Run := GetNextNode(Run);
         Continue;
       end;
+      CrackTree.OnBeforeNodeExport(CrackTree, etHTML, Run);
       Level := CrackTree.GetNodeLevel(Run);
       Buffer.Add(' <tr class="default">');
       Buffer.AddNewLine;
@@ -678,12 +679,12 @@ begin
     Run := Save;
     while Assigned(Run) and not CrackTree.OperationCanceled do
     begin
-      if ((not CrackTree.CanExportNode(Run)) or
-         (Assigned(CrackTree.OnBeforeNodeExport) and (not CrackTree.OnBeforeNodeExport(CrackTree, etRTF, Run)))) then
+      if ((not CrackTree.CanExportNode(Run)) or Assigned(CrackTree.OnBeforeNodeExport)) then
       begin
         Run := GetNextNode(Run);
         Continue;
       end;
+      CrackTree.OnBeforeNodeExport(CrackTree, etRTF, Run);
       I := 0;
       while not RenderColumns or (I < Length(Columns)) do
       begin
