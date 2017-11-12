@@ -568,13 +568,13 @@ type
   TVTElement = (
     ofsControlMargin,
     ofsNodeIndent,
-    ofsTreeLine,
     ofsToggleButton,
     ofsCheckBox,
     ofsStateImage,
     ofsImage,
-    ofsText,
-    ofsEndOfFirstColumn);
+    ofsLabel,
+    ofsEndOfClientArea // The end of the paint area
+  );
 
   /// An array that can be used to calculate the offsets ofthe elements in the tree.
   TVTOffsets = array [TVTElement] of integer;
@@ -2090,6 +2090,8 @@ type
     FCustomCheckImages: TCustomImageList;        // application defined check images
     FCheckImageKind: TCheckImageKind;            // light or dark, cross marks or tick marks
     FCheckImages: TCustomImageList;              // Reference to global image list to be used for the check images.
+    //TODO: Use this margin for other images as well
+    FImagesMargin: Integer;                      // The margin used left and right of the checkboxes.
     FImageChangeLink,
     FStateChangeLink,
     FCustomCheckChangeLink: TChangeLink;         // connections to the image lists
@@ -12276,6 +12278,7 @@ begin
   FDefaultPasteMode := amAddChildLast;
   FMargin := 4;
   FTextMargin := 4;
+  FImagesMargin := 2;
   FLastDragEffect := DROPEFFECT_NONE;
   FDragType := dtOLE;
   FDragHeight := 350;
@@ -12720,7 +12723,7 @@ begin
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   if WithCheck then
-    CheckOffset := FCheckImages.Width + 2
+    CheckOffset := FCheckImages.Width + FImagesMargin
   else
     CheckOffset := 0;
   AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
@@ -12889,7 +12892,7 @@ begin
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   if WithCheck then
-    CheckOffset := FCheckImages.Width + 2
+    CheckOffset := FCheckImages.Width + FImagesMargin
   else
     CheckOffset := 0;
   AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
@@ -13565,10 +13568,27 @@ begin
   pOffsets[TVTElement.ofsNodeIndent] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
   if pElement = TVTElement.ofsNodeIndent then
     exit;
-  raise ENotImplemented.Create('TBaseVirtualTree.GetOffsets() is not yet fully implementd. Issue #373.');
-//  pOffsets[TVTElement.ofsTreeLine] := 0;
-//  pOffsets[TVTElement.ofsToggleButton] := 0;
-//  pOffsets[TVTElement.ofsCheckBox] := 0;
+  // toggle buttons
+  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsNodeIndent] + Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
+  // checkbox
+  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) then
+    pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsNodeIndent] + Integer(fIndent); // The area in which the toggle buttons are painted must have exactly the size of one indent level
+  if pElement <= TVTElement.ofsCheckBox then
+    exit;
+  // state image
+  pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width;
+  if pElement = TVTElement.ofsStateImage then
+    exit;
+  // normal image
+  pOffsets[TVTElement.ofsImage] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikState).cx;
+  if pElement = TVTElement.ofsImage then
+    exit;
+  // label
+  pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikNormal).cx + FTextMargin;
+  // end of client area
+  pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
+  //TODO: support BiDi
+  //TODO: Use this methodin GetDisplayRect(), DetermineHitPositionLTR(), GetMaxRightExtend,PaintTree()...
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -18751,6 +18771,9 @@ begin
         FHeader.ChangeScale(M, D);
         SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
         Indent := MulDiv(Indent, M, D);
+        FTextMargin := MulDiv(FTextMargin, M, D);
+        FMargin := MulDiv(FMargin, M, D);
+        FImagesMargin := MulDiv(FImagesMargin, M, D);
         // Scale also node heights
         Run := GetFirstInitialized;
         while Assigned(Run) do
@@ -19225,7 +19248,7 @@ begin
       // Check support is only available for the main column.
       if MainColumnHit and (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and
         (HitInfo.HitNode.CheckType <> ctNone) then
-        Inc(ImageOffset, FCheckImages.Width + 2);
+        Inc(ImageOffset, FCheckImages.Width + FImagesMargin);
 
       if MainColumnHit and (Offset < ImageOffset) then
       begin
@@ -19360,7 +19383,7 @@ begin
       // Check support is only available for the main column.
       if MainColumnHit and (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and
         (HitInfo.HitNode.CheckType <> ctNone) then
-        Dec(ImageOffset, FCheckImages.Width + 2);
+        Dec(ImageOffset, FCheckImages.Width + FImagesMargin);
 
       if MainColumnHit and (Offset > ImageOffset) then
       begin
@@ -22265,7 +22288,7 @@ begin
   Inc(NodeLeft, GetImageSize(Node, TVTImageKind.ikNormal).cx);
   WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
   if WithCheck then
-    CheckOffset := FCheckImages.Width + 2
+    CheckOffset := FCheckImages.Width + FImagesMargin
   else
     CheckOffset := 0;
 
@@ -27456,7 +27479,7 @@ begin
       if toShowRoot in FOptions.FPaintOptions then
         Inc(Offset, FIndent);
       if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (Node.CheckType <> ctNone) then
-        Inc(Offset, FCheckImages.Width + 2);
+        Inc(Offset, FCheckImages.Width + FImagesMargin);
     end;
     // Consider associated images.
     Inc(Offset, GetImageSize(Node, TVTImageKind.ikState, Column).cx);
@@ -28312,7 +28335,7 @@ begin
 
     WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
     if Assigned(FCheckImages) then
-      CheckOffset := FCheckImages.Width + 2
+      CheckOffset := FCheckImages.Width + FImagesMargin
     else
       CheckOffset := 0;
 
