@@ -564,6 +564,23 @@ type
   );
   TVTOperationKinds = set of TVTOperationKind;
 
+  // content elements of the control from left to right, used when calculatin left margins.
+  TVTElement = (
+    ofsControlMargin,
+    ofsNodeIndent,
+    ofsTreeLine,
+    ofsToggleButton,
+    ofsCheckBox,
+    ofsStateImage,
+    ofsImage,
+    ofsText,
+    ofsEndOfFirstColumn);
+
+  /// An array that can be used to calculate the offsets ofthe elements in the tree.
+  TVTOffsets = array [TVTElement] of integer;
+
+
+
 const
   DefaultPaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
   DefaultAnimationOptions = [];
@@ -3053,6 +3070,8 @@ type
     function GetFirstSelectedNodeData<T>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetNodeLevelForSelectConstraint(Node: PVirtualNode): integer;
+    function GetOffset(pElement: TVTElement; pNode: PVirtualNode): integer;
+    procedure GetOffsets(pElement: TVTElement; pNode: PVirtualNode; out pOffsets: TVTOffsets);
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -13520,6 +13539,37 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetOffset(pElement: TVTElement; pNode: PVirtualNode): integer;
+// Calculates the offset of the given element
+var
+  lOffsets: TVTOffsets;
+begin
+  GetOffsets(pElement, pNode, lOffsets);
+  Exit(lOffsets[pElement]);
+end;
+
+procedure TBaseVirtualTree.GetOffsets(pElement: TVTElement; pNode: PVirtualNode; out pOffsets: TVTOffsets);
+// Calculates the offset up to the given element and supplies them in an array.
+var
+  lNodeLevel: Integer;
+begin
+  // Left Margin
+  pOffsets[TVTElement.ofsControlMargin] := FMargin;
+  if pElement = ofsControlMargin then
+    exit;
+  // plus Indent
+  lNodeLevel := GetNodeLevel(pNode);
+  if toShowRoot in FOptions.FPaintOptions then
+    Inc(lNodeLevel);
+  pOffsets[TVTElement.ofsNodeIndent] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
+  if pElement = TVTElement.ofsNodeIndent then
+    exit;
+  raise ENotImplemented.Create('TBaseVirtualTree.GetOffsets() is not yet fully implementd. Issue #373.');
+//  pOffsets[TVTElement.ofsTreeLine] := 0;
+//  pOffsets[TVTElement.ofsToggleButton] := 0;
+//  pOffsets[TVTElement.ofsCheckBox] := 0;
+end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
 
