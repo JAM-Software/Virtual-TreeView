@@ -17,7 +17,7 @@ type
     procedure CancelValidation(Tree: TBaseVirtualTree);
     procedure Execute; override;
   public
-    constructor Create(CreateSuspended: Boolean);
+    constructor Create();
     destructor Destroy; override;
 
     procedure AddTree(Tree: TBaseVirtualTree);
@@ -32,7 +32,7 @@ procedure ReleaseThreadReference(Tree: TBaseVirtualTree);
 
 
 var
-  WorkerThread: TWorkerThread;
+  WorkerThread: TWorkerThread = nil;
   WorkEvent: THandle;
 
 
@@ -59,7 +59,7 @@ begin
       RaiseLastOSError;
 
     // Create worker thread, initialize it and send it to its wait loop.
-    WorkerThread := TWorkerThread.Create(False);
+    WorkerThread := TWorkerThread.Create();
   end;
   Inc(WorkerThread.FRefCount);
 end;
@@ -78,12 +78,9 @@ begin
 
     if WorkerThread.FRefCount = 0 then
     begin
-      with WorkerThread do
-      begin
-        Terminate;
-        SetEvent(WorkEvent);
-      end;
-      FreeAndNil(WorkerThread);
+      WorkerThread.Terminate();
+      SetEvent(WorkEvent);
+      WorkerThread := nil; //Will be freed usinf TThreaf.FreeOnTerminate
       CloseHandle(WorkEvent);
     end;
   end;
@@ -91,10 +88,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-constructor TWorkerThread.Create(CreateSuspended: Boolean);
+constructor TWorkerThread.Create();
 
 begin
-  inherited Create(CreateSuspended);
+  inherited Create(False);
+  FreeOnTerminate := True;
   FWaiterList := TThreadList.Create;
 end;
 
@@ -105,7 +103,6 @@ destructor TWorkerThread.Destroy;
 begin
   // First let the ancestor stop the thread before freeing our resources.
   inherited;
-
   FWaiterList.Free;
 end;
 
