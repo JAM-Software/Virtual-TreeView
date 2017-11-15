@@ -1835,6 +1835,7 @@ type
     out EditLink: IVTEditLink) of object;
   TVTSaveTreeEvent = procedure(Sender: TBaseVirtualTree; Stream: TStream) of object;
   TVTSaveNodeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Stream: TStream) of object;
+  TVTBeforeGetCheckStateEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
 
   // header/column events
   TVTHeaderClickEvent = procedure(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo) of object;
@@ -2314,6 +2315,9 @@ type
     FOnStateChange: TVTStateChangeEvent;         // Called whenever a state in the tree changes.
     FOnGetCellIsEmpty: TVTGetCellIsEmptyEvent;   // Called when the tree needs to know if a cell is empty.
     FOnShowScrollBar: TVTScrollBarShowEvent;     // Called when a scrollbar is changed in its visibility.
+    FOnBeforeGetCheckState: TVTBeforeGetCheckStateEvent; // Called before a CheckState for a Node is obtained.
+                                                         // Gives the application a chance to do special processing
+                                                         // when a check state is actually required for the first time.
 
     // search, sort
     FOnCompareNodes: TVTCompareEvent;            // used during sort
@@ -2965,6 +2969,7 @@ type
     property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
     property OnScroll: TVTScrollEvent read FOnScroll write FOnScroll;
     property OnShowScrollBar: TVTScrollBarShowEvent read FOnShowScrollBar write FOnShowScrollBar;
+    property OnBeforeGetCheckState: TVTBeforeGetCheckStateEvent read FOnBeforeGetCheckState write FOnBeforeGetCheckState;
     property OnStartOperation: TVTOperationEvent read FOnStartOperation write FOnStartOperation;
     property OnStateChange: TVTStateChangeEvent read FOnStateChange write FOnStateChange;
     property OnStructureChange: TVTStructureChangeEvent read FOnStructureChange write FOnStructureChange;
@@ -3711,6 +3716,7 @@ type
     property OnScroll;
     property OnShortenString;
     property OnShowScrollBar;
+    property OnBeforeGetCheckState;
     property OnStartDock;
     property OnStartDrag;
     property OnStartOperation;
@@ -13375,6 +13381,9 @@ end;
 function TBaseVirtualTree.GetCheckState(Node: PVirtualNode): TCheckState;
 
 begin
+  if Assigned(FOnBeforeGetCheckState) then
+     FOnBeforeGetCheckState(Self, Node);
+
   Result := Node.CheckState;
 end;
 
