@@ -1,5 +1,9 @@
 V7.0: (Under development)
+  * Fixed issue #739: TVTHeader should use a popup menu if assigned 
   * Enhancement #735: Add event that is fired when a check state is needed
+  * Fixed issue #738: Deadlock on application close in ReleaseThreadReference
+  * Fixed issue #737: Export problem when OnBeforeNodeExport is not assigned 
+  * Fixed issue #723: Turn event OnAfterNodeExport into a procedure. This is a BREAKING CHNAGE.
   * Fixed issue #734: DefaultText property ignored
   * Fixed issue #724: Error when reading "old" streams
   * Fixed issue #397: Horizontal autoscroll on focus does not properly scroll node into view if column width is larger than client width  
