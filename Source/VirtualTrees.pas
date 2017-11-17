@@ -8340,18 +8340,27 @@ begin
       end;//else
     end;//if
 
-    if (Button = mbRight) and (hoAutoColumnPopupMenu in Header.Options) then begin
+    if (Button = mbRight) then 
+    begin
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
-      fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
-      TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
-      fColumnPopupMenu.PopupComponent := Header.Treeview;
-      if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
-        TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options + [poResizeToFitItem]
-      else
-        TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options - [poResizeToFitItem];
-      With Header.Treeview.ClientToScreen(P) do
-        fColumnPopupMenu.Popup(X, Y);
-    end;//if hoShowColumnPopupMenu
+      P := Header.Treeview.ClientToScreen(P);
+      if (hoAutoColumnPopupMenu in Header.Options) then begin
+        fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
+        TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
+        fColumnPopupMenu.PopupComponent := Header.Treeview;
+        if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
+          TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options + [poResizeToFitItem]
+        else
+          TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options - [poResizeToFitItem];
+        With Header.Treeview.ClientToScreen(P) do
+          fColumnPopupMenu.Popup(X, Y);
+      end // if  hoAutoColumnPopupMenu
+      else if Assigned(Header.PopupMenu) then
+      begin
+        With Header.Treeview.ClientToScreen(P) do
+          Header.PopupMenu.Popup(X, Y);
+      end;         
+    end;//if mbRight
     FHeader.Treeview.DoHeaderClick(HitInfo);
   end;//else (not DblClick)
 
