@@ -8343,8 +8343,7 @@ begin
     if (Button = mbRight) then 
     begin
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
-      P := Header.Treeview.ClientToScreen(P);
-      if (hoAutoColumnPopupMenu in Header.Options) then begin
+      if Assigned(Header.PopupMenu) then
         fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
         TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
         fColumnPopupMenu.PopupComponent := Header.Treeview;
@@ -8355,7 +8354,7 @@ begin
         With Header.Treeview.ClientToScreen(P) do
           fColumnPopupMenu.Popup(X, Y);
       end // if  hoAutoColumnPopupMenu
-      else if Assigned(Header.PopupMenu) then
+      else if (hoAutoColumnPopupMenu in Header.Options) then begin
       begin
         With Header.Treeview.ClientToScreen(P) do
           Header.PopupMenu.Popup(X, Y);
@@ -13606,7 +13605,7 @@ begin
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
   //TODO: support BiDi
-  //TODO: Use this methodin GetDisplayRect(), DetermineHitPositionLTR(), GetMaxRightExtend,PaintTree()...
+  //TODO: Use this method in GetDisplayRect(), DetermineHitPositionLTR(), GetMaxRightExtend,PaintTree()...
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
