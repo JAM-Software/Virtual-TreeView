@@ -1,4 +1,9 @@
 V7.0: (Under development)
+  * The support for Windows XP/2003 has been dropped (issue #707). This means:
+    - We did not intentionally break XP support.
+	- We do no longer test on Windows XP/2003
+	- We may accept pull request for XP support if the code quality is sufficient.
+	- We recommend to use the V6 branch on Windows XP
   * Fixed issue #739: TVTHeader should use a popup menu if assigned 
   * Enhancement #735: Add event that is fired when a check state is needed
   * Fixed issue #738: Deadlock on application close in ReleaseThreadReference
