@@ -8344,6 +8344,12 @@ begin
     begin
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
       if Assigned(Header.PopupMenu) then
+      begin
+        With Header.Treeview.ClientToScreen(P) do
+          Header.PopupMenu.Popup(X, Y);
+      end // if  hoAutoColumnPopupMenu
+      else if (hoAutoColumnPopupMenu in Header.Options) then
+      begin
         fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
         TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
         fColumnPopupMenu.PopupComponent := Header.Treeview;
@@ -8353,11 +8359,6 @@ begin
           TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options - [poResizeToFitItem];
         With Header.Treeview.ClientToScreen(P) do
           fColumnPopupMenu.Popup(X, Y);
-      end // if  hoAutoColumnPopupMenu
-      else if (hoAutoColumnPopupMenu in Header.Options) then begin
-      begin
-        With Header.Treeview.ClientToScreen(P) do
-          Header.PopupMenu.Popup(X, Y);
       end;         
     end;//if mbRight
     FHeader.Treeview.DoHeaderClick(HitInfo);
