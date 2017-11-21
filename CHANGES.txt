@@ -4,6 +4,7 @@ V7.0: (Under development)
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #740: TVTHeaderPopupMenu should not delete menu items added at designtime 
   * Fixed issue #739: TVTHeader should use a popup menu if assigned 
   * Enhancement #735: Add event that is fired when a check state is needed
   * Fixed issue #738: Deadlock on application close in ReleaseThreadReference
@@ -18,6 +19,7 @@ V7.0: (Under development)
   * Fixed issue #467: Multi level checkboxes and BeginUpdate/EndUpdate issue
   * Fixed issue #391: Change property HotNode: Add a setter 
   * Removed flag toDisableAutoscrollOnFocus from default configuration of a new Virtual TreeView to achieve a more common behavior with default properties.
+  * poResizeToFitItem is now set by default in TVTHeaderPopupMenu.Options
 
 V6.7: (29 May 2017)
   * Fixed issue #714: Integer overflow in TBaseVirtualTree's InternalAddFromStream

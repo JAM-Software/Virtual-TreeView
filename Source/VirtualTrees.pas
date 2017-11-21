@@ -8345,6 +8345,7 @@ begin
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
       if Assigned(Header.PopupMenu) then
       begin
+        Header.PopupMenu.PopupComponent := Header.Treeview;
         With Header.Treeview.ClientToScreen(P) do
           Header.PopupMenu.Popup(X, Y);
       end // if  hoAutoColumnPopupMenu
