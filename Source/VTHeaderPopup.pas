@@ -156,7 +156,7 @@ procedure TVTHeaderPopupMenu.OnMenuItemClick(Sender: TObject);
 
 begin
   if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then begin
-    with TBaseVirtualTree(PopupComponent).Header.Columns.Items[Tag] do
+    with TBaseVirtualTree(PopupComponent).Header.Columns.Items[TVTMenuItem(Sender).Tag] do
     begin
       if TVTMenuItem(Sender).Checked then
         Options := Options - [coVisible]
