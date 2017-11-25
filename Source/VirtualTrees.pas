@@ -5856,169 +5856,173 @@ var
   R: TRect;
 
 begin
-  if AData = nil then
-    // Defensive approach, it *can* happen that AData is nil. Maybe when several user defined hint classes are used.
-    Result := Rect(0, 0, 0, 0)
-  else
-  begin
-    // The hint window does not need any bidi mode setting but the caller of this method (TApplication.ActivateHint)
-    // does some unneccessary actions if the hint window is not left-to-right.
-    // The text alignment is based on the bidi mode passed in the hint data, hence we can
-    // simply set the window's mode to left-to-right (it might have been modified by the caller, if the
-    // tree window is right-to-left aligned).
-    BidiMode := bdLeftToRight;
-
-    FHintData := PVTHintData(AData)^;
-
-    with FHintData do
+  try
+    if AData = nil then
+      // Defensive approach, it *can* happen that AData is nil. Maybe when several user defined hint classes are used.
+      Result := Rect(0, 0, 0, 0)
+    else
     begin
-      // The draw tree gets its hint size by the application (but only if not a header hint is about to show).      // If the user will be drawing the hint, it gets its hint size by the application
-      // (but only if not a header hint is about to show).
-      // This size has already been determined in CMHintShow.
-      if Assigned(Node) and (not IsRectEmpty(HintRect)) then
-        Result := HintRect
-      else
+      // The hint window does not need any bidi mode setting but the caller of this method (TApplication.ActivateHint)
+      // does some unneccessary actions if the hint window is not left-to-right.
+      // The text alignment is based on the bidi mode passed in the hint data, hence we can
+      // simply set the window's mode to left-to-right (it might have been modified by the caller, if the
+      // tree window is right-to-left aligned).
+      BidiMode := bdLeftToRight;
+
+      FHintData := PVTHintData(AData)^;
+
+      with FHintData do
       begin
-        if Column <= NoColumn then
-        begin
-          BidiMode := Tree.BidiMode;
-          Alignment := Tree.Alignment;
-        end
+        // The draw tree gets its hint size by the application (but only if not a header hint is about to show).      // If the user will be drawing the hint, it gets its hint size by the application
+        // (but only if not a header hint is about to show).
+        // This size has already been determined in CMHintShow.
+        if Assigned(Node) and (not IsRectEmpty(HintRect)) then
+          Result := HintRect
         else
         begin
-          BidiMode := Tree.Header.Columns[Column].BidiMode;
-          Alignment := Tree.Header.Columns[Column].Alignment;
-        end;
-
-        if BidiMode <> bdLeftToRight then
-          ChangeBidiModeAlignment(Alignment);
-
-        if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
-          Canvas.Font := Screen.HintFont
-        else
-        begin
-          Canvas.Font := Tree.Font;
-          if Tree is TCustomVirtualStringTree then
-            with TCustomVirtualStringTree(Tree) do
-              DoPaintText(Node, Self.Canvas, Column, ttNormal);
-        end;
-
-        GetTextMetrics(Canvas.Handle, TM);
-        FTextHeight := TM.tmHeight;
-        LineBreakStyle := hlbDefault;
-
-        if Length(DefaultHint) > 0 then
-          HintText := DefaultHint
-        else
-          if Tree.HintMode = hmToolTip then
-            HintText := Tree.DoGetNodeToolTip(Node, Column, LineBreakStyle)
-          else
-            HintText := Tree.DoGetNodeHint(Node, Column, LineBreakStyle);
-
-        if Length(HintText) = 0 then
-          Result := Rect(0, 0, 0, 0)
-        else
-        begin
-          if Assigned(Node) and (Tree.FHintMode = hmToolTip) then
+          if Column <= NoColumn then
           begin
-            // Determine actual line break style depending on what was returned by the methods and what's in the node.
-            if LineBreakStyle = hlbDefault then
-              if vsMultiline in Node.States then
-                LineBreakStyle := hlbForceMultiLine
-              else
-                LineBreakStyle := hlbForceSingleLine;
-
-            // Hint for a node.
-            if LineBreakStyle = hlbForceMultiLine then
-            begin
-              // Multiline tooltips use the columns width but extend the bottom border to fit the whole caption.
-              Result := Tree.GetDisplayRect(Node, Column, True, False);
-              R := Result;
-
-              // On Windows NT/2K/XP the behavior of the tooltip is slightly different to that on Windows 9x/Me.
-              // We don't have Unicode word wrap on the latter so the tooltip gets as wide as the largest line
-              // in the caption (limited by carriage return), which results in unoptimal overlay of the tooltip.
-              Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_WORDBREAK);
-              if BidiMode = bdLeftToRight then
-                Result.Right := R.Right + Tree.FTextMargin
-              else
-                Result.Left := R.Left - Tree.FTextMargin + 1;
-              Result.Bottom := R.Bottom;
-
-              Inc(Result.Right);
-
-              // If the node height and the column width are both already large enough to cover the entire text,
-              // then we don't need the hint, though.
-              // However if the text is partially scrolled out of the client area then a hint is useful as well.
-              if (Tree.Header.Columns.Count > 0) and ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and
-                 ((Tree.Header.Columns[Column].Width + 2) >= (Result.Right - Result.Left)) and not
-                 ((Result.Left < 0) or (Result.Right > Tree.ClientWidth + 3) or
-                  (Result.Top < 0) or (Result.Bottom > Tree.ClientHeight + 3)) then
-              begin
-                Result := Rect(0, 0, 0, 0);
-                Exit;
-              end;
-            end
-            else
-            begin
-              Result := Tree.FLastHintRect; // = Tree.GetDisplayRect(Node, Column, True, True, True); see TBaseVirtualTree.CMHintShow
-
-              { Fixes issue #623
-
-                Measure the rectangle to draw the text. The width of the result
-                is always adjusted according to the hint text because it may
-                be a custom hint coming in which can be larger or smaller than
-                the node text.
-                Earlier logic was using the current width of the node that was
-                either cutting off the hint text or producing undesired space
-                on the right.
-              }
-              R := Rect(0, 0, MaxWidth, FTextHeight);
-              Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_TOP or DT_NOPREFIX or DT_WORDBREAK);
-              if R.Right <> result.right - result.left then
-              begin
-                result.Right := result.Left + r.Right;
-
-                //Space on right--taken from the code in the hmHint branch below.
-                if Assigned(Tree) then
-                  Inc(Result.Right, Tree.FTextMargin + Tree.FMargin);
-              end;
-              // Fix ends.
-
-              if toShowHorzGridLines in Tree.TreeOptions.PaintOptions then
-                Dec(Result.Bottom);
-            end;
-
-            // Include a one pixel border.
-            InflateRect(Result, 1, 1);
-
-            // Make the coordinates relative. They will again be offset by the caller code.
-            OffsetRect(Result, -Result.Left - 1, -Result.Top - 1);
+            BidiMode := Tree.BidiMode;
+            Alignment := Tree.Alignment;
           end
           else
           begin
-            // Hint for a header or non-tooltip hint.
+            BidiMode := Tree.Header.Columns[Column].BidiMode;
+            Alignment := Tree.Header.Columns[Column].Alignment;
+          end;
 
-            // Start with the base size of the hint in client coordinates.
-            Result := Rect(0, 0, MaxWidth, FTextHeight);
-            // Calculate the true size of the text rectangle.
-            Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), Result, DT_CALCRECT or DT_TOP or DT_NOPREFIX or DT_WORDBREAK);
-            // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
-            Inc(Result.Bottom, 6);
-            // The text is centered horizontally with usual text margin for left and right borders (plus border).
-            if not Assigned(Tree) then
-              Exit; // Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
-            { Issue #623 Fix for strange space on the right.
-              Original logic was adding FTextHeight. Changed it to add FMargin instead and
-              it looks OK even if the hint font is larger.
-            }
-            Inc(Result.Right, Tree.FTextMargin
-                + Tree.FMargin); //Issue #623 space on right
-                //+ FTextHeight); // Old code: We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
+          if BidiMode <> bdLeftToRight then
+            ChangeBidiModeAlignment(Alignment);
+
+          if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
+            Canvas.Font := Screen.HintFont
+          else
+          begin
+            Canvas.Font := Tree.Font;
+            if Tree is TCustomVirtualStringTree then
+              with TCustomVirtualStringTree(Tree) do
+                DoPaintText(Node, Self.Canvas, Column, ttNormal);
+          end;
+
+          GetTextMetrics(Canvas.Handle, TM);
+          FTextHeight := TM.tmHeight;
+          LineBreakStyle := hlbDefault;
+
+          if Length(DefaultHint) > 0 then
+            HintText := DefaultHint
+          else
+            if Tree.HintMode = hmToolTip then
+              HintText := Tree.DoGetNodeToolTip(Node, Column, LineBreakStyle)
+            else
+              HintText := Tree.DoGetNodeHint(Node, Column, LineBreakStyle);
+
+          if Length(HintText) = 0 then
+            Result := Rect(0, 0, 0, 0)
+          else
+          begin
+            if Assigned(Node) and (Tree.FHintMode = hmToolTip) then
+            begin
+              // Determine actual line break style depending on what was returned by the methods and what's in the node.
+              if LineBreakStyle = hlbDefault then
+                if vsMultiline in Node.States then
+                  LineBreakStyle := hlbForceMultiLine
+                else
+                  LineBreakStyle := hlbForceSingleLine;
+
+              // Hint for a node.
+              if LineBreakStyle = hlbForceMultiLine then
+              begin
+                // Multiline tooltips use the columns width but extend the bottom border to fit the whole caption.
+                Result := Tree.GetDisplayRect(Node, Column, True, False);
+                R := Result;
+
+                // On Windows NT/2K/XP the behavior of the tooltip is slightly different to that on Windows 9x/Me.
+                // We don't have Unicode word wrap on the latter so the tooltip gets as wide as the largest line
+                // in the caption (limited by carriage return), which results in unoptimal overlay of the tooltip.
+                Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_WORDBREAK);
+                if BidiMode = bdLeftToRight then
+                  Result.Right := R.Right + Tree.FTextMargin
+                else
+                  Result.Left := R.Left - Tree.FTextMargin + 1;
+                Result.Bottom := R.Bottom;
+
+                Inc(Result.Right);
+
+                // If the node height and the column width are both already large enough to cover the entire text,
+                // then we don't need the hint, though.
+                // However if the text is partially scrolled out of the client area then a hint is useful as well.
+                if (Tree.Header.Columns.Count > 0) and ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and
+                   ((Tree.Header.Columns[Column].Width + 2) >= (Result.Right - Result.Left)) and not
+                   ((Result.Left < 0) or (Result.Right > Tree.ClientWidth + 3) or
+                    (Result.Top < 0) or (Result.Bottom > Tree.ClientHeight + 3)) then
+                begin
+                  Result := Rect(0, 0, 0, 0);
+                  Exit;
+                end;
+              end
+              else
+              begin
+                Result := Tree.FLastHintRect; // = Tree.GetDisplayRect(Node, Column, True, True, True); see TBaseVirtualTree.CMHintShow
+
+                { Fixes issue #623
+
+                  Measure the rectangle to draw the text. The width of the result
+                  is always adjusted according to the hint text because it may
+                  be a custom hint coming in which can be larger or smaller than
+                  the node text.
+                  Earlier logic was using the current width of the node that was
+                  either cutting off the hint text or producing undesired space
+                  on the right.
+                }
+                R := Rect(0, 0, MaxWidth, FTextHeight);
+                Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), R, DT_CALCRECT or DT_TOP or DT_NOPREFIX or DT_WORDBREAK);
+                if R.Right <> result.right - result.left then
+                begin
+                  result.Right := result.Left + r.Right;
+
+                  //Space on right--taken from the code in the hmHint branch below.
+                  if Assigned(Tree) then
+                    Inc(Result.Right, Tree.FTextMargin + Tree.FMargin);
+                end;
+                // Fix ends.
+
+                if toShowHorzGridLines in Tree.TreeOptions.PaintOptions then
+                  Dec(Result.Bottom);
+              end;
+
+              // Include a one pixel border.
+              InflateRect(Result, 1, 1);
+
+              // Make the coordinates relative. They will again be offset by the caller code.
+              OffsetRect(Result, -Result.Left - 1, -Result.Top - 1);
+            end
+            else
+            begin
+              // Hint for a header or non-tooltip hint.
+
+              // Start with the base size of the hint in client coordinates.
+              Result := Rect(0, 0, MaxWidth, FTextHeight);
+              // Calculate the true size of the text rectangle.
+              Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), Result, DT_CALCRECT or DT_TOP or DT_NOPREFIX or DT_WORDBREAK);
+              // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
+              Inc(Result.Bottom, 6);
+              // The text is centered horizontally with usual text margin for left and right borders (plus border).
+              if not Assigned(Tree) then
+                Exit; // Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
+              { Issue #623 Fix for strange space on the right.
+                Original logic was adding FTextHeight. Changed it to add FMargin instead and
+                it looks OK even if the hint font is larger.
+              }
+              Inc(Result.Right, Tree.FTextMargin
+                  + Tree.FMargin); //Issue #623 space on right
+                  //+ FTextHeight); // Old code: We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
+            end;
           end;
         end;
       end;
     end;
+  except
+    Application.HandleException(Self);
   end;
 end;
 
