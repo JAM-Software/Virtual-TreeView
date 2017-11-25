@@ -26412,7 +26412,7 @@ begin
   if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) and not isDpiChange then
   begin
     Canvas.Font.Assign(Self.Font);
-    lTextHeight := Canvas.TextHeight('Tg');
+    lTextHeight := Canvas.TextHeight('Tg') + 2;
     // By default, we only ensure that DefaultNodeHeight is large enough.
     // If the form's dpi has changed, we scale up and down the DefaultNodeHeight, See issue #677.
     if (lTextHeight > Self.DefaultNodeHeight) then
