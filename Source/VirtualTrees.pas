@@ -1,3 +1,4 @@
+
 unit VirtualTrees;
 
 // The contents of this file are subject to the Mozilla Public License
@@ -1395,7 +1396,7 @@ type
     property MaxHeight: Integer read FMaxHeight write SetMaxHeight default 10000;
     property MinHeight: Integer read FMinHeight write SetMinHeight default 10;
     property Options: TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
-    property ParentFont: Boolean read FParentFont write SetParentFont default False;
+    property ParentFont: Boolean read FParentFont write SetParentFont default True;
     property PopupMenu: TPopupMenu read FPopupMenu write FPopupMenu;
     property SortColumn: TColumnIndex read FSortColumn write SetSortColumn default NoColumn;
     property SortDirection: TSortDirection read FSortDirection write SetSortDirection default sdAscending;
@@ -9713,7 +9714,7 @@ begin
   FMaxHeight := 10000;
   FFont := TFont.Create;
   FFont.OnChange := FontChanged;
-  FParentFont := False;
+  FParentFont := True;
   FBackgroundColor := clBtnFace;
   FOptions := [hoColumnResize, hoDrag, hoShowSortGlyphs];
 
