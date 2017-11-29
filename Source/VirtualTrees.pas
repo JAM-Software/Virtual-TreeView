@@ -12093,7 +12093,7 @@ begin
       9:
         // FocusedSelectionBorderColor
         if FColors[Index] = clHighlight then
-          StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecFillColor, Result)
+          Result := StyleServices.GetSystemColor(clHighlight)
         else
           Result := FColors[Index];
       11:
