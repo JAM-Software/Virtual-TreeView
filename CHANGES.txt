@@ -4,6 +4,7 @@ V7.0: (Under development)
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #743: Ugly drawing of selection in report mode when VCL Styles are used
   * Fixed issue #742: TVTHeader.ParentFont should be True by default
   * Fixed issue #740: TVTHeaderPopupMenu should not delete menu items added at designtime 
   * Fixed issue #739: TVTHeader should use a popup menu if assigned 
