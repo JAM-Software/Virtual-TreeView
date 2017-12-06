@@ -15028,6 +15028,7 @@ begin
         IsVisible[Node] := True;
     until False;
   end;
+  ScrollIntoView(Node, False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -17712,12 +17713,12 @@ var
 begin
   DoStateChange([tsLeftDblClick]);
   try
-    // get information about the hit
+    // get information about the hit, before calling inherited, is this may change the scroll postion and so the node under the mouse would chnage and would no longer be the one the user actually clicked
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+    HandleMouseDblClick(Message, HitInfo);
+    // Call inherited after doing our standard handling, as the event handler may close the form or re-fill the control, so our clicked node would be no longer valid.
+    // Our standard handling does not do that.
     inherited;
-    if HandleAllocated then begin // If the double click event handler closed the form, we will get exceptions in the code below
-      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
-      HandleMouseDblClick(Message, HitInfo);
-    end;
   finally
     DoStateChange([], [tsLeftDblClick]);
   end;
@@ -34280,8 +34281,8 @@ begin
         Exclude(FStates, tsPreviouslySelectedLocked);
       end;
       // if a there is a selected node now, then make sure that it is visible
-      if (Self.GetFirstSelected <> nil) and (UpdateCount = 0) then
-        Self.ScrollIntoView(Self.GetFirstSelected, True);
+      if (Self.GetFirstSelected <> nil) then
+        Self.SetFullyVisible(Self.GetFirstSelected, True);
     end;
   end;
 end;
