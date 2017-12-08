@@ -114,6 +114,7 @@ procedure Register;
 implementation
 
 uses
+  WinApi.Windows,
   Vcl.Forms;
 
 procedure Register;
@@ -158,8 +159,11 @@ end;
 
 function TVirtualTreeAction.Update(): Boolean;
 begin
-  inherited;
-  Result := False; // If an OnUpdate event handler is assigned, TBasicAction.Update() will return True and so TBasicAction.UpdateTarget() will not be called. We would then end up with Control == nil.
+  Result := inherited;
+  // If an OnUpdate event handler is assigned, TBasicAction.Update() will return True and so TBasicAction.UpdateTarget() will not be called.
+  // We would then end up with Control == nil. So trigger update of action manually.
+  if Result and Assigned(OnUpdate) then
+    SendAppMessage(CM_ACTIONUPDATE, 0, LPARAM(Self))
 end;
 
 procedure TVirtualTreeAction.UpdateTarget(Target: TObject);
