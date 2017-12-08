@@ -12114,7 +12114,7 @@ begin
         begin
           if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecTextColor, Result) or
             (Result <> clWindowText) then
-            Result := NodeFontColor;
+            Result := StyleServices.GetSystemColor(clHighlightText);
         end
         else
           Result := FColors[Index];
