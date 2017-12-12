@@ -12585,11 +12585,11 @@ begin
                     begin
                       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
                       begin
-                        if not Run.CheckState.IsDisabled() then
+                        if not Self.GetCheckState(Run).IsDisabled() then
                           SetCheckState(Run, csUncheckedNormal);
                         // Check if the new child state was set successfully, otherwise we have to adjust the
                         // node's new check state accordingly.
-                        case Run.CheckState of
+                        case Self.GetCheckState(Run) of
                           csCheckedNormal, csCheckedDisabled:
                             Inc(CheckedCount);
                           csMixedNormal:
@@ -12624,11 +12624,11 @@ begin
                     begin
                       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
                       begin
-                        if not Run.CheckState.IsDisabled() then
+                        if not Self.GetCheckState(Run).IsDisabled() then
                           SetCheckState(Run, csCheckedNormal);
                         // Check if the new child state was set successfully, otherwise we have to adjust the
                         // node's new check state accordingly.
-                        case Run.CheckState of
+                        case Self.GetCheckState(Run) of
                           csCheckedNormal:
                             Inc(CheckedCount);
                           csMixedNormal:
@@ -12674,7 +12674,7 @@ begin
       if Result then
         CheckState := Value // Set new check state
       else
-        CheckState := CheckState.GetUnpressed(); // Reset dynamic check state.
+        CheckState := Self.GetCheckState(Node).GetUnpressed(); // Reset dynamic check state.
 
       // Propagate state up to the parent.
       if not (vsInitialized in Parent.States) then
@@ -14718,9 +14718,9 @@ begin
       if not (vsInitialized in Node.Parent.States) then
         InitNode(Node.Parent);
       if (Node.Parent.CheckType = ctTriStateCheckBox) then begin
-        if (Node.Parent.CheckState in [csUncheckedNormal, csUncheckedDisabled]) then
+        if (GetCheckState(Node.Parent) in [csUncheckedNormal, csUncheckedDisabled]) then
           CheckState[Node] := csUncheckedNormal
-        else if (Node.Parent.CheckState in [csCheckedNormal, csCheckedDisabled]) then
+        else if (GetCheckState(Node.Parent) in [csCheckedNormal, csCheckedDisabled]) then
           CheckState[Node] := csCheckedNormal;
       end;//if
     end;//if
@@ -17024,7 +17024,7 @@ begin
       if (tsKeyCheckPending in FStates) and (CharCode <> VK_SPACE) then
       begin
         DoStateChange([], [tskeyCheckPending]);
-        FCheckNode.CheckState := FCheckNode.CheckState.GetToggled().GetUnpressed();
+        FCheckNode.CheckState := GetCheckState(FCheckNode).GetToggled().GetUnpressed();
         InvalidateNode(FCheckNode);
         FCheckNode := nil;
       end;
@@ -17548,13 +17548,13 @@ begin
                 not (vsDisabled in FFocusedNode.States) then
               begin
                 with FFocusedNode^ do
-                  NewCheckState := DetermineNextCheckState(CheckType, CheckState);
+                  NewCheckState := DetermineNextCheckState(CheckType, GetCheckState(FFocusedNode));
                 if DoChecking(FFocusedNode, NewCheckState) then
                 begin
                   DoStateChange([tsKeyCheckPending]);
                   FCheckNode := FFocusedNode;
                   FPendingCheckState := NewCheckState;
-                  FCheckNode.CheckState := FCheckNode.CheckState.GetPressed();
+                  FCheckNode.CheckState := GetCheckState(FFocusedNode).GetPressed();
                   RepaintNode(FCheckNode);
                 end;
               end;
@@ -18859,9 +18859,9 @@ begin
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
         Inc(BoxCount);
-        if Run.CheckState.IsChecked then
+        if GetCheckState(Run).IsChecked then
           Inc(CheckCount);
-        PartialCheck := PartialCheck or (Run.CheckState = csMixedNormal);
+        PartialCheck := PartialCheck or (GetCheckState(Run) = csMixedNormal);
       end;
     Run := Run.NextSibling;
   end;
@@ -22161,7 +22161,7 @@ begin
   if Assigned(Node) then
   begin
     ImgCheckType := Node.CheckType;
-    ImgCheckState := Node.CheckState;
+    ImgCheckState := GetCheckState(Node);
     ImgEnabled := not (vsDisabled in Node.States) and Self.Enabled;
 
     IsHot := Node = FCurrentHotNode;
@@ -23326,7 +23326,7 @@ procedure TBaseVirtualTree.InitNode(Node: PVirtualNode);
 var
   InitStates: TVirtualNodeInitStates;
   MustAdjustInternalVariables: Boolean;
-
+  ParentCheckState, SelfCheckState: TCheckState;
 begin
   with Node^ do
   begin
@@ -23346,11 +23346,13 @@ begin
       // by the App.
       if Node.CheckType in [ctTriStateCheckBox] then
       begin
-        if ((Node.Parent.CheckState = csCheckedNormal)
-             or (Node.Parent.CheckState = csUncheckedNormal))
-            and (not Node.CheckState.IsDisabled())
-            and (Node.CheckState <> Node.Parent.CheckState) then
-          SetCheckState(Node, Node.Parent.CheckState);
+        ParentCheckState := Self.GetCheckState(Node.Parent);
+        SelfCheckState := Self.GetCheckState(Node);
+        if ((ParentCheckState = csCheckedNormal)
+             or (ParentCheckState = csUncheckedNormal))
+            and (not SelfCheckState.IsDisabled())
+            and (SelfCheckState <> ParentCheckState) then
+          SetCheckState(Node, ParentCheckState);
       end;
 
       if ivsDisabled in InitStates then
@@ -26096,7 +26098,7 @@ begin
       // Some states are only temporary so take them out as they make no sense at the new location.
       Body.States := States - [vsChecking, vsCutOrCopy, vsDeleting, vsOnFreeNodeCallRequired, vsHeightMeasured];
       Body.Align := Align;
-      Body.CheckState := CheckState;
+      Body.CheckState := GetCheckState(Node);
       Body.CheckType := CheckType;
       Body.Reserved := 0;
     end;
@@ -28540,7 +28542,7 @@ begin
   else
     Result := GetNextNoInit(Node, ConsiderChildrenAbove);
 
-  while Assigned(Result) and (Result.CheckState <> State) do
+  while Assigned(Result) and (GetCheckState(Result) <> State) do
     Result := GetNextNoInit(Result, ConsiderChildrenAbove);
 
   if Assigned(Result) and not (vsInitialized in Result.States) then
@@ -29284,7 +29286,7 @@ begin
   else
     Result := GetPreviousNoInit(Node, ConsiderChildrenAbove);
 
-  while Assigned(Result) and (Result.CheckState <> State) do
+  while Assigned(Result) and (GetCheckState(Result) <> State) do
     Result := GetPreviousNoInit(Result, ConsiderChildrenAbove);
 
   if Assigned(Result) and not (vsInitialized in Result.States) then
@@ -34912,9 +34914,9 @@ function TCustomVirtualStringTree.CanExportNode(Node: PVirtualNode): Boolean;
 begin
   case FOptions.ExportMode of
     emChecked:
-      Result := Node.CheckState = csCheckedNormal;
+      Result := GetCheckState(Node) = csCheckedNormal;
     emUnchecked:
-      Result := Node.CheckState = csUncheckedNormal;
+      Result := GetCheckState(Node) = csUncheckedNormal;
     emVisibleDueToExpansion: //Do not export nodes that are not visible because their parent is not expanded
       Result := not Assigned(Node.Parent) or Self.Expanded[Node.Parent];
     emSelected: // export selected nodes only

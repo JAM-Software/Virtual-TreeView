@@ -1,4 +1,5 @@
 V7.0: (Under development)
+  * Enhancement #735: Add event that is fired when a check state is needed. Updated code.
   * The support for Windows XP/2003 has been dropped (issue #707). This means:
     - We did not intentionally break XP support.
 	- We do no longer test on Windows XP/2003
@@ -8,7 +9,6 @@ V7.0: (Under development)
   * Fixed issue #742: TVTHeader.ParentFont should be True by default
   * Fixed issue #740: TVTHeaderPopupMenu should not delete menu items added at designtime 
   * Fixed issue #739: TVTHeader should use a popup menu if assigned 
-  * Enhancement #735: Add event that is fired when a check state is needed
   * Fixed issue #738: Deadlock on application close in ReleaseThreadReference
   * Fixed issue #737: Export problem when OnBeforeNodeExport is not assigned 
   * Fixed issue #723: Turn event OnAfterNodeExport into a procedure. This is a BREAKING CHNAGE.
