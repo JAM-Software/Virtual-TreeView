@@ -4529,6 +4529,9 @@ begin
       begin
         if toCheckSupport in ToBeSet + ToBeCleared then
           Invalidate;
+        if toEditOnDblClick in ToBeSet then
+          FMiscOptions := FMiscOptions - [toToggleOnDblClick];  // In order for toEditOnDblClick to take effect, we need to remove toToggleOnDblClick which is handled with priority. See issue #747
+
         if not (csDesigning in ComponentState) then
         begin
           if toAcceptOLEDrop in ToBeCleared then
@@ -17714,8 +17717,8 @@ begin
   DoStateChange([tsLeftDblClick]);
   try
     // get information about the hit, before calling inherited, is this may change the scroll postion and so the node under the mouse would chnage and would no longer be the one the user actually clicked
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
-    HandleMouseDblClick(Message, HitInfo);
+      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+      HandleMouseDblClick(Message, HitInfo);
     // Call inherited after doing our standard handling, as the event handler may close the form or re-fill the control, so our clicked node would be no longer valid.
     // Our standard handling does not do that.
     inherited;
