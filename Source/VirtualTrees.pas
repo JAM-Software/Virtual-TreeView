@@ -7077,7 +7077,7 @@ var
   Temp: TColumnIndex;
 
 begin
-  if csLoading in Owner.Header.Treeview.ComponentState then
+  if (csLoading in Owner.Header.Treeview.ComponentState) or (Owner.UpdateCount > 0) then
     // Only cache the position for final fixup when loading from DFM.
     FPosition := Value
   else
