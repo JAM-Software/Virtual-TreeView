@@ -18803,12 +18803,17 @@ begin
         FMargin := MulDiv(FMargin, M, D);
         FImagesMargin := MulDiv(FImagesMargin, M, D);
         // Scale also node heights
-        Run := GetFirstInitialized;
-        while Assigned(Run) do
-        begin
-          Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
-          Run := GetNextInitialized(Run);
-        end; // while
+        BeginUpdate();
+        try
+          Run := GetFirstInitialized;
+          while Assigned(Run) do
+          begin
+            SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D));
+            Run := GetNextInitialized(Run);
+          end; // while
+        finally
+          EndUpdate();
+        end;
       end;//if sfHeight
     end;// if M<>D
   end;//if toAutoChangeScale
