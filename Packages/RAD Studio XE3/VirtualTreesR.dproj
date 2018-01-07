@@ -48,7 +48,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_HppOutput>..\..\Source</DCC_HppOutput>
-        <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DllSuffix>17</DllSuffix>
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
@@ -89,7 +88,6 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
