@@ -14229,8 +14229,8 @@ var
 begin
   if VclStyleEnabled and (seClient in StyleElements) then
   begin
-    Size.cx := 11;
-    Size.cy := 11;
+    Size.cx := ScaledPixels(11);
+    Size.cy := ScaledPixels(11);
     FillBitmap(FPlusBM);
     FillBitmap(FHotPlusBM);
     FillBitmap(FSelectedHotPlusBM);
