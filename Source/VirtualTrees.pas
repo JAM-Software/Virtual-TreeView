@@ -568,12 +568,12 @@ type
   // content elements of the control from left to right, used when calculatin left margins.
   TVTElement = (
     ofsControlMargin,
-    ofsNodeIndent,
     ofsToggleButton,
     ofsCheckBox,
     ofsStateImage,
     ofsImage,
-    ofsLabel,
+    ofsLabel, // where drawing a selection begins
+    ofsText, // includes TextMargin
     ofsEndOfClientArea // The end of the paint area
   );
 
@@ -3079,7 +3079,7 @@ type
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetNodeLevelForSelectConstraint(Node: PVirtualNode): integer;
     function GetOffset(pElement: TVTElement; pNode: PVirtualNode): integer;
-    procedure GetOffsets(pElement: TVTElement; pNode: PVirtualNode; out pOffsets: TVTOffsets);
+    procedure GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea);
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -12715,7 +12715,6 @@ var
   NextNode: PVirtualNode;
   TextRight,
   TextLeft,
-  CheckOffset,
   CurrentTop,
   CurrentRight,
   NextTop,
@@ -12723,6 +12722,7 @@ var
   NodeWidth,
   Dummy: Integer;
   MinY, MaxY: Integer;
+  OffSets: TVTOffsets;
   IsInOldRect,
   IsInNewRect: Boolean;
 
@@ -12746,10 +12746,6 @@ begin
   WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
-  if WithCheck then
-    CheckOffset := FCheckImages.Width + FImagesMargin
-  else
-    CheckOffset := 0;
   AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
   SimpleSelection := toSimpleDrawSelection in FOptions.FSelectionOptions;
   // This is the node to start with.
@@ -12757,23 +12753,14 @@ begin
 
   if Assigned(Run) then
   begin
-    // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
-    if toShowRoot in FOptions.FPaintOptions then
-      Inc(NodeLeft, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
-    else
-      Inc(NodeLeft, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
+    GetOffsets(Run, Offsets);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
     // touch only those nodes which overlap either the old selection rectangle or the new one but not both.
     repeat
       // Collect offsets for check, normal and state images.
-      TextLeft := NodeLeft;
-      if WithCheck and (Run.CheckType <> ctNone) then
-        Inc(TextLeft, CheckOffset);
-      Inc(TextLeft, GetImageSize(Run, ikNormal, MainColumn).cx);
-      if WithStateImages then
-        Inc(TextLeft, GetImageSize(Run, ikState, MainColumn).cx);
+      TextLeft := NodeLeft + Offsets[TVTElement.ofsLabel];
       NextTop := CurrentTop + Integer(NodeHeight[Run]);
 
       // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
@@ -12781,9 +12768,9 @@ begin
       if SimpleSelection or (toFullRowSelect in FOptions.FSelectionOptions) then
       begin
         IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom) and
-          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > OldRect.Left)) and (NodeLeft < OldRect.Right);
+          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > OldRect.Left)) and ((NodeLeft + Offsets[TVTElement.ofsLabel]) < OldRect.Right);
         IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom) and
-          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > NewRect.Left)) and (NodeLeft < NewRect.Right);
+          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > NewRect.Left)) and ((NodeLeft + Offsets[TVTElement.ofsLabel]) < NewRect.Right);
       end
       else
       begin
@@ -13575,11 +13562,11 @@ function TBaseVirtualTree.GetOffset(pElement: TVTElement; pNode: PVirtualNode): 
 var
   lOffsets: TVTOffsets;
 begin
-  GetOffsets(pElement, pNode, lOffsets);
+  GetOffsets(pNode, lOffsets, pElement);
   Exit(lOffsets[pElement]);
 end;
 
-procedure TBaseVirtualTree.GetOffsets(pElement: TVTElement; pNode: PVirtualNode; out pOffsets: TVTOffsets);
+procedure TBaseVirtualTree.GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea);
 // Calculates the offset up to the given element and supplies them in an array.
 var
   lNodeLevel: Integer;
@@ -13592,26 +13579,28 @@ begin
   lNodeLevel := GetNodeLevel(pNode);
   if toShowRoot in FOptions.FPaintOptions then
     Inc(lNodeLevel);
-  pOffsets[TVTElement.ofsNodeIndent] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
-  if pElement = TVTElement.ofsNodeIndent then
-    exit;
+  // left of checkbox
+  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
   // toggle buttons
-  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsNodeIndent] + Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
-  // checkbox
-  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) then
-    pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsNodeIndent] + Integer(fIndent); // The area in which the toggle buttons are painted must have exactly the size of one indent level
+  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
+  // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
     exit;
-  // state image
-  pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width;
+
+  // right of checkbox, left of state image
+  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) then
+    pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width + fImagesMargin
+  else
+    pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox];
   if pElement = TVTElement.ofsStateImage then
     exit;
-  // normal image
+  // right of left image, left of normal image
   pOffsets[TVTElement.ofsImage] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikState).cx;
   if pElement = TVTElement.ofsImage then
     exit;
   // label
-  pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikNormal).cx + FTextMargin;
+  pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikNormal).cx;
+  pOffsets[TVTElement.ofsText] := pOffsets[TVTElement.ofsLabel] + FTextMargin;
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
   //TODO: support BiDi
