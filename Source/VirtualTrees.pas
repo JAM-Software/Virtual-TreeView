@@ -22428,25 +22428,26 @@ begin
 
   if (CheckPositions * HitInfo.HitPositions = []) and
     (not (toFullRowSelect in FOptions.FSelectionOptions) or (hiNowhere in HitInfo.HitPositions)) then
-    HitInfo.HitNode := nil;
-  if (HitInfo.HitNode <> FCurrentHotNode) or (HitInfo.HitColumn <> FCurrentHotColumn) then
+    FCurrentHotNode := nil
+  else
+    FCurrentHotNode := HitInfo.HitNode;
+  if (FCurrentHotNode <> oldHotNode) or (HitInfo.HitColumn <> FCurrentHotColumn) then
   begin
     DoInvalidate := (toHotTrack in FOptions.PaintOptions) or (toCheckSupport in FOptions.FMiscOptions);
-    DoHotChange(FCurrentHotNode, HitInfo.HitNode);
-    if Assigned(FCurrentHotNode) and DoInvalidate then
-      InvalidateNode(FCurrentHotNode);
-    FCurrentHotNode := HitInfo.HitNode;
+    DoHotChange(oldHotNode, HitInfo.HitNode);
+    if Assigned(oldHotNode) and DoInvalidate then
+      InvalidateNode(oldHotNode);
     FCurrentHotColumn := HitInfo.HitColumn;
   end;
 
   ButtonIsHit := (hiOnItemButtonExact in HitInfo.HitPositions);
-  if Assigned(FCurrentHotNode) and ((FHotNodeButtonHit <> ButtonIsHit) or DoInvalidate) then
+  if Assigned(HitInfo.HitNode) and ((FHotNodeButtonHit <> ButtonIsHit) or DoInvalidate) then
   begin
     FHotNodeButtonHit := ButtonIsHit;
-    InvalidateNode(FCurrentHotNode);
+    InvalidateNode(HitInfo.HitNode);
   end
   else
-    if not Assigned(FCurrentHotNode) then
+    if not Assigned(HitInfo.HitNode) then
       FHotNodeButtonHit := False;
 
   if (oldHotNode <> FCurrentHotNode) and (oldHotNode <> nil) then
@@ -24482,7 +24483,7 @@ begin
   IsSelected := (vsSelected in Node.States);
 
   // Draw the node's plus/minus button according to the directionality.
-  if BidiMode = bdLeftToRight then
+    if BidiMode = bdLeftToRight then
     XPos := R.Left + ButtonX
   else
     XPos := R.Right - ButtonX - FPlusBM.Width;
