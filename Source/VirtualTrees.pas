@@ -12727,8 +12727,6 @@ var
   IsInNewRect: Boolean;
 
   // quick check variables for various parameters
-  WithCheck,
-  WithStateImages,
   DoSwitch,
   AutoSpan: Boolean;
   SimpleSelection: Boolean;
@@ -12743,9 +12741,6 @@ begin
 
   // Initialize short hand variables to speed up tests below.
   DoSwitch := ssCtrl in FDrawSelShiftState;
-  WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
-  // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
-  WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
   SimpleSelection := toSimpleDrawSelection in FOptions.FSelectionOptions;
   // This is the node to start with.
