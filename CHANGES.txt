@@ -4,6 +4,7 @@ V7.0: (Under development)
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #753: TVirtualTreeColumns.EndUpdate() resets column order 
   * Fixed issue #750: Plus/Minus sizes are not scaled in DPI aware applications
   * Fixed issue #748: Per Monitor Dpi Scaling - Scrollbar Not Correct after Dpi Change
   * Enhancement #735: Add event that is fired when a check state is needed.

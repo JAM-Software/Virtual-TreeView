@@ -1178,6 +1178,7 @@ type
     procedure PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint;
       RTLOffset: Integer = 0); overload; virtual;
     procedure SaveToStream(const Stream: TStream);
+    procedure EndUpdate(); override;
     function TotalWidth: Integer;
 
     property Count: Integer read GetCount;
@@ -8510,6 +8511,15 @@ begin
   end;
 
   UpdatePositions(True);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVirtualTreeColumns.EndUpdate;
+begin
+  InitializePositionArray();
+  FixPositions(); // Accept the cuurent order. See issue #753
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
