@@ -23496,10 +23496,19 @@ var
   Constrained,
   SiblingConstrained: Boolean;
   lPreviousSelectedCount: Integer;
+  AddedNodesIndexes: array of Integer;
+  AddedNodesSize: Integer;
+  PTmpNode: PVirtualNode;
+
 begin
   lPreviousSelectedCount := FSelectionCount;
   // The idea behind this code is to use a kind of reverse merge sort. QuickSort is quite fast
   // and would do the job here too but has a serious problem with already sorted lists like FSelection.
+
+  // allocate array with indexes in NewItems (max number of entries)
+  SetLength(AddedNodesIndexes, NewLength);
+  // current number of entries in AddedNodesIndexes
+  AddedNodesSize := 0;
 
   // 1) Remove already selected items, mark all other as being selected.
   if ForceInsert then
@@ -23511,13 +23520,8 @@ begin
       FLastSelectionLevel := GetNodeLevelForSelectConstraint(NewItems[0]);
     for I := 0 to NewLength - 1 do
     begin
-      //sync path note: when already selected node is clicked or selected again
-      Include(NewItems[I].States, vsSelected);
-      Inc(FSelectionCount);
-      if Assigned(FOnAddToSelection) then
-        FOnAddToSelection(Self, NewItems[I]);
-      if SyncCheckstateWithSelection[NewItems[I]] then
-        checkstate[NewItems[I]] := csCheckedNormal;
+      AddedNodesIndexes[AddedNodesSize] := I;
+      Inc(AddedNodesSize);
     end;
   end
   else
@@ -23536,13 +23540,8 @@ begin
         Inc(PAnsiChar(NewItems[I]))
       else
       begin
-        //sync path note: on click, multi-select ctrl-click and draw selection
-        Include(NewItems[I].States, vsSelected);
-        Inc(FSelectionCount);
-        if Assigned(FOnAddToSelection) then
-          FOnAddToSelection(Self, NewItems[I]);
-        if SyncCheckstateWithSelection[NewItems[I]] then
-          checkstate[NewItems[I]] := csCheckedNormal;
+        AddedNodesIndexes[AddedNodesSize] := I;
+        Inc(AddedNodesSize);
       end;
   end;
 
@@ -23596,6 +23595,22 @@ begin
       // so the remaining gap travels down to where new items must be inserted
       Move(FSelection[I + 1], FSelection[I + J + 2], (CurrentEnd - I) * SizeOf(Pointer));
       CurrentEnd := I;
+    end;
+
+    // update selection count
+    Inc(FSelectionCount, AddedNodesSize);
+
+    // post process added nodes
+    for I := 0 to AddedNodesSize - 1 do
+    begin
+      PTmpNode := NewItems[AddedNodesIndexes[I]];
+      //sync path note: on click, multi-select ctrl-click and draw selection
+      Include(PTmpNode.States, vsSelected);
+      // call on add event callbackevent
+      if Assigned(FOnAddToSelection) then
+        FOnAddToSelection(Self, PTmpNode);
+      if SyncCheckstateWithSelection[PTmpNode] then
+        checkstate[PTmpNode] := csCheckedNormal;
     end;
 
     Assert(FSelectionCount = (lPreviousSelectedCount + NewLength), 'Fixing issue #487 seems to ahve caused a problem here.')
