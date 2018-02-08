@@ -162,8 +162,6 @@ begin
         Options := Options - [coVisible]
       else
         Options := Options + [coVisible];
-
-       DoColumnChange(TVTMenuItem(Sender).Tag, not TVTMenuItem(Sender).Checked);
     end;
   end;
 end;

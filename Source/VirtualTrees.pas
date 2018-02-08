@@ -7067,8 +7067,10 @@ begin
         HandleAllocated then
       begin
         Invalidate;
-        if VisibleChanged then
+        if VisibleChanged then begin
+          DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
           UpdateHorizontalScrollBar(False);
+        end;
       end;
   end;
 end;

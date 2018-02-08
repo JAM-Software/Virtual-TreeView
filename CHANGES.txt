@@ -1,9 +1,10 @@
-V7.0: (Under development)
+﻿V7.0: (Under development)
   * The support for Windows XP/2003 has been dropped (issue #707). This means:
     - We did not intentionally break XP support.
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #758:  The OnColumnVisibilityChanged event is not always fired
   * Fixed issue #754: TBaseVirtualTree.InternalAddToSelection() may cause access violation. Thx@nminkov for the patch.
   * Fixed issue #753: TVirtualTreeColumns.EndUpdate() resets column order 
   * Fixed issue #750: Plus/Minus sizes are not scaled in DPI aware applications
