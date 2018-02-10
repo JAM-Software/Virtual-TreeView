@@ -1136,7 +1136,7 @@ type
     procedure FixPositions;
     function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: Integer; Relative: Boolean = True): Integer;
     function GetOwner: TPersistent; override;
-    procedure HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean); virtual;
+    function HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean): Boolean; virtual;
     procedure HeaderPopupMenuColumnChange(const Sender: TBaseVirtualTree; const Column: TColumnIndex; Visible: Boolean);
     procedure IndexChanged(OldIndex, NewIndex: Integer);
     procedure InitializePositionArray;
@@ -8279,16 +8279,19 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean);
+function TVirtualTreeColumns.HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean): Boolean;
 
 // Generates a click event if the mouse button has been released over the same column it was pressed first.
 // Alternatively, Force might be set to True to indicate that the down index does not matter (right, middle and
 // double click).
+// Returns true if the click was handled, False otherwise.
 
 var
   HitInfo: TVTHeaderHitInfo;
   NewClickIndex: Integer;
+  Menu: TPopupMenu;
 begin
+  Result := False;
   if (csDesigning in Header.Treeview.ComponentState) then
     exit;
   // Convert vertical position to local coordinates.
@@ -8349,17 +8352,28 @@ begin
         else
           Header.SortDirection := sdDescending;
       end;//else
+      Result := True;
     end;//if
 
-    if (Button = mbRight) then 
+    if (Button = mbRight) then
     begin
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
-      if Assigned(Header.PopupMenu) then
+      Self.FDownIndex := NoColumn;
+      Self.FTrackIndex := NoColumn;
+      Self.FCheckBoxHit := False;
+      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + Integer(Header.Treeview.Height))), P);
+      if Assigned(Menu) then
       begin
-        Header.PopupMenu.PopupComponent := Header.Treeview;
+        Header.Treeview.StopTimer(ScrollTimer);
+        Header.Treeview.StopTimer(HeaderTimer);
+        Header.FColumns.FHoverIndex := NoColumn;
+        Header.Treeview.DoStateChange([], [tsScrollPending, tsScrolling]);
+
+        Menu.PopupComponent := Header.Treeview;
         With Header.Treeview.ClientToScreen(P) do
-          Header.PopupMenu.Popup(X, Y);
-      end // if  hoAutoColumnPopupMenu
+          Menu.Popup(X, Y);
+        Result := True;
+      end
       else if (hoAutoColumnPopupMenu in Header.Options) then
       begin
         fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
@@ -8371,7 +8385,8 @@ begin
           TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options - [poResizeToFitItem];
         With Header.Treeview.ClientToScreen(P) do
           fColumnPopupMenu.Popup(X, Y);
-      end;         
+        Result := True;
+      end; // if  hoAutoColumnPopupMenu
     end;//if mbRight
     FHeader.Treeview.DoHeaderClick(HitInfo);
   end;//else (not DblClick)
@@ -10323,7 +10338,7 @@ var
   AskParent: Boolean;
 
 begin
-  Result := nil;
+  Result := PopupMenu;
   if Assigned(TreeView.FOnGetPopupMenu) then
     TreeView.FOnGetPopupMenu(TreeView, nil, Column, Position, AskParent, Result);
 end;
@@ -10611,7 +10626,6 @@ var
   HitIndex: TColumnIndex;
   NewCursor: HCURSOR;
   Button: TMouseButton;
-  Menu: TPopupMenu;
   IsInHeader,
   IsHSplitterHit,
   IsVSplitterHit: Boolean;
@@ -10818,31 +10832,11 @@ begin
         with TWMNCRButtonUp(Message) do
         begin
           Application.CancelHint;
-
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
           if InHeader(P) then
           begin
-            FColumns.HandleClick(P, mbRight, True, False);
+            HandleMessage := FColumns.HandleClick(P, mbRight, True, False);
             FOwner.DoHeaderMouseUp(mbRight, GetShiftState, P.X, P.Y + Integer(FHeight));
-            FColumns.FDownIndex := NoColumn;
-            FColumns.FTrackIndex := NoColumn;
-            FColumns.FCheckBoxHit := False;
-
-            Menu := FPopupMenu;
-            if not Assigned(Menu) then
-              Menu := DoGetPopupMenu(FColumns.ColumnFromPosition(Point(P.X, P.Y + Integer(FHeight))), P);
-
-            // Trigger header popup if there's one.
-            if Assigned(Menu) then
-            begin
-              Treeview.StopTimer(ScrollTimer);
-              Treeview.StopTimer(HeaderTimer);
-              FColumns.FHoverIndex := NoColumn;
-              Treeview.DoStateChange([], [tsScrollPending, tsScrolling]);
-              Menu.PopupComponent := Treeview;
-              Menu.Popup(XCursor, YCursor);
-              HandleMessage := True;
-            end;
           end;
         end;
     // When the tree window has an active mouse capture then we only get "client-area" messages.
