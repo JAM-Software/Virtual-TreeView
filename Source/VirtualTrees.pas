@@ -13939,6 +13939,7 @@ end;
 procedure TBaseVirtualTree.InitRecursive(Node: PVirtualNode; Levels: Cardinal = MaxInt; pVisibleOnly: Boolean = True);
 
 // Initializes a node and optionally its children up to a certain level.
+// The sepcified number of levels are latrive to the givne Node.
 
 var
   Run: PVirtualNode;
