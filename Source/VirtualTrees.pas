@@ -23351,8 +23351,10 @@ begin
         if ((ParentCheckState = csCheckedNormal)
              or (ParentCheckState = csUncheckedNormal))
             and (not SelfCheckState.IsDisabled())
-            and (SelfCheckState <> ParentCheckState) then
-          SetCheckState(Node, ParentCheckState);
+            and (SelfCheckState <> ParentCheckState) 
+            and (Parent <> FRoot)
+        then
+          SetCheckState(Node, Node.Parent.CheckState);
       end;
 
       if ivsDisabled in InitStates then
