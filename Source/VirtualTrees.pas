@@ -7037,7 +7037,7 @@ var
   ToBeCleared: TVTColumnOptions;
   VisibleChanged,
   ColorChanged: Boolean;
-
+  lTreeView: TBaseVirtualTree;
 begin
   if FOptions <> Value then
   begin
@@ -7062,16 +7062,16 @@ begin
 
     Changed(False);
     // Need to repaint and adjust the owner tree too.
-    with Owner, Header.Treeview do
-      if not (csLoading in ComponentState) and (VisibleChanged or ColorChanged) and (UpdateCount = 0) and
-        HandleAllocated then
-      begin
-        Invalidate;
-        if VisibleChanged then begin
-          DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
-          UpdateHorizontalScrollBar(False);
-        end;
+    lTreeView := Owner.Header.Treeview;
+    if not (csLoading in lTreeview.ComponentState) and (VisibleChanged or ColorChanged) and (Owner.UpdateCount = 0) and
+      lTreeView.HandleAllocated then
+    begin
+      lTreeview.Invalidate();
+      if VisibleChanged then begin
+        lTreeview.DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
+        lTreeview.UpdateHorizontalScrollBar(False);
       end;
+    end;
   end;
 end;
 
