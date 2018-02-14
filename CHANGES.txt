@@ -4,6 +4,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #760: TVirtualTreeColumns.GetFirstVisibleColumn() cause AV if called between BeginUpdate() and EndUpdate()
   * Fixed issue #759: TBaseVirtualTree.InitNode() overrides check state of top level nodes set in OnInitNode event handler
   * Fixed issue #757: Header popup menu opens twice
   * Fixed issue #758: The OnColumnVisibilityChanged event is not always fired
