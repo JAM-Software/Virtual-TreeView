@@ -580,7 +580,11 @@ type
   /// An array that can be used to calculate the offsets ofthe elements in the tree.
   TVTOffsets = array [TVTElement] of integer;
 
-
+  TAddPopupItemType = (
+    apNormal,
+    apDisabled,
+    apHidden
+  );
 
 const
   DefaultPaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
@@ -1137,6 +1141,8 @@ type
     function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: Integer; Relative: Boolean = True): Integer;
     function GetOwner: TPersistent; override;
     function HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean): Boolean; virtual;
+    procedure HeaderPopupMenuAddHeaderPopupItem(const Sender: TBaseVirtualTree; const Column: TColumnIndex;
+      var Cmd: TAddPopupItemType);
     procedure HeaderPopupMenuColumnChange(const Sender: TBaseVirtualTree; const Column: TColumnIndex; Visible: Boolean);
     procedure IndexChanged(OldIndex, NewIndex: Integer);
     procedure InitializePositionArray;
@@ -1840,6 +1846,8 @@ type
   TVTBeforeGetCheckStateEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
 
   // header/column events
+  TVTHeaderAddPopupItemEvent = procedure(const Sender: TBaseVirtualTree; const Column: TColumnIndex;
+    var Cmd: TAddPopupItemType) of object;
   TVTHeaderClickEvent = procedure(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo) of object;
   TVTHeaderMouseEvent = procedure(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X, Y: Integer) of object;
   TVTHeaderMouseMoveEvent = procedure(Sender: TVTHeader; Shift: TShiftState; X, Y: Integer) of object;
@@ -2245,6 +2253,7 @@ type
     FOnAfterAutoFitColumns: TVTAfterAutoFitColumnsEvent;
     FOnBeforeAutoFitColumns: TVTBeforeAutoFitColumnsEvent;
     FOnBeforeAutoFitColumn: TVTBeforeAutoFitColumnEvent;
+    FOnHeaderAddPopupItem: TVTHeaderAddPopupItemEvent;
     FOnHeaderClick: TVTHeaderClickEvent;
     FOnHeaderDblClick: TVTHeaderClickEvent;
     FOnAfterHeaderHeightTracking: TVTAfterHeaderHeightTrackingEvent;
@@ -2619,6 +2628,7 @@ type
     function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; virtual;
     function DoGetPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint): TPopupMenu; virtual;
     procedure DoGetUserClipboardFormats(var Formats: TFormatEtcArray); virtual;
+    procedure DoHeaderAddPopupItem(const Column: TColumnIndex; var Cmd: TAddPopupItemType);
     procedure DoHeaderClick(const HitInfo: TVTHeaderHitInfo); virtual;
     procedure DoHeaderDblClick(const HitInfo: TVTHeaderHitInfo); virtual;
     procedure DoHeaderDragged(Column: TColumnIndex; OldPosition: TColumnPosition); virtual;
@@ -2927,6 +2937,7 @@ type
     property OnGetPopupMenu: TVTPopupEvent read FOnGetPopupMenu write FOnGetPopupMenu;
     property OnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent read FOnGetUserClipboardFormats
       write FOnGetUserClipboardFormats;
+    property OnHeaderAddPopupItem: TVTHeaderAddPopupItemEvent read FOnHeaderAddPopupItem write FOnHeaderAddPopupItem;
     property OnHeaderClick: TVTHeaderClickEvent read FOnHeaderClick write FOnHeaderClick;
     property OnHeaderDblClick: TVTHeaderClickEvent read FOnHeaderDblClick write FOnHeaderDblClick;
     property OnHeaderDragged: TVTHeaderDraggedEvent read FOnHeaderDragged write FOnHeaderDragged;
@@ -3666,6 +3677,7 @@ type
     property OnGetNodeDataSize;
     property OnGetPopupMenu;
     property OnGetUserClipboardFormats;
+    property OnHeaderAddPopupItem;
     property OnHeaderClick;
     property OnHeaderDblClick;
     property OnHeaderDragged;
@@ -3925,6 +3937,7 @@ type
     property OnGetNodeWidth;
     property OnGetPopupMenu;
     property OnGetUserClipboardFormats;
+    property OnHeaderAddPopupItem;
     property OnHeaderClick;
     property OnHeaderDblClick;
     property OnHeaderDragged;
@@ -8357,6 +8370,7 @@ begin
 
     if (Button = mbRight) then
     begin
+      Dec(P.Y, FHeader.FHeight); // popup menus at actual clicked point
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
       Self.FDownIndex := NoColumn;
       Self.FTrackIndex := NoColumn;
@@ -8377,6 +8391,7 @@ begin
       else if (hoAutoColumnPopupMenu in Header.Options) then
       begin
         fColumnPopupMenu := TVTHeaderPopupMenu.Create(Header.TreeView);
+        TVTHeaderPopupMenu(fColumnPopupMenu).OnAddHeaderPopupItem := HeaderPopupMenuAddHeaderPopupItem;
         TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
         fColumnPopupMenu.PopupComponent := Header.Treeview;
         if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
@@ -8395,6 +8410,14 @@ begin
     FHeader.Invalidate(Items[NewClickIndex]);
   if (FClickIndex > NoColumn) and (FClickIndex <> NewClickIndex) then
     FHeader.Invalidate(Items[FClickIndex]);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVirtualTreeColumns.HeaderPopupMenuAddHeaderPopupItem(const Sender: TBaseVirtualTree; const Column: TColumnIndex;
+  var Cmd: TAddPopupItemType);
+begin
+  Sender.DoHeaderAddPopupItem(Column, Cmd);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20683,6 +20706,16 @@ procedure TBaseVirtualTree.DoGetUserClipboardFormats(var Formats: TFormatEtcArra
 begin
   if Assigned(FOnGetUserClipboardFormats) then
     FOnGetUserClipboardFormats(Self, Formats);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoHeaderAddPopupItem(const Column: TColumnIndex; var Cmd: TAddPopupItemType);
+
+begin
+  if Assigned(FOnHeaderAddPopupItem) then
+    FOnHeaderAddPopupItem(Self, Column, Cmd);
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
