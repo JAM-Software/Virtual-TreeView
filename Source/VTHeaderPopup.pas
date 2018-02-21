@@ -107,7 +107,7 @@ type
 implementation
 
 uses
-  Winapi.Windows;
+  Winapi.Windows, System.Types;
 
 resourcestring
   sResizeColumnToFit = 'Size &Column to Fit';
