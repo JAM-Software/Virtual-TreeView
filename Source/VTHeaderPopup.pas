@@ -245,7 +245,8 @@ var
   P: TPoint;
   Column: TColumnIndex;
 begin
-  P := TBaseVirtualTree(PopupComponent).ScreenToClient(PopupPoint);
+  P := Point(PopupPoint.X, PopupPoint.Y + TBaseVirtualTree(PopupComponent).Header.Height);
+  P := TBaseVirtualTree(PopupComponent).ScreenToClient(P);
   Column := TBaseVirtualTree(PopupComponent).Header.Columns.ColumnFromPosition(P);
   if Column <> InvalidColumn then
     TBaseVirtualTree(PopupComponent).Header.AutoFitColumns(True, smaUseColumnOption, Column, Column);
