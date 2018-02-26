@@ -85,6 +85,10 @@ procedure FillDragRectangles(DragWidth, DragHeight, DeltaX, DeltaY: Integer; var
 //        call VirtualTrees.Utils.ApplyDragImage() with your `IDataObject` and your bitmap.
 procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 
+/// Returns Tree if the mouse cursor is currently visible and False in case it is suppressed.
+/// Useful when doing hot-tracking on touchscreens, see issue #766
+function IsMouseCursorVisible(): Boolean;
+
 
 implementation
 
@@ -1320,6 +1324,18 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+function IsMouseCursorVisible(): Boolean;
+var
+  CI: TCursorInfo;
+begin
+  CI.cbSize := SizeOf(CI);
+  Result := GetCursorInfo(CI) and (CI.flags = CURSOR_SHOWING);
+  // 0                     Hidden
+  // CURSOR_SHOWING (1)    Visible
+  // CURSOR_SUPPRESSED (2) Touch/Pen Input (Windows 8+)
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648381(v=vs.85).aspx
+end;
 
 
 end.
