@@ -22279,7 +22279,7 @@ var
   lImageList: TCustomImageList;
 begin
   if not Assigned(OnGetImageIndexEx) and (((Kind = TVTImageKind.ikNormal) and not Assigned(fImages))
-    or ((Kind = TVTImageKind.ikNormal) and not Assigned(fImages))) then
+    or ((Kind = TVTImageKind.ikState) and not Assigned(fStateImages))) then
   begin
     Result.cx := 0;
     Result.cy := 0;

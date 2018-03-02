@@ -4,6 +4,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #769: GetImageSize Fails if kind ikState and not assigned(StateImages)
   * Fixed issue #766: Incorrect HotTrack with Touch-Scrolling
   * Pull request #761: Add TBaseVirtualTree.OnAddHeaderPopupItem event and 'Size Column to Fit' menu item to TVTHeaderPopupMenu.
   * Fixed issue #760: TVirtualTreeColumns.GetFirstVisibleColumn() cause AV if called between BeginUpdate() and EndUpdate()
