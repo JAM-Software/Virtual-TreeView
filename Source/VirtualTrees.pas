@@ -10159,7 +10159,7 @@ begin
   // This method is only executed if toAutoChangeScale is set
   Self.Height := MulDiv(FHeight, M, D);
   if not ParentFont then
-    FFont.Size := MulDiv(FFont.Size, M, D);
+    Font.Height := MulDiv(Font.Height, M, D);
   // Scale the columns widths too
   for I := 0 to FColumns.Count - 1 do
   begin
@@ -22489,7 +22489,7 @@ begin
     FCurrentHotColumn := HitInfo.HitColumn;
   end;
 
-  ButtonIsHit := (hiOnItemButtonExact in HitInfo.HitPositions);
+    ButtonIsHit := (hiOnItemButtonExact in HitInfo.HitPositions);
   if Assigned(HitInfo.HitNode) and ((FHotNodeButtonHit <> ButtonIsHit) or DoInvalidate) then
   begin
     FHotNodeButtonHit := ButtonIsHit;
