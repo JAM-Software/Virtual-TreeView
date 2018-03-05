@@ -20459,7 +20459,7 @@ begin
   if Node = FFocusedNode then
     FFocusedNode := nil;
   if Node = FNextNodeToSelect then
-    FNextNodeToSelect := Node.Parent;
+    UpdateNextNodeToSelect(Node);
   if Node = FLastHitInfo.HitNode then
     FLastHitInfo.HitNode := nil;
   // fire event
@@ -22017,7 +22017,7 @@ begin
     begin
       if Assigned(FNextNodeToSelect) then
         Selected[FNextNodeToSelect] := True
-      else if Self.Focused then
+      else
         Selected[GetFirstVisible] := True;
       Self.ScrollIntoView(Self.GetFirstSelected, False);
     end;// if nothing selected
