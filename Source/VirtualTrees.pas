@@ -574,6 +574,7 @@ type
     ofsImage,
     ofsLabel, // where drawing a selection begins
     ofsText, // includes TextMargin
+    ofsRightOfText, // Includes NodeWidth and ExtraNodeWidth
     ofsEndOfClientArea // The end of the paint area
   );
 
@@ -13634,6 +13635,12 @@ begin
   // label
   pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikNormal).cx;
   pOffsets[TVTElement.ofsText] := pOffsets[TVTElement.ofsLabel] + FTextMargin;
+  if pElement <= TVTElement.ofsText then
+    exit;
+
+  // End of text
+  pOffsets[TVTElement.ofsRightOfText] := pOffsets[TVTElement.ofsText] + DoGetNodeWidth(pNode, NoColumn) + DoGetNodeExtraWidth(pNode, NoColumn);
+
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
   //TODO: support BiDi
@@ -22326,7 +22333,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetMaxRightExtend: Cardinal;
+function TBaseVirtualTree.GetMaxRightExtend(): Cardinal;
 
 // Determines the maximum with of the currently visible part of the tree, depending on the length
 // of the node texts. This method is used for determining the horizontal scroll range if no columns are used.
@@ -22335,56 +22342,31 @@ var
   Node,
   NextNode: PVirtualNode;
   TopPosition: Integer;
-  NodeLeft,
   CurrentWidth: Integer;
-  WithCheck: Boolean;
-  CheckOffset: Integer;
 
 begin
   Node := GetNodeAt(0, 0, True, TopPosition);
   Result := 0;
   if not Assigned(Node) then
     exit;
-  if toShowRoot in FOptions.FPaintOptions then
-    NodeLeft := (GetNodeLevel(Node) + 1) * FIndent
-  else
-    NodeLeft := GetNodeLevel(Node) * FIndent;
-
-  Inc(NodeLeft, GetImageSize(Node, TVTImageKind.ikState).cx);
-  Inc(NodeLeft, GetImageSize(Node, TVTImageKind.ikNormal).cx);
-  WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
-  if WithCheck then
-    CheckOffset := FCheckImages.Width + FImagesMargin
-  else
-    CheckOffset := 0;
 
   while Assigned(Node) do
   begin
     if not (vsInitialized in Node.States) then
       InitNode(Node);
-
-    if WithCheck and (Node.CheckType <> ctNone) then
-      Inc(NodeLeft, CheckOffset);
-    CurrentWidth := DoGetNodeWidth(Node, NoColumn);
-    Inc(CurrentWidth, DoGetNodeExtraWidth(Node, NoColumn));
-    if Integer(Result) < (NodeLeft + CurrentWidth) then
-      Result := NodeLeft + CurrentWidth;
+    CurrentWidth := GetOffset(TVTElement.ofsRightOfText, Node);
+    if Integer(Result) < (CurrentWidth) then
+      Result := CurrentWidth;
     Inc(TopPosition, NodeHeight[Node]);
     if TopPosition > Height then
       Break;
-
-    if WithCheck and (Node.CheckType <> ctNone) then
-      Dec(NodeLeft, CheckOffset);
 
     // Get next visible node and update left node position.
     NextNode := GetNextVisible(Node, True);
     if NextNode = nil then
       Break;
-    Inc(NodeLeft, CountLevelDifference(Node, NextNode) * Integer(FIndent));
     Node := NextNode;
   end;
-
-  Inc(Result, FMargin);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
