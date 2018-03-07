@@ -13603,12 +13603,17 @@ begin
   pOffsets[TVTElement.ofsControlMargin] := FMargin;
   if pElement = ofsControlMargin then
     exit;
-  // plus Indent
-  lNodeLevel := GetNodeLevel(pNode);
-  if toShowRoot in FOptions.FPaintOptions then
-    Inc(lNodeLevel);
   // left of checkbox
+  if not (toFixedIndent in TreeOptions.PaintOptions) then begin
+    // plus Indent
+    lNodeLevel := GetNodeLevel(pNode);
+    if toShowRoot in FOptions.FPaintOptions then
+      Inc(lNodeLevel);
+  end
+  else
+    lNodeLevel := 1;
   pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
+
   // toggle buttons
   pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
@@ -28402,13 +28407,8 @@ var
   Run,
   LastNode,
   NextNode: PVirtualNode;
-  NodeLeft,
   TextLeft,
   CurrentWidth: Integer;
-  WithCheck,
-  WithStateImages: Boolean;
-  CheckOffset: Integer;
-
 begin
   if OperationCanceled then
   begin
@@ -28424,39 +28424,10 @@ begin
     if Assigned(FOnBeforeGetMaxColumnWidth) then
       FOnBeforeGetMaxColumnWidth(FHeader, Column, UseSmartColumnWidth);
 
-    WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
-    if Assigned(FCheckImages) then
-      CheckOffset := FCheckImages.Width + FImagesMargin
-    else
-      CheckOffset := 0;
-
     if UseSmartColumnWidth then // Get first visible node which is in view.
       Run := GetTopNode
     else
       Run := GetFirstVisible(nil, True);
-
-    if Column = FHeader.MainColumn then
-    begin
-      if toFixedIndent in FOptions.FPaintOptions then
-        NodeLeft := FIndent
-      else
-      begin
-        if toShowRoot in FOptions.FPaintOptions then
-          NodeLeft := Integer((GetNodeLevel(Run) + 1) * FIndent)
-        else
-          NodeLeft := Integer(GetNodeLevel(Run) * FIndent);
-      end;
-
-      WithCheck := (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages);
-    end
-    else
-    begin
-      NodeLeft := 0;
-      WithCheck := False;
-    end;
-
-    // Consider node margin at the left of the nodes.
-    Inc(NodeLeft, FMargin);
 
     // Decide where to stop.
     if UseSmartColumnWidth then
@@ -28466,13 +28437,7 @@ begin
 
     while Assigned(Run) and not OperationCanceled do
     begin
-      TextLeft := NodeLeft;
-      if WithCheck and (Run.CheckType <> ctNone) then
-        Inc(TextLeft, CheckOffset);
-      TextLeft := TextLeft + GetImageSize(Run, ikNormal, Column).cx;
-      if WithStateImages then
-        Inc(TextLeft, GetImageSize(Run, ikState, Column).cx);
-
+      TextLeft := GetOffset(TVTElement.ofsLabel, Run);
       CurrentWidth := DoGetNodeWidth(Run, Column);
       Inc(CurrentWidth, DoGetNodeExtraWidth(Run, Column));
       Inc(CurrentWidth, DoGetCellContentMargin(Run, Column).X);
@@ -28496,8 +28461,6 @@ begin
       NextNode := GetNextVisible(Run, True);
       if NextNode = LastNode then
         Break;
-      if (Column = Header.MainColumn) and not (toFixedIndent in FOptions.FPaintOptions) then
-        Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
       Run := NextNode;
     end;
     if toShowVertGridLines in FOptions.FPaintOptions then
