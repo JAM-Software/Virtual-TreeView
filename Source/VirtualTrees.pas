@@ -13644,7 +13644,7 @@ begin
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
   //TODO: support BiDi
-  //TODO: Use this method in GetDisplayRect(), DetermineHitPositionLTR(), GetMaxRightExtend,PaintTree()...
+  //TODO: Use this method in GetDisplayRect(), DetermineHitPositionLTR(), PaintTree()...
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -27457,7 +27457,8 @@ function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnInde
 
 var
   Temp: PVirtualNode;
-  Offset: Cardinal;
+  LeftOffset: Cardinal;
+  TopOffset: Cardinal;
   CacheIsAvailable: Boolean;
   Indent,
   TextWidth: Integer;
@@ -27496,17 +27497,17 @@ begin
   end;//if not toFixedIndent
 
   // Here we know the node is visible.
-  Offset := 0;
+  TopOffset := 0;
   CacheIsAvailable := False;
   if tsUseCache in FStates then
   begin
     // If we can use the position cache then do a binary search to find a cached node which is as close as possible
     // to the current node. Iterate then through all following and visible nodes and sum up their heights.
-    Temp := FindInPositionCache(Node, Offset);
+    Temp := FindInPositionCache(Node, TopOffset);
     CacheIsAvailable := Assigned(Temp);
     while Assigned(Temp) and (Temp <> Node) do
     begin
-      Inc(Offset, NodeHeight[Temp]);
+      Inc(TopOffset, NodeHeight[Temp]);
       Temp := GetNextVisibleNoInit(Temp, True);
     end;
   end;
@@ -27518,11 +27519,11 @@ begin
       Temp := GetPreviousVisibleNoInit(Temp, True);
       if Temp = nil then
         Break;
-      Inc(Offset, NodeHeight[Temp]);
+      Inc(TopOffset, NodeHeight[Temp]);
     until False;
   end;
 
-  Result := Rect(0, Offset, Max(FRangeX, ClientWidth), Offset + NodeHeight[Node]);
+  Result := Rect(0, TopOffset, Max(FRangeX, ClientWidth), TopOffset + NodeHeight[Node]);
 
   // Limit left and right bounds to the given column (if any) and move bounds according to current scroll state.
   if Column > NoColumn then
@@ -27539,7 +27540,7 @@ begin
   if TextOnly then
   begin
     // Start with the offset of the text in the column and consider the indentation level too.
-    Offset := FMargin + Indent;
+    LeftOffset := FMargin + Indent;
     // If the text of a node is involved then we have to consider directionality and alignment too.
     if Column <= NoColumn then
     begin
@@ -27555,24 +27556,24 @@ begin
     if MainColumnHit then
     begin
       if toShowRoot in FOptions.FPaintOptions then
-        Inc(Offset, FIndent);
+        Inc(LeftOffset, FIndent);
       if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (Node.CheckType <> ctNone) then
-        Inc(Offset, FCheckImages.Width + FImagesMargin);
+        Inc(LeftOffset, FCheckImages.Width + FImagesMargin);
     end;
     // Consider associated images.
-    Inc(Offset, GetImageSize(Node, TVTImageKind.ikState, Column).cx);
-    Inc(Offset, GetImageSize(Node, TVTImageKind.ikNormal, Column).cx);
+    Inc(LeftOffset, GetImageSize(Node, TVTImageKind.ikState, Column).cx);
+    Inc(LeftOffset, GetImageSize(Node, TVTImageKind.ikNormal, Column).cx);
 
     // Offset contains now the distance from the left or right border of the rectangle (depending on bidi mode).
     // Now consider the alignment too and calculate the final result.
     if CurrentBidiMode = bdLeftToRight then
     begin
-      Inc(Result.Left, Offset);
+      Inc(Result.Left, LeftOffset);
       // Left-to-right reading does not need any special adjustment of the alignment.
     end
     else
     begin
-      Dec(Result.Right, Offset);
+      Dec(Result.Right, LeftOffset);
 
       // Consider bidi mode here. In RTL context does left alignment actually mean right alignment and vice versa.
       ChangeBiDiModeAlignment(CurrentAlignment);
