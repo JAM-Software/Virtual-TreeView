@@ -1,4 +1,5 @@
 ﻿V7.0: (Under development)
+  * Fixed issue #752: HandleDrawSelection() does not correctly take horizontal scroll position into account
   * The support for Windows XP/2003 has been dropped (issue #707). This means:
     - We did not intentionally break XP support.
 	- We do no longer test on Windows XP/2003

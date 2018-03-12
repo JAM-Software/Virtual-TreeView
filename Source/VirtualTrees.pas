@@ -13865,13 +13865,13 @@ begin
     begin
       // The mouse coordinates don't include any horizontal scrolling hence take this also
       // out from the returned column position.
-      NodeLeft := FHeader.FColumns[MainColumn].Left - FEffectiveOffsetX;
+      NodeLeft := FHeader.FColumns[MainColumn].Left + FEffectiveOffsetX;
       NodeRight := NodeLeft + FHeader.FColumns[MainColumn].Width;
     end
     else
     begin
-      NodeLeft := 0;
-      NodeRight := ClientWidth;
+      NodeLeft := 0 + FEffectiveOffsetX;
+      NodeRight := NodeLeft + ClientWidth;
     end;
     if CurrentBidiMode = bdLeftToRight then
       Result := CollectSelectedNodesLTR(MainColumn, NodeLeft, NodeRight, CurrentAlignment, OldRect, NewRect)
