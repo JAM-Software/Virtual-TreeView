@@ -34460,7 +34460,7 @@ begin
     if Canvas = nil then
       Canvas := Self.Canvas;
 
-    if Column = FHeader.MainColumn then
+    if (Column = FHeader.MainColumn) or (Column = NoColumn) then
     begin
       // Primary column or no columns.
       Data := InternalData(Node);
