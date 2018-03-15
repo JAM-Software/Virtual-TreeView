@@ -3150,7 +3150,7 @@ type
     procedure SaveToStream(Stream: TStream; Node: PVirtualNode = nil); virtual;
     function ScaledPixels(pPixels: Integer): Integer;
     function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
-    function ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean; overload;
+    function ScrollIntoView(Column: TColumnIndex; Center: Boolean; Node: PVirtualNode = nil): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
     procedure SetCheckStateForAll(aCheckState: TCheckState; pSelectedOnly: Boolean; pExcludeDisabled: Boolean = True);
     procedure SetNodeData(pNode: PVirtualNode; pUserData: Pointer); overload; inline;
@@ -32192,7 +32192,7 @@ begin
     if Horizontally then
       // 2) scroll horizontally
       // Center only if there is enough space for the focused column, otherwise left align, see issue #397.
-      ScrolledHorizontally := ScrollIntoView(FFocusedColumn, Center and (R.Width <= (ClientWidth - Header.Columns.GetVisibleFixedWidth)));
+      ScrolledHorizontally := ScrollIntoView(FFocusedColumn, Center and (R.Width <= (ClientWidth - Header.Columns.GetVisibleFixedWidth)), Node);
   end;
 
   Result := ScrolledVertically or ScrolledHorizontally;
@@ -32207,7 +32207,7 @@ begin
   Result := MulDiv(pPixels, {$if CompilerVersion > 31}Self.FCurrentPPI{$else}Screen.PixelsPerInch{$ifend}, 96);
 end;
 
-function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean): Boolean;
+function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean; Node: PVirtualNode = nil): Boolean;
 
 // Scrolls the columns so that the given column is in the client area and returns True if the columns really have been
 // scrolled (e.g. to avoid further updates) else returns False.
@@ -32216,36 +32216,27 @@ var
   ColumnLeft,
   ColumnRight: Integer;
   NewOffset: Integer;
+  R: TRect;
 
 begin
   Result := False;
 
-  if not FHeader.UseColumns then
-    Exit;
-  if not FHeader.Columns.IsValidColumn(Column) then
-    Exit; // Just in case.
-
+  if FHeader.UseColumns and FHeader.Columns.IsValidColumn(Column) then begin
   ColumnLeft := Header.Columns.Items[Column].Left;
   ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
+  end else if Assigned(Node) then begin
+    R := GetDisplayRect(Node, NoColumn, not (toGridExtensions in FOptions.FMiscOptions));
+    ColumnLeft := R.Left;
+    ColumnRight := R.Right;
+  end else
+    Exit;
 
   NewOffset := FEffectiveOffsetX;
-  if Center then
-  begin
-    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
-    if NewOffset <> FEffectiveOffsetX then
-    begin
-      if UseRightToLeftAlignment then
-        SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
-      else
-        SetOffsetX(-NewOffset);
-    end;
-    Result := True;
-  end
-  else if not (coFixed in Header.Columns[Column].Options) then
+  if (Header.Columns.GetVisibleFixedWidth > 0) and (not Center) then
   begin
     if ColumnRight > ClientWidth then
-      NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft)
-    else if (ColumnLeft < Header.Columns.GetVisibleFixedWidth) then
+      NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
+    else if ColumnLeft < Header.Columns.GetVisibleFixedWidth then
       NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft);
     if NewOffset <> FEffectiveOffsetX then
     begin
@@ -32257,7 +32248,17 @@ begin
     Result := True;
   end
   else
+  begin
+    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
+    if NewOffset <> FEffectiveOffsetX then
+    begin
+      if UseRightToLeftAlignment then
+        SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
+      else
+        SetOffsetX(-NewOffset);
+    end;
     Result := True;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
