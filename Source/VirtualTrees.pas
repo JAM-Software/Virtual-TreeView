@@ -13641,8 +13641,8 @@ begin
 
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
-  //TODO: support BiDi
-  //TODO: Use this method in GetDisplayRect(), DetermineHitPositionLTR(), PaintTree()...
+  //TODO: specific BiDi support necessary?
+  //TODO: Use this method in DetermineHitPositionLTR(), PaintTree()...
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -27458,7 +27458,6 @@ var
   LeftOffset: Cardinal;
   TopOffset: Cardinal;
   CacheIsAvailable: Boolean;
-  Indent,
   TextWidth: Integer;
   MainColumnHit: Boolean;
   CurrentBidiMode: TBidiMode;
@@ -27480,19 +27479,6 @@ begin
   // Check whether the node is visible (determine indentation level btw.).
   if not IsEffectivelyVisible[Node] then
     Exit;
-  Temp := Node;
-  Indent := 0;
-  if not (toFixedIndent in FOptions.FPaintOptions) then
-  begin
-    while Temp <> FRoot do
-    begin
-      if (Temp = nil) or not (vsVisible in Temp.States) or not (vsExpanded in Temp.Parent.States) then
-        Exit;
-      Temp := Temp.Parent;
-      if MainColumnHit and (Temp <> FRoot) then
-        Inc(Indent, FIndent);
-    end;
-  end;//if not toFixedIndent
 
   // Here we know the node is visible.
   TopOffset := 0;
@@ -27537,8 +27523,6 @@ begin
   // Limit left and right bounds further if only the text area is required.
   if TextOnly then
   begin
-    // Start with the offset of the text in the column and consider the indentation level too.
-    LeftOffset := FMargin + Indent;
     // If the text of a node is involved then we have to consider directionality and alignment too.
     if Column <= NoColumn then
     begin
@@ -27552,15 +27536,10 @@ begin
     end;
 
     if MainColumnHit then
-    begin
-      if toShowRoot in FOptions.FPaintOptions then
-        Inc(LeftOffset, FIndent);
-      if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (Node.CheckType <> ctNone) then
-        Inc(LeftOffset, FCheckImages.Width + FImagesMargin);
-    end;
-    // Consider associated images.
-    Inc(LeftOffset, GetImageSize(Node, TVTImageKind.ikState, Column).cx);
-    Inc(LeftOffset, GetImageSize(Node, TVTImageKind.ikNormal, Column).cx);
+      LeftOffset := GetOffset(TVTElement.ofsLabel, Node)
+    else
+      // For a column we only need t consider associated images and the margin.
+      LeftOffset := FMargin + GetImageSize(Node, TVTImageKind.ikState, Column).cx + GetImageSize(Node, TVTImageKind.ikNormal, Column).cx;
 
     // Offset contains now the distance from the left or right border of the rectangle (depending on bidi mode).
     // Now consider the alignment too and calculate the final result.
