@@ -13215,7 +13215,7 @@ begin
   if Reverse then
     TargetX := 0
   else
-    TargetX := FIndent;
+    TargetX := FIndent + ScaledPixels(2);
 
   with PaintInfo.Canvas do
   begin
@@ -13616,7 +13616,6 @@ begin
 
   // toggle buttons
   pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
-  Dec(pOffsets[TVTElement.ofsCheckBox]); // -1 taken from AdjustImageBorder() relative line 3
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
     exit;
@@ -13635,6 +13634,7 @@ begin
   // label
   pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikNormal).cx;
   pOffsets[TVTElement.ofsText] := pOffsets[TVTElement.ofsLabel] + FTextMargin;
+  Dec(pOffsets[TVTElement.ofsText]); //TODO: This should no longer be necessary once issue #369 is resolved.
   if pElement <= TVTElement.ofsText then
     exit;
 
@@ -18452,7 +18452,7 @@ procedure TBaseVirtualTree.AdjustImageBorder(BidiMode: TBidiMode; VAlign: Intege
 begin
   if BidiMode = bdLeftToRight then
   begin
-    ImageInfo.XPos := R.Left-1;
+    ImageInfo.XPos := R.Left;
     Inc(R.Left, ImageInfo.Images.Width + 2);
   end
   else
