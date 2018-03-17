@@ -5,6 +5,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Pull request #776: ScrollIntoView centers horizontally enen without Columns defined
   * Fixed issue #764: When toAlwaysSelectNode is on, no node is auto-selected after the tree is cleared.
   * Fixed issue #769: GetImageSize Fails if kind ikState and not assigned(StateImages)
   * Fixed issue #766: Incorrect HotTrack with Touch-Scrolling
