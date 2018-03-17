@@ -1744,6 +1744,7 @@ type
     BidiMode: TBidiMode;          // directionality to be used for painting
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
+    Offsets: TVTOffsets;
   end;
 
   // Method called by the Animate routine for each animation step.
@@ -13611,10 +13612,11 @@ begin
   end
   else
     lNodeLevel := 1;
-  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent)) - 1; // -1 taken from AdjustImageBorder() relative line 3
+  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
 
   // toggle buttons
   pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+  Dec(pOffsets[TVTElement.ofsCheckBox]); // -1 taken from AdjustImageBorder() relative line 3
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
     exit;
@@ -30786,8 +30788,7 @@ var
 
   VAlign,
   IndentSize,
-  ButtonX,
-  ButtonY: Integer;
+  ButtonY: Integer;            // Y position of toggle button within the node's rect
   LineImage: TLineImage;
   PaintInfo: TVTPaintInfo;     // all necessary information about a node to pass to the paint routines
 
@@ -30914,16 +30915,14 @@ begin
 
         if Assigned(PaintInfo.Node) then
         begin
-          ButtonX := Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
 
           // ----- main node paint loop
           while Assigned(PaintInfo.Node) do
           begin
+            GetOffSets(PaintInfo.Node, PaintInfo.Offsets, TVTElement.ofsText);
             // Determine LineImage, SelectionLevel and IndentSize
             SelectLevel := DetermineLineImageAndSelectLevel(PaintInfo.Node, LineImage);
             IndentSize := Length(LineImage);
-            if not (toFixedIndent in FOptions.FPaintOptions) then
-              ButtonX := (IndentSize - 1) * Integer(FIndent) + Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1;
 
             // Initialize node if not already done.
             if not (vsInitialized in PaintInfo.Node.States) then
@@ -31177,7 +31176,7 @@ begin
                             if (toShowButtons in FOptions.FPaintOptions) and (vsHasChildren in Node.States) and
                               not ((vsAllChildrenHidden in Node.States) and
                               (toAutoHideButtons in TreeOptions.FAutoOptions)) then
-                              PaintNodeButton(Canvas, Node, Column, CellRect, ButtonX, ButtonY, BidiMode);
+                              PaintNodeButton(Canvas, Node, Column, CellRect, Offsets[ofsToggleButton] - Offsets[ofsControlMargin], ButtonY, BidiMode); // Relative X position of toggle button is needed for proper BiDi calculation
 
                             if ImageInfo[iiCheck].Index > -1 then
                               PaintCheckImage(Canvas, PaintInfo.ImageInfo[iiCheck], vsSelected in PaintInfo.Node.States);
