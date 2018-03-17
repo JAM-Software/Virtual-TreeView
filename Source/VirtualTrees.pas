@@ -13215,7 +13215,7 @@ begin
   if Reverse then
     TargetX := 0
   else
-    TargetX := FIndent + ScaledPixels(2);
+    TargetX := FIndent;
 
   with PaintInfo.Canvas do
   begin
@@ -24578,13 +24578,13 @@ begin
   begin
     if BidiMode = bdLeftToRight then
     begin
-      XPos := CellRect.Left;
+      XPos := CellRect.Left + Margin;
       Offset := FIndent;
     end
     else
     begin
       Offset := -Integer(FIndent);
-      XPos := CellRect.Right + Offset;
+      XPos := CellRect.Right - Margin + Offset;
     end;
 
     case FLineMode of
@@ -31176,7 +31176,7 @@ begin
                             if (toShowButtons in FOptions.FPaintOptions) and (vsHasChildren in Node.States) and
                               not ((vsAllChildrenHidden in Node.States) and
                               (toAutoHideButtons in TreeOptions.FAutoOptions)) then
-                              PaintNodeButton(Canvas, Node, Column, CellRect, Offsets[ofsToggleButton] - Offsets[ofsControlMargin], ButtonY, BidiMode); // Relative X position of toggle button is needed for proper BiDi calculation
+                              PaintNodeButton(Canvas, Node, Column, CellRect, Offsets[ofsToggleButton], ButtonY, BidiMode); // Relative X position of toggle button is needed for proper BiDi calculation
 
                             if ImageInfo[iiCheck].Index > -1 then
                               PaintCheckImage(Canvas, PaintInfo.ImageInfo[iiCheck], vsSelected in PaintInfo.Node.States);
