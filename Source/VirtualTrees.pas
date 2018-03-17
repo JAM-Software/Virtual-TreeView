@@ -12754,7 +12754,7 @@ var
   NodeWidth,
   Dummy: Integer;
   MinY, MaxY: Integer;
-  OffSets: TVTOffsets;
+  LabelOffset: Integer;
   IsInOldRect,
   IsInNewRect: Boolean;
 
@@ -12780,14 +12780,14 @@ begin
 
   if Assigned(Run) then
   begin
-    GetOffsets(Run, Offsets, ofsLabel);
+    LabelOffset := GetOffset(TVTElement.ofsLabel, Run);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
     // touch only those nodes which overlap either the old selection rectangle or the new one but not both.
     repeat
       // Collect offsets for check, normal and state images.
-      TextLeft := NodeLeft + Offsets[TVTElement.ofsLabel];
+      TextLeft := NodeLeft + LabelOffset;
       NextTop := CurrentTop + Integer(NodeHeight[Run]);
 
       // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
@@ -12795,9 +12795,9 @@ begin
       if SimpleSelection or (toFullRowSelect in FOptions.FSelectionOptions) then
       begin
         IsInOldRect := (NextTop > OldRect.Top) and (CurrentTop < OldRect.Bottom) and
-          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > OldRect.Left)) and ((NodeLeft + Offsets[TVTElement.ofsLabel]) < OldRect.Right);
+          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > OldRect.Left)) and ((NodeLeft + LabelOffset) < OldRect.Right);
         IsInNewRect := (NextTop > NewRect.Top) and (CurrentTop < NewRect.Bottom) and
-          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > NewRect.Left)) and ((NodeLeft + Offsets[TVTElement.ofsLabel]) < NewRect.Right);
+          ((FHeader.Columns.Count = 0) or (FHeader.Columns.TotalWidth > NewRect.Left)) and ((NodeLeft + LabelOffset) < NewRect.Right);
       end
       else
       begin
@@ -13642,7 +13642,7 @@ begin
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
   //TODO: specific BiDi support necessary?
-  //TODO: Use this method in DetermineHitPositionLTR(), PaintTree()...
+  //TODO: Use this method in PaintTree()...
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -19245,7 +19245,6 @@ procedure TBaseVirtualTree.DetermineHitPositionLTR(var HitInfo: THitInfo; Offset
 
 var
   MainColumnHit: Boolean;
-  Run: PVirtualNode;
   lIndent,
   TextWidth,
   ImageOffset: Integer;
@@ -19253,7 +19252,6 @@ var
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
   GetOffsets(HitInfo.HitNode, lOffsets, ofsLabel);
-  lIndent := 0;
 
   if (MainColumnHit and (Offset < lOffsets[ofsCheckbox])) then
   begin
