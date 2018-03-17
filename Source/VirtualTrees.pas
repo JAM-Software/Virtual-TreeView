@@ -12780,7 +12780,7 @@ begin
 
   if Assigned(Run) then
   begin
-    GetOffsets(Run, Offsets);
+    GetOffsets(Run, Offsets, ofsLabel);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
@@ -19246,33 +19246,16 @@ procedure TBaseVirtualTree.DetermineHitPositionLTR(var HitInfo: THitInfo; Offset
 var
   MainColumnHit: Boolean;
   Run: PVirtualNode;
-  Indent,
+  lIndent,
   TextWidth,
   ImageOffset: Integer;
-
+  lOffsets: TVTOffsets;
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
-  Indent := 0;
+  GetOffsets(HitInfo.HitNode, lOffsets, ofsLabel);
+  lIndent := 0;
 
-  // If columns are not used or the main column is hit then the tree indentation must be considered too.
-  if MainColumnHit then
-  begin
-    if toFixedIndent in FOptions.FPaintOptions then
-      Indent := FIndent
-    else
-    begin
-      Run := HitInfo.HitNode;
-      while (Run.Parent <> FRoot) do
-      begin
-        Inc(Indent, FIndent);
-      Run := Run.Parent;
-      end;
-      if toShowRoot in FOptions.FPaintOptions then
-        Inc(Indent, FIndent);
-    end;
-  end;
-
-  if (MainColumnHit and (Offset < (Indent + Margin{See issue #259}))) then
+  if (MainColumnHit and (Offset < lOffsets[ofsCheckbox])) then
   begin
     // Position is to the left of calculated indentation which can only happen for the main column.
     // Check whether it corresponds to a button/checkbox.
@@ -19281,9 +19264,9 @@ begin
       // Position of button is interpreted very generously to avoid forcing the user
       // to click exactly into the 9x9 pixels area. The entire node height and one full
       // indentation level is accepted as button hit.
-      if Offset >= Indent - Integer(FIndent) then
+      if Offset >= lOffsets[ofsCheckbox] - Integer(FIndent) then
         Include(HitInfo.HitPositions, hiOnItemButton);
-      if Offset >= Indent - FPlusBM.Width then
+      if Offset > lOffsets[ofsToggleButton] then
         Include(HitInfo.HitPositions, hiOnItemButtonExact);
     end;
     // no button hit so position is on indent
@@ -19304,14 +19287,7 @@ begin
     // In report mode no hit other than in the main column is possible.
     if MainColumnHit or not (toReportMode in FOptions.FMiscOptions) then
     begin
-      ImageOffset := Indent +  FMargin;
-
-      // Check support is only available for the main column.
-      if MainColumnHit and (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and
-        (HitInfo.HitNode.CheckType <> ctNone) then
-        Inc(ImageOffset, FCheckImages.Width + FImagesMargin);
-
-      if MainColumnHit and (Offset < ImageOffset) then
+      if MainColumnHit and (Offset < lOffsets[ofsStateImage]) then
       begin
         HitInfo.HitPositions := [hiOnItem];
         if (HitInfo.HitNode.CheckType <> ctNone) then
@@ -19319,12 +19295,18 @@ begin
       end
       else
       begin
-        Inc(ImageOffset, GetImageSize(HitInfo.HitNode, ikState, HitInfo.HitColumn).cx);
+        if MainColumnHit then
+          ImageOffset := lOffsets[ofsImage]
+        else
+          ImageOffSet := Margin + GetImageSize(HitInfo.HitNode, ikState, HitInfo.HitColumn).cx;
         if Offset < ImageOffset then
           Include(HitInfo.HitPositions, hiOnStateIcon)
         else
         begin
-          Inc(ImageOffset, GetImageSize(HitInfo.HitNode, ikNormal, HitInfo.HitColumn).cx);
+          if MainColumnHit then
+            ImageOffset := lOffsets[ofsLabel]
+          else
+            Inc(ImageOffset, GetImageSize(HitInfo.HitNode, ikNormal, HitInfo.HitColumn).cx);
           if Offset < ImageOffset then
             Include(HitInfo.HitPositions, hiOnNormalIcon)
           else
@@ -19342,19 +19324,19 @@ begin
               case Alignment of
                 taCenter:
                   begin
-                    Indent := (ImageOffset + Right - TextWidth) div 2;
-                    if Offset < Indent then
+                    lIndent := (ImageOffset + Right - TextWidth) div 2;
+                    if Offset < lIndent then
                       Include(HitInfo.HitPositions, hiOnItemLeft)
                     else
-                      if Offset < Indent + TextWidth then
+                      if Offset < lIndent + TextWidth then
                         Include(HitInfo.HitPositions, hiOnItemLabel)
                       else
                         Include(HitInfo.HitPositions, hiOnItemRight);
                   end;
                 taRightJustify:
                   begin
-                    Indent := Right - TextWidth;
-                    if Offset < Indent then
+                    lIndent := Right - TextWidth;
+                    if Offset < lIndent then
                       Include(HitInfo.HitPositions, hiOnItemLeft)
                     else
                       Include(HitInfo.HitPositions, hiOnItemLabel);
