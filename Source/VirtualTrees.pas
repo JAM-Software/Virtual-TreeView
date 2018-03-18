@@ -13215,7 +13215,7 @@ begin
   if Reverse then
     TargetX := 0
   else
-    TargetX := FIndent + ScaledPixels(FImagesMargin);
+    TargetX := Integer(FIndent) + ScaledPixels(FImagesMargin);
 
   with PaintInfo.Canvas do
   begin
