@@ -1736,7 +1736,7 @@ type
     Node: PVirtualNode;           // the node to paint
     Column: TColumnIndex;         // the node's column index to paint
     Position: TColumnPosition;    // the column position of the node
-    CellRect,                     // the node cell
+    CellRect: TRect;              // the node cell
     ContentRect: TRect;           // the area of the cell used for the node's content
     NodeWidth: Integer;           // the actual node width
     Alignment: TAlignment;        // how to align within the node rectangle
@@ -3093,7 +3093,7 @@ type
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetNodeLevelForSelectConstraint(Node: PVirtualNode): integer;
     function GetOffset(pElement: TVTElement; pNode: PVirtualNode): integer;
-    procedure GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea);
+    procedure GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea; pColumn: Integer = NoColumn);
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -13594,7 +13594,7 @@ begin
   Exit(lOffsets[pElement]);
 end;
 
-procedure TBaseVirtualTree.GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea);
+procedure TBaseVirtualTree.GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea; pColumn: Integer = NoColumn);
 // Calculates the offset up to the given element and supplies them in an array.
 var
   lNodeLevel: Integer;
@@ -13603,19 +13603,24 @@ begin
   pOffsets[TVTElement.ofsMargin] := FMargin;
   if pElement = ofsMargin then
     exit;
-  // left of checkbox
-  if not (toFixedIndent in TreeOptions.PaintOptions) then begin
-    // plus Indent
-    lNodeLevel := GetNodeLevel(pNode);
-    if toShowRoot in FOptions.FPaintOptions then
-      Inc(lNodeLevel);
-  end
-  else
-    lNodeLevel := 1;
-  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin] + (lNodeLevel * Integer(FIndent));
 
-  // toggle buttons
-  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+  // left of checkbox
+  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin];
+  if (pColumn = NoColumn) or (pColumn = Header.MainColumn) then
+  begin
+    if not (toFixedIndent in TreeOptions.PaintOptions) then begin
+      // plus Indent
+      lNodeLevel := GetNodeLevel(pNode);
+      if toShowRoot in FOptions.FPaintOptions then
+        Inc(lNodeLevel);
+    end
+    else
+      lNodeLevel := 1;
+    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * Integer(FIndent));
+    // toggle buttons
+    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+  end;//if MainColumn
+
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
     exit;
@@ -13639,12 +13644,12 @@ begin
     exit;
 
   // End of text
-  pOffsets[TVTElement.ofsRightOfText] := pOffsets[TVTElement.ofsText] + DoGetNodeWidth(pNode, NoColumn) + DoGetNodeExtraWidth(pNode, NoColumn);
+  pOffsets[TVTElement.ofsRightOfText] := pOffsets[TVTElement.ofsText] + DoGetNodeWidth(pNode, pColumn) + DoGetNodeExtraWidth(pNode, pColumn);
 
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
   //TODO: specific BiDi support necessary?
-  //TODO: Use this method in PaintTree()...
+  //TODO: Try to make TVTPaintInfo.NodeWidth deprecated, Use this method in PaintTree()...
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -19253,7 +19258,7 @@ var
   lOffsets: TVTOffsets;
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
-  GetOffsets(HitInfo.HitNode, lOffsets, ofsLabel);
+  GetOffsets(HitInfo.HitNode, lOffsets, ofsRightOfText, HitInfo.HitColumn);
 
   if (MainColumnHit and (Offset < lOffsets[ofsCheckbox])) then
   begin
@@ -19295,25 +19300,19 @@ begin
       end
       else
       begin
-        if MainColumnHit then
-          ImageOffset := lOffsets[ofsImage]
-        else
-          ImageOffSet := Margin + GetImageSize(HitInfo.HitNode, ikState, HitInfo.HitColumn).cx;
+        ImageOffset := lOffsets[ofsImage];
         if Offset < ImageOffset then
           Include(HitInfo.HitPositions, hiOnStateIcon)
         else
         begin
-          if MainColumnHit then
-            ImageOffset := lOffsets[ofsLabel]
-          else
-            Inc(ImageOffset, GetImageSize(HitInfo.HitNode, ikNormal, HitInfo.HitColumn).cx);
+          ImageOffset := lOffsets[ofsLabel];
           if Offset < ImageOffset then
             Include(HitInfo.HitPositions, hiOnNormalIcon)
           else
           begin
+            TextWidth := lOffsets[ofsRightOfText] - lOffsets[ofsText];
             // ImageOffset contains now the left border of the node label area. This is used to calculate the
             // correct alignment in the column.
-            TextWidth := DoGetNodeWidth(HitInfo.HitNode, HitInfo.HitColumn);
 
             // Check if the text can be aligned at all. This is only possible if there is enough room
             // in the remaining text rectangle.
@@ -30919,7 +30918,6 @@ begin
           // ----- main node paint loop
           while Assigned(PaintInfo.Node) do
           begin
-            GetOffSets(PaintInfo.Node, PaintInfo.Offsets, TVTElement.ofsText);
             // Determine LineImage, SelectionLevel and IndentSize
             SelectLevel := DetermineLineImageAndSelectLevel(PaintInfo.Node, LineImage);
             IndentSize := Length(LineImage);
@@ -31009,6 +31007,7 @@ begin
                       PaintInfo.BidiMode := BidiMode;
                       PaintInfo.Alignment := FAlignment;
                     end;
+                    GetOffSets(PaintInfo.Node, PaintInfo.Offsets, TVTElement.ofsText, PaintInfo.Column);
 
                     PaintInfo.PaintOptions := PaintOptions;
                     with PaintInfo do
@@ -31048,16 +31047,16 @@ begin
                           ContentRect := CellRect;
                           // Set up the distance from column border (margin).
                           if BidiMode <> bdLeftToRight then
-                            Dec(ContentRect.Right, FMargin)
+                            Dec(ContentRect.Right, FMArgin)//Offsets[ofsLabel])
                           else
-                            Inc(ContentRect.Left, FMargin);
+                            Inc(ContentRect.Left, FMArgin);//Offsets[ofsLabel]);
 
                           if ShowCheckImages and IsMainColumn then
                           begin
                             ImageInfo[iiCheck].Index := GetCheckImage(Node);
-                            ImageInfo[iiCheck].Images := FCheckImages;
                             if ImageInfo[iiCheck].Index > -1 then
                             begin
+                              ImageInfo[iiCheck].Images := FCheckImages;
                               AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiCheck]);
                               ImageInfo[iiCheck].Ghosted := False;
                             end;
