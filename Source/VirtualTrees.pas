@@ -567,8 +567,8 @@ type
 
   // content elements of the control from left to right, used when calculatin left margins.
   TVTElement = (
-    ofsControlMargin,
-    ofsToggleButton,
+    ofsMargin, // right of the margin
+    ofsToggleButton, // the exact x-postition of the toggle button
     ofsCheckBox,
     ofsStateImage,
     ofsImage,
@@ -13600,8 +13600,8 @@ var
   lNodeLevel: Integer;
 begin
   // Left Margin
-  pOffsets[TVTElement.ofsControlMargin] := FMargin;
-  if pElement = ofsControlMargin then
+  pOffsets[TVTElement.ofsMargin] := FMargin;
+  if pElement = ofsMargin then
     exit;
   // left of checkbox
   if not (toFixedIndent in TreeOptions.PaintOptions) then begin
@@ -13612,7 +13612,7 @@ begin
   end
   else
     lNodeLevel := 1;
-  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
+  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin] + (lNodeLevel * Integer(FIndent));
 
   // toggle buttons
   pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
@@ -24578,13 +24578,13 @@ begin
   begin
     if BidiMode = bdLeftToRight then
     begin
-      XPos := CellRect.Left + Margin;
+      XPos := CellRect.Left + PaintInfo.Offsets[ofsMargin];
       Offset := FIndent;
     end
     else
     begin
       Offset := -Integer(FIndent);
-      XPos := CellRect.Right - Margin + Offset;
+      XPos := CellRect.Right - PaintInfo.Offsets[ofsMargin] + Offset;
     end;
 
     case FLineMode of
