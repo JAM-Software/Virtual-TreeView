@@ -13211,7 +13211,7 @@ var
   TargetX: Integer;
 
 begin
-  HalfWidth := Round(FIndent / 2);
+  HalfWidth := (FIndent div 2);
   if Reverse then
     TargetX := 0
   else
@@ -13615,7 +13615,7 @@ begin
   pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsControlMargin] + (lNodeLevel * Integer(FIndent));
 
   // toggle buttons
-  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - Round((Integer(FIndent) - FPlusBM.Width) / 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
     exit;
@@ -18453,12 +18453,12 @@ begin
   if BidiMode = bdLeftToRight then
   begin
     ImageInfo.XPos := R.Left;
-    Inc(R.Left, ImageInfo.Images.Width + 2);
+    Inc(R.Left, ImageInfo.Images.Width + FImagesMargin);
   end
   else
   begin
     ImageInfo.XPos := R.Right - ImageInfo.Images.Width;
-    Dec(R.Right, ImageInfo.Images.Width + 2);
+    Dec(R.Right, ImageInfo.Images.Width + FImagesMargin);
   end;
   ImageInfo.YPos := R.Top + VAlign - ImageInfo.Images.Height div 2;
 end;
