@@ -13215,7 +13215,7 @@ begin
   if Reverse then
     TargetX := 0
   else
-    TargetX := FIndent;
+    TargetX := FIndent + ScaledPixels(FImagesMargin);
 
   with PaintInfo.Canvas do
   begin
@@ -18452,12 +18452,12 @@ procedure TBaseVirtualTree.AdjustImageBorder(BidiMode: TBidiMode; VAlign: Intege
 begin
   if BidiMode = bdLeftToRight then
   begin
-    ImageInfo.XPos := R.Left;
+    ImageInfo.XPos := R.Left + FImagesMargin;
     Inc(R.Left, ImageInfo.Images.Width + FImagesMargin);
   end
   else
   begin
-    ImageInfo.XPos := R.Right - ImageInfo.Images.Width;
+    ImageInfo.XPos := R.Right - ImageInfo.Images.Width - FImagesMargin;
     Dec(R.Right, ImageInfo.Images.Width + FImagesMargin);
   end;
   ImageInfo.YPos := R.Top + VAlign - ImageInfo.Images.Height div 2;
