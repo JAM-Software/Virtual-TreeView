@@ -18143,7 +18143,8 @@ begin
       Invalidate;
     end;
 
-    inherited;
+    if Assigned(PopupMenu) then
+      inherited;
 
     // get information about the hit
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
