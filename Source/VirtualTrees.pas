@@ -24425,7 +24425,7 @@ var
   CutNode: Boolean;
   PaintFocused: Boolean;
   DrawEnabled: Boolean;
-
+  CustomOverlayDrawing: Boolean; // False if the built-in overloay drawing of TImageList should be used, True if custom drawing should take place.
 begin
   with PaintInfo do
   begin
@@ -24434,13 +24434,8 @@ begin
 
     // Since the overlay image must be specified together with the image to draw
     // it is meaningfull to retrieve it in advance.
-    if DoOverlay then begin
-      GetImageIndex(PaintInfo, ikOverlay, iiOverlay);
-      // If the overlay image is the same as the normal image, don't paint it.
-      // Users often forgot to respect the Kind parameter and ended up opening bugs.
-      if PaintInfo.ImageInfo[iiOverlay].Equals(PaintInfo.ImageInfo[iiNormal]) then
-        PaintInfo.ImageInfo[iiOverlay].Index := -1;
-    end
+    if DoOverlay then
+      GetImageIndex(PaintInfo, ikOverlay, iiOverlay)
     else
       PaintInfo.ImageInfo[iiOverlay].Index := -1;
 
@@ -24457,12 +24452,17 @@ begin
       else
         Images.BlendColor := Color;
 
+      ExtraStyle := ILD_TRANSPARENT;
       // If the user returned an index >= 15 then we cannot use the built-in overlay image drawing.
-      // Instead we do it manually.
-      if (ImageInfo[iiOverlay].Index > -1) and (ImageInfo[iiOverlay].Index < 15) then
-        ExtraStyle := ILD_TRANSPARENT or ILD_OVERLAYMASK and IndexToOverlayMask(ImageInfo[iiOverlay].Index + 1)
+      // Instead we do it manually. Also of the image list of the normal and the overlay icon is different,
+      // we can't use the built-in drawing. See issue #779.
+      if (ImageInfo[iiOverlay].Index > -1) then begin
+        CustomOverlayDrawing := (ImageInfo[iiOverlay].Index >= 15) or (ImageInfo[iiOverlay].Images <> ImageInfo[iiNormal].Images);
+        if not CustomOverlayDrawing then
+          ExtraStyle := ILD_TRANSPARENT or ILD_OVERLAYMASK and IndexToOverlayMask(ImageInfo[iiOverlay].Index + 1);
+      end
       else
-        ExtraStyle := ILD_TRANSPARENT;
+        CustomOverlayDrawing := False;
 
       // Blend image if enabled and the tree has the focus (or ghosted images must be drawn also if unfocused) ...
       if (toUseBlendedImages in FOptions.FPaintOptions) and PaintFocused
@@ -24485,7 +24485,7 @@ begin
       // anything larger will be truncated by the ILD_OVERLAYMASK).
       // However this will only be done if the overlay image index is > 15, to avoid breaking code that relies
       // on overlay image indices (e.g. when using system image lists).
-      if PaintInfo.ImageInfo[iiOverlay].Index >= 15 then begin
+      if CustomOverlayDrawing then begin
         ExtraStyle := ExtraStyle and not ILD_BLEND50; // Fixes issue #551
         // Note: XPos and YPos are those of the normal images.
         DrawImage(ImageInfo[iiOverlay].Images, ImageInfo[iiOverlay].Index, Canvas, XPos, YPos,
