@@ -5,6 +5,9 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #781: "~" not working on German keyboard
+  * Fixed issue #779: Overlay Images with Index < 15 not drawn when OnGetImageIndexEx is used
+  * Fixed issue #777: Margin is applied right of tree lines, but should be applied left of them.
   * Pull request #776: ScrollIntoView centers horizontally enen without Columns defined
   * Fixed issue #764: When toAlwaysSelectNode is on, no node is auto-selected after the tree is cleared.
   * Fixed issue #769: GetImageSize Fails if kind ikState and not assigned(StateImages)

@@ -17526,12 +17526,12 @@ begin
           VK_ADD:
             if not (tsIncrementalSearching in FStates) then
             begin
-              if ssCtrl in Shift then
+              if Shift = [ssCtrl] then
                 if (toReverseFullExpandHotKey in TreeOptions.MiscOptions) xor (ssShift in Shift) then
                   FullExpand
                 else
                   FHeader.AutoFitColumns
-              else
+              else if Shift = [] then
                 if Assigned(FFocusedNode) and not (vsExpanded in FFocusedNode.States) then
                   ToggleNode(FFocusedNode);
             end
