@@ -1353,7 +1353,7 @@ type
     function DoGetPopupMenu(Column: TColumnIndex; Position: TPoint): TPopupMenu; virtual;
     function DoHeightTracking(var P: TPoint; Shift: TShiftState): Boolean; virtual;
     function DoHeightDblClickResize(var P: TPoint; Shift: TShiftState): Boolean; virtual;
-    procedure DoSetSortColumn(Value: TColumnIndex); virtual;
+    procedure DoSetSortColumn(Value: TColumnIndex; pSortDirection: TSortDirection); virtual;
     procedure DragTo(P: TPoint);
     procedure FixedAreaConstraintsChanged(Sender: TObject);
     function GetColumnsClass: TVirtualTreeColumnsClass; virtual;
@@ -8354,8 +8354,7 @@ begin
       if HitInfo.Column <> Header.SortColumn then
       begin
         // set sort column
-        Header.SortColumn := HitInfo.Column;
-        Header.SortDirection := Self[Header.SortColumn].DefaultSortDirection;
+        Header.DoSetSortColumn(HitInfo.Column, Self[HitInfo.Column].DefaultSortDirection);
       end//if
       else
       begin
@@ -10101,7 +10100,7 @@ begin
   if csLoading in Treeview.ComponentState then
     FSortColumn := Value
   else
-    DoSetSortColumn(Value);
+    DoSetSortColumn(Value, FSortDirection);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10392,7 +10391,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.DoSetSortColumn(Value: TColumnIndex);
+procedure TVTHeader.DoSetSortColumn(Value: TColumnIndex; pSortDirection: TSortDirection);
 
 begin
   if Value < NoColumn then
@@ -10404,6 +10403,7 @@ begin
     if FSortColumn > NoColumn then
       Invalidate(Columns[FSortColumn]);
     FSortColumn := Value;
+    FSortDirection := pSortDirection;
     if FSortColumn > NoColumn then
       Invalidate(Columns[FSortColumn]);
     if ((toAutoSort in Treeview.FOptions.FAutoOptions) or (hoHeaderClickAutoSort in Options)) and (Treeview.FUpdateCount = 0) then

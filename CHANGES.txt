@@ -5,6 +5,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #783: TVirtualTreeColumns.HandleClick() may trigger sorting twice
   * Fixed issue #781: "~" not working on German keyboard
   * Fixed issue #779: Overlay Images with Index < 15 not drawn when OnGetImageIndexEx is used
   * Fixed issue #777: Margin is applied right of tree lines, but should be applied left of them.
