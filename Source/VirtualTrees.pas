@@ -16326,7 +16326,7 @@ begin
                   CursorRect.Right := ColRight;
                   // Align the vertical hint position on the bottom bound of the node, but
                   // avoid overlapping of mouse cursor and hint.
-                  HintPos.Y := Max(HintPos.Y, ClientToScreen(CursorRect.BottomRight).Y) + 2;
+                  HintPos.Y := Max(HintPos.Y, ClientToScreen(CursorRect.BottomRight).Y) + ScaledPixels(2);
                 end
                 else
                 begin
