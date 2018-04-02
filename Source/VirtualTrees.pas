@@ -21526,7 +21526,7 @@ begin
   // height. During validation updates of the scrollbars is disabled so let's do this here.
   if Result and (toVariableNodeHeight in FOptions.FMiscOptions) then
   begin
-    UpdateScrollBars(True);
+    TThread.Queue(nil, procedure begin UpdateScrollBars(True) end);
   end;
 end;
 
@@ -33106,6 +33106,7 @@ begin
 
   if tsUpdating in FStates then
     Exit;
+  Assert(GetCurrentThreadId = MainThreadId, 'UI controls like ' + Classname + ' and its scrollbars should only be manipulated through the main thread.');
 
   if FScrollBarOptions.ScrollBars in [ssVertical, ssBoth] then
   begin
