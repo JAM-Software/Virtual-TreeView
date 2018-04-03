@@ -595,7 +595,7 @@ const
   DefaultMiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning,
     toEditOnClick];
   DefaultColumnOptions = [coAllowClick, coDraggable, coEnabled, coParentColor, coParentBidiMode, coResizable,
-    coShowDropmark, coVisible, coAllowFocus, coEditable];
+    coShowDropmark, coVisible, coAllowFocus, coEditable, coStyleColor];
 
 type
   TBaseVirtualTree = class;
@@ -6936,10 +6936,10 @@ function TVirtualTreeColumn.GetEffectiveColor(): TColor;
 // Returns the color that should effectively be used as background color for this
 // column considering all flags in the TVirtualTreeColumn.Options property
 begin
-  if (coParentColor in Options) or not (coStyleColor in Options) or not Owner.Header.TreeView.VclStyleEnabled then
-    Result := Self.Color
+  if (coParentColor in Options) or ((coStyleColor in Options) and  Owner.Header.TreeView.VclStyleEnabled) then
+    Result := Owner.Header.TreeView.FColors.BackGroundColor
   else
-    Result := Owner.Header.TreeView.FColors.BackGroundColor;
+    Result := Self.Color;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
