@@ -5,6 +5,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed issue #792: "Invalid window handle" when using styles
   * Fixed issue #788: Wrong logic in GetEffectiveColor. coStyleColor has been added to DefaultColumnOptions.
   * Fixed issue #783: TVirtualTreeColumns.HandleClick() may trigger sorting twice
   * Fixed issue #781: "~" not working on German keyboard

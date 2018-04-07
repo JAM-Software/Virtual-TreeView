@@ -453,7 +453,7 @@ begin
     FVertScrollBarWindow.Repaint;
     RedrawWindow(FVertScrollBarWindow.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
   end;
-  if FVertScrollBarWindow.HandleAllocated then begin
+  if FHorzScrollBarWindow.HandleAllocated then begin
     FHorzScrollBarWindow.Repaint;
     RedrawWindow(FHorzScrollBarWindow.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
   end;
