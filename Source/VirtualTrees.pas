@@ -9967,7 +9967,6 @@ begin
       if not (csLoading in Treeview.ComponentState) and not (hsScaling in FStates) then
         RecalculateHeader;
       Treeview.Invalidate;
-      UpdateWindow(Treeview.Handle);
     end;
   end;
 end;
