@@ -32150,7 +32150,7 @@ begin
     Exit;
 
   NewOffset := FEffectiveOffsetX;
-  if (Header.Columns.GetVisibleFixedWidth > 0) and (not Center) then
+  if not (FHeader.UseColumns and (coFixed in Header.Columns[Column].Options)) and (not Center) then
   begin
     if ColumnRight > ClientWidth then
       NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
@@ -32165,7 +32165,7 @@ begin
     end;
     Result := True;
   end
-  else
+  else if Center then
   begin
     NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
     if NewOffset <> FEffectiveOffsetX then
@@ -32176,7 +32176,7 @@ begin
         SetOffsetX(-NewOffset);
     end;
     Result := True;
-  end;
+  end
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
