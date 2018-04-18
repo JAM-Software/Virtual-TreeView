@@ -33,7 +33,8 @@ uses
   Winapi.ActiveX,
   System.Types,
   Vcl.Graphics,
-  Vcl.ImgList;
+  Vcl.ImgList,
+  Vcl.Controls;
 
 
 type
@@ -88,6 +89,8 @@ procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 /// Returns Tree if the mouse cursor is currently visible and False in case it is suppressed.
 /// Useful when doing hot-tracking on touchscreens, see issue #766
 function IsMouseCursorVisible(): Boolean;
+
+procedure ScaleImageList(const ImgList: TImageList; M, D: Integer);
 
 
 implementation
@@ -1337,5 +1340,70 @@ begin
   // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648381(v=vs.85).aspx
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure ScaleImageList(const ImgList: TImageList; M, D: Integer);
+var
+  ii : integer;
+  mb, ib, sib, smb : TBitmap;
+  TmpImgList : TImageList;
+begin
+  if M <= D then Exit;
+
+  //clear images
+  TmpImgList := TImageList.Create(nil);
+  try
+    TmpImgList.Assign(ImgList);
+
+    ImgList.Clear;
+    ImgList.SetSize(MulDiv(ImgList.Width, M, D), MulDiv(ImgList.Height, M, D));
+
+    //add images back to original ImageList stretched (if DPI scaling > 150%) or centered (if DPI scaling <= 150%)
+    for ii := 0 to -1 + TmpImgList.Count do
+    begin
+      ib := TBitmap.Create;
+      mb := TBitmap.Create;
+      try
+        ib.SetSize(TmpImgList.Width, TmpImgList.Height);
+        ib.Canvas.FillRect(ib.Canvas.ClipRect);
+
+        mb.SetSize(TmpImgList.Width, TmpImgList.Height);
+        mb.Canvas.FillRect(mb.Canvas.ClipRect);
+
+        ImageList_DrawEx(TmpImgList.Handle, ii, ib.Canvas.Handle, 0, 0, ib.Width, ib.Height, CLR_NONE, CLR_NONE, ILD_NORMAL);
+        ImageList_DrawEx(TmpImgList.Handle, ii, mb.Canvas.Handle, 0, 0, mb.Width, mb.Height, CLR_NONE, CLR_NONE, ILD_MASK);
+
+        sib := TBitmap.Create; //stretched (or centered) image
+        smb := TBitmap.Create; //stretched (or centered) mask
+        try
+          sib.SetSize(ImgList.Width, ImgList.Height);
+          sib.Canvas.FillRect(sib.Canvas.ClipRect);
+          smb.SetSize(ImgList.Width, ImgList.Height);
+          smb.Canvas.FillRect(smb.Canvas.ClipRect);
+
+          if M * 100 / D >= 150 then //stretch if >= 150%
+          begin
+            sib.Canvas.StretchDraw(Rect(0, 0, sib.Width, sib.Width), ib);
+            smb.Canvas.StretchDraw(Rect(0, 0, smb.Width, smb.Width), mb);
+          end
+          else //center if < 150%
+          begin
+            sib.Canvas.Draw((sib.Width - ib.Width) DIV 2, (sib.Height - ib.Height) DIV 2, ib);
+            smb.Canvas.Draw((smb.Width - mb.Width) DIV 2, (smb.Height - mb.Height) DIV 2, mb);
+          end;
+          ImgList.Add(sib, smb);
+        finally
+          sib.Free;
+          smb.Free;
+        end;
+    finally
+        ib.Free;
+        mb.Free;
+      end;
+    end;
+  finally
+    TmpImgList.Free;
+  end;
+end;
 
 end.

@@ -18797,6 +18797,9 @@ begin
         FTextMargin := MulDiv(FTextMargin, M, D);
         FMargin := MulDiv(FMargin, M, D);
         FImagesMargin := MulDiv(FImagesMargin, M, D);
+        // Scale utility images, #796
+        if UtilityImages.Height <> MulDiv(UtilityImageSize, M, D) then
+          ScaleImageList(UtilityImages, M, D);
         // Scale also node heights
         BeginUpdate();
         try
