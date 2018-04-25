@@ -32142,9 +32142,10 @@ begin
   Result := False;
 
   if FHeader.UseColumns and FHeader.Columns.IsValidColumn(Column) then begin
-  ColumnLeft := Header.Columns.Items[Column].Left;
-  ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
-  end else if Assigned(Node) then begin
+    ColumnLeft := Header.Columns.Items[Column].Left;
+    ColumnRight := ColumnLeft + Header.Columns.Items[Column].Width;
+  end else if Assigned(Node) and (toCenterScrollIntoView in FOptions.SelectionOptions) then begin
+    Center := False;
     R := GetDisplayRect(Node, NoColumn, not (toGridExtensions in FOptions.FMiscOptions));
     ColumnLeft := R.Left;
     ColumnRight := R.Right;
@@ -32155,7 +32156,8 @@ begin
   if not (FHeader.UseColumns and (coFixed in Header.Columns[Column].Options)) and (not Center) then
   begin
     if ColumnRight > ClientWidth then
-      NewOffset := FEffectiveOffsetX + (ColumnRight - ClientWidth)
+      NewOffset := FEffectiveOffsetX + Min(ColumnRight - ClientWidth,
+       - (Header.Columns.GetVisibleFixedWidth - ColumnLeft))
     else if ColumnLeft < Header.Columns.GetVisibleFixedWidth then
       NewOffset := FEffectiveOffsetX - (Header.Columns.GetVisibleFixedWidth - ColumnLeft);
     if NewOffset <> FEffectiveOffsetX then
