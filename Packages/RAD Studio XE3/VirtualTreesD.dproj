@@ -40,7 +40,7 @@
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DllSuffix>17</DllSuffix>
         <DesignOnlyPackage>true</DesignOnlyPackage>
-        <DCC_UnitSearchPath>..\..\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\source;$(BDSCOMMONDIR)\dcp;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>1053</VerInfo_Locale>
         <DCC_E>false</DCC_E>
