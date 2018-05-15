@@ -1610,13 +1610,16 @@ type
 
   // Export type
   TVTExportType = (
-    etNone,  // No export, normal displaying on the screen
-    etRTF,   // contentToRTF
-    etHTML,  // contentToHTML
-    etText,  // contentToText
-    etExcel, // supported by external tools
-    etWord,  // supported by external tools
-    etCustom // supported by external tools
+    etNone,   // No export, normal displaying on the screen
+    etRTF,    // contentToRTF
+    etHTML,   // contentToHTML
+    etText,   // contentToText
+    etExcel,  // supported by external tools
+    etWord,   // supported by external tools
+    etPDF,    // supported by external tools
+    etPrinter,// supported by external tools
+	etCSV,    // supported by external tools
+    etCustom  // supported by external tools
   );
 
   TVTNodeExportEvent   = procedure (Sender: TBaseVirtualTree; aExportType: TVTExportType; Node: PVirtualNode) of object;
