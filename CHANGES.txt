@@ -5,6 +5,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Pull request #796: Fixed a bug where hints of type hmTooltip had incorrect (random) position when when HitPosition was not hiOnItemLabel.
   * Fixed issue #796: Utility images are not DPI Scaled
   * Fixed issue #794: ScrollIntoView() by column centers column also when center is false
   * Fixed issue #789: Issues with toHideSelection
