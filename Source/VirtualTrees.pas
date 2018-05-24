@@ -25142,8 +25142,10 @@ begin
     FNextNodeToSelect := GetPreviousSibling(Node)
   else if GetNodeLevel(Node) > 0 then
     FNextNodeToSelect := Node.Parent
+  else if not (vsDeleting in Node.States) then  // Do not try to make a child of a node that is about to be deleted the fNextDodeToSelect. #764
+    FNextNodeToSelect := GetFirstChild(Node)
   else
-    FNextNodeToSelect := GetFirstChild(Node);
+    FNextNodeToSelect := nil;
 end;//if Assigned(Node);
 
 //----------------------------------------------------------------------------------------------------------------------
