@@ -3301,7 +3301,9 @@ type
     FRefLink: IVTEditLink;
     FLink: TStringEditLink;
     procedure AutoAdjustSize; virtual;
+    function CalcMinHeight: Integer; virtual;
     procedure CreateParams(var Params: TCreateParams); override;
+    function GetTextSize: TSize; virtual;
   public
     constructor Create(Link: TStringEditLink); reintroduce;
 
@@ -25881,7 +25883,7 @@ begin
     end;
     if toShowHorzGridLines in TreeOptions.PaintOptions then
       Dec(R.Bottom);
-    R.Bottom := R.Top + Max(R.Bottom - R.Top, FEditLink.GetBounds.Bottom - FEditLink.GetBounds.Top); // Ensure to never decrease the size of the currently active edit control. Helps to prevent issue #159
+    R.Bottom := R.Top + R.Bottom - R.Top;
     FEditLink.SetBounds(R);
   end;
 end;
@@ -33248,6 +33250,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVTEdit.CalcMinHeight: Integer;
+var
+  textHeight : Integer;
+begin
+  // Get the actual text height.
+  textHeight := GetTextSize.cy;
+  // The minimal height is the actual text height in pixels plus the the non client area.
+  Result := textHeight + (Height - ClientHeight);
+  // Also, proportionally to the text size, additional pixel(s) needs to be added for the caret.
+  Result := Result + Trunc(textHeight * 0.05);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTEdit.CMAutoAdjust(var Message: TMessage);
 
 begin
@@ -33478,35 +33494,24 @@ procedure TVTEdit.AutoAdjustSize;
 // NewChar describes the next character which will be added to the edit's text.
 
 var
-  DC: HDC;
   Size: TSize;
-  LastFont: THandle;
-
 begin
   if not (vsMultiline in FLink.FNode.States) and not (toGridExtensions in FLink.FTree.FOptions.FMiscOptions{see issue #252}) then
   begin
     // avoid flicker
     SendMessage(Handle, WM_SETREDRAW, 0, 0);
-
-    DC := GetDC(Handle);
-    LastFont := SelectObject(DC, Font.Handle);
     try
-      // Read needed space for the current text.
-      GetTextExtentPoint32(DC, PChar(Text+'yG'), Length(Text)+2, Size);
+      Size := GetTextSize;
       Inc(Size.cx, 2 * FLink.FTree.FTextMargin);
-      Inc(Size.cy, 2 * FLink.FTree.FTextMargin);
-      Height := Max(Size.cy, Height); // Ensure a minimum height so that the edit field's content and cursor are displayed correctly. See #159
       // Repaint associated node if the edit becomes smaller.
       if Size.cx < Width then
         FLink.FTree.Invalidate();
 
       if FLink.FAlignment = taRightJustify then
-        FLink.SetBounds(Rect(Left + Width - Size.cx, Top, Left + Width, Top + Height))
+        FLink.SetBounds(Rect(Left + Width - Size.cx, Top, Left + Width, Top + Max(Size.cy, Height)))
       else
-        FLink.SetBounds(Rect(Left, Top, Left + Size.cx, Top + Height));
+        FLink.SetBounds(Rect(Left, Top, Left + Size.cx, Top + Max(Size.cy, Height)));
     finally
-      SelectObject(DC, LastFont);
-      ReleaseDC(Handle, DC);
       SendMessage(Handle, WM_SETREDRAW, 1, 0);
     end;
   end;
@@ -33536,6 +33541,24 @@ begin
       Style := Style or WS_BORDER;
       ExStyle := ExStyle and not WS_EX_CLIENTEDGE;
     end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTEdit.GetTextSize: TSize;
+var
+  DC: HDC;
+  LastFont: THandle;
+begin
+  DC := GetDC(Handle);
+  LastFont := SelectObject(DC, Font.Handle);
+  try
+    // Read needed space for the current text.
+    GetTextExtentPoint32(DC, PChar(Text+'yG'), Length(Text)+2, Result);
+  finally
+    SelectObject(DC, LastFont);
+    ReleaseDC(Handle, DC);
   end;
 end;
 
@@ -33707,11 +33730,21 @@ procedure TStringEditLink.SetBounds(R: TRect);
 // Sets the outer bounds of the edit control and the actual edit area in the control.
 
 var
-  lOffset: Integer;
+  lOffset, tOffset, height: Integer;
 
 begin
   if not FStopping then
   begin
+    // Check if the provided rect height is smaller than the edit control height.
+    height := R.Bottom - R.Top;
+    if height < FEdit.ClientHeight then
+    begin
+      // If the height is smaller than the minimal height we must correct it, otherwise the caret will be invisible.
+      tOffset := FEdit.CalcMinHeight - height;
+      if tOffset > 0 then
+        Inc(R.Bottom, tOffset);
+    end;
+
     // Set the edit's bounds but make sure there's a minimum width and the right border does not
     // extend beyond the parent's left/right border.
     if R.Left < 0 then
@@ -33736,7 +33769,12 @@ begin
       Inc(lOffset);
     InflateRect(R, -FTree.FTextMargin + lOffset, lOffset);
     if not (vsMultiline in FNode.States) then
-      OffsetRect(R, 0, FTextBounds.Top - FEdit.Top);
+    begin
+      tOffset := FTextBounds.Top - FEdit.Top;
+      // Do not apply a negative offset, the cursor will disappear.
+      if tOffset > 0 then
+        OffsetRect(R, 0, tOffset);
+    end;
     R.Top := Max(-1, R.Top); // A value smaller than -1 will prevent the edit cursor from being shown by Windows, see issue #159
     R.Left := Max(-1, R.Left);
     SendMessage(FEdit.Handle, EM_SETRECTNP, 0, LPARAM(@R));
