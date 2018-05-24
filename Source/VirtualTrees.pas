@@ -16298,7 +16298,9 @@ begin
                     begin
                       ShowOwnHint := True;
                       NodeRect := GetDisplayRect(HitInfo.HitNode, HitInfo.HitColumn, True, False);
-                    end;
+                    end
+                    else
+                      ShowOwnHint := False;
                   end
                   else
                   begin
