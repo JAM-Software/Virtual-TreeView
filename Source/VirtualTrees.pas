@@ -32937,7 +32937,10 @@ begin
             InvalidateNode(Node);
         end
         else
+        begin
           UpdateRanges;
+          UpdateScrollBars(True);
+        end;
       end;
 
     finally
