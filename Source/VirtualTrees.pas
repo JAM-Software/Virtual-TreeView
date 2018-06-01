@@ -1379,7 +1379,7 @@ type
       RangeStartCol: Integer = NoColumn; RangeEndCol: Integer = NoColumn); virtual;
     function InHeader(P: TPoint): Boolean; virtual;
     function InHeaderSplitterArea(P: TPoint): Boolean; virtual;
-    procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False);
+    procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False; UpdateNowFlag : Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
     function ResizeColumns(ChangeBy: Integer; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
       Options: TVTColumnOptions = [coVisible]): Integer;
@@ -8020,10 +8020,10 @@ begin
   if NewIndex <> OldIndex then
   begin
     if OldIndex > NoColumn then
-      FHeader.Invalidate(Items[OldIndex]);
+      FHeader.Invalidate(Items[OldIndex], False, True);
     OldIndex := NewIndex;
     if OldIndex > NoColumn then
-      FHeader.Invalidate(Items[OldIndex]);
+      FHeader.Invalidate(Items[OldIndex], False, True);
     Result := True;
   end;
 end;
@@ -11534,7 +11534,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False);
+procedure TVTHeader.Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False; UpdateNowFlag : Boolean = False);
 
 // Because the header is in the non-client area of the tree it needs some special handling in order to initiate its
 // repainting.
@@ -11544,6 +11544,7 @@ procedure TVTHeader.Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boole
 
 var
   R, RW: TRect;
+  Flags: Cardinal;
 
 begin
   if (hoVisible in FOptions) and Treeview.HandleAllocated then
@@ -11583,8 +11584,10 @@ begin
 
       // Expressed in client coordinates (because RedrawWindow wants them so, they will actually become negative).
       MapWindowPoints(0, Handle, R, 2);
-      RedrawWindow(Handle, @R, 0, RDW_FRAME or RDW_INVALIDATE or RDW_UPDATENOW or RDW_VALIDATE or RDW_NOINTERNALPAINT or
-        RDW_NOERASE or RDW_NOCHILDREN);
+      Flags := RDW_FRAME or RDW_INVALIDATE or RDW_VALIDATE or RDW_NOINTERNALPAINT or RDW_NOERASE or RDW_NOCHILDREN;
+      if UpdateNowFlag then
+        Flags := Flags or RDW_UPDATENOW;
+      RedrawWindow(Handle, @R, 0, Flags);
     end;
 end;
 
