@@ -2083,7 +2083,7 @@ type
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
-    FMargin: Integer;                            // horizontal border distance
+    FMargin: Integer;                            // horizontal distance to border and columns
     FTextMargin: Integer;                        // space between the node's text and its horizontal bounds
     FBackgroundOffsetX,
     FBackgroundOffsetY: Integer;                 // used to fine tune the position of the background image
@@ -13538,13 +13538,14 @@ begin
   if pColumn = -1 then
     pColumn := Header.MainColumn;
 
+  // Left Margin
+  pOffsets[TVTElement.ofsMargin] := FMargin;
+  pOffsets[TVTElement.ofsCheckBox] := FMargin;
+  if pElement = ofsMargin then
+    exit;
+
   if (pColumn = Header.MainColumn) then
   begin
-    // Left Margin
-    pOffsets[TVTElement.ofsMargin] := FMargin;
-    if pElement = ofsMargin then
-      exit;
-
     if not (toFixedIndent in TreeOptions.PaintOptions) then begin
       // plus Indent
       lNodeLevel := GetNodeLevel(pNode);
@@ -13556,13 +13557,7 @@ begin
     pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin] + lNodeLevel * Integer(FIndent);
     // toggle buttons
     pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
-  end//if MainColumn
-  else
-  begin
-    // No margin and checkboxes in columns
-    pOffsets[TVTElement.ofsMargin] := 0;
-    pOffsets[TVTElement.ofsCheckBox] := 0;
-  end;
+  end;//if MainColumn
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
@@ -13591,8 +13586,7 @@ begin
 
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
-  //TODO: specific BiDi support necessary?
-  //TODO: Try to make TVTPaintInfo.NodeWidth deprecated, Use this method in PaintTree()...
+  //TODO: Move x-axis stuff from AdjustImageBorder() to AdjustImageCoordinates(). Do no longer use fMArgin in GetDisplayRect()
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
