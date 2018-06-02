@@ -13586,7 +13586,7 @@ begin
 
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
-  //TODO: Move x-axis stuff from AdjustImageBorder() to AdjustImageCoordinates(). Do no longer use fMArgin in GetDisplayRect()
+  //TODO: Move x-axis stuff from AdjustImageBorder() to AdjustImageCoordinates().
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -27392,7 +27392,7 @@ var
   MaxUnclippedHeight: Integer;
   TM: TTextMetric;
   ExtraVerticalMargin: Integer;
-
+  lOffsets: TVTOffsets;
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
   Assert(Node <> FRoot, 'Node must not be the hidden root node.');
@@ -27462,12 +27462,8 @@ begin
       CurrentAlignment := FHeader.FColumns[Column].Alignment;
     end;
 
-    if MainColumnHit then
-      LeftOffset := GetOffset(TVTElement.ofsLabel, Node)
-    else
-      // For a column we only need t consider associated images and the margin.
-      LeftOffset := FMargin + GetImageSize(Node, TVTImageKind.ikState, Column).cx + GetImageSize(Node, TVTImageKind.ikNormal, Column).cx;
-
+    GetOffsets(Node, lOffsets, TVTElement.ofsLabel, Column);
+    LeftOffset := lOffSets[TVTElement.ofsLabel];
     // Offset contains now the distance from the left or right border of the rectangle (depending on bidi mode).
     // Now consider the alignment too and calculate the final result.
     if CurrentBidiMode = bdLeftToRight then
