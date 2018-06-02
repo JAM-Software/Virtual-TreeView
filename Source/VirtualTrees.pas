@@ -13534,15 +13534,17 @@ procedure TBaseVirtualTree.GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffs
 var
   lNodeLevel: Integer;
 begin
-  // Left Margin
-  pOffsets[TVTElement.ofsMargin] := FMargin;
-  if pElement = ofsMargin then
-    exit;
+  // If no specific column was given, assume the main column
+  if pColumn = -1 then
+    pColumn := Header.MainColumn;
 
-  // left of checkbox
-  pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin];
-  if (pColumn = NoColumn) or (pColumn = Header.MainColumn) then
+  if (pColumn = Header.MainColumn) then
   begin
+    // Left Margin
+    pOffsets[TVTElement.ofsMargin] := FMargin;
+    if pElement = ofsMargin then
+      exit;
+
     if not (toFixedIndent in TreeOptions.PaintOptions) then begin
       // plus Indent
       lNodeLevel := GetNodeLevel(pNode);
@@ -13551,10 +13553,16 @@ begin
     end
     else
       lNodeLevel := 1;
-    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * Integer(FIndent));
+    pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin] + lNodeLevel * Integer(FIndent);
     // toggle buttons
     pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
-  end;//if MainColumn
+  end//if MainColumn
+  else
+  begin
+    // No margin and checkboxes in columns
+    pOffsets[TVTElement.ofsMargin] := 0;
+    pOffsets[TVTElement.ofsCheckBox] := 0;
+  end;
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
   if pElement <= TVTElement.ofsCheckBox then
@@ -13572,7 +13580,7 @@ begin
   if pElement = TVTElement.ofsImage then
     exit;
   // label
-  pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikNormal, pColumn).cx;
+  pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsImage] + GetImageSize(pNode, TVTImageKind.ikNormal, pColumn).cx;
   pOffsets[TVTElement.ofsText] := pOffsets[TVTElement.ofsLabel] + FTextMargin;
   Dec(pOffsets[TVTElement.ofsText]); //TODO: This should no longer be necessary once issue #369 is resolved.
   if pElement <= TVTElement.ofsText then
@@ -35334,6 +35342,10 @@ begin
     Inc(ImageInfo[iiNormal].XPos, Offset);
     Inc(ImageInfo[iiState].XPos, Offset);
     Inc(ImageInfo[iiCheck].XPos, Offset);
+//    ContentRect.Left := CellRect.Left + Offsets[TVTElement.ofsLabel];
+//    ImageInfo[iiNormal].XPos := CellRect.Left + Offsets[TVTElement.ofsImage];
+//    ImageInfo[iiState].XPos := CellRect.Left + Offsets[TVTElement.ofsStateImage];
+//    ImageInfo[iiCheck].XPos := CellRect.Left + Offsets[TVTElement.ofsCheckBox];
   end
   else
   begin
