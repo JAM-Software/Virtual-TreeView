@@ -1748,6 +1748,7 @@ type
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
     Offsets: TVTOffsets;
+    procedure AdjustImageCoordinates();
   end;
 
   // Method called by the Animate routine for each animation step.
@@ -2353,7 +2354,6 @@ type
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
 
-    procedure AdjustCoordinatesByIndent(var PaintInfo: TVTPaintInfo; Indent: Integer);
     procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
     procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
     function CalculateCacheEntryCount: Integer;
@@ -12391,37 +12391,6 @@ begin
   FSelectedHotMinusBM.Free;
 
   inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.AdjustCoordinatesByIndent(var PaintInfo: TVTPaintInfo; Indent: Integer);
-
-// During painting of the main column some coordinates must be adjusted due to the tree lines.
-// The offset resulting from the tree lines and indentation level is given in Indent.
-
-var
-  Offset: Integer;
-
-begin
-  with PaintInfo do
-  begin
-    Offset := Indent * Integer(FIndent);
-    if BidiMode = bdLeftToRight then
-    begin
-      Inc(ContentRect.Left, Offset);
-      Inc(ImageInfo[iiNormal].XPos, Offset);
-      Inc(ImageInfo[iiState].XPos, Offset);
-      Inc(ImageInfo[iiCheck].XPos, Offset);
-    end
-    else
-    begin
-      Dec(ContentRect.Right, Offset);
-      Dec(ImageInfo[iiNormal].XPos, Offset);
-      Dec(ImageInfo[iiState].XPos, Offset);
-      Dec(ImageInfo[iiCheck].XPos, Offset);
-    end;
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31056,9 +31025,7 @@ begin
                             ImageInfo[iiNormal].Index := -1;
 
                           // Take the space for the tree lines into account.
-                          if IsMainColumn then
-                            AdjustCoordinatesByIndent(PaintInfo, IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize));
-
+                          PaintInfo.AdjustImageCoordinates();
                           if UseColumns then
                           begin
                             ClipRect := CellRect;
@@ -35352,6 +35319,30 @@ begin
   Result := cSortDirectionToInt[Self];
 end;
 
+
+{ TVTPaintInfo }
+
+procedure TVTPaintInfo.AdjustImageCoordinates;
+// During painting of the main column some coordinates must be adjusted due to the tree lines.
+var
+  Offset: Integer;
+begin
+  Offset := Offsets[TVTElement.ofsCheckBox] - OffSets[TVTElement.ofsMargin];
+  if BidiMode = bdLeftToRight then
+  begin
+    Inc(ContentRect.Left, Offset);
+    Inc(ImageInfo[iiNormal].XPos, Offset);
+    Inc(ImageInfo[iiState].XPos, Offset);
+    Inc(ImageInfo[iiCheck].XPos, Offset);
+  end
+  else
+  begin
+    Dec(ContentRect.Right, Offset);
+    Dec(ImageInfo[iiNormal].XPos, Offset);
+    Dec(ImageInfo[iiState].XPos, Offset);
+    Dec(ImageInfo[iiCheck].XPos, Offset);
+  end;
+end;
 
 initialization
 
