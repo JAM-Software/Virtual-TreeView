@@ -1748,7 +1748,7 @@ type
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
     Offsets: TVTOffsets;
-    procedure AdjustImageCoordinates();
+    procedure AdjustImageCoordinates(VAlign: Integer);
   end;
 
   // Method called by the Animate routine for each animation step.
@@ -2531,7 +2531,6 @@ type
     procedure AutoScale(isDpiChange: Boolean); virtual;
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
-    procedure AdjustImageBorder(BidiMode: TBidiMode; VAlign: Integer; var R: TRect; var ImageInfo: TVTImageInfo); virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: Integer); virtual;
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
@@ -13585,7 +13584,6 @@ begin
 
   // end of client area
   pOffsets[TVTElement.ofsEndOfClientArea] := Max(FRangeX, ClientWidth) - FTextMargin;
-  //TODO: Move x-axis stuff from AdjustImageBorder() to AdjustImageCoordinates().
 end;
 
 function TBaseVirtualTree.GetOffsetXY: TPoint;
@@ -18385,17 +18383,6 @@ begin
       Change(nil);
     end;
   end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.AdjustImageBorder(BidiMode: TBidiMode; VAlign: Integer; var R: TRect;
-  var ImageInfo: TVTImageInfo);
-
-// Depending on the width of the image list as well as the given bidi mode R must be adjusted.
-
-begin
-  ImageInfo.YPos := R.Top + VAlign - ImageInfo.Images.Height div 2;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -30983,34 +30970,22 @@ begin
                           if ShowCheckImages and IsMainColumn then
                           begin
                             ImageInfo[iiCheck].Index := GetCheckImage(Node);
-                            if ImageInfo[iiCheck].Index > -1 then
-                            begin
-                              ImageInfo[iiCheck].Images := FCheckImages;
-                              AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiCheck]);
-                              ImageInfo[iiCheck].Ghosted := False;
-                            end;
+                            ImageInfo[iiCheck].Images := FCheckImages;
+                            ImageInfo[iiCheck].Ghosted := False;
                           end
                           else
                             ImageInfo[iiCheck].Index := -1;
                           if ShowStateImages then
-                          begin
-                            GetImageIndex(PaintInfo, ikState, iiState);
-                            if ImageInfo[iiState].Index > -1 then
-                              AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiState]);
-                          end
+                            GetImageIndex(PaintInfo, ikState, iiState)
                           else
                             ImageInfo[iiState].Index := -1;
                           if ShowImages then
-                          begin
-                            GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal);
-                            if ImageInfo[iiNormal].Index > -1 then
-                              AdjustImageBorder(BidiMode, VAlign, ContentRect, ImageInfo[iiNormal]);
-                          end
+                            GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal)
                           else
                             ImageInfo[iiNormal].Index := -1;
 
                           // Take the space for the tree lines into account.
-                          PaintInfo.AdjustImageCoordinates();
+                          PaintInfo.AdjustImageCoordinates(VAlign);
                           if UseColumns then
                           begin
                             ClipRect := CellRect;
@@ -35307,7 +35282,7 @@ end;
 
 { TVTPaintInfo }
 
-procedure TVTPaintInfo.AdjustImageCoordinates();
+procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: Integer);
 // During painting of the main column some coordinates must be adjusted due to the tree lines.
 var
   Offset: Integer;
@@ -35328,6 +35303,12 @@ begin
     ImageInfo[iiCheck].XPos := CellRect.Right - Offsets[TVTElement.ofsCheckBox] - (Offsets[TVTElement.ofsStateImage] - Offsets[TVTElement.ofsCheckBox]);
     ContentRect.Right := CellRect.Right - Offsets[TVTElement.ofsLabel];
   end;
+  if ImageInfo[iiNormal].Index > -1 then
+    ImageInfo[iiNormal].YPos := CellRect.Top + VAlign - ImageInfo[iiNormal].Images.Height div 2;
+  if ImageInfo[iiState].Index > -1 then
+    ImageInfo[iiState].YPos := CellRect.Top + VAlign - ImageInfo[iiState].Images.Height div 2;
+  if ImageInfo[iiCheck].Index > -1 then
+    ImageInfo[iiCheck].YPos := CellRect.Top + VAlign - ImageInfo[iiCheck].Images.Height div 2;
 end;
 
 initialization
