@@ -5,6 +5,7 @@
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * Fixed Issue #369: Centralize Left Content Margin calculation
   * Pull Request #800: Fixed an incorrect calculation of the string edit link height. 
   * Pull request #796: Fixed a bug where hints of type hmTooltip had incorrect (random) position when when HitPosition was not hiOnItemLabel.
   * Fixed issue #796: Utility images are not DPI Scaled
