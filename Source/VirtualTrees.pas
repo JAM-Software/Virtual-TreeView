@@ -13540,10 +13540,9 @@ begin
 
   // Left Margin
   pOffsets[TVTElement.ofsMargin] := FMargin;
-  pOffsets[TVTElement.ofsCheckBox] := FMargin;
   if pElement = ofsMargin then
     exit;
-
+  pOffsets[TVTElement.ofsCheckBox] := FMargin + fImagesMargin;
   if (pColumn = Header.MainColumn) then
   begin
     if not (toFixedIndent in TreeOptions.PaintOptions) then begin
@@ -13554,9 +13553,9 @@ begin
     end
     else
       lNodeLevel := 1;
-    pOffsets[TVTElement.ofsCheckBox] := pOffsets[TVTElement.ofsMargin] + lNodeLevel * Integer(FIndent);
+    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * Integer(FIndent));
     // toggle buttons
-    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
   end;//if MainColumn
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
@@ -27386,7 +27385,6 @@ var
   TopOffset: Cardinal;
   CacheIsAvailable: Boolean;
   TextWidth: Integer;
-  MainColumnHit: Boolean;
   CurrentBidiMode: TBidiMode;
   CurrentAlignment: TAlignment;
   MaxUnclippedHeight: Integer;
@@ -27397,7 +27395,6 @@ begin
   Assert(Assigned(Node), 'Node must not be nil.');
   Assert(Node <> FRoot, 'Node must not be the hidden root node.');
 
-  MainColumnHit := (Column + 1) in [0, FHeader.MainColumn + 1];
   if not (vsInitialized in Node.States) then
     InitNode(Node);
 
