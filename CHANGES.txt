@@ -1,10 +1,10 @@
 ﻿V7.0: (Under development)
-  * Fixed issue #752: HandleDrawSelection() does not correctly take horizontal scroll position into account
   * The support for Windows XP/2003 has been dropped (issue #707). This means:
     - We did not intentionally break XP support.
 	- We do no longer test on Windows XP/2003
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
+  * BREAKING CHANGE: Removed property TBaseVirtualTree.HintAnimation. Issue #730.
   * Fixed Issue #369: Centralize Left Content Margin calculation
   * Pull Request #800: Fixed an incorrect calculation of the string edit link height. 
   * Pull request #796: Fixed a bug where hints of type hmTooltip had incorrect (random) position when when HitPosition was not hiOnItemLabel.
@@ -28,6 +28,7 @@
   * Fixed issue #758: The OnColumnVisibilityChanged event is not always fired
   * Fixed issue #754: TBaseVirtualTree.InternalAddToSelection() may cause access violation. Thx@nminkov for the patch.
   * Fixed issue #753: TVirtualTreeColumns.EndUpdate() resets column order 
+  * Fixed issue #752: HandleDrawSelection() does not correctly take horizontal scroll position into account
   * Fixed issue #750: Plus/Minus sizes are not scaled in DPI aware applications
   * Fixed issue #748: Per Monitor Dpi Scaling - Scrollbar Not Correct after Dpi Change
   * Enhancement #735: Add event that is fired when a check state is needed.
