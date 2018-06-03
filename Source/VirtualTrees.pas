@@ -13563,7 +13563,7 @@ begin
     exit;
 
   // right of checkbox, left of state image
-  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) then
+  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
     pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width + fImagesMargin
   else
     pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox];
