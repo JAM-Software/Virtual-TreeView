@@ -16,7 +16,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus, UITypes;
+  StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus, UITypes, System.ImageList;
 
 type
   TAlignForm = class(TForm)
@@ -200,6 +200,8 @@ begin
     Data := Sender.GetNodeData(Node);
     Index := Data.ImageIndex;
   end;
+  if (Kind = ikState) and (Column = Sender.Header.MainColumn) then
+    Index := 1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -252,6 +254,7 @@ begin
       end;
     end;
   end;
+  Node.CheckType := TCheckType.ctTriStateCheckBox;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -114,10 +114,11 @@ object AlignForm: TAlignForm
     RootNodeCount = 6
     SelectionCurveRadius = 5
     ShowHint = True
+    StateImages = TreeImages
     TabOrder = 0
     TreeOptions.AnimationOptions = [toAnimatedToggle]
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoTristateTracking, toAutoDeleteMovedNodes]
-    TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware]
     TreeOptions.SelectionOptions = [toExtendedFocus, toMultiSelect]
     OnFocusChanged = AlignTreeFocusChanged
