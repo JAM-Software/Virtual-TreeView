@@ -30959,13 +30959,6 @@ begin
                         begin
                           // Fill in remaining values in the paint info structure.
                           NodeWidth := DoGetNodeWidth(Node, Column, Canvas);
-                          // Not the entire cell is covered by text. Hence we need a running rectangle to follow up.
-                          ContentRect := CellRect;
-                          // Set up the distance from column border (margin).
-                          if BidiMode <> bdLeftToRight then
-                            Dec(ContentRect.Right, FMArgin)//Offsets[ofsLabel])
-                          else
-                            Inc(ContentRect.Left, FMArgin);//Offsets[ofsLabel]);
 
                           if ShowCheckImages and IsMainColumn then
                           begin
@@ -35284,10 +35277,8 @@ end;
 
 procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: Integer);
 // During painting of the main column some coordinates must be adjusted due to the tree lines.
-var
-  Offset: Integer;
 begin
-  Offset := Offsets[TVTElement.ofsCheckBox] - OffSets[TVTElement.ofsMargin];
+  ContentRect := CellRect;
   if BidiMode = bdLeftToRight then
   begin
     ContentRect.Left := CellRect.Left + Offsets[TVTElement.ofsLabel];
