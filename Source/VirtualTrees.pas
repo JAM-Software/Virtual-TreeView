@@ -864,15 +864,17 @@ type
     FDrawBuffer,
     FTarget: TBitmap;
     FTextHeight: Integer;
+    FAnimationType: THintAnimationType;          // none, fade in, slide in animation (just like those animations used
+    function DoGetAnimationType: THintAnimationType; virtual;
     function AnimationCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
     procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
     function GetHintWindowDestroyed: Boolean;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMNCPaint(var Message: TMessage); message WM_NCPAINT;
     procedure WMShowWindow(var Message: TWMShowWindow); message WM_SHOWWINDOW;
-  protected
-    procedure CreateParams(var Params: TCreateParams); override;
     procedure InternalPaint(Step, StepSize: Integer);
+  strict protected
+    procedure CreateParams(var Params: TCreateParams); override;
     procedure Paint; override;
 
     property Background: TBitmap read FBackground;
@@ -2055,7 +2057,6 @@ type
     FNewSelRect: TRect;                          // used while doing draw selection
     FHotCursor: TCursor;                         // can be set to additionally indicate the current hot node
     FLastHitInfo: THitInfo;                      // The THitInfo of the last mouse-down event.
-    FAnimationType: THintAnimationType;          // none, fade in, slide in animation (just like those animations used
                                                  // in Win98 (slide) and Windows 2000 (fade))
     FHintMode: TVTHintMode;                      // determines the kind of the hint window
     FHintData: TVTHintData;                      // used while preparing the hint window
@@ -2407,6 +2408,7 @@ type
     function PackArray({*}const TheArray: TNodeArray; Count: Integer): Integer;
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
     procedure FakeReadImageKind(Reader: TReader);
+    procedure FakeReadHintAnimation(Reader: TReader);
     procedure ReadOldOptions(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
@@ -2613,7 +2615,6 @@ type
     function DoFocusChanging(OldNode, NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex): Boolean; virtual;
     procedure DoFocusNode(Node: PVirtualNode; Ask: Boolean); virtual;
     procedure DoFreeNode(Node: PVirtualNode); virtual;
-    function DoGetAnimationType: THintAnimationType; virtual;
     function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
       CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; virtual;
     procedure DoGetCursor(var Cursor: TCursor); virtual;
@@ -2824,7 +2825,6 @@ type
     property EditDelay: Cardinal read FEditDelay write FEditDelay default 1000;
     property EffectiveOffsetX: Integer read FEffectiveOffsetX;
     property HeaderRect: TRect read FHeaderRect;
-    property HintAnimation: THintAnimationType read FAnimationType write FAnimationType default hatSystemDefault;
     property HintMode: TVTHintMode read FHintMode write FHintMode default hmDefault;
     property HintData: TVTHintData read FHintData write FHintData;
     property HotCursor: TCursor read FHotCursor write FHotCursor default crDefault;
@@ -3562,7 +3562,6 @@ type
     property Enabled;
     property Font;
     property Header;
-    property HintAnimation;
     property HintMode;
     property HotCursor;
     property Images;
@@ -3828,7 +3827,6 @@ type
     property Enabled;
     property Font;
     property Header;
-    property HintAnimation;
     property HintMode;
     property HotCursor;
     property Images;
@@ -5454,6 +5452,42 @@ var
   // while it is still in the animation loop.
   FHintWindowDestroyed: Boolean = True;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVirtualTreeHintWindow.DoGetAnimationType: THintAnimationType;
+
+// Determines (depending on the properties settings and the system) which hint
+// animation type is to be used.
+
+var
+  Animation: BOOL;
+
+begin
+  Result := FAnimationType;
+  if Result = hatSystemDefault then
+  begin
+    SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animation, 0);
+    if not Animation then
+      Result := hatNone
+    else
+    begin
+      SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animation, 0);
+      if Animation then
+        Result := hatFade
+      else
+        Result := hatSlide;
+    end;
+  end;
+
+  // Check availability of MMX if fading is requested.
+  if not MMXAvailable and (Result = hatFade) then
+    Result := hatSlide;
+
+  //Disable animation if hot tracking is ON as it causes problems
+  if (toHotTrack in FHintData.Tree.TreeOptions.PaintOptions) then
+    Result := hatNone;
+end;
+
 constructor TVirtualTreeHintWindow.Create(AOwner: TComponent);
 
 begin
@@ -5468,6 +5502,7 @@ begin
 
   DoubleBuffered := False; // we do our own buffering
   FHintWindowDestroyed := False;
+  FAnimationType := hatSystemDefault
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5648,7 +5683,7 @@ var
   LGradientEnd: TColor;
 
 begin
-  Shadow := 0;
+  Shadow := 0;    // TODO: This value is never changed
 
   with FHintData, FDrawBuffer do
   begin
@@ -5742,7 +5777,7 @@ begin
 
     if StepSize > 0 then
       begin
-        if FHintData.Tree.DoGetAnimationType = hatFade then
+        if DoGetAnimationType = hatFade then
         begin
           with FTarget do
             BitBlt(Canvas.Handle, 0, 0, Width, Height, FBackground.Canvas.Handle, 0, 0, SRCCOPY);
@@ -5756,22 +5791,22 @@ begin
         end
         else
         begin
-          // Slide is done by blitting "step" lines of the lower part of the hint window
-          // and fill the rest with the screen background.
+        // Slide is done by blitting "step" lines of the lower part of the hint window
+        // and fill the rest with the screen background.
 
-          // 1) blit hint bitmap to the hint canvas
-          BitBlt(Canvas.Handle, 0, 0, Width - Shadow, Step, FDrawBuffer.Canvas.Handle, 0, Height - Step, SRCCOPY);
-          // 2) blit background rest to hint canvas
-          if Step <= Shadow then
-            Step := 0
-          else
-            Dec(Step, Shadow);
-          BitBlt(Canvas.Handle, 0, Step, Width, Height - Step, FBackground.Canvas.Handle, 0, Step, SRCCOPY);
+        // 1) blit hint bitmap to the hint canvas
+        BitBlt(Canvas.Handle, 0, 0, Width - Shadow, Step, FDrawBuffer.Canvas.Handle, 0, Height - Step, SRCCOPY);
+        // 2) blit background rest to hint canvas
+        if Step <= Shadow then
+          Step := 0
+        else
+          Dec(Step, Shadow);
+        BitBlt(Canvas.Handle, 0, Step, Width, Height - Step, FBackground.Canvas.Handle, 0, Step, SRCCOPY);
         end;
       end
       else
         // Last step during slide or the only step without animation.
-        if FHintData.Tree.DoGetAnimationType <> hatFade then
+        if DoGetAnimationType <> hatFade then
         begin
           if Shadow > 0 then
           begin
@@ -5849,7 +5884,7 @@ begin
     with FHintData.Tree do
       case DoGetAnimationType of
         hatNone:
-          InvalidateRect(Self.Handle, nil, False);
+      InvalidateRect(Self.Handle, nil, False);
         hatFade:
           begin
             // Make sure the window is not drawn unanimated.
@@ -12257,7 +12292,6 @@ begin
   FFocusedColumn := NoColumn;
   FDragImageKind := diComplete;
   FLastSelectionLevel := -1;
-  FAnimationType := hatSystemDefault;
   FSelectionBlendFactor := 128;
 
   FIndent := 18;
@@ -19040,6 +19074,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.FakeReadHintAnimation(Reader: TReader);
+begin
+  Assert(Reader.NextValue = vaIdent);
+  Reader.ReadIdent;
+end;
+
 procedure TBaseVirtualTree.FakeReadImageKind(Reader: TReader);
 begin
   Assert(Reader.NextValue = vaIdent);
@@ -19079,6 +19119,8 @@ begin
   // #622 made old DFMs incompatible with new VTW - so the program is compiled successfully
   //    and then suddenly crashes at user site in runtime.
   Filer.DefineProperty('CheckImageKind', FakeReadImageKind, nil, false);
+  /// #730 removed property HintAnimation
+  Filer.DefineProperty('HintAnimation', FakeReadHintAnimation, nil, false);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20388,47 +20430,6 @@ begin
   FreeMem(Node);
   if Self.UpdateCount = 0 then
     EnsureNodeSelected();
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-// These constants are defined in the platform SDK for W2K/XP, but not yet in Delphi.
-const
-  SPI_GETTOOLTIPANIMATION = $1016;
-  SPI_GETTOOLTIPFADE = $1018;
-
-function TBaseVirtualTree.DoGetAnimationType: THintAnimationType;
-
-// Determines (depending on the properties settings and the system) which hint
-// animation type is to be used.
-
-var
-  Animation: BOOL;
-
-begin
-  Result := FAnimationType;
-  if Result = hatSystemDefault then
-  begin
-    SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animation, 0);
-    if not Animation then
-      Result := hatNone
-    else
-    begin
-      SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animation, 0);
-      if Animation then
-        Result := hatFade
-      else
-        Result := hatSlide;
-    end;
-  end;
-
-  // Check availability of MMX if fading is requested.
-  if not MMXAvailable and (Result = hatFade) then
-    Result := hatSlide;
-
-  //Disable animation if hot tracking is ON as it causes problems
-  if (toHotTrack in FOptions.PaintOptions) then
-    Result := hatNone;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26325,7 +26326,6 @@ begin
       Self.Enabled := Enabled;
       Self.Font := Font;
       Self.Header := Header;
-      Self.HintAnimation := HintAnimation;
       Self.HintMode := HintMode;
       Self.HotCursor := HotCursor;
       Self.Images := Images;
