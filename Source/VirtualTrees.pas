@@ -4020,6 +4020,7 @@ uses
   Vcl.AxCtrls,                 // TOLEStream
   Winapi.MMSystem,             // for animation timer (does not include further resources)
   System.TypInfo,              // for migration stuff
+  System.SyncObjs,
   Vcl.ActnList,
   Vcl.StdActns,                // for standard action support
   System.StrUtils,
