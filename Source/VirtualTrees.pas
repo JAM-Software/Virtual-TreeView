@@ -18395,16 +18395,6 @@ procedure TBaseVirtualTree.AdjustImageBorder(BidiMode: TBidiMode; VAlign: Intege
 // Depending on the width of the image list as well as the given bidi mode R must be adjusted.
 
 begin
-  if BidiMode = bdLeftToRight then
-  begin
-    ImageInfo.XPos := R.Left + FImagesMargin;
-    Inc(R.Left, ImageInfo.Images.Width + FImagesMargin);
-  end
-  else
-  begin
-    ImageInfo.XPos := R.Right - ImageInfo.Images.Width - FImagesMargin;
-    Dec(R.Right, ImageInfo.Images.Width + FImagesMargin);
-  end;
   ImageInfo.YPos := R.Top + VAlign - ImageInfo.Images.Height div 2;
 end;
 
@@ -35317,7 +35307,7 @@ end;
 
 { TVTPaintInfo }
 
-procedure TVTPaintInfo.AdjustImageCoordinates;
+procedure TVTPaintInfo.AdjustImageCoordinates();
 // During painting of the main column some coordinates must be adjusted due to the tree lines.
 var
   Offset: Integer;
@@ -35325,21 +35315,18 @@ begin
   Offset := Offsets[TVTElement.ofsCheckBox] - OffSets[TVTElement.ofsMargin];
   if BidiMode = bdLeftToRight then
   begin
-    Inc(ContentRect.Left, Offset);
-    Inc(ImageInfo[iiNormal].XPos, Offset);
-    Inc(ImageInfo[iiState].XPos, Offset);
-    Inc(ImageInfo[iiCheck].XPos, Offset);
-//    ContentRect.Left := CellRect.Left + Offsets[TVTElement.ofsLabel];
-//    ImageInfo[iiNormal].XPos := CellRect.Left + Offsets[TVTElement.ofsImage];
-//    ImageInfo[iiState].XPos := CellRect.Left + Offsets[TVTElement.ofsStateImage];
-//    ImageInfo[iiCheck].XPos := CellRect.Left + Offsets[TVTElement.ofsCheckBox];
+    ContentRect.Left := CellRect.Left + Offsets[TVTElement.ofsLabel];
+    ImageInfo[iiNormal].XPos := CellRect.Left + Offsets[TVTElement.ofsImage];
+    ImageInfo[iiState].XPos := CellRect.Left + Offsets[TVTElement.ofsStateImage];
+    ImageInfo[iiCheck].XPos := CellRect.Left + Offsets[TVTElement.ofsCheckBox];
   end
   else
   begin
-    Dec(ContentRect.Right, Offset);
-    Dec(ImageInfo[iiNormal].XPos, Offset);
-    Dec(ImageInfo[iiState].XPos, Offset);
-    Dec(ImageInfo[iiCheck].XPos, Offset);
+    /// Since images are still drawn from left to right, we need to substract the image sze as well.
+    ImageInfo[iiNormal].XPos := CellRect.Right - Offsets[TVTElement.ofsImage] - (Offsets[TVTElement.ofsLabel] - Offsets[TVTElement.ofsImage]);
+    ImageInfo[iiState].XPos := CellRect.Right - Offsets[TVTElement.ofsStateImage] - (Offsets[TVTElement.ofsImage] - Offsets[TVTElement.ofsStateImage]);
+    ImageInfo[iiCheck].XPos := CellRect.Right - Offsets[TVTElement.ofsCheckBox] - (Offsets[TVTElement.ofsStateImage] - Offsets[TVTElement.ofsCheckBox]);
+    ContentRect.Right := CellRect.Right - Offsets[TVTElement.ofsLabel];
   end;
 end;
 
