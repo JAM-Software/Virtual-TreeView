@@ -838,7 +838,7 @@ type
     Node: PVirtualNode;
     Column: TColumnIndex;
     HintRect: TRect;            // used for draw trees only, string trees get the size from the hint string
-    DefaultHint: string; // used only if there is no node specific hint string available
+    DefaultHint: string deprecated; // used only if there is no node specific hint string available
                                 // or a header hint is about to appear
     HintText: string;    // set when size of the hint window is calculated
     BidiMode: TBidiMode;
@@ -5932,7 +5932,8 @@ begin
 
       with FHintData do
       begin
-        // The draw tree gets its hint size by the application (but only if not a header hint is about to show).      // If the user will be drawing the hint, it gets its hint size by the application
+        // The draw tree gets its hint size by the application (but only if not a header hint is about to show).
+        // If the user will be drawing the hint, it gets its hint size by the application
         // (but only if not a header hint is about to show).
         // This size has already been determined in CMHintShow.
         if Assigned(Node) and (not IsRectEmpty(HintRect)) then
@@ -14668,7 +14669,7 @@ end;
 procedure TBaseVirtualTree.SetCheckState(Node: PVirtualNode; Value: TCheckState);
 
 begin
-  if (Node.CheckState <> Value) and not (vsDisabled in Node.States) and DoChecking(Node, Value) then
+  if (Node.CheckState <> Value) and DoChecking(Node, Value) then
     DoCheckClick(Node, Value);
 end;
 
@@ -17555,8 +17556,7 @@ begin
             if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FFocusedNode) and
               (FFocusedNode.CheckType <> ctNone) then
             begin
-              if (FStates * [tsKeyCheckPending, tsMouseCheckPending] = []) and
-                not (vsDisabled in FFocusedNode.States) then
+              if (FStates * [tsKeyCheckPending, tsMouseCheckPending] = []) then
               begin
                 with FFocusedNode^ do
                   NewCheckState := DetermineNextCheckState(CheckType, GetCheckState(FFocusedNode));
@@ -19896,7 +19896,7 @@ function TBaseVirtualTree.DoChecking(Node: PVirtualNode; var NewCheckState: TChe
 // Determines if a node is allowed to change its check state to NewCheckState.
 
 begin
-  if toReadOnly in FOptions.FMiscOptions then
+  if (toReadOnly in FOptions.FMiscOptions) or (vsDisabled in Node.States) then
     Result := False
   else
   begin
@@ -22706,7 +22706,7 @@ begin
     else
       if hiOnItemCheckBox in HitInfo.HitPositions then
       begin
-        if (FStates * [tsMouseCheckPending, tsKeyCheckPending] = []) and not (vsDisabled in HitInfo.HitNode.States) then
+        if (FStates * [tsMouseCheckPending, tsKeyCheckPending] = []) then
         begin
           with HitInfo.HitNode^ do
             NewCheckState := DetermineNextCheckState(CheckType, CheckState);
@@ -22953,7 +22953,7 @@ begin
   // check event
   if hiOnItemCheckBox in HitInfo.HitPositions then
   begin
-    if (FStates * [tsMouseCheckPending, tsKeyCheckPending] = []) and not (vsDisabled in HitInfo.HitNode.States) then
+    if (FStates * [tsMouseCheckPending, tsKeyCheckPending] = []) then
     begin
       with HitInfo.HitNode^ do
         NewCheckState := DetermineNextCheckState(CheckType, CheckState);
@@ -23177,7 +23177,7 @@ begin
     if (FHeader.FColumns.FClickIndex > NoColumn) and (FHeader.FColumns.FClickIndex = HitInfo.HitColumn) then
       DoColumnClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
 
-    if FLastHitInfo.HitNode <> nil then  // Use THitInfo of mouse down here, see issue #692
+      if FLastHitInfo.HitNode <> nil then  // Use THitInfo of mouse down here, see issue #692
      DoNodeClick(FLastHitInfo);
 
     // handle a pending edit event
