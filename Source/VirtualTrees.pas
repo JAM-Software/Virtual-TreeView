@@ -838,7 +838,7 @@ type
     Node: PVirtualNode;
     Column: TColumnIndex;
     HintRect: TRect;            // used for draw trees only, string trees get the size from the hint string
-    DefaultHint: string deprecated; // used only if there is no node specific hint string available
+    DefaultHint: string; // used only if there is no node specific hint string available
                                 // or a header hint is about to appear
     HintText: string;    // set when size of the hint window is calculated
     BidiMode: TBidiMode;
