@@ -17562,11 +17562,15 @@ begin
                   NewCheckState := DetermineNextCheckState(CheckType, GetCheckState(FFocusedNode));
                 if DoChecking(FFocusedNode, NewCheckState) then
                 begin
-                  DoStateChange([tsKeyCheckPending]);
-                  FCheckNode := FFocusedNode;
-                  FPendingCheckState := NewCheckState;
-                  FCheckNode.CheckState := GetCheckState(FFocusedNode).GetPressed();
-                  RepaintNode(FCheckNode);
+                  if SelectedCount > 1 then
+                    SetCheckStateForAll(NewCheckState, True)
+                  else begin
+                    DoStateChange([tsKeyCheckPending]);
+                    FCheckNode := FFocusedNode;
+                    FPendingCheckState := NewCheckState;
+                    FCheckNode.CheckState := GetCheckState(FFocusedNode).GetPressed();
+                    RepaintNode(FCheckNode);
+                  end;//else
                 end;
               end;
             end
@@ -22959,12 +22963,16 @@ begin
         NewCheckState := DetermineNextCheckState(CheckType, CheckState);
       if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
       begin
-        DoStateChange([tsMouseCheckPending]);
-        FCheckNode := HitInfo.HitNode;
-        FPendingCheckState := NewCheckState;
-        FCheckNode.CheckState := FCheckNode.CheckState.GetPressed();
-        InvalidateNode(HitInfo.HitNode);
-      end;
+        if Self.SelectedCount > 1 then
+          SetCheckStateForAll(NewCheckState, True)
+        else begin
+          DoStateChange([tsMouseCheckPending]);
+          FCheckNode := HitInfo.HitNode;
+          FPendingCheckState := NewCheckState;
+          FCheckNode.CheckState := FCheckNode.CheckState.GetPressed();
+          InvalidateNode(HitInfo.HitNode);
+        end;//else (SelectedCount == 1)
+      end;//if ssLeft
     end;
     Exit;
   end;

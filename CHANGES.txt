@@ -5,6 +5,7 @@
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
   * BREAKING CHANGE: Removed property TBaseVirtualTree.HintAnimation. Issue #730.
+  * Fixed issue #745: Pressing SPACE should change the check-state of all selected nodes
   * Fixed Issue #369: Centralize Left Content Margin calculation
   * Pull Request #800: Fixed an incorrect calculation of the string edit link height. 
   * Pull request #796: Fixed a bug where hints of type hmTooltip had incorrect (random) position when when HitPosition was not hiOnItemLabel.
