@@ -5307,7 +5307,8 @@ begin
   else
   begin
     Result := FOwner.DoCreateDataObject;
-    if Result = nil then
+    if (Result = nil) and not Assigned(FOwner.OnCreateDataObject) then
+      // Do not create a TVTDataObject if the event handler explicitely decided not to supply one, issue #736.
       Result := TVTDataObject.Create(FOwner, False) as IDataObject;
   end;
 end;
