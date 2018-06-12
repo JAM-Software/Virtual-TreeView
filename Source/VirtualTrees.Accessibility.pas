@@ -1,4 +1,4 @@
-unit VTAccessibility;
+unit VirtualTrees.Accessibility;
 
 // This unit implements iAccessible interfaces for the VirtualTree visual components
 // and the currently focused node.
@@ -9,7 +9,7 @@ interface
 
 uses
   Winapi.Windows, System.Classes, Winapi.ActiveX, System.Types, Winapi.oleacc,
-  VirtualTrees, VTAccessibilityFactory, Vcl.Controls;
+  VirtualTrees, VirtualTrees.AccessibilityFactory, Vcl.Controls;
 
 type
   TVirtualTreeAccessibility = class(TInterfacedObject, IDispatch, IAccessible)

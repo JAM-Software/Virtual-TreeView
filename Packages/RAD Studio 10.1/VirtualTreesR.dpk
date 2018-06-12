@@ -36,8 +36,8 @@ requires
 contains
   VirtualTrees in '..\..\Source\VirtualTrees.pas',
   VirtualTrees.HeaderPopup in '..\..\Source\VirtualTrees.HeaderPopup.pas',
-  VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
-  VTAccessibility in '..\..\Source\VTAccessibility.pas',
+  VirtualTrees.AccessibilityFactory in '..\..\Source\VirtualTrees.AccessibilityFactory.pas',
+  VirtualTrees.Accessibility in '..\..\Source\VirtualTrees.Accessibility.pas',
   VirtualTrees.StyleHooks in '..\..\Source\VirtualTrees.StyleHooks.pas',
   VirtualTrees.Classes in '..\..\Source\VirtualTrees.Classes.pas',
   VirtualTrees.WorkerThread in '..\..\Source\VirtualTrees.WorkerThread.pas',

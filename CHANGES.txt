@@ -5,6 +5,9 @@
 	- We may accept pull request for XP support if the code quality is sufficient.
 	- We recommend to use the V6 branch on Windows XP
   * BREAKING CHANGE: Removed property TBaseVirtualTree.HintAnimation. Issue #730.
+  * BREAKING CHANGE: Renamed unit "VTHeaderPopup" to "VirtualTrees.HeaderPopup"
+                     Renamed unit "VTAccessibility" to "VirtualTrees.Accessibility"
+					 Renamed unit "VTAccessibilityFactory" to "VirtualTrees.AccessibilityFactory"
   * Fixed issue #736: TVTDragManager.GetDataObject() should not use TVTDataObject in case the OnCreateDataObject event handler returned nil
   * Fixed issue #745: Pressing SPACE should change the check-state of all selected nodes
   * Fixed Issue #369: Centralize Left Content Margin calculation

@@ -108,8 +108,8 @@
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="..\..\Source\VirtualTrees.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.HeaderPopup.pas"/>
-        <DCCReference Include="..\..\Source\VTAccessibilityFactory.pas"/>
-        <DCCReference Include="..\..\Source\VTAccessibility.pas"/>
+        <DCCReference Include="..\..\Source\VirtualTrees.AccessibilityFactory.pas"/>
+        <DCCReference Include="..\..\Source\VirtualTrees.Accessibility.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.StyleHooks.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Classes.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.WorkerThread.pas"/>

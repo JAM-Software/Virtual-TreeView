@@ -4023,8 +4023,8 @@ uses
   Vcl.ActnList,
   Vcl.StdActns,                // for standard action support
   System.StrUtils,
-  VTAccessibilityFactory,
   Vcl.GraphUtil,               // accessibility helper class
+  VirtualTrees.AccessibilityFactory,
   VirtualTrees.StyleHooks,
   VirtualTrees.Classes,
   VirtualTrees.WorkerThread,
