@@ -2409,7 +2409,6 @@ type
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
     procedure FakeReadImageKind(Reader: TReader);
     procedure FakeReadHintAnimation(Reader: TReader);
-    procedure ReadOldOptions(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
     procedure SetBackground(const Value: TPicture);
@@ -14419,76 +14418,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-type
-  TOldVTOption = (voAcceptOLEDrop, voAnimatedToggle, voAutoDropExpand, voAutoExpand, voAutoScroll,
-    voAutoSort, voAutoSpanColumns, voAutoTristateTracking, voCheckSupport, voDisableDrawSelection, voEditable,
-    voExtendedFocus, voFullRowSelect, voGridExtensions, voHideFocusRect, voHideSelection, voHotTrack, voInitOnSave,
-    voLevelSelectConstraint, voMiddleClickSelect, voMultiSelect, voRightClickSelect, voPopupMode, voShowBackground,
-    voShowButtons, voShowDropmark, voShowHorzGridLines, voShowRoot, voShowTreeLines, voShowVertGridLines,
-    voSiblingSelectConstraint, voToggleOnDblClick);
-
-const
-  OptionMap: array[TOldVTOption] of Integer = (
-    Ord(toAcceptOLEDrop), Ord(toAnimatedToggle), Ord(toAutoDropExpand), Ord(toAutoExpand), Ord(toAutoScroll),
-    Ord(toAutoSort), Ord(toAutoSpanColumns), Ord(toAutoTristateTracking), Ord(toCheckSupport), Ord(toDisableDrawSelection),
-    Ord(toEditable), Ord(toExtendedFocus), Ord(toFullRowSelect), Ord(toGridExtensions), Ord(toHideFocusRect),
-    Ord(toHideSelection), Ord(toHotTrack), Ord(toInitOnSave), Ord(toLevelSelectConstraint), Ord(toMiddleClickSelect),
-    Ord(toMultiSelect), Ord(toRightClickSelect), Ord(toPopupMode), Ord(toShowBackground),
-    Ord(toShowButtons), Ord(toShowDropmark), Ord(toShowHorzGridLines), Ord(toShowRoot), Ord(toShowTreeLines),
-    Ord(toShowVertGridLines), Ord(toSiblingSelectConstraint), Ord(toToggleOnDblClick)
-  );
-
-procedure TBaseVirtualTree.ReadOldOptions(Reader: TReader);
-
-// Migration helper routine to silently convert forms containing the old tree options member into the new
-// sub-options structure.
-
-var
-  OldOption: TOldVTOption;
-  EnumName: string;
-
-begin
-  // If we are at design time currently then let the designer know we changed something.
-  UpdateDesigner;
-
-  // It should never happen at this place that there is something different than the old set.
-  if Reader.ReadValue = vaSet then
-  begin
-    // Remove all default values set by the constructor.
-    FOptions.AnimationOptions := [];
-    FOptions.AutoOptions := [];
-    FOptions.MiscOptions := [];
-    FOptions.PaintOptions := [];
-    FOptions.SelectionOptions := [];
-
-    while True do
-    begin
-      // Sets are stored with their members as simple strings. Read them one by one and map them to the new option
-      // in the correct sub-option set.
-      EnumName := Reader.ReadStr;
-      if EnumName = '' then
-        Break;
-      OldOption := TOldVTOption(GetEnumValue(TypeInfo(TOldVTOption), EnumName));
-      case OldOption of
-        voAcceptOLEDrop, voCheckSupport, voEditable, voGridExtensions, voInitOnSave, voToggleOnDblClick:
-          FOptions.MiscOptions := FOptions.FMiscOptions + [TVTMiscOption(OptionMap[OldOption])];
-        voAnimatedToggle:
-          FOptions.AnimationOptions := FOptions.FAnimationOptions + [TVTAnimationOption(OptionMap[OldOption])];
-        voAutoDropExpand, voAutoExpand, voAutoScroll, voAutoSort, voAutoSpanColumns, voAutoTristateTracking:
-          FOptions.AutoOptions := FOptions.FAutoOptions + [TVTAutoOption(OptionMap[OldOption])];
-        voDisableDrawSelection, voExtendedFocus, voFullRowSelect, voLevelSelectConstraint,
-        voMiddleClickSelect, voMultiSelect, voRightClickSelect, voSiblingSelectConstraint:
-          FOptions.SelectionOptions := FOptions.FSelectionOptions + [TVTSelectionOption(OptionMap[OldOption])];
-        voHideFocusRect, voHideSelection, voHotTrack, voPopupMode, voShowBackground, voShowButtons,
-        voShowDropmark, voShowHorzGridLines, voShowRoot, voShowTreeLines, voShowVertGridLines:
-          FOptions.PaintOptions := FOptions.FPaintOptions + [TVTPaintOption(OptionMap[OldOption])];
-      end;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.SetAlignment(const Value: TAlignment);
 
 begin
@@ -19119,7 +19048,6 @@ begin
     StoreIt := False;
 
   Filer.DefineProperty('Columns', FHeader.ReadColumns, FHeader.WriteColumns, StoreIt);
-  Filer.DefineProperty('Options', ReadOldOptions, nil, False);
 
   // #622 made old DFMs incompatible with new VTW - so the program is compiled successfully
   //    and then suddenly crashes at user site in runtime.
