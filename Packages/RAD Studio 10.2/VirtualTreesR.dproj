@@ -7,7 +7,7 @@
         <AppType>Package</AppType>
         <FrameworkType>VCL</FrameworkType>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>18.3</ProjectVersion>
+        <ProjectVersion>18.4</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
@@ -80,7 +80,7 @@
         <DCCReference Include="vcl.dcp"/>
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="..\..\Source\VirtualTrees.pas"/>
-        <DCCReference Include="..\..\Source\VTHeaderPopup.pas"/>
+        <DCCReference Include="..\..\Source\VirtualTrees.HeaderPopup.pas"/>
         <DCCReference Include="..\..\Source\VTAccessibilityFactory.pas"/>
         <DCCReference Include="..\..\Source\VTAccessibility.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.StyleHooks.pas"/>

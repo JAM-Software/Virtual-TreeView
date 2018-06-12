@@ -4031,7 +4031,7 @@ uses
   VirtualTrees.ClipBoard,
   VirtualTrees.Utils, 
   VirtualTrees.Export,
-  VTHeaderPopup;
+  VirtualTrees.HeaderPopup;
 
 resourcestring
   // Localizable strings.

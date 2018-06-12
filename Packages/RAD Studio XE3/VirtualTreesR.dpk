@@ -35,7 +35,7 @@ requires
 
 contains
   VirtualTrees in '..\..\Source\VirtualTrees.pas',
-  VTHeaderPopup in '..\..\Source\VTHeaderPopup.pas',
+  VirtualTrees.HeaderPopup in '..\..\Source\VirtualTrees.HeaderPopup.pas',
   VTAccessibilityFactory in '..\..\Source\VTAccessibilityFactory.pas',
   VTAccessibility in '..\..\Source\VTAccessibility.pas',
   VirtualTrees.StyleHooks in '..\..\Source\VirtualTrees.StyleHooks.pas',

@@ -48,10 +48,8 @@ object GeneralForm: TGeneralForm
     Header.AutoSizeIndex = -1
     Header.Background = clBtnShadow
     Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoShowHint, hoVisible]
-    Header.ParentFont = True
     Header.PopupMenu = VTHPopup
     Header.Style = hsFlatButtons
-    HintAnimation = hatFade
     HintMode = hmTooltip
     HotCursor = crHandPoint
     Images = TreeImages

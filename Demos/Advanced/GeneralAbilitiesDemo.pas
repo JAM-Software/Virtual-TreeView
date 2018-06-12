@@ -27,7 +27,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
-  StdActns, ActnList, VTHeaderPopup, UITypes;
+  StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList;
 
 type
   TGeneralForm = class(TForm)

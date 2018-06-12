@@ -107,7 +107,7 @@
         <DCCReference Include="vcl.dcp"/>
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="..\..\Source\VirtualTrees.pas"/>
-        <DCCReference Include="..\..\Source\VTHeaderPopup.pas"/>
+        <DCCReference Include="..\..\Source\VirtualTrees.HeaderPopup.pas"/>
         <DCCReference Include="..\..\Source\VTAccessibilityFactory.pas"/>
         <DCCReference Include="..\..\Source\VTAccessibility.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.StyleHooks.pas"/>
