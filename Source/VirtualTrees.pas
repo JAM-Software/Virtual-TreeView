@@ -2615,7 +2615,7 @@ type
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
-    procedure ChangeScale(M, D: Integer); override;
+    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); override;
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearTempCache; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
@@ -20313,8 +20313,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ChangeScale(M, D: Integer);
 
+procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
 begin
   inherited;
 
