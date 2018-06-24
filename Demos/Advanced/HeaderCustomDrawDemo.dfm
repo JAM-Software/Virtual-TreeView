@@ -60,17 +60,11 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
     EditDelay = 100
     Header.AutoSizeIndex = 0
     Header.Background = clBtnShadow
-    Header.Font.Charset = ANSI_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -12
-    Header.Font.Name = 'Arial'
-    Header.Font.Style = [fsBold]
     Header.Height = 110
     Header.Images = HeaderImages
     Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoOwnerDraw, hoShowHint, hoShowImages, hoShowSortGlyphs, hoVisible]
     Header.SortColumn = 0
     Header.Style = hsFlatButtons
-    HintAnimation = hatNone
     HintMode = hmTooltip
     HotCursor = crHandPoint
     LineMode = lmBands
