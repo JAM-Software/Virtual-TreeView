@@ -30004,27 +30004,32 @@ begin
 
     if FUpdateCount = 0 then
     begin
-      // If auto sort is enabled then sort the node or its parent (depending on the insert mode).
-      if (toAutoSort in FOptions.FAutoOptions) and (FHeader.FSortColumn > InvalidColumn) then
-        case Mode of
-          amInsertBefore,
-          amInsertAfter:
-            // Here no initialization is necessary because *if* a node has already got children then it
-            // must also be initialized.
-            // Note: Node can never be FRoot at this point.
+      case Mode of
+        amInsertBefore,
+        amInsertAfter:
+        begin
+          // Here no initialization is necessary because *if* a node has already got children then it
+          // must also be initialized.
+          // Note: Node can never be FRoot at this point.
+          StructureChange(Result, crNodeAdded);
+          // If auto sort is enabled then sort the node or its parent (depending on the insert mode).
+          if (toAutoSort in FOptions.FAutoOptions) and (FHeader.FSortColumn > InvalidColumn) then
             Sort(Node.Parent, FHeader.FSortColumn, FHeader.FSortDirection, True);
-          amAddChildFirst,
-          amAddChildLast:
-            Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, True);
+          InvalidateToBottom(Result)
         end;
-
+        amAddChildFirst,
+        amAddChildLast:
+        begin
+          StructureChange(Node, crChildAdded);
+          // If auto sort is enabled then sort the node or its parent (depending on the insert mode).
+          if (toAutoSort in FOptions.FAutoOptions) and (FHeader.FSortColumn > InvalidColumn) then
+            Sort(Node, FHeader.FSortColumn, FHeader.FSortDirection, True);
+          InvalidateToBottom(Node);
+        end;
+      end;
+      InvalidateCache();
       UpdateScrollBars(True);
-      if Mode = amInsertBefore then
-        InvalidateToBottom(Result)
-      else
-        InvalidateToBottom(Node);
     end;
-    StructureChange(Result, crNodeAdded);
   end
   else
     Result := nil;
