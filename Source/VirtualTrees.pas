@@ -192,7 +192,6 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   CF_HTML,
   CF_CSV: Word;
 
-  MMXAvailable: Boolean; // necessary to know because the blend code uses MMX instructions
   IsWinVistaOrAbove: Boolean;
 
   {$MinEnumSize 1, make enumerations as small as possible}
@@ -4405,8 +4404,6 @@ begin
   // This watcher is used whenever a global structure could be modified by more than one thread.
   gWatcher := TCriticalSection.Create();
 
-  // For the drag image a fast MMX blend routine is used. We have to make sure MMX is available.
-  MMXAvailable := HasMMX;
   IsWinVistaOrAbove := (Win32MajorVersion >= 6);
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
@@ -5480,10 +5477,6 @@ begin
     end;
   end;
 
-  // Check availability of MMX if fading is requested.
-  if not MMXAvailable and (Result = hatFade) then
-    Result := hatSlide;
-
   //Disable animation if hot tracking is ON as it causes problems
   if (toHotTrack in FHintData.Tree.TreeOptions.PaintOptions) then
     Result := hatNone;
@@ -6477,7 +6470,7 @@ begin
   else
     Exclude(FStates, disSystemSupport);
 
-  if MMXAvailable and not (disSystemSupport in FStates) then
+  if not (disSystemSupport in FStates) then
   begin
     FLastPosition := HotSpot;
 
@@ -24514,8 +24507,7 @@ var
   BackColorBackup: COLORREF;   // used to restore forground and background colors when drawing a selection rectangle
 
 begin
-  if ((FDrawSelectionMode = smDottedRectangle) and not (tsUseThemes in FStates)) or
-    not MMXAvailable then
+  if ((FDrawSelectionMode = smDottedRectangle) and not (tsUseThemes in FStates)) then
   begin
     // Classical selection rectangle using dotted borderlines.
     TextColorBackup := GetTextColor(Target.Handle);
@@ -24701,7 +24693,7 @@ begin
               if tsUseExplorerTheme in FStates then
                 DrawBackground(TREIS_SELECTED)
               else
-                if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
+                if (toUseBlendedSelection in FOptions.PaintOptions) then
                   AlphaBlendSelection(Brush.Color)
                 else
                   with TWithSafeRect(InnerRect) do
@@ -24736,7 +24728,7 @@ begin
                   DrawBackground(IfThen(Self.Focused, TREIS_SELECTED, TREIS_SELECTEDNOTFOCUS));
               end
               else
-                if MMXAvailable and (toUseBlendedSelection in FOptions.PaintOptions) then
+                if (toUseBlendedSelection in FOptions.PaintOptions) then
                   AlphaBlendSelection(Brush.Color)
                 else
                   with TWithSafeRect(InnerRect) do
@@ -30695,7 +30687,7 @@ begin
         NodeBitmap := TBitmap.Create;
         // For alpha blending we need the 32 bit pixel format. For other targets there might be a need for a certain
         // pixel format (e.g. printing).
-        if MMXAvailable and ((FDrawSelectionMode = smBlendedRectangle) or (tsUseThemes in FStates) or
+        if ((FDrawSelectionMode = smBlendedRectangle) or (tsUseThemes in FStates) or
           (toUseBlendedSelection in FOptions.PaintOptions)) then
           NodeBitmap.PixelFormat := pf32Bit
         else

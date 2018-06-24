@@ -49,7 +49,6 @@ type
 procedure AlphaBlend(Source, Destination: HDC; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
 function GetRGBColor(Value: TColor): DWORD;
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
-function HasMMX: Boolean;
 
 procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
@@ -1165,47 +1164,6 @@ begin
   end;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-function HasMMX: Boolean;
-
-// Helper method to determine whether the current processor supports MMX.
-
-{$ifdef CPUX64}
-begin
-  // We use SSE2 in the "MMX-functions"
-  Result := True;
-end;
-{$else}
-asm
-        PUSH    EBX
-        XOR     EAX, EAX     // Result := False
-        PUSHFD               // determine if the processor supports the CPUID command
-        POP     EDX
-        MOV     ECX, EDX
-        XOR     EDX, $200000
-        PUSH    EDX
-        POPFD
-        PUSHFD
-        POP     EDX
-        XOR     ECX, EDX
-        JZ      @1           // no CPUID support so we can't even get to the feature information
-        PUSH    EDX
-        POPFD
-
-        MOV     EAX, 1
-        DW      $A20F        // CPUID, EAX contains now version info and EDX feature information
-        MOV     EBX, EAX     // free EAX to get the result value
-        XOR     EAX, EAX     // Result := False
-        CMP     EBX, $50
-        JB      @1           // if processor family is < 5 then it is not a Pentium class processor
-        TEST    EDX, $800000
-        JZ      @1           // if the MMX bit is not set then we don't have MMX
-        INC     EAX          // Result := True
-@1:
-        POP     EBX
-end;
-{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
