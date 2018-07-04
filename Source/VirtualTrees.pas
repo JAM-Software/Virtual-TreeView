@@ -15030,6 +15030,8 @@ begin
           Dec(FVisibleCount);
           NeedUpdate := True;
         end;
+        if FocusedNode = Node then
+          FocusedNode := nil;
       end;
 
       if FUpdateCount = 0 then
