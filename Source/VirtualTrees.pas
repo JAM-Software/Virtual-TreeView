@@ -25726,9 +25726,10 @@ procedure TBaseVirtualTree.UpdateEditBounds;
 
 var
   R: TRect;
-  Dummy: Integer;
   CurrentAlignment: TAlignment;
   CurrentBidiMode: TBidiMode;
+  offsets : TVTOffsets;
+  offset : Integer;
 
 begin
   if (tsEditing in FStates) and Assigned(FFocusedNode) and
@@ -25741,10 +25742,24 @@ begin
     end;
     if vsMultiline in FFocusedNode.States then
       R := GetDisplayRect(FFocusedNode, FEditColumn, True, False)
-    else
+    else if not (toGridExtensions in FOptions.FMiscOptions) then
       R := GetDisplayRect(FFocusedNode, FEditColumn, True, True);
+
     if (toGridExtensions in FOptions.FMiscOptions) then
     begin
+      // Use the whole cell when grid extensions are on.
+      R := GetDisplayRect(FFocusedNode, FEditColumn, False, False);
+      if FEditColumn = FHeader.MainColumn then
+      begin
+        // Calculate an offset for the main column.
+        GetOffsets(FFocusedNode, offsets, ofsLabel, FEditColumn);
+        offset := offsets[ofsLabel];
+        if offsets[ofsToggleButton] < 0 then
+          Inc(offset, offsets[ofsToggleButton]);
+      end
+      else
+        offset := 0;
+
       // Adjust edit bounds depending on alignment and bidi mode.
       if FEditColumn <= NoColumn then
       begin
@@ -25760,9 +25775,19 @@ begin
       if CurrentBidiMode <> bdLeftToRight then
         ChangeBiDiModeAlignment(CurrentAlignment);
       if CurrentAlignment = taLeftJustify then
-        FHeader.Columns.GetColumnBounds(FEditColumn, Dummy, R.Right)
+      begin
+        if CurrentBiDiMode = bdLeftToRight then
+          Inc(R.Left, offset)
+        else
+          Dec(R.Right, offset);
+      end
       else
-        FHeader.Columns.GetColumnBounds(FEditColumn, R.Left, Dummy);
+      begin
+        if CurrentBiDiMode = bdLeftToRight then
+          Inc(R.Left, offset)
+        else
+          Dec(R.Right, offset);
+      end;
     end;
     if toShowHorzGridLines in TreeOptions.PaintOptions then
       Dec(R.Bottom);
@@ -33594,7 +33619,7 @@ procedure TStringEditLink.SetBounds(R: TRect);
 
 var
   lOffset, tOffset, height: Integer;
-
+  offsets : TVTOffsets;
 begin
   if not FStopping then
   begin
@@ -33627,6 +33652,31 @@ begin
     // We have to take out the two pixel border of the edit control as well as a one pixel "edit border" the
     // control leaves around the (selected) text.
     R := FEdit.ClientRect;
+
+    // If toGridExtensions are turned on, we can fine tune the left margin (or the right margin if RTL is on)
+    // of the text to exactly match the text in the tree cell.
+    if (toGridExtensions in FTree.TreeOptions.MiscOptions) and
+       ((FAlignment = taLeftJustify) and (FEdit.BidiMode = bdLeftToRight) or
+        (FAlignment = taRightJustify) and (FEdit.BidiMode <> bdLeftToRight)) then
+    begin
+      // Calculate needed text area offset.
+      FTree.GetOffsets(FNode, offsets, ofsText, FColumn);
+      if FColumn = FTree.Header.MainColumn then
+      begin
+        if offsets[ofsToggleButton] < 0 then
+          lOffset := -(offsets[ofsToggleButton] + 2)
+        else
+          lOffset := 0;
+      end
+      else
+        lOffset := offsets[ofsText] - offsets[ofsMargin] + 1;
+      // Apply the offset.
+      if FEdit.BidiMode = bdLeftToRight then
+        Inc(R.Left, lOffset)
+      else
+        Dec(R.Right, lOffset);
+    end;
+
     lOffset := IfThen(vsMultiline in FNode.States, 0, 2);
     if tsUseThemes in FTree.FStates then
       Inc(lOffset);
