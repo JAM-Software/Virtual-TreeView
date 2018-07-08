@@ -31031,7 +31031,9 @@ begin
                             // nodes is visible or auto button hiding is disabled.
                             if (toShowButtons in FOptions.FPaintOptions) and (vsHasChildren in Node.States) and
                               not ((vsAllChildrenHidden in Node.States) and
-                              (toAutoHideButtons in TreeOptions.FAutoOptions)) then
+                              (toAutoHideButtons in TreeOptions.FAutoOptions)) and
+                              ((toShowRoot in TreeOptions.PaintOptions) or (GetNodeLevel(Node) > 0))
+                            then
                               PaintNodeButton(Canvas, Node, Column, CellRect, Offsets[ofsToggleButton], ButtonY, BidiMode); // Relative X position of toggle button is needed for proper BiDi calculation
 
                             if ImageInfo[iiCheck].Index > -1 then
