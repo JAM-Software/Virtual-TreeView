@@ -22745,6 +22745,8 @@ var
   //--------------- end local functions ---------------------------------------
 
 begin
+  if IsEmpty then
+    Exit; // Nothing to do
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
   begin
     StopWheelPanning;
