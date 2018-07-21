@@ -26122,49 +26122,7 @@ function TBaseVirtualTree.AddChild(Parent: PVirtualNode; UserData: Pointer = nil
 
 begin
   if not (toReadOnly in FOptions.FMiscOptions) then
-  begin
-    CancelEditNode;
-
-    if Parent = nil then
-      Parent := FRoot;
-    if not (vsInitialized in Parent.States) then
-      InitNode(Parent);
-
-    // Locally stop updates of the tree in order to avoid usage of the new node before it is correctly set up.
-    // If the update count was 0 on enter then there will be a correct update at the end of this method.
-    Inc(FUpdateCount);
-    try
-      SetChildCount(Parent, Parent.ChildCount + 1);
-      // Update the hidden children flag of the parent. Nodes are added as being visible by default.
-      Exclude(Parent.States, vsAllChildrenHidden);
-    finally
-      Dec(FUpdateCount);
-    end;
-    Result := Parent.LastChild;
-    //TODO: The above code implicitely triggers OnMeasureItem, but the NodeData is not set then. Consider doing this similar to InsertNode() with a combination of MakeNewNode and InternalConnectNode()
-
-    if Assigned(UserData) then
-      SetNodeData(Result, UserData);
-
-    InvalidateCache;
-    if FUpdateCount = 0 then
-    begin
-      ValidateCache;
-      if tsStructureChangePending in FStates then
-      begin
-        if Parent = FRoot then
-          StructureChange(nil, crChildAdded)
-        else
-          StructureChange(Parent, crChildAdded);
-      end;
-
-      if (toAutoSort in FOptions.FAutoOptions) and (FHeader.FSortColumn > InvalidColumn) then
-        Sort(Parent, FHeader.FSortColumn, FHeader.FSortDirection, True);
-
-      InvalidateToBottom(Parent);
-      UpdateScrollBars(True);
-   end;
-  end
+    Result := InsertNode(Parent, TVTNodeAttachMode.amAddChildLast, UserData)
   else
     Result := nil;
 end;
