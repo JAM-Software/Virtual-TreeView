@@ -5,7 +5,7 @@ Virtual Treeview is a Delphi treeview control built from ground up. Many years o
 I don't use C++ Builder and my experience with it is very limited. This makes it difficult to take care about bugs that are reported in C++ Builder and to maintain the C++ Builder packages. I would be great if someone would volunteer to do this. Please contact me at joachim.marder+CPP@gmail.com.
 
 ### Downloads
-**V7** official release for **RAD Studio XE3 to 10.2 Tokyo**: [JAM Software](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/7.0.zip)
+**V7** official release for **RAD Studio XE3 to 10.2 Tokyo**: [JAM Software](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/7.0.zip) ([Changes](https://github.com/Virtual-TreeView/Virtual-TreeView/releases/tag/7.0))
 
 For a **Delphi XE2** compatible fork see: [Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2](https://github.com/Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2)
 
