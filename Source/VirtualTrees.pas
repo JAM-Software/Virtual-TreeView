@@ -26832,6 +26832,8 @@ begin
         StructureChange(nil, crChildDeleted)
       else
         StructureChange(LastParent, crChildDeleted);
+      if Node = FNextNodeToSelect then
+        FNextNodeToSelect := nil;
     end;
 
     LastLeft := -FEffectiveOffsetX;
