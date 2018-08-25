@@ -3368,6 +3368,13 @@ type
   // New text can only be set for variable caption.
   TVSTNewTextEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     NewText: string) of object;
+
+  //Beginpatch Uwe Rupprecht
+  //New Data Event
+  TVSTNewDataEvent = Procedure(Sender:TBaseVirtualTree;Node:PVirtualNode;Column:TColumnIndex; var NewData:Pointer) of Object;
+  TVSTGetDataEvent = Procedure(Sender:TBaseVirtualTree;Node:PVirtualNode;Column:TColumnIndex; var Data:Pointer) of Object;
+  //Endpatch
+
   TVSTShortenStringEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; const S: string; TextSpace: Integer; var Result: string;
     var Done: Boolean) of object;
@@ -3402,6 +3409,11 @@ type
     fOnGetCellText: TVSTGetCellTextEvent;             // used to retrieve the normal and static text of a tree node
     FOnGetHint: TVSTGetHintEvent;                  // used to retrieve the hint to be displayed for a specific node
     FOnNewText: TVSTNewTextEvent;                  // used to notify the application about an edited node caption
+    //Beginpatch Uwe Rupprecht
+    fonGetData : TVSTGetDataEvent;                // used to get the current Userdata of a Node
+    fonNewData : TVSTNewDataEvent;                // used to update the attached Userdata if option is set
+    //Endpatch
+
     FOnShortenString: TVSTShortenStringEvent;      // used to allow the application a customized string shortage
     FOnMeasureTextWidth: TVTMeasureTextEvent;      // used to adjust the width of the cells
     FOnMeasureTextHeight: TVTMeasureTextEvent;
@@ -3417,6 +3429,10 @@ type
     procedure SetOptions(const Value: TCustomStringTreeOptions);
     procedure SetText(Node: PVirtualNode; Column: TColumnIndex; const Value: string);
     procedure WriteText(Writer: TWriter);
+    //Beginpatch Uwe Rupprecht
+    function GetData(Node:PVirtualNode; Column: TColumnindex):Pointer;
+    Procedure SetData(Node:PVirtualNode; column: TColumnIndex; value:Pointer);
+    //Endpatch
 
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean = True);
@@ -3439,6 +3455,11 @@ type
     procedure DoGetText(var pEventArgs: TVSTGetCellTextEventArgs); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: string): Integer; override;
     procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string); virtual;
+
+    //Beginpatch Uwe Rupprecht
+    Procedure DoNewData(Node: PVirtualNode; Column: TColumnindex; value:Pointer);virtual;
+    //Endpatch
+
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex;
       TextType: TVSTTextType); virtual;
@@ -3466,6 +3487,11 @@ type
     property OnGetText: TVSTGetTextEvent read FOnGetText write FOnGetText;
     property OnGetCellText: TVSTGetCellTextEvent read fOnGetCellText write fOnGetCellText;
     property OnNewText: TVSTNewTextEvent read FOnNewText write FOnNewText;
+    //Beginpatch Uwe Rupprecht
+    Property onGetData: TVSTGetDataEvent read fonGetData write fonGetData;
+    Property onNewData: TVSTNewDataEvent read fonNewData write fonNewData;
+    //Endpatch
+
     property OnPaintText: TVTPaintText read FOnPaintText write FOnPaintText;
     property OnShortenString: TVSTShortenStringEvent read FOnShortenString write FOnShortenString;
     property OnMeasureTextWidth: TVTMeasureTextEvent read FOnMeasureTextWidth write FOnMeasureTextWidth;
@@ -3713,6 +3739,11 @@ type
     property OnMouseEnter;
     property OnMouseLeave;
     property OnNewText;
+    //Beginpatch Uwe Rupprecht
+    Property onGetData;
+    Property onNewData;
+    //Endpatch
+
     property OnNodeClick;
     property OnNodeCopied;
     property OnNodeCopying;
@@ -33808,6 +33839,18 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+//Beginpatch Uwe Rupprecht
+function TCustomVirtualStringTree.GetData(Node: PVirtualNode; Column: TColumnIndex):Pointer;
+begin
+  Assert(Assigned(Node), 'Node must not be nil.');
+  if (Assigned(fonGetData)) then
+    fonGetData(self,node,column,result)
+  else
+    result := GetNodeData(node);
+end;
+//Endpatch
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TCustomVirtualStringTree.InitializeTextProperties(var PaintInfo: TVTPaintInfo);
 
@@ -34066,6 +34109,15 @@ begin
   DoNewText(Node, Column, Value);
   InvalidateNode(Node);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+//Beginpatch Uwe Rupprecht
+Procedure TCustomVirtualStringTree.SetData(Node: PVirtualNode; column: TColumnIndex; value: Pointer);
+begin
+  DoNewData(Node,column,value);
+  InvalidateNode(node);
+end;
+//Endpatch
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -34375,6 +34427,17 @@ begin
   if FUpdateCount = 0 then
     UpdateHorizontalScrollBar(True);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+//Beginpatch Uwe Rupprecht
+procedure TCustomVirtualStringTree.DoNewData(Node: PVirtualNode; Column: TColumnIndex; value: Pointer);
+begin
+  if (Assigned(fonNewData)) then
+    fonNewData(self,node,column,value);
+  if (fUpdateCount = 0) then
+    UpdateHorizontalScrollBar(true);
+end;
+//Endpatch
 
 //----------------------------------------------------------------------------------------------------------------------
 
