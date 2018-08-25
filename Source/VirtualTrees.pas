@@ -3521,12 +3521,15 @@ type
     property ImageText[Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex]: string read GetImageText;
     property StaticText[Node: PVirtualNode; Column: TColumnIndex]: string read GetStaticText;
     property Text[Node: PVirtualNode; Column: TColumnIndex]: string read GetText write SetText;
+    //Beginpatch Uwe Rupprecht
+    Property Value[Node:PVirtualNode; Column: TColumnIndex]: Pointer read GetData write SetData;
+    //Endpatch
   end;
 
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   TVirtualStringTree = class(TCustomVirtualStringTree)
   private
-   
+
     function GetOptions: TStringTreeOptions;
     procedure SetOptions(const Value: TStringTreeOptions);
   protected
