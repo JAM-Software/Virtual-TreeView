@@ -1,4 +1,4 @@
-﻿V7.0: (Under development)
+﻿V7.0: (22 Jul 2018)
   * The support for Windows XP/2003 has been dropped (issue #707). This means:
     - We did not intentionally break XP support.
 	- We do no longer test on Windows XP/2003
@@ -10,6 +10,7 @@
 					 Renamed unit "VTAccessibilityFactory" to "VirtualTrees.AccessibilityFactory"
   * Fixed issue #804: Remove MMXAvailable and related stuff
   * Fixed issue #736: TVTDragManager.GetDataObject() should not use TVTDataObject in case the OnCreateDataObject event handler returned nil
+  * Fixed issue #756: OnMeasureItem called before data is assigned to node
   * Fixed issue #745: Pressing SPACE should change the check-state of all selected nodes
   * Fixed Issue #369: Centralize Left Content Margin calculation
   * Pull Request #800: Fixed an incorrect calculation of the string edit link height. 
