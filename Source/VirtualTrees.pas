@@ -18597,9 +18597,9 @@ procedure TBaseVirtualTree.StartOperation(OperationKind: TVTOperationKind);
 
 begin
   Inc(FOperationCount);
-  DoStartOperation(OperationKind);
   if FOperationCount = 1 then
     FOperationCanceled := False;
+  DoStartOperation(OperationKind);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
