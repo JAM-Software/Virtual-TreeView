@@ -851,19 +851,17 @@ type
   THintAnimationType = (
     hatNone,                 // no animation at all, just display hint/tooltip
     hatFade,                 // fade in the hint/tooltip, like in Windows 2000
-    hatSlide,                // slide in the hint/tooltip, like in Windows 98
-    hatSystemDefault         // use what the system is using (slide for Win9x, slide/fade for Win2K+, depends on settings)
+    hatSlide                // slide in the hint/tooltip, like in Windows 98
   );
 
   // The trees need an own hint window class because of Unicode output and adjusted font.
   TVirtualTreeHintWindow = class(THintWindow)
-  private
+  strict private
     FHintData: TVTHintData;
     FBackground,
     FDrawBuffer,
     FTarget: TBitmap;
     FTextHeight: Integer;
-    FAnimationType: THintAnimationType;          // none, fade in, slide in animation (just like those animations used
     function DoGetAnimationType: THintAnimationType; virtual;
     function AnimationCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
     procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
@@ -5461,20 +5459,16 @@ var
   Animation: BOOL;
 
 begin
-  Result := FAnimationType;
-  if Result = hatSystemDefault then
+  SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animation, 0);
+  if not Animation then
+    Result := hatNone
+  else
   begin
-    SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, @Animation, 0);
-    if not Animation then
-      Result := hatNone
+    SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animation, 0);
+    if Animation then
+      Result := hatFade
     else
-    begin
-      SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animation, 0);
-      if Animation then
-        Result := hatFade
-      else
-        Result := hatSlide;
-    end;
+      Result := hatSlide;
   end;
 
   //Disable animation if hot tracking is ON as it causes problems
@@ -5496,7 +5490,6 @@ begin
 
   DoubleBuffered := False; // we do our own buffering
   FHintWindowDestroyed := False;
-  FAnimationType := hatSystemDefault
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
