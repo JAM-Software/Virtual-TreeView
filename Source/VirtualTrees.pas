@@ -837,8 +837,6 @@ type
     Node: PVirtualNode;
     Column: TColumnIndex;
     HintRect: TRect;            // used for draw trees only, string trees get the size from the hint string
-    DefaultHint: string; // used only if there is no node specific hint string available
-                                // or a header hint is about to appear
     HintText: string;    // set when size of the hint window is calculated
     BidiMode: TBidiMode;
     Alignment: TAlignment;
@@ -5953,14 +5951,6 @@ begin
           GetTextMetrics(Canvas.Handle, TM);
           FTextHeight := TM.tmHeight;
           LineBreakStyle := hlbDefault;
-
-          if Length(DefaultHint) > 0 then
-            HintText := DefaultHint
-          else
-            if Tree.HintMode = hmToolTip then
-              HintText := Tree.DoGetNodeToolTip(Node, Column, LineBreakStyle)
-            else
-              HintText := Tree.DoGetNodeHint(Node, Column, LineBreakStyle);
 
           if Length(HintText) = 0 then
             Result := Rect(0, 0, 0, 0)
@@ -16102,35 +16092,30 @@ begin
       begin
         Result := 0;
         ShowOwnHint := False;
-        // Assign a dummy string otherwise the VCL will not show the hint window.
-        if GetHintWindowClass.InheritsFrom(TVirtualTreeHintWindow) then
-          HintStr := ' '
-        else
+
+        //workaround for issue #291
+        //it duplicates parts of the following code and code in TVirtualTreeHintWindow
+        HintStr := '';
+        if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(CursorPos) then
         begin
-          //workaround for issue #291
-          //it duplicates parts of the following code and code in TVirtualTreeHintWindow
-          HintStr := '';
-          if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(CursorPos) then
-          begin
-            CursorRect := FHeaderRect;
-            // Convert the cursor rectangle into real client coordinates.
-            OffsetRect(CursorRect, 0, -Integer(FHeader.FHeight));
-            HitInfo.HitColumn := FHeader.FColumns.GetColumnAndBounds(CursorPos, CursorRect.Left, CursorRect.Right);
-            if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) and
-              (FHeader.FColumns[HitInfo.HitColumn].FHint <> '') then
-              HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
-          end
+          CursorRect := FHeaderRect;
+          // Convert the cursor rectangle into real client coordinates.
+          OffsetRect(CursorRect, 0, -Integer(FHeader.FHeight));
+          HitInfo.HitColumn := FHeader.FColumns.GetColumnAndBounds(CursorPos, CursorRect.Left, CursorRect.Right);
+          if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) and
+            (FHeader.FColumns[HitInfo.HitColumn].FHint <> '') then
+            HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
+        end
+        else
+        if HintMode = hmDefault then
+          HintStr := GetShortHint(Hint)
+        else
+        if Assigned(HitInfo.HitNode) and (HitInfo.HitColumn > InvalidColumn) then
+        begin
+          if HintMode = hmToolTip then
+            HintStr := DoGetNodeToolTip(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle)
           else
-          if HintMode = hmDefault then
-            HintStr := GetShortHint(Hint)
-          else
-          if Assigned(HitInfo.HitNode) and (HitInfo.HitColumn > InvalidColumn) then
-          begin
-            if HintMode = hmToolTip then
-              HintStr := DoGetNodeToolTip(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle)
-            else
-              HintStr := DoGetNodeHint(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle);
-          end;
+            HintStr := DoGetNodeHint(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle);
         end;
 
         // First check whether there is a header hint to show.
@@ -16148,8 +16133,8 @@ begin
           //       cancel this with ESC.
           if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) then
           begin
-            FHintData.DefaultHint := FHeader.FColumns[HitInfo.HitColumn].FHint;
-            if FHintData.DefaultHint <> '' then
+            FHintData.HintText := FHeader.FColumns[HitInfo.HitColumn].FHint;
+            if FHintData.HintText <> '' then
               ShowOwnHint := True
             else
               Result := 1;
@@ -16205,7 +16190,6 @@ begin
                   ColRight := ClientWidth;
                 end;
 
-                FHintData.DefaultHint := '';
                 if FHintMode <> hmTooltip then
                 begin
                   // Node specific hint text.
@@ -16249,7 +16233,7 @@ begin
                   if ShowOwnHint then
                   begin
                     // Node specific hint text given will be retrieved when needed.
-                    FHintData.DefaultHint := '';
+                    FHintData.HintText := HintStr;
                     HintPos := ClientToScreen(Point(NodeRect.Left, NodeRect.Top));
                     CursorRect := NodeRect;
                   end
@@ -16266,7 +16250,7 @@ begin
               // No node so fall back to control's hint (if indicated) or show nothing.
               if FHintMode = hmHintAndDefault then
               begin
-                FHintData.DefaultHint := GetShortHint(Hint);
+                FHintData.HintText := GetShortHint(Hint);
 
                 // Fix for the problem: Default Hint once shown stayed even when 
                 // node hint was to be displayed. The reason was that CursorRect
@@ -16277,7 +16261,7 @@ begin
                 else
                   CursorRect.right := CursorRect.right - Header.Columns.TotalWidth;
 
-                if Length(FHintData.DefaultHint) = 0 then
+                if Length(FHintData.HintText) = 0 then
                   Result := 1
                 else
                   ShowOwnHint := True;
