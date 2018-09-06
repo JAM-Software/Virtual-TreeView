@@ -16133,8 +16133,8 @@ begin
           //       cancel this with ESC.
           if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) then
           begin
-            FHintData.HintText := FHeader.FColumns[HitInfo.HitColumn].FHint;
-            if FHintData.HintText <> '' then
+            HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
+            if HintStr <> '' then
               ShowOwnHint := True
             else
               Result := 1;
@@ -16233,7 +16233,6 @@ begin
                   if ShowOwnHint then
                   begin
                     // Node specific hint text given will be retrieved when needed.
-                    FHintData.HintText := HintStr;
                     HintPos := ClientToScreen(Point(NodeRect.Left, NodeRect.Top));
                     CursorRect := NodeRect;
                   end
@@ -16250,9 +16249,9 @@ begin
               // No node so fall back to control's hint (if indicated) or show nothing.
               if FHintMode = hmHintAndDefault then
               begin
-                FHintData.HintText := GetShortHint(Hint);
+                HintStr := GetShortHint(Hint);
 
-                // Fix for the problem: Default Hint once shown stayed even when 
+                // Fix for the problem: Default Hint once shown stayed even when
                 // node hint was to be displayed. The reason was that CursorRect
                 // was for the full client area. Now reducing it to remove the
                 // columns from it.
@@ -16261,7 +16260,7 @@ begin
                 else
                   CursorRect.right := CursorRect.right - Header.Columns.TotalWidth;
 
-                if Length(FHintData.HintText) = 0 then
+                if Length(HintStr) = 0 then
                   Result := 1
                 else
                   ShowOwnHint := True;
@@ -16276,7 +16275,7 @@ begin
         if ShowOwnHint and (Result = 0) then
         begin
           HintWindowClass := GetHintWindowClass;
-
+          FHintData.HintText := HintStr;
           FHintData.Tree := Self;
           FHintData.Column := HitInfo.HitColumn;
           FHintData.Node := HitInfo.HitNode;
