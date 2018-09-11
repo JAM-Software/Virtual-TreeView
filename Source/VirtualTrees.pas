@@ -27905,6 +27905,7 @@ var
   NextNode: PVirtualNode;
   TextLeft,
   CurrentWidth: Integer;
+  lOffsets: TVTOffsets;
 begin
   if OperationCanceled then
   begin
@@ -27933,7 +27934,8 @@ begin
 
     while Assigned(Run) and not OperationCanceled do
     begin
-      TextLeft := GetOffset(TVTElement.ofsLabel, Run);
+      GetOffsets(Run, lOffsets, TVTElement.ofsLabel, Column);
+      TextLeft := lOffsets[TVTElement.ofsLabel];
       CurrentWidth := DoGetNodeWidth(Run, Column);
       Inc(CurrentWidth, DoGetNodeExtraWidth(Run, Column));
       Inc(CurrentWidth, DoGetCellContentMargin(Run, Column).X);
