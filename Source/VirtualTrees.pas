@@ -849,16 +849,14 @@ type
     FHintData: TVTHintData;
     FTextHeight: Integer;
     procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
-    function GetHintWindowDestroyed: Boolean;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
-    procedure WMNCPaint(var Message: TMessage); message WM_NCPAINT;
     procedure WMShowWindow(var Message: TWMShowWindow); message WM_SHOWWINDOW;
   strict protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Paint; override;
 
     property HintData: TVTHintData read FHintData;
-    property HintWindowDestroyed: Boolean read GetHintWindowDestroyed;
+    function HintWindowDestroyed(): Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -5453,7 +5451,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeHintWindow.GetHintWindowDestroyed;
+function TVirtualTreeHintWindow.HintWindowDestroyed;
 
 // This function exists to inform descendants if the hint window has been destroyed.
 
@@ -5471,15 +5469,6 @@ begin
   Message.Result := 1;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualTreeHintWindow.WMNCPaint(var Message: TMessage);
-
-// The control is fully painted by own code so don't paint any borders.
-
-begin
-  Message.Result := 0;
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5490,10 +5479,6 @@ procedure TVirtualTreeHintWindow.WMShowWindow(var Message: TWMShowWindow);
 begin
   if not Message.Show then
   begin
-    // Don't touch the last hint rectangle stored in the associated tree to avoid flickering in certain situations.
-    Finalize(FHintData);
-    ZeroMemory (@FHintData, SizeOf(FHintData));
-
     // If the hint window destruction flag to stop any hint window animation was set by a tree
     // during its destruction then reset it here to allow other tree instances to still use
     // this hint window.
