@@ -4253,7 +4253,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure CreateSystemImageSet(var IL: TImageList; Flags: Cardinal; Flat: Boolean);
+procedure CreateSystemImageSet(Handle: HWND; var IL: TImageList; Flags: Cardinal; Flat: Boolean);
 
 // Creates a system check image set.
 // Note: the DarkCheckImages and FlatImages image lists must already be filled, as some images from them are copied here.
@@ -4263,6 +4263,8 @@ const
 
 var
   BM: TBitmap;
+  Theme: HTHEME;
+  Details: TThemedElementDetails;
 
   //--------------- local functions -------------------------------------------
 
@@ -4316,7 +4318,10 @@ var
       ButtonState := ButtonState or DFCS_CHECKED;
     if Flat then
     ButtonState := ButtonState or DFCS_FLAT;
-    DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
+    if StyleServices.Enabled and StyleServices.IsSystemStyle then
+      DrawThemeBackground(Theme, BM.Canvas.Handle, Details.Part, Details.State, Rect(0, 0, BM.Width, BM.Height), nil)
+    else
+      DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
     IL.AddMasked(BM, MaskColor);
   end;
 
@@ -4325,12 +4330,23 @@ var
 var
   I: Integer;
   lSize: TSize;
+  Res: Boolean;
 begin
   BM := TBitmap.Create; // Create a temporary bitmap, which holds the intermediate images.
   try
+    Res := False;
     // Retrieve the checkbox image size, prefer theme if available, fall back to GetSystemMetrics() otherwise, but this returns odd results on Windows 8 and higher in high-dpi scenarios.
-    if not StyleServices.Enabled or not StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
-     lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
+    if StyleServices.Enabled then
+      if StyleServices.IsSystemStyle then
+      begin
+        Theme := OpenThemeData(Handle, 'BUTTON');
+        Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal);
+        Res := GetThemePartSize(Theme, BM.Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize) = S_OK;
+      end
+      else
+        Res := StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize);
+    if not Res then
+      lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
 
     IL := TImageList.CreateSize(lSize.cx, lSize.cy);
     with IL do
@@ -4350,6 +4366,8 @@ begin
       AddSystemImage(IL, I);
     // Add the 4 node images
     AddNodeImages(IL);
+    if StyleServices.Enabled and StyleServices.IsSystemStyle then
+      CloseThemeData(Theme);
 
   finally
     BM.Free;
@@ -4398,7 +4416,7 @@ begin
     Handle := ImageList_Create(UtilityImageSize, UtilityImageSize, Flags, 0, AllocBy);
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
 
-  CreateSystemImageSet(SystemCheckImages, Flags, False);
+  CreateSystemImageSet(0, SystemCheckImages, Flags, False);
 
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
@@ -18412,6 +18430,10 @@ begin
         // Scale utility images, #796
         if UtilityImages.Height <> MulDiv(UtilityImageSize, M, D) then
           ScaleImageList(UtilityImages, M, D);
+        SystemCheckImages.Free;
+        CreateSystemImageSet(Handle, SystemCheckImages, ILC_COLOR32 or ILC_MASK, False);
+        if FCheckImageKind = ckSystemDefault then
+          FCheckImages := SystemCheckImages;
         // Scale also node heights
         BeginUpdate();
         try
@@ -23892,6 +23914,7 @@ var
   R: TRect;
   Details: TThemedElementDetails;
   lSize: TSize;
+  Theme: HTHEME;
 begin
   with ImageInfo do
   begin
@@ -23929,18 +23952,29 @@ begin
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
-      if (Index in [21..24]) or   not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
-        // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. See issue #615
-        if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
-          lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
-      end;//if
-      R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
+      if StyleServices.IsSystemStyle and not (Index in [21..24]) then
+      begin
+        Theme := OpenThemeData(Handle, 'BUTTON');
+        GetThemePartSize(Theme, Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize);
+        R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
+        DrawThemeBackground(Theme, Canvas.Handle, Details.Part, Details.State, R, nil);
+        CloseThemeData(Theme);
+      end
+      else
+      begin
+        if (Index in [21..24]) or   not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
+          // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. See issue #615
+          if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
+            lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
+        end;//if
+        R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
 
-      StyleServices.DrawElement(Canvas.Handle, Details, R);
-      Canvas.Refresh;
+        StyleServices.DrawElement(Canvas.Handle, Details, R);
+        Canvas.Refresh;
 
-      if Index in [21..24] then
-        UtilityImages.Draw(Canvas, XPos, YPos, 4);  //Does anyone know what this was good for?
+        if Index in [21..24] then
+          UtilityImages.Draw(Canvas, XPos, YPos, 4);  //Does anyone know what this was good for?
+      end
     end
     else
       with FCheckImages do
