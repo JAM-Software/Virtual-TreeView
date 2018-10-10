@@ -22825,8 +22825,10 @@ begin
     if (FHeader.FColumns.FClickIndex > NoColumn) and (FHeader.FColumns.FClickIndex = HitInfo.HitColumn) then
       DoColumnClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
 
-      if FLastHitInfo.HitNode <> nil then  // Use THitInfo of mouse down here, see issue #692
-     DoNodeClick(FLastHitInfo);
+    if FLastHitInfo.HitNode <> nil then begin // Use THitInfo of mouse down here, see issue #692
+      DoNodeClick(FLastHitInfo);
+      FLastHitInfo.HitNode := nil; // prevent firing the event again
+    end;
 
     // handle a pending edit event
     if tsEditPending in FStates then
