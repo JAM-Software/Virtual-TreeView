@@ -31780,7 +31780,6 @@ procedure TBaseVirtualTree.SelectAll(VisibleOnly: Boolean);
 var
   Run: PVirtualNode;
   NextFunction: TGetNextNodeProc;
-  lUseBeginEndUpdate: Boolean;
 begin
   if not FSelectionLocked and (toMultiSelect in FOptions.FSelectionOptions) then
   begin
@@ -31795,9 +31794,7 @@ begin
       Run := GetFirst;
       NextFunction := GetNext;
     end;
-    lUseBeginEndUpdate := Assigned(OnInitChildren); // See issue #680
-    if lUseBeginEndUpdate then
-      BeginUpdate;
+    BeginUpdate();  // Improve performance, see issue #690
     try
       while Assigned(Run) do
       begin
@@ -31809,8 +31806,7 @@ begin
         AddToSelection(FTempNodeCache, FTempNodeCount);
       ClearTempCache;
     finally
-      if lUseBeginEndUpdate then
-        EndUpdate();
+      EndUpdate();
     end;//try..finally
     Invalidate;
   end;
