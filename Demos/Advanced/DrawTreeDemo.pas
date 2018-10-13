@@ -493,7 +493,7 @@ begin
     case Column of
       0:
         begin
-          if Node.Parent = Sender.RootNode then
+          if Sender.NodeParent[Node] = nil then
             NodeWidth := Canvas.TextWidth(Data.FullPath) + 2 * AMargin
           else
             NodeWidth := Canvas.TextWidth(ExtractFileName(Data.FullPath)) + 2 * AMargin;

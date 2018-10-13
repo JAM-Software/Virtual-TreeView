@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes;
+  StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes, System.ImageList;
 
 const
   // Helper message to decouple node change handling from edit handling.
@@ -125,7 +125,7 @@ begin
   if TextType = ttNormal then
     case Column of
       0:
-        if Node.Parent = Sender.RootNode then
+        if Sender.NodeParent[Node] = nil then
         begin
           // root nodes
           if Node.Index = 0 then
@@ -134,7 +134,7 @@ begin
             CellText := 'Origin';
         end
         else
-          CellText := PropertyTexts[Node.Parent.Index, Node.Index, ptkText];
+          CellText := PropertyTexts[Sender.NodeParent[Node].Index, Node.Index, ptkText];
       1:
         begin
           Data := Sender.GetNodeData(Node);
@@ -150,9 +150,9 @@ procedure TPropertiesForm.VST3GetHint(Sender: TBaseVirtualTree; Node: PVirtualNo
 
 begin
   // Add a dummy hint to the normal hint to demonstrate multiline hints.
-  if (Column = 0) and (Node.Parent <> Sender.RootNode) then
+  if (Column = 0) and (Sender.NodeParent[Node] <> nil) then
   begin
-    HintText := PropertyTexts[Node.Parent.Index, Node.Index, ptkHint];
+    HintText := PropertyTexts[Sender.NodeParent[Node].Index, Node.Index, ptkHint];
     { Related to #Issue 623
       Observed when solving issue #623. For hmToolTip, the multi-line mode
       depends on the node's multi-lin emode. Hence, append a line only
@@ -177,7 +177,7 @@ var
 begin
   if (Kind in [ikNormal, ikSelected]) and (Column = 0) then
   begin
-    if Node.Parent = Sender.RootNode then
+    if Sender.NodeParent[Node] = nil then
       Index := 12 // root nodes, this is an open folder
     else
     begin
@@ -201,7 +201,7 @@ begin
   with Sender do
   begin
     Data := GetNodeData(Node);
-    Allowed := (Node.Parent <> RootNode) and (Column = 1) and (Data.ValueType <> vtNone);
+    Allowed := (Sender.NodeParent[Node] <> nil) and (Column = 1) and (Data.ValueType <> vtNone);
   end;
 end;
 
@@ -213,7 +213,7 @@ begin
   with Sender do
   begin
     // Start immediate editing as soon as another node gets focused.
-    if Assigned(Node) and (Node.Parent <> RootNode) and not (tsIncrementalSearching in TreeStates) then
+    if Assigned(Node) and (Sender.NodeParent[Node] <> nil) and not (tsIncrementalSearching in TreeStates) then
     begin
       // We want to start editing the currently selected node. However it might well happen that this change event
       // here is caused by the node editor if another node is currently being edited. It causes trouble
@@ -249,7 +249,7 @@ var
 
 begin
   // Make the root nodes underlined and draw changed nodes in bold style.
-  if Node.Parent = Sender.RootNode then
+  if Sender.NodeParent[Node] = nil then
     TargetCanvas.Font.Style := [fsUnderline]
   else
   begin
@@ -274,7 +274,7 @@ begin
   S := SearchText;
   SetStatusbarText('Searching for: ' + S);
 
-  if Node.Parent = Sender.RootNode then
+  if Sender.NodeParent[Node] = nil then
   begin
     // root nodes
     if Node.Index = 0 then
@@ -284,7 +284,7 @@ begin
   end
   else
   begin
-    PropText := PropertyTexts[Node.Parent.Index, Node.Index, ptkText];
+    PropText := PropertyTexts[Sender.NodeParent[Node].Index, Node.Index, ptkText];
   end;
 
   // By using StrLIComp we can specify a maximum length to compare. This allows us to find also nodes

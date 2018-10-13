@@ -104,12 +104,12 @@ begin
   Data := Sender.GetNodeData(Node);
   case Kind of
     ikNormal, ikSelected:
-      if (Column = 0) and (Node.Parent = Sender.RootNode) then
+      if (Column = 0) and (Sender.NodeParent[Node] = nil) then
         Index := Data.Image;
     ikState:
       case Column of
         0:
-          if Node.Parent <> Sender.RootNode then
+          if Sender.NodeParent[Node] <> nil then
             Index := 21;
       end;
   end;
@@ -168,15 +168,15 @@ begin
   Data := Sender.GetNodeData(Node);
   case Column of
     0:
-      if Node.Parent = Sender.RootNode then
+      if Sender.NodeParent[Node] = nil then
         CellText := Data.Caption
       else
         CellText := 'More entries';
     1:
-      if Node.Parent = Sender.RootNode then
+      if Sender.NodeParent[Node] = nil then
         CellText := FloatToStr(Data.Size / 1000) + ' MB';
     2:
-      if Node.Parent = Sender.RootNode then
+      if Sender.NodeParent[Node] = nil then
         CellText := 'System Folder';
   end;
 end;

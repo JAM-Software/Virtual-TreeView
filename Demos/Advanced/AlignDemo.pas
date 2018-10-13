@@ -152,7 +152,7 @@ begin
       Canvas.Font.Color := clSilver;
     2:
       begin
-        if not Odd(Node.Parent.Index) then
+        if not Odd(Sender.NodeParent[Node].Index) then
           Canvas.Font := FArabicFont
         else
           Canvas.Font := FHebrewFont;
@@ -162,7 +162,7 @@ begin
   // Reset the text color for selected and drop target nodes.
   if ((Node = Sender.DropTargetNode) or (vsSelected in Node.States)) and (Column = Sender.FocusedColumn) then
     Canvas.Font.Color := clHighlightText;
-  if Node.Parent = Sender.RootNode then
+  if Sender.NodeParent[Node] = nil then
     Canvas.Font.Style := [fsBold];
 end;
 

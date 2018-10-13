@@ -286,7 +286,7 @@ var
 begin
   Result := True;
 
-  Data := FTree.GetNodeData(FNode);
+  Data := FNode.GetData();
   if FEdit is TComboBox then
     S := TComboBox(FEdit).Text
   else
@@ -329,7 +329,7 @@ begin
   // determine what edit type actually is needed
   FEdit.Free;
   FEdit := nil;
-  Data := FTree.GetNodeData(Node);
+  Data := Node.GetData();
   case Data.ValueType of
     vtString:
       begin
@@ -455,7 +455,7 @@ var
 
 begin
   Result := True;
-  Data := FTree.GetNodeData<TGridData>(FNode);
+  Data := FNode.GetData<TGridData>();
   if FEdit is TComboBox then
   begin
     S := TComboBox(FEdit).Text;
