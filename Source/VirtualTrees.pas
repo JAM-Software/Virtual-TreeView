@@ -12222,134 +12222,142 @@ begin
       end;//if
 
       // Indicate that we are going to propagate check states up and down the hierarchy.
-      if FCheckPropagationCount = 0 then // WL, 05.02.2004: Do not enter tsCheckPropagation more than once
+      if FCheckPropagationCount = 0 then begin
+        // Do not enter tsCheckPropagation more than once
         DoStateChange([tsCheckPropagation]);
-      Inc(FCheckPropagationCount); // WL, 05.02.2004
-      // Do actions which are associated with the given check state.
-      case CheckType of
-        // Check state change with additional consequences for check states of the children.
-        ctTriStateCheckBox:
-          begin
-            // Propagate state down to the children.
-            if toAutoTristateTracking in FOptions.FAutoOptions then
-              case Value of
-                csUncheckedNormal:
-                  if Node.ChildCount > 0 then
-                  begin
-                    Run := FirstChild;
-                    CheckedCount := 0;
-                    MixedCheckCount := 0;
-                    UncheckedCount := 0;
-                    while Assigned(Run) do
-                    begin
-                      if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
-                      begin
-                        if not Self.GetCheckState(Run).IsDisabled() then
-                          SetCheckState(Run, csUncheckedNormal);
-                        // Check if the new child state was set successfully, otherwise we have to adjust the
-                        // node's new check state accordingly.
-                        case Self.GetCheckState(Run) of
-                          csCheckedNormal, csCheckedDisabled:
-                            Inc(CheckedCount);
-                          csMixedNormal:
-                            Inc(MixedCheckCount);
-                          csUncheckedNormal, csUncheckedDisabled:
-                            Inc(UncheckedCount);
-                        end;
-                      end;
-                      Run := Run.NextSibling;
-                    end;
-
-                    // If there is still a mixed state child node checkbox then this node must be mixed checked too.
-                    if MixedCheckCount > 0 then
-                      Value := csMixedNormal
-                    else
-                      // If nodes are normally checked child nodes then the unchecked count determines what
-                      // to set for the node itself.
-                      if CheckedCount > 0 then
-                        if UncheckedCount > 0 then
-                          Value := csMixedNormal
-                        else
-                          Value := csCheckedNormal;
-                  end;
-                csCheckedNormal:
-                  if Node.ChildCount > 0 then
-                  begin
-                    Run := FirstChild;
-                    CheckedCount := 0;
-                    MixedCheckCount := 0;
-                    UncheckedCount := 0;
-                    while Assigned(Run) do
-                    begin
-                      if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
-                      begin
-                        if not Self.GetCheckState(Run).IsDisabled() then
-                          SetCheckState(Run, csCheckedNormal);
-                        // Check if the new child state was set successfully, otherwise we have to adjust the
-                        // node's new check state accordingly.
-                        case Self.GetCheckState(Run) of
-                          csCheckedNormal:
-                            Inc(CheckedCount);
-                          csMixedNormal:
-                            Inc(MixedCheckCount);
-                          csUncheckedNormal:
-                            Inc(UncheckedCount);
-                        end;
-                      end;
-                      Run := Run.NextSibling;
-                    end;
-
-                    // If there is still a mixed state child node checkbox then this node must be mixed checked too.
-                    if MixedCheckCount > 0 then
-                      Value := csMixedNormal
-                    else
-                      // If nodes are normally checked child nodes then the unchecked count determines what
-                      // to set for the node itself.
-                      if CheckedCount > 0 then
-                        if UncheckedCount > 0 then
-                          Value := csMixedNormal
-                        else
-                          Value := csCheckedNormal;
-                  end;
-              end;
-          end;
-        // radio button check state change
-        ctRadioButton:
-          if Value = csCheckedNormal then
-          begin
-            Value := csCheckedNormal;
-            // Make sure only this node is checked.
-            Run := Parent.FirstChild;
-            while Assigned(Run) do
-            begin
-              if Run.CheckType = ctRadioButton then
-                Run.CheckState := csUncheckedNormal;
-              Run := Run.NextSibling;
-            end;
-            Invalidate;
-          end;
+        BeginUpdate();
       end;
+      Inc(FCheckPropagationCount);
+      try
+        // Do actions which are associated with the given check state.
+        case CheckType of
+          // Check state change with additional consequences for check states of the children.
+          ctTriStateCheckBox:
+            begin
+              // Propagate state down to the children.
+              if toAutoTristateTracking in FOptions.FAutoOptions then
+                case Value of
+                  csUncheckedNormal:
+                    if Node.ChildCount > 0 then
+                    begin
+                      Run := FirstChild;
+                      CheckedCount := 0;
+                      MixedCheckCount := 0;
+                      UncheckedCount := 0;
+                      while Assigned(Run) do
+                      begin
+                        if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
+                        begin
+                          if not Self.GetCheckState(Run).IsDisabled() then
+                            SetCheckState(Run, csUncheckedNormal);
+                          // Check if the new child state was set successfully, otherwise we have to adjust the
+                          // node's new check state accordingly.
+                          case Self.GetCheckState(Run) of
+                            csCheckedNormal, csCheckedDisabled:
+                              Inc(CheckedCount);
+                            csMixedNormal:
+                              Inc(MixedCheckCount);
+                            csUncheckedNormal, csUncheckedDisabled:
+                              Inc(UncheckedCount);
+                          end;
+                        end;
+                        Run := Run.NextSibling;
+                      end;
 
-      if Result then
-        CheckState := Value // Set new check state
-      else
-        CheckState := Self.GetCheckState(Node).GetUnpressed(); // Reset dynamic check state.
+                      // If there is still a mixed state child node checkbox then this node must be mixed checked too.
+                      if MixedCheckCount > 0 then
+                        Value := csMixedNormal
+                      else
+                        // If nodes are normally checked child nodes then the unchecked count determines what
+                        // to set for the node itself.
+                        if CheckedCount > 0 then
+                          if UncheckedCount > 0 then
+                            Value := csMixedNormal
+                          else
+                            Value := csCheckedNormal;
+                    end;
+                  csCheckedNormal:
+                    if Node.ChildCount > 0 then
+                    begin
+                      Run := FirstChild;
+                      CheckedCount := 0;
+                      MixedCheckCount := 0;
+                      UncheckedCount := 0;
+                      while Assigned(Run) do
+                      begin
+                        if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
+                        begin
+                          if not Self.GetCheckState(Run).IsDisabled() then
+                            SetCheckState(Run, csCheckedNormal);
+                          // Check if the new child state was set successfully, otherwise we have to adjust the
+                          // node's new check state accordingly.
+                          case Self.GetCheckState(Run) of
+                            csCheckedNormal:
+                              Inc(CheckedCount);
+                            csMixedNormal:
+                              Inc(MixedCheckCount);
+                            csUncheckedNormal:
+                              Inc(UncheckedCount);
+                          end;
+                        end;
+                        Run := Run.NextSibling;
+                      end;
 
-      // Propagate state up to the parent.
-      if not (vsInitialized in Parent.States) then
-        InitNode(Parent);
-      if (toAutoTristateTracking in FOptions.FAutoOptions) and ([vsChecking, vsDisabled] * Parent.States = []) and
-        (CheckType in [ctCheckBox, ctTriStateCheckBox]) and (Parent <> FRoot) and
-        (Parent.CheckType = ctTriStateCheckBox) then
-        Result := CheckParentCheckState(Node, Value)
-      else
-        Result := True;
+                      // If there is still a mixed state child node checkbox then this node must be mixed checked too.
+                      if MixedCheckCount > 0 then
+                        Value := csMixedNormal
+                      else
+                        // If nodes are normally checked child nodes then the unchecked count determines what
+                        // to set for the node itself.
+                        if CheckedCount > 0 then
+                          if UncheckedCount > 0 then
+                            Value := csMixedNormal
+                          else
+                            Value := csCheckedNormal;
+                    end;
+                end;
+            end;
+          // radio button check state change
+          ctRadioButton:
+            if Value = csCheckedNormal then
+            begin
+              Value := csCheckedNormal;
+              // Make sure only this node is checked.
+              Run := Parent.FirstChild;
+              while Assigned(Run) do
+              begin
+                if Run.CheckType = ctRadioButton then
+                  Run.CheckState := csUncheckedNormal;
+                Run := Run.NextSibling;
+              end;
+              Invalidate;
+            end;
+        end;
 
-      InvalidateNode(Node);
+        if Result then
+          CheckState := Value // Set new check state
+        else
+          CheckState := Self.GetCheckState(Node).GetUnpressed(); // Reset dynamic check state.
 
-      Dec(FCheckPropagationCount); // WL, 05.02.2004
-      if FCheckPropagationCount = 0 then // WL, 05.02.2004: Allow state change event after all check operations finished
-        DoStateChange([], [tsCheckPropagation]);
+        // Propagate state up to the parent.
+        if not (vsInitialized in Parent.States) then
+          InitNode(Parent);
+        if (toAutoTristateTracking in FOptions.FAutoOptions) and ([vsChecking, vsDisabled] * Parent.States = []) and
+          (CheckType in [ctCheckBox, ctTriStateCheckBox]) and (Parent <> FRoot) and
+          (Parent.CheckType = ctTriStateCheckBox) then
+          Result := CheckParentCheckState(Node, Value)
+        else
+          Result := True;
+
+        InvalidateNode(Node);
+      finally
+        Dec(FCheckPropagationCount); // WL, 05.02.2004
+        if FCheckPropagationCount = 0 then begin
+          // Allow state change event after all check operations finished
+          DoStateChange([], [tsCheckPropagation]);
+          EndUpdate();
+        end;
+      end;
     finally
       Exclude(States, vsChecking);
     end;
