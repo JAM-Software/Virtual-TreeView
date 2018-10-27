@@ -850,16 +850,12 @@ type
     FTextHeight: Integer;
     procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
-    procedure WMShowWindow(var Message: TWMShowWindow); message WM_SHOWWINDOW;
   strict protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Paint; override;
 
     property HintData: TVTHintData read FHintData;
-    function HintWindowDestroyed(): Boolean;
   public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
     function CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect; override;
     function IsHintMsg(var Msg: TMsg): Boolean; override;
   end;
@@ -5432,49 +5428,13 @@ begin
       Result := S_OK;
 end;
 
+
 //----------------- TVirtualTreeHintWindow -----------------------------------------------------------------------------
-
-var
-  // This variable is necessary to coordinate the complex interaction between different hints in the application
-  // and animated hints in our own class. Under certain conditions it can happen that our hint window is destroyed
-  // while it is still in the animation loop.
-  FHintWindowDestroyed: Boolean = True;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-
-constructor TVirtualTreeHintWindow.Create(AOwner: TComponent);
-
-begin
-  inherited;
-  FHintWindowDestroyed := False;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-destructor TVirtualTreeHintWindow.Destroy;
-
-begin
-  FHintWindowDestroyed := True;
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeHintWindow.CMTextChanged(var Message: TMessage);
 
 begin
   // swallow this message to prevent the ancestor from resizing the window (we don't use the caption anyway)
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVirtualTreeHintWindow.HintWindowDestroyed;
-
-// This function exists to inform descendants if the hint window has been destroyed.
-
-begin
-  Result := FHintWindowDestroyed;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5487,22 +5447,6 @@ begin
   Message.Result := 1;
 end;
 
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualTreeHintWindow.WMShowWindow(var Message: TWMShowWindow);
-
-// Clear hint data when the window becomes hidden.
-
-begin
-  if not Message.Show then
-  begin
-    // If the hint window destruction flag to stop any hint window animation was set by a tree
-    // during its destruction then reset it here to allow other tree instances to still use
-    // this hint window.
-    FHintWindowDestroyed := False;
-  end;
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -16035,9 +15979,6 @@ procedure TBaseVirtualTree.CMHintShowPause(var Message: TCMHintShowPause);
 // Tells the application that the tree (and only the tree) does not want a delayed tool tip.
 // Normal hints / header hints use the default delay (except for the first time).
 
-var
-  P: TPoint;
-
 begin
   // A little workaround is needed here to make the application class using the correct hint window class.
   // Once the application gets ShowHint set to true (which is the case when we want to show hints in the tree) then
@@ -16046,15 +15987,19 @@ begin
   // hints for the non-client area to show up (e.g. for the header) by calling CancelHint whenever certain messages
   // arrive. By setting the hint show pause to 0 if our hint class was not used recently we make sure
   // that the hint timer (in Forms.pas) is not used and our class is created immediately.
-  if FHintWindowDestroyed then
-  begin
-    GetCursorPos(P);
-    // Check if the mouse is in the header or tool tips are enabled, which must be shown without delay anyway.
-    if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(ScreenToClient(P)) or
-      (FHintMode = hmToolTip) then
-      Message.Pause^ := 0;
-  end
-  else
+  //
+  // Note for newer Delphi versions: Does not work because TApplication.HintMouseMessage() not only checks (Pause = 0) but also TApplication.FHintActive,
+  // which is initally False. So this code has been commented. See also issue #728.
+//  if FHintWindowDestroyed then
+//  begin
+//    GetCursorPos(P);
+//    // Check if the mouse is in the header or tool tips are enabled, which must be shown without delay anyway.
+//    if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(ScreenToClient(P)) or
+//      (FHintMode = hmToolTip) then
+//      Message.Pause^ := 0;
+//  end
+//  else
+
     if FHintMode = hmToolTip then
       Message.Pause^ := 0;
 end;
@@ -17526,9 +17471,6 @@ begin
   // Clean up other stuff.
   DeleteObject(FDottedBrush);
   FDottedBrush := 0;
-  if tsInAnimation in FStates then
-    FHintWindowDestroyed := True; // Stop any pending animation.
-
   inherited;
 end;
 
