@@ -22,8 +22,8 @@ type
     constructor Create();
     destructor Destroy; override;
 
-    procedure AddTree(Tree: TBaseVirtualTree);
-    procedure RemoveTree(Tree: TBaseVirtualTree);
+    class procedure AddTree(Tree: TBaseVirtualTree);
+    class procedure RemoveTree(Tree: TBaseVirtualTree);
 
     property CurrentTree: TBaseVirtualTree read FCurrentTree;
   end;
@@ -32,9 +32,6 @@ type
 procedure AddThreadReference;
 procedure ReleaseThreadReference(Tree: TBaseVirtualTree);
 
-
-var
-  WorkerThread: TWorkerThread = nil;
 
 
 implementation
@@ -49,6 +46,7 @@ type
   end;
 
 var
+  WorkerThread: TWorkerThread = nil;
   WorkEvent: THandle;
 //----------------- TWorkerThread --------------------------------------------------------------------------------------
 
@@ -200,19 +198,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TWorkerThread.AddTree(Tree: TBaseVirtualTree);
+class procedure TWorkerThread.AddTree(Tree: TBaseVirtualTree);
 
 begin
   Assert(Assigned(Tree), 'Tree must not be nil.');
+  TWorkerThread.EnsureCreated();
 
   // Remove validation stop flag, just in case it is still set.
   TBaseVirtualTreeCracker(Tree).DoStateChange([], [tsStopValidation]);
-  with FWaiterList.LockList do
+  with WorkerThread.FWaiterList.LockList do
   try
     if IndexOf(Tree) = -1 then
       Add(Tree);
   finally
-    FWaiterList.UnlockList;
+    WorkerThread.FWaiterList.UnlockList;
   end;
 
   SetEvent(WorkEvent);
@@ -220,18 +219,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TWorkerThread.RemoveTree(Tree: TBaseVirtualTree);
+class procedure TWorkerThread.RemoveTree(Tree: TBaseVirtualTree);
 
 begin
+  if not Assigned(WorkerThread) then
+    exit;
   Assert(Assigned(Tree), 'Tree must not be nil.');
 
-  with FWaiterList.LockList do
+  with WorkerThread.FWaiterList.LockList do
   try
     Remove(Tree);
   finally
-    FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
+    WorkerThread.FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
   end;
-  CancelValidation(Tree);
+  WorkerThread.CancelValidation(Tree);
 end;
 
 
