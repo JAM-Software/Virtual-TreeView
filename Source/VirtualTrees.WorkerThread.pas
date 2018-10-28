@@ -13,7 +13,9 @@ type
     FCurrentTree: TBaseVirtualTree;
     FWaiterList: TThreadList;
     FRefCount: Cardinal;
-  protected
+    class procedure EnsureCreated();
+    class procedure Dispose();
+  strict protected
     procedure CancelValidation(Tree: TBaseVirtualTree);
     procedure Execute; override;
   public
@@ -33,7 +35,6 @@ procedure ReleaseThreadReference(Tree: TBaseVirtualTree);
 
 var
   WorkerThread: TWorkerThread = nil;
-  WorkEvent: THandle;
 
 
 implementation
@@ -47,9 +48,11 @@ type
   TBaseVirtualTreeCracker = class(TBaseVirtualTree)
   end;
 
+var
+  WorkEvent: THandle;
 //----------------- TWorkerThread --------------------------------------------------------------------------------------
 
-procedure AddThreadReference;
+class procedure TWorkerThread.EnsureCreated();
 begin
   if not Assigned(WorkerThread) then
   begin
@@ -61,6 +64,20 @@ begin
     // Create worker thread, initialize it and send it to its wait loop.
     WorkerThread := TWorkerThread.Create();
   end;
+end;
+
+class procedure TWorkerThread.Dispose();
+begin
+  WorkerThread.Terminate();
+  SetEvent(WorkEvent);
+  WorkerThread := nil; //Will be freed usinf TThreaf.FreeOnTerminate
+  CloseHandle(WorkEvent);
+end;
+
+
+procedure AddThreadReference;
+begin
+  TWorkerThread.EnsureCreated();
   Inc(WorkerThread.FRefCount);
 end;
 
@@ -77,12 +94,7 @@ begin
     TBaseVirtualTreeCracker(Tree).InterruptValidation;
 
     if WorkerThread.FRefCount = 0 then
-    begin
-      WorkerThread.Terminate();
-      SetEvent(WorkEvent);
-      WorkerThread := nil; //Will be freed usinf TThreaf.FreeOnTerminate
-      CloseHandle(WorkEvent);
-    end;
+      WorkerThread.Dispose();
   end;
 end;
 
@@ -202,6 +214,8 @@ begin
   finally
     FWaiterList.UnlockList;
   end;
+
+  SetEvent(WorkEvent);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

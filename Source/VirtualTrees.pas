@@ -25575,7 +25575,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ValidateCache;
+procedure TBaseVirtualTree.ValidateCache();
 
 // Starts cache validation if not already done by adding this instance to the worker thread's waiter list
 // (if not already there) and signalling the thread it can start validating.
@@ -25589,7 +25589,6 @@ begin
   begin
     // Tell the thread this tree needs actually something to do.
     WorkerThread.AddTree(Self);
-    SetEvent(WorkEvent);
   end;
 end;
 
