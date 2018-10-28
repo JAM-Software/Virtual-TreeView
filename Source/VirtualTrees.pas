@@ -27832,19 +27832,24 @@ function TBaseVirtualTree.GetLastVisibleNoInit(Node: PVirtualNode = nil;
 
 // Returns the very last visible node in the tree while optionally considering toChildrenAbove.
 // No initialization is performed.
+var
+  Next: PVirtualNode;
 
 begin
-  Result := GetLastNoInit(Node, ConsiderChildrenAbove);
-  while Assigned(Result) and (Result <> Node) do
-  begin
-    if FullyVisible[Result] and
-       (IncludeFiltered or not IsEffectivelyFiltered[Result]) then
-      Break;
-    Result := GetPreviousNoInit(Result, ConsiderChildrenAbove);
-  end;
-
-  if (Result = Node) then // i.e. there is no visible node
-    Result := nil;
+  Result := GetLastVisibleChildNoInit(Node, IncludeFiltered);
+  if not ConsiderChildrenAbove or not (toChildrenAbove in FOptions.FPaintOptions) then
+    while Assigned(Result) and (vsExpanded in Result.States) do
+    begin
+      // Test if there is a next last child. If not keep the node from the last run.
+      // Otherwise use the next last child.
+      Next := GetLastChildNoInit(Result);
+      if Assigned(Next) and (not (vsVisible in Next.States) or
+         (not IncludeFiltered and IsEffectivelyFiltered[Next])) then
+        Next := GetPreviousVisibleSiblingNoInit(Next, IncludeFiltered);
+      if Next = nil then
+        Break;
+      Result := Next;
+    end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
