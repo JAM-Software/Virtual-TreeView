@@ -1016,8 +1016,6 @@ type
     function GetOwner: TVirtualTreeColumns; reintroduce;
     procedure ReadHint(Reader: TReader);
     procedure ReadText(Reader: TReader);
-    procedure WriteHint(Writer: TWriter);
-    procedure WriteText(Writer: TWriter);
     property HasImage: Boolean read FHasImage;
     property ImageRect: TRect read FImageRect;
   public
@@ -1048,7 +1046,7 @@ type
     property CheckBox: Boolean read FCheckBox write SetCheckBox default False;
     property Color: TColor read FColor write SetColor stored IsColorStored;
     property DefaultSortDirection: TSortDirection read FDefaultSortDirection write FDefaultSortDirection default sdAscending;
-    property Hint: string read FHint write FHint stored False;
+    property Hint: string read FHint write FHint;
     property ImageIndex: TImageIndex read FImageIndex write SetImageIndex default -1;
     property Layout: TVTHeaderColumnLayout read FLayout write SetLayout default blGlyphLeft;
     property Margin: Integer read FMargin write SetMargin default 4;
@@ -1061,9 +1059,7 @@ type
     property Spacing: Integer read FSpacing write SetSpacing default 3;
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
     property Tag: NativeInt read FTag write FTag default 0;
-    property Text: string read GetText write SetText stored False; // Never let the VCL store the wide string,  // [IPK] FText changed to GetText
-                                                                     // it is simply unable to write it correctly.
-                                                                     // We use DefineProperties here.
+    property Text: string read GetText write SetText;
     property Width: Integer read FWidth write SetWidth default 50;
   end;
 
@@ -2374,8 +2370,7 @@ type
     function MakeNewNode: PVirtualNode;
     function PackArray({*}const TheArray: TNodeArray; Count: Integer): Integer;
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
-    procedure FakeReadImageKind(Reader: TReader);
-    procedure FakeReadHintAnimation(Reader: TReader);
+    procedure FakeReadIdent(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
     procedure SetBackground(const Value: TPicture);
@@ -3384,8 +3379,6 @@ type
     procedure SetDefaultText(const Value: string);
     procedure SetOptions(const Value: TCustomStringTreeOptions);
     procedure SetText(Node: PVirtualNode; Column: TColumnIndex; const Value: string);
-    procedure WriteText(Writer: TWriter);
-
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean = True);
   protected
@@ -3426,7 +3419,7 @@ type
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); override;
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); override;
 
-    property DefaultText: string read FDefaultText write SetDefaultText stored False;
+    property DefaultText: string read FDefaultText write SetDefaultText;
     property EllipsisWidth: Integer read FEllipsisWidth;
     property TreeOptions: TCustomStringTreeOptions read GetOptions write SetOptions;
 
@@ -7282,10 +7275,9 @@ procedure TVirtualTreeColumn.DefineProperties(Filer: TFiler);
 begin
   inherited;
 
-  // Must define a new name for the properties otherwise the VCL will try to load the wide string
-  // without asking us and screws it completely up.
-  Filer.DefineProperty('WideText', ReadText, WriteText, FText <> '');
-  Filer.DefineProperty('WideHint', ReadHint, WriteHint, FHint <> '');
+  // These properites are remains from non-Unicode Delphi versions, readers remain for backward compatibility.
+  Filer.DefineProperty('WideText', ReadText, nil, False);
+  Filer.DefineProperty('WideHint', ReadHint, nil, False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7361,19 +7353,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.WriteHint(Writer: TWriter);
-
-begin
-  Writer.WriteString(FHint);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualTreeColumn.WriteText(Writer: TWriter);
-
-begin
-  Writer.WriteString(FText);
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -18666,13 +18645,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.FakeReadHintAnimation(Reader: TReader);
-begin
-  Assert(Reader.NextValue = vaIdent);
-  Reader.ReadIdent;
-end;
-
-procedure TBaseVirtualTree.FakeReadImageKind(Reader: TReader);
+procedure TBaseVirtualTree.FakeReadIdent(Reader: TReader);
 begin
   Assert(Reader.NextValue = vaIdent);
   Reader.ReadIdent;
@@ -18709,9 +18682,9 @@ begin
 
   // #622 made old DFMs incompatible with new VTW - so the program is compiled successfully
   //    and then suddenly crashes at user site in runtime.
-  Filer.DefineProperty('CheckImageKind', FakeReadImageKind, nil, false);
+  Filer.DefineProperty('CheckImageKind', FakeReadIdent, nil, false);
   /// #730 removed property HintAnimation
-  Filer.DefineProperty('HintAnimation', FakeReadHintAnimation, nil, false);
+  Filer.DefineProperty('HintAnimation', FakeReadIdent, nil, false);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33677,14 +33650,8 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TCustomVirtualStringTree.ReadText(Reader: TReader);
-
 begin
-  case Reader.NextValue of
-    vaLString, vaString:
-      SetDefaultText(Reader.ReadString);
-  else
-    SetDefaultText(Reader.ReadString);
-  end;
+  SetDefaultText(Reader.ReadString);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33738,14 +33705,6 @@ procedure TCustomVirtualStringTree.SetText(Node: PVirtualNode; Column: TColumnIn
 begin
   DoNewText(Node, Column, Value);
   InvalidateNode(Node);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomVirtualStringTree.WriteText(Writer: TWriter);
-
-begin
-  Writer.WriteString(FDefaultText);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33901,7 +33860,7 @@ begin
   inherited;
 
   // Delphi still cannot handle wide strings properly while streaming
-  Filer.DefineProperty('WideDefaultText', ReadText, WriteText, FDefaultText <> 'Node');
+  Filer.DefineProperty('WideDefaultText', ReadText, nil, False);
   Filer.DefineProperty('StringOptions', ReadOldStringOptions, nil, False);
 end;
 
