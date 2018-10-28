@@ -12,15 +12,19 @@ type
   private
     FCurrentTree: TBaseVirtualTree;
     FWaiterList: TThreadList;
-    FRefCount: Cardinal;
+    FRefCount: Integer;
     class procedure EnsureCreated();
     class procedure Dispose();
-  strict protected
     procedure CancelValidation(Tree: TBaseVirtualTree);
+  protected
     procedure Execute; override;
   public
     constructor Create();
     destructor Destroy; override;
+
+    /// For lifeteime management of the TWorkerThread
+    class procedure AddThreadReference;
+    class procedure ReleaseThreadReference();
 
     class procedure AddTree(Tree: TBaseVirtualTree);
     class procedure RemoveTree(Tree: TBaseVirtualTree);
@@ -29,8 +33,6 @@ type
   end;
 
 
-procedure AddThreadReference;
-procedure ReleaseThreadReference(Tree: TBaseVirtualTree);
 
 
 
@@ -73,23 +75,19 @@ begin
 end;
 
 
-procedure AddThreadReference;
+class procedure TWorkerThread.AddThreadReference;
 begin
   TWorkerThread.EnsureCreated();
-  Inc(WorkerThread.FRefCount);
+  InterlockedIncrement(WorkerThread.FRefCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure ReleaseThreadReference(Tree: TBaseVirtualTree);
-
+class procedure TWorkerThread.ReleaseThreadReference();
 begin
   if Assigned(WorkerThread) then
   begin
-    Dec(WorkerThread.FRefCount);
-
-    // Make sure there is no reference remaining to the releasing tree.
-    TBaseVirtualTreeCracker(Tree).InterruptValidation;
+    InterlockedDecrement(WorkerThread.FRefCount);
 
     if WorkerThread.FRefCount = 0 then
       WorkerThread.Dispose();
