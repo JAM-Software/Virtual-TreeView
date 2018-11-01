@@ -849,12 +849,9 @@ type
     FHintData: TVTHintData;
     FTextHeight: Integer;
     procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
-    procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
   strict protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Paint; override;
-
-    property HintData: TVTHintData read FHintData;
   public
     function CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect; override;
     function IsHintMsg(var Msg: TMsg): Boolean; override;
@@ -5427,17 +5424,6 @@ procedure TVirtualTreeHintWindow.CMTextChanged(var Message: TMessage);
 begin
   // swallow this message to prevent the ancestor from resizing the window (we don't use the caption anyway)
 end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualTreeHintWindow.WMEraseBkgnd(var Message: TWMEraseBkgnd);
-
-// The control is fully painted by own code so don't erase its background as this causes flickering.
-
-begin
-  Message.Result := 1;
-end;
-
 
 //----------------------------------------------------------------------------------------------------------------------
 
