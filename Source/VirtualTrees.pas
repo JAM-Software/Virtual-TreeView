@@ -25389,8 +25389,8 @@ begin
         // Calculate an offset for the main column.
         GetOffsets(FFocusedNode, offsets, ofsLabel, FEditColumn);
         offset := offsets[ofsLabel];
-        if offsets[ofsToggleButton] < 0 then
-          Inc(offset, offsets[ofsToggleButton]);
+//        if offsets[ofsToggleButton] < 0 then
+//          Inc(offset, offsets[ofsToggleButton]);
       end
       else
         offset := 0;
