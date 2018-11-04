@@ -29,6 +29,12 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
+
 uses
   Winapi.Windows,
   Winapi.Messages,

@@ -48,6 +48,11 @@ unit VirtualTrees;
 //----------------------------------------------------------------------------------------------------------------------
 
 interface
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
 
 {$if CompilerVersion < 24}{$MESSAGE FATAL 'This version supports only RAD Studio XE3 and higher. Please use V5 from  http://www.jam-software.com/virtual-treeview/VirtualTreeViewV5.5.3.zip  or  https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V5_stable.zip'}{$ifend}
 
@@ -61,6 +66,7 @@ interface
 {$LEGACYIFEND ON}
 {$WARN UNSUPPORTED_CONSTRUCT      OFF}
 
+{$IFDEF VT_VCL}
 {$HPPEMIT '#include <objidl.h>'}
 {$HPPEMIT '#include <oleidl.h>'}
 {$HPPEMIT '#include <oleacc.h>'}
@@ -70,17 +76,46 @@ interface
   {$HPPEMIT '#pragma comment(lib, "VirtualTreesR")'}
 {$endif}
 {$HPPEMIT '#pragma comment(lib, "Shell32")'}
+{$ENDIF}
 
 uses
+{$IFDEF VT_FMX}
+  System.SysUtils, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.ImgList, System.ImageList, FMX.StdCtrls, System.Classes,
+  FMX.Menus, System.Types, System.UITypes, System.Generics.Collections, System.Threading,
+  System.Variants, FMX.Types, FMX.Dialogs, FMX.Controls.Presentation, FMX.Objects, FMX.Printer, FMX.Edit, FMX.Platform,
+  System.Devices;
+{$ELSE}
   Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
-
+{$ENDIF}
 const
   VTVersion = '7.0.0';
 
 const
+{$IFDEF VT_FMX}
+  //i resign from overriding types as this caused many problems and i start from scratch once again
+  //this can be done in the next steep if really needed because step back will be not so simple
+  //TColor = TAlphaColor;
+  //TRect = TRectF;
+  //TPoint = TPointF; 
+  clBtnFace = TAlphaColorRec.Gray;
+  clBtnText = TAlphaColorRec.Black;
+  clBtnHighlight = TAlphaColorRec.DkGray;
+  clBtnShadow = TAlphaColorRec.Darkgray;
+  clHighlight = TAlphaColorRec.Lightblue;
+  clWindow = TAlphaColorRec.White;
+  clWindowText = TAlphaColorRec.Black;
+  clHighlightText = TAlphaColorRec.White;
+  clWhite = TAlphaColorRec.White;
+  clSilver = TAlphaColorRec.Silver;
+  clGray = TAlphaColorRec.Gray;
+  clBlack = TAlphaColorRec.Black;
+  clGreen = TAlphaColorRec.Green;
+  clBlue =  TAlphaColorRec.Blue;
+  clGrayText =  TAlphaColorRec.DkGray;
+{$ENDIF}
   VTTreeStreamVersion = 3;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -138,15 +173,16 @@ const
   ThemeChangedTimerDelay = 500;
 
   // Need to use this message to release the edit link interface asynchronously.
+  {$IFDEF VT_VCL}
   WM_CHANGESTATE = WM_APP + 32;
-
+  
   // Virtual Treeview does not need to be subclassed by an eventual Theme Manager instance as it handles
   // Windows XP theme painting itself. Hence the special message is used to prevent subclassing.
   CM_DENYSUBCLASSING = CM_BASE + 2000;
 
   // Decoupling message for auto-adjusting the internal edit window.
   CM_AUTOADJUST = CM_BASE + 2005;
-
+  {$ENDIF}
   
 
   // VT's own clipboard formats,
@@ -195,6 +231,186 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   IsWinVistaOrAbove: Boolean;
 
   {$MinEnumSize 1, make enumerations as small as possible}
+
+{$IFDEF VT_FMX}
+type
+  TRect = System.Types.TRectF;
+  PRect = System.Types.PRectF;
+  TPoint = System.Types.TPointF;
+  PPoint = System.Types.PPointF;
+  PSize = System.Types.PSizeF;
+  TSize = System.Types.TSizeF;
+  TColor = System.UITypes.TAlphaColor;
+
+  TBorderWidth = Single;
+  TBevelCut = (bvNone, bvLowered, bvRaised, bvSpace);
+  TBevelEdge = (beLeft, beTop, beRight, beBottom);
+  TBevelEdges = set of TBevelEdge;
+  TBevelKind = (bkNone, bkTile, bkSoft, bkFlat);
+  TBevelWidth = 1..MaxInt;
+
+  TFormBorderStyle = (bsNone, bsSingle, bsSizeable, bsDialog, bsToolWindow, bsSizeToolWin);
+  TBorderStyle = bsNone..bsSingle;
+
+  TTextMetric = record
+    tmHeight: Single;  //The height (ascent + descent) of characters.
+    tmAscent: Single;  //The ascent (units above the base line) of characters.
+    tmDescent: Single; //The descent (units below the base line) of characters.
+    tmInternalLeading: Single; //The amount of leading (space) inside the bounds set by the tmHeight member. Accent marks and other diacritical characters may occur in this area. The designer may set this member to zero
+    tmExternalLeading: Single; //The amount of extra leading (space) that the application adds between rows. Since this area is outside the font, it contains no marks and is not altered by text output calls in either OPAQUE or TRANSPARENT mode. The designer may set this member to zero.
+    tmAveCharWidth: Single; //The average width of characters in the font (generally defined as the width of the letter x ). This value does not include the overhang required for bold or italic characters.
+    tmMaxCharWidth: Single; //The width of the widest character in the font.
+    tmWeight: Single; //The weight of the font.
+    tmOverhang: Single;
+    tmDigitizedAspectX: Single; //The horizontal aspect of the device for which the font was designed.
+    tmDigitizedAspectY: Single; //The vertical aspect of the device for which the font was designed. The ratio of the tmDigitizedAspectX and tmDigitizedAspectY members is the aspect ratio of the device for which the font was designed.
+    tmFirstChar: WideChar; //The value of the first character defined in the font.
+    tmLastChar: WideChar;  //The value of the last character defined in the font.
+    tmDefaultChar: WideChar; //The value of the character to be substituted for characters not in the font.
+    tmBreakChar: WideChar; //The value of the character that will be used to define word breaks for text justification.
+    tmItalic: Byte; //Specifies an italic font if it is nonzero.
+    tmUnderlined: Byte; //Specifies an underlined font if it is nonzero.
+    tmStruckOut: Byte; //A strikeout font if it is nonzero.
+    tmPitchAndFamily: Byte; //Specifies information about the pitch, the technology, and the family of a physical font.  TMPF_FIXED_PITCH, TMPF_VECTOR, TMPF_TRUETYPE, TMPF_DEVICE
+    tmCharSet: Byte; //The character set of the font. The character set can be one of the following values. ANSI_CHARSET, GREEK_CHARSET....
+  end;
+  procedure GetTextMetrics(ACanvas: TCanvas; var TM: TTextMetric);
+  function Rect(ALeft, ATop, ARight, ABottom: Single): TRect; overload; inline;
+  function Rect(const ATopLeft, ABottomRight: TPoint): TRect; overload; inline;
+  function Point(AX, AY: Single): TPoint; overload; inline;
+
+  procedure Inc(Var V: Single; OIle: Single=1.0); overload;
+  procedure Dec(Var V: Single; OIle: Single=1.0); overload;
+  function MulDiv(const A, B, C: Single): Single; overload;
+  procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
+  procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
+  procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
+  procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
+
+
+const
+  { 3D border styles }
+  {$EXTERNALSYM BDR_RAISEDOUTER}
+  BDR_RAISEDOUTER = 1;
+  {$EXTERNALSYM BDR_SUNKENOUTER}
+  BDR_SUNKENOUTER = 2;
+  {$EXTERNALSYM BDR_RAISEDINNER}
+  BDR_RAISEDINNER = 4;
+  {$EXTERNALSYM BDR_SUNKENINNER}
+  BDR_SUNKENINNER = 8;
+
+  {$EXTERNALSYM BDR_OUTER}
+  BDR_OUTER = 3;
+  {$EXTERNALSYM BDR_INNER}
+  BDR_INNER = 12;
+  {$EXTERNALSYM BDR_RAISED}
+  BDR_RAISED = 5;
+  {$EXTERNALSYM BDR_SUNKEN}
+  BDR_SUNKEN = 10;
+
+  {$EXTERNALSYM EDGE_RAISED}
+  EDGE_RAISED = (BDR_RAISEDOUTER or BDR_RAISEDINNER);
+  {$EXTERNALSYM EDGE_SUNKEN}
+  EDGE_SUNKEN = (BDR_SUNKENOUTER or BDR_SUNKENINNER);
+  {$EXTERNALSYM EDGE_ETCHED}
+  EDGE_ETCHED = (BDR_SUNKENOUTER or BDR_RAISEDINNER);
+  {$EXTERNALSYM EDGE_BUMP}
+  EDGE_BUMP = (BDR_RAISEDOUTER or BDR_SUNKENINNER);
+
+  {$EXTERNALSYM ETO_OPAQUE}
+  ETO_OPAQUE = 2;
+  {$EXTERNALSYM ETO_CLIPPED}
+  ETO_CLIPPED = 4;
+  {$EXTERNALSYM ETO_RTLREADING}
+  ETO_RTLREADING = $80;
+
+  RTLFlag: array[Boolean] of Integer = (0, ETO_RTLREADING);
+
+  { Border flags }
+  {$EXTERNALSYM BF_LEFT}
+  BF_LEFT = 1;
+  {$EXTERNALSYM BF_TOP}
+  BF_TOP = 2;
+  {$EXTERNALSYM BF_RIGHT}
+  BF_RIGHT = 4;
+  {$EXTERNALSYM BF_BOTTOM}
+  BF_BOTTOM = 8;
+
+  {$EXTERNALSYM BF_TOPLEFT}
+  BF_TOPLEFT = (BF_TOP or BF_LEFT);
+  {$EXTERNALSYM BF_TOPRIGHT}
+  BF_TOPRIGHT = (BF_TOP or BF_RIGHT);
+  {$EXTERNALSYM BF_BOTTOMLEFT}
+  BF_BOTTOMLEFT = (BF_BOTTOM or BF_LEFT);
+  {$EXTERNALSYM BF_BOTTOMRIGHT}
+  BF_BOTTOMRIGHT = (BF_BOTTOM or BF_RIGHT);
+  {$EXTERNALSYM BF_RECT}
+  BF_RECT = (BF_LEFT or BF_TOP or BF_RIGHT or BF_BOTTOM);
+
+  {$EXTERNALSYM BF_MIDDLE}
+  BF_MIDDLE = $800;   { Fill in the middle }
+  {$EXTERNALSYM BF_SOFT}
+  BF_SOFT = $1000;    { For softer buttons }
+  {$EXTERNALSYM BF_ADJUST}
+  BF_ADJUST = $2000;  { Calculate the space left over }
+  {$EXTERNALSYM BF_FLAT}
+  BF_FLAT = $4000;    { For flat rather than 3D borders }
+  {$EXTERNALSYM BF_MONO}
+  BF_MONO = $8000;    { For monochrome borders }
+
+  { DrawText() Format Flags }
+  DT_TOP = 0;
+  {$EXTERNALSYM DT_TOP}
+  DT_LEFT = 0;
+  {$EXTERNALSYM DT_LEFT}
+  DT_CENTER = 1;
+  {$EXTERNALSYM DT_CENTER}
+  DT_RIGHT = 2;
+  {$EXTERNALSYM DT_RIGHT}
+  DT_VCENTER = 4;
+  {$EXTERNALSYM DT_VCENTER}
+  DT_BOTTOM = 8;
+  {$EXTERNALSYM DT_BOTTOM}
+  DT_WORDBREAK = $10;
+  {$EXTERNALSYM DT_WORDBREAK}
+  DT_SINGLELINE = $20;
+  {$EXTERNALSYM DT_SINGLELINE}
+  DT_EXPANDTABS = $40;
+  {$EXTERNALSYM DT_EXPANDTABS}
+  DT_TABSTOP = $80;
+  {$EXTERNALSYM DT_TABSTOP}
+  DT_NOCLIP = $100;
+  {$EXTERNALSYM DT_NOCLIP}
+  DT_EXTERNALLEADING = $200;
+  {$EXTERNALSYM DT_EXTERNALLEADING}
+  DT_CALCRECT = $400;
+  {$EXTERNALSYM DT_CALCRECT}
+  DT_NOPREFIX = $800;
+  {$EXTERNALSYM DT_NOPREFIX}
+  DT_INTERNAL = $1000;
+  {$EXTERNALSYM DT_INTERNAL}
+
+
+  DT_EDITCONTROL = $2000;
+  {$EXTERNALSYM DT_EDITCONTROL}
+  DT_PATH_ELLIPSIS = $4000;
+  {$EXTERNALSYM DT_PATH_ELLIPSIS}
+  DT_END_ELLIPSIS = $8000;
+  {$EXTERNALSYM DT_END_ELLIPSIS}
+  DT_MODIFYSTRING = $10000;
+  {$EXTERNALSYM DT_MODIFYSTRING}
+  DT_RTLREADING = $20000;
+  {$EXTERNALSYM DT_RTLREADING}
+  DT_WORD_ELLIPSIS = $40000;
+  {$EXTERNALSYM DT_WORD_ELLIPSIS}
+  DT_NOFULLWIDTHCHARBREAK = $0080000;
+  {$EXTERNALSYM DT_NOFULLWIDTHCHARBREAK}
+  DT_HIDEPREFIX = $00100000;
+  {$EXTERNALSYM DT_HIDEPREFIX}
+  DT_PREFIXONLY = $00200000;
+  {$EXTERNALSYM DT_PREFIXONLY}
+
+{$ENDIF}
 
 type
   // Alias defintions for convenience
@@ -395,7 +611,7 @@ type
     -- hmToolTip shows a hint only when node text is not fully shown. It's meant to
        fully show node text when not visible. It will show multi-line hint only if
        the node itself is multi-line. If you provide a custom multi-line hint then
-       you msut force linebreak style to hlbForceMultiLine in the OnGetHint event 
+       you must force linebreak style to hlbForceMultiLine in the OnGetHint event 
        in order to show the complete hint.
   }
   TVTHintMode = (
@@ -462,7 +678,7 @@ type
     The animation does not look good as the image splits and moves with it.
   }
   TVTAnimationOption = (
-    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll). 
+    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll).
                                // **See note above.
     toAdvancedAnimatedToggle   // Do some advanced animation effects when toggling a node.
   );
@@ -521,7 +737,9 @@ type
 
   // Options which do not fit into any of the other groups:
   TVTMiscOption = (
+{$IFDEF VT_VCL}
     toAcceptOLEDrop,            // Register tree as OLE accepting drop target
+{$ENDIF}	
     toCheckSupport,             // Show checkboxes/radio buttons.
     toEditable,                 // Node captions can be edited.
     toFullRepaintOnResize,      // Fully invalidate the tree when its window is resized (CS_HREDRAW/CS_VREDRAW).
@@ -578,7 +796,7 @@ type
   );
 
   /// An array that can be used to calculate the offsets ofthe elements in the tree.
-  TVTOffsets = array [TVTElement] of integer;
+  TVTOffsets = array [TVTElement] of {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   TAddPopupItemType = (
     apNormal,
@@ -591,7 +809,7 @@ const
   DefaultAnimationOptions = [];
   DefaultAutoOptions = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort];
   DefaultSelectionOptions = [];
-  DefaultMiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning,
+  DefaultMiscOptions = [{$IFDEF VT_VCL}toAcceptOLEDrop, {$ENDIF}toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning,
     toEditOnClick];
   DefaultColumnOptions = [coAllowClick, coDraggable, coEnabled, coParentColor, coParentBidiMode, coResizable,
     coShowDropmark, coVisible, coAllowFocus, coEditable, coStyleColor];
@@ -609,7 +827,7 @@ type
   // to compile (conversion done by BCB is wrong).
   TCacheEntry = record
     Node: PVirtualNode;
-    AbsoluteTop: Cardinal;
+    AbsoluteTop: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
   end;
 
   TCache = array of TCacheEntry;
@@ -667,14 +885,14 @@ type
   TVirtualNode = packed record
     Index,                   // index of node with regard to its parent
     ChildCount: Cardinal;    // number of child nodes
-    NodeHeight: Word;        // height in pixels
+    NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Word{$ENDIF}; // height in pixels
     States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
     CheckType: TCheckType;   // indicates which check type shall be used for this node
     Dummy: Byte;             // dummy value to fill DWORD boundary
-    TotalCount,              // sum of this node, all of its child nodes and their child nodes etc.
-    TotalHeight: Cardinal;   // height in pixels this node covers on screen including the height of all of its
+    TotalCount: Cardinal;    // sum of this node, all of its child nodes and their child nodes etc.
+    TotalHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};   // height in pixels this node covers on screen including the height of all of its
                              // children
     // Note: Some copy routines require that all pointers (as well as the data area) in a node are
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
@@ -699,7 +917,7 @@ type
   // Structure used when info about a certain position in the header is needed.
   TVTHeaderHitInfo = record
     X,
-    Y: Integer;
+    Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     Button: TMouseButton;
     Shift: TShiftState;
     Column: TColumnIndex;
@@ -722,10 +940,12 @@ type
     sdDown
   );
 
+{$IFDEF VT_VCL}
   // OLE drag'n drop support
   TFormatEtcArray = array of TFormatEtc;
+{$ENDIF}
   TFormatArray = array of Word;
-
+{$IFDEF VT_VCL}
   // IDataObject.SetData support
   TInternalStgMedium = packed record
     Format: TClipFormat;
@@ -830,6 +1050,7 @@ type
     function GiveFeedback(Effect: Integer): HResult; stdcall;
     function QueryContinueDrag(EscapePressed: BOOL; KeyState: Integer): HResult; stdcall;
   end;
+{$ENDIF}
 
   PVTHintData = ^TVTHintData;
   TVTHintData = record
@@ -844,6 +1065,7 @@ type
   end;
 
   // The trees need an own hint window class because of Unicode output and adjusted font.
+{$IFDEF VT_VCL}
   TVirtualTreeHintWindow = class(THintWindow)
   strict private
     FHintData: TVTHintData;
@@ -856,7 +1078,7 @@ type
     function CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect; override;
     function IsHintMsg(var Msg: TMsg): Boolean; override;
   end;
-
+{$ENDIF}
   // Drag image support for the tree.
   TVTTransparency = 0..255;
   TVTBias = -128..127;
@@ -876,6 +1098,7 @@ type
   );
 
   // Class to manage header and tree drag image during a drag'n drop operation.
+{$IFDEF VT_VCL}
   TVTDragImage = class
   private
     FOwner: TBaseVirtualTree;
@@ -917,7 +1140,7 @@ type
     property Transparency: TVTTransparency read FTransparency write FTransparency default 128;
     property Visible: Boolean read GetVisible;
   end;
-
+{$ENDIF}
   // tree columns implementation
   TVirtualTreeColumns = class;
   TVTHeader = class;
@@ -951,23 +1174,23 @@ type
   private
     FText,
     FHint: string;
-    FWidth: Integer;
+    FWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     FPosition: TColumnPosition;
-    FMinWidth: Integer;
-    FMaxWidth: Integer;
+    FMinWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FMaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     FStyle: TVirtualTreeColumnStyle;
     FImageIndex: TImageIndex;
     FBiDiMode: TBiDiMode;
     FLayout: TVTHeaderColumnLayout;
     FMargin,
-    FSpacing: Integer;
+    FSpacing: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     FOptions: TVTColumnOptions;
     FEditOptions: TVTEditOptions;
     FEditNextColumn: Integer;
     FTag: NativeInt;
     FAlignment: TAlignment;
     FCaptionAlignment: TAlignment;     // Alignment of the caption.
-    FLastWidth: Integer;
+    FLastWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     FColor: TColor;
     FBonusPixel: Boolean;
     FSpringRest: Single;               // Accumulator for width adjustment when auto spring option is enabled.
@@ -979,7 +1202,7 @@ type
     FHasImage: Boolean;
     FDefaultSortDirection: TSortDirection;
     function GetCaptionAlignment: TAlignment;
-    function GetLeft: Integer;
+    function GetLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     function IsBiDiModeStored: Boolean;
     function IsCaptionAlignmentStored: Boolean;
     function IsColorStored: Boolean;
@@ -992,21 +1215,21 @@ type
     procedure SetColor(const Value: TColor);
     procedure SetImageIndex(Value: TImageIndex);
     procedure SetLayout(Value: TVTHeaderColumnLayout);
-    procedure SetMargin(Value: Integer);
-    procedure SetMaxWidth(Value: Integer);
-    procedure SetMinWidth(Value: Integer);
+    procedure SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetMaxWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetMinWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetOptions(Value: TVTColumnOptions);
     procedure SetPosition(Value: TColumnPosition);
-    procedure SetSpacing(Value: Integer);
+    procedure SetSpacing(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetStyle(Value: TVirtualTreeColumnStyle);
-    procedure SetWidth(Value: Integer);
+    procedure SetWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
   protected
-    FLeft: Integer;
-    procedure ComputeHeaderLayout(DC: HDC; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
+    FLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    procedure ComputeHeaderLayout({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
       var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
       CalculateTextRect: Boolean = False);
     procedure DefineProperties(Filer: TFiler); override;
-    procedure GetAbsoluteBounds(var Left, Right: Integer);
+    procedure GetAbsoluteBounds(var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     function GetDisplayName: string; override;
     function GetText: string; virtual; // [IPK]
     procedure SetText(const Value: string); virtual; // [IPK] private to protected & virtual
@@ -1031,7 +1254,7 @@ type
     function UseRightToLeftReading: Boolean;
 
     property CaptionText: string read FCaptionText;
-    property Left: Integer read GetLeft;
+    property Left: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read GetLeft;
     property Owner: TVirtualTreeColumns read GetOwner;
   published
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
@@ -1046,18 +1269,18 @@ type
     property Hint: string read FHint write FHint;
     property ImageIndex: TImageIndex read FImageIndex write SetImageIndex default -1;
     property Layout: TVTHeaderColumnLayout read FLayout write SetLayout default blGlyphLeft;
-    property Margin: Integer read FMargin write SetMargin default 4;
-    property MaxWidth: Integer read FMaxWidth write SetMaxWidth default 10000;
-    property MinWidth: Integer read FMinWidth write SetMinWidth default 10;
+    property Margin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMargin write SetMargin{$IFDEF VT_VCL} default 4{$ENDIF};
+    property MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMaxWidth write SetMaxWidth{$IFDEF VT_VCL} default 10000{$ENDIF};
+    property MinWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMinWidth write SetMinWidth{$IFDEF VT_VCL} default 10{$ENDIF};
     property Options: TVTColumnOptions read FOptions write SetOptions default DefaultColumnOptions;
     property EditOptions: TVTEditOptions read FEditOptions write FEditOptions default toDefaultEdit;
     property EditNextColumn: Integer read FEditNextColumn write FEditNextColumn default -1;
     property Position: TColumnPosition read FPosition write SetPosition;
-    property Spacing: Integer read FSpacing write SetSpacing default 3;
+    property Spacing: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FSpacing write SetSpacing{$IFDEF VT_VCL} default 3{$ENDIF};
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
     property Tag: NativeInt read FTag write FTag default 0;
     property Text: string read GetText write SetText;
-    property Width: Integer read FWidth write SetWidth default 50;
+    property Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FWidth write SetWidth{$IFDEF VT_VCL} default 50{$ENDIF};
   end;
 
   TVirtualTreeColumnClass = class of TVirtualTreeColumn;
@@ -1099,12 +1322,12 @@ type
     procedure AdjustPosition(Column: TVirtualTreeColumn; Position: Cardinal);
     function CanSplitterResize(P: TPoint; Column: TColumnIndex): Boolean;
     procedure DoCanSplitterResize(P: TPoint; Column: TColumnIndex; var Allowed: Boolean); virtual;
-    procedure DrawButtonText(DC: HDC; Caption: string; Bounds: TRect; Enabled, Hot: Boolean; DrawFormat: Cardinal;
+    procedure DrawButtonText({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Caption: string; Bounds: TRect; Enabled, Hot: Boolean; DrawFormat: Cardinal;
       WrapCaption: Boolean);
     procedure FixPositions;
-    function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: Integer; Relative: Boolean = True): Integer;
+    function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean = True): Integer;
     function GetOwner: TPersistent; override;
-    function HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean): Boolean; virtual;
+    function HandleClick(P: TPoint; Button: TMouseButton;{$IFDEF VT_FMX}Shift: TShiftState;{$ENDIF} Force, DblClick: Boolean): Boolean; virtual;
     procedure HeaderPopupMenuAddHeaderPopupItem(const Sender: TBaseVirtualTree; const Column: TColumnIndex;
       var Cmd: TAddPopupItemType);
     procedure HeaderPopupMenuColumnChange(const Sender: TBaseVirtualTree; const Column: TColumnIndex; Visible: Boolean);
@@ -1125,13 +1348,13 @@ type
     destructor Destroy; override;
 
     function Add: TVirtualTreeColumn; virtual;
-    procedure AnimatedResize(Column: TColumnIndex; NewWidth: Integer);
+    procedure AnimatedResize(Column: TColumnIndex; NewWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure Assign(Source: TPersistent); override;
     procedure Clear; virtual;
     function ColumnFromPosition(P: TPoint; Relative: Boolean = True): TColumnIndex; overload; virtual;
     function ColumnFromPosition(PositionIndex: TColumnPosition): TColumnIndex; overload; virtual;
     function Equals(OtherColumnsObj: TObject): Boolean; override;
-    procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: Integer);
+    procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     function GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetFirstColumn: TColumnIndex;
@@ -1139,17 +1362,16 @@ type
     function GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetPreviousColumn(Column: TColumnIndex): TColumnIndex;
     function GetPreviousVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
-    function GetScrollWidth: Integer;
+    function GetScrollWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     function GetVisibleColumns: TColumnsArray;
-    function GetVisibleFixedWidth: Integer;
+    function GetVisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     function IsValidColumn(Column: TColumnIndex): Boolean;
     procedure LoadFromStream(const Stream: TStream; Version: Integer);
-    procedure PaintHeader(DC: HDC; R: TRect; HOffset: Integer); overload; virtual;
-    procedure PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint;
-      RTLOffset: Integer = 0); overload; virtual;
+    procedure PaintHeader({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; R: TRect; HOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); overload; virtual;
+    procedure PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint; RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0); overload; virtual;
     procedure SaveToStream(const Stream: TStream);
     procedure EndUpdate(); override;
-    function TotalWidth: Integer;
+    function TotalWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
     property Count: Integer read GetCount;
     property ClickIndex: TColumnIndex read FClickIndex;
@@ -1248,12 +1470,22 @@ type
     crNodeCopied,   // a node has been duplicated
     crNodeMoved     // a node has been moved to a new place
   ); // desribes what made a structure change event happen
+{$IFDEF VT_FMX}
+  TChangeLink = class(TImageLink)
+  private
+    function GetSender: TCustomImageList; inline;
+    procedure SetSender(const Value: TCustomImageList); inline;
+  public
+    constructor Create; override;
+    property Sender: TCustomImageList read GetSender write SetSender;
+  end;
+{$ENDIF}
 
   TVTHeader = class(TPersistent)
   private
     FOwner: TBaseVirtualTree;
     FColumns: TVirtualTreeColumns;
-    FHeight: Integer;
+    FHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     FFont: TFont;
     FParentFont: Boolean;
     FOptions: TVTHeaderOptions;
@@ -1262,17 +1494,19 @@ type
     FAutoSizeIndex: TColumnIndex;
     FPopupMenu: TPopupMenu;
     FMainColumn: TColumnIndex;         // the column which holds the tree
-    FMaxHeight: Integer;
-    FMinHeight: Integer;
-    FDefaultHeight: Integer;
+    FMaxHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FMinHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FDefaultHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     FFixedAreaConstraints: TVTFixedAreaConstraints; // Percentages for the fixed area (header, fixed columns).
     FImages: TCustomImageList;
     FImageChangeLink: TChangeLink;     // connections to the image list to get notified about changes
     fSplitterHitTolerance: Integer; // For property SplitterHitTolerance
     FSortColumn: TColumnIndex;
     FSortDirection: TSortDirection;
+  {$IFDEF VT_VCL}
     FDragImage: TVTDragImage;          // drag image management during header drag
-    FLastWidth: Integer;               // Used to adjust spring columns. This is the width of all visible columns,
+  {$ENDIF}
+    FLastWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};               // Used to adjust spring columns. This is the width of all visible columns,
                                        // not the header rectangle.
     procedure FontChanged(Sender: TObject);
     function GetMainColumn: TColumnIndex;
@@ -1281,13 +1515,13 @@ type
     procedure SetAutoSizeIndex(Value: TColumnIndex);
     procedure SetBackground(Value: TColor);
     procedure SetColumns(Value: TVirtualTreeColumns);
-    procedure SetDefaultHeight(Value: Integer);
+    procedure SetDefaultHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetFont(const Value: TFont);
-    procedure SetHeight(Value: Integer);
+    procedure SetHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetImages(const Value: TCustomImageList);
     procedure SetMainColumn(Value: TColumnIndex);
-    procedure SetMaxHeight(Value: Integer);
-    procedure SetMinHeight(Value: Integer);
+    procedure SetMaxHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetMinHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetOptions(Value: TVTHeaderOptions);
     procedure SetParentFont(Value: Boolean);
     procedure SetSortColumn(Value: TColumnIndex);
@@ -1302,7 +1536,7 @@ type
 
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
-    procedure ChangeScale(M, D: Integer); virtual;
+    procedure ChangeScale(M, D: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
     procedure DoAfterAutoFitColumn(Column: TColumnIndex); virtual;
     procedure DoAfterColumnWidthTracking(Column: TColumnIndex); virtual;
@@ -1321,9 +1555,11 @@ type
     procedure FixedAreaConstraintsChanged(Sender: TObject);
     function GetColumnsClass: TVirtualTreeColumnsClass; virtual;
     function GetOwner: TPersistent; override;
+{$IFDEF VT_VCL}
     function GetShiftState: TShiftState;
     function HandleHeaderMouseMove(var Message: TWMMouseMove): Boolean;
     function HandleMessage(var Message: TMessage): Boolean; virtual;
+{$ENDIF}
     procedure ImageListChange(Sender: TObject);
     procedure PrepareDrag(P, Start: TPoint);
     procedure ReadColumns(Reader: TReader);
@@ -1333,7 +1569,7 @@ type
     procedure UpdateSpringColumns;
     procedure WriteColumns(Writer: TWriter);
   public
-    constructor Create(AOwner: TBaseVirtualTree); virtual;
+    constructor Create(AOwner: TBaseVirtualTree); virtual; //header
     destructor Destroy; override;
 
     function AllowFocus(ColumnIndex: TColumnIndex): Boolean;
@@ -1344,12 +1580,13 @@ type
     function InHeaderSplitterArea(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False; UpdateNowFlag : Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
-    function ResizeColumns(ChangeBy: Integer; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
-      Options: TVTColumnOptions = [coVisible]): Integer;
+    function ResizeColumns(ChangeBy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
+      Options: TVTColumnOptions = [coVisible]): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
-
+{$IFDEF VT_VCL}
     property DragImage: TVTDragImage read FDragImage;
+{$ENDIF}	
     property States: THeaderStates read FStates;
     property Treeview: TBaseVirtualTree read FOwner;
     property UseColumns: Boolean read GetUseColumns;
@@ -1358,14 +1595,14 @@ type
     property AutoSizeIndex: TColumnIndex read FAutoSizeIndex write SetAutoSizeIndex;
     property Background: TColor read FBackgroundColor write SetBackground default clBtnFace;
     property Columns: TVirtualTreeColumns read FColumns write SetColumns stored False; // Stored by the owner tree to support VFI.
-    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default 19;
+    property DefaultHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FDefaultHeight write SetDefaultHeight{$IFDEF VT_VCL} default 19{$ENDIF};
     property Font: TFont read FFont write SetFont stored IsFontStored;
     property FixedAreaConstraints: TVTFixedAreaConstraints read FFixedAreaConstraints write FFixedAreaConstraints;
-    property Height: Integer read FHeight write SetHeight default 19;
+    property Height: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FHeight write SetHeight{$IFDEF VT_VCL} default 19{$ENDIF};
     property Images: TCustomImageList read FImages write SetImages;
     property MainColumn: TColumnIndex read GetMainColumn write SetMainColumn default 0;
-    property MaxHeight: Integer read FMaxHeight write SetMaxHeight default 10000;
-    property MinHeight: Integer read FMinHeight write SetMinHeight default 10;
+    property MaxHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMaxHeight write SetMaxHeight{$IFDEF VT_VCL} default 10000{$ENDIF};
+    property MinHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMinHeight write SetMinHeight{$IFDEF VT_VCL} default 10{$ENDIF};
     property Options: TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
     property ParentFont: Boolean read FParentFont write SetParentFont default True;
     property PopupMenu: TPopupMenu read FPopupMenu write FPopupMenu;
@@ -1387,7 +1624,9 @@ type
     function EndEdit: Boolean; stdcall;                    // Called when editing has been finished by the tree. Returns True if successful, False if edit mode is still active.
     function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
                                                            // Called after creation to allow a setup.
+{$IFDEF VT_VCL}
     procedure ProcessMessage(var Message: TMessage); stdcall;
+{$ENDIF}
                                                            // Used to forward messages to the edit window(s)-
     procedure SetBounds(R: TRect); stdcall;                // Called to place the editor.
   end;
@@ -1471,8 +1710,10 @@ type
     tsMiddleButtonDown,       // Set when the middle mouse button is down.
     tsMiddleDblClick,         // Set when the middle mouse button was doubly clicked.
     tsNeedRootCountUpdate,    // Set if while loading a root node count is set.
+{$IFDEF VT_VCL}
     tsOLEDragging,            // OLE dragging in progress.
     tsOLEDragPending,         // User has requested to start delayed dragging.
+{$ENDIF}
     tsPainting,               // The tree is currently painting itself.
     tsRightButtonDown,        // Set when the right mouse button is down.
     tsRightDblClick,          // Set when the right mouse button was doubly clicked.
@@ -1499,8 +1740,8 @@ type
     tsVCLDragFinished,        // Flag to avoid triggering the OnColumnClick event twice
     tsWheelPanning,           // Wheel mouse panning is active or soon will be.
     tsWheelScrolling,         // Wheel mouse scrolling is active or soon will be.
-    tsWindowCreating,         // Set during window handle creation to avoid frequent unnecessary updates.
-    tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
+    tsWindowCreating{$IFDEF VT_VCL},  // Set during window handle creation to avoid frequent unnecessary updates.
+    tsUseExplorerTheme{$ENDIF}        // The tree runs under WinVista+ and is using the explorer theme
   );
 
   TChangeStates = set of (
@@ -1607,7 +1848,7 @@ type
   published
     property AlwaysVisible: Boolean read FAlwaysVisible write SetAlwaysVisible default False;
     property HorizontalIncrement: TVTScrollIncrement read FIncrementX write FIncrementX default 20;
-    property ScrollBars: TScrollStyle read FScrollBars write SetScrollBars default ssBoth;
+    property ScrollBars: TScrollStyle read FScrollBars write SetScrollBars default TScrollStyle.ssBoth;
     property ScrollBarStyle: TScrollBarStyle read FScrollBarStyle write SetScrollBarStyle default sbmRegular;
     property VerticalIncrement: TVTScrollIncrement read FIncrementY write FIncrementY default 20;
   end;
@@ -1658,7 +1899,7 @@ type
   TVTImageInfo = record
     Index: TImageIndex;           // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
-    YPos: Integer;            // Vertical position in the current target canvas.
+    YPos: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};            // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
     Images: TCustomImageList; // The image list to be used for painting.
     function Equals(const pImageInfo2: TVTImageInfo): Boolean;
@@ -1701,14 +1942,14 @@ type
     Position: TColumnPosition;    // the column position of the node
     CellRect: TRect;              // the node cell
     ContentRect: TRect;           // the area of the cell used for the node's content
-    NodeWidth: Integer;           // the actual node width
+    NodeWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};           // the actual node width
     Alignment: TAlignment;        // how to align within the node rectangle
     CaptionAlignment: TAlignment; // how to align text within the caption rectangle
     BidiMode: TBidiMode;          // directionality to be used for painting
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
     Offsets: TVTOffsets;
-    procedure AdjustImageCoordinates(VAlign: Integer);
+    procedure AdjustImageCoordinates(VAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
   end;
 
   // Method called by the Animate routine for each animation step.
@@ -1815,8 +2056,8 @@ type
   TVTHeaderAddPopupItemEvent = procedure(const Sender: TBaseVirtualTree; const Column: TColumnIndex;
     var Cmd: TAddPopupItemType) of object;
   TVTHeaderClickEvent = procedure(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo) of object;
-  TVTHeaderMouseEvent = procedure(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X, Y: Integer) of object;
-  TVTHeaderMouseMoveEvent = procedure(Sender: TVTHeader; Shift: TShiftState; X, Y: Integer) of object;
+  TVTHeaderMouseEvent = procedure(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
+  TVTHeaderMouseMoveEvent = procedure(Sender: TVTHeader; Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
   TVTBeforeHeaderHeightTrackingEvent = procedure(Sender: TVTHeader; Shift: TShiftState) of object;
   TVTAfterHeaderHeightTrackingEvent = procedure(Sender: TVTHeader) of object;
   TVTHeaderHeightTrackingEvent = procedure(Sender: TVTHeader; var P: TPoint; Shift: TShiftState; var Allowed: Boolean) of object;
@@ -1845,9 +2086,9 @@ type
   TVTAfterColumnWidthTrackingEvent = procedure(Sender: TVTHeader; Column: TColumnIndex) of object;
   TVTColumnWidthTrackingEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; Shift: TShiftState; var TrackPoint: TPoint; P: TPoint;
     var Allowed: Boolean) of object;
-  TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: HCURSOR) of object;
+  TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: {$IFDEF VT_FMX}TCursor{$ELSE}HCURSOR{$ENDIF}) of object;
   TVTBeforeGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var UseSmartColumnWidth: Boolean) of object;
-  TVTAfterGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var MaxWidth: Integer) of object;
+  TVTAfterGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
   TVTCanSplitterResizeColumnEvent = procedure(Sender: TVTHeader; P: TPoint; Column: TColumnIndex; var Allowed: Boolean) of object;
   TVTCanSplitterResizeHeaderEvent = procedure(Sender: TVTHeader; P: TPoint; var Allowed: Boolean) of object;
 
@@ -1867,17 +2108,21 @@ type
     Column: TColumnIndex; var Allowed: Boolean) of object;
 
   // drag'n drop/OLE events
+{$IFDEF VT_VCL}
   TVTCreateDragManagerEvent = procedure(Sender: TBaseVirtualTree; out DragManager: IVTDragManager) of object;
-  TVTCreateDataObjectEvent = procedure(Sender: TBaseVirtualTree; out IDataObject: IDataObject) of object;
+{$ENDIF}
+  TVTCreateDataObjectEvent = procedure(Sender: TBaseVirtualTree; out IDataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}) of object;
   TVTDragAllowedEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     var Allowed: Boolean) of object;
   TVTDragOverEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState;
     Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean) of object;
-  TVTDragDropEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
+  TVTDragDropEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF};
     Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode) of object;
+{$IFDEF VT_VCL}
   TVTRenderOLEDataEvent = procedure(Sender: TBaseVirtualTree; const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
     ForClipboard: Boolean; var Result: HRESULT) of object;
   TVTGetUserClipboardFormatsEvent = procedure(Sender: TBaseVirtualTree; var Formats: TFormatEtcArray) of object;
+{$ENDIF}
 
   // paint events
   TVTBeforeItemEraseEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect;
@@ -1897,7 +2142,7 @@ type
     var Handled: Boolean) of object;
   TVTGetLineStyleEvent = procedure(Sender: TBaseVirtualTree; var Bits: Pointer) of object;
   TVTMeasureItemEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
-    var NodeHeight: Integer) of object;
+    var NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
 
   TVTPrepareButtonImagesEvent = procedure(Sender: TBaseVirtualTree; const APlusBM : TBitmap; const APlusHotBM :TBitmap;
                                           const APlusSelectedHotBM :TBitmap; const AMinusBM : TBitmap; const AMinusHotBM : TBitmap;
@@ -1922,7 +2167,7 @@ type
   TVTGetNodeDataSizeEvent = procedure(Sender: TBaseVirtualTree; var NodeDataSize: Integer) of object;
   TVTKeyActionEvent = procedure(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState;
     var DoDefault: Boolean) of object;
-  TVTScrollEvent = procedure(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer) of object;
+  TVTScrollEvent = procedure(Sender: TBaseVirtualTree; DeltaX, DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
   TVTUpdatingEvent = procedure(Sender: TBaseVirtualTree; State: TVTUpdateState) of object;
   TVTGetCursorEvent = procedure(Sender: TBaseVirtualTree; var Cursor: TCursor) of object;
   TVTStateChangeEvent = procedure(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates) of object;
@@ -1981,14 +2226,14 @@ type
 
 
   // ----- TBaseVirtualTree
-  TBaseVirtualTree = class(TCustomControl)
+  TBaseVirtualTree = class({$IFDEF VT_FMX}TRectangle{$ELSE}TCustomControl{$ENDIF})
   private
     FTotalInternalDataSize: Cardinal;            // Cache of the sum of the necessary internal data size for all tree
     FBorderStyle: TBorderStyle;
     FHeader: TVTHeader;
     FRoot: PVirtualNode;
     FDefaultNodeHeight,
-    FIndent: Cardinal;
+    FIndent: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
     FOptions: TCustomVirtualTreeOptions;
     FUpdateCount: Cardinal;                      // update stopper, updates of the tree control are only done if = 0
     FSynchUpdateCount: Cardinal;                 // synchronizer, causes all events which are usually done via timers
@@ -2038,14 +2283,14 @@ type
     FEditLink: IVTEditLink;                      // used to comunicate with an application defined editor
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
-    FBackground: TPicture;                       // A background image loadable at design and runtime.
+    FBackground: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF};                         // A background image loadable at design and runtime.
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
-    FMargin: Integer;                            // horizontal distance to border and columns
-    FTextMargin: Integer;                        // space between the node's text and its horizontal bounds
+    FMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                            // horizontal distance to border and columns
+    FTextMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                        // space between the node's text and its horizontal bounds
     FBackgroundOffsetX,
-    FBackgroundOffsetY: Integer;                 // used to fine tune the position of the background image
+    FBackgroundOffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                 // used to fine tune the position of the background image
     FAnimationDuration: Cardinal;                // specifies how long an animation shall take (expanding, hint)
     FWantTabs: Boolean;                          // If True then the tree also consumes the tab key.
     FNodeAlignment: TVTNodeAlignment;            // determines how to interpret the align member of a node
@@ -2067,7 +2312,7 @@ type
     FCheckImageKind: TCheckImageKind;            // light or dark, cross marks or tick marks
     FCheckImages: TCustomImageList;              // Reference to global image list to be used for the check images.
     //TODO: Use this margin for other images as well
-    FImagesMargin: Integer;                      // The margin used left and right of the checkboxes.
+    FImagesMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                      // The margin used left and right of the checkboxes.
     FImageChangeLink,
     FStateChangeLink,
     FCustomCheckChangeLink: TChangeLink;         // connections to the image lists
@@ -2077,7 +2322,7 @@ type
     FButtonFillMode: TVTButtonFillMode;          // for rectangular tree buttons only: how to fill them
     FLineStyle: TVTLineStyle;                    // style of the tree lines
     FLineMode: TVTLineMode;                      // tree lines or bands etc.
-    FDottedBrush: HBRUSH;                        // used to paint dotted lines without special pens
+    FDottedBrush: {$IFDEF VT_FMX}TBrush{$ELSE}HBRUSH{$ENDIF};                        // used to paint dotted lines without special pens
     FSelectionCurveRadius: Cardinal;             // radius for rounded selection rectangles
     FSelectionBlendFactor: Byte;                 // Determines the factor by which the selection rectangle is to be
                                                  // faded if enabled.
@@ -2090,13 +2335,17 @@ type
     FDragImageKind: TVTDragImageKind;            // determines whether or not and what to show in the drag image
     FDragOperations: TDragOperations;            // determines which operations are allowed during drag'n drop
     FDragThreshold: Integer;                     // used to determine when to actually start a drag'n drop operation
+{$IFDEF VT_VCL}	
     FDragManager: IVTDragManager;                // drag'n drop, cut'n paste
+{$ENDIF}
     FDropTargetNode: PVirtualNode;               // node currently selected as drop target
     FLastDropMode: TDropMode;                    // set while dragging and used to track changes
     FDragSelection: TNodeArray;                  // temporary copy of FSelection used during drag'n drop
     FLastDragEffect: Integer;                    // The last executed drag effect
     FDragType: TVTDragType;                      // used to switch between OLE and VCL drag'n drop
+{$IFDEF VT_VCL}	
     FDragImage: TVTDragImage;                    // drag image management
+{$ENDIF}	
     FDragWidth,
     FDragHeight: Integer;                        // size of the drag image, the larger the more CPU power is needed
     FClipboardFormats: TClipboardFormats;        // a list of clipboard format descriptions enabled for this tree
@@ -2109,12 +2358,12 @@ type
     FAutoScrollDelay: Cardinal;                  // amount of milliseconds to wait until autoscrolling becomes active
     FAutoExpandDelay: Cardinal;                  // amount of milliseconds to wait until a node is expanded if it is the
                                                  // drop target
-    FOffsetX: Integer;
-    FOffsetY: Integer;                           // Determines left and top scroll offset.
-    FEffectiveOffsetX: Integer;                  // Actual position of the horizontal scroll bar (varies depending on bidi mode).
+    FOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FOffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                           // Determines left and top scroll offset.
+    FEffectiveOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                  // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
-    FRangeY: Cardinal;                           // current virtual width and height of the tree
-    FBottomSpace: Cardinal;                      // Extra space below the last node.
+    FRangeY: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};                           // current virtual width and height of the tree
+    FBottomSpace: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};                      // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
     FSingletonNodeArray: TNodeArray;             // Contains only one element for quick addition of single nodes
@@ -2130,20 +2379,22 @@ type
     FSearchStart: TVTSearchStart;                // Where to start iteration on each key press.
 
     // miscellanous
+{$IFDEF VT_VCL}	
     FPanningWindow: HWND;                        // Helper window for wheel panning
-    FPanningCursor: HCURSOR;                     // Current wheel panning cursor.
+{$ENDIF}	
+    FPanningCursor: {$IFDEF VT_FMX}TCursor{$ELSE}HCURSOR{$ENDIF};                     // Current wheel panning cursor.
     FPanningImage: TBitmap;                      // A little 32x32 bitmap to indicate the panning reference point.
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
     FOperationCount: Cardinal;                   // Counts how many nested long-running operations are in progress.
     FOperationCanceled: Boolean;                 // Used to indicate that a long-running operation should be canceled.
     FChangingTheme: Boolean;                     // Used to indicate that a theme change is goi ng on
     FNextNodeToSelect: PVirtualNode;             // Next tree node that we would like to select if the current one gets deleted or looses selection for other reasons.
-
+{$IFDEF VT_VCL}	
     // MSAA support
     FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
     FAccessibleItem: IAccessible;                // The IAccessible to the item that currently has focus.
     FAccessibleName: string;                     // The name the window is given for screen readers.
-
+{$ENDIF}
     // export
     FOnBeforeNodeExport: TVTNodeExportEvent;     // called before exporting a node
     FOnNodeExport: TVTNodeExportEvent;
@@ -2269,7 +2520,9 @@ type
                                                  // determined by the application.
 
     // drag'n drop events
+{$IFDEF VT_VCL}	
     FOnCreateDragManager: TVTCreateDragManagerEvent; // called to allow for app./descendant defined drag managers
+{$ENDIF}
     FOnCreateDataObject: TVTCreateDataObjectEvent; // called to allow for app./descendant defined data objects
     FOnDragAllowed: TVTDragAllowedEvent;         // used to get permission for manual drag in mouse down
     FOnDragOver: TVTDragOverEvent;               // called for every mouse move
@@ -2277,9 +2530,11 @@ type
     FOnHeaderDragged: TVTHeaderDraggedEvent;     // header (column) drag'n drop
     FOnHeaderDraggedOut: TVTHeaderDraggedOutEvent; // header (column) drag'n drop, which did not result in a valid drop.
     FOnHeaderDragging: TVTHeaderDraggingEvent;   // header (column) drag'n drop
+{$IFDEF VT_VCL}		
     FOnRenderOLEData: TVTRenderOLEDataEvent;     // application/descendant defined clipboard formats
     FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
                                                  // add own clipboard formats on the fly
+{$ENDIF}												 
 
     // miscellanous events
     FOnGetNodeDataSize: TVTGetNodeDataSizeEvent; // Called if NodeDataSize is -1.
@@ -2309,25 +2564,36 @@ type
     FOnEndOperation: TVTOperationEvent;          // Called when an operation ends
 
     FVclStyleEnabled: Boolean;
-
+{$IFDEF VT_FMX}
+    FFont: TFont;
+    FBevelEdges: TBevelEdges;
+    FBevelInner: TBevelCut;
+    FBevelOuter: TBevelCut;
+    FBevelKind: TBevelKind;
+    FBevelWidth: TBevelWidth;
+    FBorderWidth: TBorderWidth;
+    FHandleAllocated: Boolean;
+    FBiDiMode: TBiDiMode;
+{$ENDIF}
+{$IFDEF VT_VCL}
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
-
+{$ENDIF}
     procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
-    procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
+    procedure AdjustTotalHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; relative: Boolean = False);
     function CalculateCacheEntryCount: Integer;
     procedure CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode; var VAlign,
-      VButtonAlign: Integer);
+      VButtonAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     function ChangeCheckState(Node: PVirtualNode; Value: TCheckState): Boolean;
-    function CollectSelectedNodesLTR(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment; OldRect,
-      NewRect: TRect): Boolean;
-    function CollectSelectedNodesRTL(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment; OldRect,
+    function CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment; OldRect,
+      NewRect: TRectF): Boolean;
+    function CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment; OldRect,
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
-    function FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode; overload;
-    function FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode; overload;
+    function FindInPositionCache(Node: PVirtualNode; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode; overload;
+    function FindInPositionCache(Position: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
     function GetBottomNode: PVirtualNode;
@@ -2337,14 +2603,16 @@ type
     function GetChildrenInitialized(Node: PVirtualNode): Boolean;
     function GetCutCopyCount: Integer;
     function GetDisabled(Node: PVirtualNode): Boolean;
-    function GetSyncCheckstateWithSelection(Node: PVirtualNode): Boolean;
+	function GetSyncCheckstateWithSelection(Node: PVirtualNode): Boolean;
+{$IFDEF VT_VCL}    
     function GetDragManager: IVTDragManager;
+{$ENDIF}
     function GetExpanded(Node: PVirtualNode): Boolean;
     function GetFiltered(Node: PVirtualNode): Boolean;
     function GetFullyVisible(Node: PVirtualNode): Boolean;
     function GetHasChildren(Node: PVirtualNode): Boolean;
     function GetMultiline(Node: PVirtualNode): Boolean;
-    function GetNodeHeight(Node: PVirtualNode): Cardinal;
+    function GetNodeHeight(Node: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
     function GetNodeParent(Node: PVirtualNode): PVirtualNode;
     function GetOffsetXY: TPoint;
     function GetRootNodeCount: Cardinal;
@@ -2354,7 +2622,7 @@ type
     function GetVerticalAlignment(Node: PVirtualNode): Byte;
     function GetVisible(Node: PVirtualNode): Boolean;
     function GetVisiblePath(Node: PVirtualNode): Boolean;
-    function HandleDrawSelection(X, Y: Integer): Boolean;
+    function HandleDrawSelection(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean;
     function HasVisibleNextSibling(Node: PVirtualNode): Boolean;
     function HasVisiblePreviousSibling(Node: PVirtualNode): Boolean;
     procedure ImageListChange(Sender: TObject);
@@ -2368,12 +2636,12 @@ type
     procedure FakeReadIdent(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
-    procedure SetBackground(const Value: TPicture);
+    procedure SetBackground(const Value: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF});
     procedure SetBackGroundImageTransparent(const Value: Boolean);
-    procedure SetBackgroundOffset(const Index, Value: Integer);
+    procedure SetBackgroundOffset(const Index: Integer; const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetBottomNode(Node: PVirtualNode);
-    procedure SetBottomSpace(const Value: Cardinal);
+    procedure SetBottomSpace(const Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
     procedure SetButtonFillMode(const Value: TVTButtonFillMode);
     procedure SetButtonStyle(const Value: TVTButtonStyle);
     procedure SetCheckImageKind(Value: TCheckImageKind);
@@ -2382,7 +2650,7 @@ type
     procedure SetClipboardFormats(const Value: TClipboardFormats);
     procedure SetColors(const Value: TVTColors);
     procedure SetCustomCheckImages(const Value: TCustomImageList);
-    procedure SetDefaultNodeHeight(Value: Cardinal);
+    procedure SetDefaultNodeHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
     procedure SetDisabled(Node: PVirtualNode; Value: Boolean);
     procedure SetEmptyListMessage(const Value: string);
     procedure SetExpanded(Node: PVirtualNode; Value: Boolean);
@@ -2394,18 +2662,18 @@ type
     procedure SetHotNode(Value: PVirtualNode);
     procedure SetFiltered(Node: PVirtualNode; Value: Boolean);
     procedure SetImages(const Value: TCustomImageList);
-    procedure SetIndent(Value: Cardinal);
+    procedure SetIndent(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
     procedure SetLineMode(const Value: TVTLineMode);
     procedure SetLineStyle(const Value: TVTLineStyle);
-    procedure SetMargin(Value: Integer);
+    procedure SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetMultiline(Node: PVirtualNode; const Value: Boolean);
     procedure SetNodeAlignment(const Value: TVTNodeAlignment);
     procedure SetNodeDataSize(Value: Integer);
-    procedure SetNodeHeight(Node: PVirtualNode; Value: Cardinal);
+    procedure SetNodeHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
     procedure SetNodeParent(Node: PVirtualNode; const Value: PVirtualNode);
-    procedure SetOffsetX(const Value: Integer);
+    procedure SetOffsetX(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetOffsetXY(const Value: TPoint);
-    procedure SetOffsetY(const Value: Integer);
+    procedure SetOffsetY(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetOptions(const Value: TCustomVirtualTreeOptions);
     procedure SetRootNodeCount(Value: Cardinal);
     procedure SetScrollBarOptions(Value: TScrollBarOptions);
@@ -2413,17 +2681,19 @@ type
     procedure SetSelected(Node: PVirtualNode; Value: Boolean);
     procedure SetSelectionCurveRadius(const Value: Cardinal);
     procedure SetStateImages(const Value: TCustomImageList);
-    procedure SetTextMargin(Value: Integer);
+    procedure SetTextMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
     procedure SetTopNode(Node: PVirtualNode);
     procedure SetUpdateState(Updating: Boolean);
     procedure SetVerticalAlignment(Node: PVirtualNode; Value: Byte);
     procedure SetVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
-    procedure PrepareBackGroundPicture(Source: TPicture; DrawBitmap: TBitmap; DrawBitmapWidth: Integer; DrawBitMapHeight: Integer; ABkgcolor: TColor);
-    procedure StaticBackground(Source: TPicture; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
+    procedure PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; DrawBitmap: TBitmap; DrawBitmapWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; DrawBitMapHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; ABkgcolor: TColor);
+    procedure StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
     procedure StopTimer(ID: Integer);
     procedure SetWindowTheme(const Theme: string);
-    procedure TileBackground(Source: TPicture; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+    procedure TileBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+{$IFDEF VT_VCL}
+
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
     procedure CMColorChange(var Message: TMessage); message CM_COLORCHANGED;
@@ -2480,52 +2750,69 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
-    function GetRangeX: Cardinal;
+{$ENDIF}
+    function GetRangeX: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
+{$IFDEF VT_FMX}
+    procedure SetFont(const Value: TFont);
+    function GetClientHeight: Single;
+    function GetClientWidth: Single;
+{$ENDIF}
 
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
+{$IFDEF VT_FMX}
+    FUseRightToLeftAlignment: Boolean;
+    procedure SetBevelCut(Index: Integer; const Value: TBevelCut);
+    procedure SetBevelEdges(const Value: TBevelEdges);
+    procedure SetBevelKind(const Value: TBevelKind);
+    procedure SetBevelWidth(const Value: TBevelWidth);
+    procedure SetBorderWidth(Value: TBorderWidth);
+    procedure SetBiDiMode(Value: TBiDiMode);
+{$ENDIF}
     procedure AutoScale(isDpiChange: Boolean); virtual;
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
-    procedure AdjustPanningCursor(X, Y: Integer); virtual;
+    procedure AdjustPanningCursor(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
     function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
-    function CalculateSelectionRect(X, Y: Integer): Boolean; virtual;
+    function CalculateSelectionRect(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean; virtual;
     function CanAutoScroll: Boolean; virtual;
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
     procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
-    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); override;
+    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); {$IFDEF VT_FMX}virtual;{$ELSE}override;{$ENDIF}
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearSelection(pFireChangeEvent: Boolean); overload; virtual;
     procedure ClearTempCache; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
-    function ComputeRTLOffset(ExcludeScrollBar: Boolean = False): Integer; virtual;
+    function ComputeRTLOffset(ExcludeScrollBar: Boolean = False): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
     function CountLevelDifference(Node1, Node2: PVirtualNode): Integer; virtual;
     function CountVisibleChildren(Node: PVirtualNode): Cardinal; virtual;
+{$IFDEF VT_VCL}
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWnd; override;
+{$ENDIF}
     procedure DefineProperties(Filer: TFiler); override;
     procedure DeleteNode(Node: PVirtualNode; Reindex: Boolean; ParentClearing: Boolean); overload;
     function DetermineDropMode(const P: TPoint; var HitInfo: THitInfo; var NodeRect: TRect): TDropMode; virtual;
     procedure DetermineHiddenChildrenFlag(Node: PVirtualNode); virtual;
     procedure DetermineHiddenChildrenFlagAllNodes; virtual;
-    procedure DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: Integer; Alignment: TAlignment); virtual;
-    procedure DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: Integer; Alignment: TAlignment); virtual;
+    procedure DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment); virtual;
+    procedure DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment); virtual;
     function DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer; virtual;
     function DetermineNextCheckState(CheckType: TCheckType; CheckState: TCheckState): TCheckState; virtual;
-    function DetermineScrollDirections(X, Y: Integer): TScrollDirections; virtual;
+    function DetermineScrollDirections(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): TScrollDirections; virtual;
     procedure DoAdvancedHeaderDraw(var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements); virtual;
     procedure DoAfterCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellRect: TRect); virtual;
     procedure DoAfterItemErase(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect); virtual;
     procedure DoAfterItemPaint(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect); virtual;
     procedure DoAfterPaint(Canvas: TCanvas); virtual;
-    procedure DoAutoScroll(X, Y: Integer); virtual;
+    procedure DoAutoScroll(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     function DoBeforeDrag(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
     procedure DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect); virtual;
@@ -2548,20 +2835,22 @@ type
     procedure DoColumnResize(Column: TColumnIndex); virtual;
     procedure DoColumnVisibilityChanged(const Column: TColumnIndex; Visible: Boolean);
     function DoCompare(Node1, Node2: PVirtualNode; Column: TColumnIndex): Integer; virtual;
+{$IFDEF VT_VCL}
     function DoCreateDataObject: IDataObject; virtual;
     function DoCreateDragManager: IVTDragManager; virtual;
+{$ENDIF}
     function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; virtual;
     procedure DoDragging(P: TPoint); virtual;
     procedure DoDragExpand; virtual;
     procedure DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: Integer); virtual;
     function DoDragOver(Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
       var Effect: Integer): Boolean; virtual;
-    procedure DoDragDrop(Source: TObject; const DataObject: IDataObject; const Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
+    procedure DoDragDrop(Source: TObject; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; const Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
       var Effect: Integer; Mode: TDropMode); virtual;
     procedure DoDrawHint(Canvas: TCanvas; Node: PVirtualNode; R: TRect; Column:
         TColumnIndex);
     procedure DoEdit; virtual;
-    procedure DoEndDrag(Target: TObject; X, Y: Integer); override;
+    procedure DoEndDrag(Target: TObject; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); {$IFDEF VT_FMX}virtual;{$ELSE}override;{$ENDIF}
     function DoEndEdit: Boolean; virtual;
     procedure DoEndOperation(OperationKind: TVTOperationKind); virtual;
     procedure DoEnter(); override;
@@ -2574,7 +2863,7 @@ type
     function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
       CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; virtual;
     procedure DoGetCursor(var Cursor: TCursor); virtual;
-    procedure DoGetHeaderCursor(var Cursor: HCURSOR); virtual;
+    procedure DoGetHeaderCursor(var Cursor: {$IFDEF VT_FMX}TCursor{$ELSE}HCURSOR{$ENDIF}); virtual;
     procedure DoGetHintSize(Node: PVirtualNode; Column: TColumnIndex; var R:
         TRect); virtual;
     procedure DoGetHintKind(Node: PVirtualNode; Column: TColumnIndex; var Kind:
@@ -2585,10 +2874,12 @@ type
     procedure DoGetLineStyle(var Bits: Pointer); virtual;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; virtual;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; virtual;
-    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; virtual;
-    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; virtual;
+    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
     function DoGetPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint): TPopupMenu; virtual;
-    procedure DoGetUserClipboardFormats(var Formats: TFormatEtcArray); virtual;
+{$IFDEF VT_VCL}   
+	  procedure DoGetUserClipboardFormats(var Formats: TFormatEtcArray); virtual;
+{$ENDIF}	
     procedure DoHeaderAddPopupItem(const Column: TColumnIndex; var Cmd: TAddPopupItemType);
     procedure DoHeaderClick(const HitInfo: TVTHeaderHitInfo); virtual;
     procedure DoHeaderDblClick(const HitInfo: TVTHeaderHitInfo); virtual;
@@ -2607,7 +2898,7 @@ type
     procedure DoInitNode(Parent, Node: PVirtualNode; var InitStates: TVirtualNodeInitStates); virtual;
     function DoKeyAction(var CharCode: Word; var Shift: TShiftState): Boolean; virtual;
     procedure DoLoadUserData(Node: PVirtualNode; Stream: TStream); virtual;
-    procedure DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer); virtual;
+    procedure DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     procedure DoMouseEnter(); virtual;
     procedure DoMouseLeave(); virtual;
     procedure DoNodeCopied(Node: PVirtualNode); virtual;
@@ -2625,31 +2916,33 @@ type
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); virtual;
     procedure DoPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint); virtual;
     procedure DoRemoveFromSelection(Node: PVirtualNode); virtual;
+{$IFDEF VT_VCL}
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
       ForClipboard: Boolean): HRESULT; virtual;
+{$ENDIF}	  
     procedure DoReset(Node: PVirtualNode); virtual;
     procedure DoSaveUserData(Node: PVirtualNode; Stream: TStream); virtual;
-    procedure DoScroll(DeltaX, DeltaY: Integer); virtual;
+    procedure DoScroll(DeltaX, DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     function DoSetOffsetXY(Value: TPoint; Options: TScrollUpdateOptions; ClipRect: PRect = nil): Boolean; virtual;
     procedure DoShowScrollBar(Bar: Integer; Show: Boolean); virtual;
-    procedure DoStartDrag(var DragObject: TDragObject); override;
+    procedure DoStartDrag(var DragObject: TDragObject); {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
     procedure DoStartOperation(OperationKind: TVTOperationKind); virtual;
     procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); virtual;
     procedure DoStructureChange(Node: PVirtualNode; Reason: TChangeReason); virtual;
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
-    procedure DragAndDrop(AllowedEffects: DWord; const DataObject: IDataObject; var DragEffect: Integer); virtual;
-    procedure DragCanceled; override;
-    function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
+    procedure DragAndDrop(AllowedEffects: DWord; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; var DragEffect: Integer); virtual;
+    procedure DragCanceled; {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
+    function DragDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
     function DragEnter(KeyState: Integer; Pt: TPoint; var Effect: Integer): HResult; virtual;
     procedure DragFinished; virtual;
     procedure DragLeave; virtual;
     function DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
-    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: Integer); virtual;
-    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer; UseSelectedBkColor: Boolean = False); virtual;
+    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; UseSelectedBkColor: Boolean = False); virtual;
     procedure EndOperation(OperationKind: TVTOperationKind);
     procedure EnsureNodeFocused(); virtual;
     function FindNodeInSelection(P: PVirtualNode; var Index: Integer; LowBound, HighBound: Integer): Boolean; virtual;
@@ -2662,20 +2955,28 @@ type
     function GetColumnClass: TVirtualTreeColumnClass; virtual;
     function GetDefaultHintKind: TVTHintKind; virtual;
     function GetHeaderClass: TVTHeaderClass; virtual;
+{$IFDEF VT_VCL}
     function GetHintWindowClass: THintWindowClass; virtual;
+{$ENDIF}
     procedure GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex); virtual;
     function GetImageSize(Node: PVirtualNode; Kind: TVTImageKind = TVTImageKind.ikNormal; Column: TColumnIndex = 0; IncludePadding: Boolean = True): TSize; virtual;
     function GetNodeImageSize(Node: PVirtualNode): TSize; virtual; deprecated 'Use GetImageSize instead';
-    function GetMaxRightExtend: Cardinal; virtual;
+    function GetMaxRightExtend: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}; virtual;
+{$IFDEF VT_VCL}	
     procedure GetNativeClipboardFormats(var Formats: TFormatEtcArray); virtual;
+{$ENDIF}
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
-    function GetTreeFromDataObject(const DataObject: IDataObject): TBaseVirtualTree; virtual;
-    procedure HandleHotTrack(X, Y: Integer); virtual;
+    function GetTreeFromDataObject(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}): TBaseVirtualTree; virtual;
+    procedure HandleHotTrack(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
+{$IFDEF VT_FMX}
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
+{$ELSE}
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
     procedure HandleMouseDown(var Message: TWMMouse; var HitInfo: THitInfo); virtual;
     procedure HandleMouseUp(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
+{$ENDIF}
     procedure HandleClickSelection(LastFocused, NewNode: PVirtualNode; Shift: TShiftState; DragPending: Boolean);
     function HasImage(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex): Boolean; virtual; deprecated 'Use GetImageSize instead';
     function HasPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Pos: TPoint): Boolean; virtual;
@@ -2696,32 +2997,36 @@ type
     procedure Loaded; override;
     procedure MainColumnChanged; virtual;
     procedure MarkCutCopyNodes; virtual;
-    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure OriginalWMNCPaint(DC: HDC); virtual;
+    procedure OriginalWMNCPaint({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}); virtual;
     procedure Paint; override;
     procedure PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVTImageInfo; Selected: Boolean); virtual;
     procedure PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean); virtual;
     procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect; ButtonX,
-      ButtonY: Integer; BidiMode: TBiDiMode); virtual;
-    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer; const LineImage: TLineImage); virtual;
-    procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: Integer; const SelectionRect: TRect;
+      ButtonY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; BidiMode: TBiDiMode); virtual;
+    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const LineImage: TLineImage); virtual;
+    procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const SelectionRect: TRect;
       TargetRect: TRect); virtual;
+{$IFDEF VT_VCL}
     procedure PanningWindowProc(var Message: TMessage); virtual;
-    procedure PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: Integer); virtual;
+{$ENDIF}
+    procedure PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     function ReadChunk(Stream: TStream; Version: Integer; Node: PVirtualNode; ChunkType,
       ChunkSize: Integer): Boolean; virtual;
     procedure ReadNode(Stream: TStream; Version: Integer; Node: PVirtualNode); virtual;
     procedure RedirectFontChangeEvent(Canvas: TCanvas); virtual;
     procedure RemoveFromSelection(Node: PVirtualNode); virtual;
     procedure UpdateNextNodeToSelect(Node: PVirtualNode); virtual;
+{$IFDEF VT_VCL}
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual;
+{$ENDIF}	
     procedure ResetRangeAnchor; virtual;
     procedure RestoreFontChangeEvent(Canvas: TCanvas); virtual;
     procedure SelectNodes(StartNode, EndNode: PVirtualNode; AddOnly: Boolean); virtual;
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); virtual;
     procedure SetFocusedNodeAndColumn(Node: PVirtualNode; Column: TColumnIndex); virtual;
-    procedure SetRangeX(value: Cardinal);
+    procedure SetRangeX(value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
     procedure SkipNode(Stream: TStream); virtual;
     procedure StartOperation(OperationKind: TVTOperationKind);
     procedure StartWheelPanning(Position: TPoint); virtual;
@@ -2734,16 +3039,21 @@ type
     procedure UpdateDesigner; virtual;
     procedure UpdateEditBounds; virtual;
     procedure UpdateHeaderRect; virtual;
-    procedure UpdateStyleElements; override;
+    procedure UpdateStyleElements; {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
     procedure UpdateWindowAndDragImage(const Tree: TBaseVirtualTree; TreeRect: TRect; UpdateNCArea,
       ReshowDragImage: Boolean); virtual;
     procedure ValidateCache; virtual;
     procedure ValidateNodeDataSize(var Size: Integer); virtual;
+{$IFDEF VT_VCL}
     procedure WndProc(var Message: TMessage); override;
+{$ENDIF}
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); virtual;
     procedure WriteNode(Stream: TStream; Node: PVirtualNode); virtual;
 
     procedure VclStyleChanged; virtual;
+{$IFDEF VT_FMX}
+    property HandleAllocated: Boolean read FHandleAllocated default true;
+{$ENDIF}
     property VclStyleEnabled: Boolean read FVclStyleEnabled;
     property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
 
@@ -2752,12 +3062,12 @@ type
     property AutoExpandDelay: Cardinal read FAutoExpandDelay write FAutoExpandDelay default 1000;
     property AutoScrollDelay: Cardinal read FAutoScrollDelay write FAutoScrollDelay default 1000;
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
-    property Background: TPicture read FBackground write SetBackground;
+    property Background: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF} read FBackground write SetBackground;
     property BackGroundImageTransparent: Boolean read FBackGroundImageTransparent write SetBackGroundImageTransparent default False;
-    property BackgroundOffsetX: Integer index 0 read FBackgroundOffsetX write SetBackgroundOffset default 0;
-    property BackgroundOffsetY: Integer index 1 read FBackgroundOffsetY write SetBackgroundOffset default 0;
+    property BackgroundOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} index 0 read FBackgroundOffsetX write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
+    property BackgroundOffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} index 1 read FBackgroundOffsetY write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
-    property BottomSpace: Cardinal read FBottomSpace write SetBottomSpace default 0;
+    property BottomSpace: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FBottomSpace write SetBottomSpace{$IFDEF VT_VCL} default 0{$ENDIF};
     property ButtonFillMode: TVTButtonFillMode read FButtonFillMode write SetButtonFillMode default fmTreeColor;
     property ButtonStyle: TVTButtonStyle read FButtonStyle write SetButtonStyle default bsRectangle;
     property ChangeDelay: Cardinal read FChangeDelay write FChangeDelay default 0;
@@ -2766,7 +3076,7 @@ type
     property Colors: TVTColors read FColors write SetColors;
     property CustomCheckImages: TCustomImageList read FCustomCheckImages write SetCustomCheckImages;
     property DefaultHintKind: TVTHintKind read GetDefaultHintKind;
-    property DefaultNodeHeight: Cardinal read FDefaultNodeHeight write SetDefaultNodeHeight default 18;
+    property DefaultNodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FDefaultNodeHeight write SetDefaultNodeHeight{$IFDEF VT_VCL} default 18{$ENDIF};
     property DefaultPasteMode: TVTNodeAttachMode read FDefaultPasteMode write FDefaultPasteMode default amAddChildLast;
     property DragHeight: Integer read FDragHeight write FDragHeight default 350;
     property DragImageKind: TVTDragImageKind read FDragImageKind write FDragImageKind default diComplete;
@@ -2779,7 +3089,7 @@ type
       default smDottedRectangle;
     property EditColumn: TColumnIndex read FEditColumn write FEditColumn;
     property EditDelay: Cardinal read FEditDelay write FEditDelay default 1000;
-    property EffectiveOffsetX: Integer read FEffectiveOffsetX;
+    property EffectiveOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FEffectiveOffsetX;
     property HeaderRect: TRect read FHeaderRect;
     property HintMode: TVTHintMode read FHintMode write FHintMode default hmDefault;
     property HintData: TVTHintData read FHintData write FHintData;
@@ -2789,13 +3099,13 @@ type
     property IncrementalSearchDirection: TVTSearchDirection read FSearchDirection write FSearchDirection default sdForward;
     property IncrementalSearchStart: TVTSearchStart read FSearchStart write FSearchStart default ssFocusedNode;
     property IncrementalSearchTimeout: Cardinal read FSearchTimeout write FSearchTimeout default 1000;
-    property Indent: Cardinal read FIndent write SetIndent default 18;
+    property Indent: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FIndent write SetIndent{$IFDEF VT_VCL} default 18{$ENDIF};
     property LastClickPos: TPoint read FLastClickPos write FLastClickPos;
     property LastDropMode: TDropMode read FLastDropMode write FLastDropMode;
     property LastHintRect: TRect read FLastHintRect write FLastHintRect;
     property LineMode: TVTLineMode read FLineMode write SetLineMode default lmNormal;
     property LineStyle: TVTLineStyle read FLineStyle write SetLineStyle default lsDotted;
-    property Margin: Integer read FMargin write SetMargin default 4;
+    property Margin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMargin write SetMargin{$IFDEF VT_VCL} default 4{$ENDIF};
     property NextNodeToSelect: PVirtualNode read FNextNodeToSelect; // Next tree node that we would like to select if the current one gets deleted
     property NodeAlignment: TVTNodeAlignment read FNodeAlignment write SetNodeAlignment default naProportional;
     property NodeDataSize: Integer read FNodeDataSize write SetNodeDataSize default -1;
@@ -2804,14 +3114,14 @@ type
     property HotPlusBM: TBitmap read FHotPlusBM;
     property MinusBM: TBitmap read FMinusBM;
     property PlusBM: TBitmap read FPlusBM;
-    property RangeX: Cardinal read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
-    property RangeY: Cardinal read FRangeY;
+    property RangeX: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
+    property RangeY: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FRangeY;
     property RootNodeCount: Cardinal read GetRootNodeCount write SetRootNodeCount default 0;
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
     property SelectionBlendFactor: Byte read FSelectionBlendFactor write FSelectionBlendFactor default 128;
     property SelectionCurveRadius: Cardinal read FSelectionCurveRadius write SetSelectionCurveRadius default 0;
     property StateImages: TCustomImageList read FStateImages write SetStateImages;
-    property TextMargin: Integer read FTextMargin write SetTextMargin default 4;
+    property TextMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FTextMargin write SetTextMargin{$IFDEF VT_VCL} default 4{$ENDIF};
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
     property SyncCheckstateWithSelection[Node: PVirtualNode]: Boolean read GetSyncCheckstateWithSelection;
@@ -2866,7 +3176,9 @@ type
     property OnColumnWidthTracking: TVTColumnWidthTrackingEvent read FOnColumnWidthTracking write FOnColumnWidthTracking;
     property OnCompareNodes: TVTCompareEvent read FOnCompareNodes write FOnCompareNodes;
     property OnCreateDataObject: TVTCreateDataObjectEvent read FOnCreateDataObject write FOnCreateDataObject;
+{$IFDEF VT_VCL}
     property OnCreateDragManager: TVTCreateDragManagerEvent read FOnCreateDragManager write FOnCreateDragManager;
+{$ENDIF}
     property OnCreateEditor: TVTCreateEditorEvent read FOnCreateEditor write FOnCreateEditor;
     property OnDragAllowed: TVTDragAllowedEvent read FOnDragAllowed write FOnDragAllowed;
     property OnDragOver: TVTDragOverEvent read FOnDragOver write FOnDragOver;
@@ -2895,8 +3207,10 @@ type
     property OnGetLineStyle: TVTGetLineStyleEvent read FOnGetLineStyle write FOnGetLineStyle;
     property OnGetNodeDataSize: TVTGetNodeDataSizeEvent read FOnGetNodeDataSize write FOnGetNodeDataSize;
     property OnGetPopupMenu: TVTPopupEvent read FOnGetPopupMenu write FOnGetPopupMenu;
+{$IFDEF VT_VCL}
     property OnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent read FOnGetUserClipboardFormats
       write FOnGetUserClipboardFormats;
+{$ENDIF}
     property OnHeaderAddPopupItem: TVTHeaderAddPopupItemEvent read FOnHeaderAddPopupItem write FOnHeaderAddPopupItem;
     property OnHeaderClick: TVTHeaderClickEvent read FOnHeaderClick write FOnHeaderClick;
     property OnHeaderDblClick: TVTHeaderClickEvent read FOnHeaderDblClick write FOnHeaderDblClick;
@@ -2936,7 +3250,9 @@ type
     property OnPaintBackground: TVTBackgroundPaintEvent read FOnPaintBackground write FOnPaintBackground;
     property OnPrepareButtonBitmaps : TVTPrepareButtonImagesEvent read FOnPrepareButtonImages write FOnPrepareButtonImages;
     property OnRemoveFromSelection: TVTRemoveFromSelectionEvent read FOnRemoveFromSelection write FOnRemoveFromSelection;
-    property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
+{$IFDEF VT_VCL}    
+	  property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
+{$ENDIF}
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
     property OnSaveNode: TVTSaveNodeEvent read FOnSaveNode write FOnSaveNode;
     property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
@@ -2948,7 +3264,7 @@ type
     property OnStructureChange: TVTStructureChangeEvent read FOnStructureChange write FOnStructureChange;
     property OnUpdating: TVTUpdatingEvent read FOnUpdating write FOnUpdating;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TComponent); override; //base tree
     destructor Destroy; override;
     function AbsoluteIndex(Node: PVirtualNode): Cardinal;
     function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; overload; virtual;
@@ -2964,7 +3280,7 @@ type
     function CancelEditNode: Boolean;
     procedure CancelOperation;
     function CanEdit(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
-    function CanFocus: Boolean; override;
+    function CanFocus: Boolean; {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
     procedure Clear; virtual;
     procedure ClearChecked;
     procedure ClearSelection(); overload; inline;
@@ -2989,7 +3305,7 @@ type
     procedure FlushClipboard;
     procedure FullCollapse(Node: PVirtualNode = nil);  virtual;
     procedure FullExpand(Node: PVirtualNode = nil); virtual;
-    function GetControlsAlignment: TAlignment; override;
+    function GetControlsAlignment: TAlignment; {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
     function GetDisplayRect(Node: PVirtualNode; Column: TColumnIndex; TextOnly: Boolean; Unclipped: Boolean = False;
       ApplyCellContentMargin: Boolean = False): TRect;
     function GetEffectivelyFiltered(Node: PVirtualNode): Boolean;
@@ -3010,7 +3326,7 @@ type
     function GetFirstVisibleChildNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetFirstVisibleNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): PVirtualNode;
-    procedure GetHitTestInfoAt(X, Y: Integer; Relative: Boolean; var HitInfo: THitInfo); virtual;
+    procedure GetHitTestInfoAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var HitInfo: THitInfo); virtual;
     function GetLast(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastInitialized(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -3022,7 +3338,7 @@ type
     function GetLastVisibleChildNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetLastVisibleNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): PVirtualNode;
-    function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer; virtual;
+    function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
     function GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode; overload;
@@ -3040,8 +3356,8 @@ type
     function GetNextVisibleSibling(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetNextVisibleSiblingNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetNodeAt(const P: TPoint): PVirtualNode; overload; inline;
-    function GetNodeAt(X, Y: Integer): PVirtualNode; overload;
-    function GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode; overload;
+    function GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode; overload;
+    function GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var NodeTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode; overload;
     function GetNodeData(Node: PVirtualNode): Pointer; overload;
     function GetNodeData<T>(pNode: PVirtualNode): T; overload; inline;
     function GetSelectedData<T>(): TArray<T>; overload;
@@ -3050,7 +3366,7 @@ type
     function GetFirstSelectedNodeData<T>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetNodeLevelForSelectConstraint(Node: PVirtualNode): integer;
-    function GetOffset(pElement: TVTElement; pNode: PVirtualNode): integer;
+    function GetOffset(pElement: TVTElement; pNode: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     procedure GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea; pColumn: Integer = NoColumn);
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
@@ -3092,14 +3408,16 @@ type
     procedure MoveTo(Node: PVirtualNode; Tree: TBaseVirtualTree; Mode: TVTNodeAttachMode;
       ChildrenOnly: Boolean); overload;
     procedure PaintTree(TargetCanvas: TCanvas; Window: TRect; Target: TPoint; PaintOptions: TVTInternalPaintOptions;
-      PixelFormat: TPixelFormat = pfDevice); virtual;
+      PixelFormat: TPixelFormat = {$IFDEF VT_FMX}TPixelFormat.RGBA{$ELSE}pfDevice{$ENDIF}); virtual;
     function PasteFromClipboard: Boolean; virtual;
-    procedure PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
+    procedure PrepareDragImage(HotSpot: TPoint; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF});
     procedure Print(Printer: TPrinter; PrintHeader: Boolean);
-    function ProcessDrop(const DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
+    function ProcessDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; TargetNode: PVirtualNode; var Effect: Integer; Mode:
       TVTNodeAttachMode): Boolean;
-    function ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode;
-                            Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
+{$IFDEF VT_VCL}
+    function ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode; 
+	                        Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
+{$ENDIF}
     procedure RepaintNode(Node: PVirtualNode);
     procedure ReinitChildren(Node: PVirtualNode; Recursive: Boolean); virtual;
     procedure InitRecursive(Node: PVirtualNode; Levels: Cardinal = MaxInt; pVisibleOnly: Boolean = True);
@@ -3107,7 +3425,7 @@ type
     procedure ResetNode(Node: PVirtualNode); virtual;
     procedure SaveToFile(const FileName: TFileName);
     procedure SaveToStream(Stream: TStream; Node: PVirtualNode = nil); virtual;
-    function ScaledPixels(pPixels: Integer): Integer;
+    function ScaledPixels(pPixels: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean; Node: PVirtualNode = nil): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
@@ -3144,9 +3462,11 @@ type
     function VisibleChildNoInitNodes(Node: PVirtualNode; IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
     function VisibleNoInitNodes(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
+{$IFDEF VT_VCL}
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
     property AccessibleName: string read FAccessibleName write FAccessibleName;
+{$ENDIF}
     property BottomNode: PVirtualNode read GetBottomNode write SetBottomNode;
     property CheckedCount: Integer read GetCheckedCount;
     property CheckImages: TCustomImageList read FCheckImages;
@@ -3155,15 +3475,17 @@ type
     property ChildCount[Node: PVirtualNode]: Cardinal read GetChildCount write SetChildCount;
     property ChildrenInitialized[Node: PVirtualNode]: Boolean read GetChildrenInitialized;
     property CutCopyCount: Integer read GetCutCopyCount;
+{$IFDEF VT_VCL}
     property DragImage: TVTDragImage read FDragImage;
     property DragManager: IVTDragManager read GetDragManager;
+{$ENDIF}
     property DropTargetNode: PVirtualNode read FDropTargetNode write FDropTargetNode;
     property EditLink: IVTEditLink read FEditLink;
     property EmptyListMessage: string read FEmptyListMessage write SetEmptyListMessage;
     property Expanded[Node: PVirtualNode]: Boolean read GetExpanded write SetExpanded;
     property FocusedColumn: TColumnIndex read FFocusedColumn write SetFocusedColumn default InvalidColumn;
     property FocusedNode: PVirtualNode read FFocusedNode write SetFocusedNode;
-    property Font;
+    property Font{$IFDEF VT_FMX}: TFont read FFont write SetFont{$ENDIF};
     property FullyVisible[Node: PVirtualNode]: Boolean read GetFullyVisible write SetFullyVisible;
     property HasChildren[Node: PVirtualNode]: Boolean read GetHasChildren write SetHasChildren;
     property Header: TVTHeader read FHeader write SetHeader;
@@ -3174,11 +3496,11 @@ type
     property IsFiltered[Node: PVirtualNode]: Boolean read GetFiltered write SetFiltered;
     property IsVisible[Node: PVirtualNode]: Boolean read GetVisible write SetVisible;
     property MultiLine[Node: PVirtualNode]: Boolean read GetMultiline write SetMultiline;
-    property NodeHeight[Node: PVirtualNode]: Cardinal read GetNodeHeight write SetNodeHeight;
+    property NodeHeight[Node: PVirtualNode]: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read GetNodeHeight write SetNodeHeight;
     property NodeParent[Node: PVirtualNode]: PVirtualNode read GetNodeParent write SetNodeParent;
-    property OffsetX: Integer read FOffsetX write SetOffsetX;
+    property OffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FOffsetX write SetOffsetX;
     property OffsetXY: TPoint read GetOffsetXY write SetOffsetXY;
-    property OffsetY: Integer read FOffsetY write SetOffsetY;
+    property OffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FOffsetY write SetOffsetY;
     property OperationCount: Cardinal read FOperationCount;
     property RootNode: PVirtualNode read FRoot;
     property SearchBuffer: string read FSearchBuffer;
@@ -3193,6 +3515,24 @@ type
     property VisiblePath[Node: PVirtualNode]: Boolean read GetVisiblePath write SetVisiblePath;
     property UpdateCount: Cardinal read FUpdateCount;
     property DoubleBuffered: Boolean read GetDoubleBuffered write SetDoubleBuffered default True;
+{$IFDEF VT_FMX}	
+    property ClientWidth: Single read GetClientWidth;
+    property ClientHeight: Single read GetClientHeight;
+    property UseRightToLeftAlignment: Boolean read FUseRightToLeftAlignment write FUseRightToLeftAlignment default false;
+    property BevelEdges: TBevelEdges read FBevelEdges write SetBevelEdges default [beLeft, beTop, beRight, beBottom];
+    property BevelInner: TBevelCut index 0 read FBevelInner write SetBevelCut default bvRaised;
+    property BevelOuter: TBevelCut index 1 read FBevelOuter write SetBevelCut default bvLowered;
+    property BevelKind: TBevelKind read FBevelKind write SetBevelKind default bkNone;
+    property BevelWidth: TBevelWidth read FBevelWidth write SetBevelWidth default 1;
+    property BorderWidth: TBorderWidth read FBorderWidth write SetBorderWidth;
+    property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
+    procedure Invalidate();
+{$IFDEF VT_FMX}
+    function ClientToScreen(P: TPoint): TPoint;
+    function ScreenToClient(P: TPoint): TPoint;
+    procedure RecreateWnd;
+{$ENDIF}
+{$ENDIF}
   end;
 
 
@@ -3244,6 +3584,7 @@ type
 
   TVTEdit = class(TCustomEdit)
   private
+{$IFDEF VT_VCL}
     procedure CMAutoAdjust(var Message: TMessage); message CM_AUTOADJUST;
     procedure CMExit(var Message: TMessage); message CM_EXIT;
     procedure CMRelease(var Message: TMessage); message CM_RELEASE;
@@ -3252,26 +3593,35 @@ type
     procedure WMDestroy(var Message: TWMDestroy); message WM_DESTROY;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
+{$ENDIF}
   protected
     FRefLink: IVTEditLink;
     FLink: TStringEditLink;
     procedure AutoAdjustSize; virtual;
+{$IFDEF VT_VCL}
     function CalcMinHeight: Integer; virtual;
     procedure CreateParams(var Params: TCreateParams); override;
     function GetTextSize: TSize; virtual;
+{$ENDIF}
   public
     constructor Create(Link: TStringEditLink); reintroduce;
 
     procedure Release; virtual;
-
+{$IFDEF VT_VCL}
     property AutoSelect;
     property AutoSize;
     property BorderStyle;
+{$ENDIF}	
     property CharCase;
+{$IFDEF VT_VCL}
     property HideSelection;
     property MaxLength;
     property OEMConvert;
     property PasswordChar;
+{$ENDIF}	
+{$IFDEF VT_FMX}
+    property Password;
+{$ENDIF}
   end;
 
   TStringEditLink = class(TInterfacedObject, IVTEditLink)
@@ -3289,7 +3639,7 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     property Node  : PVirtualNode read FNode; // [IPK] Make FNode accessible
-    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible 
+    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible
 
     function BeginEdit: Boolean; virtual; stdcall;
     function CancelEdit: Boolean; virtual; stdcall;
@@ -3297,7 +3647,9 @@ type
     function EndEdit: Boolean; virtual; stdcall;
     function GetBounds: TRect; virtual; stdcall;
     function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual; stdcall;
+{$IFDEF VT_VCL}
     procedure ProcessMessage(var Message: TMessage); virtual; stdcall;
+{$ENDIF}
     procedure SetBounds(R: TRect); virtual; stdcall;
   end;
 
@@ -3327,10 +3679,10 @@ type
   TVSTNewTextEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     NewText: string) of object;
   TVSTShortenStringEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
-    Column: TColumnIndex; const S: string; TextSpace: Integer; var Result: string;
+    Column: TColumnIndex; const S: string; TextSpace: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; var Result: string;
     var Done: Boolean) of object;
   TVTMeasureTextEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
-    Column: TColumnIndex; const Text: string; var Extent: Integer) of object;
+    Column: TColumnIndex; const Text: string; var Extent: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
   TVTDrawTextEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean) of object;
 
@@ -3374,7 +3726,9 @@ type
     procedure SetDefaultText(const Value: string);
     procedure SetOptions(const Value: TCustomStringTreeOptions);
     procedure SetText(Node: PVirtualNode; Column: TColumnIndex; const Value: string);
+{$IFDEF VT_VCL}
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
+{$ENDIF}
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean = True);
   protected
     FPreviouslySelected: TStringList;
@@ -3383,23 +3737,23 @@ type
     procedure PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer; const Text: string); virtual; // [IPK] - private to protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
-    function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer; virtual;
-    function CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer; virtual;
+    function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; override;
     procedure DefineProperties(Filer: TFiler); override;
     function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; override;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
-    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
-    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
+    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; override;
+    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; override;
     procedure DoGetText(var pEventArgs: TVSTGetCellTextEventArgs); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: string): Integer; override;
     procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex;
       TextType: TVSTTextType); virtual;
-    function DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const S: string; Width: Integer;
-      EllipsisWidth: Integer = 0): string; virtual;
+    function DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const S: string; Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+      EllipsisWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0): string; virtual;
     procedure DoTextDrawing(var PaintInfo: TVTPaintInfo; const Text: string; CellRect: TRect; DrawFormat: Cardinal); virtual;
     function DoTextMeasuring(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): TSize; virtual;
     function GetOptionsClass: TTreeOptionsClass; override;
@@ -3410,7 +3764,9 @@ type
     function ReadChunk(Stream: TStream; Version: Integer; Node: PVirtualNode; ChunkType,
       ChunkSize: Integer): Boolean; override;
     procedure ReadOldStringOptions(Reader: TReader);
+{$IFDEF VT_VCL}
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; override;
+{$ENDIF}
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); override;
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); override;
 
@@ -3431,7 +3787,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
     function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; override;
-    function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: string = ''): Integer; virtual;
+    function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: string = ''): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
     procedure ContentToCustom(Source: TVSTTextSourceType);
     function ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): String;
@@ -3465,10 +3821,14 @@ type
 
     property Canvas;
     property RangeX;
+{$IFDEF VT_VCL}
     property LastDragEffect;
+{$ENDIF}
     property CheckImageKind; // should no more be published to make #622 fix working
   published
+{$IFDEF VT_VCL}
     property AccessibleName;
+{$ENDIF}
     property Action;
     property Align;
     property Alignment;
@@ -3494,17 +3854,25 @@ type
     property BorderWidth;
     property ChangeDelay;
     property ClipboardFormats;
+{$IFDEF VT_VCL}
     property Color;
+{$ENDIF}
     property Colors;
+{$IFDEF VT_VCL}
     property Constraints;
     property Ctl3D;
+{$ENDIF}
     property CustomCheckImages;
     property DefaultNodeHeight;
     property DefaultPasteMode;
     property DefaultText;
+{$IFDEF VT_VCL}
     property DragCursor;
+{$ENDIF}
     property DragHeight;
+{$IFDEF VT_VCL}
     property DragKind;
+{$ENDIF}
     property DragImageKind;
     property DragMode;
     property DragOperations;
@@ -3530,10 +3898,12 @@ type
     property NodeAlignment;
     property NodeDataSize;
     property OperationCanceled;
+{$IFDEF VT_VCL}
     property ParentBiDiMode;
     property ParentColor default False;
     property ParentCtl3D;
     property ParentFont;
+{$ENDIF}
     property ParentShowHint;
     property PopupMenu;
     property RootNodeCount;
@@ -3542,7 +3912,9 @@ type
     property SelectionCurveRadius;
     property ShowHint;
     property StateImages;
+{$IFDEF VT_VCL}
     property StyleElements;
+{$ENDIF}
     property TabOrder;
     property TabStop default True;
     property TextMargin;
@@ -3596,9 +3968,13 @@ type
     property OnColumnWidthDblClickResize;
     property OnColumnWidthTracking;
     property OnCompareNodes;
+{$IFDEF VT_VCL}
     property OnContextPopup;
+{$ENDIF}
     property OnCreateDataObject;
+{$IFDEF VT_VCL}
     property OnCreateDragManager;
+{$ENDIF}
     property OnCreateEditor;
     property OnDblClick;
     property OnDragAllowed;
@@ -3609,8 +3985,10 @@ type
     property OnEditCancelled;
     property OnEdited;
     property OnEditing;
+{$IFDEF VT_VCL}
     property OnEndDock;
     property OnEndDrag;
+{$ENDIF}
     property OnEndOperation;
     property OnEnter;
     property OnExit;
@@ -3635,7 +4013,9 @@ type
     property OnGetLineStyle;
     property OnGetNodeDataSize;
     property OnGetPopupMenu;
-    property OnGetUserClipboardFormats;
+{$IFDEF VT_VCL}
+    property OnGetUserClipboardFormats;    
+{$ENDIF}
     property OnHeaderAddPopupItem;
     property OnHeaderClick;
     property OnHeaderDblClick;
@@ -3655,7 +4035,9 @@ type
     property OnInitNode;
     property OnKeyAction;
     property OnKeyDown;
+{$IFDEF VT_VCL}
     property OnKeyPress;
+{$ENDIF}
     property OnKeyUp;
     property OnLoadNode;
     property OnLoadTree;
@@ -3681,7 +4063,9 @@ type
     property OnPaintBackground;
     property OnPrepareButtonBitmaps;
     property OnRemoveFromSelection;
+{$IFDEF VT_VCL}
     property OnRenderOLEData;
+{$ENDIF}
     property OnResetNode;
     property OnResize;
     property OnSaveNode;
@@ -3690,13 +4074,17 @@ type
     property OnShortenString;
     property OnShowScrollBar;
     property OnBeforeGetCheckState;
+{$IFDEF VT_VCL}
     property OnStartDock;
     property OnStartDrag;
+{$ENDIF}
     property OnStartOperation;
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
+{$IFDEF VT_VCL}
     property OnCanResize;
+{$ENDIF}
     property OnGesture;
     property Touch;
   end;
@@ -3705,7 +4093,7 @@ type
   TVTGetCellContentMarginEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; CellContentMarginType: TVTCellContentMarginType; var CellContentMargin: TPoint) of object;
   TVTGetNodeWidthEvent = procedure(Sender: TBaseVirtualTree; HintCanvas: TCanvas; Node: PVirtualNode;
-    Column: TColumnIndex; var NodeWidth: Integer) of object;
+    Column: TColumnIndex; var NodeWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
 
   // Tree descendant to let an application draw its stuff itself.
   TCustomVirtualDrawTree = class(TBaseVirtualTree)
@@ -3716,7 +4104,7 @@ type
   protected
     function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
       CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; override;
-    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
+    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; override;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     function GetDefaultHintKind: TVTHintKind; override;
 
@@ -3734,7 +4122,9 @@ type
     function GetOptionsClass: TTreeOptionsClass; override;
   public
     property Canvas;
+{$IFDEF VT_VCL}
     property LastDragEffect;
+{$ENDIF}
     property CheckImageKind; // should no more be published to make #622 fix working
   published
     property Action;
@@ -3761,16 +4151,24 @@ type
     property BorderWidth;
     property ChangeDelay;
     property ClipboardFormats;
+{$IFDEF VT_VCL}
     property Color;
+{$ENDIF}
     property Colors;
+{$IFDEF VT_VCL}
     property Constraints;
     property Ctl3D;
+{$ENDIF}
     property CustomCheckImages;
     property DefaultNodeHeight;
     property DefaultPasteMode;
+{$IFDEF VT_VCL}
     property DragCursor;
+{$ENDIF}
     property DragHeight;
+{$IFDEF VT_VCL}
     property DragKind;
+{$ENDIF}
     property DragImageKind;
     property DragMode;
     property DragOperations;
@@ -3795,10 +4193,12 @@ type
     property NodeAlignment;
     property NodeDataSize;
     property OperationCanceled;
+{$IFDEF VT_VCL}
     property ParentBiDiMode;
     property ParentColor default False;
     property ParentCtl3D;
     property ParentFont;
+{$ENDIF}
     property ParentShowHint;
     property PopupMenu;
     property RootNodeCount;
@@ -3860,9 +4260,13 @@ type
     property OnColumnWidthDblClickResize;
     property OnColumnWidthTracking;
     property OnCompareNodes;
+{$IFDEF VT_VCL}
     property OnContextPopup;
+{$ENDIF}	
     property OnCreateDataObject;
+{$IFDEF VT_VCL}
     property OnCreateDragManager;
+{$ENDIF}
     property OnCreateEditor;
     property OnDblClick;
     property OnDragAllowed;
@@ -3872,8 +4276,10 @@ type
     property OnDrawNode;
     property OnEdited;
     property OnEditing;
+{$IFDEF VT_VCL}
     property OnEndDock;
     property OnEndDrag;
+{$ENDIF}
     property OnEndOperation;
     property OnEnter;
     property OnExit;
@@ -3894,7 +4300,9 @@ type
     property OnGetNodeDataSize;
     property OnGetNodeWidth;
     property OnGetPopupMenu;
+{$IFDEF VT_VCL}
     property OnGetUserClipboardFormats;
+{$ENDIF}
     property OnHeaderAddPopupItem;
     property OnHeaderClick;
     property OnHeaderDblClick;
@@ -3914,7 +4322,9 @@ type
     property OnInitNode;
     property OnKeyAction;
     property OnKeyDown;
+{$IFDEF VT_VCL}
     property OnKeyPress;
+{$ENDIF}
     property OnKeyUp;
     property OnLoadNode;
     property OnLoadTree;
@@ -3935,23 +4345,31 @@ type
     property OnPaintBackground;
     property OnPrepareButtonBitmaps;
     property OnRemoveFromSelection;
+{$IFDEF VT_VCL}
     property OnRenderOLEData;
+{$ENDIF}
     property OnResetNode;
     property OnResize;
     property OnSaveNode;
     property OnSaveTree;
     property OnScroll;
     property OnShowScrollBar;
+{$IFDEF VT_VCL}
     property OnStartDock;
     property OnStartDrag;
+{$ENDIF}
     property OnStartOperation;
     property OnStateChange;
     property OnStructureChange;
     property OnUpdating;
+{$IFDEF VT_VCL}
     property OnCanResize;
+{$ENDIF}
     property OnGesture;
     property Touch;
+{$IFDEF VT_VCL}
     property StyleElements;
+{$ENDIF}
   end;
 
 
@@ -3969,24 +4387,40 @@ implementation
 {$R VirtualTrees.res}
 
 uses
+{$IFDEF VT_VCL}
   Vcl.Consts,
+{$ENDIF}
   System.Math,
+{$IFDEF VT_VCL}
   Vcl.AxCtrls,                 // TOLEStream
   Winapi.MMSystem,             // for animation timer (does not include further resources)
+{$ENDIF}
   System.TypInfo,              // for migration stuff
   System.SyncObjs,
+{$IFDEF VT_VCL}
   Vcl.ActnList,
   Vcl.StdActns,                // for standard action support
+{$ENDIF}
   System.StrUtils,
+{$IFDEF VT_VCL}
   Vcl.GraphUtil,               // accessibility helper class
-  VirtualTrees.AccessibilityFactory,
+{$ENDIF} 
+  //VirtualTrees.AccessibilityFactory,
+{$IFDEF VT_VCL}
   VirtualTrees.StyleHooks,
+{$ENDIF}  
   VirtualTrees.Classes,
+{$IFDEF VT_VCL} 
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
+{$ENDIF}    
   VirtualTrees.Utils, 
   VirtualTrees.Export,
-  VirtualTrees.HeaderPopup;
+  VirtualTrees.HeaderPopup
+{$IFDEF VT_FMX} 
+  ,FMX.TextLayout
+{$ENDIF}   
+;
 
 resourcestring
   // Localizable strings.
@@ -4009,7 +4443,7 @@ const
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
   Copyright: string = 'Virtual Treeview © 1999, 2010, 2016 Mike Lischke, Joachim Marder';
-
+{$IFDEF VT_VCL}
 var
   StandardOLEFormat: TFormatEtc = (
     // Format must later be set.
@@ -4023,12 +4457,146 @@ var
     // Acceptable storage formats are IStream and global memory. The first is preferred.
     tymed: TYMED_ISTREAM or TYMED_HGLOBAL;
   );
+{$ENDIF}
+{$IFDEF VT_FMX}
+procedure GetTextMetrics(ACanvas: TCanvas; var TM: TTextMetric);
+Var P: TPathData;
+  tx: TTextLayout;
+  R: TRectF;
+begin
+{
+    tmHeight: Single;  //The height (ascent + descent) of characters.
+    tmAscent: Single;  //The ascent (units above the base line) of characters.
+    tmDescent: Single; //The descent (units below the base line) of characters.
+    tmInternalLeading: Single; //The amount of leading (space) inside the bounds set by the tmHeight member. Accent marks and other diacritical characters may occur in this area. The designer may set this member to zero
+    tmExternalLeading: Single; //The amount of extra leading (space) that the application adds between rows. Since this area is outside the font, it contains no marks and is not altered by text output calls in either OPAQUE or TRANSPARENT mode. The designer may set this member to zero.
+    tmAveCharWidth: Single; //The average width of characters in the font (generally defined as the width of the letter x ). This value does not include the overhang required for bold or italic characters.
+    tmMaxCharWidth: Single; //The width of the widest character in the font.
+    tmWeight: Single; //The weight of the font.
+    tmOverhang: Single;
+    tmDigitizedAspectX: Single; //The horizontal aspect of the device for which the font was designed.
+    tmDigitizedAspectY: Single; //The vertical aspect of the device for which the font was designed. The ratio of the tmDigitizedAspectX and tmDigitizedAspectY members is the aspect ratio of the device for which the font was designed.
+    tmFirstChar: WideChar; //The value of the first character defined in the font.
+    tmLastChar: WideChar;  //The value of the last character defined in the font.
+    tmDefaultChar: WideChar; //The value of the character to be substituted for characters not in the font.
+    tmBreakChar: WideChar; //The value of the character that will be used to define word breaks for text justification.
+    tmItalic: Byte; //Specifies an italic font if it is nonzero.
+    tmUnderlined: Byte; //Specifies an underlined font if it is nonzero.
+    tmStruckOut: Byte; //A strikeout font if it is nonzero.
+    tmPitchAndFamily: Byte; //Specifies information about the pitch, the technology, and the family of a physical font.  TMPF_FIXED_PITCH, TMPF_VECTOR, TMPF_TRUETYPE, TMPF_DEVICE
+    tmCharSet: Byte; //The character set of the font. The character set can be one of the following values. ANSI_CHARSET, GREEK_CHARSET....
+}
+  TM.tmExternalLeading:= 0;
+  TM.tmWeight:= 0; //boldness???
+  TM.tmOverhang:= 0;
+  TM.tmDigitizedAspectX:= 0;
+  TM.tmDigitizedAspectY:= 0;
+  TM.tmFirstChar:= 'a'; //???
+  TM.tmLastChar:= 'z'; //???
+  TM.tmDefaultChar:= ' ';
+  TM.tmBreakChar:= ' ';
+  TM.tmItalic:= 0;
+  TM.tmUnderlined:= 0;
+  TM.tmStruckOut:= 0;
+  TM.tmPitchAndFamily:= 0;
+  TM.tmCharSet:= 0;
+
+  tx:= TTextLayoutManager.DefaultTextLayout.Create(ACanvas);
+  P:= TPathData.Create;
+  try
+    tx.Text:= 'W';
+    tx.ConvertToPath(p);
+    R:= P.GetBounds();
+
+    TM.tmHeight:= R.Height;
+    TM.tmMaxCharWidth:= R.Width;
+
+    //------------------------------------
+    tx.Text:= 'Ó';
+    p.Clear;
+    tx.ConvertToPath(p);
+    R:= P.GetBounds();
+    TM.tmInternalLeading:= R.Height - TM.tmHeight;
+
+    //------------------------------------
+    tx.Text:= 'x';
+    p.Clear;
+    tx.ConvertToPath(p);
+    R:= P.GetBounds();
+    TM.tmAscent:= R.Height - TM.tmHeight;
+    TM.tmAveCharWidth:= R.Width;
+
+    //------------------------------------
+    tx.Text:= 'y';
+    p.Clear;
+    tx.ConvertToPath(p);
+    TM.tmDescent:= P.GetBounds().Height - R.Height;
+    TM.tmHeight:= TM.tmHeight + TM.tmDescent;
+  finally
+    FreeAndNil(P);
+    FreeAndNil(tx);
+  end;
+end;
+
+function Rect(ALeft, ATop, ARight, ABottom: Single): TRect;
+begin
+  Result:= RectF(ALeft, ATop, ARight, ABottom);
+end;
+
+function Rect(const ATopLeft, ABottomRight: TPoint): TRect;
+begin
+  Result:= RectF(ATopLeft.X, ATopLeft.Y, ABottomRight.X, ABottomRight.Y);
+end;
+
+function Point(AX, AY: Single): TPoint;
+begin
+  Result.X:= AX;
+  Result.Y:= AY;
+end;
+
+procedure Inc(Var V: Single; OIle: Single=1.0);
+begin
+  V:= V + OIle;
+end;
+
+procedure Dec(Var V: Single; OIle: Single=1.0);
+begin
+  V:= V - OIle;
+end;
+
+function MulDiv(const A, B, C: Single): Single;
+begin
+  Result:= (A * B) / C;
+end;
+
+procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
+begin
+  FillChar(Destination^, Length, Fill);
+end;
+
+procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
+begin
+  FillChar(Destination^, Length, 0);
+end;
+
+procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
+begin
+  Move(Source^, Destination^, Length);
+end;
+
+procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
+begin
+  Move(Source^, Destination^, Length);
+end;
+
+{$ENDIF}
+
 
 type
   // protection against TRect record method that cause problems with with-statements
   TWithSafeRect = record
     case Integer of
-      0: (Left, Top, Right, Bottom: Integer);
+      0: (Left, Top, Right, Bottom: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
       1: (TopLeft, BottomRight: TPoint);
   end;
 
@@ -4042,8 +4610,8 @@ type // streaming support
 
   // base information about a node
   TBaseChunkBody = packed record
-    ChildCount,
-    NodeHeight: Cardinal;
+    ChildCount: Cardinal;
+    NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
     States: TVirtualNodeStates;
     Align: Byte;
     CheckState: TCheckState;
@@ -4065,9 +4633,13 @@ type // streaming support
 
   // Internally used data for animations.
   TToggleAnimationData = record
+{$IFDEF VT_FMX}
+    Canvas: TCanvas; 
+{$ELSE}
     Window: HWND;                 // copy of the tree's window handle
     DC: HDC;                      // the DC of the window to erase uncovered parts
-    Brush: HBRUSH;                // the brush to be used to erase uncovered parts
+{$ENDIF}
+    Brush: {$IFDEF VT_FMX}TBrush{$ELSE}HBRUSH{$ENDIF};                // the brush to be used to erase uncovered parts
     R1,
     R2: TRect;                    // animation rectangles
     Mode1,
@@ -4087,8 +4659,9 @@ const
                         // this chunk is immediately followed by all child nodes
   CaptionChunk = 3;     // used by the string tree to store a node's caption
   UserChunk = 4;        // used for data supplied by the application
-
+{$IFDEF VT_VCL}
   RTLFlag: array[Boolean] of Integer = (0, ETO_RTLREADING);
+{$ENDIF}
   AlignmentToDrawFlag: array[TAlignment] of Cardinal = (DT_LEFT, DT_RIGHT, DT_CENTER);
 
   WideCR = Char(#13);
@@ -4111,7 +4684,7 @@ var
 function GetUtilityImages: TCustomImageList; // [IPK]
 
 begin
-  Result := UtilityImages; 
+  Result := UtilityImages;
 end; 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4156,16 +4729,16 @@ begin
     P := TheArray[(L + R) shr 1];
     repeat
       while PAnsiChar(TheArray[I]) < PAnsiChar(P) do
-        Inc(I);
+        System.Inc(I);
       while PAnsiChar(TheArray[J]) > PAnsiChar(P) do
-        Dec(J);
+        System.Dec(J);
       if I <= J then
       begin
         T := TheArray[I];
         TheArray[I] := TheArray[J];
         TheArray[J] := T;
-        Inc(I);
-        Dec(J);
+        System.Inc(I);
+        System.Dec(J);
       end;
     until I > J;
     if L < J then
@@ -4184,6 +4757,7 @@ const
   Grays: array[0..3] of TColor = (clWhite, clSilver, clGray, clBlack);
   SysGrays: array[0..3] of TColor = (clWindow, clBtnFace, clBtnShadow, clBtnText);
 
+{$IFDEF VT_VCL}
 procedure ConvertImageList(IL: TImageList; const ImageName: string; ColorRemapping: Boolean = True);
 
 // Loads a bunch of images given by ImageName into IL. If ColorRemapping = True then a mapping of gray values to
@@ -4234,9 +4808,10 @@ begin
     gWatcher.Leave();
   end;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure CreateSystemImageSet(Handle: HWND; var IL: TImageList; Flags: Cardinal; Flat: Boolean);
 
 // Creates a system check image set.
@@ -4357,6 +4932,7 @@ begin
     BM.Free;
   end;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4372,7 +4948,7 @@ var
   Flags: Cardinal;
 
 begin
-  if (gInitialized > 0) or (InterlockedIncrement(gInitialized) <> 1) then // Ensure threadsafe that this code is executed only once
+  if (gInitialized > 0) or ({$IFDEF VT_FMX}AtomicIncrement{$ELSE}InterlockedIncrement{$ENDIF}(gInitialized) <> 1) then // Ensure threadsafe that this code is executed only once
     exit;
 
   // This watcher is used whenever a global structure could be modified by more than one thread.
@@ -4381,15 +4957,16 @@ begin
   IsWinVistaOrAbove := (Win32MajorVersion >= 6);
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
-  NeedToUnitialize := not IsLibrary and Succeeded(OleInitialize(nil));
+  NeedToUnitialize := {$IFDEF VT_FMX}false{$ELSE}not IsLibrary and Succeeded(OleInitialize(nil)){$ENDIF};
 
   // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
-  CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
+  CF_VTREFERENCE := {$IFDEF VT_FMX}0{$ELSE}RegisterClipboardFormat(CFSTR_VTREFERENCE){$ENDIF};
 
   // Load all internal image lists and convert their colors to current desktop color scheme.
   // In order to use high color images we have to create the image list handle ourselves.
-  Flags := ILC_COLOR32 or ILC_MASK;
+  Flags := {$IFDEF VT_FMX}0{$ELSE}ILC_COLOR32 or ILC_MASK{$ENDIF};
 
+{$IFDEF VT_VCL}
   NodeImages := TImageList.CreateSize(16, 16);
   with NodeImages do
     Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
@@ -4401,25 +4978,29 @@ begin
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
 
   CreateSystemImageSet(0, SystemCheckImages, Flags, False);
+{$ENDIF}
 
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
+{$IFDEF VT_VCL}
   Screen.Cursors[crHeaderSplit] := LoadCursor(HInstance, 'VT_HEADERSPLIT');
   Screen.Cursors[crVertSplit] := LoadCursor(HInstance, 'VT_VERTSPLIT');
-
+{$ENDIF}
   // Clipboard format registration.
   // Native clipboard format. Needs a new identifier and has an average priority to allow other formats to take over.
   // This format is supposed to use the IStream storage format but unfortunately this does not work when
   // OLEFlushClipboard is used. Hence it is disabled until somebody finds a solution.
-  CF_VIRTUALTREE := RegisterVTClipboardFormat(CFSTR_VIRTUALTREE, TBaseVirtualTree, 50, TYMED_HGLOBAL {or TYMED_ISTREAM});
+  CF_VIRTUALTREE := {$IFDEF VT_FMX}0{$ELSE}RegisterVTClipboardFormat(CFSTR_VIRTUALTREE, TBaseVirtualTree, 50, TYMED_HGLOBAL {or TYMED_ISTREAM}){$ENDIF};
   // Specialized string tree formats.
-  CF_HTML := RegisterVTClipboardFormat(CFSTR_HTML, TCustomVirtualStringTree, 80);
-  CF_VRTFNOOBJS := RegisterVTClipboardFormat(CFSTR_RTFNOOBJS, TCustomVirtualStringTree, 84);
-  CF_VRTF := RegisterVTClipboardFormat(CFSTR_RTF, TCustomVirtualStringTree, 85);
-  CF_CSV := RegisterVTClipboardFormat(CFSTR_CSV, TCustomVirtualStringTree, 90);
+  CF_HTML := {$IFDEF VT_FMX}0{$ELSE}RegisterVTClipboardFormat(CFSTR_HTML, TCustomVirtualStringTree, 80){$ENDIF};
+  CF_VRTFNOOBJS := {$IFDEF VT_FMX}0{$ELSE}RegisterVTClipboardFormat(CFSTR_RTFNOOBJS, TCustomVirtualStringTree, 84){$ENDIF};
+  CF_VRTF := {$IFDEF VT_FMX}0{$ELSE}RegisterVTClipboardFormat(CFSTR_RTF, TCustomVirtualStringTree, 85){$ENDIF};
+  CF_CSV := {$IFDEF VT_FMX}0{$ELSE}RegisterVTClipboardFormat(CFSTR_CSV, TCustomVirtualStringTree, 90){$ENDIF};
   // Predefined clipboard formats. Just add them to the internal list.
+{$IFDEF VT_VCL}
   RegisterVTClipboardFormat(CF_TEXT, TCustomVirtualStringTree, 100);
   RegisterVTClipboardFormat(CF_UNICODETEXT, TCustomVirtualStringTree, 95);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -4437,8 +5018,10 @@ begin
   FreeAndNil(UtilityImages);
   FreeAndNil(SystemCheckImages);
 
+{$IFDEF VT_VCL}
   if NeedToUnitialize then
     OleUninitialize;
+{$ENDIF}
 
   // If VT is used in a package and its special hint window was used then the last instance of this
   // window is not freed correctly (bug in the VCL). We explicitely tell the application to free it
@@ -4523,12 +5106,14 @@ begin
 
         if not (csDesigning in ComponentState) then
         begin
+{$IFDEF VT_VCL}
           if toAcceptOLEDrop in ToBeCleared then
             RevokeDragDrop(Handle);
           if toFullRepaintOnResize in ToBeSet + ToBeCleared then
             RecreateWnd;
           if toAcceptOLEDrop in ToBeSet then
             RegisterDragDrop(Handle, DragManager as IDropTarget);
+{$ENDIF}
           if toVariableNodeHeight in ToBeSet then begin
             BeginUpdate();
             try
@@ -4581,9 +5166,9 @@ begin
             if FullyVisible[Run] then
             begin
               if toShowFilteredNodes in ToBeSet then
-                Inc(FVisibleCount)
+                System.Inc(FVisibleCount)
               else
-                Dec(FVisibleCount);
+                System.Dec(FVisibleCount);
             end;
             if toShowFilteredNodes in ToBeSet then
               AdjustTotalHeight(Run, Run.NodeHeight, True)
@@ -4599,9 +5184,10 @@ begin
       if HandleAllocated then
       begin
         if IsWinVistaOrAbove and ((tsUseThemes in FStates) or
-           ((toThemeAware in ToBeSet) and StyleServices.Enabled)) and
+           ((toThemeAware in ToBeSet) {$IFDEF VT_VCL}and StyleServices.Enabled{$ENDIF})) and
            (toUseExplorerTheme in (ToBeSet + ToBeCleared)) and not VclStyleEnabled then
         begin
+{$IFDEF VT_VCL}
           if (toUseExplorerTheme in ToBeSet) then
           begin
             SetWindowTheme('explorer');
@@ -4613,20 +5199,21 @@ begin
               SetWindowTheme('');
               DoStateChange([], [tsUseExplorerTheme]);
             end;
+{$ENDIF}
         end;
 
         if not (csLoading in ComponentState) then
         begin
           if ((toThemeAware in ToBeSet + ToBeCleared) or (toUseExplorerTheme in ToBeSet + ToBeCleared) or VclStyleEnabled) then
           begin
-            if ((toThemeAware in ToBeSet) and StyleServices.Enabled) then
+            if ((toThemeAware in ToBeSet) {$IFDEF VT_VCL}and StyleServices.Enabled{$ENDIF}) then
               DoStateChange([tsUseThemes])
             else
               if (toThemeAware in ToBeCleared) then
               DoStateChange([], [tsUseThemes]);
 
             PrepareBitmaps(True, False);
-            RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME);
+            {$IFDEF VT_FMX}Repaint{$ELSE}RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME){$ENDIF};
           end;
 
           if toChildrenAbove in ToBeSet + ToBeCleared then
@@ -4706,7 +5293,7 @@ end;
 // of DD'ing various kinds of virtual data and works also between applications.
 
 //----------------- TEnumFormatEtc -------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 constructor TEnumFormatEtc.Create(Tree: TBaseVirtualTree; const AFormatEtcArray: TFormatEtcArray);
 
 var
@@ -6272,6 +6859,7 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 
 //----------------- TVTVirtualNodeEnumerator ---------------------------------------------------------------------------
 
@@ -6411,6 +6999,7 @@ end;
 constructor TVirtualTreeColumn.Create(Collection: TCollection);
 
 begin
+  FWidth:= 50;
   FMinWidth := 10;
   FMaxWidth := 10000;
   FImageIndex := -1;
@@ -6457,7 +7046,7 @@ var
       ColumnIndex := NoColumn
     else
       if Index < ColumnIndex then
-        Dec(ColumnIndex);
+        System.Dec(ColumnIndex);
   end;
 
   //--------------- end local function -----------------------------------------
@@ -6513,7 +7102,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumn.GetLeft: Integer;
+function TVirtualTreeColumn.GetLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   Result := FLeft;
@@ -6676,7 +7265,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMargin(Value: Integer);
+procedure TVirtualTreeColumn.SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   // Compatibility setting for -1.
@@ -6691,7 +7280,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMaxWidth(Value: Integer);
+procedure TVirtualTreeColumn.SetMaxWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Value < FMinWidth then
@@ -6702,7 +7291,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMinWidth(Value: Integer);
+procedure TVirtualTreeColumn.SetMinWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Value < 0 then
@@ -6748,11 +7337,11 @@ begin
     Changed(False);
     // Need to repaint and adjust the owner tree too.
     lTreeView := Owner.Header.Treeview;
-    if not (csLoading in lTreeview.ComponentState) and (VisibleChanged or ColorChanged) and (Owner.UpdateCount = 0) and
-      lTreeView.HandleAllocated then
+    if not (csLoading in lTreeview.ComponentState) and ({$IFDEF VT_VCL}VisibleChanged or{$ENDIF} ColorChanged) and (Owner.UpdateCount = 0) 
+	  and lTreeView.HandleAllocated then
     begin
       lTreeview.Invalidate();
-      if VisibleChanged then begin
+      if {$IFDEF VT_FMX}true{$ELSE}VisibleChanged {$ENDIF}then begin
         lTreeview.DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
         lTreeview.UpdateHorizontalScrollBar(False);
       end;
@@ -6815,7 +7404,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetSpacing(Value: Integer);
+procedure TVirtualTreeColumn.SetSpacing(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if FSpacing <> Value then
@@ -6852,13 +7441,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetWidth(Value: Integer);
+procedure TVirtualTreeColumn.SetWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 var
   EffectiveMaxWidth,
   EffectiveMinWidth,
   TotalFixedMaxWidth,
-  TotalFixedMinWidth: Integer;
+  TotalFixedMinWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   I: TColumnIndex;
 
 begin
@@ -6878,18 +7467,18 @@ begin
 
         // The percentage values have precedence over the pixel values.
         If FMaxWidthPercent > 0 then
-          TotalFixedMinWidth:= Min((ClientWidth * FMaxWidthPercent) div 100, TotalFixedMinWidth);
+          TotalFixedMinWidth:= Min((ClientWidth * FMaxWidthPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100, TotalFixedMinWidth);
         If FMinWidthPercent > 0 then
-          TotalFixedMaxWidth := Max((ClientWidth * FMinWidthPercent) div 100, TotalFixedMaxWidth);
+          TotalFixedMaxWidth := Max((ClientWidth * FMinWidthPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100, TotalFixedMaxWidth);
 
         EffectiveMaxWidth := Min(TotalFixedMaxWidth - (GetVisibleFixedWidth - Self.FWidth), FMaxWidth);
         EffectiveMinWidth := Max(TotalFixedMinWidth - (GetVisibleFixedWidth - Self.FWidth), FMinWidth);
         Value := Min(Max(Value, EffectiveMinWidth), EffectiveMaxWidth);
 
         if FMinWidthPercent > 0 then
-          Value := Max((ClientWidth * FMinWidthPercent) div 100 - GetVisibleFixedWidth + Self.FWidth, Value);
+          Value := Max((ClientWidth * FMinWidthPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100 - GetVisibleFixedWidth + Self.FWidth, Value);
         if FMaxWidthPercent > 0 then
-          Value := Min((ClientWidth * FMaxWidthPercent) div 100 - GetVisibleFixedWidth + Self.FWidth, Value);
+          Value := Min((ClientWidth * FMaxWidthPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100 - GetVisibleFixedWidth + Self.FWidth, Value);
       end;
     end
     else
@@ -6916,8 +7505,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.ComputeHeaderLayout(DC: HDC; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
-  var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
+procedure TVirtualTreeColumn.ComputeHeaderLayout({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
+  var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSizeF; var TextBounds: TRect; DrawFormat: Cardinal;
   CalculateTextRect: Boolean = False);
 
 // The layout of a column header is determined by a lot of factors. This method takes them all into account and
@@ -6934,11 +7523,12 @@ var
   CurrentAlignment: TAlignment;
   MinLeft,
   MaxRight,
-  TextSpacing: Integer;
+  TextSpacing: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   UseText: Boolean;
   R: TRect;
+{$IFDEF VT_VCL}
   Theme: HTHEME;
-
+{$ENDIF}
 begin
   UseText := Length(FText) > 0;
   // If nothing is to show then don't waste time with useless preparation.
@@ -6946,8 +7536,10 @@ begin
     Exit;
 
   CurrentAlignment := CaptionAlignment;
+{$IFDEF VT_VCL}
   if FBiDiMode <> bdLeftToRight then
     ChangeBiDiModeAlignment(CurrentAlignment);
+{$ENDIF}
 
   // Calculate sizes of the involved items.
   ClientSize := Point(Client.Right - Client.Left, Client.Bottom - Client.Top);
@@ -6955,17 +7547,18 @@ begin
   begin
     if UseHeaderGlyph then
       if not FCheckBox then
-        HeaderGlyphSize := Point(FImages.Width, FImages.Height)
+        HeaderGlyphSize := {$IFDEF VT_FMX}PointF(16, 16){$ELSE}Point(FImages.Width, FImages.Height){$ENDIF} //TODO: 16px Image! 
       else
         with Self.Owner.Header.Treeview do
         begin
           if Assigned(FCheckImages) then
-            HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height);
+            HeaderGlyphSize := {$IFDEF VT_FMX}PointF(16, 16){$ELSE}Point(FCheckImages.Width, FCheckImages.Height){$ENDIF}; //TODO: 16px Image! 
         end
     else
       HeaderGlyphSize := Point(0, 0);
     if UseSortGlyph then
     begin
+{$IFDEF VT_VCL}
       if tsUseExplorerTheme in FHeader.Treeview.FStates then
       begin
         R := Rect(0, 0, 100, 100);
@@ -6974,13 +7567,14 @@ begin
         CloseThemeData(Theme);
       end
       else
+{$ENDIF}
       begin
-        SortGlyphSize.cx := UtilityImages.Width;
-        SortGlyphSize.cy := UtilityImages.Height;
+        SortGlyphSize.cx := {$IFDEF VT_FMX}16{$ELSE}UtilityImages.Width{$ENDIF};//TODO: 16px Image! 
+        SortGlyphSize.cy := {$IFDEF VT_FMX}16{$ELSE}UtilityImages.Height{$ENDIF};//TODO: 16px Image! 
       end;
 
       // In any case, the sort glyph is vertically centered.
-      SortGlyphPos.Y := (ClientSize.Y - SortGlyphSize.cy) div 2;
+      SortGlyphPos.Y := (ClientSize.Y - SortGlyphSize.cy) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
     end
     else
     begin
@@ -6994,7 +7588,7 @@ begin
     if not (coWrapCaption in FOptions) then
     begin
       FCaptionText := FText;
-      GetTextExtentPoint32W(DC, PWideChar(FText), Length(FText), TextSize);
+      GetTextExtentPoint32W({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(FText), Length(FText), TextSize);
       Inc(TextSize.cx, 2);
       TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
     end
@@ -7002,9 +7596,9 @@ begin
     begin
       R := Client;
       if FCaptionText = '' then
-        FCaptionText := WrapString(DC, FText, R, DT_RTLREADING and DrawFormat <> 0, DrawFormat);
+        FCaptionText := WrapString({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FText, R, {$IFDEF VT_FMX}false{$ELSE}DT_RTLREADING and DrawFormat <> 0{$ENDIF}, DrawFormat);
 
-      GetStringDrawRect(DC, FCaptionText, R, DrawFormat);
+      GetStringDrawRect({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FCaptionText, R, DrawFormat);
       TextSize.cx := Client.Right - Client.Left;
       TextSize.cy := R.Bottom - R.Top;
       TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
@@ -7022,29 +7616,29 @@ begin
   if UseSortGlyph and not (UseText or UseHeaderGlyph) then
   begin
     // Center the sort glyph in the available area if nothing else is there.
-    SortGlyphPos := Point((ClientSize.X - SortGlyphSize.cx) div 2, (ClientSize.Y - SortGlyphSize.cy) div 2);
+    SortGlyphPos := Point((ClientSize.X - SortGlyphSize.cx) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2, (ClientSize.Y - SortGlyphSize.cy) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
   end
   else
   begin
     // Determine extents of text and glyph and calculate positions which are clear from the layout.
     if (Layout in [blGlyphLeft, blGlyphRight]) or not UseHeaderGlyph then
     begin
-      HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y) div 2;
+      HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
       // If the text is taller than the given height, perform no vertical centration as this
       // would make the text even less readable.
       //Using Max() fixes badly positioned text if Extra Large fonts have been activated in the Windows display options
-      TextPos.Y := Max(-5, (ClientSize.Y - TextSize.cy) div 2);
+      TextPos.Y := Max(-5, (ClientSize.Y - TextSize.cy) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
     end
     else
     begin
       if Layout = blGlyphTop then
       begin
-        HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
+        HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
         TextPos.Y := HeaderGlyphPos.Y + HeaderGlyphSize.Y + TextSpacing;
       end
       else
       begin
-        TextPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
+        TextPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
         HeaderGlyphPos.Y := TextPos.Y + TextSize.cy + TextSpacing;
       end;
     end;
@@ -7067,7 +7661,7 @@ begin
             TextPos.X := MinLeft;
             if UseHeaderGlyph then
             begin
-              HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+              HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
               if HeaderGlyphPos.X < MinLeft then
                 HeaderGlyphPos.X := MinLeft;
               MinLeft := Max(TextPos.X + TextSize.cx + TextSpacing, HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing);
@@ -7099,14 +7693,14 @@ begin
         begin
           if Layout in [blGlyphTop, blGlyphBottom] then
           begin
-            HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
-            TextPos.X := (ClientSize.X - TextSize.cx) div 2;
+            HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
+            TextPos.X := (ClientSize.X - TextSize.cx) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
             if UseSortGlyph then
-              Dec(TextPos.X, SortGlyphSize.cx div 2);
+              Dec(TextPos.X, SortGlyphSize.cx {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
           end
           else
           begin
-            MinLeft := (ClientSize.X - HeaderGlyphSize.X - TextSpacing - TextSize.cx) div 2;
+            MinLeft := (ClientSize.X - HeaderGlyphSize.X - TextSpacing - TextSize.cx) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
             if UseHeaderGlyph and (Layout = blGlyphLeft) then
             begin
               HeaderGlyphPos.X := MinLeft;
@@ -7155,7 +7749,7 @@ begin
         TextPos.X := MaxRight - TextSize.cx;
         if UseHeaderGlyph then
         begin
-          HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+          HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
           if HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing > MaxRight then
             HeaderGlyphPos.X := MaxRight - HeaderGlyphSize.X - FSpacing;
           MaxRight := Min(TextPos.X - TextSpacing, HeaderGlyphPos.X - FSpacing);
@@ -7246,8 +7840,8 @@ begin
     begin
       // Wrap the column caption if necessary.
       R := TextBounds;
-      FCaptionText := WrapString(DC, FText, R, DT_RTLREADING and DrawFormat <> 0, DrawFormat);
-      GetStringDrawRect(DC, FCaptionText, R, DrawFormat);
+      FCaptionText := WrapString({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FText, R, {$IFDEF VT_FMX}false{$ELSE}DT_RTLREADING and DrawFormat <> 0{$ENDIF}, DrawFormat);
+      GetStringDrawRect({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FCaptionText, R, DrawFormat);
     end;
   end;
 end;
@@ -7266,7 +7860,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.GetAbsoluteBounds(var Left, Right: Integer);
+procedure TVirtualTreeColumn.GetAbsoluteBounds(var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Returns the column's left and right bounds in header coordinates, that is, independant of the scrolling position.
 
@@ -7292,7 +7886,7 @@ begin
   begin
     if Ord(FText[I]) > 255 then
       Break;
-    Inc(I);
+    System.Inc(I);
   end;
 
   if I > Length(FText) then
@@ -7510,11 +8104,13 @@ begin
   if coParentBiDiMode in FOptions then
   begin
     Columns := GetOwner as TVirtualTreeColumns;
+{$IFDEF VT_VCL}
     if Assigned(Columns) and (FBiDiMode <> Columns.FHeader.Treeview.BiDiMode) then
     begin
       FBiDiMode := Columns.FHeader.Treeview.BiDiMode;
       Changed(False);
     end;
+{$ENDIF}
   end;
 end;
 
@@ -7529,9 +8125,9 @@ begin
   if coParentColor in FOptions then
   begin
     Columns := GetOwner as TVirtualTreeColumns;
-    if Assigned(Columns) and (FColor <> Columns.FHeader.Treeview.Color) then
+    if Assigned(Columns) and (FColor <> Columns.FHeader.Treeview.{$IFDEF VT_FMX}Fill.{$ENDIF}Color) then
     begin
-      FColor := Columns.FHeader.Treeview.Color;
+      FColor := Columns.FHeader.Treeview.{$IFDEF VT_FMX}Fill.{$ENDIF}Color;
       Changed(False);
     end;
   end;
@@ -7619,8 +8215,9 @@ begin
   inherited Create(ColumnClass);
 
   FHeaderBitmap := TBitmap.Create;
+{$IFDEF VT_VCL}
   FHeaderBitmap.PixelFormat := pf32Bit;
-
+{$ENDIF}
   FHoverIndex := NoColumn;
   FDownIndex := NoColumn;
   FClickIndex := NoColumn;
@@ -7704,10 +8301,9 @@ procedure TVirtualTreeColumns.AdjustAutoSize(CurrentIndex: TColumnIndex; Force: 
 // CurrentIndex (if not InvalidColumn) describes which column has just been resized.
 
 var
-  NewValue,
   AutoIndex,
-  Index,
-  RestWidth: Integer;
+  Index: Integer;
+  NewValue, RestWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   WasUpdating: Boolean;
 begin
   if Count > 0 then
@@ -7835,46 +8431,75 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.DrawButtonText(DC: HDC; Caption: string; Bounds: TRect; Enabled, Hot: Boolean;
+procedure TVirtualTreeColumns.DrawButtonText({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Caption: string; Bounds: TRect; Enabled, Hot: Boolean;
     DrawFormat: Cardinal; WrapCaption: Boolean);
 
 var
-  TextSpace: Integer;
+  TextSpace: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Size: TSize;
 
 begin
   if not WrapCaption then
   begin
     // Do we need to shorten the caption due to limited space?
-    GetTextExtentPoint32W(DC, PWideChar(Caption), Length(Caption), Size);
+    GetTextExtentPoint32W({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(Caption), Length(Caption), Size);
     TextSpace := Bounds.Right - Bounds.Left;
     if TextSpace < Size.cx then
-      Caption := ShortenString(DC, Caption, TextSpace);
+      Caption := ShortenString({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, Caption, TextSpace);
   end;
-
+{$IFDEF VT_VCL}
   SetBkMode(DC, TRANSPARENT);
+{$ENDIF}
   if not Enabled then
     if FHeader.Treeview.VclStyleEnabled then
     begin
+{$IFDEF VT_FMX}
+      ACanvas.Fill.Color:= FHeader.Treeview.FColors.HeaderFontColor;
+	  DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
+{$ELSE}
       SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
-      Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+	  Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+{$ENDIF}
     end
     else
   begin
     OffsetRect(Bounds, 1, 1);
+{$IFDEF VT_FMX}
+    ACanvas.Fill.Color:= clBtnHighlight;
+    DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
+{$ELSE}
     SetTextColor(DC, ColorToRGB(clBtnHighlight));
     Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+{$ENDIF}
     OffsetRect(Bounds, -1, -1);
+{$IFDEF VT_FMX}
+    ACanvas.Fill.Color:= clBtnShadow;
+    DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
+{$ELSE}
     SetTextColor(DC, ColorToRGB(clBtnShadow));
     Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+{$ENDIF}
   end
   else
   begin
     if Hot then
+{$IFDEF VT_FMX}
+      ACanvas.Fill.Color:= FHeader.Treeview.FColors.HeaderHotColor
+{$ELSE}
       SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderHotColor))
+{$ENDIF}
     else
+{$IFDEF VT_FMX}
+      ACanvas.Fill.Color:= FHeader.Treeview.FColors.HeaderFontColor;
+{$ELSE}
       SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
+{$ENDIF}
+{$IFDEF VT_FMX}
+    DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
+{$ELSE}
     Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+{$ENDIF}
+
   end;
 end;
 
@@ -7897,7 +8522,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: Integer;
+function TVirtualTreeColumns.GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Relative: Boolean = True): Integer;
 
 // Returns the column where the mouse is currently in as well as the left and right bound of
@@ -7927,7 +8552,7 @@ begin
         if (P.X < ColumnLeft) and (I = 0) then
         begin
           Result := InvalidColumn;
-          exit;
+          Exit;
         end;
         if P.X < ColumnRight then
         begin
@@ -7948,7 +8573,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.HandleClick(P: TPoint; Button: TMouseButton; Force, DblClick: Boolean): Boolean;
+function TVirtualTreeColumns.HandleClick(P: TPoint; Button: TMouseButton; {$IFDEF VT_FMX}Shift: TShiftState;{$ENDIF} Force, DblClick: Boolean): Boolean;
 
 // Generates a click event if the mouse button has been released over the same column it was pressed first.
 // Alternatively, Force might be set to True to indicate that the down index does not matter (right, middle and
@@ -7970,10 +8595,15 @@ begin
   begin
     X := P.X;
     Y := P.Y;
+{$IFDEF VT_VCL}
     Shift := FHeader.GetShiftState;
+{$ENDIF}	
     if DblClick then
       Shift := Shift + [ssDouble];
   end;
+{$IFDEF VT_FMX}
+  HitInfo.Shift:= Shift;
+{$ENDIF}
   HitInfo.Button := Button;
 
   if (NewClickIndex > NoColumn) and (coAllowClick in Items[NewClickIndex].FOptions) and
@@ -7988,7 +8618,7 @@ begin
       Include(HitInfo.HitPosition, hhiOnIcon);
       if Items[NewClickIndex].CheckBox then
       begin
-        if Button = mbLeft then
+        if Button = TMouseButton.mbLeft then
           FHeader.Treeview.UpdateColumnCheckState(Items[NewClickIndex]);
         Include(HitInfo.HitPosition, hhiOnCheckbox);
       end;
@@ -8004,7 +8634,7 @@ begin
   if DblClick then
     FHeader.Treeview.DoHeaderDblClick(HitInfo)
   else begin
-    if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
+    if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = TMouseButton.mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
     begin
       // handle automatic setting of SortColumn and toggling of the sort order
       if HitInfo.Column <> Header.SortColumn then
@@ -8023,14 +8653,14 @@ begin
       Result := True;
     end;//if
 
-    if (Button = mbRight) then
+    if (Button = TMouseButton.mbRight) then
     begin
       Dec(P.Y, FHeader.FHeight); // popup menus at actual clicked point
       FreeAndNil(fColumnPopupMenu);// Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
       Self.FDownIndex := NoColumn;
       Self.FTrackIndex := NoColumn;
       Self.FCheckBoxHit := False;
-      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + Integer(Header.Treeview.Height))), P);
+      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + {$IFDEF VT_VCL}Integer{$ENDIF}(Header.Treeview.Height))), P);
       if Assigned(Menu) then
       begin
         Header.Treeview.StopTimer(ScrollTimer);
@@ -8108,11 +8738,11 @@ begin
       begin
         // Index found. Move all higher entries one step down and remove the last entry.
         if I < Upper then
-          Move(FPositionToIndex[I + 1], FPositionToIndex[I], (Upper - I) * SizeOf(TColumnIndex));
+          System.Move(FPositionToIndex[I + 1], FPositionToIndex[I], (Upper - I) * SizeOf(TColumnIndex));
       end;
       // Decrease all indices, which are greater than the index to be deleted.
       if FPositionToIndex[I] > OldIndex then
-        Dec(FPositionToIndex[I]);
+        System.Dec(FPositionToIndex[I]);
     end;
     SetLength(FPositionToIndex, High(FPositionToIndex));
   end
@@ -8128,7 +8758,7 @@ begin
     for I := 0 to High(FPositionToIndex) do
     begin
       if (FPositionToIndex[I] >= Lower) and (FPositionToIndex[I] < Upper) then
-        Inc(FPositionToIndex[I], Increment)
+        System.Inc(FPositionToIndex[I], Increment)
       else
         if FPositionToIndex[I] = OldIndex then
           FPositionToIndex[I] := NewIndex;
@@ -8167,7 +8797,7 @@ begin
         for I := 0 to Count - 1 do
           if FPositionToIndex[I] >= Count then
           begin
-            Dec(FPositionToIndex[I]);
+            System.Dec(FPositionToIndex[I]);
             Changed := True;
           end;
       until not Changed;
@@ -8267,8 +8897,8 @@ procedure TVirtualTreeColumns.UpdatePositions(Force: Boolean = False);
 // PostionToIndex array which primarily determines where each column is placed visually.
 
 var
-  I, RunningPos: Integer;
-
+  I: Integer;
+  RunningPos: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 begin
   if not (csDestroying in FHeader.Treeview.ComponentState) and not FNeedPositionsFix and (Force or (UpdateCount = 0)) then
   begin
@@ -8290,28 +8920,30 @@ end;
 function TVirtualTreeColumns.Add: TVirtualTreeColumn;
 
 begin
+{$IFDEF VT_VCL}
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls may only be chnaged in UI thread.');
+{$ENDIF}
   Result := TVirtualTreeColumn(inherited Add);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.AnimatedResize(Column: TColumnIndex; NewWidth: Integer);
+procedure TVirtualTreeColumns.AnimatedResize(Column: TColumnIndex; NewWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Resizes the given column animated by scrolling the window DC.
 
 var
-  OldWidth: Integer;
-  DC: HDC;
-  I,
-  Steps,
-  DX: Integer;
+  OldWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  {$IFDEF VT_FMX}Canvas: TCanvas{$ELSE}DC: HDC{$ENDIF};
+  I: Integer;
+  Steps: Integer;
+  DX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   HeaderScrollRect,
   ScrollRect,
   R: TRect;
 
   NewBrush,
-  LastBrush: HBRUSH;
+  LastBrush: {$IFDEF VT_FMX}TBrush{$ELSE}HBRUSH{$ENDIF};
 
 begin
   if not IsValidColumn(Column) then
@@ -8330,11 +8962,15 @@ begin
     if not ( (hoDisableAnimatedResize in FHeader.Options) or
              (coDisableAnimatedResize in Items[Column].Options) ) then
     begin
+{$IFDEF VT_FMX}
+      Canvas:= FHeader.Treeview.Canvas;
+{$ELSE}
       DC := GetWindowDC(FHeader.Treeview.Handle);
+{$ENDIF}
       with FHeader.Treeview do
       try
         Steps := 32;
-        DX := (NewWidth - OldWidth) div Steps;
+        DX := (NewWidth - OldWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} Steps;
 
         // Determination of the scroll rectangle is a bit complicated since we neither want
         // to scroll the scrollbars nor the border of the treeview window.
@@ -8354,12 +8990,26 @@ begin
         if NewWidth > OldWidth then
         begin
           R := ScrollRect;
+{$IFDEF VT_FMX}
+          NewBrush := TBrush.Create(TBrushKind.Solid, Fill.Color);
+          LastBrush := TBrush.Create(TBrushKind.Solid, Fill.Color);
+          LastBrush.Assign(Canvas.Fill);
+{$ELSE}
           NewBrush := CreateSolidBrush(ColorToRGB(Color));
           LastBrush := SelectObject(DC, NewBrush);
+{$ENDIF}		  
+          
           R.Right := R.Left + DX;
+{$IFDEF VT_FMX}
+          Canvas.FillRect(R, 0, 0, [], 1.0, NewBrush);
+          Canvas.Fill.Assign(LastBrush);
+          FreeAndNil(NewBrush);
+          FreeAndNil(LastBrush);
+{$ELSE}
           FillRect(DC, R, NewBrush);
           SelectObject(DC, LastBrush);
           DeleteObject(NewBrush);
+{$ENDIF}
         end
         else
         begin
@@ -8367,6 +9017,7 @@ begin
           Inc(ScrollRect.Left, DX);
         end;
 
+{$IFDEF VT_VCL}
         for I := 0 to Steps - 1 do
         begin
           ScrollDC(DC, DX, 0, HeaderScrollRect, HeaderScrollRect, 0, nil);
@@ -8375,8 +9026,11 @@ begin
           Inc(ScrollRect.Left, DX);
           Sleep(1);
         end;
+{$ENDIF}
       finally
+{$IFDEF VT_VCL}
         ReleaseDC(Handle, DC);
+{$ENDIF}
       end;
     end;
     Items[Column].Width := NewWidth;
@@ -8443,8 +9097,8 @@ function TVirtualTreeColumns.ColumnFromPosition(P: TPoint; Relative: Boolean = T
 // Determines the current column based on the position passed in P.
 
 var
-  I, Sum: Integer;
-
+  I: Integer;
+  Sum: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 begin
   Result := InvalidColumn;
 
@@ -8527,7 +9181,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.GetColumnBounds(Column: TColumnIndex; var Left, Right: Integer);
+procedure TVirtualTreeColumns.GetColumnBounds(Column: TColumnIndex; var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Returns the left and right bound of the given column. If Column is NoColumn then the entire client width is returned.
 
@@ -8551,7 +9205,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetScrollWidth: Integer;
+function TVirtualTreeColumns.GetScrollWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Returns the average width of all visible, non-fixed columns. If there is no such column the indent is returned.
 
@@ -8569,14 +9223,14 @@ begin
     if ([coVisible, coFixed] * FHeader.Columns[I].Options = [coVisible]) then
     begin
       Inc(Result, FHeader.Columns[I].Width);
-      Inc(ScrollColumnCount);
+      System.Inc(ScrollColumnCount);
     end;
   end;
 
   if ScrollColumnCount > 0 then // use average width
     Result := Round(Result / ScrollColumnCount)
   else // use indent
-    Result := Integer(FHeader.Treeview.FIndent);
+    Result := {$IFDEF VT_VCL}Integer{$ENDIF}(FHeader.Treeview.FIndent);
 
 end;
 
@@ -8744,7 +9398,7 @@ begin
     if coVisible in Items[FPositionToIndex[I]].FOptions then
     begin
       Result[Counter] := Items[FPositionToIndex[I]];
-      Inc(Counter);
+      System.Inc(Counter);
     end;
   // Set result length to actual visible count.
   SetLength(Result, Counter);
@@ -8752,7 +9406,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetVisibleFixedWidth: Integer;
+function TVirtualTreeColumns.GetVisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Determines the horizontal space all visible and fixed columns occupy.
 
@@ -8811,16 +9465,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.PaintHeader(DC: HDC; R: TRect; HOffset: Integer);
+procedure TVirtualTreeColumns.PaintHeader({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; R: TRect; HOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Backward compatible header paint method. This method takes care of visually moving floating columns
 
 var
-  VisibleFixedWidth: Integer;
-  RTLOffset: Integer;
+  VisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   procedure PaintFixedArea;
-  
   begin
     if VisibleFixedWidth > 0 then
       PaintHeader(FHeaderBitmap.Canvas,
@@ -8832,7 +9485,7 @@ begin
   // Adjust size of the header bitmap
   with TWithSafeRect(FHeader.Treeview.FHeaderRect) do
   begin
-    FHeaderBitmap.SetSize(Max(Right, R.Right - R.Left), Bottom);
+    FHeaderBitmap.SetSize({$IFDEF VT_FMX}Round{$ENDIF}(Max(Right, R.Right - R.Left)), {$IFDEF VT_FMX}Round{$ENDIF}(Bottom)); //TODO: round added!!!
   end;
 
   VisibleFixedWidth := GetVisibleFixedWidth;
@@ -8842,7 +9495,7 @@ begin
     RTLOffset := FHeader.Treeview.ComputeRTLOffset
   else
     RTLOffset := 0;
-    
+
   if RTLOffset = 0 then
     PaintFixedArea;
 
@@ -8854,16 +9507,25 @@ begin
   // In case of right-to-left directionality we paint the fixed part last.
   if RTLOffset <> 0 then
     PaintFixedArea;
-  
+
   // Blit the result to target.
   with TWithSafeRect(R) do
+{$IFDEF VT_FMX}
+    ACanvas.DrawBitmap(
+        FHeaderBitmap
+      , Rect(Left, Top, Right - Left, Bottom - Top)
+      , Rect(Left, Top, Left+FHeaderBitmap.Width, Top+FHeaderBitmap.Height)
+      , 1.0
+      , false);
+{$ELSE}
     BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumns.PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint;
-  RTLOffset: Integer = 0);
+  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0);
 
 // Main paint method to draw the header.
 // This procedure will paint the a slice (given in R) out of HeaderRect into TargetCanvas starting at position Target.
@@ -8890,7 +9552,9 @@ var
   PaintInfo: THeaderPaintInfo;
   RequestedElements,
   ActualElements: THeaderPaintElements;
-
+{$IFDEF VT_FMX}
+  SaveS: TCanvasSaveState;
+{$ENDIF}
   //--------------- local functions -------------------------------------------
 
   procedure PrepareButtonStyles;
@@ -8936,8 +9600,10 @@ var
 
   var
     BackgroundRect: TRect;
+{$IFDEF VT_VCL}
     Details: TThemedElementDetails;
     Theme: HTheme;
+{$ENDIF}
   begin
     BackgroundRect := Rect(Target.X, Target.Y, Target.X + R.Right - R.Left, Target.Y + FHeader.Height);
 
@@ -8947,9 +9613,10 @@ var
       begin
         PaintInfo.PaintRectangle := BackgroundRect;
         FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground]);
-      end  
+      end
       else
       begin
+{$IFDEF VT_VCL}
         if (FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements)) then
         begin
           Details := StyleServices.GetElementDetails(thHeaderItemRightNormal);
@@ -8963,9 +9630,10 @@ var
           CloseThemeData(THeme);
         end
         else
+{$ENDIF}
         begin
-          Brush.Color := FHeader.FBackgroundColor;
-          FillRect(BackgroundRect);
+          {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FHeader.FBackgroundColor;
+          FillRect(BackgroundRect{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
         end;
       end;
     end;
@@ -8979,21 +9647,28 @@ var
   // this procedure is called.
 
   var
-    Y: Integer;
+    Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     SavedDC: Integer;
     ColCaptionText: string;
     ColImageInfo: TVTImageInfo;
     SortIndex: Integer;
     SortGlyphSize: TSize;
+{$IFDEF VT_VCL}
     Glyph: TThemedHeader;
     Details: TThemedElementDetails;
+{$ENDIF}
     WrapCaption: Boolean;
     DrawFormat: Cardinal;
     Pos: TRect;
     DrawHot: Boolean;
     ImageWidth: Integer;
+{$IFDEF VT_VCL}
     Theme: HTheme;
+{$ENDIF}
     IdState: Integer;
+{$IFDEF VT_FMX}
+    SaveS: TCanvasSaveState;
+{$ENDIF}	
   begin
     ColImageInfo.Ghosted := False;
     PaintInfo.Column := Items[AColumn];
@@ -9023,7 +9698,7 @@ var
       //the dragged column will stay where it is
       if (DropMark = dmmRight) and (Items[FDragIndex].Position = Items[FDropTarget].Position + 1)
       then
-        DropMark := dmmNone;      
+        DropMark := dmmNone;
 
       IsEnabled := (coEnabled in FOptions) and (FHeader.Treeview.Enabled);
       ShowHeaderGlyph := (hoShowImages in FHeader.FOptions) and ((Assigned(Images) and (FImageIndex > -1)) or FCheckBox);
@@ -9052,6 +9727,7 @@ var
           FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground])
         else
         begin
+{$IFDEF VT_VCL}
           if FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements)  then
           begin
             if IsDownIndex then
@@ -9064,7 +9740,9 @@ var
             StyleServices.DrawElement(TargetCanvas.Handle, Details, PaintRectangle, @PaintRectangle);
           end
           else
+{$ENDIF}
             begin
+{$IFDEF VT_VCL}
               if tsUseThemes in FHeader.Treeview.FStates then
               begin
                 Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
@@ -9079,16 +9757,17 @@ var
                 CloseThemeData(Theme);
               end
               else
+{$ENDIF}
                 if IsDownIndex then
-                  DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
+                  DrawEdge(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
                 else
                   // Plates have the special case of raising on mouse over.
                   if (FHeader.Style = hsPlates) and IsHoverIndex and
                      (coAllowClick in FOptions) and (coEnabled in FOptions) then
-                    DrawEdge(TargetCanvas.Handle, PaintRectangle, RaisedButtonStyle,
+                    DrawEdge(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, PaintRectangle, RaisedButtonStyle,
                              RaisedButtonFlags or RightBorderFlag)
                   else
-                    DrawEdge(TargetCanvas.Handle, PaintRectangle, NormalButtonStyle,
+                    DrawEdge(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, PaintRectangle, NormalButtonStyle,
                              NormalButtonFlags or RightBorderFlag);
           end;
         end;
@@ -9105,7 +9784,7 @@ var
         end;
         if UseRightToLeftReading then
           DrawFormat := DrawFormat + DT_RTLREADING;
-        ComputeHeaderLayout(TargetCanvas.Handle, PaintRectangle, ShowHeaderGlyph, ShowSortGlyph, GlyphPos,
+        ComputeHeaderLayout(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, PaintRectangle, ShowHeaderGlyph, ShowSortGlyph, GlyphPos,
           SortGlyphPos, SortGlyphSize, TextRectangle, DrawFormat);
 
         // Move glyph and text one pixel to the right and down to simulate a pressed button.
@@ -9125,7 +9804,7 @@ var
         // main glyph
         FHasImage := False;
         if Assigned(Images) then
-          ImageWidth := Images.Width
+          ImageWidth := {$IFDEF VT_FMX}16{$ELSE}Images.Width{$ENDIF} //TODO: 16 px image!!!
         else
           ImageWidth := 0;
 
@@ -9135,7 +9814,7 @@ var
           if not FCheckBox then
           begin
             ColImageInfo.Images := Images;
-            Images.Draw(TargetCanvas, GlyphPos.X, GlyphPos.Y, FImageIndex, IsEnabled);
+            Images.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(GlyphPos.X, GlyphPos.Y, GlyphPos.X+16, GlyphPos.Y+16){$ELSE}GlyphPos.X, GlyphPos.Y({$ENDIF}, FImageIndex{$IFDEF VT_VCL}, IsEnabled{$ENDIF}); //TODO: 16px Image!!!
           end
           else
           begin
@@ -9157,8 +9836,8 @@ var
           begin
             Left := GlyphPos.X;
             Top := GlyphPos.Y;
-            Right := Left + ColImageInfo.Images.Width;
-            Bottom := Top + ColImageInfo.Images.Height;
+            Right := Left + {$IFDEF VT_FMX}16{$ELSE}ColImageInfo.Images.Width{$ENDIF};//TODO: 16px Image!!!
+            Bottom := Top + {$IFDEF VT_FMX}16{$ELSE}ColImageInfo.Images.Height{$ENDIF};//TODO: 16px Image!!!
           end;
         end;
 
@@ -9172,11 +9851,12 @@ var
           else
             DrawHot := (IsHoverIndex and (hoHotTrack in FHeader.FOptions) and not(tsUseThemes in FHeader.Treeview.FStates));
           if not(hpeText in ActualElements) and (Length(Text) > 0) then
-            DrawButtonText(TargetCanvas.Handle, ColCaptionText, TextRectangle, IsEnabled, DrawHot, DrawFormat, WrapCaption);
+            DrawButtonText(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, ColCaptionText, TextRectangle, IsEnabled, DrawHot, DrawFormat, WrapCaption);
 
         // sort glyph
         if not (hpeSortGlyph in ActualElements) and ShowSortGlyph then
         begin
+{$IFDEF VT_VCL}
           if tsUseExplorerTheme in FHeader.Treeview.FStates then
           begin
             Pos.TopLeft := SortGlyphPos;
@@ -9190,27 +9870,37 @@ var
             StyleServices.DrawElement(TargetCanvas.Handle, Details, Pos, @Pos);
           end
           else
+{$ENDIF}
           begin
             SortIndex := SortGlyphs[FHeader.FSortDirection, tsUseThemes in FHeader.Treeview.FStates];
-            UtilityImages.Draw(TargetCanvas, SortGlyphPos.X, SortGlyphPos.Y, SortIndex);
+            UtilityImages.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(SortGlyphPos.X, SortGlyphPos.Y, SortGlyphPos.X + 16, SortGlyphPos.Y + 16){$ELSE}SortGlyphPos.X, SortGlyphPos.Y{$ENDIF}, SortIndex);//TODO: 16px Image!!!
           end;
         end;
 
         // Show an indication if this column is the current drop target in a header drag operation.
         if not (hpeDropMark in ActualElements) and (DropMark <> dmmNone) then
         begin
-          Y := (PaintRectangle.Top + PaintRectangle.Bottom - UtilityImages.Height) div 2;
+          Y := (PaintRectangle.Top + PaintRectangle.Bottom - {$IFDEF VT_FMX}16{$ELSE}UtilityImages.Height{$ENDIF}) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;//TODO: 16px Image!!!
           if DropMark = dmmLeft then
-            UtilityImages.Draw(TargetCanvas, PaintRectangle.Left, Y, 0)
+            UtilityImages.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(PaintRectangle.Left, Y, PaintRectangle.Left+16, Y+16){$ELSE}PaintRectangle.Left, Y{$ENDIF}, 0)//TODO: 16px Image!!!
           else
-            UtilityImages.Draw(TargetCanvas, PaintRectangle.Right - 16 , Y,  1);
+            UtilityImages.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(PaintRectangle.Right - 16, Y, PaintRectangle.Right, Y + 16){$ELSE}PaintRectangle.Right - 16 , Y{$ENDIF},  1);//TODO: 16px Image!!!
         end;
 
         if ActualElements <> [] then
         begin
+{$IFDEF VT_FMX}
+          saveS:= TargetCanvas.SaveState;
+          try
+		  	FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, ActualElements);
+          finally
+            TargetCanvas.RestoreState(saveS); //must i free it???
+          end;
+{$ELSE}
           SavedDC := SaveDC(TargetCanvas.Handle);
-          FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, ActualElements);
-          RestoreDC(TargetCanvas.Handle, SavedDC);
+          FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, ActualElements);	
+		  RestoreDC(TargetCanvas.Handle, SavedDC);	  
+{$ENDIF}
         end;
       end
       else // Let application draw the header.
@@ -9223,8 +9913,7 @@ var
 
 var
   TargetRect: TRect;
-  MaxX: Integer;
-
+  MaxX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 begin
   if IsRectEmpty(R) then
     Exit;
@@ -9242,8 +9931,11 @@ begin
   begin
     // Use shortcuts for the images and the font.
     Images := FHeader.FImages;
+{$IFDEF VT_FMX}	
+    Font.Assign(FHeader.FFont);
+{$ELSE}
     Font := FHeader.FFont;
-
+{$ENDIF}
     PrepareButtonStyles;
 
     // At first, query the application which parts of the header it wants to draw on its own.
@@ -9285,13 +9977,21 @@ begin
       TargetRect.Right := TargetRect.Left + Items[Run].FWidth;
 
       // create a clipping rect to limit painting to button area
+{$IFDEF VT_FMX}
+      SaveS:= TargetCanvas.SaveState;
+      try
+        TargetCanvas.IntersectClipRect(RectF(Max(TargetRect.Left, Target.X), Target.Y + R.Top,
+                                      Min(TargetRect.Right, MaxX), TargetRect.Bottom));
+        PaintColumnHeader(Run, TargetRect);
+      finally
+        TargetCanvas.RestoreState(SaveS);
+      end;
+{$ELSE}
       ClipCanvas(TargetCanvas, Rect(Max(TargetRect.Left, Target.X), Target.Y + R.Top,
                                     Min(TargetRect.Right, MaxX), TargetRect.Bottom));
-
       PaintColumnHeader(Run, TargetRect);
-
       SelectClipRgn(Handle, 0);
-      
+{$ENDIF}	 
       TargetRect.Left := TargetRect.Right;
       Run := GetNextVisibleColumn(Run);
     end;
@@ -9322,7 +10022,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.TotalWidth: Integer;
+function TVirtualTreeColumns.TotalWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 var
   LastColumn: TColumnIndex;
@@ -9430,7 +10130,7 @@ begin
   FMinHeight := 10;
   FMaxHeight := 10000;
   FFont := TFont.Create;
-  FFont.OnChange := FontChanged;
+  FFont.{$IFDEF VT_FMX}OnChanged{$ELSE}OnChange{$ENDIF} := FontChanged;
   FParentFont := True;
   FBackgroundColor := clBtnFace;
   FOptions := [hoColumnResize, hoDrag, hoShowSortGlyphs];
@@ -9442,6 +10142,7 @@ begin
   FSortDirection := sdAscending;
   FMainColumn := NoColumn;
 
+{$IFDEF VT_VCL}
   FDragImage := TVTDragImage.Create(AOwner);
   with FDragImage do
   begin
@@ -9450,6 +10151,7 @@ begin
     PreBlendBias := -50;
     Transparency := 140;
   end;
+{$ENDIF}
 
   fSplitterHitTolerance := 8;
   FFixedAreaConstraints := TVTFixedAreaConstraints.Create(Self);
@@ -9463,7 +10165,9 @@ end;
 destructor TVTHeader.Destroy;
 
 begin
+{$IFDEF VT_VCL}
   FDragImage.Free;
+{$ENDIF}
   FFixedAreaConstraints.Free;
   FImageChangeLink.Free;
   FFont.Free;
@@ -9477,7 +10181,7 @@ end;
 procedure TVTHeader.FontChanged(Sender: TObject);
 var
   I: Integer;
-  lMaxHeight: Integer;
+  lMaxHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 begin
   if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then
   begin
@@ -9489,7 +10193,7 @@ begin
     with TBitmap.Create do
       try
         Canvas.Font.Assign(FFont);
-        lMaxHeight := lMaxHeight {top spacing} + (lMaxHeight div 2) {minimum bottom spacing} + Canvas.TextHeight('Q');
+        lMaxHeight := lMaxHeight {top spacing} + (lMaxHeight {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) {minimum bottom spacing} + Canvas.TextHeight('Q');
       finally
         Free;
       end;
@@ -9563,7 +10267,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetDefaultHeight(Value: Integer);
+procedure TVTHeader.SetDefaultHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Value < FMinHeight then
@@ -9587,13 +10291,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetHeight(Value: Integer);
+procedure TVTHeader.SetHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 var
   RelativeMaxHeight,
   RelativeMinHeight,
   EffectiveMaxHeight,
-  EffectiveMinHeight: Integer;
+  EffectiveMinHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   if not TreeView.HandleAllocated then
@@ -9605,8 +10309,8 @@ begin
   begin
     with FFixedAreaConstraints do
     begin
-      RelativeMaxHeight := ((Treeview.ClientHeight + FHeight) * FMaxHeightPercent) div 100;
-      RelativeMinHeight := ((Treeview.ClientHeight + FHeight) * FMinHeightPercent) div 100;
+      RelativeMaxHeight := ((Treeview.ClientHeight + FHeight) * FMaxHeightPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100;
+      RelativeMinHeight := ((Treeview.ClientHeight + FHeight) * FMinHeightPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100;
 
       EffectiveMinHeight := IfThen(FMaxHeightPercent > 0, Min(RelativeMaxHeight, FMinHeight), FMinHeight);
       EffectiveMaxHeight := IfThen(FMinHeightPercent > 0, Max(RelativeMinHeight, FMaxHeight), FMaxHeight);
@@ -9637,13 +10341,21 @@ begin
   begin
     if Assigned(FImages) then
     begin
+{$IFDEF VT_FMX}
+      FImageChangeLink.Images:= nil;
+{$ELSE}
       FImages.UnRegisterChanges(FImageChangeLink);
+{$ENDIF}
       FImages.RemoveFreeNotification(FOwner);
     end;
     FImages := Value;
     if Assigned(FImages) then
     begin
+{$IFDEF VT_FMX}
+      FImageChangeLink.Images:= FImages;
+{$ELSE}
       FImages.RegisterChanges(FImageChangeLink);
+{$ENDIF}
       FImages.FreeNotification(FOwner);
     end;
     if not (csLoading in Treeview.ComponentState) then
@@ -9680,7 +10392,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetMaxHeight(Value: Integer);
+procedure TVTHeader.SetMaxHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Value < FMinHeight then
@@ -9691,7 +10403,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetMinHeight(Value: Integer);
+procedure TVTHeader.SetMinHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Value < 0 then
@@ -9807,14 +10519,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.ChangeScale(M, D: Integer);
+procedure TVTHeader.ChangeScale(M, D: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 var
   I: Integer;
 begin
   // This method is only executed if toAutoChangeScale is set
   Self.Height := MulDiv(FHeight, M, D);
   if not ParentFont then
-    Font.Height := MulDiv(Font.Height, M, D);
+    FFont.{$IFDEF VT_FMX}Size{$ELSE}Height{$ENDIF} := MulDiv(FFont.{$IFDEF VT_FMX}Size{$ELSE}Height{$ENDIF}, M, D);
   // Scale the columns widths too
   for I := 0 to FColumns.Count - 1 do
   begin
@@ -9833,8 +10545,8 @@ function TVTHeader.DetermineSplitterIndex(P: TPoint): Boolean;
 //       columns possible.
 
 var
-  VisibleFixedWidth: Integer;
-  SplitPoint: Integer;
+  VisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  SplitPoint: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   //--------------- local function --------------------------------------------
 
@@ -10080,7 +10792,7 @@ var
   // optimized drag image move support
   ClientP: TPoint;
   Left,
-  Right: Integer;
+  Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   NeedRepaint: Boolean; // True if the screen needs an update (changed drop target or drop side)
 
 begin
@@ -10093,7 +10805,7 @@ begin
   if NewTarget >= 0 then
   begin
     FColumns.GetColumnBounds(NewTarget, Left, Right);
-    if (ClientP.X < ((Left + Right) div 2)) <> FColumns.FDropBefore then
+    if (ClientP.X < ((Left + Right) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2)) <> FColumns.FDropBefore then
     begin
       NeedRepaint := True;
       FColumns.FDropBefore := not FColumns.FDropBefore;
@@ -10119,12 +10831,17 @@ begin
   // Fix for various problems mentioned in issue 248.
   if NeedRepaint then
   begin
+{$IFDEF VT_FMX}
+    FOwner.Repaint;
+{$ELSE}
     UpdateWindow(FOwner.Handle);
+{$ENDIF}	
     // The new routine recaptures the backup image after the updatewindow
     // Note: We could have called this unconditionally but when called
     // over the tree, doesn't capture the background image. Since our
     // problems are in painting of the header, we call it only when the
     // drag image is over the header.
+{$IFDEF VT_VCL}
     if
       // determine the case when the drag image is or was on the header area
       (InHeader(FOwner.ScreenToClient(FDragImage.FLastPosition))
@@ -10134,12 +10851,14 @@ begin
       GDIFlush;
       FOwner.UpdateWindowAndDragImage(FOwner, FOwner.HeaderRect, True, true);
     end;
+{$ENDIF}
     // since we took care of UpdateWindow above, there is no need to do an
     // update window again by sending NeedRepaint. So switch off the second parameter.
     NeedRepaint := false;
   end;
-
+{$IFDEF VT_VCL}
   FDragImage.DragTo(P, NeedRepaint);
+{$ENDIF} 
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10176,6 +10895,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$IFDEF VT_VCL}
 function TVTHeader.GetShiftState: TShiftState;
 
 begin
@@ -10187,9 +10907,11 @@ begin
   if GetKeyState(VK_MENU) < 0 then
     Include(Result, ssAlt);
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$IFDEF VT_VCL}
 function TVTHeader.HandleHeaderMouseMove(var Message: TWMMouseMove): Boolean;
 
 var
@@ -10746,7 +11468,7 @@ begin
       end;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.ImageListChange(Sender: TObject);
@@ -10766,7 +11488,7 @@ var
   Image: TBitmap;
   ImagePos: TPoint;
   DragColumn: TVirtualTreeColumn;
-  RTLOffset: Integer;
+  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   // Determine initial position of drag image (screen coordinates).
@@ -10779,13 +11501,15 @@ begin
   Image := TBitmap.Create;
   with Image do
   try
+{$IFDEF VT_VCL}  
     PixelFormat := pf32Bit;
-    SetSize(DragColumn.Width, FHeight);
+{$ENDIF}
+    SetSize({$IFDEF VT_FMX}Round{$ENDIF}(DragColumn.Width), {$IFDEF VT_FMX}Round{$ENDIF}(FHeight)); //TODO: round is not good here!
 
     // Erase the entire image with the color key value, for the case not everything
     // in the image is covered by the header image.
-    Canvas.Brush.Color := clBtnFace;
-    Canvas.FillRect(Rect(0, 0, Width, Height));
+    Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBtnFace;
+    Canvas.FillRect(Rect(0, 0, Width, Height){$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
 
     if TreeView.UseRightToLeftAlignment then
       RTLOffset := Treeview.ComputeRTLOffset
@@ -10801,12 +11525,14 @@ begin
     // Column rectangles are given in local window coordinates not client coordinates.
     Dec(ImagePos.Y, FHeight);
 
+{$IFDEF VT_VCL}
     if hoRestrictDrag in FOptions then
       FDragImage.MoveRestriction := dmrHorizontalOnly
     else
       FDragImage.MoveRestriction := dmrNone;
     FDragImage.PrepareDrag(Image, ImagePos, P, nil);
     FDragImage.ShowDragImage;
+{$ENDIF}
   finally
     Image.Free;
   end;
@@ -10834,8 +11560,10 @@ begin
   if Treeview.HandleAllocated then
   begin
     Treeview.UpdateHeaderRect;
+{$IFDEF VT_VCL}
     SetWindowPos(Treeview.Handle, 0, 0, 0, 0, 0, SWP_FRAMECHANGED or SWP_NOMOVE or SWP_NOACTIVATE or SWP_NOOWNERZORDER or
       SWP_NOSENDCHANGING or SWP_NOSIZE or SWP_NOZORDER);
+{$ENDIF}
   end;
 end;
 
@@ -10848,7 +11576,7 @@ procedure TVTHeader.RescaleHeader;
 var
   FixedWidth,
   MaxFixedWidth,
-  MinFixedWidth: Integer;
+  MinFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   //--------------- local function --------------------------------------------
 
@@ -10872,8 +11600,8 @@ var
 
     with FFixedAreaConstraints do
     begin
-      MinFixedWidth := (TreeView.ClientWidth * FMinWidthPercent) div 100;
-      MaxFixedWidth := (TreeView.ClientWidth * FMaxWidthPercent) div 100;
+      MinFixedWidth := (TreeView.ClientWidth * FMinWidthPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100;
+      MaxFixedWidth := (TreeView.ClientWidth * FMaxWidthPercent) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 100;
     end;
   end;
 
@@ -10948,7 +11676,7 @@ begin
     SpringCount := 0;
     for I := 0 to FColumns.Count-1 do
       if [coVisible, coAutoSpring] * FColumns[I].FOptions = [coVisible, coAutoSpring] then
-        Inc(SpringCount);
+        System.Inc(SpringCount);
     if SpringCount > 0 then
     begin
       // Calculate the size to add/sub to each columns.
@@ -11134,6 +11862,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+//TODO: to investigate - here client coordinates and non client coordinates have problem in FMX
 function TVTHeader.InHeader(P: TPoint): Boolean;
 
 // Determines whether the given point (client coordinates!) is within the header rectangle (non-client coordinates).
@@ -11145,13 +11874,18 @@ begin
   R := Treeview.FHeaderRect;
 
   // Current position of the owner in screen coordinates.
+{$IFDEF VT_FMX}
+  RW:= Treeview.ClipRect;
+{$ELSE}
   GetWindowRect(Treeview.Handle, RW);
-
-  // Convert to client coordinates.
+    // Convert to client coordinates.
   MapWindowPoints(0, Treeview.Handle, RW, 2);
+{$ENDIF}
 
+{$IFDEF VT_VCL}
   // Consider the header within this rectangle.
   OffsetRect(R, RW.Left, RW.Top);
+{$ENDIF}
   Result := PtInRect(R, P);
 end;
 
@@ -11173,13 +11907,18 @@ begin
     Inc(R.Bottom, 2);
 
     // Current position of the owner in screen coordinates.
-    GetWindowRect(Treeview.Handle, RW);
+{$IFDEF VT_FMX}
+  RW:= Treeview.ClipRect;
+{$ELSE}
+  GetWindowRect(Treeview.Handle, RW);
+  // Convert to client coordinates.
+  MapWindowPoints(0, Treeview.Handle, RW, 2);
+{$ENDIF}
 
-    // Convert to client coordinates.
-    MapWindowPoints(0, Treeview.Handle, RW, 2);
-
+{$IFDEF VT_VCL} 
     // Consider the header within this rectangle.
     OffsetRect(R, RW.Left, RW.Top);
+{$ENDIF}
     Result := PtInRect(R, P);
   end;
 end;
@@ -11197,11 +11936,13 @@ procedure TVTHeader.Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boole
 var
   R, RW: TRect;
   Flags: Cardinal;
-
 begin
   if (hoVisible in FOptions) and Treeview.HandleAllocated then
     with Treeview do
     begin
+{$IFDEF VT_FMX}
+      Repaint;
+{$ELSE}	
       if Column = nil then
         R := FHeaderRect
       else
@@ -11240,6 +11981,7 @@ begin
       if UpdateNowFlag then
         Flags := Flags or RDW_UPDATENOW;
       RedrawWindow(Handle, @R, 0, Flags);
+{$ENDIF}	  
     end;
 end;
 
@@ -11290,16 +12032,20 @@ begin
     // TFont has no own save routine so we do it manually
     with Font do
     begin
+{$IFDEF VT_VCL}	
       ReadBuffer(Dummy, SizeOf(Dummy));
       Color := Dummy;
+{$ENDIF}	  
       ReadBuffer(Dummy, SizeOf(Dummy));
       Height := Dummy;
       ReadBuffer(Dummy, SizeOf(Dummy));
       SetLength(S, Dummy);
       ReadBuffer(PAnsiChar(S)^, Dummy);
-      Name := UTF8ToString(S);
+      {$IFDEF VT_FMX}Family{$ELSE}Name{$ENDIF} := UTF8ToString(S);
+{$IFDEF VT_VCL}	  
       ReadBuffer(Dummy, SizeOf(Dummy));
       Pitch := TFontPitch(Dummy);
+{$ENDIF}
       ReadBuffer(Dummy, SizeOf(Dummy));
       Style := TFontStyles(Byte(Dummy));
     end;
@@ -11347,8 +12093,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTHeader.ResizeColumns(ChangeBy: Integer; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
-  Options: TVTColumnOptions = [coVisible]): Integer;
+function TVTHeader.ResizeColumns(ChangeBy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
+  Options: TVTColumnOptions = [coVisible]): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Distribute the given width change to a range of columns. A 'fair' way is used to distribute ChangeBy to the columns,
 // while ensuring that everything that can be distributed will be distributed.
@@ -11357,13 +12103,10 @@ var
   Start,
   I: TColumnIndex;
   ColCount,
-  ToGo,
-  Sign,
-  Rest,
-  MaxDelta,
-  Difference: Integer;
+  Sign: Integer;
+  ToGo, MaxDelta, Difference, Rest: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Constraints,
-  Widths: array of Integer;
+  Widths: array of {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   BonusPixel: Boolean;
 
   //--------------- local functions -------------------------------------------
@@ -11390,7 +12133,7 @@ var
 
   //---------------------------------------------------------------------------
 
-  function ChangeWidth(Column: TColumnIndex; Delta: Integer): Integer;
+  function ChangeWidth(Column: TColumnIndex; Delta: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   begin
     if Delta > 0 then
@@ -11408,7 +12151,7 @@ var
   function ReduceConstraints: Boolean;
 
   var
-    MaxWidth,
+    MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     MaxReserveCol,
     Column: TColumnIndex;
 
@@ -11431,7 +12174,7 @@ var
       Result := False
     else
       Dec(Constraints[MaxReserveCol - RangeStartCol],
-          Constraints[MaxReserveCol - RangeStartCol] div 10);
+          Constraints[MaxReserveCol - RangeStartCol] {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 10);
   end;
 
   //----------- end local functions -------------------------------------------
@@ -11460,7 +12203,7 @@ begin
         for I := RangeStartCol to RangeEndCol do
           if (Options * FColumns[I].FOptions = Options) and IsResizable(I) then
           begin
-            Inc(ColCount);
+            System.Inc(ColCount);
             IncDelta(I);
           end;
         if MaxDelta < Abs(ChangeBy) then
@@ -11472,8 +12215,13 @@ begin
         Break;
 
       ToGo := Min(ToGo, MaxDelta);
+{$IFDEF VT_FMX}	  
+      Difference := Trunc(ToGo / ColCount);
+      Rest := Frac(ToGo / ColCount);
+{$ELSE}
       Difference := ToGo div ColCount;
       Rest := ToGo mod ColCount;
+{$ENDIF}	  
 
       if Difference > 0 then
         for I := RangeStartCol to RangeEndCol do
@@ -11490,7 +12238,7 @@ begin
             Dec(Rest, ChangeWidth(I, Sign));
             FColumns[I].FBonusPixel := BonusPixel;
           end;
-        Inc(I, Sign);
+        System.Inc(I, Sign);
         if (BonusPixel and (I > RangeEndCol)) or (not BonusPixel and (I < RangeStartCol)) then
         begin
           for I := RangeStartCol to RangeEndCol do
@@ -11537,6 +12285,9 @@ procedure TVTHeader.SaveToStream(const Stream: TStream);
 
 var
   Dummy: Integer;
+{$IFDEF VT_FMX}  
+  DummySingle: Single;
+{$ENDIF}  
   Tmp: AnsiString;
 
 begin
@@ -11559,8 +12310,8 @@ begin
     WriteBuffer(Dummy, SizeOf(Dummy));
     Dummy := FBackgroundColor;
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := FHeight;
-    WriteBuffer(Dummy, SizeOf(Dummy));
+    {$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF}:= FHeight;
+    WriteBuffer({$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF}, SizeOf({$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF}));
     Dummy := Integer(FOptions);
     WriteBuffer(Dummy, SizeOf(Dummy));
     // PopupMenu is neither saved nor restored
@@ -11569,18 +12320,22 @@ begin
     // TFont has no own save routine so we do it manually
     with Font do
     begin
+{$IFDEF VT_VCL}	  	
       Dummy := Color;
       WriteBuffer(Dummy, SizeOf(Dummy));
+{$ENDIF}
 
       // Need only to write one: size or height, I decided to write height.
-      Dummy := Height;
-      WriteBuffer(Dummy, SizeOf(Dummy));
-      Tmp := UTF8Encode(Name);
+      {$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF} := Height;
+      WriteBuffer({$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF}, SizeOf({$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF}));
+      Tmp := UTF8Encode({$IFDEF VT_FMX}Family{$ELSE}Name{$ENDIF});
       Dummy := Length(Tmp);
       WriteBuffer(Dummy, SizeOf(Dummy));
       WriteBuffer(PAnsiChar(Tmp)^, Dummy);
+{$IFDEF VT_VCL}	  
       Dummy := Ord(Pitch);
       WriteBuffer(Dummy, SizeOf(Dummy));
+{$ENDIF}	  
       Dummy := Byte(Style);
       WriteBuffer(Dummy, SizeOf(Dummy));
     end;
@@ -11596,12 +12351,21 @@ begin
     // Data introduced by stream version 5.
     Dummy := Integer(ParentFont);
     WriteBuffer(Dummy, SizeOf(Dummy));
+{$IFDEF VT_FMX}
+    DummySingle := FMaxHeight;
+    WriteBuffer(DummySingle, SizeOf(DummySingle));
+    DummySingle := FMinHeight;
+    WriteBuffer(DummySingle, SizeOf(DummySingle));
+    DummySingle := FDefaultHeight;
+    WriteBuffer(DummySingle, SizeOf(DummySingle));
+{$ELSE}
     Dummy := Integer(FMaxHeight);
     WriteBuffer(Dummy, SizeOf(Dummy));
     Dummy := Integer(FMinHeight);
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := Integer(FDefaultHeight);
+    Dummy := FDefaultHeight;
     WriteBuffer(Dummy, SizeOf(Dummy));
+{$ENDIF}
     with FFixedAreaConstraints do
     begin
       Dummy := Integer(FMaxHeightPercent);
@@ -11626,7 +12390,7 @@ begin
   FOwner := AOwner;
   FAlwaysVisible := False;
   FScrollBarStyle := sbmRegular;
-  FScrollBars := ssBoth;
+  FScrollBars := TScrollStyle.ssBoth;
   FIncrementX := 20;
   FIncrementY := 20;
 end;
@@ -11723,10 +12487,12 @@ end;
 function TVTColors.GetBackgroundColor: TColor;
 begin
 // XE2 VCL Style
+{$IFDEF VT_VCL}
   if FOwner.VclStyleEnabled and (seClient in FOwner.StyleElements) then
     Result := StyleServices.GetStyleColor(scTreeView)
   else
-    Result := FOwner.Color;
+{$ENDIF}  
+    Result := FOwner.{$IFDEF VT_FMX}Fill.Color{$ELSE}Color{$ENDIF};
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11734,7 +12500,8 @@ end;
 function TVTColors.GetColor(const Index: Integer): TColor;
 begin
   Result := FColors[Index];
-  if FOwner.VclStyleEnabled and not StyleServices.IsSystemStyle  then
+  {$IFDEF VT_VCL}
+  if FOwner.VclStyleEnabled and not StyleServices.IsSystemStyle then
   begin
     // Only fetch the color via StyleServices if it is the default color
     // Return user defined color otherwise
@@ -11776,6 +12543,7 @@ begin
         Result := StyleServices.GetSystemColor(FColors[Index]);
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11783,20 +12551,28 @@ end;
 function TVTColors.GetHeaderFontColor: TColor;
 begin
 // XE2+ VCL Style
+{$IFDEF VT_FMX}
+  Result := clBlack; //TODO: color!!!
+{$ELSE}
   if FOwner.VclStyleEnabled and (seFont in FOwner.StyleElements) then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result)
   else
     Result := FOwner.FHeader.Font.Color;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTColors.GetNodeFontColor: TColor;
 begin
+{$IFDEF VT_FMX}
+  Result := clBlack; //TODO: color!!!
+{$ELSE}
   if FOwner.VclStyleEnabled and (seFont in FOwner.StyleElements) then
     StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemNormal), ecTextColor, Result)
   else
     Result := FOwner.Font.Color;
+{$ENDIF}	
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11817,7 +12593,12 @@ begin
             FOwner.Invalidate;
           end;
         7:
+{$IFDEF VT_FMX}
+          FOwner.Repaint;
+{$ELSE}
           RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN)
+{$ENDIF}
+		  
       else
         FOwner.Invalidate;
       end;
@@ -11862,10 +12643,12 @@ var
   RegisteredClass: TVirtualTreeClass;
 
 begin
+{$IFDEF VT_VCL}
   RegisteredClass := TClipboardFormatList.FindFormat(S, Format);
   if Assigned(RegisteredClass) and FOwner.ClassType.InheritsFrom(RegisteredClass) then
     Result := inherited Add(S)
   else
+{$ENDIF}  
     Result := -1;
 end;
 
@@ -11881,7 +12664,7 @@ var
   RegisteredClass: TVirtualTreeClass;
 
 begin
-  RegisteredClass := TClipboardFormatList.FindFormat(S, Format);
+  RegisteredClass := {$IFDEF VT_FMX}nil{$ELSE}TClipboardFormatList.FindFormat(S, Format);{$ENDIF};
   if Assigned(RegisteredClass) and FOwner.ClassType.InheritsFrom(RegisteredClass) then
     inherited Insert(Index, S);
 end;
@@ -11894,15 +12677,34 @@ begin
   InitializeGlobalStructures();
 
   inherited;
-
+{$IFDEF VT_FMX}
+  FHandleAllocated:= true;
+  FUseRightToLeftAlignment:= false;
+  FBackgroundOffsetX:= 0;
+  FBackgroundOffsetY:= 0;
+  FMargin:= 4;
+  FTextMargin:= 4;
+  FDefaultNodeHeight:= 18; //???
+  FIndent:= 18; //???
+  FBevelEdges:= [beLeft, beTop, beRight, beBottom];
+  FBevelInner:= bvRaised;
+  FBevelOuter:= bvLowered;
+  FBevelKind:= bkNone;
+  FBevelWidth:= 1;
+  FBorderWidth:= 0;  
+{$ELSE}
   ControlStyle := ControlStyle - [csSetCaption] + [csCaptureMouse, csOpaque, csReplicatable, csDisplayDragImage,
     csReflector];
+{$ENDIF}
+
   FTotalInternalDataSize := 0;
   FNodeDataSize := -1;
   Width := 200;
   Height := 100;
   TabStop := True;
+{$IFDEF VT_VCL}  
   ParentColor := False;
+{$ENDIF}
   FDefaultNodeHeight := 18;
   FDragOperations := [doCopy, doMove];
   FHotCursor := crDefault;
@@ -11928,8 +12730,9 @@ begin
   FHeader := GetHeaderClass.Create(Self);
 
   // we have an own double buffer handling
+{$IFDEF VT_VCL}  
   inherited DoubleBuffered := False;
-
+{$ENDIF}
   FCheckImageKind := ckSystemDefault;
   FCheckImages := SystemCheckImages;
 
@@ -11944,7 +12747,7 @@ begin
   FAutoScrollDelay := 1000;
   FAutoScrollInterval := 1;
 
-  FBackground := TPicture.Create;
+  FBackground := {$IFDEF VT_FMX}TImage.Create(Self){$ELSE}TPicture.Create{$ENDIF};
   // Similar to the Transparent property of TImage,
   // this flag is Off by default.
   FBackGroundImageTransparent := False;
@@ -11953,14 +12756,16 @@ begin
   FMargin := 4;
   FTextMargin := 4;
   FImagesMargin := 2;
+{$IFDEF VT_VCL}  
   FLastDragEffect := DROPEFFECT_NONE;
+{$ENDIF}  
   FDragType := dtOLE;
   FDragHeight := 350;
   FDragWidth := 200;
 
   FColors := TVTColors.Create(Self);
   FEditDelay := 1000;
-
+{$IFDEF VT_VCL} 
   FDragImage := TVTDragImage.Create(Self);
   with FDragImage do
   begin
@@ -11969,6 +12774,7 @@ begin
     PreBlendBias := 0;
     Transparency := 200;
   end;
+{$ENDIF}  
 
   SetLength(FSingletonNodeArray, 1);
   FAnimationDuration := 200;
@@ -11979,10 +12785,14 @@ begin
   FIncrementalSearch := isNone;
   FClipboardFormats := TClipboardFormats.Create(Self);
   FOptions := GetOptionsClass.Create(Self);
-
+{$IFDEF VT_VCL} 
   if not (csDesigning in ComponentState) then //Don't create worker thread in IDE, there is no use for it
     TWorkerThread.AddThreadReference();
+{$ENDIF}  
   VclStyleChanged();
+{$IFDEF VT_FMX}
+  PrepareBitmaps(True, True);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11991,6 +12801,7 @@ destructor TBaseVirtualTree.Destroy;
 
 begin
   // Disconnect all remote MSAA connections
+{$IFDEF VT_VCL}   
   if Assigned(FAccessibleItem) then begin
     CoDisconnectObject(FAccessibleItem, 0);
     FAccessibleItem := nil;
@@ -11999,11 +12810,14 @@ begin
     CoDisconnectObject(fAccessible, 0);
     fAccessible := nil;
   end;
+{$ENDIF}  
 
   InterruptValidation();
   Exclude(FOptions.FMiscOptions, toReadOnly);
+{$IFDEF VT_VCL}   
   // Make sure there is no reference remaining to the releasing tree.
   TWorkerThread.ReleaseThreadReference();
+{$ENDIF}
   StopWheelPanning;
   CancelEditNode;
 
@@ -12012,7 +12826,9 @@ begin
   FClipboardFormats.Free;
   // Clear will also free the drag manager if it is still alive.
   Clear;
+{$IFDEF VT_VCL}  
   FDragImage.Free;
+{$ENDIF}    
   FColors.Free;
   FBackground.Free;
   FImageChangeLink.Free;
@@ -12021,13 +12837,20 @@ begin
   FScrollBarOptions.Free;
 
   // The window handle must be destroyed before the header is freed because it is needed in WM_NCDESTROY.
+{$IFDEF VT_VCL}
   if HandleAllocated then
     DestroyWindowHandle;
+{$ENDIF}
 
   // Release FDottedBrush in case WM_NCDESTROY hasn't been triggered.
+{$IFDEF VT_FMX}
+  if FDottedBrush <> nil then
+    FreeAndNil(FDottedBrush);
+{$ELSE}
   if FDottedBrush <> 0 then
     DeleteObject(FDottedBrush);
   FDottedBrush := 0;
+{$ENDIF}
 
   FHeader.Free;
   FHeader := nil; // Do not use FreeAndNil() before checking issue #497
@@ -12067,7 +12890,7 @@ begin
     // Root node has as parent the tree view.
     while Assigned(Run) and (Run <> Pointer(Self)) do
     begin
-      Inc(Integer(Run.TotalCount), Difference);
+      System.Inc(Integer(Run.TotalCount), Difference);
       Run := Run.Parent;
     end;
   end;
@@ -12075,24 +12898,29 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: Integer; Relative: Boolean = False);
+procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean = False);
 
 // Sets a node's total height to the given value and recursively adjusts the parent's total height.
 
 var
-  Difference: Integer;
+  Difference: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Run: PVirtualNode;
 
 begin
   if Relative then
     Difference := Value
   else
-    Difference := Value - Integer(Node.TotalHeight);
+    Difference := Value - {$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight);
   if Difference <> 0 then
   begin
     Run := Node;
     repeat
+{$IFDEF VT_FMX}
+      Inc(Run.TotalHeight, Difference);
+{$ELSE}
       Inc(Integer(Run.TotalHeight), Difference);
+{$ENDIF}
+
       // If the node is not visible or the parent node is not expanded or we are already at the top
       // then nothing more remains to do.
       if not (vsVisible in Run.States) or (Run = FRoot) or
@@ -12122,7 +12950,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode;
-  var VAlign, VButtonAlign: Integer);
+  var VAlign, VButtonAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Calculates the vertical alignment of the given node and its associated expand/collapse button during
 // a node paint cycle depending on the required node alignment style.
@@ -12133,7 +12961,7 @@ begin
     naFromTop:
       VAlign := Node.Align;
     naFromBottom:
-      VAlign := Integer(NodeHeight[Node]) - Node.Align;
+      VAlign := {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) - Node.Align;
   else // naProportional
     // Consider button and line alignment, but make sure neither the image nor the button (whichever is taller)
     // go out of the entire node height (100% means bottom alignment to the node's bounds).
@@ -12142,14 +12970,14 @@ begin
       if ShowImages then
         VAlign := GetImageSize(Node).cy
       else
-        VAlign := FStateImages.Height;
-      VAlign := MulDiv((Integer(NodeHeight[Node]) - VAlign), Node.Align, 100) + VAlign div 2;
+        VAlign := {$IFDEF VT_FMX}16{$ELSE}FStateImages.Height{$ENDIF}; //TODO: 16px Image! 
+      VAlign := MulDiv(({$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) - VAlign), Node.Align, 100) + VAlign {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
     end
     else
       if toShowButtons in FOptions.FPaintOptions then
-        VAlign := MulDiv((Integer(NodeHeight[Node]) - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height div 2
+        VAlign := MulDiv(({$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2
       else
-        VAlign := MulDiv(Integer(Node.NodeHeight), Node.Align, 100);
+        VAlign := MulDiv({$IFDEF VT_VCL}Integer{$ENDIF}(Node.NodeHeight), Node.Align, 100);
   end;
 
   VButtonAlign := VAlign - FPlusBM.Height div 2 - (FPlusBM.Height and 1);
@@ -12191,7 +13019,7 @@ begin
         DoStateChange([tsCheckPropagation]);
         BeginUpdate();
       end;
-      Inc(FCheckPropagationCount);
+      System.Inc(FCheckPropagationCount);
       try
         // Do actions which are associated with the given check state.
         case CheckType of
@@ -12218,11 +13046,11 @@ begin
                           // node's new check state accordingly.
                           case Self.GetCheckState(Run) of
                             csCheckedNormal, csCheckedDisabled:
-                              Inc(CheckedCount);
+                              System.Inc(CheckedCount);
                             csMixedNormal:
-                              Inc(MixedCheckCount);
+                              System.Inc(MixedCheckCount);
                             csUncheckedNormal, csUncheckedDisabled:
-                              Inc(UncheckedCount);
+                              System.Inc(UncheckedCount);
                           end;
                         end;
                         Run := Run.NextSibling;
@@ -12257,11 +13085,11 @@ begin
                           // node's new check state accordingly.
                           case Self.GetCheckState(Run) of
                             csCheckedNormal:
-                              Inc(CheckedCount);
+                              System.Inc(CheckedCount);
                             csMixedNormal:
-                              Inc(MixedCheckCount);
+                              System.Inc(MixedCheckCount);
                             csUncheckedNormal:
-                              Inc(UncheckedCount);
+                              System.Inc(UncheckedCount);
                           end;
                         end;
                         Run := Run.NextSibling;
@@ -12315,7 +13143,7 @@ begin
 
         InvalidateNode(Node);
       finally
-        Dec(FCheckPropagationCount); // WL, 05.02.2004
+        System.Dec(FCheckPropagationCount); // WL, 05.02.2004
         if FCheckPropagationCount = 0 then begin
           // Allow state change event after all check operations finished
           DoStateChange([], [tsCheckPropagation]);
@@ -12330,7 +13158,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CollectSelectedNodesLTR(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment;
+function TBaseVirtualTree.CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment;
   OldRect, NewRect: TRect): Boolean;
 
 // Helper routine used when a draw selection takes place. This version handles left-to-right directionality.
@@ -12345,14 +13173,17 @@ var
   TextLeft,
   CurrentTop,
   CurrentRight,
-  NextTop,
+  NextTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   NextColumn,
-  NodeWidth,
   Dummy: Integer;
-  MinY, MaxY: Integer;
-  LabelOffset: Integer;
+{$IFDEF VT_FMX}
+  DummySingle: Single;
+{$ENDIF}
+  MinY, MaxY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  LabelOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   IsInOldRect,
   IsInNewRect: Boolean;
+  NodeWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   // quick check variables for various parameters
   DoSwitch,
@@ -12384,7 +13215,7 @@ begin
     repeat
       // Collect offsets for check, normal and state images.
       TextLeft := NodeLeft + LabelOffset;
-      NextTop := CurrentTop + Integer(NodeHeight[Run]);
+      NextTop := CurrentTop + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Run]);
 
       // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
       // required. Only top and bottom bounds of the rectangle matter.
@@ -12413,7 +13244,7 @@ begin
             if NextColumn = MainColumn then
               CurrentRight := NodeRight
             else
-              GetColumnBounds(NextColumn, Dummy, CurrentRight);
+              GetColumnBounds(NextColumn, {$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF}, CurrentRight);
           end;
         end
         else
@@ -12431,7 +13262,7 @@ begin
                   TextRight := TextLeft + NodeWidth;
                 taCenter:
                   begin
-                    TextLeft := (TextLeft + CurrentRight - NodeWidth) div 2;
+                    TextLeft := (TextLeft + CurrentRight - NodeWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
                     TextRight := TextLeft + NodeWidth;
                   end;
               else
@@ -12473,7 +13304,7 @@ begin
       NextNode := GetNextVisibleNoInit(Run, True);
       if NextNode = nil then
         Break;
-      Inc(NodeLeft, CountLevelDifference(Run, NextNode) * Integer(FIndent));
+      Inc(NodeLeft, CountLevelDifference(Run, NextNode) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
       Run := NextNode;
     until CurrentTop > MaxY;
   end;
@@ -12481,7 +13312,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CollectSelectedNodesRTL(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment;
+function TBaseVirtualTree.CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment;
   OldRect, NewRect: TRect): Boolean;
 
 // Helper routine used when a draw selection takes place. This version handles right-to-left directionality.
@@ -12490,16 +13321,22 @@ function TBaseVirtualTree.CollectSelectedNodesRTL(MainColumn, NodeLeft, NodeRigh
 var
   Run,
   NextNode: PVirtualNode;
+
+  NextColumn,
+  Dummy: Integer;
+
+  NextTop,
+  NodeWidth,
   TextRight,
   TextLeft,
   CheckOffset,
   CurrentTop,
-  CurrentLeft,
-  NextTop,
-  NextColumn,
-  NodeWidth,
-  Dummy: Integer;
-  MinY, MaxY: Integer;
+  CurrentLeft,  
+  MinY, MaxY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+
+{$IFDEF VT_FMX}
+  DummySingle: Single;
+{$ENDIF}
   IsInOldRect,
   IsInNewRect: Boolean;
 
@@ -12514,7 +13351,9 @@ begin
   // A priori nothing changes.
   Result := False;
   // Switch the alignment to the opposite value in RTL context.
+{$IFDEF VT_VCL}
   ChangeBiDiModeAlignment(Alignment);
+{$ENDIF}
 
   // Determine minimum and maximum vertical coordinates to limit iteration to.
   MinY := Min(OldRect.Top, NewRect.Top);
@@ -12526,7 +13365,7 @@ begin
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   if WithCheck then
-    CheckOffset := FCheckImages.Width + FImagesMargin
+    CheckOffset := {$IFDEF VT_FMX}16{$ELSE}FCheckImages.Width + FImagesMargin{$ENDIF} //TODO: 16px Image! 
   else
     CheckOffset := 0;
   AutoSpan := FHeader.UseColumns and (toAutoSpanColumns in FOptions.FAutoOptions);
@@ -12538,9 +13377,9 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.FPaintOptions then
-      Dec(NodeRight, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
     else
-      Dec(NodeRight, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
+      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run) * FIndent) + FMargin);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
@@ -12553,7 +13392,7 @@ begin
       Dec(TextRight, GetImageSize(Run, ikNormal, MainColumn).cx);
       if WithStateImages then
         Dec(TextRight, GetImageSize(Run, ikState, MainColumn).cx);
-      NextTop := CurrentTop + Integer(NodeHeight[Run]);
+      NextTop := CurrentTop + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Run]);
 
       // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
       // required. Only top and bottom bounds of the rectangle matter.
@@ -12577,7 +13416,7 @@ begin
           if NextColumn = MainColumn then
             CurrentLeft := NodeLeft
           else
-            FHeader.FColumns.GetColumnBounds(NextColumn, CurrentLeft, Dummy);
+            FHeader.FColumns.GetColumnBounds(NextColumn, CurrentLeft, {$IFDEF VT_FMX}DummySingle{$ELSE}Dummy{$ENDIF});
         end
         else
           CurrentLeft := NodeLeft;
@@ -12597,7 +13436,7 @@ begin
                 end;
               taCenter:
                 begin
-                  TextLeft := (TextRight + CurrentLeft - NodeWidth) div 2;
+                  TextLeft := (TextRight + CurrentLeft - NodeWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
                   TextRight := TextLeft + NodeWidth;
                 end;
               else
@@ -12638,7 +13477,7 @@ begin
       NextNode := GetNextVisibleNoInit(Run, True);
       if NextNode = nil then
         Break;
-      Dec(NodeRight, CountLevelDifference(Run, NextNode) * Integer(FIndent));
+      Dec(NodeRight, CountLevelDifference(Run, NextNode) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
       Run := NextNode;
     until CurrentTop > MaxY;
   end;
@@ -12682,8 +13521,13 @@ begin
         eaColor:
           begin
             // User has given a new background color.
+{$IFDEF VT_FMX}
+            Fill.Color := BackColor;
+            FillRect(R, 0, 0, [], 1.0);
+{$ELSE}
             Brush.Color := BackColor;
             FillRect(R);
+{$ENDIF}
           end;
       else // eaDefault
         if UseBackground then
@@ -12696,33 +13540,37 @@ begin
         else
         begin
           if (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
-             (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) and not
-             (tsUseExplorerTheme in FStates) then
+             (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) 
+			 {$IFDEF VT_VCL}and not (tsUseExplorerTheme in FStates){$ENDIF} then
           begin
             if toShowHorzGridLines in FOptions.PaintOptions then
             begin
-              Brush.Color := BackColor;
-              FillRect(Rect(R.Left, R.Bottom - 1, R.Right, R.Bottom));
+              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := BackColor;
+              FillRect(Rect(R.Left, R.Bottom - 1, R.Right, R.Bottom){$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
               Dec(R.Bottom);
             end;
-            if Focused or (toPopupMode in FOptions.FPaintOptions) then
+            if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
             begin
-              Brush.Color := FColors.FocusedSelectionColor;
-              Pen.Color := FColors.FocusedSelectionBorderColor;
+              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.FocusedSelectionColor;
+              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.FocusedSelectionBorderColor;
             end
             else
             begin
-              Brush.Color := FColors.UnfocusedSelectionColor;
-              Pen.Color := FColors.UnfocusedSelectionBorderColor;
+              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.UnfocusedSelectionColor;
+              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.UnfocusedSelectionBorderColor;
             end;
 
             with TWithSafeRect(R) do
-              RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+{$IFDEF VT_FMX}
+              DrawRect(RectF(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, AllCorners, 1.0);
+{$ELSE}
+              DrawRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius);
+{$ENDIF}			
           end
           else
           begin
-            Brush.Color := BackColor;
-            FillRect(R);
+            {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := BackColor;
+            FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
           end;
         end;
       end;
@@ -12771,13 +13619,13 @@ begin
         while Level1 > Level2 do
         begin
           Run1 := Run1.Parent;
-          Dec(Level1);
+          System.Dec(Level1);
         end;
         Run2 := Node2;
         while Level2 > Level1 do
         begin
           Run2 := Run2.Parent;
-          Dec(Level2);
+          System.Dec(Level2);
         end;
 
         // now go up until we find a common parent node (loop will safely stop at FRoot if the nodes
@@ -12803,14 +13651,14 @@ procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H,
 
 var
   HalfWidth,
-  TargetX: Integer;
+  TargetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
-  HalfWidth := (FIndent div 2);
+  HalfWidth := FIndent {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
   if Reverse then
     TargetX := 0
   else
-    TargetX := Integer(FIndent) + ScaledPixels(FImagesMargin);
+    TargetX := {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) + ScaledPixels(FImagesMargin);
 
   with PaintInfo.Canvas do
   begin
@@ -12836,19 +13684,19 @@ begin
         end;
       ltLeft: // left can also mean right for RTL context
         if Reverse then
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + Integer(FIndent))
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent))
         else
           DrawDottedVLine(PaintInfo, Y, Y + H, X);
       ltLeftBottom:
         if Reverse then
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + Integer(FIndent));
-          DrawDottedHLine(PaintInfo, X, X + Integer(FIndent), Y + H);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
+          DrawDottedHLine(PaintInfo, X, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent), Y + H);
         end
         else
         begin
           DrawDottedVLine(PaintInfo, Y, Y + H, X);
-          DrawDottedHLine(PaintInfo, X, X + Integer(FIndent), Y + H);
+          DrawDottedHLine(PaintInfo, X, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent), Y + H);
         end;
     end;
   end;
@@ -12856,7 +13704,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.FindInPositionCache(Node: PVirtualNode; var CurrentPos: Cardinal): PVirtualNode;
+function TBaseVirtualTree.FindInPositionCache(Node: PVirtualNode; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode;
 
 // Looks through the position cache and returns the node whose top position is the largest one which is smaller or equal
 // to the position of the given node.
@@ -12889,7 +13737,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.FindInPositionCache(Position: Cardinal; var CurrentPos: Cardinal): PVirtualNode;
+function TBaseVirtualTree.FindInPositionCache(Position: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode;
 
 // Looks through the position cache and returns the node whose top position is the largest one which is smaller or equal
 // to the given vertical position.
@@ -12939,7 +13787,7 @@ begin
   while Assigned(Child) do
   begin
     FixupTotalCount(Child);
-    Inc(Node.TotalCount, Child.TotalCount);
+    System.Inc(Node.TotalCount, Child.TotalCount);
     Child := Child.NextSibling;
   end;
 end;
@@ -12999,7 +13847,7 @@ begin
   Node := GetFirstChecked;
   while Assigned(Node) do
   begin
-     Inc(Result);
+     System.Inc(Result);
      Node := GetNextChecked(Node);
   end;
 end;
@@ -13042,6 +13890,18 @@ begin
   Result := not (vsHasChildren in Node.States) or (Node.ChildCount > 0);
 end;
 
+{$IFDEF VT_FMX}
+function TBaseVirtualTree.GetClientHeight: Single;
+begin
+  Result:= Height;
+end;
+
+function TBaseVirtualTree.GetClientWidth: Single;
+begin
+  Result:= Width;
+end;
+{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetCutCopyCount: Integer;
@@ -13054,7 +13914,7 @@ begin
   Node := GetFirstCutCopy;
   while Assigned(Node) do
   begin
-     Inc(Result);
+     System.Inc(Result);
      Node := GetNextCutCopy(Node);
   end;
 end;
@@ -13079,7 +13939,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.GetDragManager: IVTDragManager;
 
 // Returns the internal drag manager interface. If this does not yet exist then it is created here.
@@ -13094,6 +13954,7 @@ begin
 
   Result := FDragManager;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -13148,7 +14009,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): Cardinal;
+function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
 
 begin
   if Assigned(Node) and (Node <> FRoot) then
@@ -13180,7 +14041,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetOffset(pElement: TVTElement; pNode: PVirtualNode): integer;
+function TBaseVirtualTree.GetOffset(pElement: TVTElement; pNode: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 // Calculates the offset of the given element
 var
   lOffsets: TVTOffsets;
@@ -13209,13 +14070,13 @@ begin
       // plus Indent
       lNodeLevel := GetNodeLevel(pNode);
       if toShowRoot in FOptions.FPaintOptions then
-        Inc(lNodeLevel);
+        System.Inc(lNodeLevel);
     end
     else
       lNodeLevel := 1;
-    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * Integer(FIndent));
+    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
     // toggle buttons
-    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - ((Integer(FIndent) - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - (({$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) - FPlusBM.Width) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
   end;//if MainColumn
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
@@ -13224,7 +14085,7 @@ begin
 
   // right of checkbox, left of state image
   if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
-    pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width + fImagesMargin
+    pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + {$IFDEF VT_FMX}16{$ELSE}FCheckImages.Width{$ENDIF} + fImagesMargin //TODO: 16px Image!
   else
     pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox];
   if pElement = TVTElement.ofsStateImage then
@@ -13255,7 +14116,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetRangeX: Cardinal;
+function TBaseVirtualTree.GetRangeX: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
 begin
   Result := Max(0, FRangeX);
 end;
@@ -13293,7 +14154,7 @@ end;
 function TBaseVirtualTree.GetTopNode: PVirtualNode;
 
 var
-  Dummy: Integer;
+  Dummy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   Result := GetNodeAt(0, 0, True, Dummy);
@@ -13304,11 +14165,11 @@ end;
 function TBaseVirtualTree.GetTotalCount: Cardinal;
 
 begin
-  Inc(FUpdateCount);
+  System.Inc(FUpdateCount);
   try
     ValidateNode(FRoot, True);
   finally
-    Dec(FUpdateCount);
+    System.Dec(FUpdateCount);
   end;
   // The root node itself doesn't count as node.
   Result := FRoot.TotalCount - 1;
@@ -13415,7 +14276,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.HandleDrawSelection(X, Y: Integer): Boolean;
+function TBaseVirtualTree.HandleDrawSelection(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean;
 
 // Handles multi-selection with a focus rectangle.
 // Result is True if something changed in selection.
@@ -13428,7 +14289,7 @@ var
 
   // limits of a node and its text
   NodeLeft,
-  NodeRight: Integer;
+  NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   // alignment and directionality
   CurrentBidiMode: TBidiMode;
@@ -13642,7 +14503,9 @@ begin
 
   // Check the worker thread existance. It might already be gone (usually on destruction of the last tree).
   WasValidating := (tsValidating in FStates);
+{$IFDEF VT_VCL}
   TWorkerThread.RemoveTree(Self);
+{$ENDIF}
   if WasValidating then
     InvalidateCache();
 end;
@@ -13698,10 +14561,10 @@ begin
       ValidateNodeDataSize(FNodeDataSize);
 
     // Take record alignment into account.
-    Inc(Size, FNodeDataSize);
+    System.Inc(Size, FNodeDataSize);
   end//not csDesigning
   else
-    Inc(Size, SizeOf(Pointer)); // Fixes #702
+    System.Inc(Size, SizeOf(Pointer)); // Fixes #702
 
 
   Result := AllocMem(Size + FTotalInternalDataSize);
@@ -13733,7 +14596,7 @@ function TBaseVirtualTree.PackArray({*}const TheArray: TNodeArray; Count: Intege
 // The returned value is the number of remaining entries in the array, so the caller can reallocate (shorten)
 // the selection array if needed or -1 if nothing needs to be changed.
 
-{$ifdef CPUX64}
+{$IF Defined(CPUX64) or Defined(VT_FMX)} //{$ifdef CPUX64}
 var
   Source, Dest: ^PVirtualNode;
   ConstOne: NativeInt;
@@ -13744,9 +14607,9 @@ begin
   // Do the fastest scan possible to find the first entry
   while (Count <> 0) and {not Odd(NativeInt(Source^))} (NativeInt(Source^) and ConstOne = 0) do
   begin
-    Inc(Result);
-    Inc(Source);
-    Dec(Count);
+    System.Inc(Result);
+    System.Inc(Source);
+    System.Dec(Count);
   end;
 
   if Count <> 0 then
@@ -13757,11 +14620,11 @@ begin
       if {not Odd(NativeInt(Source^))} NativeInt(Source^) and ConstOne = 0 then
       begin
         Dest^ := Source^;
-        Inc(Result);
-        Inc(Dest);
+        System.Inc(Result);
+        System.Inc(Dest);
       end;
-      Inc(Source); // Point to the next entry
-      Dec(Count);
+      System.Inc(Source); // Point to the next entry
+      System.Dec(Count);
     until Count = 0;
   end;
 end;
@@ -13807,7 +14670,7 @@ asm
         POP     EDI
         POP     EBX
 end;
-{$endif CPUX64}
+{$IFEND} //{$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -13820,16 +14683,27 @@ const
   LineBitsSolid: array [0..7] of Word = (0, 0, 0, 0, 0, 0, 0, 0);
 
 var
-  PatternBitmap: HBITMAP;
+  PatternBitmap: {$IFDEF VT_FMX}TBitmap{$ELSE}HBITMAP{$ENDIF};
   Bits: Pointer;
   Size: TSize;
+{$IFDEF VT_FMX}
+  Theme: Integer;
+{$ELSE}
   Theme: HTHEME;
+{$ENDIF}
   R: TRect;
 
   //--------------- local function --------------------------------------------
 
   procedure FillBitmap (ABitmap: TBitmap);
   begin
+    //i hate "with" clause!!! Karol Bieniaszewski
+{$IFDEF VT_FMX}
+    ABitmap.SetSize(9, 9); 
+
+    ABitmap.Canvas.Fill.Color :=  $00FF00FF; // TAlphaColorRec.Fuchsia;
+    ABitmap.Clear(ABitmap.Canvas.Fill.Color);
+{$ELSE}
     with ABitmap, Canvas do
     begin
       SetSize(Size.cx, Size.cy);
@@ -13849,11 +14723,13 @@ var
 
       FillRect(Rect(0, 0, Width, Height));
     end;
+{$ENDIF}
   end;
 
   //--------------- end local function ----------------------------------------
 
 begin
+{$IFDEF VT_VCL}
   if VclStyleEnabled and (seClient in StyleElements) then
   begin
     Size.cx := ScaledPixels(11);
@@ -13876,9 +14752,11 @@ begin
       FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
   end
     else
+{$ENDIF}
       begin
         Size.cx := 9;
         Size.cy := 9;
+{$IFDEF VT_VCL}
         if tsUseThemes in FStates then
         begin
           R := Rect(0, 0, 100, 100);
@@ -13886,12 +14764,14 @@ begin
           GetThemePartSize(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, @R, TS_TRUE, Size);
         end
           else
+{$ENDIF}
             Theme := 0;
+
 
         if NeedButtons then
         begin
           //VCL Themes do not really have ability to provide tree plus/minus images when not using the
-          //windows theme. The bitmap style designer doesn't have any elements for for them, and you
+          //windows theme. The bitmap style designer doesn't have any elements for them, and you
           //cannot name any elements you add, which makes it useless.
           //To mitigate this, Hook up the OnPrepareButtonImages and draw them yourself.
           if Assigned(FOnPrepareButtonImages) then
@@ -13906,7 +14786,7 @@ begin
           end
             else
               begin
-                with FMinusBM, Canvas do
+                with FMinusBM{$IFDEF VT_VCL}, Canvas{$ENDIF} do
                 begin
                   // box is always of odd size
                   FillBitmap(FMinusBM);
@@ -13916,13 +14796,15 @@ begin
                   // Because the self-drawn bitmaps view Vcl Style shit
                   if Theme = 0 then
                   begin
+{$IFDEF VT_VCL}
                     if not(tsUseExplorerTheme in FStates) then
+{$ENDIF}
                     begin
                       if FButtonStyle = bsTriangle then
                       begin
-                        Brush.Color := clBlack;
-                        Pen.Color := clBlack;
-                        Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
+                        FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
+                        FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
+                        FMinusBM.Canvas.{$IFDEF VT_FMX}DrawPolygon{$ELSE}Polygon{$ENDIF}([Point(0, 2), Point(8, 2), Point(4, 6)]{$IFDEF VT_FMX}, 1.0{$ENDIF});
                       end
                         else
                           begin
@@ -13931,38 +14813,72 @@ begin
                             begin
                               case FButtonFillMode of
                                 fmTreeColor:
-                                  Brush.Color := FColors.BackGroundColor;
+                                  FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
                                 fmWindowColor:
-                                  Brush.Color := clWindow;
+                                  FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clWindow;
                               end;
+{$IFDEF VT_FMX}
+                              FMinusBM.Canvas.BeginScene();
+                              FMinusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
+                              FMinusBM.Canvas.DrawRect(Rect(1, 1, FMinusBM.Width-1, FMinusBM.Height-1), 0, 0, [], 1.0);
+                              FMinusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
+                              FMinusBM.Canvas.DrawLine(Point(2, FMinusBM.Width / 2), Point(FMinusBM.Width - 2, FMinusBM.Width / 2), 1.0);
+                              FMinusBM.Canvas.EndScene();
+{$ELSE}
                               Pen.Color := FColors.TreeLineColor;
                               Rectangle(0, 0, Width, Height);
                               Pen.Color := FColors.NodeFontColor;
                               MoveTo(2, Width div 2);
                               LineTo(Width - 2, Width div 2);
+
+{$ENDIF}
                             end
-                              else
-                                FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
-                          end;
+                                else
+                                  begin
+{$IFDEF VT_FMX}
+                                    //load_bitmap_from_resource(FMinusBM, 'VT_XPBUTTONMINUS'); //TODO: is this still releated to Windows???
+{$ELSE}
+									FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
+{$ENDIF}
+                                  end;
+                            end;
+
+{$IFDEF VT_FMX}
+                      FHotMinusBM.Canvas.DrawBitmap(//###!!!
+                            FMinusBM
+                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                            , 1.0
+                            );
+                      FSelectedHotMinusBM.Canvas.DrawBitmap(//###!!!
+                            FMinusBM
+                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                            , 1.0
+                            );
+{$ELSE}
                       FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
                       FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+{$ENDIF}
                     end;
                   end;
                 end;
-                with FPlusBM, Canvas do
+                with FPlusBM{$IFDEF VT_VCL}, Canvas{$ENDIF} do
                 begin
                   FillBitmap(FPlusBM);
                   FillBitmap(FHotPlusBM);
                   FillBitmap(FSelectedHotPlusBM);
                   if Theme = 0 then
                   begin
+{$IFDEF VT_VCL}				  
                     if not(tsUseExplorerTheme in FStates) then
+{$ENDIF}					
                     begin
                       if FButtonStyle = bsTriangle then
                       begin
-                        Brush.Color := clBlack;
-                        Pen.Color := clBlack;
-                        Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
+                        FPlusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
+                        FPlusBM.Canvas.{$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := clBlack;
+                        FPlusBM.Canvas.{$IFDEF VT_FMX}DrawPolygon{$ELSE}Polygon{$ENDIF}([Point(2, 0), Point(6, 4), Point(2, 8)]{$IFDEF VT_FMX}, 1.0{$ENDIF});
                       end
                         else
                           begin
@@ -13971,10 +14887,19 @@ begin
                             begin
                               case FButtonFillMode of
                                 fmTreeColor:
-                                  Brush.Color := FColors.BackGroundColor;
+                                  FPlusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
                                 fmWindowColor:
-                                  Brush.Color := clWindow;
+                                  FPlusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clWindow;
                               end;
+{$IFDEF VT_FMX}
+                              FPlusBM.Canvas.BeginScene();
+                              FPlusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
+                              FPlusBM.Canvas.DrawRect(Rect(1, 1, FPlusBM.Width-1, FPlusBM.Height-1), 0, 0, [], 1.0); //###!!! czy jeszcze fill
+                              FPlusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
+                              FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width / 2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width / 2), 1.0);
+                              FPlusBM.Canvas.DrawLine(Point(FPlusBM.Canvas.Width / 2, 2), Point(FPlusBM.Canvas.Width / 2, FPlusBM.Canvas.Width - 2), 1.0);
+                              FPlusBM.Canvas.EndScene();
+{$ELSE}
                               Pen.Color := FColors.TreeLineColor;
                               Rectangle(0, 0, Width, Height);
                               Pen.Color := FColors.NodeFontColor;
@@ -13982,18 +14907,42 @@ begin
                               LineTo(Width - 2, Width div 2);
                               MoveTo(Width div 2, 2);
                               LineTo(Width div 2, Width - 2);
+{$ENDIF}
                             end
                               else
-                                FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
-                          end;
+                                  begin
+{$IFDEF VT_FMX}
+                                    //load_bitmap_from_resource(FPlusBM, 'VT_XPBUTTONPLUS'); //TODO: is this still releated to Windows???
+{$ELSE}
+                                    FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
+{$ENDIF}	
+                                  end;
+						  end;
+{$IFDEF VT_FMX}
+                         FHotPlusBM.Canvas.DrawBitmap(//###!!!
+                            FMinusBM
+                            , Rect(0, 0, FMinusBM.Width, FMinusBM.Height)
+                            , Rect(0, 0, FMinusBM.Width, FMinusBM.Height)
+                            , 1.0
+                            );
+
+                         FSelectedHotPlusBM.Canvas.DrawBitmap(//###!!!
+                            FPlusBM
+                            , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
+                            , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
+                            , 1.0
+                            );
+{$ELSE}
                        FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
                        FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+{$ENDIF}
                      end;
                   end;
                 end;
 
 
           // Overwrite glyph images if theme is active.
+{$IFDEF VT_VCL}		  
           if (tsUseThemes in FStates) and (Theme <> 0) then
           begin
             R := Rect(0, 0, Size.cx, Size.cy);
@@ -14005,7 +14954,7 @@ begin
               DrawThemeBackground(Theme, FSelectedHotPlusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_CLOSED, R, nil);
               DrawThemeBackground(Theme, FHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
               DrawThemeBackground(Theme, FSelectedHotMinusBM.Canvas.Handle, TVP_HOTGLYPH, GLPS_OPENED, R, nil);
-             end
+            end
                else
                  begin
                    FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
@@ -14013,17 +14962,24 @@ begin
                    FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
                    FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
                  end;
-          end;
+          end;				 
+{$ENDIF}
         end;
+{$IFDEF VT_VCL}
         if tsUseThemes in FStates then
           CloseThemeData(Theme);
+{$ENDIF}
       end;
   end;
 
   if NeedLines then
   begin
+{$IFDEF VT_FMX}
+      FreeAndNil(FDottedBrush);
+{$ELSE}
     if FDottedBrush <> 0 then
       DeleteObject(FDottedBrush);
+{$ENDIF}
     case FLineStyle of
       lsDotted:
         Bits := @LineBitsDotted;
@@ -14033,10 +14989,19 @@ begin
       Bits := @LineBitsDotted;
       DoGetLineStyle(Bits);
     end;
+{$IFDEF VT_FMX}
+    PatternBitmap := TBitmap.Create(8, 8);   //###!!! CreateBitmap(8, 8, 1, 1, Bits);
+    FDottedBrush := TBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap);
+    FDottedBrush.Bitmap.Bitmap.Assign(PatternBitmap);
+    FreeAndNil(PatternBitmap);
+{$ELSE}
     PatternBitmap := CreateBitmap(8, 8, 1, 1, Bits);
     FDottedBrush := CreatePatternBrush(PatternBitmap);
     DeleteObject(PatternBitmap);
+{$ENDIF}
   end;
+  FMinusBM.SaveToFile('R:\Minus.png');
+  FPlusBM.SaveToFile('R:\Plus.png');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14073,7 +15038,7 @@ end;
     set the flag BackgroundTransparentExternalType explicitly in order to properly do
     transparent painting.
 }
-procedure TBaseVirtualTree.SetBackground(const Value: TPicture);
+procedure TBaseVirtualTree.SetBackground(const Value: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF});
 
 begin
   FBackground.Assign(Value);
@@ -14094,7 +15059,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetBackgroundOffset(const Index, Value: Integer);
+procedure TBaseVirtualTree.SetBackgroundOffset(const Index: Integer; const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   case Index of
@@ -14145,14 +15110,14 @@ begin
       Run := Run.Parent;
     end;
     R := GetDisplayRect(Node, FHeader.MainColumn, True);
-    DoSetOffsetXY(Point(FOffsetX, FOffsetY + ClientHeight - R.Top - Integer(NodeHeight[Node])),
+    DoSetOffsetXY(Point(FOffsetX, FOffsetY + ClientHeight - R.Top - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node])),
       [suoRepaintScrollBars, suoUpdateNCArea]);
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetBottomSpace(const Value: Cardinal);
+procedure TBaseVirtualTree.SetBottomSpace(const Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
 
 begin
   if FBottomSpace <> Value then
@@ -14212,7 +15177,7 @@ begin
     else
       FCheckImages := SystemCheckImages;
     if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
-      InvalidateRect(Handle, nil, False);
+      {$IFDEF VT_FMX}Repaint{$ELSE}InvalidateRect(Handle, nil, False){$ENDIF};
   end;
 end;
 
@@ -14238,7 +15203,9 @@ var
   lItem : PVirtualNode;
 begin
   With Self do begin
+{$IFDEF VT_VCL}
     Screen.Cursor := crHourGlass;
+{$ENDIF}
     BeginUpdate;
     try
       if pSelectedOnly then
@@ -14255,7 +15222,9 @@ begin
           lItem := GetNext(lItem);
       end;//while
     finally
+{$IFDEF VT_VCL}
       Screen.Cursor := crDefault;
+{$ENDIF}
       EndUpdate;
     end;//try..finally
   end;//With
@@ -14301,14 +15270,15 @@ var
   Index: Cardinal;
   Child: PVirtualNode;
   Count: Integer;
-  NewHeight: Integer;
+  NewHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 begin
   if not (toReadOnly in FOptions.FMiscOptions) then
   begin
     if Node = nil then
       Node := FRoot;
-
+{$IFDEF VT_VCL}
     Assert(GetCurrentThreadId = MainThreadId, 'UI controls may only be chnaged in UI thread.');
+{$ENDIF}
     if NewChildCount = 0 then
       DeleteChildren(Node)
     else
@@ -14334,7 +15304,7 @@ begin
           end;
           Node.States := Node.States - [vsAllChildrenHidden, vsHeightMeasured];
           if (vsExpanded in Node.States) and FullyVisible[Node] then
-            Inc(FVisibleCount, Count); // Do this before a possible init of the sub-nodes in DoMeasureItem()
+            System.Inc(FVisibleCount, Count); // Do this before a possible init of the sub-nodes in DoMeasureItem()
 
           // New nodes are by default always visible, so we don't need to check the visibility.
           while Remaining > 0 do
@@ -14348,8 +15318,8 @@ begin
             Node.LastChild := Child;
             if Node.FirstChild = nil then
               Node.FirstChild := Child;
-            Dec(Remaining);
-            Inc(Index);
+            System.Dec(Remaining);
+            System.Inc(Index);
 
             if (toVariableNodeHeight in FOptions.FMiscOptions) then
               GetNodeHeight(Child);
@@ -14373,7 +15343,7 @@ begin
           while Remaining > 0 do
           begin
             DeleteNode(Node.LastChild);
-            Dec(Remaining);
+            System.Dec(Remaining);
           end;
         end;
 
@@ -14425,7 +15395,11 @@ begin
   begin
     if Assigned(FCustomCheckImages) then
     begin
+{$IFDEF VT_FMX}
+      FCustomCheckChangeLink.Images:= nil;
+{$ELSE}
       FCustomCheckImages.UnRegisterChanges(FCustomCheckChangeLink);
+{$ENDIF}
       FCustomCheckImages.RemoveFreeNotification(Self);
       // Reset the internal check image list reference too, if necessary.
       if FCheckImages = FCustomCheckImages then
@@ -14434,7 +15408,11 @@ begin
     FCustomCheckImages := Value;
     if Assigned(FCustomCheckImages) then
     begin
+{$IFDEF VT_FMX}
+      FCustomCheckChangeLink.Images:= FCustomCheckImages;
+{$ELSE}
       FCustomCheckImages.RegisterChanges(FCustomCheckChangeLink);
+{$ENDIF}
       FCustomCheckImages.FreeNotification(Self);
       // If custom check images are assigned, we switch the property CheckImageKind to ckCustom so that they are actually used
       FCheckImageKind := ckCustom;
@@ -14451,15 +15429,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetDefaultNodeHeight(Value: Cardinal);
+procedure TBaseVirtualTree.SetDefaultNodeHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
 
 begin
   if Value = 0 then
     Value := 18;
   if FDefaultNodeHeight <> Value then
   begin
+{$IFDEF VT_FMX}
+    Inc(FRoot.TotalHeight, (Value) - (FDefaultNodeHeight));
+    Inc(FRoot.NodeHeight, (Value) - (FDefaultNodeHeight));
+{$ELSE}
     Inc(Integer(FRoot.TotalHeight), Integer(Value) - Integer(FDefaultNodeHeight));
     Inc(SmallInt(FRoot.NodeHeight), Integer(Value) - Integer(FDefaultNodeHeight));
+{$ENDIF}
     FDefaultNodeHeight := Value;
     InvalidateCache;
     if (FUpdateCount = 0) and HandleAllocated and not (csLoading in ComponentState) then
@@ -14653,10 +15636,10 @@ begin
         if (vsInitializing in Node.States) and not (vsHasChildren in Node.States) then
           AdjustTotalHeight(Node, 0, False)
         else
-          AdjustTotalHeight(Node, -Integer(NodeHeight[Node]), True);
+          AdjustTotalHeight(Node, -{$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]), True);
         if FullyVisible[Node] then
         begin
-          Dec(FVisibleCount);
+          System.Dec(FVisibleCount);
           NeedUpdate := True;
         end;
         if FocusedNode = Node then
@@ -14673,10 +15656,10 @@ begin
       Exclude(Node.States, vsFiltered);
       if not (toShowFilteredNodes in FOptions.FPaintOptions) then
       begin
-        AdjustTotalHeight(Node, Integer(NodeHeight[Node]), True);
+        AdjustTotalHeight(Node, {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]), True);
         if FullyVisible[Node] then
         begin
-          Inc(FVisibleCount);
+          System.Inc(FVisibleCount);
           NeedUpdate := True;
         end;
       end;
@@ -14705,13 +15688,21 @@ begin
   begin
     if Assigned(FImages) then
     begin
+{$IFDEF VT_FMX}
+      FImageChangeLink.Images:= nil;
+{$ELSE}
       FImages.UnRegisterChanges(FImageChangeLink);
+{$ENDIF}
       FImages.RemoveFreeNotification(Self);
     end;
     FImages := Value;
     if Assigned(FImages) then
     begin
+{$IFDEF VT_FMX}
+      FImageChangeLink.Images:= FImages;
+{$ELSE}
       FImages.RegisterChanges(FImageChangeLink);
+{$ENDIF}
       FImages.FreeNotification(Self);
     end;
     if not (csLoading in ComponentState) then
@@ -14721,7 +15712,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetIndent(Value: Cardinal);
+procedure TBaseVirtualTree.SetIndent(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
 
 begin
   if FIndent <> Value then
@@ -14767,7 +15758,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetMargin(Value: Integer);
+procedure TBaseVirtualTree.SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if FMargin <> Value then
@@ -14867,15 +15858,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetNodeHeight(Node: PVirtualNode; Value: Cardinal);
+procedure TBaseVirtualTree.SetNodeHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
 
 var
-  Difference: Integer;
+  Difference: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   if Assigned(Node) and (Node <> FRoot) and (Node.NodeHeight <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
-    Difference := Integer(Value) - Integer(Node.NodeHeight);
+    Difference := {$IFDEF VT_VCL}Integer{$ENDIF}(Value) - {$IFDEF VT_VCL}Integer{$ENDIF}(Node.NodeHeight);
     Node.NodeHeight := Value;
 
     // If the node is effectively filtered out, nothing else has to be done, as it is not visible anyway.
@@ -14912,7 +15903,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetOffsetX(const Value: Integer);
+procedure TBaseVirtualTree.SetOffsetX(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   DoSetOffsetXY(Point(Value, FOffsetY), DefaultScrollUpdateFlags);
@@ -14928,7 +15919,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetOffsetY(const Value: Integer);
+procedure TBaseVirtualTree.SetOffsetY(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   DoSetOffsetXY(Point(FOffsetX, Value), DefaultScrollUpdateFlags);
@@ -14944,7 +15935,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetRangeX(value: Cardinal);
+procedure TBaseVirtualTree.SetRangeX(value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
 begin
   FRangeX := value;
 end;
@@ -15057,13 +16048,21 @@ begin
   begin
     if Assigned(FStateImages) then
     begin
+{$IFDEF VT_FMX}
+      FStateChangeLink.Images:= nil;
+{$ELSE}
       FStateImages.UnRegisterChanges(FStateChangeLink);
+{$ENDIF}
       FStateImages.RemoveFreeNotification(Self);
     end;
     FStateImages := Value;
     if Assigned(FStateImages) then
     begin
+{$IFDEF VT_FMX}
+      FStateChangeLink.Images:= FStateImages;
+{$ELSE}
       FStateImages.RegisterChanges(FStateChangeLink);
+{$ENDIF}
       FStateImages.FreeNotification(Self);
     end;
     if HandleAllocated and not (csLoading in ComponentState) then
@@ -15073,7 +16072,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetTextMargin(Value: Integer);
+procedure TBaseVirtualTree.SetTextMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if FTextMargin <> Value then
@@ -15117,7 +16116,11 @@ begin
   // updating is allowed. As this happens internally the VCL does not get notified and
   // still assumes the control is hidden. This results in weird "cannot focus invisible control" errors.
   if Visible and HandleAllocated and (FUpdateCount = 0) then
+{$IFDEF VT_FMX}
+    Repaint;
+{$ELSE}
     SendMessage(Handle, WM_SETREDRAW, Ord(not Updating), 0);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15158,7 +16161,7 @@ begin
         AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
       if VisiblePath[Node] then
       begin
-        Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
 
@@ -15170,10 +16173,10 @@ begin
     else
     begin
       if vsExpanded in Node.Parent.States then
-        AdjustTotalHeight(Node.Parent, -Integer(Node.TotalHeight), True);
+        AdjustTotalHeight(Node.Parent, -{$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight), True);
       if VisiblePath[Node] then
       begin
-        Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
       Exclude(Node.States, vsVisible);
@@ -15216,8 +16219,8 @@ begin
 end;
 
 // ----------------------------------------------------------------------------------------------------------------------
-procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: TPicture;
-  DrawBitmap: TBitmap; DrawBitmapWidth: Integer; DrawBitMapHeight: Integer; ABkgcolor: TColor);
+procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF};
+  DrawBitmap: TBitmap; DrawBitmapWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; DrawBitMapHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; ABkgcolor: TColor);
 const
   DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
 
@@ -15225,13 +16228,20 @@ const
   // will not disturb non-transparent ones
   procedure FillDrawBitmapWithBackGroundColor;
   begin
-    DrawBitmap.Canvas.Brush.Color := ABkgcolor;
-    DrawBitmap.Canvas.FillRect(Rect(0, 0, DrawBitmap.Width, DrawBitmap.Height));
+    DrawBitmap.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := ABkgcolor;
+    DrawBitmap.Canvas.FillRect(Rect(0, 0, DrawBitmap.Width, DrawBitmap.Height){$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
   end;
 
 begin
-  DrawBitmap.SetSize(DrawBitmapWidth, DrawBitMapHeight);
-
+  DrawBitmap.SetSize({$IFDEF VT_FMX}Round{$ENDIF}(DrawBitmapWidth), {$IFDEF VT_FMX}Round{$ENDIF}(DrawBitMapHeight)); //TODO: round is not good at all!!!
+{$IFDEF VT_FMX}
+  DrawBitmap.Canvas.DrawBitmap(//###!!!
+                          Source.Bitmap
+                          , Rect(0, 0, Source.Width, Source.Height)
+                          , Rect(0, 0, Source.Width, Source.Height)
+                          , 1.0
+                          );
+{$ELSE}
   if (Source.Graphic is TBitmap) and
      (FBackGroundImageTransparent or Source.Bitmap.TRANSPARENT)
   then
@@ -15249,11 +16259,12 @@ begin
       FillDrawBitmapWithBackGroundColor;
     DrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
   end
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.StaticBackground(Source: TPicture; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
+procedure TBaseVirtualTree.StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRectF; aBkgColor: TColor);
 
 // Draws the given source graphic so that it stays static in the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -15271,8 +16282,8 @@ begin
   DrawBitmap := TBitmap.Create;
   try
     // clear background
-    Target.Brush.Color := aBkgColor;
-    Target.FillRect(R);
+    Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := aBkgColor;
+    Target.FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
 
   // Picture rect in relation to client viewscreen.
   PicRect := Rect(FBackgroundOffsetX, FBackgroundOffsetY, FBackgroundOffsetX + Source.Width, FBackgroundOffsetY + Source.Height);
@@ -15285,9 +16296,17 @@ begin
   begin
       PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
       // copy image to destination
+{$IFDEF VT_FMX}
+      Target.DrawBitmap(DrawBitmap
+        ,Rect(DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X), (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top)
+        ,Rect(DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, DrawRect.Left, DrawRect.Top)
+        , 1.0
+        );
+{$ELSE}
       BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
       (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, 
         SRCCOPY);
+{$ENDIF}
     end;
   finally
     DrawBitmap.Free;
@@ -15297,24 +16316,126 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.StopTimer(ID: Integer);
-
 begin
+{$IFDEF VT_VCL}
   if HandleAllocated then
     KillTimer(Handle, ID);
+{$ENDIF}
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+{$IFDEF VT_FMX}
+procedure TBaseVirtualTree.SetBevelCut(Index: Integer; const Value: TBevelCut);
+begin
+  case Index of
+    0: { BevelInner }
+      if Value <> FBevelInner then
+      begin
+        FBevelInner := Value;
+        Repaint;
+      end;
+    1: { BevelOuter }
+      if Value <> FBevelOuter then
+      begin
+        FBevelOuter := Value;
+        Repaint;
+      end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBevelEdges(const Value: TBevelEdges);
+begin
+  if Value <> FBevelEdges then
+    begin
+      FBevelEdges := Value;
+      Repaint;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBevelKind(const Value: TBevelKind);
+begin
+  if Value <> FBevelKind then
+    begin
+      FBevelKind := Value;
+      Repaint;
+    end;
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBevelWidth(const Value: TBevelWidth);
+begin
+  if Value <> FBevelWidth then
+    begin
+      FBevelWidth := Value;
+      Repaint;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.ScreenToClient(P: TPoint): TPoint;
+begin
+  Result:= AbsoluteToLocal(P);
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.ClientToScreen(P: TPoint): TPoint;
+begin
+  Result:= LocalToAbsolute(P);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.Invalidate();
+begin
+  Repaint;
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.RecreateWnd();
+begin
+  Repaint;
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBiDiMode(Value: TBiDiMode);
+begin
+  if FBiDiMode <> Value then
+    begin
+      FBiDiMode := Value;
+      Repaint;
+    end;
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetBorderWidth(Value: TBorderWidth);
+begin
+  if FBorderWidth <> Value then
+    begin
+      FBorderWidth := Value;
+      Repaint;
+    end;
+end;
+
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.SetWindowTheme(const Theme: string);
 
 begin
   FChangingTheme := True;
+{$IFDEF VT_VCL}
   Winapi.UxTheme.SetWindowTheme(Handle, PWideChar(Theme), nil);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.TileBackground(Source: TPicture; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+procedure TBaseVirtualTree.TileBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it tiles into the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -15327,6 +16448,7 @@ var
   DeltaY: Integer;
   DrawBitmap: TBitmap;
 begin
+{$IFDEF VT_VCL}
   DrawBitmap := TBitmap.Create;
   try
     PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
@@ -15364,10 +16486,12 @@ begin
   finally
     DrawBitmap.Free;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
 var
@@ -15476,9 +16600,9 @@ begin
     end;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.CMColorChange(var Message: TMessage);
 
 begin
@@ -16190,9 +17314,9 @@ begin
     PRect(Message.LParam)^ := GetDisplayRect(Node, NoColumn, TextOnly);
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.TVMGetNextItem(var Message: TMessage);
 
 // Screen read support function. This method returns a node depending on the requested case.
@@ -16235,9 +17359,10 @@ begin
       Message.Result := LRESULT(GetFirst);
   end;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.WMCancelMode(var Message: TWMCancelMode);
 
 begin
@@ -17467,7 +18592,6 @@ var
   TempRgn: HRGN;
   BorderWidth,
   BorderHeight: Integer;
- 
 begin
   if tsUseThemes in FStates then
   begin
@@ -17914,7 +19038,7 @@ begin
   end;
   Message.Result := 0;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.AddToSelection(Node: PVirtualNode);
@@ -17984,18 +19108,19 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustPanningCursor(X, Y: Integer);
+procedure TBaseVirtualTree.AdjustPanningCursor(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Triggered by a mouse move when wheel panning/scrolling is active.
 // Loads the proper cursor which indicates into which direction scrolling is done.
-
+{$IFDEF VT_VCL}
 var
   Name: string;
   NewCursor: HCURSOR;
   ScrollHorizontal,
   ScrollVertical: Boolean;
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   ScrollHorizontal := Integer(FRangeX) > ClientWidth;
   ScrollVertical := Integer(FRangeY) > ClientHeight;
 
@@ -18080,6 +19205,7 @@ begin
   end
   else
     DeleteObject(NewCursor);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18125,7 +19251,7 @@ function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
 begin
   Assert((FRoot = nil) or (FRoot.ChildCount = 0), 'Internal data allocation must be done before any node is created.');
   Result := TreeNodeSize + FTotalInternalDataSize;
-  Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
+  System.Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
   InitRootNode(Result);
 end;
 
@@ -18167,22 +19293,22 @@ begin
 
       while (RemainingSteps > 0) and (RemainingTime > 0) and not Application.Terminated do
       begin
-        StartTime := timeGetTime;
+        StartTime := {$IFDEF VT_FMX}TThread.GetTickCount{$ELSE}timeGetTime{$ENDIF};
         NextTimeStep := StartTime + RemainingTime div RemainingSteps;
         if not Callback(CurrentStep, StepSize, Data) then
           Break;
 
         // Keep duration for this step for rest calculation.
-        CurrentTime := timeGetTime;
+        CurrentTime := {$IFDEF VT_FMX}TThread.GetTickCount{$ELSE}timeGetTime{$ENDIF};
         // Wait until the calculated time has been reached.
         while CurrentTime < NextTimeStep do
-          CurrentTime := timeGetTime;
+          CurrentTime := {$IFDEF VT_FMX}TThread.GetTickCount{$ELSE}timeGetTime{$ENDIF};
 
         // Subtract the time this step really needed.
         if RemainingTime >= CurrentTime - StartTime then
         begin
-          Dec(RemainingTime, CurrentTime - StartTime);
-          Dec(RemainingSteps);
+          System.Dec(RemainingTime, CurrentTime - StartTime);
+          System.Dec(RemainingSteps);
         end
         else
         begin
@@ -18194,11 +19320,11 @@ begin
         if (RemainingSteps > 0) and ((RemainingTime div RemainingSteps) < 1) then
         begin
           repeat
-            Inc(StepSize);
+            System.Inc(StepSize);
             RemainingSteps := RemainingTime div StepSize;
           until (RemainingSteps <= 0) or ((RemainingTime div RemainingSteps) >= 1);
         end;
-        CurrentStep := Steps - RemainingSteps;
+        CurrentStep := Cardinal(Steps) - RemainingSteps;
       end;
 
       if not Application.Terminated then
@@ -18216,7 +19342,7 @@ procedure TBaseVirtualTree.StartOperation(OperationKind: TVTOperationKind);
 // Called to indicate that a long-running operation has been started.
 
 begin
-  Inc(FOperationCount);
+  System.Inc(FOperationCount);
   if FOperationCount = 1 then
     FOperationCanceled := False;
   DoStartOperation(OperationKind);
@@ -18224,13 +19350,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CalculateSelectionRect(X, Y: Integer): Boolean;
+function TBaseVirtualTree.CalculateSelectionRect(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean;
 
 // Recalculates old and new selection rectangle given that X, Y are new mouse coordinates.
 // Returns True if there was a change since the last call.
 
 var
-  MaxValue: Integer;
+  MaxValue: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   if tsDrawSelecting in FStates then
@@ -18241,12 +19367,12 @@ begin
   if FNewSelRect.Bottom < 0 then
     FNewSelRect.Bottom := 0;
   MaxValue := ClientWidth;
-  if FRangeX > Cardinal(MaxValue) then
+  if FRangeX > {$IFDEF VT_VCL}Cardinal{$ENDIF}(MaxValue) then
     MaxValue := FRangeX;
   if FNewSelRect.Right > MaxValue then
     FNewSelRect.Right := MaxValue;
   MaxValue := ClientHeight;
-  if FRangeY > Cardinal(MaxValue) then
+  if FRangeY > {$IFDEF VT_VCL}Cardinal{$ENDIF}(MaxValue) then
     MaxValue := FRangeY;
   if FNewSelRect.Bottom > MaxValue then
     FNewSelRect.Bottom := MaxValue;
@@ -18269,7 +19395,11 @@ begin
   // Don't scroll the client area if the header is currently doing tracking or dragging.
   // Do auto scroll only if there is a draw selection in progress or the tree is the current drop target or
   // wheel panning/scrolling is active.
+{$IFDEF VT_FMX}
+  IsDropTarget := false; //TODO: drop..
+{$ELSE}
   IsDropTarget := Assigned(FDragManager) and DragManager.IsDropTarget;
+{$ENDIF}
   IsDrawSelecting := [tsDrawSelPending, tsDrawSelecting] * FStates <> [];
   IsWheelPanning := [tsWheelPanning, tsWheelScrolling] * FStates <> [];
   Result := ((toAutoScroll in FOptions.FAutoOptions) or IsWheelPanning) and
@@ -18306,7 +19436,9 @@ begin
   if FUpdateCount = 0 then
   begin
     if (FChangeDelay > 0) and HandleAllocated and not (tsSynchMode in FStates) then
+{$IFDEF VT_VCL}
       SetTimer(Handle, ChangeTimer, FChangeDelay, nil)
+{$ENDIF}	  
     else
       DoChange(Node);
   end;
@@ -18319,10 +19451,13 @@ procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31};
 const
   DefaultScalingFlags = [sfLeft, sfTop, sfWidth, sfHeight, sfFont]; // Was introduced with XE6: http://docwiki.embarcadero.com/Libraries/XE6/en/Vcl.Controls.TControl.DefaultScalingFlags
 {$ifend}
+{$IFDEF VT_VCL}
 var
   Flags: TScalingFlags;
   Run: PVirtualNode;
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
     if (M <> D) then
@@ -18364,6 +19499,7 @@ begin
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
   // It is important to do this call after calling inherited, so that the Font has been updated.
   AutoScale(M <> D);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18371,8 +19507,10 @@ end;
 procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
 
 begin
+{$IFDEF VT_VCL}
   if (Self.HandleAllocated) then
     SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18401,18 +19539,18 @@ begin
       // will get if this method returns True.
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
-        Inc(BoxCount);
+        System.Inc(BoxCount);
         if NewCheckState.IsChecked then
-          Inc(CheckCount);
+          System.Inc(CheckCount);
         PartialCheck := PartialCheck or (NewCheckState = csMixedNormal);
       end;
     end
     else
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
-        Inc(BoxCount);
+        System.Inc(BoxCount);
         if GetCheckState(Run).IsChecked then
-          Inc(CheckCount);
+          System.Inc(CheckCount);
         PartialCheck := PartialCheck or (GetCheckState(Run) = csMixedNormal);
       end;
     Run := Run.NextSibling;
@@ -18471,29 +19609,29 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ComputeRTLOffset(ExcludeScrollBar: Boolean): Integer;
+function TBaseVirtualTree.ComputeRTLOffset(ExcludeScrollBar: Boolean): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Computes the horizontal offset needed when all columns are automatically right aligned (in RTL bidi mode).
 // ExcludeScrollBar determines if the left-hand vertical scrollbar is to be included (if visible) or not.
 
 var
-  HeaderWidth: Integer;
+  HeaderWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   ScrollBarVisible: Boolean;
 begin
-  ScrollBarVisible := (Integer(FRangeY) > ClientHeight) and (ScrollBarOptions.ScrollBars in [ssVertical, ssBoth]);
+  ScrollBarVisible := ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) > ClientHeight) and (ScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth]);
   if ScrollBarVisible then
-    Result := GetSystemMetrics(SM_CXVSCROLL)
+    Result := {$IFDEF VT_FMX}16{$ELSE}GetSystemMetrics(SM_CXVSCROLL){$ENDIF}
   else
     Result := 0;
 
   // Make everything right aligned.
   HeaderWidth := FHeaderRect.Right - FHeaderRect.Left;
-  if Integer(FRangeX) + Result <= HeaderWidth then
-    Result := HeaderWidth - Integer(FRangeX);
+  if {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) + Result <= HeaderWidth then
+    Result := HeaderWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX);
   // Otherwise take only left-hand vertical scrollbar into account.
 
   if ScrollBarVisible and ExcludeScrollBar then
-    Dec(Result, GetSystemMetrics(SM_CXVSCROLL));
+    Dec(Result, {$IFDEF VT_FMX}16{$ELSE}GetSystemMetrics(SM_CXVSCROLL){$ENDIF});
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18513,14 +19651,14 @@ begin
   Level1 := 0;
   while Node1.Parent <> FRoot do
   begin
-    Inc(Level1);
+    System.Inc(Level1);
     Node1 := Node1.Parent;
   end;
 
   Level2 := 0;
   while Node2.Parent <> FRoot do
   begin
-    Inc(Level2);
+    System.Inc(Level2);
     Node2 := Node2.Parent;
   end;
 
@@ -18544,14 +19682,14 @@ begin
     while Assigned(Node) do
     begin
       if vsVisible in Node.States then
-        Inc(Result, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Inc(Result, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
       Node := Node.NextSibling;
     end;
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.CreateParams(var Params: TCreateParams);
 
 const
@@ -18559,7 +19697,7 @@ const
 
 begin
   inherited CreateParams(Params);
- 
+
   with Params do
   begin
     Style := Style or WS_CLIPCHILDREN or WS_CLIPSIBLINGS or ScrollBar[ScrollBarOptions.FScrollBars];
@@ -18583,9 +19721,9 @@ begin
     AddBiDiModeExStyle(ExStyle);
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.CreateWnd;
 
 // Initializes data which depends on a valid window handle.
@@ -18626,6 +19764,8 @@ begin
   UpdateScrollBars(True);
   UpdateHeaderRect;
 end;
+{$ENDIF}
+//----------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -18698,7 +19838,7 @@ begin
     if LabelHit or ImageHit or not (toShowDropmark in FOptions.FPaintOptions) then
       Result := dmOnNode
     else
-      if ((NodeRect.Top + NodeRect.Bottom) div 2) > P.Y then
+      if ((NodeRect.Top + NodeRect.Bottom) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) > P.Y then
         Result := dmAbove
       else
         Result := dmBelow;
@@ -18755,7 +19895,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: Integer;
+procedure TBaseVirtualTree.DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Alignment: TAlignment);
 
 // This method determines the hit position within a node with left-to-right orientation.
@@ -18764,7 +19904,7 @@ var
   MainColumnHit: Boolean;
   lIndent,
   TextWidth,
-  ImageOffset: Integer;
+  ImageOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   lOffsets: TVTOffsets;
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
@@ -18779,7 +19919,7 @@ begin
       // Position of button is interpreted very generously to avoid forcing the user
       // to click exactly into the 9x9 pixels area. The entire node height and one full
       // indentation level is accepted as button hit.
-      if Offset >= lOffsets[ofsCheckbox] - Integer(FIndent) then
+      if Offset >= lOffsets[ofsCheckbox] - {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) then
         Include(HitInfo.HitPositions, hiOnItemButton);
       if Offset > lOffsets[ofsToggleButton] then
         Include(HitInfo.HitPositions, hiOnItemButtonExact);
@@ -18833,7 +19973,7 @@ begin
               case Alignment of
                 taCenter:
                   begin
-                    lIndent := (ImageOffset + Right - TextWidth) div 2;
+                    lIndent := (ImageOffset + Right - TextWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
                     if Offset < lIndent then
                       Include(HitInfo.HitPositions, hiOnItemLeft)
                     else
@@ -18866,7 +20006,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: Integer; Alignment: TAlignment);
+procedure TBaseVirtualTree.DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment);
 
 // This method determines the hit position within a node with right-to-left orientation.
 
@@ -18875,7 +20015,7 @@ var
   Run: PVirtualNode;
   Indent,
   TextWidth,
-  ImageOffset: Integer;
+  ImageOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
@@ -18907,7 +20047,7 @@ begin
       // Position of button is interpreted very generously to avoid forcing the user
       // to click exactly into the 9x9 pixels area. The entire node height and one full
       // indentation level is accepted as button hit.
-      if Offset <= Right + Integer(FIndent) then
+      if Offset <= Right + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) then
         Include(HitInfo.HitPositions, hiOnItemButton);
       if Offset <= Right + FPlusBM.Width then
         Include(HitInfo.HitPositions, hiOnItemButtonExact);
@@ -18935,7 +20075,7 @@ begin
       // Check support is only available for the main column.
       if MainColumnHit and (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and
         (HitInfo.HitNode.CheckType <> ctNone) then
-        Dec(ImageOffset, FCheckImages.Width + FImagesMargin);
+        Dec(ImageOffset, {$IFDEF VT_FMX}16{$ELSE}FCheckImages.Width{$ENDIF} + FImagesMargin); //TODO: 16px Image!
 
       if MainColumnHit and (Offset > ImageOffset) then
       begin
@@ -18967,12 +20107,13 @@ begin
             begin
               // Consider bidi mode here. In RTL context does left alignment actually mean right alignment
               // and vice versa.
+{$IFDEF VT_VCL}
               ChangeBiDiModeAlignment(Alignment);
-
+{$ENDIF}
               case Alignment of
                 taCenter:
                   begin
-                    Indent := (ImageOffset - TextWidth) div 2;
+                    Indent := (ImageOffset - TextWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
                     if Offset < Indent then
                       Include(HitInfo.HitPositions, hiOnItemLeft)
                     else
@@ -19026,11 +20167,11 @@ begin
   // Determine indentation level of top node.
   while Run.Parent <> FRoot do
   begin
-    Inc(X);
+    System.Inc(X);
     Run := Run.Parent;
     // Count selected nodes (FRoot is never selected).
     if vsSelected in Run.States then
-      Inc(Result);
+      System.Inc(Result);
   end;
 
   // Set initial size of line index array, this will automatically initialized all entries to ltNone.
@@ -19043,7 +20184,7 @@ begin
   begin
     if toChildrenAbove in FOptions.FPaintOptions then
     begin
-      Dec(X);
+      System.Dec(X);
       if not HasVisiblePreviousSibling(Node) then
       begin
         if (Node.Parent <> FRoot) or HasVisibleNextSibling(Node) then
@@ -19061,7 +20202,7 @@ begin
       Run := Node.Parent;
       while Run <> FRoot do
       begin
-        Dec(X);
+        System.Dec(X);
         if HasVisiblePreviousSibling(Run) then
           LineImage[X] := ltTopDown
         else
@@ -19088,7 +20229,7 @@ begin
         repeat
           if Run.Parent = FRoot then
             Break;
-          Dec(X);
+          System.Dec(X);
           if HasVisibleNextSibling(Run) then
             LineImage[X - 1] := ltTopDown
           else
@@ -19129,10 +20270,11 @@ begin
       end;
     end;
   end;
-
+{$IFDEF VT_VCL}
   if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0)
        and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.FAutoOptions)) then
     LineImage[Indent] := ltNone;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19158,7 +20300,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DetermineScrollDirections(X, Y: Integer): TScrollDirections;
+function TBaseVirtualTree.DetermineScrollDirections(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): TScrollDirections;
 
 // Determines which direction the client area must be scrolled depending on the given position.
 
@@ -19182,18 +20324,19 @@ begin
     end
     else
     begin
-      if (X < Integer(FDefaultNodeHeight)) and (FEffectiveOffsetX <> 0) then
+      if (X < {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) and (FEffectiveOffsetX <> 0) then
         Include(Result, sdLeft);
-      if (ClientWidth + FEffectiveOffsetX < Integer(FRangeX)) and (X > ClientWidth - Integer(FDefaultNodeHeight)) then
+      if (ClientWidth + FEffectiveOffsetX < {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX)) and (X > ClientWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) then
         Include(Result, sdRight);
 
-      if (Y < Integer(FDefaultNodeHeight)) and (FOffsetY <> 0) then
+      if (Y < {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) and (FOffsetY <> 0) then
         Include(Result, sdUp);
-      if (ClientHeight - FOffsetY < Integer(FRangeY)) and (Y > ClientHeight - Integer(FDefaultNodeHeight)) then
+      if (ClientHeight - FOffsetY < {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY)) and (Y > ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) then
         Include(Result, sdDown);
 
       // Since scrolling during dragging is not handled via the timer we do a check here whether the auto
       // scroll timeout already has elapsed or not.
+{$IFDEF VT_VCL}
       if (Result <> []) and
         ((Assigned(FDragManager) and DragManager.IsDropTarget) or
         (FindDragTarget(Point(X, Y), False) = Self)) then
@@ -19205,6 +20348,7 @@ begin
         if ((Int64(timeGetTime) - FDragScrollStart) < FAutoScrollDelay) then
           Result := [];
       end;
+{$ENDIF}
     end;
   end;
 end;
@@ -19256,7 +20400,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoAutoScroll(X, Y: Integer);
+procedure TBaseVirtualTree.DoAutoScroll(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   FScrollDirections := DetermineScrollDirections(X, Y);
@@ -19277,7 +20421,9 @@ begin
       if (FStates * [tsScrollPending, tsScrolling]) = [] then
       begin
         DoStateChange([tsScrollPending]);
+{$IFDEF VT_VCL}		
         SetTimer(Handle, ScrollTimer, FAutoScrollDelay, nil);
+{$ENDIF}
       end;
     end;
   end;
@@ -19297,27 +20443,36 @@ end;
 
 procedure TBaseVirtualTree.DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
   CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
-
 var
   UpdateRect: TRect;
-
 begin
   if Assigned(FOnBeforeCellPaint) then
   begin
     if CellPaintMode = cpmGetContentMargin then
     begin
       // Prevent drawing if we are only about to get the margin. As this also clears the update rect we need to save it.
+{$IFDEF VT_FMX}
+      UpdateRect:= GetUpdateRect;
+{$ELSE}
       GetUpdateRect(Handle, UpdateRect, False);
+{$ENDIF}
       SetUpdateState(True);
     end;
-
+{$IFDEF VT_FMX}
+    Canvas.Font.Assign(Self.Font); // Fixes issue #298
+{$ELSE}
     Canvas.Font := Self.Font; // Fixes issue #298
+{$ENDIF}
     FOnBeforeCellPaint(Self, Canvas, Node, Column, CellPaintMode, CellRect, ContentRect);
 
     if CellPaintMode = cpmGetContentMargin then
     begin
       SetUpdateState(False);
+{$IFDEF VT_FMX}
+      Repaint;
+{$ELSE}
       InvalidateRect(Handle, @UpdateRect, False);
+{$ENDIF}
     end;
   end;
 end;
@@ -19432,8 +20587,10 @@ procedure TBaseVirtualTree.DoChecked(Node: PVirtualNode);
 begin
   if Assigned(FOnChecked) then
     FOnChecked(Self, Node);
+{$IFDEF VT_VCL}
   if Assigned(FAccessibleItem) then
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19463,8 +20620,10 @@ begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
 
+{$IFDEF VT_VCL}
   if Assigned(FAccessibleItem) then
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+{$ENDIF}
 
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
@@ -19536,6 +20695,9 @@ begin
     if Column > NoColumn then
     begin
       // Invalidate client area from the current column all to the right (or left in RTL mode).
+{$IFDEF VT_FMX}
+      Repaint;
+{$ELSE}
       R := ClientRect;
       if not (toAutoSpanColumns in FOptions.FAutoOptions) then
         if UseRightToLeftAlignment then
@@ -19544,9 +20706,14 @@ begin
           R.Left := FHeader.Columns[Column].Left;
       InvalidateRect(Handle, @R, False);
       FHeader.Invalidate(FHeader.Columns[Column], True);
+{$ENDIF}
     end;
     if [hsColumnWidthTracking, hsResizing] * FHeader.States = [hsColumnWidthTracking] then
+{$IFDEF VT_FMX}
+      Repaint;
+{$ELSE}
       UpdateWindow(Handle);
+{$ENDIF}
 
     if not (tsUpdating in FStates) then
       UpdateDesigner; // design time only
@@ -19580,7 +20747,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.DoCreateDataObject: IDataObject;
 
 begin
@@ -19598,7 +20765,7 @@ begin
   if Assigned(FOnCreateDragManager) then
     FOnCreateDragManager(Self, Result);
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink;
@@ -19612,7 +20779,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoDragging(P: TPoint);
-
+{$IFDEF VT_VCL}
 // Initiates finally the drag'n drop operation and returns after DD is finished.
 
   //--------------- local function --------------------------------------------
@@ -19641,8 +20808,9 @@ var
   DragObject: TDragObject;
 
   DataObject: IDataObject;
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   DataObject := nil;
   // Dragging is dragging, nothing else.
   DoCancelEdit;
@@ -19702,6 +20870,7 @@ begin
   finally
     FDragSelection := nil;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19712,6 +20881,7 @@ var
   SourceTree: TBaseVirtualTree;
 
 begin
+{$IFDEF VT_VCL}
   StopTimer(ExpandTimer);
   if Assigned(FDropTargetNode) and (vsHasChildren in FDropTargetNode.States) and
     not (vsExpanded in FDropTargetNode.States) then
@@ -19728,6 +20898,7 @@ begin
     if not DragManager.DropTargetHelperSupported and Assigned(SourceTree) then
       SourceTree.FDragImage.ShowDragImage;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19743,7 +20914,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: IDataObject; const Formats: TFormatArray;
+procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; const Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 
 begin
@@ -19775,8 +20946,9 @@ begin
     FEditLink := DoCreateEditor(FFocusedNode, FEditColumn);
     if Assigned(FEditLink) then
     begin
-      DoStateChange([tsEditing], [tsDrawSelecting, tsDrawSelPending, tsToggleFocusedSelection, tsOLEDragPending,
-        tsOLEDragging, tsClearPending, tsDrawSelPending, tsScrollPending, tsScrolling, tsMouseCheckPending]);
+      DoStateChange([tsEditing], [tsDrawSelecting, tsDrawSelPending, tsToggleFocusedSelection, 
+	    {$IFDEF VT_VCL}tsOLEDragPending, tsOLEDragging,{$ENDIF} 
+		tsClearPending, tsDrawSelPending, tsScrollPending, tsScrolling, tsMouseCheckPending]);
       ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions,
         not (toDisableAutoscrollOnEdit in FOptions.AutoOptions));
       if FEditLink.PrepareEdit(Self, FFocusedNode, FEditColumn) then
@@ -19797,7 +20969,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoEndDrag(Target: TObject; X, Y: Integer);
+procedure TBaseVirtualTree.DoEndDrag(Target: TObject; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Does some housekeeping for VCL drag'n drop;
 
@@ -19852,9 +21024,10 @@ procedure TBaseVirtualTree.DoExpanded(Node: PVirtualNode);
 begin
   if Assigned(FOnExpanded) then
     FOnExpanded(Self, Node);
-
+{$IFDEF VT_VCL}
   if Assigned(FAccessibleItem) then
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19875,6 +21048,7 @@ begin
   if Assigned(FOnFocusChanged) then
     FOnFocusChanged(Self, Node, Column);
 
+{$IFDEF VT_VCL}
   if Assigned(FAccessibleItem) then
   begin
     NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
@@ -19884,6 +21058,7 @@ begin
     NotifyWinEvent(EVENT_OBJECT_SELECTION, Handle, OBJID_CLIENT, CHILDID_SELF);
     NotifyWinEvent(EVENT_OBJECT_FOCUS, Handle, OBJID_CLIENT, CHILDID_SELF);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20033,7 +21208,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoGetHeaderCursor(var Cursor: HCURSOR);
+procedure TBaseVirtualTree.DoGetHeaderCursor(var Cursor: {$IFDEF VT_FMX}TCursor{$ELSE}HCURSOR{$ENDIF});
 
 begin
   if Assigned(FOnGetHeaderCursor) then
@@ -20112,7 +21287,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer;
+function TBaseVirtualTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Returns the pixel width of extra space occupied by node contents (for example, static text).
 
@@ -20122,7 +21297,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer;
+function TBaseVirtualTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Returns the pixel width of a node.
 
@@ -20160,14 +21335,14 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.DoGetUserClipboardFormats(var Formats: TFormatEtcArray);
 
 begin
   if Assigned(FOnGetUserClipboardFormats) then
     FOnGetUserClipboardFormats(Self, Formats);
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoHeaderAddPopupItem(const Column: TColumnIndex; var Cmd: TAddPopupItemType);
@@ -20336,7 +21511,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
+procedure TBaseVirtualTree.DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if not (vsInitialized in Node.States) then
@@ -20457,12 +21632,14 @@ procedure TBaseVirtualTree.DoPaintDropMark(Canvas: TCanvas; Node: PVirtualNode; 
 
 // draws the drop mark into the given rectangle
 // Note: Changed properties of the given canvas should be reset to their previous values.
-
+{$IFDEF VT_VCL}
 var
   SaveBrushColor: TColor;
   SavePenStyle: TPenStyle;
 
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if FLastDropMode in [dmAbove, dmBelow] then
     with Canvas do
     begin
@@ -20492,6 +21669,7 @@ begin
       Brush.Color := SaveBrushColor;
       Pen.Style := SavePenStyle;
     end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20533,7 +21711,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
   ForClipboard: Boolean): HRESULT;
 
@@ -20542,6 +21720,7 @@ begin
   if Assigned(FOnRenderOLEData) then
     FOnRenderOLEData(Self, FormatEtcIn, Medium, ForClipboard, Result);
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -20566,7 +21745,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoScroll(DeltaX, DeltaY: Integer);
+procedure TBaseVirtualTree.DoScroll(DeltaX, DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Assigned(FOnScroll) then
@@ -20581,24 +21760,26 @@ function TBaseVirtualTree.DoSetOffsetXY(Value: TPoint; Options: TScrollUpdateOpt
 // Returns True if the offset really changed otherwise False is returned.
 
 var
-  DeltaX: Integer;
-  DeltaY: Integer;
+  DeltaX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+{$IFDEF VT_VCL}
   DWPStructure: HDWP;
+{$ENDIF}
   I: Integer;
   P: TPoint;
   R: TRect;
 
 begin
   // Range check, order is important here.
-  if Value.X < (ClientWidth - Integer(FRangeX)) then
-    Value.X := ClientWidth - Integer(FRangeX);
+  if Value.X < (ClientWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX)) then
+    Value.X := ClientWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX);
   if Value.X > 0 then
     Value.X := 0;
   DeltaX := Value.X - FOffsetX;
   if UseRightToLeftAlignment then
     DeltaX := -DeltaX;
-  if Value.Y < (ClientHeight - Integer(FRangeY)) then
-    Value.Y := ClientHeight - Integer(FRangeY);
+  if Value.Y < (ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY)) then
+    Value.Y := ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY);
   if Value.Y > 0 then
     Value.Y := 0;
   DeltaY := Value.Y - FOffsetY;
@@ -20615,9 +21796,11 @@ begin
     if FUpdateCount = 0 then
     begin
       // The drag image from VCL controls need special consideration.
+{$IFDEF VT_VCL}
       if tsVCLDragging in FStates then
         ImageList_DragShowNolock(False);
-
+{$ENDIF}
+{$IFDEF VT_VCL}
       if (suoScrollClientArea in Options) and not (tsToggling in FStates) then
       begin
         // Have to invalidate the entire window if there's a background.
@@ -20678,15 +21861,27 @@ begin
 
       if tsVCLDragging in FStates then
         ImageList_DragShowNolock(True);
+{$ENDIF}
     end;
 
     // Finally update "hot" node if hot tracking is activated
+{$IFDEF VT_FMX}
+    //FMX.Platform.GetMousePos(P);
+    P:= Screen.MousePos();
+    P := AbsoluteToLocal(P);
+    if PtInRect(BoundsRect, P) then
+      HandleHotTrack(P.X, P.Y);
+
+    DoScroll(DeltaX, DeltaY);
+{$ELSE}
     GetCursorPos(P);
     P := ScreenToClient(P);
     if PtInRect(ClientRect, P) then
       HandleHotTrack(P.X, P.Y);
 
     DoScroll(DeltaX, DeltaY);
+{$ENDIF}
+
   end;
 end;
 
@@ -20695,7 +21890,9 @@ end;
 procedure TBaseVirtualTree.DoShowScrollBar(Bar: Integer; Show: Boolean);
 
 begin
+{$IFDEF VT_VCL}
   ShowScrollBar(Handle, Bar, Show);
+{$ENDIF}
   if Assigned(FOnShowScrollBar) then
     FOnShowScrollBar(Self, Bar, Show);
 end;
@@ -20709,7 +21906,9 @@ begin
 
   // Check if the application created an own drag object. This is needed to pass the correct source in
   // OnDragOver and OnDragDrop.
+{$IFDEF VT_VCL}
   if Assigned(DragObject) then
+{$ENDIF}
     DoStateChange([tsUserDragObject]);
 end;
 
@@ -20772,7 +21971,8 @@ var
   DeltaY: Integer;
 
 begin
-  GetCursorPos(P);
+{$IFDEF VT_VCL}
+  GetCursorPos(P); //Platform.GetMousePos(P);
   R := ClientRect;
   ClipRect := R;
   MapWindowPoints(Handle, 0, R, 2);
@@ -20881,6 +22081,7 @@ begin
       DoStateChange([], [tsScrollPending, tsScrolling]);
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20905,11 +22106,10 @@ function TBaseVirtualTree.DoValidateCache: Boolean;
 
 var
   EntryCount,
-  CurrentTop,
   Index: Cardinal;
   CurrentNode,
   Temp: PVirtualNode;
-
+  CurrentTop: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
 begin
   EntryCount := 0;
   if not (tsStopValidation in FStates) then
@@ -20961,7 +22161,7 @@ begin
             Node := CurrentNode;
             AbsoluteTop := CurrentTop;
           end;
-          Inc(Index);
+          System.Inc(Index);
         end;
 
         Inc(CurrentTop, NodeHeight[CurrentNode]);
@@ -20972,7 +22172,7 @@ begin
           Break;                   // CHANGED: 17.09.2013 - Veit Zimmermann
 
         CurrentNode := Temp;
-        Inc(EntryCount);
+        System.Inc(EntryCount);
       end;
     end;
     // Finalize the position cache so no nil entry remains there.
@@ -20999,18 +22199,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: IDataObject; var DragEffect: Integer);
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; var DragEffect: Integer);
 var
   lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
 begin
   if IsWinVistaOrAbove then
   begin
     lDragEffect := DWord(DragEffect);
+{$IFDEF VT_VCL}
     SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
+{$ENDIF}
     DragEffect := Integer(lDragEffect);
   end
   else
+{$IFDEF VT_VCL}
   Winapi.ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
+{$ENDIF}
  end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21026,18 +22230,18 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
+function TBaseVirtualTree.DragDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; KeyState: Integer; Pt: TPoint;
   var Effect: Integer): HResult;
-
+{$IFDEF VT_VCL}
 var
   Shift: TShiftState;
   EnumFormat: IEnumFormatEtc;
   Fetched: Integer;
   OLEFormat: TFormatEtc;
   Formats: TFormatArray;
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   StopTimer(ExpandTimer);
   StopTimer(ScrollTimer);
   DoStateChange([], [tsScrollPending, tsScrolling]);
@@ -21088,6 +22292,7 @@ begin
       FDropTargetNode := nil;
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21103,6 +22308,7 @@ var
   HitInfo: THitInfo;
 
 begin
+{$IFDEF VT_VCL}
   try
     // Determine acceptance of drag operation and reset scroll start time.
     FDragScrollStart := 0;
@@ -21149,6 +22355,7 @@ begin
   except
     Result := E_UNEXPECTED;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21162,12 +22369,13 @@ var
   P: TPoint;
 
 begin
-  if [tsOLEDragging, tsVCLDragPending, tsVCLDragging, tsVCLDragFinished] * FStates = [] then
+  if [{$IFDEF VT_VCL}tsOLEDragging, {$ENDIF}tsVCLDragPending, tsVCLDragging, tsVCLDragFinished] * FStates = [] then
     Exit;
 
   DoStateChange([], [tsVCLDragPending, tsVCLDragging, tsUserDragObject, tsVCLDragFinished]);
 
-  GetCursorPos(P);
+{$IFDEF VT_VCL}
+  GetCursorPos(P);  //Platform.GetMousePos(P);
   P := ScreenToClient(P);
   if tsRightButtonDown in FStates then
     Perform(WM_RBUTTONUP, 0, LPARAM(Integer(PointToSmallPoint(P))))
@@ -21176,6 +22384,7 @@ begin
       Perform(WM_MBUTTONUP, 0, LPARAM(Integer(PointToSmallPoint(P))))
     else
       Perform(WM_LBUTTONUP, 0, LPARAM(Integer(PointToSmallPoint(P))));
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21187,19 +22396,24 @@ var
 
 begin
   StopTimer(ExpandTimer);
-
+{$IFDEF VT_VCL}
   if not DragManager.DropTargetHelperSupported and Assigned(DragManager.DragSource) then
     DragManager.DragSource.FDragImage.HideDragImage;
+{$ENDIF}
 
   if Assigned(FDropTargetNode) then
   begin
     InvalidateNode(FDropTargetNode);
     FDropTargetNode := nil;
   end;
+{$IFDEF VT_FMX}
+  Repaint;
+{$ELSE}
   UpdateWindow(Handle);
+{$ENDIF}
 
   Effect := 0;
-  DoDragOver(nil, [], dsDragLeave, Point(0, 0), FLastDropMode, Effect);
+  DoDragOver(nil, [], TDragState.dsDragLeave, Point(0, 0), FLastDropMode, Effect);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21221,10 +22435,11 @@ var
   Tree: TBaseVirtualTree;
   LastNode: PVirtualNode;
   DeltaX,
-  DeltaY: Integer;
+  DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   ScrollOptions: TScrollUpdateOptions;
 
 begin
+{$IFDEF VT_VCL}
   if not DragManager.DropTargetHelperSupported and (Source is TBaseVirtualTree) then
   begin
     Tree := Source as TBaseVirtualTree;
@@ -21256,7 +22471,7 @@ begin
       if sdDown in FScrollDirections then
       begin
         DeltaY := -Min(FScrollBarOptions.FIncrementY, ClientHeight);
-        if (ClientHeight - FOffsetY) = Integer(FRangeY) then
+        if (ClientHeight - FOffsetY) = {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) then
           Exclude(FScrollDirections, sdDown);
       end;
       if sdLeft in FScrollDirections then
@@ -21268,7 +22483,7 @@ begin
       if sdRight in FScrollDirections then
       begin
         DeltaX := -FScrollBarOptions.FIncrementX;
-        if (ClientWidth + FEffectiveOffsetX) = Integer(FRangeX) then
+        if (ClientWidth + FEffectiveOffsetX) = {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) then
           Exclude(FScrollDirections, sdRight);
       end;
       WindowScrolled := DoSetOffsetXY(Point(FOffsetX + DeltaX, FOffsetY + DeltaY), ScrollOptions, nil);
@@ -21398,11 +22613,12 @@ begin
   except
     Result := E_UNEXPECTED;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: Integer);
+procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -21412,16 +22628,21 @@ var
 begin
   with PaintInfo, Canvas do
   begin
+{$IFDEF VT_FMX}
+    Fill.Color := FColors.BackGroundColor;
+    R := RectF(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
+    FillRect(R, 0, 0, [], 1.0, FDottedBrush);
+{$ELSE}
     Brush.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-    Winapi.Windows.FillRect(Handle, R, FDottedBrush
-    );
+    Winapi.Windows.FillRect(Handle, R, FDottedBrush);
+{$ENDIF}
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: Integer; UseSelectedBkColor: Boolean = False);
+procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; UseSelectedBkColor: Boolean = False);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -21433,15 +22654,19 @@ begin
   begin
     if UseSelectedBkColor then
     begin
-      if Focused or (toPopupMode in FOptions.FPaintOptions) then
-        Brush.Color := FColors.FocusedSelectionColor
+      if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
+        {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.FocusedSelectionColor
       else
-        Brush.Color := FColors.UnfocusedSelectionColor;
+        {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.UnfocusedSelectionColor;
     end
     else
-      Brush.Color := FColors.BackGroundColor;
+      {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
+{$IFDEF VT_FMX}
+    FillRect(R, 0, 0, [], 1.0, FDottedBrush);
+{$ELSE}
     Winapi.Windows.FillRect(Handle, R, FDottedBrush);
+{$ENDIF}
   end;
 end;
 
@@ -21453,7 +22678,7 @@ procedure TBaseVirtualTree.EndOperation(OperationKind: TVTOperationKind);
 
 begin
   Assert(FOperationCount > 0, 'EndOperation must not be called when no operation in progress.');
-  Dec(FOperationCount);
+  System.Dec(FOperationCount);
   DoEndOperation(OperationKind);
 end;
 
@@ -21572,6 +22797,7 @@ begin
   Result.cx := 0;
   Result.cy := 0;
 
+{$IFDEF VT_VCL}
   Styles := GetWindowLong(Handle, GWL_STYLE);
   if (Styles and WS_BORDER) <> 0 then
   begin
@@ -21589,6 +22815,7 @@ begin
     Dec(Result.cx, GetSystemMetrics(SM_CXEDGE));
     Dec(Result.cy, GetSystemMetrics(SM_CYEDGE));
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21697,7 +22924,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.GetHintWindowClass: THintWindowClass;
 
 // Returns the default hint window class used for the tree. Descendants can override it to use their own classes.
@@ -21705,6 +22932,7 @@ function TBaseVirtualTree.GetHintWindowClass: THintWindowClass;
 begin
   Result := TVirtualTreeHintWindow;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -21751,10 +22979,10 @@ begin
   lImageList := DoGetImageIndex(Node, Kind, Column, Ghosted, Index);
   if Index >= 0 then begin
     if IncludePadding then
-      Result.cx := lImageList.Width + ScaledPixels(2)
+      Result.cx := {$IFDEF VT_FMX}16{$ELSE}lImageList.Width{$ENDIF} + ScaledPixels(2) //TODO: 16px Image! 
     else
-      Result.cx := lImageList.Width;
-    Result.cy := lImageList.Height;
+      Result.cx := {$IFDEF VT_FMX}16{$ELSE}lImageList.Width{$ENDIF}; //TODO: 16px Image! 
+    Result.cy := {$IFDEF VT_FMX}16{$ELSE}lImageList.Height{$ENDIF}; //TODO: 16px Image! 
   end
   else begin
     Result.cx := 0;
@@ -21781,7 +23009,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetMaxRightExtend(): Cardinal;
+function TBaseVirtualTree.GetMaxRightExtend(): {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
 
 // Determines the maximum with of the currently visible part of the tree, depending on the length
 // of the node texts. This method is used for determining the horizontal scroll range if no columns are used.
@@ -21789,8 +23017,8 @@ function TBaseVirtualTree.GetMaxRightExtend(): Cardinal;
 var
   Node,
   NextNode: PVirtualNode;
-  TopPosition: Integer;
-  CurrentWidth: Integer;
+  TopPosition: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  CurrentWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   Node := GetNodeAt(0, 0, True, TopPosition);
@@ -21803,7 +23031,7 @@ begin
     if not (vsInitialized in Node.States) then
       InitNode(Node);
     CurrentWidth := GetOffset(TVTElement.ofsRightOfText, Node);
-    if Integer(Result) < (CurrentWidth) then
+    if {$IFDEF VT_VCL}Integer{$ENDIF}(Result) < (CurrentWidth) then
       Result := CurrentWidth;
     Inc(TopPosition, NodeHeight[Node]);
     if TopPosition > Height then
@@ -21818,7 +23046,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.GetNativeClipboardFormats(var Formats: TFormatEtcArray);
 
 // Returns the supported clipboard formats of the tree.
@@ -21828,6 +23056,7 @@ begin
   // Ask application/descendants for self defined formats.
   DoGetUserClipboardFormats(Formats);
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -21847,17 +23076,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: IDataObject): TBaseVirtualTree;
+function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}): TBaseVirtualTree;
 
 // Returns the owner/sender of the given data object by means of a special clipboard format
 // or nil if the sender is in another process or no virtual tree at all.
-
+{$IFDEF VT_VCL}
 var
   Medium: TStgMedium;
   Data: PVTReference;
 
+{$ENDIF}
 begin
   Result := nil;
+
+{$IFDEF VT_VCL}
   if Assigned(DataObject) then
   begin
     StandardOLEFormat.cfFormat := CF_VTREFERENCE;
@@ -21873,11 +23105,12 @@ begin
       ReleaseStgMedium(Medium);
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.HandleHotTrack(X, Y: Integer);
+procedure TBaseVirtualTree.HandleHotTrack(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // Updates the current "hot" node.
 
@@ -21888,6 +23121,7 @@ var
   DoInvalidate: Boolean;
   oldHotNode : PVirtualNode;
 begin
+{$IFDEF VT_VCL}
   if not IsMouseCursorVisible then
   begin
     if Assigned(FCurrentHotNode) then
@@ -21897,6 +23131,7 @@ begin
     end;
     Exit;
   end;//if  not IsMouseCursorVisible
+{$ENDIF}
 
   DoInvalidate := False;
   oldHotNode := FCurrentHotNode;
@@ -21907,10 +23142,11 @@ begin
   CheckPositions := [hiOnItemLabel, hiOnItemCheckbox];
 
   // If running under Windows Vista using the explorer theme hitting the buttons makes the node hot, too.
+{$IFDEF VT_VCL}
   if tsUseExplorerTheme in FStates then
     Include(CheckPositions, hiOnItemButtonExact);
-
-  if (CheckPositions * HitInfo.HitPositions = []) and
+{$ENDIF}
+  if (CheckPositions * HitInfo.HitPositions = []) and //TODO: check merge TurboPack
     (not (toFullRowSelect in FOptions.FSelectionOptions) or (hiNowhere in HitInfo.HitPositions)) then
     FCurrentHotNode := nil
   else
@@ -22068,7 +23304,7 @@ var
   end;
 
   //---------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
   function CodePageFromLocale(Language: LCID): Integer;
 
   // Determines the code page for a given locale.
@@ -22081,6 +23317,7 @@ var
     GetLocaleInfo(Language, LOCALE_IDEFAULTANSICODEPAGE, Buf, 6);
     Result := StrToIntDef(Buf, GetACP);
   end;
+{$ENDIF}
 
   //---------------------------------------------------------------------------
 
@@ -22108,7 +23345,7 @@ begin
 
       // Convert the given virtual key code into a Unicode character based on the current locale.
       NewChar := KeyUnicode(Char(CharCode));
-      PreviousSearch := NewChar = WideChar(VK_BACK);
+      PreviousSearch := NewChar = {$IFDEF VT_FMX}WideChar(vkBack){$ELSE}WideChar(VK_BACK){$ENDIF};
       // We cannot do a search with an empty search buffer.
       if not PreviousSearch or (FSearchBuffer <> '') then
       begin
@@ -22201,12 +23438,22 @@ begin
     end;
 
     // Restart search timeout interval.
+{$IFDEF VT_VCL}	
     SetTimer(Handle, SearchTimer, FSearchTimeout, nil);
+{$ENDIF}
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+{$IFDEF VT_FMX}
+procedure TBaseVirtualTree.MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single);
+begin
+  //TODO: MouseDown
+end;
 
+{$ENDIF}
+//----------------------------------------------------------------------------------------------------------------------
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo);
 
 var
@@ -22751,7 +23998,7 @@ begin
     end;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.HasImage(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex): Boolean;
@@ -22868,7 +24115,7 @@ begin
         begin
           AdjustTotalHeight(Node, -NodeHeight, True);
           if FullyVisible[Node] then
-            Dec(FVisibleCount);
+            System.Dec(FVisibleCount);
           if FUpdateCount = 0 then
             UpdateScrollBars(True);
         end;
@@ -22901,7 +24148,7 @@ procedure TBaseVirtualTree.InternalAddFromStream(Stream: TStream; Version: Integ
 var
   Stop: PVirtualNode;
   Index: Integer;
-  LastTotalHeight: Cardinal;
+  LastTotalHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
   WasFullyVisible: Boolean;
 
 begin
@@ -22920,19 +24167,19 @@ begin
   FixupTotalCount(Node);
   AdjustTotalCount(Node.Parent, Node.TotalCount - 1, True); // -1 because Node itself was already set.
   FixupTotalHeight(Node);
-  AdjustTotalHeight(Node.Parent, Integer(Node.TotalHeight) - Integer(LastTotalHeight), True);
+  AdjustTotalHeight(Node.Parent, {$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) - {$IFDEF VT_VCL}Integer{$ENDIF}(LastTotalHeight), True);
 
   // New nodes are always visible, so the visible node count has been increased already.
   // If Node is now invisible we have to take back this increment and don't need to add any visible child node.
   if not FullyVisible[Node] or IsEffectivelyFiltered[Node] then
   begin
     if WasFullyVisible then
-      Dec(FVisibleCount);
+      System.Dec(FVisibleCount);
   end
   else
     // It can never happen that the node is now fully visible but was not before as this would require
     // that the visibility state of one of its parents has changed, which cannot happen during loading.
-    Inc(FVisibleCount, CountVisibleChildren(Node));
+    System.Inc(FVisibleCount, CountVisibleChildren(Node));
 
   // Fix selection array.
   ClearTempCache;
@@ -23010,7 +24257,7 @@ begin
     for I := 0 to NewLength - 1 do
     begin
       AddedNodesIndexes[AddedNodesSize] := I;
-      Inc(AddedNodesSize);
+      System.Inc(AddedNodesSize);
     end;
   end
   else
@@ -23026,11 +24273,11 @@ begin
       if ([vsSelected, vsDisabled] * NewItems[I].States <> []) or
          (Constrained and (Cardinal(FLastSelectionLevel) <> GetNodeLevel(NewItems[I]))) or
          (SiblingConstrained and (FRangeAnchor.Parent <> NewItems[I].Parent)) then
-        Inc(PAnsiChar(NewItems[I]))
+        System.Inc(PAnsiChar(NewItems[I]))
       else
       begin
         AddedNodesIndexes[AddedNodesSize] := I;
-        Inc(AddedNodesSize);
+        System.Inc(AddedNodesSize);
       end;
   end;
 
@@ -23062,7 +24309,7 @@ begin
         while (J >= 0) and (PAnsiChar(NewItems[J]) > PAnsiChar(FSelection[CurrentEnd])) do
         begin
           FSelection[CurrentEnd + J + 1] := NewItems[J];
-          Dec(J);
+          System.Dec(J);
         end;
         // early out if nothing more needs to be copied
         if J < 0 then
@@ -23071,7 +24318,7 @@ begin
       else
       begin
         // insert remaining new entries at position 0
-        Move(NewItems[0], FSelection[0], (J + 1) * SizeOf(Pointer));
+        System.Move(NewItems[0], FSelection[0], (J + 1) * SizeOf(Pointer));
         // nothing more to do so exit main loop
         Break;
       end;
@@ -23079,15 +24326,15 @@ begin
       // find the last entry in the remaining selection list which is smaller then the largest
       // entry in the remaining new items list
       FindNodeInSelection(NewItems[J], I, 0, CurrentEnd);
-      Dec(I);
+      System.Dec(I);
       // move all entries which are greater than the greatest entry in the new items list up
       // so the remaining gap travels down to where new items must be inserted
-      Move(FSelection[I + 1], FSelection[I + J + 2], (CurrentEnd - I) * SizeOf(Pointer));
+      System.Move(FSelection[I + 1], FSelection[I + J + 2], (CurrentEnd - I) * SizeOf(Pointer));
       CurrentEnd := I;
     end;
 
     // update selection count
-    Inc(FSelectionCount, AddedNodesSize);
+    System.Inc(FSelectionCount, AddedNodesSize);
 
     // post process added nodes
     for I := 0 to AddedNodesSize - 1 do
@@ -23126,7 +24373,7 @@ begin
     SetLength(FTempNodeCache, Len);
   end;
   FTempNodeCache[FTempNodeCount] := Node;
-  Inc(FTempNodeCount);
+  System.Inc(FTempNodeCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23152,7 +24399,7 @@ begin
 
   while FSelectionCount > 0 do
   begin
-    Dec(FSelectionCount);
+    System.Dec(FSelectionCount);
     //sync path note: deselect when click on another or on outside area
     Exclude(FSelection[FSelectionCount].States, vsSelected);
     if SyncCheckstateWithSelection[FSelection[FSelectionCount]] then
@@ -23197,7 +24444,7 @@ begin
           Run := Destination;
           while Assigned(Run) do
           begin
-            Inc(Run.Index);
+            System.Inc(Run.Index);
             Run := Run.NextSibling;
           end;
         end;
@@ -23217,7 +24464,7 @@ begin
           Run := Node;
           while Assigned(Run) do
           begin
-            Inc(Run.Index);
+            System.Inc(Run.Index);
             Run := Run.NextSibling;
           end;
         end;
@@ -23244,7 +24491,7 @@ begin
           Run := Node.NextSibling;
           while Assigned(Run) do
           begin
-            Inc(Run.Index);
+            System.Inc(Run.Index);
             Run := Run.NextSibling;
           end;
         end;
@@ -23278,14 +24525,14 @@ begin
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting];
 
     if (Mode <> amNoWhere) then begin
-      Inc(Node.Parent.ChildCount);
+      System.Inc(Node.Parent.ChildCount);
       Include(Node.Parent.States, vsHasChildren);
       AdjustTotalCount(Node.Parent, Node.TotalCount, True);
 
       // Add the new node's height only if its parent is expanded.
       if (vsExpanded in Node.Parent.States) and (vsVisible in Node.States) then begin
         AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
-        Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
       end;//if
 
       // Update the hidden children flag of the parent.
@@ -23354,7 +24601,7 @@ begin
     // Some states are only temporary so take them out.
     Node.States := Node.States - [vsChecking];
     Parent := Node.Parent;
-    Dec(Parent.ChildCount);
+    System.Dec(Parent.ChildCount);
     AdjustHeight := (vsExpanded in Parent.States) and (vsVisible in Node.States);
     if Parent.ChildCount = 0 then
     begin
@@ -23364,9 +24611,9 @@ begin
     end;
     AdjustTotalCount(Parent, -Integer(Node.TotalCount), True);
     if AdjustHeight then
-      AdjustTotalHeight(Parent, -Integer(Node.TotalHeight), True);
+      AdjustTotalHeight(Parent, -{$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight), True);
     if FullyVisible[Node] then
-      Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+      System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
 
     if Assigned(Node.PrevSibling) then
       Node.PrevSibling.NextSibling := Node.NextSibling
@@ -23384,7 +24631,7 @@ begin
         while Assigned(Run) do
         begin
           Run.Index := Index;
-          Inc(Index);
+          System.Inc(Index);
           Run := Run.NextSibling;
         end;
       end;
@@ -23414,7 +24661,7 @@ begin
     Exclude(Node.States, vsSelected);
     if SyncCheckstateWithSelection[Node] then
       checkstate[Node] := csUncheckedNormal;
-    Inc(PAnsiChar(FSelection[Index]));
+    System.Inc(PAnsiChar(FSelection[Index]));
     DoRemoveFromSelection(Node);
     AdviseChangeEvent(False, Node, crIgnore);
   end;
@@ -23468,10 +24715,11 @@ begin
   inherited;
 
   // Call RegisterDragDrop after all visual inheritance changes to MiscOptions have been applied.
+{$IFDEF VT_VCL}
   if not (csDesigning in ComponentState) and (toAcceptOLEDrop in FOptions.FMiscOptions) then
     if HandleAllocated then
       RegisterDragDrop(Handle, DragManager as IDropTarget);
-
+{$ENDIF}
   // If a root node count has been set during load of the tree then update its child structure now
   // as this hasn't been done yet in this case.
   if (tsNeedRootCountUpdate in FStates) and (FRoot.ChildCount > 0) then
@@ -23494,8 +24742,10 @@ begin
   try
     FHeader.UpdateMainColumn;
     FHeader.FColumns.FixPositions;
+{$IFDEF VT_VCL}
     if toAutoBidiColumnOrdering in FOptions.FAutoOptions then
       FHeader.FColumns.ReorderColumns(UseRightToLeftAlignment);
+{$ENDIF}
     // Because of the special recursion and update stopper when creating the window (or resizing it)
     // we have to manually trigger the auto size calculation here.
     if hsNeedScaling in FHeader.FStates then
@@ -23515,14 +24765,15 @@ procedure TBaseVirtualTree.MainColumnChanged;
 
 begin
   DoCancelEdit;
-
+{$IFDEF VT_VCL}
   if Assigned(FAccessibleItem) then
     NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TBaseVirtualTree.MouseMove(Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 var
   R: TRect;
@@ -23545,7 +24796,7 @@ begin
     FSearchBuffer := '';
     FLastSearchNode := nil;
 
-    DoStateChange([tsNodeHeightTracking], [tsScrollPending, tsScrolling, tsEditPending, tsOLEDragPending, tsVCLDragPending,
+    DoStateChange([tsNodeHeightTracking], [tsScrollPending, tsScrolling, tsEditPending, {$IFDEF VT_VCL}tsOLEDragPending, {$ENDIF}tsVCLDragPending,
       tsIncrementalSearching, tsNodeHeightTrackPending]);
   end;
 
@@ -23555,10 +24806,15 @@ begin
     // and moved the mouse.
     if CalculateSelectionRect(X, Y) then
     begin
+{$IFDEF VT_FMX}
+      Repaint;
+{$ELSE}
       InvalidateRect(Handle, @FNewSelRect, False);
       UpdateWindow(Handle);
-      if (Abs(FNewSelRect.Right - FNewSelRect.Left) > Mouse.DragThreshold) or
-         (Abs(FNewSelRect.Bottom - FNewSelRect.Top) > Mouse.DragThreshold) then
+{$ENDIF}
+
+      if (Abs(FNewSelRect.Right - FNewSelRect.Left) > {$IFDEF VT_FMX}3{$ELSE}Mouse.DragThreshold{$ENDIF}) or
+         (Abs(FNewSelRect.Bottom - FNewSelRect.Top) > {$IFDEF VT_FMX}3{$ELSE}Mouse.DragThreshold{$ENDIF}) then
       begin
         if tsClearPending in FStates then
         begin
@@ -23572,7 +24828,11 @@ begin
 
         // The current rectangle may already include some node captions. Handle this.
         if HandleDrawSelection(X, Y) then
+{$IFDEF VT_FMX}
+          Repaint;
+{$ELSE}
           InvalidateRect(Handle, nil, False);
+{$ENDIF}
       end;
     end;
   end
@@ -23581,14 +24841,18 @@ begin
     if tsNodeHeightTracking in FStates then
     begin
       // Handle height tracking.
-      if DoNodeHeightTracking(FHeightTrackNode, FHeightTrackColumn, FHeader.GetShiftState,
+      if DoNodeHeightTracking(FHeightTrackNode, FHeightTrackColumn, {$IFDEF VT_FMX}[]{$ELSE}FHeader.GetShiftState{$ENDIF},
         FHeightTrackPoint, Point(X, Y)) then
       begin
         // Avoid negative (or zero) node heights.
         if FHeightTrackPoint.Y >= Y then
           Y := FHeightTrackPoint.Y + 1;
         SetNodeHeight(FHeightTrackNode, Y - FHeightTrackPoint.Y);
+{$IFDEF VT_FMX}
+        Repaint;
+{$ELSE}
         UpdateWindow(Handle);
+{$ENDIF}
         Exit;
       end;
     end;
@@ -23597,15 +24861,17 @@ begin
     // middle mouse button. This means panning is being used, hence remove the wheel scroll flag.
     if [tsWheelPanning, tsWheelScrolling] * FStates = [tsWheelPanning, tsWheelScrolling] then
     begin
-      if ((Abs(FLastClickPos.X - X) >= Mouse.DragThreshold) or (Abs(FLastClickPos.Y - Y) >= Mouse.DragThreshold)) then
+      if ((Abs(FLastClickPos.X - X) >= {$IFDEF VT_FMX}3{$ELSE}Mouse.DragThreshold{$ENDIF}) or (Abs(FLastClickPos.Y - Y) >= {$IFDEF VT_FMX}3{$ELSE}Mouse.DragThreshold{$ENDIF})) then
         DoStateChange([], [tsWheelScrolling]);
     end;
 
     // Really start dragging if the mouse has been moved more than the threshold.
+{$IFDEF VT_VCL}
     if (tsOLEDragPending in FStates) and ((Abs(FLastClickPos.X - X) >= FDragThreshold) or
        (Abs(FLastClickPos.Y - Y) >= FDragThreshold)) then
       DoDragging(FLastClickPos)
-    else
+    else 
+{$ENDIF}
     begin
       if CanAutoScroll then
         DoAutoScroll(X, Y);
@@ -23625,14 +24891,26 @@ begin
           // If something in the selection changed then invalidate the entire
           // tree instead trying to figure out the display rects of all changed nodes.
           if HandleDrawSelection(X, Y) then
+{$IFDEF VT_FMX}
+            Repaint
+{$ELSE}
             InvalidateRect(Handle, nil, False)
+{$ENDIF}
           else
           begin
             UnionRect(R, OrderRect(FNewSelRect), OrderRect(FLastSelRect));
             OffsetRect(R, -FEffectiveOffsetX, FOffsetY);
+{$IFDEF VT_FMX}
+            Repaint;
+{$ELSE}
             InvalidateRect(Handle, @R, False);
+{$ENDIF}
           end;
+{$IFDEF VT_FMX}
+          Repaint;
+{$ELSE}
           UpdateWindow(Handle);
+{$ENDIF}
         end;
       end;
     end;
@@ -23687,23 +24965,25 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.OriginalWMNCPaint(DC: HDC);
+procedure TBaseVirtualTree.OriginalWMNCPaint({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF});
 
 // Unfortunately, the painting for the non-client area in TControl is not always correct and does also not consider
 // existing clipping regions, so it has been modified here to take this into account.
-
+{$IFDEF VT_VCL}
 const
   InnerStyles: array[TBevelCut] of Integer = (0, BDR_SUNKENINNER, BDR_RAISEDINNER, 0);
   OuterStyles: array[TBevelCut] of Integer = (0, BDR_SUNKENOUTER, BDR_RAISEDOUTER, 0);
   EdgeStyles: array[TBevelKind] of Integer = (0, 0, BF_SOFT, BF_FLAT);
   Ctl3DStyles: array[Boolean] of Integer = (BF_MONO, 0);
 
+{$ENDIF}
 var
   RC, RW: TRect;
   EdgeSize: Integer;
   Size: TSize;
 
 begin
+{$IFDEF VT_VCL}
   if (BevelKind <> bkNone) or (BorderWidth > 0) then
   begin
     RC := Rect(0, 0, Width, Height);
@@ -23745,9 +25025,10 @@ begin
     ExcludeClipRect(DC, RC.Left, RC.Top, RC.Right, RC.Bottom);
 
     // Erase parts not drawn.
-    Brush.Color := FColors.BorderColor;
+    {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BorderColor;
     Winapi.Windows.FillRect(DC, RW, Brush.Handle);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23759,13 +25040,16 @@ procedure TBaseVirtualTree.Paint;
 var
   Window: TRect;
   Target: TPoint;
-  Temp: Integer;
+  Temp: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Options: TVTInternalPaintOptions;
-  RTLOffset: Integer;
+  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
 
   Options := [poBackground, poColumnColor, poDrawFocusRect, poDrawDropMark, poDrawSelection, poGridLines];
+{$IFDEF VT_FMX}
+  Options:= Options + [poUnbuffered]; //!!!!!!!
+{$ENDIF}
   if UseRightToLeftAlignment and FHeader.UseColumns then
     RTLOffset := ComputeRTLOffset(True)
   else
@@ -23775,12 +25059,14 @@ begin
   // reset when BeginPaint is called (in the ancestor).
   // The difference to the DC's clipbox is that it is also valid with internal paint operations used
   // e.g. by the Explorer while dragging, but show window content while dragging is disabled.
+{$IFDEF VT_VCL}
   if not IsRectEmpty(FUpdateRect) then
+{$ENDIF}
   begin
     Temp := Header.Columns.GetVisibleFixedWidth;
     if Temp = 0 then
     begin
-      Window := FUpdateRect;
+      Window := {$IFDEF VT_FMX}ClipRect{$ELSE}FUpdateRect{$ENDIF};
       Target := Window.TopLeft;
 
       // The clipping rectangle is given in client coordinates of the window. We have to convert it into
@@ -23791,7 +25077,7 @@ begin
     else
     begin
       // First part, fixed columns
-      Window := ClientRect;
+      Window := {$IFDEF VT_FMX}ClipRect{$ELSE}ClientRect{$ENDIF};
       Window.Right := Temp;
       Target := Window.TopLeft;
 
@@ -23799,7 +25085,7 @@ begin
       PaintTree(Canvas, Window, Target, Options);
 
       // Second part, other columns
-      Window := GetClientRect;
+      Window := {$IFDEF VT_FMX}ClipRect{$ELSE}GetClientRect{$ENDIF};
 
       if Temp > Window.Right then
         Exit;
@@ -23818,14 +25104,18 @@ end;
 procedure TBaseVirtualTree.PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVTImageInfo; Selected: Boolean);
 
 var
-  ForegroundColor: COLORREF;
-  R: TRect;
+{$IFDEF VT_VCL}
+  ForegroundColor: COLORREF;   
   Details: TThemedElementDetails;
-  lSize: TSize;
   Theme: HTHEME;
+{$ENDIF}
+  ForegroundColor: TColor;
+  R: TRect;
+  lSize: TSize;
 begin
   with ImageInfo do
   begin
+{$IFDEF VT_VCL}
     if (tsUseThemes in FStates) and (FCheckImageKind = ckSystemDefault) then
     begin
       Details.Element := teButton;
@@ -23885,26 +25175,37 @@ begin
       end
     end
     else
+{$ENDIF}
       with FCheckImages do
       begin
         if Selected and not Ghosted then
         begin
-          if Focused or (toPopupMode in FOptions.FPaintOptions) then
-            ForegroundColor := ColorToRGB(FColors.FocusedSelectionColor)
+          if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (TVTPaintOption.toPopupMode in FOptions.FPaintOptions) then
+            ForegroundColor := {$IFDEF VT_VCL}ColorToRGB{$ENDIF}(FColors.FocusedSelectionColor)
           else
-            ForegroundColor := ColorToRGB(FColors.UnfocusedSelectionColor);
+            ForegroundColor := {$IFDEF VT_VCL}ColorToRGB{$ENDIF}(FColors.UnfocusedSelectionColor);
         end
         else
+{$IFDEF VT_FMX}
+          ForegroundColor := clWhite;
+          Draw(Canvas, Rect(XPos, YPos, 16, 16), Index, 1.0); //TODO: 16px Image! 
+{$ELSE}
           ForegroundColor := GetRGBColor(BlendColor);
 
           ImageList_DrawEx(Handle, Index, Canvas.Handle, XPos, YPos, 0, 0, GetRGBColor(BkColor), ForegroundColor,
             ILD_TRANSPARENT);
+{$ENDIF}
       end;
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_FMX}
+type
+  TImageType = (itImage, itMask); //###!!!
+const
+  ILD_MASK                = $0010; //###!!!
+{$ENDIF}
 
 procedure TBaseVirtualTree.PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean);
 const
@@ -23916,6 +25217,7 @@ var
   DrawEnabled: Boolean;
   CustomOverlayDrawing: Boolean; // False if the built-in overloay drawing of TImageList should be used, True if custom drawing should take place.
 begin
+{$IFDEF VT_VCL}
   with PaintInfo do
   begin
     CutNode := (vsCutOrCopy in Node.States) and (tsCutPending in FStates);
@@ -23982,33 +25284,35 @@ begin
       end;//if
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect;
-  ButtonX, ButtonY: Integer; BidiMode: TBiDiMode);
+  ButtonX, ButtonY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; BidiMode: TBiDiMode);
 
 var
   Bitmap: TBitmap;
-  XPos: Integer;
+  XPos: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   IsHot: Boolean;
   IsSelected : boolean;
+{$IFDEF VT_VCL}
   Theme: HTHEME;
+{$ENDIF}
   Glyph: Integer;
   State: Integer;
   Pos: TRect;
-
 begin
   IsHot := (FCurrentHotNode = Node) and FHotNodeButtonHit;
   IsSelected := (vsSelected in Node.States);
 
   // Draw the node's plus/minus button according to the directionality.
-    if BidiMode = bdLeftToRight then
+  if BidiMode = bdLeftToRight then
     XPos := R.Left + ButtonX
   else
     XPos := R.Right - ButtonX - FPlusBM.Width;
-
+{$IFDEF VT_VCL}
   if (tsUseExplorerTheme in FStates) and not VclStyleEnabled then
   begin
     Glyph := IfThen(IsHot, TVP_HOTGLYPH, TVP_GLYPH);
@@ -24019,6 +25323,7 @@ begin
     CloseThemeData(Theme);
   end
   else
+{$ENDIF}
   begin
     if vsExpanded in Node.States then
     begin
@@ -24045,23 +25350,31 @@ begin
         Bitmap := FPlusBM;
     end;
     // Need to draw this masked.
+{$IFDEF VT_FMX}
+    Canvas.DrawBitmap(//###!!!
+                          Bitmap
+                          , Rect(0, 0, FMinusBM.Width, FMinusBM.Height)
+                          , Rect(XPos, R.Top + ButtonY, XPos+FMinusBM.Width, R.Top + ButtonY + FMinusBM.Height)
+                          , 1.0
+                          );
+{$ELSE}
     Canvas.Draw(XPos, R.Top + ButtonY, Bitmap);
+{$ENDIF}
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer; const LineImage: TLineImage);
+procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const LineImage: TLineImage);
 
 var
   I: Integer;
   XPos,
-  Offset: Integer;
+  Offset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   NewStyles: TLineImage;
-
 begin
   NewStyles := nil;
-
+{$IFDEF VT_VCL}
   with PaintInfo do
   begin
     if BidiMode = bdLeftToRight then
@@ -24129,21 +25442,23 @@ begin
       end;
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintSelectionRectangle(Target: TCanvas; WindowOrgX: Integer; const SelectionRect: TRect;
+procedure TBaseVirtualTree.PaintSelectionRectangle(Target: TCanvas; WindowOrgX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const SelectionRect: TRect;
   TargetRect: TRect);
 
 // Helper routine to draw a selection rectangle in the mode determined by DrawSelectionMode.
-
+{$IFDEF VT_VCL}
 var
   BlendRect: TRect;
   TextColorBackup,
   BackColorBackup: COLORREF;   // used to restore forground and background colors when drawing a selection rectangle
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if ((FDrawSelectionMode = smDottedRectangle) and not (tsUseThemes in FStates)) then
   begin
     // Classical selection rectangle using dotted borderlines.
@@ -24165,14 +25480,15 @@ begin
       AlphaBlend(0, Target.Handle, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
         ColorToRGB(FColors.SelectionRectangleBlendColor));
 
-      Target.Brush.Color := FColors.SelectionRectangleBorderColor;
+      Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.SelectionRectangleBorderColor;
       Target.FrameRect(SelectionRect);
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.PanningWindowProc(var Message: TMessage);
 
 var
@@ -24198,13 +25514,14 @@ begin
     with Message do
       Result := DefWindowProc(FPanningWindow, Msg, wParam, lParam);
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: Integer);
+procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 // This method is called immediately before a cell's content is drawn und is responsible to paint selection colors etc.
-
+{$IFDEF VT_VCL}
 var
   TextColorBackup,
   BackColorBackup: COLORREF;
@@ -24262,8 +25579,9 @@ const
   end;
 
   //--------------- end local functions ---------------------------------------
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if tsUseExplorerTheme in FStates then
   begin
     Theme := OpenThemeData(Application.ActiveFormHandle, 'Explorer::TreeView');
@@ -24424,6 +25742,7 @@ begin
 
   if tsUseExplorerTheme in FStates then
     CloseThemeData(Theme);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -24437,8 +25756,8 @@ function TBaseVirtualTree.ReadChunk(Stream: TStream; Version: Integer; Node: PVi
 // Returns True if the chunk could be handled, otherwise False.
 type
   TAdvancedVersion2Identifier = packed record
-    ChildCount,
-    NodeHeight: Cardinal;
+    ChildCount: Cardinal;
+    NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
     States: Word;
     Align: Byte;
     CheckState: TCheckState;
@@ -24491,7 +25810,7 @@ begin
                   ChildCount := IdBody.ChildCount;
                   NodeHeight := IdBody.NodeHeight;
                   States := [];
-                  Move(IdBody.States, States, SizeOf(IdBody.States));
+                  System.Move(IdBody.States, States, SizeOf(IdBody.States));
                   CheckState := IdBody.CheckState;
                   CheckType := IdBody.CheckType;
                   Reserved := IdBody.Reserved;
@@ -24534,7 +25853,7 @@ begin
             Run.Parent := Node;
 
             ReadNode(Stream, Version, Run);
-            Dec(ChunkBody.ChildCount);
+            System.Dec(ChunkBody.ChildCount);
           end;
         end;
         Result := True;
@@ -24600,10 +25919,10 @@ end;
 procedure TBaseVirtualTree.RedirectFontChangeEvent(Canvas: TCanvas);
 
 begin
-  if @Canvas.Font.OnChange <> @FOldFontChange then
+  if @Canvas.Font.{$IFDEF VT_FMX}OnChanged{$ELSE}OnChange{$ENDIF} <> @FOldFontChange then
   begin
-    FOldFontChange := Canvas.Font.OnChange;
-    Canvas.Font.OnChange := FontChanged;
+    FOldFontChange := Canvas.Font.{$IFDEF VT_FMX}OnChanged{$ELSE}OnChange{$ENDIF};
+    Canvas.Font.{$IFDEF VT_FMX}OnChanged{$ELSE}OnChange{$ENDIF} := FontChanged;
   end;
 end;
 
@@ -24618,7 +25937,9 @@ begin
   if not FSelectionLocked then
   begin
     Assert(Assigned(Node), 'Node must not be nil!');
+{$IFDEF VT_VCL}
     Assert(GetCurrentThreadId = MainThreadId, Self.Classname + '.RemoveFromSelection() must only be called from UI thread.');
+{$ENDIF}	
     if vsSelected in Node.States then
     begin
       Assert(FSelectionCount > 0, 'if one node has set the vsSelected flag, SelectionCount must be >0.');
@@ -24628,9 +25949,9 @@ begin
         checkstate[Node] := csUncheckedNormal;
 
       if FindNodeInSelection(Node, Index, -1, -1) and (Index < FSelectionCount - 1) then
-        Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
+        System.Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
       if FSelectionCount > 0 then
-        Dec(FSelectionCount);
+        System.Dec(FSelectionCount);
       SetLength(FSelection, FSelectionCount);
 
       if FSelectionCount = 0 then
@@ -24669,7 +25990,7 @@ begin
 end;//if Assigned(Node);
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
   ForClipboard: Boolean): HResult;
 
@@ -24764,7 +26085,7 @@ begin
   else // Ask application descendants to render self defined formats.
     Result := DoRenderOLEData(FormatEtcIn, Medium, ForClipboard);
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ResetRangeAnchor;
@@ -24781,7 +26102,7 @@ end;
 procedure TBaseVirtualTree.RestoreFontChangeEvent(Canvas: TCanvas);
 
 begin
-  Canvas.Font.OnChange := FOldFontChange;
+  Canvas.Font.{$IFDEF VT_FMX}OnChanged{$ELSE}OnChange{$ENDIF} := FOldFontChange;
   FOldFontChange := nil;
 end;
 
@@ -24879,6 +26200,13 @@ begin
     FFocusedColumn := OldColumn;
 end;
 
+{$IFDEF VT_FMX}
+procedure TBaseVirtualTree.SetFont(const Value: TFont);
+begin
+  FFont.Assign(Value);
+end;
+{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.SkipNode(Stream: TStream);
@@ -24901,7 +26229,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 var
   PanningWindowClass: TWndClass = (
     style: 0;
@@ -24915,6 +26243,7 @@ var
     lpszMenuName: nil;
     lpszClassName: 'VTPanningWindow'
   );
+{$ENDIF}
 
 procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
 
@@ -24922,7 +26251,7 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
 // which determines in which direction and how far wheel panning/scrolling will happen.
 
   //--------------- local function --------------------------------------------
-
+{$IFDEF VT_VCL}
   function CreateClipRegion: HRGN;
 
   // In order to avoid doing all the transparent drawing ourselves we use a
@@ -24978,11 +26307,12 @@ var
   ClassRegistered: Boolean;
   ImageName: string;
   Pt: TPoint;
-
+{$ENDIF}
 begin
   // Set both panning and scrolling flag. One will be removed shortly depending on whether the middle mouse button is
   // released before the mouse is moved or vice versa. The first case is referred to as wheel scrolling while the
   // latter is called wheel panning.
+{$IFDEF VT_VCL}
   StopTimer(ScrollTimer);
   DoStateChange([tsWheelPanning, tsWheelScrolling]);
 
@@ -25024,6 +26354,7 @@ begin
   SetFocus;
   SetCapture(Handle);
   SetTimer(Handle, ScrollTimer, 20, nil);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25036,6 +26367,7 @@ var
   Instance: Pointer;
 
 begin
+{$IFDEF VT_VCL}
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
   begin
     // Release the mouse capture and stop the panscroll timer.
@@ -25059,6 +26391,7 @@ begin
     FPanningCursor := 0;
     Winapi.Windows.SetCursor(Screen.Cursors[Cursor]);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25071,7 +26404,9 @@ begin
   if FUpdateCount = 0 then
   begin
     if (FChangeDelay > 0) and HandleAllocated and not (tsSynchMode in FStates) then
+{$IFDEF VT_VCL}
       SetTimer(Handle, StructureChangeTimer, FChangeDelay, nil)
+{$ENDIF}
     else
       DoStructureChange(Node, Reason);
   end;
@@ -25087,7 +26422,7 @@ function TBaseVirtualTree.SuggestDropEffect(Source: TObject; Shift: TShiftState;
 
 begin
   Result := AllowedEffects;
-
+{$IFDEF VT_VCL}
   // prefer MOVE if source and target are the same control, otherwise whatever is allowed as initial value
   if Assigned(Source) and (Source = Self) then
     if (AllowedEffects and DROPEFFECT_MOVE) <> 0 then
@@ -25137,6 +26472,7 @@ begin
       // else default
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25298,7 +26634,11 @@ var
 begin
   if (csDesigning in ComponentState) and not (csUpdating in ComponentState) then
   begin
+{$IFDEF VT_FMX}
+    ParentForm := Self.Root.GetObject as TCustomForm;
+{$ELSE}
     ParentForm := GetParentForm(Self);
+{$ENDIF}
     if Assigned(ParentForm) and Assigned(ParentForm.Designer) then
       ParentForm.Designer.Modified;
   end;
@@ -25313,8 +26653,8 @@ procedure TBaseVirtualTree.UpdateHeaderRect;
 
 var
   OffsetX,
-  OffsetY: Integer;
-  EdgeSize: Integer;
+  OffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  EdgeSize: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Size: TSize;
 
 begin
@@ -25345,7 +26685,7 @@ begin
   if hoVisible in FHeader.FOptions then
   begin
     if FHeaderRect.Left <= FHeaderRect.Right then
-      FHeaderRect.Bottom := FHeaderRect.Top + Integer(FHeader.FHeight)
+      FHeaderRect.Bottom := FHeaderRect.Top + {$IFDEF VT_VCL}Integer{$ENDIF}(FHeader.FHeight)
     else
       FHeaderRect := Rect(0, 0, 0, 0);
   end
@@ -25364,17 +26704,19 @@ var
   CurrentAlignment: TAlignment;
   CurrentBidiMode: TBidiMode;
   offsets : TVTOffsets;
-  offset : Integer;
+  offset : {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   if (tsEditing in FStates) and Assigned(FFocusedNode) and
      (FEditColumn < FHeader.Columns.Count) then // prevent EArgumentOutOfRangeException
   begin
+{$IFDEF VT_VCL}
     if (GetCurrentThreadId <> MainThreadID) then
     begin
       // UpdateEditBounds() will be called at the end of the thread
       Exit;
     end;
+{$ENDIF}
     if vsMultiline in FFocusedNode.States then
       R := GetDisplayRect(FFocusedNode, FEditColumn, True, False)
     else if not (toGridExtensions in FOptions.FMiscOptions) then
@@ -25389,8 +26731,8 @@ begin
         // Calculate an offset for the main column.
         GetOffsets(FFocusedNode, offsets, ofsLabel, FEditColumn);
         offset := offsets[ofsLabel];
-//        if offsets[ofsToggleButton] < 0 then
-//          Inc(offset, offsets[ofsToggleButton]);
+        if offsets[ofsToggleButton] < 0 then
+          Inc(offset, offsets[ofsToggleButton]);
       end
       else
         offset := 0;
@@ -25407,8 +26749,10 @@ begin
         CurrentBidiMode := FHeader.Columns[FEditColumn].FBiDiMode;
       end;
       // Consider bidi mode here. In RTL context does left alignment actually mean right alignment and vice versa.
+{$IFDEF VT_VCL}
       if CurrentBidiMode <> bdLeftToRight then
         ChangeBiDiModeAlignment(CurrentAlignment);
+{$ENDIF}
       if CurrentAlignment = taLeftJustify then
       begin
         if CurrentBiDiMode = bdLeftToRight then
@@ -25432,7 +26776,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 const
   ScrollMasks: array[Boolean] of Cardinal = (0, SIF_DISABLENOSCROLL);
 
@@ -25443,7 +26787,7 @@ const // Region identifiers for GetRandomRgn
   SYSRGN = 4;
 
 function GetRandomRgn(DC: HDC; Rgn: HRGN; iNum: Integer): Integer; stdcall; external 'GDI32.DLL';
-
+{$ENDIF}
 procedure TBaseVirtualTree.UpdateWindowAndDragImage(const Tree: TBaseVirtualTree; TreeRect: TRect; UpdateNCArea,
   ReshowDragImage: Boolean);
 
@@ -25451,7 +26795,7 @@ procedure TBaseVirtualTree.UpdateWindowAndDragImage(const Tree: TBaseVirtualTree
 // of the drag image.
 // Note: This method must only be called during a drag operation and the tree passed in is the one managing the current
 // drag image (so it is the actual drag source).
-
+{$IFDEF VT_VCL}
 var
   DragRegion,          // the region representing the drag image
   UpdateRegion,        // the unclipped region within the tree to be updated
@@ -25467,7 +26811,11 @@ var
   //This function was originally designed only for tree's drag image. But we modified
   //it for reusing it with header's drag image too for solving issue 248.
   useDragImage: TVTDragImage;
+{$ENDIF}
 begin
+{$IFDEF VT_FMX}
+  Repaint;
+{$ELSE}  
   if IntersectRect(TreeRect, TreeRect, ClientRect) then
   begin
     // Retrieve the visible region of the window. This is important to avoid overpainting parts of other windows
@@ -25526,6 +26874,7 @@ begin
     DeleteObject(DragRegion);
     DeleteObject(VisibleTreeRegion);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25540,11 +26889,13 @@ begin
   InterruptValidation;
 
   FStartIndex := 0;
+{$IFDEF VT_VCL}
   if (tsValidationNeeded in FStates) and (FVisibleCount > CacheThreshold) then
   begin
     // Tell the thread this tree needs actually something to do.
     TWorkerThread.AddTree(Self);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25564,12 +26915,17 @@ procedure TBaseVirtualTree.VclStyleChanged;
   // Updates the member FVclStyleEnabled, should be called initially and when the VCL style changes
 
 begin
+{$IFDEF VT_FMX}
+FVclStyleEnabled := false;
+{$ELSE}
   FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 //PROFILE-NO
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.WndProc(var Message: TMessage);
 
 var
@@ -25611,6 +26967,7 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 //PROFILE-YES
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25729,13 +27086,13 @@ begin
     begin
       // if there's a previous sibling then add its total count to the result
       Node := Node.PrevSibling;
-      Inc(Result, Node.TotalCount);
+      System.Inc(Result, Node.TotalCount);
     end
     else
     begin
       Node := Node.Parent;
       if Node <> FRoot then
-        Inc(Result);
+        System.Inc(Result);
     end;
   end;
 end;
@@ -25806,7 +27163,7 @@ begin
 
           while (Stream.Position < Stream.Size) and (Count > 0) do
           begin
-            Dec(Count);
+            System.Dec(Count);
             Node := MakeNewNode;
             InternalConnectNode(Node, TargetNode, Self, amAddChildLast);
             InternalAddFromStream(Stream, Version, Node);
@@ -25850,27 +27207,37 @@ begin
       Self.Anchors := Anchors;
       Self.AutoScrollDelay := AutoScrollDelay;
       Self.AutoScrollInterval := AutoScrollInterval;
+{$IFDEF VT_VCL}
       Self.AutoSize := AutoSize;
+{$ENDIF}
       Self.Background := Background;
       Self.BevelEdges := BevelEdges;
       Self.BevelInner := BevelInner;
       Self.BevelKind := BevelKind;
       Self.BevelOuter := BevelOuter;
       Self.BevelWidth := BevelWidth;
+{$IFDEF VT_VCL}
       Self.BiDiMode := BiDiMode;
+{$ENDIF}
       Self.BorderStyle := BorderStyle;
       Self.BorderWidth := BorderWidth;
       Self.ChangeDelay := ChangeDelay;
       Self.CheckImageKind := CheckImageKind;
-      Self.Color := Color;
+      Self.{$IFDEF VT_FMX}Fill.{$ENDIF}Color := {$IFDEF VT_FMX}Fill.{$ENDIF}Color;
       Self.Colors.Assign(Colors);
+{$IFDEF VT_VCL}
       Self.Constraints.Assign(Constraints);
       Self.Ctl3D := Ctl3D;
+{$ENDIF}
       Self.DefaultNodeHeight := DefaultNodeHeight;
       Self.DefaultPasteMode := DefaultPasteMode;
+{$IFDEF VT_VCL}
       Self.DragCursor := DragCursor;
+{$ENDIF}
       Self.DragImageKind := DragImageKind;
+{$IFDEF VT_VCL}
       Self.DragKind := DragKind;
+{$ENDIF}
       Self.DragMode := DragMode;
       Self.Enabled := Enabled;
       Self.Font := Font;
@@ -25878,24 +27245,30 @@ begin
       Self.HintMode := HintMode;
       Self.HotCursor := HotCursor;
       Self.Images := Images;
+{$IFDEF VT_VCL}
       Self.ImeMode := ImeMode;
       Self.ImeName := ImeName;
+{$ENDIF}
       Self.Indent := Indent;
       Self.Margin := Margin;
       Self.NodeAlignment := NodeAlignment;
       Self.NodeDataSize := NodeDataSize;
       Self.TreeOptions := TreeOptions;
+{$IFDEF VT_VCL}
       Self.ParentBiDiMode := ParentBiDiMode;
       Self.ParentColor := ParentColor;
       Self.ParentCtl3D := ParentCtl3D;
       Self.ParentFont := ParentFont;
+{$ENDIF}
       Self.ParentShowHint := ParentShowHint;
       Self.PopupMenu := PopupMenu;
       Self.RootNodeCount := RootNodeCount;
       Self.ScrollBarOptions := ScrollBarOptions;
       Self.ShowHint := ShowHint;
       Self.StateImages := StateImages;
+{$IFDEF VT_VCL}
       Self.StyleElements := StyleElements;
+{$ENDIF}
       Self.TabOrder := TabOrder;
       Self.TabStop := TabStop;
       Self.Visible := Visible;
@@ -25915,7 +27288,7 @@ procedure TBaseVirtualTree.AutoScale(isDpiChange: Boolean);
 // isDPIChnage is True, if the DPI of the form has changed. In this case the font may not yet be adapted to this, so do not adjust DefualtNodeHeight.
 
 var
-  lTextHeight: Cardinal;
+  lTextHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
 begin
   if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) and not isDpiChange then
   begin
@@ -25935,6 +27308,7 @@ procedure TBaseVirtualTree.BeginDrag(Immediate: Boolean; Threshold: Integer);
 // Reintroduced method to allow to start OLE drag'n drop as well as VCL drag'n drop.
 
 begin
+{$IFDEF VT_VCL}
   if FDragType = dtVCL then
   begin
     DoStateChange([tsVCLDragPending]);
@@ -25953,6 +27327,7 @@ begin
       else
         DoStateChange([tsOLEDragPending]);
     end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25989,7 +27364,7 @@ begin
     else
       DoUpdating(usSynch);
   end;
-  Inc(FSynchUpdateCount);
+  System.Inc(FSynchUpdateCount);
   DoStateChange([tsSynchMode]);
 end;
 
@@ -25998,7 +27373,9 @@ end;
 procedure TBaseVirtualTree.BeginUpdate;
 
 begin
+{$IFDEF VT_VCL}
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls like ' + Classname + ' should only be manipulated through the main thread.');
+{$ENDIF}
   if not (csDestroying in ComponentState) then
   begin
     if FUpdateCount = 0 then
@@ -26009,7 +27386,7 @@ begin
     else
       DoUpdating(usUpdate);
   end;
-  Inc(FUpdateCount);
+  System.Inc(FUpdateCount);
   DoStateChange([tsUpdating]);
 end;
 
@@ -26084,8 +27461,13 @@ begin
 
   if Result and not (csDesigning in ComponentState) then
   begin
+{$IFDEF VT_FMX}
+    Form := Self.Root.GetObject as TCustomForm;
+    Result := (Form = nil) or ({Form.Enabled and }Form.Visible);
+{$ELSE}
     Form := GetParentForm(Self);
     Result := (Form = nil) or (Form.Enabled and Form.Visible);
+{$ENDIF}
   end;
 end;
 
@@ -26104,7 +27486,9 @@ begin
 
       if ClipboardStates * FStates <> [] then
       begin
+{$IFDEF VT_VCL}
         OleSetClipboard(nil);
+{$ENDIF}
         DoStateChange([], ClipboardStates);
       end;
       ClearSelection;
@@ -26157,12 +27541,14 @@ procedure TBaseVirtualTree.ClearSelection(pFireChangeEvent: Boolean);
 
 var
   Node: PVirtualNode;
-  Dummy: Integer;
+  Dummy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   R: TRect;
   Counter: Integer;
 
 begin
+{$IFDEF VT_VCL}
   Assert(GetCurrentThreadId = MainThreadId, Self.Classname + '.ClearSelection() must only be called from UI thread.');
+{$ENDIF}  
   if not FSelectionLocked and (FSelectionCount > 0) and not (csDestroying in ComponentState) then
   begin
     if (FUpdateCount = 0) and HandleAllocated and (FVisibleCount > 0) then
@@ -26175,11 +27561,15 @@ begin
 
       while Assigned(Node) do
       begin
-        R.Bottom := R.Top + Integer(NodeHeight[Node]);
+        R.Bottom := R.Top + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]);
         if vsSelected in Node.States then
         begin
+{$IFDEF VT_FMX}
+          Repaint;
+{$ELSE}
           InvalidateRect(Handle, @R, False);
-          Dec(Counter);
+{$ENDIF}
+          System.Dec(Counter);
           // Only try as many nodes as are selected.
           if Counter = 0 then
             Break;
@@ -26309,11 +27699,12 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.CopyToClipboard;
-
+{$IFDEF VT_VCL}
 var
   DataObject: IDataObject;
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if FSelectionCount > 0 then
   begin
     DataObject := TVTDataObject.Create(Self, True) as IDataObject;
@@ -26324,6 +27715,7 @@ begin
       Invalidate;
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26332,12 +27724,14 @@ procedure TBaseVirtualTree.CutToClipboard;
 begin
   if (FSelectionCount > 0) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
+{$IFDEF VT_VCL}
     if OleSetClipboard(TVTDataObject.Create(Self, True)) = S_OK then
     begin
       MarkCutCopyNodes;
       DoStateChange([tsCutPending], [tsCopyPending]);
       Invalidate;
     end;
+{$ENDIF}
   end;
 end;
 
@@ -26351,7 +27745,7 @@ var
   Run,
   Mark: PVirtualNode;
   LastTop,
-  LastLeft,
+  LastLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   NewSize: Integer;
   ParentVisible: Boolean;
 
@@ -26362,7 +27756,7 @@ begin
 
     // The code below uses some flags for speed improvements which may cause invalid pointers if updates of
     // the tree happen. Hence switch updates off until we have finished the operation.
-    Inc(FUpdateCount);
+    System.Inc(FUpdateCount);
     try
       InterruptValidation;
       LastLeft := -FEffectiveOffsetX;
@@ -26379,7 +27773,7 @@ begin
       while Assigned(Run) do
       begin
         if ParentVisible and IsEffectivelyVisible[Run] then
-          Dec(FVisibleCount);
+          System.Dec(FVisibleCount);
 
         Include(Run.States, vsDeleting);
         Mark := Run;
@@ -26407,7 +27801,7 @@ begin
       Node.FirstChild := nil;
       Node.LastChild := nil;
     finally
-      Dec(FUpdateCount);
+      System.Dec(FUpdateCount);
     end;
 
     InvalidateCache;
@@ -26445,7 +27839,7 @@ procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode; Reindex: Boolean; Pare
 
 var
   LastTop,
-  LastLeft: Integer;
+  LastLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   LastParent: PVirtualNode;
   WasInSynchMode: Boolean;
 
@@ -26573,7 +27967,11 @@ function TBaseVirtualTree.Dragging: Boolean;
 
 begin
   // Check for both OLE drag'n drop as well as VCL drag'n drop.
+{$IFDEF VT_FMX}
+  Result := false;
+{$ELSE}
   Result := ([tsOLEDragPending, tsOLEDragging] * FStates <> []) or inherited Dragging;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26627,7 +28025,7 @@ procedure TBaseVirtualTree.EndSynch;
 
 begin
   if FSynchUpdateCount > 0 then
-    Dec(FSynchUpdateCount);
+    System.Dec(FSynchUpdateCount);
 
   if not (csDestroying in ComponentState) then
   begin
@@ -26650,7 +28048,7 @@ var
 
 begin
   if FUpdateCount > 0 then
-    Dec(FUpdateCount);
+    System.Dec(FUpdateCount);
 
   if not (csDestroying in ComponentState) then
   begin
@@ -26712,28 +28110,28 @@ begin
 
   if not Result then
   begin
-    Result := Action is TEditSelectAll;
+    Result := {$IFDEF VT_FMX}false{$ELSE}Action is TEditSelectAll{$ENDIF};
     if Result then
       SelectAll(False)
     else
     begin
-      Result := Action is TEditCopy;
+      Result := {$IFDEF VT_FMX}false{$ELSE}Action is TEditCopy{$ENDIF};
       if Result then
         CopyToClipboard
       else
         if not (toReadOnly in FOptions.FMiscOptions) then
         begin
-          Result := Action is TEditCut;
+          Result := {$IFDEF VT_FMX}false{$ELSE}Action is TEditCut{$ENDIF};
           if Result then
             CutToClipboard
           else
           begin
-            Result := Action is TEditPaste;
+            Result := {$IFDEF VT_FMX}false{$ELSE}Action is TEditPaste{$ENDIF};
             if Result then
               PasteFromClipboard
               else
               begin
-                Result := Action is TEditDelete;
+                Result := {$IFDEF VT_FMX}false{$ELSE}Action is TEditDelete{$ENDIF};
                 if Result then
                   DeleteSelectedNodes;
               end;
@@ -26776,7 +28174,9 @@ begin
   if ClipboardStates * FStates <> [] then
   begin
     DoStateChange([tsClipboardFlushing]);
+{$IFDEF VT_VCL}
     OleFlushClipboard;
+{$ENDIF}
     CancelCutOrCopy;
     DoStateChange([], [tsClipboardFlushing]);
   end;
@@ -26909,15 +28309,15 @@ function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnInde
 
 var
   Temp: PVirtualNode;
-  LeftOffset: Cardinal;
-  TopOffset: Cardinal;
+  LeftOffset: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  TopOffset: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
   CacheIsAvailable: Boolean;
-  TextWidth: Integer;
+  TextWidth: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
   CurrentBidiMode: TBidiMode;
   CurrentAlignment: TAlignment;
-  MaxUnclippedHeight: Integer;
+  MaxUnclippedHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
   TM: TTextMetric;
-  ExtraVerticalMargin: Integer;
+  ExtraVerticalMargin: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
   lOffsets: TVTOffsets;
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
@@ -27001,7 +28401,9 @@ begin
       Dec(Result.Right, LeftOffset);
 
       // Consider bidi mode here. In RTL context does left alignment actually mean right alignment and vice versa.
+{$IFDEF VT_VCL}
       ChangeBiDiModeAlignment(CurrentAlignment);
+{$ENDIF}
     end;
 
     TextWidth := DoGetNodeWidth(Node, Column);
@@ -27026,15 +28428,15 @@ begin
           CurrentAlignment := taRightJustify;
 
       // Increase cell height (up to MaxUnclippedHeight determined above) if text does not fit.
-      GetTextMetrics(Self.Canvas.Handle, TM);
+      GetTextMetrics(Self.Canvas{$IFDEF VT_VCL}.Handle{$ENDIF}, TM);
       ExtraVerticalMargin := System.Math.Min(TM.tmHeight, MaxUnclippedHeight) - (Result.Bottom - Result.Top);
       if ExtraVerticalMargin > 0 then
-        InflateRect(Result, 0, (ExtraVerticalMargin + 1) div 2);
+        InflateRect(Result, 0, (ExtraVerticalMargin + 1) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
 
       case CurrentAlignment of
         taCenter:
           begin
-            Result.Left := (Result.Left + Result.Right - TextWidth) div 2;
+            Result.Left := (Result.Left + Result.Right - TextWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
             Result.Right := Result.Left + TextWidth;
           end;
         taRightJustify:
@@ -27049,7 +28451,7 @@ begin
         case CurrentAlignment of
           taCenter:
             begin
-              Result.Left := (Result.Left + Result.Right - TextWidth) div 2;
+              Result.Left := (Result.Left + Result.Right - TextWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
               Result.Right := Result.Left + TextWidth;
             end;
           taRightJustify:
@@ -27480,7 +28882,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: Integer; Relative: Boolean; var HitInfo: THitInfo);
+procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var HitInfo: THitInfo);
 
 // Determines the node that occupies the specified point or nil if there's none. The parameter Relative determines
 // whether to consider X and Y as being client coordinates (if True) or as being absolute tree coordinates.
@@ -27488,14 +28890,13 @@ procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: Integer; Relative: Boolean; va
 
 var
   ColLeft,
-  ColRight: Integer;
-  NodeTop: Integer;
+  ColRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NodeTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   InitialColumn,
   NextColumn: TColumnIndex;
   CurrentBidiMode: TBidiMode;
   CurrentAlignment: TAlignment;
   NodeRect: TRect;
-
 begin
   HitInfo.HitNode := nil;
   HitInfo.HitPositions := [];
@@ -27809,7 +29210,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): Integer;
+function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // This method determines the width of the largest node in the given column.
 // If UseSmartColumnWidth is True then only the visible nodes which are in view will be considered
@@ -27821,7 +29222,7 @@ var
   LastNode,
   NextNode: PVirtualNode;
   TextLeft,
-  CurrentWidth: Integer;
+  CurrentWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   lOffsets: TVTOffsets;
 begin
   if OperationCanceled then
@@ -28476,13 +29877,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeAt(X, Y: Integer): PVirtualNode;
+function TBaseVirtualTree.GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode;
 
 // Overloaded variant of GetNodeAt to easy life of application developers which do not need to have the exact
 // top position returned and always use client coordinates.
 
 var
-  Dummy: Integer;
+  Dummy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   Result := GetNodeAt(X, Y, True, Dummy);
@@ -28495,7 +29896,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTop: Integer): PVirtualNode;
+function TBaseVirtualTree.GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var NodeTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode;
 
 // This method returns the node that occupies the specified point, or nil if there's none.
 // If Releative is True then X and Y are given in client coordinates otherwise they are considered as being
@@ -28505,8 +29906,7 @@ function TBaseVirtualTree.GetNodeAt(X, Y: Integer; Relative: Boolean; var NodeTo
 
 var
   AbsolutePos,
-  CurrentPos: Cardinal;
-
+  CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
 begin
   if Y < 0 then
     Y := 0;
@@ -28628,7 +30028,7 @@ begin
     while Run <> FRoot do
     begin
       Run := Run.Parent;
-      Inc(Result);
+      System.Inc(Result);
     end;
   end;
 end;
@@ -29406,7 +30806,7 @@ var
       SetLength(Result, Len);
     end;
     Result[Counter] := Node;
-    Inc(Counter);
+    System.Inc(Counter);
   end;
 
   //--------------- end local function ----------------------------------------
@@ -29489,7 +30889,7 @@ begin
         if vsSelected in Run.States then
         begin
           Result[Counter] := Run;
-          Inc(Counter);
+          System.Inc(Counter);
           if Assigned(Run.NextSibling) then
             Run := Run.NextSibling
           else
@@ -29516,7 +30916,7 @@ begin
         if vsSelected in Run.States then
         begin
           Result[Counter] := Run;
-          Inc(Counter);
+          System.Inc(Counter);
         end;
         Run := GetNextNoInit(Run);
       end;
@@ -29705,13 +31105,16 @@ procedure TBaseVirtualTree.InvalidateColumn(Column: TColumnIndex);
 
 var
   R: TRect;
-
 begin
   if (FUpdateCount = 0) and HandleAllocated and FHeader.FColumns.IsValidColumn(Column) then
   begin
-    R := ClientRect;
+    R := {$IFDEF VT_FMX}ClipRect{$ELSE}ClientRect{$ENDIF};
     FHeader.Columns.GetColumnBounds(Column, R.Left, R.Right);
+{$IFDEF VT_FMX}
+    Repaint;
+{$ELSE}
     InvalidateRect(Handle, @R, False);
+{$ENDIF}
   end;
 end;
 
@@ -29723,13 +31126,19 @@ function TBaseVirtualTree.InvalidateNode(Node: PVirtualNode): TRect;
 
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
+{$IFDEF VT_VCL}
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls may only be chnaged in UI thread.');
+{$ENDIF}
   // Reset height measured flag too to cause a re-issue of the OnMeasureItem event.
   Exclude(Node.States, vsHeightMeasured);
   if (FUpdateCount = 0) and HandleAllocated then
   begin
     Result := GetDisplayRect(Node, NoColumn, False);
+{$IFDEF VT_FMX}
+    Repaint;
+{$ELSE}
     InvalidateRect(Handle, @Result, False);
+{$ENDIF}
   end
   else
     result := Rect(-1,-1,-1,-1);
@@ -29744,7 +31153,6 @@ procedure TBaseVirtualTree.InvalidateToBottom(Node: PVirtualNode);
 
 var
   R: TRect;
-
 begin
   if (FUpdateCount = 0) and HandleAllocated then
   begin
@@ -29759,7 +31167,11 @@ begin
           if (toChildrenAbove in FOptions.FPaintOptions) and (vsExpanded in Node.States) then
             Dec(R.Top, Node.TotalHeight + NodeHeight[Node]);
           R.Bottom := ClientHeight;
+{$IFDEF VT_FMX}
+          Repaint;
+{$ELSE}
           InvalidateRect(Handle, @R, False);
+{$ENDIF}
         end;
       end;
   end;
@@ -29996,7 +31408,7 @@ begin
 
           while (Stream.Position < Stream.Size) and (Count > 0) do
           begin
-            Dec(Count);
+            System.Dec(Count);
             Node := MakeNewNode;
             InternalConnectNode(Node, FRoot, Self, amAddChildLast);
             InternalAddFromStream(Stream, Version, Node);
@@ -30023,7 +31435,7 @@ procedure TBaseVirtualTree.MeasureItemHeight(const Canvas: TCanvas; Node: PVirtu
 // If the height of the given node has not yet been measured then do it now.
 
 var
-  NewNodeHeight: Integer;
+  NewNodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   if not (vsHeightMeasured in Node.States) then
@@ -30033,6 +31445,7 @@ begin
     begin
       NewNodeHeight := Node.NodeHeight;
       // Anonymous methods help to make this thread safe easily. 
+{$IFDEF VT_VCL}
       if (MainThreadId <> GetCurrentThreadId) then
         TThread.Synchronize(nil,
           procedure
@@ -30043,9 +31456,12 @@ begin
         )
       else
       begin
+{$ENDIF}
         DoMeasureItem(Canvas, Node, NewNodeHeight);
         SetNodeHeight(Node, NewNodeHeight);
+{$IFDEF VT_VCL}
       end;
+{$ENDIF}
     end;
   end;
 end;
@@ -30267,7 +31683,7 @@ var
 
   VAlign,
   IndentSize,
-  ButtonY: Integer;            // Y position of toggle button within the node's rect
+  ButtonY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};            // Y position of toggle button within the node's rect
   LineImage: TLineImage;
   PaintInfo: TVTPaintInfo;     // all necessary information about a node to pass to the paint routines
 
@@ -30276,20 +31692,20 @@ var
   SelectionRect,               // ordered rectangle used for drawing the selection focus rect
   ClipRect: TRect;             // area to which the canvas will be clipped when painting a node's content
   NextColumn: TColumnIndex;
-  BaseOffset: Integer;         // top position of the top node to draw given in absolute tree coordinates
+  BaseOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};         // top position of the top node to draw given in absolute tree coordinates
   NodeBitmap: TBitmap;         // small buffer to draw flicker free
   MaximumRight,                // maximum horizontal target position
-  MaximumBottom: Integer;      // maximum vertical target position
+  MaximumBottom: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};      // maximum vertical target position
   SelectLevel: Integer;        // > 0 if current node is selected or child/grandchild etc. of a selected node
   FirstColumn: TColumnIndex;   // index of first column which is at least partially visible in the given window
 
   MaxRight,
   ColLeft,
-  ColRight: Integer;
+  ColRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
   SavedTargetDC: Integer;
-  PaintWidth: Integer;
-  CurrentNodeHeight: Integer;
+  PaintWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  CurrentNodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   lUseSelectedBkColor: Boolean; // determines if the dotted grid lines need to be painted in selection color of background color
 
   CellIsTouchingClientRight: Boolean;
@@ -30297,22 +31713,26 @@ var
   ColumnIsFixed: Boolean;
 
 begin
+{$IFDEF VT_FMX}
+  PaintOptions:= PaintOptions + [poUnbuffered]; //!!!!!!!
+{$ENDIF}
+
   if not (tsPainting in FStates) then
   begin
     DoStateChange([tsPainting]);
     try
       DoBeforePaint(TargetCanvas);
-
+{$IFDEF VT_VCL}
       if poUnbuffered in PaintOptions then
         SavedTargetDC := SaveDC(TargetCanvas.Handle)
       else
         SavedTargetDC := 0;
-
+{$ENDIF}
       // Prepare paint info structure.
       ZeroMemory(@PaintInfo, SizeOf(PaintInfo));
 
       PaintWidth := Window.Right - Window.Left;
-
+{$IFDEF VT_VCL}
       if not (poUnbuffered in PaintOptions) then
       begin
         // Create small bitmaps and initialize default values.
@@ -30334,6 +31754,7 @@ begin
         PaintInfo.Canvas := NodeBitmap.Canvas;
       end
       else
+{$ENDIF}
       begin
         PaintInfo.Canvas := TargetCanvas;
         NodeBitmap := nil;
@@ -30344,7 +31765,7 @@ begin
       try
         // Prepare the current selection rectangle once. The corner points are absolute tree coordinates.
         SelectionRect := OrderRect(FNewSelRect);
-        DrawSelectionRect := IsMouseSelecting and not IsRectEmpty(SelectionRect) and (GetKeyState(VK_LBUTTON) < 0);
+        DrawSelectionRect := IsMouseSelecting and not IsRectEmpty(SelectionRect) {$IFDEF VT_VCL}and (GetKeyState(VK_LBUTTON) < 0){$ENDIF}; //TODO: GetKeyState
 
         // R represents an entire node (all columns), but is a bit unprecise when it comes to
         // trees without any column defined, because FRangeX only represents the maximum width of all
@@ -30354,7 +31775,7 @@ begin
         R := Rect(0, 0, Max(FRangeX, ClientWidth), 0);
 
         // For quick checks some intermediate variables are used.
-        UseBackground := (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.Graphic) and
+        UseBackground := (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.{$IFDEF VT_FMX}Bitmap{$ELSE}Graphic{$ENDIF}) and
           (poBackground in PaintOptions);
         ShowImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
         ShowStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
@@ -30364,7 +31785,7 @@ begin
 
         // Adjust paint options to tree settings. Hide selection if told so or the tree is unfocused.
         if (toAlwaysHideSelection in FOptions.FPaintOptions) or
-          (not Focused and (toHideSelection in FOptions.FPaintOptions)) then
+          (not {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} and (toHideSelection in FOptions.FPaintOptions)) then
           Exclude(PaintOptions, poDrawSelection);
         if toHideFocusRect in FOptions.FPaintOptions then
           Exclude(PaintOptions, poDrawFocusRect);
@@ -30386,7 +31807,11 @@ begin
 
         TargetRect := Rect(Target.X, Target.Y - (Window.Top - BaseOffset), MaximumRight, 0);
         TargetRect.Bottom := TargetRect.Top;
+{$IFDEF VT_FMX}
+        TargetCanvas.Font.Assign(Self.Font);
+{$ELSE}
         TargetCanvas.Font := Self.Font;
+{$ENDIF}
 
         // This marker gets the index of the first column which is visible in the given window.
         // This is needed for column based background colors.
@@ -30406,14 +31831,14 @@ begin
             if not (vsInitialized in PaintInfo.Node.States) then
               InitNode(PaintInfo.Node);
             if (vsSelected in PaintInfo.Node.States) and not (toChildrenAbove in FOptions.FPaintOptions) then
-              Inc(SelectLevel);
+              System.Inc(SelectLevel);
 
             // Ensure the node's height is determined.
             MeasureItemHeight(PaintInfo.Canvas, PaintInfo.Node);
 
             // Adjust the brush origin for dotted lines depending on the current source position.
             // It is applied some lines later, as the canvas might get reallocated, when changing the node bitmap.
-            PaintInfo.BrushOrigin := Point(Window.Left and 1, BaseOffset and 1);
+            PaintInfo.BrushOrigin := {$IFDEF VT_FMX}Point(0,0){$ELSE}Point(Window.Left and 1, BaseOffset and 1){$ENDIF};
             Inc(BaseOffset, PaintInfo.Node.NodeHeight);
 
             TargetRect.Bottom := TargetRect.Top + PaintInfo.Node.NodeHeight;
@@ -30422,6 +31847,7 @@ begin
             // which are children of selected nodes.
             if (SelectLevel > 0) or not (poSelectedOnly in PaintOptions) then
             begin
+{$IFDEF VT_VCL}
               if not (poUnbuffered in PaintOptions) then
               begin
                 // Adjust height of temporary node bitmap.
@@ -30446,10 +31872,14 @@ begin
               // Set the origin of the canvas' brush. This depends on the node heights.
               with PaintInfo do
                 SetBrushOrigin(Canvas, BrushOrigin.X, BrushOrigin.Y);
-
+{$ENDIF}
               CurrentNodeHeight := PaintInfo.Node.NodeHeight;
+{$IFDEF VT_FMX}
+              R := TargetRect;
+{$ELSE}
               R.Bottom := CurrentNodeHeight;
-              
+{$ENDIF}
+
               CalculateVerticalAlignments(ShowImages, ShowStateImages, PaintInfo.Node, VAlign, ButtonY);
 
               // Let application decide whether the node should normally be drawn or by the application itself.
@@ -30459,7 +31889,7 @@ begin
                 PaintInfo.PaintOptions := PaintOptions;
 
                 // The node background can contain a single color, a bitmap or can be drawn by the application.
-                ClearNodeBackground(PaintInfo, UseBackground, True, Rect(Window.Left, TargetRect.Top, Window.Right,
+                ClearNodeBackground(PaintInfo, UseBackground, {$IFDEF VT_FMX}False{$ELSE}True{$ENDIF}, Rect(Window.Left, TargetRect.Top, Window.Right,
                   TargetRect.Bottom));
 
                 // Prepare column, position and node clipping rectangle.
@@ -30506,8 +31936,10 @@ begin
                     IsMainColumn := PaintInfo.Column = FHeader.MainColumn;
 
                     // Consider bidi mode here. In RTL context means left alignment actually right alignment and vice versa.
+{$IFDEF VT_VCL}
                     if PaintInfo.BidiMode <> bdLeftToRight then
                       ChangeBiDiModeAlignment(PaintInfo.Alignment);
+{$ENDIF}
 
                     // Paint the current cell if it is marked as being visible or columns aren't used and
                     // if this cell belongs to the main column if only the main column should be drawn.
@@ -30553,23 +31985,31 @@ begin
                               ClipRect.Top := Max(ClipRect.Top, Window.Top - (BaseOffset - CurrentNodeHeight));
                               ClipRect.Bottom := ClipRect.Bottom - Max(TargetRect.Bottom - MaximumBottom, 0);
                             end;
+{$IFDEF VT_FMX}
+                            //Canvas.IntersectClipRect(ClipRect);
+{$ELSE}
                             ClipCanvas(Canvas, ClipRect);
+{$ENDIF}
                           end;
 
                           // Paint the horizontal grid line.
                           if (poGridLines in PaintOptions) and (toShowHorzGridLines in FOptions.FPaintOptions) then
                           begin
+{$IFDEF VT_FMX}
+                            Canvas.Fill.Color := FColors.GridLineColor;
+{$ELSE}
                             Canvas.Font.Color := FColors.GridLineColor;
+{$ENDIF}
                             if IsMainColumn and (FLineMode = lmBands) then
                             begin
                               if BidiMode = bdLeftToRight then
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * Integer(FIndent), CellRect.Right - 1,
+                                DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent), CellRect.Right - 1,
                                   CellRect.Bottom - 1);
                               end
                               else
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * Integer(FIndent) - 1,
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) - 1,
                                   CellRect.Bottom - 1);
                               end;
                             end
@@ -30587,7 +32027,7 @@ begin
                             begin
                               // These variables and the nested if conditions shall make the logic
                               // easier to understand.
-                              CellIsTouchingClientRight := PaintInfo.CellRect.Right = ClientRect.Right;
+                              CellIsTouchingClientRight := PaintInfo.CellRect.Right = {$IFDEF VT_FMX}ClipRect{$ELSE}ClientRect{$ENDIF}.Right;
                               CellIsInLastColumn := Position = TColumnPosition(Count - 1);
                               ColumnIsFixed := coFixed in FHeader.FColumns[Column].Options;
 
@@ -30604,10 +32044,14 @@ begin
                                 begin
                                   if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
                                   begin
+{$IFDEF VT_FMX}
+                                    Canvas.Fill.Color := FColors.GridLineColor;
+{$ELSE}
                                     Canvas.Font.Color := FColors.GridLineColor;
+{$ENDIF}
                                     lUseSelectedBkColor := (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
-                                                          (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) and not
-                                                          (tsUseExplorerTheme in FStates);
+                                                          (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) 
+														  {$IFDEF VT_VCL}and not (tsUseExplorerTheme in FStates){$ENDIF};
                                     DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, lUseSelectedBkColor);
                                   end;
 
@@ -30664,7 +32108,12 @@ begin
                     else
                       NextColumn := GetNextVisibleColumn(PaintInfo.Column);
 
+{$IFDEF VT_FMX}
+                    //PaintInfo.Canvas.IntersectClipRect(Rect(0, 0, 0, 0));
+{$ELSE}
                     SelectClipRgn(PaintInfo.Canvas.Handle, 0);
+{$ENDIF}
+
                     // Stop column loop if there are no further columns in the given window.
                     if (PaintInfo.CellRect.Left >= Window.Right) or (NextColumn = InvalidColumn) then
                       Break;
@@ -30705,9 +32154,13 @@ begin
                 end;
 
                 // Put the constructed node image onto the target canvas.
+{$IFDEF VT_FMX}
+				//TODO:
+{$ELSE}
                 if not (poUnbuffered in PaintOptions) then
                   with TWithSafeRect(TargetRect), NodeBitmap do
                     BitBlt(TargetCanvas.Handle, Left, Top, Width, Height, Canvas.Handle, Window.Left, 0, SRCCOPY);
+{$ENDIF}
               end;
             end;
 
@@ -30731,8 +32184,13 @@ begin
           BaseOffset := Target.X;
           Target := TargetRect.TopLeft;
           R := Rect(TargetRect.Left, 0, TargetRect.Left, MaximumBottom - Target.Y);
+{$IFDEF VT_FMX}
+          TargetRect := Rect(0, TargetRect.Top, MaximumRight - Target.X, MaximumBottom - Target.Y);
+{$ELSE}
           TargetRect := Rect(0, 0, MaximumRight - Target.X, MaximumBottom - Target.Y);
+{$ENDIF}
 
+{$IFDEF VT_VCL}
           if not (poUnbuffered in PaintOptions) then
           begin
             // Avoid unnecessary copying of bitmap content. This will destroy the DC handle too.
@@ -30740,13 +32198,15 @@ begin
             NodeBitmap.PixelFormat := pf32Bit;
             NodeBitmap.SetSize(TargetRect.Right - TargetRect.Left, TargetRect.Bottom - TargetRect.Top);
           end;
-
+{$ENDIF}
           // Call back application/descendants whether they want to erase this area.
           if not DoPaintBackground(PaintInfo.Canvas, TargetRect) then
           begin
             if UseBackground then
             begin
+{$IFDEF VT_VCL}
               SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
+{$ENDIF}
               if toStaticBackground in TreeOptions.PaintOptions then
                 StaticBackground(FBackground, PaintInfo.Canvas, Target, TargetRect, FColors.BackGroundColor)
               else
@@ -30755,7 +32215,9 @@ begin
             else
             begin
               // Consider here also colors of the columns.
+{$IFDEF VT_VCL}
               SetCanvasOrigin(PaintInfo.Canvas, Target.X, 0); // This line caused issue #313 when it was placed above the if-statement
+{$ENDIF}
               if UseColumns then
               begin
                 with FHeader.FColumns do
@@ -30784,7 +32246,7 @@ begin
                   // Initialize MaxRight.
                   MaxRight := Target.X - 1;
 
-                  PaintInfo.Canvas.Font.Color := FColors.GridLineColor;
+                  PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GridLineColor;
                   while (FirstColumn <> InvalidColumn) and (MaxRight < TargetRect.Right + Target.X) do
                   begin
                     // Determine left and right coordinate of the current column
@@ -30808,10 +32270,10 @@ begin
                       end;
 
                       if not (coParentColor in Items[FirstColumn].FOptions) then
-                        PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
+                        PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := Items[FirstColumn].FColor
                       else
-                        PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
-                      PaintInfo.Canvas.FillRect(R);
+                        PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+                      PaintInfo.Canvas.FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
                     end;
                     FirstColumn := GetNextVisibleColumn(FirstColumn);
                   end;
@@ -30826,56 +32288,77 @@ begin
                        (toFullVertGridLines in FOptions.FPaintOptions) and (toShowVertGridLines in FOptions.FPaintOptions) and
                        (not (hoAutoResize in FHeader.FOptions)) then
                       Inc(R.Left);
-                    PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
-                    PaintInfo.Canvas.FillRect(R);
+                    PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+                    PaintInfo.Canvas.FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
                   end;
                 end;
+{$IFDEF VT_VCL}
                 SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
+{$ENDIF}
               end
               else
               begin
                 // No columns nor bitmap background. Simply erase it with the tree color.
+{$IFDEF VT_VCL}
                 SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
-                PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
-                PaintInfo.Canvas.FillRect(TargetRect);
+{$ENDIF}
+                PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+                PaintInfo.Canvas.FillRect(TargetRect{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
               end;
             end;
           end;
+{$IFDEF VT_VCL}
           SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
-
+{$ENDIF}
           if DrawSelectionRect then
           begin
             R := OrderRect(FNewSelRect);
             // Remap the selection rectangle to the current window of the tree.
             // Since Target has been used for other tasks BaseOffset got the left extent of the target position here.
             OffsetRect(R, -Target.X + BaseOffset - Window.Left, -Target.Y + FOffsetY);
+{$IFDEF VT_VCL}
             SetBrushOrigin(PaintInfo.Canvas, 0, Target.X and 1);
+{$ENDIF}
             PaintSelectionRectangle(PaintInfo.Canvas, 0, R, TargetRect);
           end;
-
+{$IFDEF VT_FMX}
+          //TODO: BitBlt
+{$ELSE}
           if not (poUnBuffered in PaintOptions) then
             with Target, NodeBitmap do
               BitBlt(TargetCanvas.Handle, X, Y, Width, Height, Canvas.Handle, 0, 0, SRCCOPY);
+{$ENDIF}
         end;
       finally
         PaintInfo.Canvas.Unlock;
+{$IFDEF VT_VCL}
         if poUnbuffered in PaintOptions then
           RestoreDC(TargetCanvas.Handle, SavedTargetDC)
         else
           NodeBitmap.Free;
+{$ENDIF}
       end;//try..finally
       
       if (ChildCount[nil] = 0) and (FEmptyListMessage <> '') then
       begin
         // output a message if no items are to display
+{$IFDEF VT_FMX}
+        Canvas.Font.Assign(Self.Font);
+{$ELSE}
         Canvas.Font := Self.Font;
-        SetBkMode(TargetCanvas.Handle, TRANSPARENT);
+		SetBkMode(TargetCanvas.Handle, TRANSPARENT);
+{$ENDIF}
         R.Left := OffSetX + 2;
         R.Top := 2;
         R.Right := R.Left + Width - 2;
         R.Bottom := Height -2;
+{$IFDEF VT_FMX}
+        TargetCanvas.Fill.Color := clGrayText;
+        TargetCanvas.FillText(R, FEmptyListMessage, true, 1.0, [], TTextAlign.Leading {[tfNoClip, tfLeft, tfWordBreak]});
+{$ELSE}
         TargetCanvas.Font.Color := clGrayText;
         TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft, tfWordBreak]);
+{$ENDIF}
       end;
 
       DoAfterPaint(TargetCanvas);
@@ -30892,13 +32375,15 @@ function TBaseVirtualTree.PasteFromClipboard: Boolean;
 // Reads what is currently on the clipboard into the tree (if the format is supported).
 // Note: If the application wants to have text or special formats to be inserted then it must implement
 //       its own code (OLE). Here only the native tree format is accepted.
-
+{$IFDEF VT_VCL}
 var
   Data: IDataObject;
   Source: TBaseVirtualTree;
 
+{$ENDIF}
 begin
   Result := False;
+{$IFDEF VT_VCL}
   if not (toReadOnly in FOptions.FMiscOptions) then
   begin
     if OleGetClipboard(Data) <> S_OK then
@@ -30918,11 +32403,12 @@ begin
       end;    
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
+procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF});
 
 // Initiates an image drag operation. HotSpot is the position of the mouse in client coordinates.
 
@@ -30936,6 +32422,8 @@ var
   Image: TBitmap;
 
 begin
+{$IFDEF VT_VCL}
+  {$IFDEF VT_FMX}PaintOptions:= PaintOptions + [poUnbuffered];{$ENDIF}
   if CanShowDragImage then
   begin
     // Determine the drag rectangle which is a square around the hot spot. Operate in virtual tree space.
@@ -30972,7 +32460,7 @@ begin
       SetSize(TreeRect.Right - TreeRect.Left, TreeRect.Bottom - TreeRect.Top);
       // Erase the entire image with the color key value, for the case not everything
       // in the image is covered by the tree image.
-      Canvas.Brush.Color := FColors.BackGroundColor;
+      Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
       Canvas.FillRect(Rect(0, 0, Width, Height));
 
       PaintOptions := [poDrawSelection, poSelectedOnly];
@@ -30991,6 +32479,7 @@ begin
       Image.Free;
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31016,9 +32505,11 @@ var
   xPageNum, yPageNum,                  // # of pages (except the occasional last one)
   xPage, yPage: Integer;               // Loop counter
   Scale: Extended;                     // Scale factor between Printer Canvas and VTree Canvas
+{$IFDEF VT_VCL}
   LogFont: TLogFont;
-
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if Assigned(Printer) then
   begin
     BeginUpdate;
@@ -31122,7 +32613,7 @@ begin
             SrcRect.Bottom := SrcRect.Top + vPageHeight;
 
             // Clear the image
-            PrinterImage.Canvas.Brush.Color := clWhite;
+            PrinterImage.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clWhite;
             PrinterImage.Canvas.FillRect(Rect(0, 0, PrinterImage.Width, PrinterImage.Height));
             PrinterImage.Canvas.CopyRect(DestRect, Image.Canvas, SrcRect);
             PrtStretchDrawDIB(Printer.Canvas, Rect(0, 0, Printer.PageWidth, Printer.PageHeight - 1), PrinterImage);
@@ -31143,11 +32634,12 @@ begin
       EndUpdate;
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ProcessDrop(const DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer;
+function TBaseVirtualTree.ProcessDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; TargetNode: PVirtualNode; var Effect: Integer;
   Mode: TVTNodeAttachMode): Boolean;
 
 // Recreates the (sub) tree structure serialized into memory and provided by DataObject. The new nodes are attached to
@@ -31160,6 +32652,7 @@ var
 
 begin
   Result := False;
+{$IFDEF VT_VCL}
   if Mode = amNoWhere then
     Effect := DROPEFFECT_NONE
   else
@@ -31195,10 +32688,12 @@ begin
       EndUpdate;
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$IFDEF VT_VCL}
 type
   // needed to handle OLE global memory objects
   TOLEMemoryStream = class(TCustomMemoryStream)
@@ -31213,6 +32708,7 @@ function TOLEMemoryStream.Write(const Buffer; Count: Integer): Integer;
 begin
   raise EStreamError.CreateRes(PResStringRec(@SCantWriteResourceStreamError));
 end;
+{$ENDIF}
 
 //----------------- TBaseVirtualTree -----------------------------------------------------------------------------
 
@@ -31253,7 +32749,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode;
   Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
 
@@ -31394,7 +32890,7 @@ begin
     end;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ReinitChildren(Node: PVirtualNode; Recursive: Boolean);
@@ -31457,7 +32953,11 @@ begin
   if Assigned(Node) and (Node <> FRoot) then
   begin
     R := GetDisplayRect(Node, NoColumn, False);
+{$IFDEF VT_FMX}
+    Repaint;
+{$ELSE}
     RedrawWindow(Handle, @R, 0, RDW_INVALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_VALIDATE or RDW_NOCHILDREN);
+{$ENDIF}
   end;
 end;
 
@@ -31585,7 +33085,7 @@ begin
     if R.Top < 0 then
     begin
       if Center then
-        SetOffsetY(FOffsetY - R.Top + ClientHeight div 2)
+        SetOffsetY(FOffsetY - R.Top + ClientHeight {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2)
       else
         SetOffsetY(FOffsetY - R.Top);
       ScrolledVertically := True;
@@ -31594,16 +33094,16 @@ begin
       if (R.Bottom > ClientHeight) or Center then
       begin
         HScrollBarVisible := (ScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssBoth, System.UITypes.TScrollStyle.ssHorizontal]) and
-          (ScrollBarOptions.AlwaysVisible or (Integer(FRangeX) > ClientWidth));
+          (ScrollBarOptions.AlwaysVisible or ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) > ClientWidth));
         if Center then
-          SetOffsetY(FOffsetY - R.Bottom + ClientHeight div 2)
+          SetOffsetY(FOffsetY - R.Bottom + ClientHeight {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2)
         else
           SetOffsetY(FOffsetY - R.Bottom + ClientHeight);
         // When scrolling up and the horizontal scroll appears because of the operation
         // then we have to move up the node the horizontal scrollbar's height too
         // in order to avoid that the scroll bar hides the node which we wanted to have in view.
-        if not UseColumns and not HScrollBarVisible and (Integer(FRangeX) > ClientWidth) then
-          SetOffsetY(FOffsetY - GetSystemMetrics(SM_CYHSCROLL));
+        if not UseColumns and not HScrollBarVisible and ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) > ClientWidth) then
+          SetOffsetY(FOffsetY - {$IFDEF VT_FMX}3{$ELSE}GetSystemMetrics(SM_CYHSCROLL){$ENDIF});
         ScrolledVertically := True;
       end;
 
@@ -31618,11 +33118,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ScaledPixels(pPixels: Integer): Integer;
+function TBaseVirtualTree.ScaledPixels(pPixels: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
    /// Returns the given pixels scaled to the current dpi assuming that we designed at 96dpi (100%)
 begin
+{$IFDEF VT_FMX}
+  Result := MulDiv(pPixels, 96, 96); //TODO: System.Devices.TDeviceInfo.PixelsPerInch
+{$ELSE}
   Result := MulDiv(pPixels, {$if CompilerVersion > 31}Self.FCurrentPPI{$else}Screen.PixelsPerInch{$ifend}, 96);
+{$ENDIF}
 end;
 
 function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean; Node: PVirtualNode = nil): Boolean;
@@ -31632,8 +33136,8 @@ function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean; 
 
 var
   ColumnLeft,
-  ColumnRight: Integer;
-  NewOffset: Integer;
+  ColumnRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NewOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   R: TRect;
 
 begin
@@ -31661,7 +33165,7 @@ begin
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
-        SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
+        SetOffsetX(-{$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) + ClientWidth + NewOffset)
       else
         SetOffsetX(-NewOffset);
     end;
@@ -31669,11 +33173,11 @@ begin
   end
   else if Center then
   begin
-    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
+    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) - (ClientWidth {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) + ((ColumnRight - ColumnLeft) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
-        SetOffsetX(-Integer(FRangeX) + ClientWidth + NewOffset)
+        SetOffsetX(-{$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) + ClientWidth + NewOffset)
       else
         SetOffsetX(-NewOffset);
     end;
@@ -31909,7 +33413,7 @@ begin
         Index := 0;
         repeat
           Run.Index := Index;
-          Inc(Index);
+          System.Inc(Index);
           if Run.NextSibling = nil then
             Break;
           Run.NextSibling.PrevSibling := Run;
@@ -31962,7 +33466,7 @@ begin
     Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
-  Inc(FUpdateCount);
+  System.Inc(FUpdateCount);
   try
     if Column > InvalidColumn then
     begin
@@ -31971,12 +33475,12 @@ begin
         DoSort(FRoot);
       finally
         EndOperation(okSortTree);
-      end; 
+      end;
     end;
     InvalidateCache;
   finally
     if FUpdateCount > 0 then
-      Dec(FUpdateCount);
+      System.Dec(FUpdateCount);
     if FUpdateCount = 0 then
     begin
       ValidateCache;
@@ -31996,7 +33500,7 @@ var
   FirstVisible: PVirtualNode;
   HeightDelta,
   StepsR1,
-  StepsR2,
+  StepsR2: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   Steps: Integer;
   TogglingTree,
   ChildrenInView,
@@ -32015,17 +33519,22 @@ var
 
   var
     R: TRect;
-    S: Integer;
+    S: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
     M: TToggleAnimationMode;
 
   begin
     with ToggleData do
     begin
+{$IFDEF VT_FMX}
+      Canvas:= Self.Canvas;
+      Self.Fill.Color := FColors.BackGroundColor;
+      Brush := Self.Fill;
+{$ELSE}
       Window := Handle;
       DC := GetDC(Handle);
       Self.Brush.Color := FColors.BackGroundColor;
       Brush := Self.Brush.Handle;
-
+{$ENDIF}
       if (Mode1 <> tamNoScroll) and (Mode2 <> tamNoScroll) then
       begin
         if StepsR1 < StepsR2 then
@@ -32047,14 +33556,20 @@ var
         ScaleFactor := StepsR2 / StepsR1;
         MissedSteps := 0;
       end;
-
+{$IFDEF VT_FMX}
+      if Mode1 <> tamNoScroll then
+        Steps := Round(StepsR1) //TODO: round!!
+      else
+        Steps := Round(StepsR2);
+{$ELSE}
       if Mode1 <> tamNoScroll then
         Steps := StepsR1
       else
         Steps := StepsR2;
+{$ENDIF}
+
     end;
   end;
-
   //--------------- end local function ----------------------------------------
 
 begin
@@ -32084,13 +33599,17 @@ begin
           NeedUpdate := True;
 
           // Calculate the height delta right now as we need it for toChildrenAbove anyway.
-          HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]); 
+          HeightDelta := -{$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]); 
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
             if tsHint in Self.FStates then
               Application.CancelHint;
+{$IFDEF VT_FMX}
+            Repaint;
+{$ELSE}
             UpdateWindow(Handle);
+{$ENDIF}
 
             // animated collapsing
             with ToggleData do
@@ -32101,7 +33620,7 @@ begin
               Mode2 := tamNoScroll;
               if toChildrenAbove in FOptions.FPaintOptions then
               begin
-                PosHoldable := (FOffsetY + (Integer(Node.TotalHeight) - Integer(NodeHeight[Node]))) <= 0;
+                PosHoldable := (FOffsetY + ({$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]))) <= 0;
                 NodeInView := R1.Top < ClientHeight;
 
                 StepsR1 := 0;
@@ -32113,7 +33632,7 @@ begin
                     Mode1 := tamScrollDown;
                     R1.Bottom := R1.Top;
                     R1.Top := 0;
-                    StepsR1 := Min(R1.Bottom - R1.Top + 1, Integer(Node.TotalHeight) - Integer(NodeHeight[Node]));
+                    StepsR1 := Min(R1.Bottom - R1.Top + 1, {$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]));
                   end
                   else
                   begin
@@ -32127,8 +33646,8 @@ begin
               end
               else
               begin
-                if (Integer(FRangeY) + FOffsetY - R1.Bottom + HeightDelta >= ClientHeight - R1.Bottom) or
-                   (Integer(FRangeY) <= ClientHeight) or (FOffsetY = 0) or not
+                if ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + FOffsetY - R1.Bottom + HeightDelta >= ClientHeight - R1.Bottom) or
+                   ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) <= ClientHeight) or (FOffsetY = 0) or not
                    (toAdvancedAnimatedToggle in FOptions.FAnimationOptions) then
                 begin
                   // Do a simple scroll up over the child nodes.
@@ -32142,7 +33661,7 @@ begin
                   // Scroll the node down to its future position. As FOffsetY will change we need to invalidate the
                   // whole tree.
                   Mode1 := tamScrollDown;
-                  StepsR1 := Min(-FOffsetY, ClientHeight - Integer(FRangeY) -FOffsetY - HeightDelta);
+                  StepsR1 := Min(-FOffsetY, ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) -FOffsetY - HeightDelta);
                   R1.Top := 0;
                   R1.Bottom := Min(ClientHeight, R1.Bottom + Steps);
                   NeedFullInvalidate := True;
@@ -32154,9 +33673,11 @@ begin
               begin
                 PrepareAnimation;
                 try
-                  Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
+                  Animate(Steps, FAnimationDuration, {$IFDEF VT_FMX}nil{$ELSE}ToggleCallback{$ENDIF}, @ToggleData);
                 finally
+{$IFDEF VT_VCL}
                   ReleaseDC(Window, DC);
+{$ENDIF}
                 end;
               end;
             end;
@@ -32165,7 +33686,7 @@ begin
           // collapse the node
           AdjustTotalHeight(Node, IfThen(IsEffectivelyFiltered[Node], 0, NodeHeight[Node]));
           if FullyVisible[Node] then
-            Dec(FVisibleCount, CountVisibleChildren(Node));
+            System.Dec(FVisibleCount, CountVisibleChildren(Node));
           Exclude(Node.States, vsExpanded);
           DoCollapsed(Node);
 
@@ -32210,13 +33731,13 @@ begin
               begin
                 R1 := GetDisplayRect(Node, NoColumn, False);
                 Mode2 := tamNoScroll;
-                TotalFit := HeightDelta + Integer(NodeHeight[Node]) <= ClientHeight;
+                TotalFit := HeightDelta + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) <= ClientHeight;
 
                 if toChildrenAbove in FOptions.FPaintOptions then
                 begin
                   // The main goal with toChildrenAbove being set is to keep the nodes visual position so the user does
                   // not get confused. Therefore we need to scroll the view when the expanding is done.
-                  PosHoldable := TotalFit and (Integer(FRangeY) - ClientHeight >= 0) ;
+                  PosHoldable := TotalFit and ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) - ClientHeight >= 0) ;
                   ChildrenInView := (R1.Top - HeightDelta) >= 0;
                   NodeInView := R1.Bottom <= ClientHeight;
                 end
@@ -32238,7 +33759,11 @@ begin
               begin
                 if tsHint in Self.FStates then
                   Application.CancelHint;
+{$IFDEF VT_FMX}
+                Repaint;
+{$ELSE}
                 UpdateWindow(Handle);
+{$ENDIF}
                 // animated expanding
                 with ToggleData do
                 begin
@@ -32263,25 +33788,25 @@ begin
                       begin
                         // If we shall not or cannot scroll to the desired extent we calculate the new position (with
                         // max FOffsetY applied) and animate it that way.
-                        StepsR1 := -FOffsetY - Max(Integer(FRangeY) + HeightDelta - ClientHeight, 0) + HeightDelta;
-                        if (Integer(FRangeY) + HeightDelta - ClientHeight) <= 0 then
+                        StepsR1 := -FOffsetY - Max({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta - ClientHeight, 0) + HeightDelta;
+                        if ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta - ClientHeight) <= 0 then
                           Mode2 := tamNoScroll
                         else
-                          StepsR2 := Min(Integer(FRangeY) + HeightDelta - ClientHeight, R2.Bottom);
+                          StepsR2 := Min({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta - ClientHeight, R2.Bottom);
                       end
                       else
                       begin
-                        if TotalFit and NodeInView and (Integer(FRangeY) + HeightDelta > ClientHeight) then
+                        if TotalFit and NodeInView and ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta > ClientHeight) then
                         begin
                           // If the whole subtree will fit into the client area and the node is currently fully visible,
                           // the first child will be made the top node if possible.
                           if HeightDelta >= R1.Top then
                             StepsR1 := Abs(R1.Top - HeightDelta)
                           else
-                            StepsR1 := ClientHeight - Integer(FRangeY);
+                            StepsR1 := ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY);
                         end
                         else
-                          if Integer(FRangeY) + HeightDelta <= ClientHeight then
+                          if {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta <= ClientHeight then
                           begin
                             // We cannot make the first child the top node as we cannot scroll to that extent,
                             // so we do a simple scroll down.
@@ -32291,7 +33816,7 @@ begin
                           else
                             // If the subtree does not fit into the client area at once, the expanded node will
                             // be made the bottom node.
-                            StepsR1 := ClientHeight - R1.Top - Integer(NodeHeight[Node]);
+                            StepsR1 := ClientHeight - R1.Top - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]);
 
                         if Mode2 <> tamNoScroll then
                         begin
@@ -32324,11 +33849,11 @@ begin
                       Mode1 := tamScrollUp;
                       Mode2 := tamScrollDown;
 
-                      R1.Bottom := R1.Top + Integer(NodeHeight[Node]) + 1;
+                      R1.Bottom := R1.Top + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) + 1;
                       R1.Top := 0;
                       R2 := Rect(R1.Left, R1.Bottom, R1.Right, ClientHeight);
 
-                      StepsR1 := Min(HeightDelta - (ClientHeight - R2.Top), R1.Bottom - Integer(NodeHeight[Node]));
+                      StepsR1 := Min(HeightDelta - (ClientHeight - R2.Top), R1.Bottom - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]));
                       StepsR2 := ClientHeight - R2.Top;
                     end;
                   end;
@@ -32337,9 +33862,11 @@ begin
                   begin
                     PrepareAnimation;
                     try
-                      Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
+                      Animate(Steps, FAnimationDuration, {$IFDEF VT_FMX}nil{$ELSE}ToggleCallback{$ENDIF}, @ToggleData);
                     finally
+{$IFDEF VT_VCL}
                       ReleaseDC(Window, DC);
+{$ENDIF}
                     end;
                   end;
                 end;
@@ -32351,7 +33878,7 @@ begin
             Include(Node.States, vsExpanded);
             AdjustTotalHeight(Node, HeightDelta, True);
             if FullyVisible[Node] then
-              Inc(FVisibleCount, CountVisibleChildren(Node));
+              System.Inc(FVisibleCount, CountVisibleChildren(Node));
 
             DoExpanded(Node);
           end;
@@ -32377,7 +33904,7 @@ begin
                   NeedFullInvalidate := True;
                   if (PosHoldable and ChildrenInView and NodeInView) or not
                      (toAutoScrollOnExpand in FOptions.FAutoOptions) then
-                    SetOffsetY(FOffsetY - Integer(HeightDelta))
+                    SetOffsetY(FOffsetY - {$IFDEF VT_VCL}Integer{$ENDIF}(HeightDelta))
                   else
                     if TotalFit and NodeInView then
                     begin
@@ -32405,7 +33932,7 @@ begin
                 // If we have collapsed the node or toAutoScrollOnExpand is not set, we try to keep the nodes
                 // visual position.
                 if toChildrenAbove in FOptions.FPaintOptions then
-                  SetOffsetY(FOffsetY - Integer(HeightDelta));
+                  SetOffsetY(FOffsetY - {$IFDEF VT_VCL}Integer{$ENDIF}(HeightDelta));
                 NeedFullInvalidate := True;
               end;
             end;
@@ -32450,15 +33977,18 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.UpdateHorizontalScrollBar(DoRepaint: Boolean);
-
+{$IFDEF VT_VCL}
 var
   ScrollInfo: TScrollInfo;
-
+{$ENDIF}
 begin
   UpdateHorizontalRange;
 
   if (tsUpdating in FStates) or not HandleAllocated then
     Exit;
+
+
+{$IFDEF VT_VCL}
 
   // Adjust effect scroll offset depending on bidi mode.
   if UseRightToLeftAlignment then
@@ -32512,6 +34042,7 @@ begin
     // Reset the current horizontal offset to account for window resize etc.
     SetOffsetX(FOffsetX);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32534,7 +34065,9 @@ begin
   begin
     UpdateVerticalScrollBar(DoRepaint);
     UpdateHorizontalScrollBar(DoRepaint);
+{$IFDEF VT_VCL}
     Perform(CM_UPDATE_VCLSTYLE_SCROLLBARS,0,0);
+{$ENDIF}
   end;
 end;
 
@@ -32551,21 +34084,22 @@ procedure TBaseVirtualTree.UpdateVerticalRange;
 
 begin
   // Total node height includes the height of the invisible root node.
-  FRangeY := Cardinal(Int64(FRoot.TotalHeight) - FRoot.NodeHeight + FBottomSpace);
+  FRangeY := {$IFDEF VT_VCL}Cardinal{$ENDIF}({$IFDEF VT_VCL}Int64{$ENDIF}(FRoot.TotalHeight) - FRoot.NodeHeight + FBottomSpace);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.UpdateVerticalScrollBar(DoRepaint: Boolean);
-
+{$IFDEF VT_VCL}
 var
   ScrollInfo: TScrollInfo;
-
+{$ENDIF}
 begin
   UpdateVerticalRange;
 
   if tsUpdating in FStates then
     Exit;
+{$IFDEF VT_VCL}
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls like ' + Classname + ' and its scrollbars should only be manipulated through the main thread.');
 
   if FScrollBarOptions.ScrollBars in [ssVertical, ssBoth] then
@@ -32607,6 +34141,7 @@ begin
     // Reset the current vertical offset to account for window resize etc.
     SetOffsetY(FOffsetY);
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32737,7 +34272,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TVTEdit.CalcMinHeight: Integer;
 var
   textHeight : Integer;
@@ -32973,17 +34508,19 @@ begin
     inherited;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTEdit.AutoAdjustSize;
 
 // Changes the size of the edit to accomodate as much as possible of its text within its container window.
 // NewChar describes the next character which will be added to the edit's text.
-
+{$IFDEF VT_VCL}
 var
   Size: TSize;
+{$ENDIF}
 begin
+{$IFDEF VT_VCL}
   if not (vsMultiline in FLink.FNode.States) and not (toGridExtensions in FLink.FTree.FOptions.FMiscOptions{see issue #252}) then
   begin
     // avoid flicker
@@ -33003,10 +34540,11 @@ begin
       SendMessage(Handle, WM_SETREDRAW, 1, 0);
     end;
   end;
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TVTEdit.CreateParams(var Params: TCreateParams);
 
 begin
@@ -33031,9 +34569,9 @@ begin
     end;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TVTEdit.GetTextSize: TSize;
 var
   DC: HDC;
@@ -33049,14 +34587,16 @@ begin
     ReleaseDC(Handle, DC);
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTEdit.Release;
 
 begin
+{$IFDEF VT_VCL}
   if HandleAllocated then
     PostMessage(Handle, CM_RELEASE, 0, 0);
+{$ENDIF}
 end;
 
 //----------------- TStringEditLink ------------------------------------------------------------------------------------
@@ -33069,8 +34609,10 @@ begin
   with FEdit do
   begin
     Visible := False;
+{$IFDEF VT_VCL}
     BorderStyle := bsSingle;
     AutoSize := False;
+{$ENDIF}
   end;
 end;
 
@@ -33137,7 +34679,9 @@ begin
   if Result then
   try
     FStopping := True;
+{$IFDEF VT_VCL}
     if FEdit.Modified then
+{$ENDIF}
       FTree.Text[FNode, FColumn] := FEdit.Text;
     FEdit.Hide;
     FEdit.FLink := nil;
@@ -33173,43 +34717,56 @@ begin
     begin
       FEdit := TVTEdit.Create(Self);
       FEdit.Visible := False;
+{$IFDEF VT_VCL}
       FEdit.BorderStyle := bsSingle;
+{$ENDIF}
     end;
+{$IFDEF VT_VCL}
     FEdit.AutoSize := True;
+{$ENDIF}
     FTree := Tree as TCustomVirtualStringTree;
     FNode := Node;
     FColumn := Column;
     FEdit.Parent := Tree;
     // Initial size, font and text of the node.
     FTree.GetTextInfo(Node, Column, FEdit.Font, FTextBounds, Text);
+{$IFDEF VT_VCL}
     FEdit.Font.Color := clWindowText;
     FEdit.RecreateWnd;
     FEdit.AutoSize := False;
+{$ENDIF}
     FEdit.Text := Text;
 
     if Column <= NoColumn then
     begin
+{$IFDEF VT_VCL}
       FEdit.BidiMode := FTree.BidiMode;
+{$ENDIF}
       FAlignment := FTree.Alignment;
     end
     else
     begin
+{$IFDEF VT_VCL}
       FEdit.BidiMode := FTree.Header.Columns[Column].BidiMode;
+{$ENDIF}
       FAlignment := FTree.Header.Columns[Column].Alignment;
     end;
 
+{$IFDEF VT_VCL}
     if FEdit.BidiMode <> bdLeftToRight then
       ChangeBidiModeAlignment(FAlignment);
+{$ENDIF}
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TStringEditLink.ProcessMessage(var Message: TMessage);
 
 begin
   FEdit.WindowProc(Message);
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -33218,9 +34775,10 @@ procedure TStringEditLink.SetBounds(R: TRect);
 // Sets the outer bounds of the edit control and the actual edit area in the control.
 
 var
-  lOffset, tOffset, height: Integer;
+  lOffset, tOffset, height: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   offsets : TVTOffsets;
 begin
+{$IFDEF VT_VCL}
   if not FStopping then
   begin
     // Check if the provided rect height is smaller than the edit control height.
@@ -33251,7 +34809,7 @@ begin
     // The selected text shall exclude the text margins and be centered vertically.
     // We have to take out the two pixel border of the edit control as well as a one pixel "edit border" the
     // control leaves around the (selected) text.
-    R := FEdit.ClientRect;
+    R := FEdit.{$IFDEF VT_FMX}BoundsRect{$ELSE}ClientRect{$ENDIF};
 
     // If toGridExtensions are turned on, we can fine tune the left margin (or the right margin if RTL is on)
     // of the text to exactly match the text in the tree cell.
@@ -33290,8 +34848,11 @@ begin
     end;
     R.Top := Max(-1, R.Top); // A value smaller than -1 will prevent the edit cursor from being shown by Windows, see issue #159
     R.Left := Max(-1, R.Left);
+{$IFDEF VT_VCL}	
     SendMessage(FEdit.Handle, EM_SETRECTNP, 0, LPARAM(@R));
+{$ENDIF}
   end;
+{$ENDIF}
 end;
 
 //----------------- TCustomVirtualString -------------------------------------------------------------------------------
@@ -33452,18 +35013,23 @@ begin
   with PaintInfo do
   begin
     // Set default font values first.
+{$IFDEF VT_FMX}
+    Canvas.Font.Assign(Font);
+{$ELSE}
     Canvas.Font := Font;
+{$ENDIF}
+
     if Enabled then // Es werden sonst nur die Farben verwendet von Font die an  Canvas.Font übergeben wurden
-       Canvas.Font.Color := FColors.NodeFontColor
+       Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.NodeFontColor
     else
-      Canvas.Font.Color := FColors.DisabledColor;
+      Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.DisabledColor;
 
     if (toHotTrack in FOptions.FPaintOptions) and (Node = FCurrentHotNode) then
     begin
-      if not (tsUseExplorerTheme in FStates) then
+      {$IFDEF VT_VCL}if not (tsUseExplorerTheme in FStates) then{$ENDIF}
       begin
-        Canvas.Font.Style := Canvas.Font.Style + [fsUnderline];
-        Canvas.Font.Color := FColors.HotColor;
+        Canvas.Font.Style := Canvas.Font.Style + [TFontStyle.fsUnderline];
+        Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.HotColor;
       end;
     end;
 
@@ -33474,15 +35040,15 @@ begin
       begin
         if Node = FDropTargetNode then
         begin
-          if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) and not
-             (tsUseExplorerTheme in FStates) then
-            Canvas.Font.Color := FColors.SelectionTextColor;
+          if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) 
+		    {$IFDEF VT_VCL}and not (tsUseExplorerTheme in FStates){$ENDIF} then
+            Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.SelectionTextColor;
         end
         else
           if vsSelected in Node.States then
           begin
-            if not (tsUseExplorerTheme in FStates) then
-              Canvas.Font.Color := FColors.SelectionTextColor;
+            {$IFDEF VT_VCL}if not (tsUseExplorerTheme in FStates) then{$ENDIF}
+              Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.SelectionTextColor;
           end;
       end;
     end;
@@ -33500,18 +35066,20 @@ procedure TCustomVirtualStringTree.PaintNormalText(var PaintInfo: TVTPaintInfo; 
 //       the node rectangle. The clipping rectangle comprises the entire node (including tree lines, buttons etc.).
 
 var
-  TripleWidth: Integer;
+  TripleWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   R: TRect;
   DrawFormat: Cardinal;
   Size: TSize;
-  Height: Integer;
+  Height: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   InitializeTextProperties(PaintInfo);
   with PaintInfo do
   begin
     R := ContentRect;
+{$IFDEF VT_VCL}
     Canvas.TextFlags := 0;
+{$ENDIF}
     InflateRect(R, -FTextMargin, 0);
 
     // Multiline nodes don't need special font handling or text manipulation.
@@ -33525,7 +35093,7 @@ begin
       Height := ComputeNodeHeight(Canvas, Node, Column);
       // Disabled node color overrides all other variants.
       if (vsDisabled in Node.States) or not Enabled then
-        Canvas.Font.Color := FColors.DisabledColor;
+        Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.DisabledColor;
 
       // The edit control flag will ensure that no partial line is displayed, that is, only lines
       // which are (vertically) fully visible are drawn.
@@ -33535,7 +35103,7 @@ begin
 
       // Center the text vertically if it fits entirely into the content rect.
       if R.Bottom - R.Top > Height then
-        InflateRect(R, 0, (Height - R.Bottom - R.Top) div 2);
+        InflateRect(R, 0, (Height - R.Bottom - R.Top) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
     end
     else
     begin
@@ -33547,13 +35115,13 @@ begin
         // If the font has been changed then the ellipsis width must be recalculated.
         TripleWidth := 0;
         // Recalculate also the width of the normal text.
-        GetTextExtentPoint32W(Canvas.Handle, PWideChar(Text), Length(Text), Size);
+        GetTextExtentPoint32W(Canvas{$IFDEF VT_VCL}.Handle{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(Text), Length(Text), Size);
         NodeWidth := Size.cx + 2 * FTextMargin;
       end;
 
       // Disabled node color overrides all other variants.
       if (vsDisabled in Node.States) or not Enabled then
-        Canvas.Font.Color := FColors.DisabledColor;
+        Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.DisabledColor;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
       if BidiMode <> bdLeftToRight then
@@ -33571,11 +35139,12 @@ begin
         DrawFormat := DrawFormat or AlignmentToDrawFlag[Alignment];
     end;
 
+{$IFDEF VT_VCL}
     if Canvas.TextFlags and ETO_OPAQUE = 0 then
       SetBkMode(Canvas.Handle, TRANSPARENT)
     else
       SetBkMode(Canvas.Handle, OPAQUE);
-
+{$ENDIF}
     DoTextDrawing(PaintInfo, Text, R, DrawFormat);
   end;
 end;
@@ -33594,45 +35163,54 @@ var
 begin
   with PaintInfo do
   begin
+{$IFDEF VT_FMX}
+    Canvas.Font.Assign(Font);
+{$ELSE}
     Canvas.Font := Font;
+{$ENDIF}
     if toFullRowSelect in FOptions.FSelectionOptions then
     begin
       if Node = FDropTargetNode then
       begin
         if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
-          Canvas.Font.Color := FColors.SelectionTextColor
+          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.SelectionTextColor
         else
-          Canvas.Font.Color := FColors.NodeFontColor;
+          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.NodeFontColor;
       end
       else
         if vsSelected in Node.States then
         begin
-          if Focused or (toPopupMode in FOptions.FPaintOptions) then
-          Canvas.Font.Color := FColors.SelectionTextColor
+          if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
+          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.SelectionTextColor
           else
-            Canvas.Font.Color := FColors.NodeFontColor;
+            Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.NodeFontColor;
         end;
     end;
 
     DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
+{$IFDEF VT_VCL}
     Canvas.TextFlags := 0;
+{$ENDIF}
     DoPaintText(Node, Canvas, Column, ttStatic);
 
     // Disabled node color overrides all other variants.
     if (vsDisabled in Node.States) or not Enabled then
-      Canvas.Font.Color := FColors.DisabledColor;
+      Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.DisabledColor;
 
     R := ContentRect;
     if Alignment = taRightJustify then
       Dec(R.Right, NodeWidth + FTextMargin)
     else
       Inc(R.Left, NodeWidth + FTextMargin);
-
+{$IFDEF VT_FMX}
+    Canvas.FillText(R, (Text), true, 1.0, [], TTextAlign.Leading);
+{$ELSE}
     if Canvas.TextFlags and ETO_OPAQUE = 0 then
       SetBkMode(Canvas.Handle, TRANSPARENT)
     else
       SetBkMode(Canvas.Handle, OPAQUE);
     Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat);
+{$ENDIF}
   end;
 end;
 
@@ -33698,6 +35276,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$IFDEF VT_VCL}
 procedure TCustomVirtualStringTree.WMSetFont(var Msg: TWMSetFont);
 
 // Whenever a new font is applied to the tree some default values are determined to avoid frequent
@@ -33735,6 +35314,7 @@ begin
     Run := GetNextNoInit(Run);
   end;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -33795,7 +35375,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer;
+function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   Result := 0;
@@ -33803,7 +35383,7 @@ begin
   begin
     DoPaintText(Node, Canvas, Column, ttStatic);
 
-    Inc(Result, DoTextMeasuring(Canvas, Node, Column, Text).cx);
+    Inc(Result, DoTextMeasuring(Canvas, Node, Column, Text).{$IFDEF VT_FMX}Width{$ELSE}cx{$ENDIF});
     Inc(Result, FTextMargin);
   end;
 end;
@@ -33811,7 +35391,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  const Text: string): Integer;
+  const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Determines the width of the given text.
 
@@ -33819,7 +35399,11 @@ begin
   Result := 2 * FTextMargin;
   if Length(Text) > 0 then
   begin
+{$IFDEF VT_FMX}
+    Canvas.Font.Assign(Font);
+{$ELSE}
     Canvas.Font := Font;
+{$ENDIF}
     DoPaintText(Node, Canvas, Column, ttNormal);
 
     Inc(Result, DoTextMeasuring(Canvas, Node, Column, Text).cx);
@@ -33899,7 +35483,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex;
-  Canvas: TCanvas = nil): Integer;
+  Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   if not (toShowStaticText in TreeOptions.FStringOptions) then
@@ -33911,13 +35495,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer;
+function TCustomVirtualStringTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Returns the text width of the given node in pixels.
 // This width is stored in the node's data member to increase access speed.
 
 var
-  Data: PInteger;
+  Data: {$IFDEF VT_FMX}PSingle{$ELSE}PInteger{$ENDIF};
 
 begin
   if (Column > NoColumn) and (vsMultiline in Node.States) then
@@ -34047,7 +35631,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
+  const S: string; Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; EllipsisWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0): string;
 
 var
   Done: Boolean;
@@ -34057,7 +35641,7 @@ begin
   if Assigned(FOnShortenString) then
     FOnShortenString(Self, Canvas, Node, Column, S, Width, Result, Done);
   if not Done then
-    Result := ShortenString(Canvas.Handle, S, Width, EllipsisWidth);
+    Result := ShortenString(Canvas{$IFDEF VT_VCL}.Handle{$ENDIF}, S, Width, EllipsisWidth);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34073,7 +35657,11 @@ begin
   if Assigned(FOnDrawText) then
     FOnDrawText(Self, PaintInfo.Canvas, PaintInfo.Node, PaintInfo.Column, Text, CellRect, DefaultDraw);
   if DefaultDraw then
+{$IFDEF VT_FMX}
+    PaintInfo.Canvas.FillText(CellRect, (Text), true, 1.0, [], TTextAlign.Leading);
+{$ELSE}
     Winapi.Windows.DrawTextW(PaintInfo.Canvas.Handle, PWideChar(Text), Length(Text), CellRect, DrawFormat);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34086,15 +35674,22 @@ var
   DrawFormat: Integer;
 
 begin
-  GetTextExtentPoint32W(Canvas.Handle, PWideChar(Text), Length(Text), Result);
+  GetTextExtentPoint32W(Canvas{$IFDEF VT_VCL}.Handle{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(Text), Length(Text), Result);
   if vsMultiLine in Node.States then
   begin
     DrawFormat := DT_CALCRECT or DT_NOPREFIX or DT_WORDBREAK or DT_END_ELLIPSIS or DT_EDITCONTROL or AlignmentToDrawFlag[Alignment];
-    if BidiMode <> bdLeftToRight then
+{$IFDEF VT_VCL}
+	if BidiMode <> bdLeftToRight then
       DrawFormat := DrawFormat or DT_RTLREADING;
+{$ENDIF}
 
     R := Rect(0, 0, Result.cx, MaxInt);
+{$IFDEF VT_FMX}
+    Canvas.FillText(R, Text, true, 1.0, [], TTextAlign.Leading);
+{$ELSE}
     Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat);
+{$ENDIF}
+
     Result.cx := R.Right - R.Left;
   end;
   if Assigned(FOnMeasureTextWidth) then
@@ -34217,7 +35812,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TCustomVirtualStringTree.RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
   ForClipboard: Boolean): HResult;
 
@@ -34244,6 +35839,7 @@ begin
     Result := E_FAIL;
   end;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -34282,7 +35878,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
- S: string): Integer;
+ S: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 // Default node height calculation for multi line nodes. This method can be used by the application to delegate the
 // computation to the string tree.
@@ -34311,9 +35907,10 @@ begin
     BidiMode := Header.Columns[Column].BidiMode;
     Alignment := Header.Columns[Column].Alignment;
   end;
-
+{$IFDEF VT_VCL}
   if BidiMode <> bdLeftToRight then
     ChangeBidiModeAlignment(Alignment);
+{$ENDIF}
 
   if vsMultiline in Node.States then
     DrawFormat := DT_NOPREFIX or DT_TOP or DT_WORDBREAK or DT_EDITCONTROL
@@ -34336,7 +35933,7 @@ begin
         SetLength(LineImage, 1)
       else
         DetermineLineImageAndSelectLevel(Node, LineImage);
-    Inc(PaintInfo.CellRect.Left, Length(LineImage) * Integer(Indent));
+    Inc(PaintInfo.CellRect.Left, Length(LineImage) * {$IFDEF VT_VCL}Integer{$ENDIF}(Indent));
     end;
   end
   else
@@ -34347,7 +35944,12 @@ begin
     DrawFormat := DrawFormat or DT_RIGHT or DT_RTLREADING
   else
     DrawFormat := DrawFormat or DT_LEFT;
+{$IFDEF VT_FMX}
+  Canvas.FillText(PaintInfo.CellRect, S, true, 1.0, [], TTextAlign.Leading);
+{$ELSE}
   Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(S), Length(S), PaintInfo.CellRect, DrawFormat);
+{$ENDIF}
+
   Result := PaintInfo.CellRect.Bottom - PaintInfo.CellRect.Top;
 end;
 
@@ -34367,7 +35969,11 @@ function TCustomVirtualStringTree.ContentToClipboard(Format: Word; Source: TVSTT
 // the Result is 0.
 
 begin
+{$IFDEF VT_FMX}
+Result := 0;
+{$ELSE}
   Result := VirtualTrees.Export.ContentToClipboard(Self, Format, Source);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34503,22 +36109,24 @@ procedure TCustomVirtualStringTree.GetTextInfo(Node: PVirtualNode; Column: TColu
 // bounding rectangle around Text.
 
 var
-  NewHeight: Integer;
+  NewHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
   TM: TTextMetric;
 
 begin
   // Get default font and initialize the other parameters.
   inherited GetTextInfo(Node, Column, AFont, R, Text);
-
+{$IFDEF VT_FMX}
+  Canvas.Font.Assign(AFont);
+{$ELSE}
   Canvas.Font := AFont;
-
+{$ENDIF}
   FFontChanged := False;
   RedirectFontChangeEvent(Canvas);
   DoPaintText(Node, Canvas, Column, ttNormal);
   if FFontChanged then
   begin
     AFont.Assign(Canvas.Font);
-    GetTextMetrics(Canvas.Handle, TM);
+    GetTextMetrics(Canvas{$IFDEF VT_VCL}.Handle{$ENDIF}, TM);
     NewHeight := TM.tmHeight;
   end
   else // Otherwise the correct font is already there and we only need to set the correct height.
@@ -34530,7 +36138,7 @@ begin
   R := GetDisplayRect(Node, Column, True, not (vsMultiline in Node.States));
   if toShowHorzGridLines in TreeOptions.PaintOptions then
     Dec(R.Bottom);
-  InflateRect(R, 0, -(R.Bottom - R.Top - NewHeight) div 2);
+  InflateRect(R, 0, -(R.Bottom - R.Top - NewHeight) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34661,7 +36269,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualDrawTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer;
+function TCustomVirtualDrawTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 
 begin
   Result := 2 * FTextMargin;
@@ -34844,10 +36452,28 @@ begin
   Result := cSortDirectionToInt[Self];
 end;
 
+{ TChangeLink }
+{$IFDEF VT_FMX}
+constructor TChangeLink.Create;
+begin
+  inherited;
+  IgnoreIndex := True;
+  IgnoreImages := True;
+end;
 
+function TChangeLink.GetSender: TCustomImageList;
+begin
+  Result := TCustomImageList(Images);
+end;
+
+procedure TChangeLink.SetSender(const Value: TCustomImageList);
+begin
+  Images := TBaseImageList(Value);
+end;
+{$ENDIF}
 { TVTPaintInfo }
 
-procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: Integer);
+procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 // During painting of the main column some coordinates must be adjusted due to the tree lines.
 begin
   ContentRect := CellRect;
@@ -34866,12 +36492,21 @@ begin
     ImageInfo[iiCheck].XPos := CellRect.Right - Offsets[TVTElement.ofsCheckBox] - (Offsets[TVTElement.ofsStateImage] - Offsets[TVTElement.ofsCheckBox]);
     ContentRect.Right := CellRect.Right - Offsets[TVTElement.ofsLabel];
   end;
+{$IFDEF VT_FMX}
+  if ImageInfo[iiNormal].Index > -1 then
+    ImageInfo[iiNormal].YPos := CellRect.Top + VAlign - 16 / 2; //TODO: 16px Image!
+  if ImageInfo[iiState].Index > -1 then
+    ImageInfo[iiState].YPos := CellRect.Top + VAlign - 16 / 2; //TODO: 16px Image!
+  if ImageInfo[iiCheck].Index > -1 then
+    ImageInfo[iiCheck].YPos := CellRect.Top + VAlign - 16 / 2; //TODO: 16px Image!
+{$ELSE}
   if ImageInfo[iiNormal].Index > -1 then
     ImageInfo[iiNormal].YPos := CellRect.Top + VAlign - ImageInfo[iiNormal].Images.Height div 2;
   if ImageInfo[iiState].Index > -1 then
     ImageInfo[iiState].YPos := CellRect.Top + VAlign - ImageInfo[iiState].Images.Height div 2;
   if ImageInfo[iiCheck].Index > -1 then
     ImageInfo[iiCheck].YPos := CellRect.Top + VAlign - ImageInfo[iiCheck].Images.Height div 2;
+{$ENDIF}
 end;
 
 initialization

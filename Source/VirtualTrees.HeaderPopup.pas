@@ -65,10 +65,22 @@ unit VirtualTrees.HeaderPopup;
 
 interface
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
 uses
+{$IFDEF VT_FMX}
+  System.Classes,
+  FMX.Menus,
+  VirtualTrees;
+{$ELSE}
   System.Classes,
   Vcl.Menus,
   VirtualTrees;
+{$ENDIF}
+
 
 type
   TVTHeaderPopupOption = (
@@ -94,7 +106,7 @@ type
     procedure OnMenuItemClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
-    procedure Popup(x, y: Integer); override;
+    procedure Popup(x, y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); override;
   published
     property Options: TVTHeaderPopupOptions read FOptions write FOptions default [poResizeToFitItem];
 
@@ -107,7 +119,14 @@ type
 implementation
 
 uses
+{$IFDEF VT_FMX}
+  FMX.Types;
+{$ELSE}
   Winapi.Windows, System.Types;
+{$ENDIF}
+const
+  cResizeToFitMenuItemName = 'VT_ResizeToFitMenuItem';
+
 
 resourcestring
   sResizeColumnToFit = 'Size &Column to Fit';
@@ -152,7 +171,7 @@ begin
   if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then begin
     with TBaseVirtualTree(PopupComponent).Header.Columns.Items[TVTMenuItem(Sender).Tag] do
     begin
-      if TVTMenuItem(Sender).Checked then
+      if TVTMenuItem(Sender).{$IFDEF VT_FMX}IsChecked{$ELSE}Checked{$ENDIF} then
         Options := Options - [coVisible]
       else
         Options := Options + [coVisible];
@@ -162,7 +181,31 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeaderPopupMenu.Popup(x, y: Integer);
+{$IFDEF VT_FMX}
+function NewItem(const ACaption: string; AShortCut: TShortCut;
+  AChecked, AEnabled: Boolean; AOnClick: TNotifyEvent; hCtx: THelpContext;
+  const AName: string): TVTMenuItem;
+begin
+  Result := TVTMenuItem.Create(nil, ACaption, AOnClick);
+  with Result do
+  begin
+    Text := ACaption;
+    ShortCut := AShortCut;
+    OnClick := AOnClick;
+    HelpContext := hCtx;
+    IsChecked := AChecked;
+    Enabled := AEnabled;
+    Name := AName;
+  end;
+end;
+
+function NewLine: TMenuItem;
+begin
+  Result := TMenuItem.Create(nil);
+  Result.Text := '-';
+end;
+{$ENDIF}
+procedure TVTHeaderPopupMenu.Popup(x, y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 var
   ColPos: TColumnPosition;
   ColIdx: TColumnIndex;
@@ -174,11 +217,22 @@ var
   VisibleItem: TVTMenuItem;
 
   i: Integer;
-
 begin
   if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then
   begin
     // Delete existing menu items.
+{$IFDEF VT_FMX}
+    while ItemsCount > 0 do
+      Items[0].Free;
+
+    if poResizeToFitItem in Self.Options then begin
+      NewMenuItem := NewItem(sResizeToFit, 0, False, True, OnMenuItemClick, 0, cResizeToFitMenuItemName);
+      InsertObject(ItemsCount-1{???}, NewMenuItem);
+      InsertObject(ItemsCount-1{???}, NewLine());
+      {if IsHandleValid(Handle) then
+        Platform.UpdateMenuItem(mnuFile);  }
+    end;//poResizeToFitItem
+{$ELSE}
     for i := Items.Count -1 downto 0 do begin
       if Items[i] is TVTMenuItem then
         Items[i].Free;
@@ -190,6 +244,8 @@ begin
       Items.Add(TVTMenuItem.Create(Self, sResizeToFit, ResizeToFit));
       Items.Add(TVTMenuItem.Create(Self, cLineCaption));
     end;//poResizeToFitItem
+{$ENDIF}
+
 
     // Add column menu items.
     with (PopupComponent as TBaseVirtualTree).Header do
@@ -211,22 +267,26 @@ begin
         with Columns[ColIdx] do
         begin
           if coVisible in Options then
-            Inc(VisibleCounter);
+            System.Inc(VisibleCounter);
           DoAddHeaderPopupItem(ColIdx, Cmd);
           if Cmd <> apHidden then
           begin
             NewMenuItem := TVTMenuItem.Create(Self, Text, OnMenuItemClick);
             NewMenuItem.Tag := ColIdx;
-            NewMenuItem.Caption := Text;
+            NewMenuItem.{$IFDEF VT_FMX}Text{$ELSE}Caption{$ENDIF} := Text;
             NewMenuItem.Hint := Hint;
             NewMenuItem.ImageIndex := ImageIndex;
-            NewMenuItem.Checked := coVisible in Options;
+            NewMenuItem.{$IFDEF VT_FMX}IsChecked{$ELSE}Checked{$ENDIF} := coVisible in Options;
             if Cmd = apDisabled then
               NewMenuItem.Enabled := False
             else
               if coVisible in Options then
                 VisibleItem := NewMenuItem;
+{$IFDEF VT_FMX}
+            InsertObject(Self.ItemsCount-1{???}, NewMenuItem);
+{$ELSE}
             Items.Add(NewMenuItem);
+{$ENDIF}
           end;
         end;
       end;
@@ -264,7 +324,7 @@ end;
 constructor TVTMenuItem.Create(AOwner: TComponent; const ACaption: string; AClickHandler: TNotifyEvent);
 begin
   Inherited Create(AOwner);
-  Caption := ACaption;
+  {$IFDEF VT_FMX}Text{$ELSE}Caption{$ENDIF} := ACaption;
   OnClick := AClickHandler;
 end;
 

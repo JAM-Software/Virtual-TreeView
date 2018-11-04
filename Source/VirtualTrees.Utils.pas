@@ -28,13 +28,28 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
 uses
+{$IFDEF VT_FMX}
+  System.Types,
+  System.Sysutils,
+  FMX.Graphics,
+  FMX.ImgList,
+  System.ImageList,
+  FMX.Types,
+  VirtualTrees;
+{$ELSE}
   Winapi.Windows,
   Winapi.ActiveX,
   System.Types,
   Vcl.Graphics,
   Vcl.ImgList,
   Vcl.Controls;
+{$ENDIF}
 
 
 type
@@ -46,6 +61,7 @@ type
     bmConstantAlphaAndColor  // blend the destination color with the given constant color und the constant alpha value
   );
 
+{$IFDEF VT_VCL}
 procedure AlphaBlend(Source, Destination: HDC; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
 function GetRGBColor(Value: TColor): DWORD;
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
@@ -59,23 +75,29 @@ procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 procedure ClipCanvas(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
 
 procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
+{$ENDIF}
 
 
 // Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
 // the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
 // For higher speed (and multiple entries to be shorted) specify this value explicitely.
-function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
+function ShortenString({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; const S: string; Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; EllipsisWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0): string;
 
 // Wrap the given string S so that it fits into a space of given width.
 // RTL determines if right-to-left reading is active.
-function WrapString(DC: HDC; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
+function WrapString({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
 
 // Calculates bounds of a drawing rectangle for the given string
-procedure GetStringDrawRect(DC: HDC; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
-
+procedure GetStringDrawRect({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
+{$IFDEF VT_FMX}
+procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSizeF);
+{--}procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
+{$ENDIF}
 // Converts the incoming rectangle so that left and top are always less than or equal to right and bottom.
 function OrderRect(const R: TRect): TRect;
 
+{$IFDEF VT_VCL}
 // Fills the given rectangles with values which can be used while dragging around an image
 // (used in DragMove of the drag manager and DragTo of the header columns).
 procedure FillDragRectangles(DragWidth, DragHeight, DeltaX, DeltaY: Integer; var RClip, RScroll, RSamp1, RSamp2, RDraw1, RDraw2: TRect);
@@ -90,20 +112,25 @@ procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 function IsMouseCursorVisible(): Boolean;
 
 procedure ScaleImageList(const ImgList: TImageList; M, D: Integer);
-
+{$ENDIF}
 
 implementation
-
 uses
+{$IFDEF VT_FMX}
+  System.Math;
+{$ELSE}
   Winapi.CommCtrl,
   Winapi.ShlObj,
   System.SysUtils,
   System.StrUtils,
   System.Math;
+{$ENDIF}
+
 
 const
   WideLF = Char(#10);
 
+{$IFDEF VT_VCL}
 procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 var
   DragSourceHelper: IDragSourceHelper;
@@ -133,7 +160,7 @@ begin
     end;//if not InitializeFromWindow
   end;
 end;
-
+{$ENDIF}
 
 function OrderRect(const R: TRect): TRect;
 
@@ -161,8 +188,14 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-
+{$IFDEF VT_FMX}
+procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+begin
+  //TTextLayout. render
+  //DrawFormat: Cardinal{this is windows format - must be converted to FMX}
+  ACanvas.FillText(Bounds, CaptionText, false, 1.0, [], TTextAlign.Leading, TTextAlign.Center);
+end;
+{$ELSE}
 procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
 
 // Set the brush origin of a given canvas.
@@ -214,29 +247,44 @@ begin
   SelectClipRgn(Canvas.Handle, ClipRegion);
   DeleteObject(ClipRegion);
 end;
+{$ENDIF}
+
 
 //----------------------------------------------------------------------------------------------------------------------
 
 
-procedure GetStringDrawRect(DC: HDC; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
-
+procedure GetStringDrawRect({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
 begin
+{$IFDEF VT_FMX}
+  Bounds:= Rect(0, 0, ACanvas.TextWidth(S), ACanvas.TextHeight(S));
+{$ELSE}
   Bounds.Right := Bounds.Left + 1;
   Bounds.Bottom := Bounds.Top + 1;
 
   Winapi.Windows.DrawTextW(DC, PWideChar(S), Length(S), Bounds, DrawFormat or DT_CALCRECT);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
+begin
+  //TODO: DrawEdge
+  //NormalButtonStyle
+  //RaisedButtonStyle
+  //RaisedButtonFlags or RightBorderFlag
+  //NormalButtonFlags or RightBorderFlag
+end;
 
-function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
+//----------------------------------------------------------------------------------------------------------------------
+
+function ShortenString({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; const S: string; Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; EllipsisWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0): string;
 
 var
   Size: TSize;
   Len: Integer;
-  L, H, N, W: Integer;
-
+  L, H, N: Integer;
+  W: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
 begin
   Len := Length(S);
   if (Len = 0) or (Width <= 0) then
@@ -246,7 +294,7 @@ begin
     // Determine width of triple point using the current DC settings (if not already done).
     if EllipsisWidth = 0 then
     begin
-      GetTextExtentPoint32W(DC, '...', 3, Size);
+      GetTextExtentPoint32W({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, '...', 3, Size);
       EllipsisWidth := Size.cx;
     end;
 
@@ -259,7 +307,7 @@ begin
       while L < H do
       begin
         N := (L + H + 1) shr 1;
-        GetTextExtentPoint32W(DC, PWideChar(S), N, Size);
+        GetTextExtentPoint32W({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(S), N, Size);
         W := Size.cx + EllipsisWidth;
         if W <= Width then
           L := N
@@ -278,9 +326,20 @@ begin
   end;
 end;
 
+{$IFDEF VT_FMX}
+
 //----------------------------------------------------------------------------------------------------------------------
 
-function WrapString(DC: HDC; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
+procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSizeF);
+begin
+  Size.cx:= ACanvas.TextWidth(Copy(CaptionText, 1, Len));
+  Size.cy:= ACanvas.TextHeight(Copy(CaptionText, 1, Len));
+end;
+
+{$ENDIF}
+//----------------------------------------------------------------------------------------------------------------------
+
+function WrapString({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
 
 var
   Width,
@@ -292,8 +351,10 @@ var
   Line: string;
   Words: array of string;
   R: TRect;
-
 begin
+{$IFDEF VT_FMX}
+  Result:= S;
+{$ELSE}
   Result := '';
   // Leading and trailing are ignored.
   Buffer := Trim(S);
@@ -426,7 +487,10 @@ begin
 
   Len := Length(Result);
   if Result[Len] = WideLF then
-    SetLength(Result, Len - 1);
+    SetLength(Result, Len - 1);  
+{$ENDIF}
+
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -446,8 +510,8 @@ end;
 
 
 //----------------------------------------------------------------------------------------------------------------------
-
-function GetBitmapBitsFromDeviceContext(DC: HDC; var Width, Height: Integer): Pointer;
+{$IFDEF VT_VCL}
+function GetBitmapBitsFromDeviceContext({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; var Width, Height: Integer): Pointer;
 
 // Helper function used to retrieve the bitmap selected into the given device context. If there is a bitmap then
 // the function will return a pointer to its bits otherwise nil is returned.
@@ -1363,5 +1427,6 @@ begin
     TmpImgList.Free;
   end;
 end;
+{$ENDIF}
 
 end.

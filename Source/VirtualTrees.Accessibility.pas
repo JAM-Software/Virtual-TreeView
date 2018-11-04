@@ -7,6 +7,11 @@ unit VirtualTrees.Accessibility;
 
 interface
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
 uses
   Winapi.Windows, System.Classes, Winapi.ActiveX, System.Types, Winapi.oleacc,
   VirtualTrees, VirtualTrees.AccessibilityFactory, Vcl.Controls;

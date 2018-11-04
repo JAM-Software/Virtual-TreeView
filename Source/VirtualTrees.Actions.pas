@@ -2,6 +2,11 @@ unit VirtualTrees.Actions;
 
 interface
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
 uses
   System.Classes,
   System.Actions,

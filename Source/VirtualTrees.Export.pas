@@ -6,27 +6,34 @@
 
 interface
 
-uses Winapi.Windows,
-     VirtualTrees,
-     VirtualTrees.Classes;
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
+{$IFDEF VT_FMX}
+uses System.SysUtils, FMX.Graphics, System.Classes, FMX.Forms,
+     FMX.Controls, System.StrUtils, System.Generics.Collections,
+     VirtualTrees, VirtualTrees.Classes, FMX.Types;
+{$ELSE}
+uses Winapi.Windows, System.SysUtils, Vcl.Graphics, System.Classes, Vcl.Forms,
+     Vcl.Controls, System.StrUtils, System.Generics.Collections,
+     VirtualTrees, VirtualTrees.Classes;
+{$ENDIF}
+
 
 function ContentToHTML(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Caption: string = ''): String;
 function ContentToRTF(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType): RawByteString;
 function ContentToUnicodeString(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Separator: string): string;
+{$IFDEF VT_VCL}
 function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source: TVSTTextSourceType): HGLOBAL;
+{$ENDIF}
 procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType);
 
 implementation
 
 uses
-  Vcl.Graphics,
-  Vcl.Controls,
-  Vcl.Forms,
-  System.Classes,
-  System.SysUtils,
-  System.StrUtils,
-  System.Generics.Collections,
-  System.UITypes;
+  UITypes;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree)
@@ -48,9 +55,17 @@ var
   Buffer: TBufferedString;
 
   //--------------- local functions -------------------------------------------
-
+{$IFDEF VT_FMX}
   procedure WriteColorAsHex(Color: TColor);
-
+  var
+    Result: String;
+  begin
+    Result := IntToHex(Color, 6);
+    Result := '#' + Copy(Result, 5, 2) + Copy(Result, 3, 2) + Copy(Result, 1, 2);
+    Buffer.Add('#' + Result);
+  end;
+{$ELSE}
+  procedure WriteColorAsHex(Color: TColor);
   var
     WinColor: COLORREF;
     I: Integer;
@@ -67,19 +82,21 @@ var
 
       Value := 48 + (Component shr 4);
       if Value > $39 then
-        Inc(Value, 7);
+        System.Inc(Value, 7);
       Buffer.Add(AnsiChar(Value));
-      Inc(I);
+      System.Inc(I);
 
       Value := 48 + (Component and $F);
       if Value > $39 then
-        Inc(Value, 7);
+        System.Inc(Value, 7);
       Buffer.Add(AnsiChar(Value));
-      Inc(I);
+      System.Inc(I);
 
       WinColor := WinColor shr 8;
     end;
   end;
+{$ENDIF}
+
 
   //---------------------------------------------------------------------------
 
@@ -98,18 +115,23 @@ var
       Buffer.Add('{');
     end;
 
-    Buffer.Add(Format('font-family: ''%s''; ', [Font.Name]));
+    Buffer.Add(Format('font-family: ''%s''; ', [Font.{$IFDEF VT_FMX}Family{$ELSE}Name{$ENDIF}]));
+{$IFDEF VT_FMX}
+    Buffer.Add(Format('font-size: %dpt; ', [Round(Font.Size)])); //TODO: Round
+{$ELSE}
     if Font.Size < 0 then
       Buffer.Add(Format('font-size: %dpx; ', [Font.Height]))
     else
       Buffer.Add(Format('font-size: %dpt; ', [Font.Size]));
+{$ENDIF}
 
-    Buffer.Add(Format('font-style: %s; ', [IfThen(fsItalic in Font.Style, 'italic', 'normal')]));
-    Buffer.Add(Format('font-weight: %s; ', [IfThen(fsBold in Font.Style, 'bold', 'normal')]));
-    Buffer.Add(Format('text-decoration: %s; ', [IfThen(fsUnderline in Font.Style, 'underline', 'none')]));
+
+    Buffer.Add(Format('font-style: %s; ', [IfThen(TFontStyle.fsItalic in Font.Style, 'italic', 'normal')]));
+    Buffer.Add(Format('font-weight: %s; ', [IfThen(TFontStyle.fsBold in Font.Style, 'bold', 'normal')]));
+    Buffer.Add(Format('text-decoration: %s; ', [IfThen(TFontStyle.fsUnderline in Font.Style, 'underline', 'none')]));
 
     Buffer.Add('color: ');
-    WriteColorAsHex(Font.Color);
+    WriteColorAsHex({$IFDEF VT_FMX}TColors.Black{$ELSE}Font.Color{$ENDIF}); //TODO: Font.Color
     Buffer.Add(';');
     if Length(Name) = 0 then
       Buffer.Add('"')
@@ -149,14 +171,17 @@ begin
     CrackTree.RedirectFontChangeEvent(CrackTree.Canvas);
 
     CellPadding := Format('padding-left: %dpx; padding-right: %0:dpx;', [CrackTree.Margin]);
-
+{$IFDEF VT_FMX}
+    IndentWidth := IntToStr(Round(CrackTree.Indent));
+{$ELSE}
     IndentWidth := IntToStr(CrackTree.Indent);
+{$ENDIF}
     AddHeader := ' ';
     // Add title if adviced so by giving a caption.
     if Length(Caption) > 0 then
       AddHeader := AddHeader + 'caption="' + Caption + '"';
     if CrackTree.Borderstyle <> bsNone then
-      AddHeader := AddHeader + Format(' border="%d" frame=box', [CrackTree.BorderWidth + 1]);
+      AddHeader := AddHeader + Format(' border="%d" frame=box', [{$IFDEF VT_FMX}Round{$ENDIF}(CrackTree.BorderWidth) + 1]); //TODO: Round
 
     Buffer.Add('<META http-equiv="Content-Type" content="text/html; charset=utf-8">');
 
@@ -209,7 +234,11 @@ begin
 
     // General table properties.
     Buffer.Add('<table class="default" style="border-collapse: collapse;" bgcolor=');
+{$IFDEF VT_FMX}
+    WriteColorAsHex(TColors.White); //TODO: color
+{$ELSE}
     WriteColorAsHex(CrackTree.Color);
+{$ENDIF}
     Buffer.Add(AddHeader);
     Buffer.Add(' cellspacing="0">');
     Buffer.AddNewLine;
@@ -254,13 +283,19 @@ begin
         if Assigned(CrackTree.OnBeforeColumnExport) then
           CrackTree.OnBeforeColumnExport(CrackTree, etHTML, Columns[I]);
         Buffer.Add('<th height="');
+{$IFDEF VT_FMX}
+        Buffer.Add(IntToStr(Round(CrackTree.Header.Height))); //TODO: Round
+{$ELSE}
         Buffer.Add(IntToStr(CrackTree.Header.Height));
+{$ENDIF}
         Buffer.Add('px"');
         Alignment := Columns[I].CaptionAlignment;
         // Consider directionality.
         if Columns[I].BiDiMode <> bdLeftToRight then
         begin
+{$IFDEF VT_VCL}
           ChangeBidiModeAlignment(Alignment);
+{$ENDIF}
           Buffer.Add(' dir="rtl"');
         end;
 
@@ -289,7 +324,11 @@ begin
 
         // Set column width in pixels.
         Buffer.Add(' width="');
+{$IFDEF VT_FMX}
+        Buffer.Add(IntToStr(Round(Columns[I].Width))); //TODO: Round
+{$ELSE}
         Buffer.Add(IntToStr(Columns[I].Width));
+{$ENDIF}
         Buffer.Add('px">');
 
         if Length(Columns[I].Text) > 0 then
@@ -330,7 +369,11 @@ begin
         if not RenderColumns or (coVisible in Columns[I].Options) then
         begin
           // Call back the application to know about font customization.
+{$IFDEF VT_FMX}
+          CrackTree.Canvas.Font.Assign(CrackTree.Font);
+{$ELSE}
           CrackTree.Canvas.Font := CrackTree.Font;
+{$ENDIF}
           CrackTree.FFontChanged := False;
           CrackTree.DoPaintText(Run, CrackTree.Canvas, Index, ttNormal);
 
@@ -344,7 +387,11 @@ begin
                 Buffer.Add('<td class="noborder" width="');
                 Buffer.Add(IndentWidth);
                 Buffer.Add('" height="');
+{$IFDEF VT_FMX}
+                Buffer.Add(IntToStr(Round(CrackTree.NodeHeight[Run]))); //TODO: Round
+{$ELSE}
                 Buffer.Add(IntToStr(CrackTree.NodeHeight[Run]));
+{$ENDIF}
                 Buffer.Add('px"');
                 if not (coParentColor in Columns[I].Options) then
                 begin
@@ -360,7 +407,11 @@ begin
                 if J = 1 then
                 begin
                   Buffer.Add(' <td height="');
+{$IFDEF VT_FMX}
+                  Buffer.Add(IntToStr(Round(CrackTree.NodeHeight[Run]))); //TODO: Round
+{$ELSE}
                   Buffer.Add(IntToStr(CrackTree.NodeHeight[Run]));
+{$ENDIF}
                   Buffer.Add('px" class="normalborder">&nbsp;</td>');
                 end
                 else
@@ -373,13 +424,21 @@ begin
             Buffer.Add(' <td class="normalborder" ');
             WriteStyle('', CrackTree.Canvas.Font);
             Buffer.Add(' height="');
+{$IFDEF VT_FMX}
+            Buffer.Add(IntToStr(Round(CrackTree.NodeHeight[Run]))); //TODO: Round
+{$ELSE}
             Buffer.Add(IntToStr(CrackTree.NodeHeight[Run]));
+{$ENDIF}
             Buffer.Add('px"');
           end
           else
           begin
             Buffer.Add(' <td class="normalborder"  height="');
+{$IFDEF VT_FMX}
+            Buffer.Add(IntToStr(Round(CrackTree.NodeHeight[Run]))); //TODO: Round
+{$ELSE}
             Buffer.Add(IntToStr(CrackTree.NodeHeight[Run]));
+{$ENDIF}
             Buffer.Add('px"');
           end;
 
@@ -396,7 +455,9 @@ begin
           // Consider directionality.
           if BiDiMode <> bdLeftToRight then
           begin
+{$IFDEF VT_VCL}
             ChangeBidiModeAlignment(Alignment);
+{$ENDIF}
             Buffer.Add(' dir="rtl"');
           end;
 
@@ -434,7 +495,7 @@ begin
 
         if not RenderColumns then
           Break;
-        Inc(I);
+        System.Inc(I);
       end;
       if Assigned(CrackTree.OnAfterNodeExport) then
         CrackTree.OnAfterNodeExport(CrackTree, etHTML, Run);
@@ -462,7 +523,7 @@ var
   Fonts: TStringList;
   Colors: TList<TColor>;
   CurrentFontIndex,
-  CurrentFontColor,
+  CurrentFontColor: Integer;
   CurrentFontSize: Integer;
   Buffer: TBufferedRawByteString;
 
@@ -535,23 +596,23 @@ var
   begin
     if Length(Text) > 0 then
     begin
-      UseUnderline := fsUnderline in Font.Style;
+      UseUnderline := TFontStyle.fsUnderline in Font.Style;
       if UseUnderline then
         Buffer.Add('\ul');
-      UseItalic := fsItalic in Font.Style;
+      UseItalic := TFontStyle.fsItalic in Font.Style;
       if UseItalic then
         Buffer.Add('\i');
-      UseBold := fsBold in Font.Style;
+      UseBold := TFontStyle.fsBold in Font.Style;
       if UseBold then
         Buffer.Add('\b');
-      SelectFont(Font.Name);
-      SelectColor(Font.Color);
+      SelectFont(Font.{$IFDEF VT_FMX}Family{$ELSE}Name{$ENDIF});
+      SelectColor({$IFDEF VT_FMX}TColors.Black{$ELSE}Font.Color{$ENDIF}); //TODO: color
       if Font.Size <> CurrentFontSize then
       begin
         // Font size must be given in half points.
         Buffer.Add('\fs');
-        Buffer.Add(IntToStr(2 * Font.Size));
-        CurrentFontSize := Font.Size;
+        Buffer.Add(IntToStr(2 * {$IFDEF VT_FMX}Round{$ENDIF}(Font.Size))); //TODO: Round
+        CurrentFontSize := {$IFDEF VT_FMX}Round{$ENDIF}(Font.Size);
       end;
       // Use escape sequences to note Unicode text.
       Buffer.Add(' ');
@@ -630,16 +691,16 @@ begin
     begin
       for I := 0 to High(Columns) do
       begin
-        Inc(J, Columns[I].Width);
+        System.Inc(J, {$IFDEF VT_FMX}Round{$ENDIF}(Columns[I].Width));
         // This value must be expressed in twips (1 inch = 1440 twips).
-        Twips := Round(1440 * J / Screen.PixelsPerInch);
+        Twips := Round(1440 * J / {$IFDEF VT_FMX}96{$ELSE}Screen.PixelsPerInch{$ENDIF}); //TODO: PixelsPerInch
         Buffer.Add('\cellx');
         Buffer.Add(IntToStr(Twips));
       end;
     end
     else
     begin
-      Twips := Round(1440 * CrackTree.ClientWidth / Screen.PixelsPerInch);
+      Twips := Round(1440 * CrackTree.ClientWidth / {$IFDEF VT_FMX}96{$ELSE}Screen.PixelsPerInch{$ENDIF});//TODO: PixelsPerInch
       Buffer.Add('\cellx');
       Buffer.Add(IntToStr(Twips));
     end;
@@ -658,8 +719,10 @@ begin
         BidiMode := Columns[I].BidiMode;
 
         // Alignment is not supported with older RTF formats, however it will be ignored.
+{$IFDEF VT_VCL}
         if BidiMode <> bdLeftToRight then
           ChangeBidiModeAlignment(Alignment);
+{$ENDIF}
         case Alignment of
           taLeftJustify:
             Buffer.Add('\ql');
@@ -715,8 +778,10 @@ begin
           Buffer.Add('\pard\intbl');
 
           // Alignment is not supported with older RTF formats, however it will be ignored.
+{$IFDEF VT_VCL}
           if BidiMode <> bdLeftToRight then
             ChangeBidiModeAlignment(Alignment);
+{$ENDIF}
           case Alignment of
             taRightJustify:
               Buffer.Add('\qr');
@@ -725,7 +790,11 @@ begin
           end;
 
           // Call back the application to know about font customization.
+{$IFDEF VT_FMX}
+          CrackTree.Canvas.Font.Assign(CrackTree.Font);
+{$ELSE}
           CrackTree.Canvas.Font := CrackTree.Font;
+{$ENDIF}		  
           CrackTree.FFontChanged := False;
           CrackTree.DoPaintText(Run, CrackTree.Canvas, Index, ttNormal);
 
@@ -764,7 +833,7 @@ begin
 
         if not RenderColumns then
           Break;
-        Inc(I);
+        System.Inc(I);
       end;
       Buffer.Add('\row');
       Buffer.AddNewLine;
@@ -784,14 +853,19 @@ begin
     S := S + '{\colortbl;';
     for I := 0 to Colors.Count - 1 do
     begin
-      J := ColorToRGB(TColor(Colors[I]));
+      J := {$IFDEF VT_VCL}ColorToRGB{$ENDIF}(TColor(Colors[I]));
       S := S + Format('\red%d\green%d\blue%d;', [J and $FF, (J shr 8) and $FF, (J shr 16) and $FF]);
     end;
     S := S + '}';
+{$IFDEF VT_FMX}
+    S := S + '\paperw16840\paperh11907';// This sets A4 landscape format
+{$ELSE}
     if (GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, @LocaleBuffer[0], Length(LocaleBuffer)) <> 0) and (LocaleBuffer[0] = '0'{metric}) then
       S := S + '\paperw16840\paperh11907'// This sets A4 landscape format
     else
       S := S + '\paperw15840\paperh12240';//[JAM:marder]  This sets US Letter landscape format
+{$ENDIF}	
+
     // Make sure a small margin is used so that a lot of the table fits on a paper. This defines a margin of 0.5"
     S := S + '\margl720\margr720\margt720\margb720';
     Result := S + Buffer.AsString + '}';
@@ -939,6 +1013,7 @@ begin
   end;
 end;
 
+{$IFDEF VT_VCL}
 function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source: TVSTTextSourceType): HGLOBAL;
 
 // This method constructs a shareable memory object filled with string data in the required format. Supported are:
@@ -1061,6 +1136,7 @@ begin
     GlobalUnlock(Result);
   end;
 end;
+{$ENDIF}
 
 procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType);
 

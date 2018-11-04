@@ -28,6 +28,12 @@ interface
 {$WARN UNSAFE_TYPE OFF}
 {$WARN UNSAFE_CAST OFF}
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
+
 uses
   Winapi.Windows,
   Winapi.ActiveX,
