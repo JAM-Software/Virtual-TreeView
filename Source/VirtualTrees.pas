@@ -693,14 +693,14 @@ type
   TVirtualNode = packed record
     Index,                   // index of node with regard to its parent
     ChildCount: Cardinal;    // number of child nodes
-    NodeHeight: TDimension; // height in pixels
+    NodeHeight: TDimension;  // height in pixels
     States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
     CheckType: TCheckType;   // indicates which check type shall be used for this node
     Dummy: Byte;             // dummy value to fill DWORD boundary
     TotalCount: Cardinal;    // sum of this node, all of its child nodes and their child nodes etc.
-    TotalHeight: TDimension;   // height in pixels this node covers on screen including the height of all of its
+    TotalHeight: TDimension; // height in pixels this node covers on screen including the height of all of its
                              // children
     // Note: Some copy routines require that all pointers (as well as the data area) in a node are
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
@@ -1298,13 +1298,13 @@ type
     FFixedAreaConstraints: TVTFixedAreaConstraints; // Percentages for the fixed area (header, fixed columns).
     FImages: TCustomImageList;
     FImageChangeLink: TChangeLink;     // connections to the image list to get notified about changes
-    fSplitterHitTolerance: Integer; // For property SplitterHitTolerance
+    fSplitterHitTolerance: Integer;    // For property SplitterHitTolerance
     FSortColumn: TColumnIndex;
     FSortDirection: TSortDirection;
   {$IFDEF VT_VCL}
     FDragImage: TVTDragImage;          // drag image management during header drag
   {$ENDIF}
-    FLastWidth: TDimension;               // Used to adjust spring columns. This is the width of all visible columns,
+    FLastWidth: TDimension;            // Used to adjust spring columns. This is the width of all visible columns,
                                        // not the header rectangle.
     procedure FontChanged(Sender: TObject);
     function GetMainColumn: TColumnIndex;
@@ -1695,9 +1695,9 @@ type
 
   // For painting a node and its columns/cells a lot of information must be passed frequently around.
   TVTImageInfo = record
-    Index: TImageIndex;           // Index in the associated image list.
+    Index: TImageIndex;       // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
-    YPos: TDimension;            // Vertical position in the current target canvas.
+    YPos: TDimension;         // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
     Images: TCustomImageList; // The image list to be used for painting.
     function Equals(const pImageInfo2: TVTImageInfo): Boolean;
@@ -1740,7 +1740,7 @@ type
     Position: TColumnPosition;    // the column position of the node
     CellRect: TRect;              // the node cell
     ContentRect: TRect;           // the area of the cell used for the node's content
-    NodeWidth: TDimension;           // the actual node width
+    NodeWidth: TDimension;        // the actual node width
     Alignment: TAlignment;        // how to align within the node rectangle
     CaptionAlignment: TAlignment; // how to align text within the caption rectangle
     BidiMode: TBidiMode;          // directionality to be used for painting
@@ -2085,17 +2085,17 @@ type
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
-    FMargin: TDimension;                            // horizontal distance to border and columns
-    FTextMargin: TDimension;                        // space between the node's text and its horizontal bounds
+    FMargin: TDimension;                         // horizontal distance to border and columns
+    FTextMargin: TDimension;                     // space between the node's text and its horizontal bounds
     FBackgroundOffsetX,
-    FBackgroundOffsetY: TDimension;                 // used to fine tune the position of the background image
+    FBackgroundOffsetY: TDimension;              // used to fine tune the position of the background image
     FAnimationDuration: Cardinal;                // specifies how long an animation shall take (expanding, hint)
     FWantTabs: Boolean;                          // If True then the tree also consumes the tab key.
     FNodeAlignment: TVTNodeAlignment;            // determines how to interpret the align member of a node
     FHeaderRect: TRect;                          // Space which the header currently uses in the control (window coords).
     FLastHintRect: TRect;                        // Area which the mouse must leave to reshow a hint.
     FUpdateRect: TRect;
-    FEmptyListMessage: string;            // Optional message that will be displayed if no nodes exist in the control.
+    FEmptyListMessage: string;                   // Optional message that will be displayed if no nodes exist in the control.
 
     // paint support and images
     FPlusBM,
@@ -2110,7 +2110,7 @@ type
     FCheckImageKind: TCheckImageKind;            // light or dark, cross marks or tick marks
     FCheckImages: TCustomImageList;              // Reference to global image list to be used for the check images.
     //TODO: Use this margin for other images as well
-    FImagesMargin: TDimension;                      // The margin used left and right of the checkboxes.
+    FImagesMargin: TDimension;                   // The margin used left and right of the checkboxes.
     FImageChangeLink,
     FStateChangeLink,
     FCustomCheckChangeLink: TChangeLink;         // connections to the image lists
@@ -2157,11 +2157,11 @@ type
     FAutoExpandDelay: Cardinal;                  // amount of milliseconds to wait until a node is expanded if it is the
                                                  // drop target
     FOffsetX: TDimension;
-    FOffsetY: TDimension;                           // Determines left and top scroll offset.
-    FEffectiveOffsetX: TDimension;                  // Actual position of the horizontal scroll bar (varies depending on bidi mode).
+    FOffsetY: TDimension;                        // Determines left and top scroll offset.
+    FEffectiveOffsetX: TDimension;               // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
-    FRangeY: TDimension;                           // current virtual width and height of the tree
-    FBottomSpace: TDimension;                      // Extra space below the last node.
+    FRangeY: TDimension;                         // current virtual width and height of the tree
+    FBottomSpace: TDimension;                    // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
     FSingletonNodeArray: TNodeArray;             // Contains only one element for quick addition of single nodes
@@ -2171,7 +2171,7 @@ type
     // search
     FIncrementalSearch: TVTIncrementalSearch;    // Used to determine whether and how incremental search is to be used.
     FSearchTimeout: Cardinal;                    // Number of milliseconds after which to stop incremental searching.
-    FSearchBuffer: string;                 // Collects a sequence of keypresses used to do incremental searching.
+    FSearchBuffer: string;                       // Collects a sequence of keypresses used to do incremental searching.
     FLastSearchNode: PVirtualNode;               // Reference to node which was last found as search fit.
     FSearchDirection: TVTSearchDirection;        // Direction to incrementally search the tree.
     FSearchStart: TVTSearchStart;                // Where to start iteration on each key press.
@@ -8322,7 +8322,7 @@ begin
       Self.FDownIndex := NoColumn;
       Self.FTrackIndex := NoColumn;
       Self.FCheckBoxHit := False;
-      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + {$IFDEF VT_VCL}Integer{$ENDIF}(Header.Treeview.Height))), P);
+      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + Header.Treeview.Height)), P);
       if Assigned(Menu) then
       begin
         Header.Treeview.StopTimer(ScrollTimer);
@@ -8892,7 +8892,7 @@ begin
   if ScrollColumnCount > 0 then // use average width
     Result := Round(Result / ScrollColumnCount)
   else // use indent
-    Result := {$IFDEF VT_VCL}Integer{$ENDIF}(FHeader.Treeview.FIndent);
+    Result := FHeader.Treeview.FIndent;
 
 end;
 
@@ -12575,16 +12575,12 @@ begin
   if Relative then
     Difference := Value
   else
-    Difference := Value - {$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight);
+    Difference := Value - Node.TotalHeight;
   if Difference <> 0 then
   begin
     Run := Node;
     repeat
-{$IFDEF VT_FMX}
       Inc(Run.TotalHeight, Difference);
-{$ELSE}
-      Inc(Integer(Run.TotalHeight), Difference);
-{$ENDIF}
 
       // If the node is not visible or the parent node is not expanded or we are already at the top
       // then nothing more remains to do.
@@ -12626,7 +12622,7 @@ begin
     naFromTop:
       VAlign := Node.Align;
     naFromBottom:
-      VAlign := {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) - Node.Align;
+      VAlign := NodeHeight[Node] - Node.Align;
   else // naProportional
     // Consider button and line alignment, but make sure neither the image nor the button (whichever is taller)
     // go out of the entire node height (100% means bottom alignment to the node's bounds).
@@ -12635,14 +12631,14 @@ begin
       if ShowImages then
         VAlign := GetImageSize(Node).cy
       else
-        VAlign := {$IFDEF VT_FMX}16{$ELSE}FStateImages.Height{$ENDIF}; //TODO: 16px Image! 
-      VAlign := MulDiv(({$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) - VAlign), Node.Align, 100) + VAlign {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
+        VAlign := {$IFDEF VT_FMX}16{$ELSE}FStateImages.Height{$ENDIF}; //TODO: 16px Image!
+      VAlign := MulDiv((NodeHeight[Node] - VAlign), Node.Align, 100) + VAlign {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
     end
     else
       if toShowButtons in FOptions.FPaintOptions then
-        VAlign := MulDiv(({$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2
+        VAlign := MulDiv((NodeHeight[Node] - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2
       else
-        VAlign := MulDiv({$IFDEF VT_VCL}Integer{$ENDIF}(Node.NodeHeight), Node.Align, 100);
+        VAlign := MulDiv(Node.NodeHeight, Node.Align, 100);
   end;
 
   VButtonAlign := VAlign - FPlusBM.Height div 2 - (FPlusBM.Height and 1);
@@ -12880,7 +12876,7 @@ begin
     repeat
       // Collect offsets for check, normal and state images.
       TextLeft := NodeLeft + LabelOffset;
-      NextTop := CurrentTop + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Run]);
+      NextTop := CurrentTop + NodeHeight[Run];
 
       // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
       // required. Only top and bottom bounds of the rectangle matter.
@@ -12969,7 +12965,7 @@ begin
       NextNode := GetNextVisibleNoInit(Run, True);
       if NextNode = nil then
         Break;
-      Inc(NodeLeft, CountLevelDifference(Run, NextNode) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
+      Inc(NodeLeft, CountLevelDifference(Run, NextNode) * FIndent);
       Run := NextNode;
     until CurrentTop > MaxY;
   end;
@@ -13042,9 +13038,9 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.FPaintOptions then
-      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}(({$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run)) + 1) * FIndent) + FMargin)
+      Dec(NodeRight, (({$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run)) + 1) * FIndent) + FMargin)
     else
-      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}({$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run)) * FIndent) + FMargin);
+      Dec(NodeRight, ({$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run)) * FIndent) + FMargin);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
@@ -13057,7 +13053,7 @@ begin
       Dec(TextRight, GetImageSize(Run, ikNormal, MainColumn).cx);
       if WithStateImages then
         Dec(TextRight, GetImageSize(Run, ikState, MainColumn).cx);
-      NextTop := CurrentTop + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Run]);
+      NextTop := CurrentTop + NodeHeight[Run];
 
       // Simple selection allows to draw the selection rectangle anywhere. No intersection with node captions is
       // required. Only top and bottom bounds of the rectangle matter.
@@ -13142,7 +13138,7 @@ begin
       NextNode := GetNextVisibleNoInit(Run, True);
       if NextNode = nil then
         Break;
-      Dec(NodeRight, CountLevelDifference(Run, NextNode) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
+      Dec(NodeRight, CountLevelDifference(Run, NextNode) * FIndent);
       Run := NextNode;
     until CurrentTop > MaxY;
   end;
@@ -13323,7 +13319,7 @@ begin
   if Reverse then
     TargetX := 0
   else
-    TargetX := {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) + ScaledPixels(FImagesMargin);
+    TargetX := FIndent + ScaledPixels(FImagesMargin);
 
   with PaintInfo.Canvas do
   begin
@@ -13349,19 +13345,19 @@ begin
         end;
       ltLeft: // left can also mean right for RTL context
         if Reverse then
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent))
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent)
         else
           DrawDottedVLine(PaintInfo, Y, Y + H, X);
       ltLeftBottom:
         if Reverse then
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
-          DrawDottedHLine(PaintInfo, X, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent), Y + H);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent);
+          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H);
         end
         else
         begin
           DrawDottedVLine(PaintInfo, Y, Y + H, X);
-          DrawDottedHLine(PaintInfo, X, X + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent), Y + H);
+          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H);
         end;
     end;
   end;
@@ -13739,9 +13735,9 @@ begin
     end
     else
       lNodeLevel := 1;
-    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent));
+    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * FIndent);
     // toggle buttons
-    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - (({$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) - FPlusBM.Width) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - ((FIndent - FPlusBM.Width) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
   end;//if MainColumn
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
@@ -14773,7 +14769,7 @@ begin
       Run := Run.Parent;
     end;
     R := GetDisplayRect(Node, FHeader.MainColumn, True);
-    DoSetOffsetXY(Point(FOffsetX, FOffsetY + ClientHeight - R.Top - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node])),
+    DoSetOffsetXY(Point(FOffsetX, FOffsetY + ClientHeight - R.Top - NodeHeight[Node]),
       [suoRepaintScrollBars, suoUpdateNCArea]);
   end;
 end;
@@ -15299,7 +15295,7 @@ begin
         if (vsInitializing in Node.States) and not (vsHasChildren in Node.States) then
           AdjustTotalHeight(Node, 0, False)
         else
-          AdjustTotalHeight(Node, -{$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]), True);
+          AdjustTotalHeight(Node, -NodeHeight[Node], True);
         if FullyVisible[Node] then
         begin
           System.Dec(FVisibleCount);
@@ -15319,7 +15315,7 @@ begin
       Exclude(Node.States, vsFiltered);
       if not (toShowFilteredNodes in FOptions.FPaintOptions) then
       begin
-        AdjustTotalHeight(Node, {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]), True);
+        AdjustTotalHeight(Node, NodeHeight[Node], True);
         if FullyVisible[Node] then
         begin
           System.Inc(FVisibleCount);
@@ -15529,7 +15525,7 @@ var
 begin
   if Assigned(Node) and (Node <> FRoot) and (Node.NodeHeight <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
-    Difference := {$IFDEF VT_VCL}Integer{$ENDIF}(Value) - {$IFDEF VT_VCL}Integer{$ENDIF}(Node.NodeHeight);
+    Difference := Value - Node.NodeHeight;
     Node.NodeHeight := Value;
 
     // If the node is effectively filtered out, nothing else has to be done, as it is not visible anyway.
@@ -15836,7 +15832,7 @@ begin
     else
     begin
       if vsExpanded in Node.Parent.States then
-        AdjustTotalHeight(Node.Parent, -{$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight), True);
+        AdjustTotalHeight(Node.Parent, -Node.TotalHeight, True);
       if VisiblePath[Node] then
       begin
         System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
@@ -19298,7 +19294,7 @@ var
   HeaderWidth: TDimension;
   ScrollBarVisible: Boolean;
 begin
-  ScrollBarVisible := ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) > ClientHeight) and (ScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth]);
+  ScrollBarVisible := (FRangeY > ClientHeight) and (ScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth]);
   if ScrollBarVisible then
     Result := {$IFDEF VT_FMX}16{$ELSE}GetSystemMetrics(SM_CXVSCROLL){$ENDIF}
   else
@@ -19306,8 +19302,8 @@ begin
 
   // Make everything right aligned.
   HeaderWidth := FHeaderRect.Right - FHeaderRect.Left;
-  if {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) + Result <= HeaderWidth then
-    Result := HeaderWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX);
+  if FRangeX + Result <= HeaderWidth then
+    Result := HeaderWidth - FRangeX;
   // Otherwise take only left-hand vertical scrollbar into account.
 
   if ScrollBarVisible and ExcludeScrollBar then
@@ -19599,7 +19595,7 @@ begin
       // Position of button is interpreted very generously to avoid forcing the user
       // to click exactly into the 9x9 pixels area. The entire node height and one full
       // indentation level is accepted as button hit.
-      if Offset >= lOffsets[ofsCheckbox] - {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) then
+      if Offset >= lOffsets[ofsCheckbox] - FIndent then
         Include(HitInfo.HitPositions, hiOnItemButton);
       if Offset > lOffsets[ofsToggleButton] then
         Include(HitInfo.HitPositions, hiOnItemButtonExact);
@@ -19727,7 +19723,7 @@ begin
       // Position of button is interpreted very generously to avoid forcing the user
       // to click exactly into the 9x9 pixels area. The entire node height and one full
       // indentation level is accepted as button hit.
-      if Offset <= Right + {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) then
+      if Offset <= Right + FIndent then
         Include(HitInfo.HitPositions, hiOnItemButton);
       if Offset <= Right + FPlusBM.Width then
         Include(HitInfo.HitPositions, hiOnItemButtonExact);
@@ -20004,14 +20000,14 @@ begin
     end
     else
     begin
-      if (X < {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) and (FEffectiveOffsetX <> 0) then
+      if (X < FDefaultNodeHeight) and (FEffectiveOffsetX <> 0) then
         Include(Result, sdLeft);
-      if (ClientWidth + FEffectiveOffsetX < {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX)) and (X > ClientWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) then
+      if (ClientWidth + FEffectiveOffsetX < FRangeX) and (X > ClientWidth - FDefaultNodeHeight) then
         Include(Result, sdRight);
 
-      if (Y < {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) and (FOffsetY <> 0) then
+      if (Y < FDefaultNodeHeight) and (FOffsetY <> 0) then
         Include(Result, sdUp);
-      if (ClientHeight - FOffsetY < {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY)) and (Y > ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FDefaultNodeHeight)) then
+      if (ClientHeight - FOffsetY < FRangeY) and (Y > ClientHeight - FDefaultNodeHeight) then
         Include(Result, sdDown);
 
       // Since scrolling during dragging is not handled via the timer we do a check here whether the auto
@@ -21451,15 +21447,15 @@ var
 
 begin
   // Range check, order is important here.
-  if Value.X < (ClientWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX)) then
-    Value.X := ClientWidth - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX);
+  if Value.X < (ClientWidth - FRangeX) then
+    Value.X := ClientWidth - FRangeX;
   if Value.X > 0 then
     Value.X := 0;
   DeltaX := Value.X - FOffsetX;
   if UseRightToLeftAlignment then
     DeltaX := -DeltaX;
-  if Value.Y < (ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY)) then
-    Value.Y := ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY);
+  if Value.Y < (ClientHeight - FRangeY) then
+    Value.Y := ClientHeight - FRangeY;
   if Value.Y > 0 then
     Value.Y := 0;
   DeltaY := Value.Y - FOffsetY;
@@ -22151,7 +22147,7 @@ begin
       if sdDown in FScrollDirections then
       begin
         DeltaY := -Min(FScrollBarOptions.FIncrementY, ClientHeight);
-        if (ClientHeight - FOffsetY) = {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) then
+        if (ClientHeight - FOffsetY) = FRangeY then
           Exclude(FScrollDirections, sdDown);
       end;
       if sdLeft in FScrollDirections then
@@ -22163,7 +22159,7 @@ begin
       if sdRight in FScrollDirections then
       begin
         DeltaX := -FScrollBarOptions.FIncrementX;
-        if (ClientWidth + FEffectiveOffsetX) = {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) then
+        if (ClientWidth + FEffectiveOffsetX) = FRangeX then
           Exclude(FScrollDirections, sdRight);
       end;
       WindowScrolled := DoSetOffsetXY(Point(FOffsetX + DeltaX, FOffsetY + DeltaY), ScrollOptions, nil);
@@ -22711,7 +22707,7 @@ begin
     if not (vsInitialized in Node.States) then
       InitNode(Node);
     CurrentWidth := GetOffset(TVTElement.ofsRightOfText, Node);
-    if {$IFDEF VT_VCL}Integer{$ENDIF}(Result) < (CurrentWidth) then
+    if Result < (CurrentWidth) then
       Result := CurrentWidth;
     Inc(TopPosition, NodeHeight[Node]);
     if TopPosition > Height then
@@ -23847,7 +23843,7 @@ begin
   FixupTotalCount(Node);
   AdjustTotalCount(Node.Parent, Node.TotalCount - 1, True); // -1 because Node itself was already set.
   FixupTotalHeight(Node);
-  AdjustTotalHeight(Node.Parent, {$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) - {$IFDEF VT_VCL}Integer{$ENDIF}(LastTotalHeight), True);
+  AdjustTotalHeight(Node.Parent, Node.TotalHeight - LastTotalHeight, True);
 
   // New nodes are always visible, so the visible node count has been increased already.
   // If Node is now invisible we have to take back this increment and don't need to add any visible child node.
@@ -24291,7 +24287,7 @@ begin
     end;
     AdjustTotalCount(Parent, -Integer(Node.TotalCount), True);
     if AdjustHeight then
-      AdjustTotalHeight(Parent, -{$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight), True);
+      AdjustTotalHeight(Parent, -Node.TotalHeight, True);
     if FullyVisible[Node] then
       System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
 
@@ -26380,7 +26376,7 @@ begin
   if hoVisible in FHeader.FOptions then
   begin
     if FHeaderRect.Left <= FHeaderRect.Right then
-      FHeaderRect.Bottom := FHeaderRect.Top + {$IFDEF VT_VCL}Integer{$ENDIF}(FHeader.FHeight)
+      FHeaderRect.Bottom := FHeaderRect.Top + FHeader.FHeight
     else
       FHeaderRect := Rect(0, 0, 0, 0);
   end
@@ -27256,7 +27252,7 @@ begin
 
       while Assigned(Node) do
       begin
-        R.Bottom := R.Top + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]);
+        R.Bottom := R.Top + NodeHeight[Node];
         if vsSelected in Node.States then
         begin
 {$IFDEF VT_FMX}
@@ -31387,7 +31383,7 @@ var
   SelectionRect,               // ordered rectangle used for drawing the selection focus rect
   ClipRect: TRect;             // area to which the canvas will be clipped when painting a node's content
   NextColumn: TColumnIndex;
-  BaseOffset: TDimension;         // top position of the top node to draw given in absolute tree coordinates
+  BaseOffset: TDimension;      // top position of the top node to draw given in absolute tree coordinates
   NodeBitmap: TBitmap;         // small buffer to draw flicker free
   MaximumRight,                // maximum horizontal target position
   MaximumBottom: TDimension;      // maximum vertical target position
@@ -31699,12 +31695,12 @@ begin
                             begin
                               if BidiMode = bdLeftToRight then
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent), CellRect.Right - 1,
+                                DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * FIndent, CellRect.Right - 1,
                                   CellRect.Bottom - 1);
                               end
                               else
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * {$IFDEF VT_VCL}Integer{$ENDIF}(FIndent) - 1,
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * FIndent - 1,
                                   CellRect.Bottom - 1);
                               end;
                             end
@@ -32789,7 +32785,7 @@ begin
       if (R.Bottom > ClientHeight) or Center then
       begin
         HScrollBarVisible := (ScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssBoth, System.UITypes.TScrollStyle.ssHorizontal]) and
-          (ScrollBarOptions.AlwaysVisible or ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) > ClientWidth));
+          (ScrollBarOptions.AlwaysVisible or (FRangeX > ClientWidth));
         if Center then
           SetOffsetY(FOffsetY - R.Bottom + ClientHeight {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2)
         else
@@ -32797,7 +32793,7 @@ begin
         // When scrolling up and the horizontal scroll appears because of the operation
         // then we have to move up the node the horizontal scrollbar's height too
         // in order to avoid that the scroll bar hides the node which we wanted to have in view.
-        if not UseColumns and not HScrollBarVisible and ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) > ClientWidth) then
+        if not UseColumns and not HScrollBarVisible and (FRangeX > ClientWidth) then
           SetOffsetY(FOffsetY - {$IFDEF VT_FMX}3{$ELSE}GetSystemMetrics(SM_CYHSCROLL){$ENDIF});
         ScrolledVertically := True;
       end;
@@ -32860,7 +32856,7 @@ begin
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
-        SetOffsetX(-{$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) + ClientWidth + NewOffset)
+        SetOffsetX(-FRangeX + ClientWidth + NewOffset)
       else
         SetOffsetX(-NewOffset);
     end;
@@ -32872,7 +32868,7 @@ begin
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
-        SetOffsetX(-{$IFDEF VT_VCL}Integer{$ENDIF}(FRangeX) + ClientWidth + NewOffset)
+        SetOffsetX(-FRangeX + ClientWidth + NewOffset)
       else
         SetOffsetX(-NewOffset);
     end;
@@ -33294,7 +33290,7 @@ begin
           NeedUpdate := True;
 
           // Calculate the height delta right now as we need it for toChildrenAbove anyway.
-          HeightDelta := -{$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]); 
+          HeightDelta := -Node.TotalHeight + NodeHeight[Node];
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
@@ -33315,7 +33311,7 @@ begin
               Mode2 := tamNoScroll;
               if toChildrenAbove in FOptions.FPaintOptions then
               begin
-                PosHoldable := (FOffsetY + ({$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]))) <= 0;
+                PosHoldable := (FOffsetY + (Node.TotalHeight - NodeHeight[Node])) <= 0;
                 NodeInView := R1.Top < ClientHeight;
 
                 StepsR1 := 0;
@@ -33327,7 +33323,7 @@ begin
                     Mode1 := tamScrollDown;
                     R1.Bottom := R1.Top;
                     R1.Top := 0;
-                    StepsR1 := Min(R1.Bottom - R1.Top + 1, {$IFDEF VT_VCL}Integer{$ENDIF}(Node.TotalHeight) - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]));
+                    StepsR1 := Min(R1.Bottom - R1.Top + 1, Node.TotalHeight - NodeHeight[Node]);
                   end
                   else
                   begin
@@ -33341,8 +33337,8 @@ begin
               end
               else
               begin
-                if ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + FOffsetY - R1.Bottom + HeightDelta >= ClientHeight - R1.Bottom) or
-                   ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) <= ClientHeight) or (FOffsetY = 0) or not
+                if (FRangeY + FOffsetY - R1.Bottom + HeightDelta >= ClientHeight - R1.Bottom) or
+                   (FRangeY <= ClientHeight) or (FOffsetY = 0) or not
                    (toAdvancedAnimatedToggle in FOptions.FAnimationOptions) then
                 begin
                   // Do a simple scroll up over the child nodes.
@@ -33356,7 +33352,7 @@ begin
                   // Scroll the node down to its future position. As FOffsetY will change we need to invalidate the
                   // whole tree.
                   Mode1 := tamScrollDown;
-                  StepsR1 := Min(-FOffsetY, ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) -FOffsetY - HeightDelta);
+                  StepsR1 := Min(-FOffsetY, ClientHeight - FRangeY -FOffsetY - HeightDelta);
                   R1.Top := 0;
                   R1.Bottom := Min(ClientHeight, R1.Bottom + Steps);
                   NeedFullInvalidate := True;
@@ -33426,13 +33422,13 @@ begin
               begin
                 R1 := GetDisplayRect(Node, NoColumn, False);
                 Mode2 := tamNoScroll;
-                TotalFit := HeightDelta + {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]) <= ClientHeight;
+                TotalFit := HeightDelta + NodeHeight[Node] <= ClientHeight;
 
                 if toChildrenAbove in FOptions.FPaintOptions then
                 begin
                   // The main goal with toChildrenAbove being set is to keep the nodes visual position so the user does
                   // not get confused. Therefore we need to scroll the view when the expanding is done.
-                  PosHoldable := TotalFit and ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) - ClientHeight >= 0) ;
+                  PosHoldable := TotalFit and (FRangeY - ClientHeight >= 0) ;
                   ChildrenInView := (R1.Top - HeightDelta) >= 0;
                   NodeInView := R1.Bottom <= ClientHeight;
                 end
@@ -33483,25 +33479,25 @@ begin
                       begin
                         // If we shall not or cannot scroll to the desired extent we calculate the new position (with
                         // max FOffsetY applied) and animate it that way.
-                        StepsR1 := -FOffsetY - Max({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta - ClientHeight, 0) + HeightDelta;
-                        if ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta - ClientHeight) <= 0 then
+                        StepsR1 := -FOffsetY - Max(FRangeY + HeightDelta - ClientHeight, 0) + HeightDelta;
+                        if (FRangeY + HeightDelta - ClientHeight) <= 0 then
                           Mode2 := tamNoScroll
                         else
-                          StepsR2 := Min({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta - ClientHeight, R2.Bottom);
+                          StepsR2 := Min(FRangeY + HeightDelta - ClientHeight, R2.Bottom);
                       end
                       else
                       begin
-                        if TotalFit and NodeInView and ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta > ClientHeight) then
+                        if TotalFit and NodeInView and (FRangeY + HeightDelta > ClientHeight) then
                         begin
                           // If the whole subtree will fit into the client area and the node is currently fully visible,
                           // the first child will be made the top node if possible.
                           if HeightDelta >= R1.Top then
                             StepsR1 := Abs(R1.Top - HeightDelta)
                           else
-                            StepsR1 := ClientHeight - {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY);
+                            StepsR1 := ClientHeight - FRangeY;
                         end
                         else
-                          if {$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) + HeightDelta <= ClientHeight then
+                          if FRangeY + HeightDelta <= ClientHeight then
                           begin
                             // We cannot make the first child the top node as we cannot scroll to that extent,
                             // so we do a simple scroll down.
@@ -33511,7 +33507,7 @@ begin
                           else
                             // If the subtree does not fit into the client area at once, the expanded node will
                             // be made the bottom node.
-                            StepsR1 := ClientHeight - R1.Top - {$IFDEF VT_VCL}Integer{$ENDIF}(NodeHeight[Node]);
+                            StepsR1 := ClientHeight - R1.Top - NodeHeight[Node];
 
                         if Mode2 <> tamNoScroll then
                         begin
