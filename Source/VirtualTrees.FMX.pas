@@ -213,7 +213,7 @@ procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Inte
 {--}procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
 
 implementation
-uses FMX.TextLayout, System.SysUtils;
+uses FMX.TextLayout, System.SysUtils, FMX.Types;
 
 //----------------------------------------------------------------------------------------------------------------------
 
