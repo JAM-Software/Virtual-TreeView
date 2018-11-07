@@ -18307,6 +18307,7 @@ end;
 procedure TBaseVirtualTree.WMPaint(var Message: TWMPaint);
 var
   DC: HDC;
+  prevDC: HDC;
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
@@ -18326,8 +18327,13 @@ begin
     if DC <> 0 then
       try
         begin
+          prevDC:= dummyCanvas.Handle;
           dummyCanvas.Handle:= DC;
-          FHeader.FColumns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
+          try
+            FHeader.FColumns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
+          finally
+            dummyCanvas.Handle:= prevDC;
+          end;
         end;
     finally
       ReleaseDC(Handle, DC);
@@ -18349,12 +18355,18 @@ procedure TBaseVirtualTree.WMPrint(var Message: TWMPrint);
 
 // This message is sent to request that the tree draws itself to a given device context. This includes not only
 // the client area but also the non-client area (header!).
+Var prevDC: HDC;
 begin
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
     begin
-      dummyCanvas.Handle:= Message.DC;
-      Header.Columns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
+      prevDC:= dummyCanvas.Handle;
+      try
+        dummyCanvas.Handle:= Message.DC;
+        Header.Columns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
+      finally
+        dummyCanvas.Handle:= prevDC;
+      end;
     end;
 
   inherited;
@@ -25125,6 +25137,7 @@ var
   BlendRect: TRect;
   TextColorBackup,
   BackColorBackup: COLORREF;   // used to restore forground and background colors when drawing a selection rectangle
+  prevDC: HDC;
 {$ENDIF}
 begin
 {$IFDEF VT_VCL}
@@ -25146,10 +25159,14 @@ begin
     if IntersectRect(BlendRect, OrderRect(SelectionRect), TargetRect) then
     begin
       OffsetRect(BlendRect, -WindowOrgX, 0);
-
-      dummyCanvas.Handle:= 0;
-      AlphaBlend(dummyCanvas, Target, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
-        ColorToRGB(FColors.SelectionRectangleBlendColor));
+      prevDC:= dummyCanvas.Handle;
+      try
+        dummyCanvas.Handle:= 0;
+        AlphaBlend(dummyCanvas, Target, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
+          ColorToRGB(FColors.SelectionRectangleBlendColor));
+      finally
+        dummyCanvas.Handle:= prevDC;
+      end;
 
       Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.SelectionRectangleBorderColor;
       Target.FrameRect(SelectionRect);
@@ -25209,6 +25226,7 @@ const
 
   var
     R: TRect;
+    prevDC: HDC;
   begin
     // Take into account any window offset and size limitations in the target bitmap, as this is only as large
     // as necessary and might not cover the whole node. For normal painting this does not matter (because of
@@ -25221,9 +25239,14 @@ const
     if R.Right > MaxWidth then
       R.Right := MaxWidth;
 
+    prevDC:= dummyCanvas.Handle;
     dummyCanvas.Handle:= 0;
-    AlphaBlend(dummyCanvas, PaintInfo.Canvas, R, Point(0, 0), bmConstantAlphaAndColor,
-      FSelectionBlendFactor, ColorToRGB(Color));
+    try
+      AlphaBlend(dummyCanvas, PaintInfo.Canvas, R, Point(0, 0), bmConstantAlphaAndColor,
+        FSelectionBlendFactor, ColorToRGB(Color));
+    finally
+      dummyCanvas.Handle:= prevDC;
+    end;
   end;
 
   //---------------------------------------------------------------------------
