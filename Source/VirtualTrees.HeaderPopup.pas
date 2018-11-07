@@ -74,7 +74,8 @@ uses
 {$IFDEF VT_FMX}
   System.Classes,
   FMX.Menus,
-  VirtualTrees;
+  VirtualTrees,
+  VirtualTrees.FMX;
 {$ELSE}
   System.Classes,
   Vcl.Menus,

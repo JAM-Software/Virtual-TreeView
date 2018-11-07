@@ -14,7 +14,7 @@ interface
 {$IFDEF VT_FMX}
 uses System.SysUtils, FMX.Graphics, System.Classes, FMX.Forms,
      FMX.Controls, System.StrUtils, System.Generics.Collections,
-     VirtualTrees, VirtualTrees.Classes, FMX.Types;
+     VirtualTrees, VirtualTrees.Classes, FMX.Types, VirtualTrees.FMX;
 {$ELSE}
 uses Winapi.Windows, System.SysUtils, Vcl.Graphics, System.Classes, Vcl.Forms,
      Vcl.Controls, System.StrUtils, System.Generics.Collections,
@@ -180,7 +180,7 @@ begin
     // Add title if adviced so by giving a caption.
     if Length(Caption) > 0 then
       AddHeader := AddHeader + 'caption="' + Caption + '"';
-    if CrackTree.Borderstyle <> bsNone then
+    if CrackTree.Borderstyle <> TFormBorderStyle.bsNone then
       AddHeader := AddHeader + Format(' border="%d" frame=box', [{$IFDEF VT_FMX}Round{$ENDIF}(CrackTree.BorderWidth) + 1]); //TODO: Round
 
     Buffer.Add('<META http-equiv="Content-Type" content="text/html; charset=utf-8">');

@@ -83,39 +83,25 @@ uses
   System.SysUtils, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.ImgList, System.ImageList, FMX.StdCtrls, System.Classes,
   FMX.Menus, System.Types, System.UITypes, System.Generics.Collections, System.Threading,
   System.Variants, FMX.Types, FMX.Dialogs, FMX.Controls.Presentation, FMX.Objects, FMX.Printer, FMX.Edit, FMX.Platform,
-  System.Devices;
+  System.Devices, VirtualTrees.FMX;
 {$ELSE}
   Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
 {$ENDIF}
+
+type
+{$IFDEF VT_FMX}
+  TDimension = Single;
+{$ELSE}
+  TDimension = Integer;
+{$ENDIF}
+
 const
   VTVersion = '7.0.0';
 
 const
-{$IFDEF VT_FMX}
-  //i resign from overriding types as this caused many problems and i start from scratch once again
-  //this can be done in the next steep if really needed because step back will be not so simple
-  //TColor = TAlphaColor;
-  //TRect = TRectF;
-  //TPoint = TPointF; 
-  clBtnFace = TAlphaColorRec.Gray;
-  clBtnText = TAlphaColorRec.Black;
-  clBtnHighlight = TAlphaColorRec.DkGray;
-  clBtnShadow = TAlphaColorRec.Darkgray;
-  clHighlight = TAlphaColorRec.Lightblue;
-  clWindow = TAlphaColorRec.White;
-  clWindowText = TAlphaColorRec.Black;
-  clHighlightText = TAlphaColorRec.White;
-  clWhite = TAlphaColorRec.White;
-  clSilver = TAlphaColorRec.Silver;
-  clGray = TAlphaColorRec.Gray;
-  clBlack = TAlphaColorRec.Black;
-  clGreen = TAlphaColorRec.Green;
-  clBlue =  TAlphaColorRec.Blue;
-  clGrayText =  TAlphaColorRec.DkGray;
-{$ENDIF}
   VTTreeStreamVersion = 3;
   VTHeaderStreamVersion = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
@@ -232,185 +218,7 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 
   {$MinEnumSize 1, make enumerations as small as possible}
 
-{$IFDEF VT_FMX}
-type
-  TRect = System.Types.TRectF;
-  PRect = System.Types.PRectF;
-  TPoint = System.Types.TPointF;
-  PPoint = System.Types.PPointF;
-  PSize = System.Types.PSizeF;
-  TSize = System.Types.TSizeF;
-  TColor = System.UITypes.TAlphaColor;
 
-  TBorderWidth = Single;
-  TBevelCut = (bvNone, bvLowered, bvRaised, bvSpace);
-  TBevelEdge = (beLeft, beTop, beRight, beBottom);
-  TBevelEdges = set of TBevelEdge;
-  TBevelKind = (bkNone, bkTile, bkSoft, bkFlat);
-  TBevelWidth = 1..MaxInt;
-
-  TFormBorderStyle = (bsNone, bsSingle, bsSizeable, bsDialog, bsToolWindow, bsSizeToolWin);
-  TBorderStyle = bsNone..bsSingle;
-
-  TTextMetric = record
-    tmHeight: Single;  //The height (ascent + descent) of characters.
-    tmAscent: Single;  //The ascent (units above the base line) of characters.
-    tmDescent: Single; //The descent (units below the base line) of characters.
-    tmInternalLeading: Single; //The amount of leading (space) inside the bounds set by the tmHeight member. Accent marks and other diacritical characters may occur in this area. The designer may set this member to zero
-    tmExternalLeading: Single; //The amount of extra leading (space) that the application adds between rows. Since this area is outside the font, it contains no marks and is not altered by text output calls in either OPAQUE or TRANSPARENT mode. The designer may set this member to zero.
-    tmAveCharWidth: Single; //The average width of characters in the font (generally defined as the width of the letter x ). This value does not include the overhang required for bold or italic characters.
-    tmMaxCharWidth: Single; //The width of the widest character in the font.
-    tmWeight: Single; //The weight of the font.
-    tmOverhang: Single;
-    tmDigitizedAspectX: Single; //The horizontal aspect of the device for which the font was designed.
-    tmDigitizedAspectY: Single; //The vertical aspect of the device for which the font was designed. The ratio of the tmDigitizedAspectX and tmDigitizedAspectY members is the aspect ratio of the device for which the font was designed.
-    tmFirstChar: WideChar; //The value of the first character defined in the font.
-    tmLastChar: WideChar;  //The value of the last character defined in the font.
-    tmDefaultChar: WideChar; //The value of the character to be substituted for characters not in the font.
-    tmBreakChar: WideChar; //The value of the character that will be used to define word breaks for text justification.
-    tmItalic: Byte; //Specifies an italic font if it is nonzero.
-    tmUnderlined: Byte; //Specifies an underlined font if it is nonzero.
-    tmStruckOut: Byte; //A strikeout font if it is nonzero.
-    tmPitchAndFamily: Byte; //Specifies information about the pitch, the technology, and the family of a physical font.  TMPF_FIXED_PITCH, TMPF_VECTOR, TMPF_TRUETYPE, TMPF_DEVICE
-    tmCharSet: Byte; //The character set of the font. The character set can be one of the following values. ANSI_CHARSET, GREEK_CHARSET....
-  end;
-  procedure GetTextMetrics(ACanvas: TCanvas; var TM: TTextMetric);
-  function Rect(ALeft, ATop, ARight, ABottom: Single): TRect; overload; inline;
-  function Rect(const ATopLeft, ABottomRight: TPoint): TRect; overload; inline;
-  function Point(AX, AY: Single): TPoint; overload; inline;
-
-  procedure Inc(Var V: Single; OIle: Single=1.0); overload;
-  procedure Dec(Var V: Single; OIle: Single=1.0); overload;
-  function MulDiv(const A, B, C: Single): Single; overload;
-  procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
-  procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
-  procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
-  procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
-
-
-const
-  { 3D border styles }
-  {$EXTERNALSYM BDR_RAISEDOUTER}
-  BDR_RAISEDOUTER = 1;
-  {$EXTERNALSYM BDR_SUNKENOUTER}
-  BDR_SUNKENOUTER = 2;
-  {$EXTERNALSYM BDR_RAISEDINNER}
-  BDR_RAISEDINNER = 4;
-  {$EXTERNALSYM BDR_SUNKENINNER}
-  BDR_SUNKENINNER = 8;
-
-  {$EXTERNALSYM BDR_OUTER}
-  BDR_OUTER = 3;
-  {$EXTERNALSYM BDR_INNER}
-  BDR_INNER = 12;
-  {$EXTERNALSYM BDR_RAISED}
-  BDR_RAISED = 5;
-  {$EXTERNALSYM BDR_SUNKEN}
-  BDR_SUNKEN = 10;
-
-  {$EXTERNALSYM EDGE_RAISED}
-  EDGE_RAISED = (BDR_RAISEDOUTER or BDR_RAISEDINNER);
-  {$EXTERNALSYM EDGE_SUNKEN}
-  EDGE_SUNKEN = (BDR_SUNKENOUTER or BDR_SUNKENINNER);
-  {$EXTERNALSYM EDGE_ETCHED}
-  EDGE_ETCHED = (BDR_SUNKENOUTER or BDR_RAISEDINNER);
-  {$EXTERNALSYM EDGE_BUMP}
-  EDGE_BUMP = (BDR_RAISEDOUTER or BDR_SUNKENINNER);
-
-  {$EXTERNALSYM ETO_OPAQUE}
-  ETO_OPAQUE = 2;
-  {$EXTERNALSYM ETO_CLIPPED}
-  ETO_CLIPPED = 4;
-  {$EXTERNALSYM ETO_RTLREADING}
-  ETO_RTLREADING = $80;
-
-  RTLFlag: array[Boolean] of Integer = (0, ETO_RTLREADING);
-
-  { Border flags }
-  {$EXTERNALSYM BF_LEFT}
-  BF_LEFT = 1;
-  {$EXTERNALSYM BF_TOP}
-  BF_TOP = 2;
-  {$EXTERNALSYM BF_RIGHT}
-  BF_RIGHT = 4;
-  {$EXTERNALSYM BF_BOTTOM}
-  BF_BOTTOM = 8;
-
-  {$EXTERNALSYM BF_TOPLEFT}
-  BF_TOPLEFT = (BF_TOP or BF_LEFT);
-  {$EXTERNALSYM BF_TOPRIGHT}
-  BF_TOPRIGHT = (BF_TOP or BF_RIGHT);
-  {$EXTERNALSYM BF_BOTTOMLEFT}
-  BF_BOTTOMLEFT = (BF_BOTTOM or BF_LEFT);
-  {$EXTERNALSYM BF_BOTTOMRIGHT}
-  BF_BOTTOMRIGHT = (BF_BOTTOM or BF_RIGHT);
-  {$EXTERNALSYM BF_RECT}
-  BF_RECT = (BF_LEFT or BF_TOP or BF_RIGHT or BF_BOTTOM);
-
-  {$EXTERNALSYM BF_MIDDLE}
-  BF_MIDDLE = $800;   { Fill in the middle }
-  {$EXTERNALSYM BF_SOFT}
-  BF_SOFT = $1000;    { For softer buttons }
-  {$EXTERNALSYM BF_ADJUST}
-  BF_ADJUST = $2000;  { Calculate the space left over }
-  {$EXTERNALSYM BF_FLAT}
-  BF_FLAT = $4000;    { For flat rather than 3D borders }
-  {$EXTERNALSYM BF_MONO}
-  BF_MONO = $8000;    { For monochrome borders }
-
-  { DrawText() Format Flags }
-  DT_TOP = 0;
-  {$EXTERNALSYM DT_TOP}
-  DT_LEFT = 0;
-  {$EXTERNALSYM DT_LEFT}
-  DT_CENTER = 1;
-  {$EXTERNALSYM DT_CENTER}
-  DT_RIGHT = 2;
-  {$EXTERNALSYM DT_RIGHT}
-  DT_VCENTER = 4;
-  {$EXTERNALSYM DT_VCENTER}
-  DT_BOTTOM = 8;
-  {$EXTERNALSYM DT_BOTTOM}
-  DT_WORDBREAK = $10;
-  {$EXTERNALSYM DT_WORDBREAK}
-  DT_SINGLELINE = $20;
-  {$EXTERNALSYM DT_SINGLELINE}
-  DT_EXPANDTABS = $40;
-  {$EXTERNALSYM DT_EXPANDTABS}
-  DT_TABSTOP = $80;
-  {$EXTERNALSYM DT_TABSTOP}
-  DT_NOCLIP = $100;
-  {$EXTERNALSYM DT_NOCLIP}
-  DT_EXTERNALLEADING = $200;
-  {$EXTERNALSYM DT_EXTERNALLEADING}
-  DT_CALCRECT = $400;
-  {$EXTERNALSYM DT_CALCRECT}
-  DT_NOPREFIX = $800;
-  {$EXTERNALSYM DT_NOPREFIX}
-  DT_INTERNAL = $1000;
-  {$EXTERNALSYM DT_INTERNAL}
-
-
-  DT_EDITCONTROL = $2000;
-  {$EXTERNALSYM DT_EDITCONTROL}
-  DT_PATH_ELLIPSIS = $4000;
-  {$EXTERNALSYM DT_PATH_ELLIPSIS}
-  DT_END_ELLIPSIS = $8000;
-  {$EXTERNALSYM DT_END_ELLIPSIS}
-  DT_MODIFYSTRING = $10000;
-  {$EXTERNALSYM DT_MODIFYSTRING}
-  DT_RTLREADING = $20000;
-  {$EXTERNALSYM DT_RTLREADING}
-  DT_WORD_ELLIPSIS = $40000;
-  {$EXTERNALSYM DT_WORD_ELLIPSIS}
-  DT_NOFULLWIDTHCHARBREAK = $0080000;
-  {$EXTERNALSYM DT_NOFULLWIDTHCHARBREAK}
-  DT_HIDEPREFIX = $00100000;
-  {$EXTERNALSYM DT_HIDEPREFIX}
-  DT_PREFIXONLY = $00200000;
-  {$EXTERNALSYM DT_PREFIXONLY}
-
-{$ENDIF}
 
 type
   // Alias defintions for convenience
@@ -796,7 +604,7 @@ type
   );
 
   /// An array that can be used to calculate the offsets ofthe elements in the tree.
-  TVTOffsets = array [TVTElement] of {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TVTOffsets = array [TVTElement] of TDimension;
 
   TAddPopupItemType = (
     apNormal,
@@ -827,7 +635,7 @@ type
   // to compile (conversion done by BCB is wrong).
   TCacheEntry = record
     Node: PVirtualNode;
-    AbsoluteTop: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+    AbsoluteTop: TDimension;
   end;
 
   TCache = array of TCacheEntry;
@@ -885,14 +693,14 @@ type
   TVirtualNode = packed record
     Index,                   // index of node with regard to its parent
     ChildCount: Cardinal;    // number of child nodes
-    NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Word{$ENDIF}; // height in pixels
+    NodeHeight: TDimension; // height in pixels
     States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
     CheckType: TCheckType;   // indicates which check type shall be used for this node
     Dummy: Byte;             // dummy value to fill DWORD boundary
     TotalCount: Cardinal;    // sum of this node, all of its child nodes and their child nodes etc.
-    TotalHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};   // height in pixels this node covers on screen including the height of all of its
+    TotalHeight: TDimension;   // height in pixels this node covers on screen including the height of all of its
                              // children
     // Note: Some copy routines require that all pointers (as well as the data area) in a node are
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
@@ -917,7 +725,7 @@ type
   // Structure used when info about a certain position in the header is needed.
   TVTHeaderHitInfo = record
     X,
-    Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    Y: TDimension;
     Button: TMouseButton;
     Shift: TShiftState;
     Column: TColumnIndex;
@@ -1174,23 +982,23 @@ type
   private
     FText,
     FHint: string;
-    FWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FWidth: TDimension;
     FPosition: TColumnPosition;
-    FMinWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-    FMaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FMinWidth: TDimension;
+    FMaxWidth: TDimension;
     FStyle: TVirtualTreeColumnStyle;
     FImageIndex: TImageIndex;
     FBiDiMode: TBiDiMode;
     FLayout: TVTHeaderColumnLayout;
     FMargin,
-    FSpacing: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FSpacing: TDimension;
     FOptions: TVTColumnOptions;
     FEditOptions: TVTEditOptions;
     FEditNextColumn: Integer;
     FTag: NativeInt;
     FAlignment: TAlignment;
     FCaptionAlignment: TAlignment;     // Alignment of the caption.
-    FLastWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FLastWidth: TDimension;
     FColor: TColor;
     FBonusPixel: Boolean;
     FSpringRest: Single;               // Accumulator for width adjustment when auto spring option is enabled.
@@ -1202,7 +1010,7 @@ type
     FHasImage: Boolean;
     FDefaultSortDirection: TSortDirection;
     function GetCaptionAlignment: TAlignment;
-    function GetLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function GetLeft: TDimension;
     function IsBiDiModeStored: Boolean;
     function IsCaptionAlignmentStored: Boolean;
     function IsColorStored: Boolean;
@@ -1215,21 +1023,21 @@ type
     procedure SetColor(const Value: TColor);
     procedure SetImageIndex(Value: TImageIndex);
     procedure SetLayout(Value: TVTHeaderColumnLayout);
-    procedure SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
-    procedure SetMaxWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
-    procedure SetMinWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetMargin(Value: TDimension);
+    procedure SetMaxWidth(Value: TDimension);
+    procedure SetMinWidth(Value: TDimension);
     procedure SetOptions(Value: TVTColumnOptions);
     procedure SetPosition(Value: TColumnPosition);
-    procedure SetSpacing(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetSpacing(Value: TDimension);
     procedure SetStyle(Value: TVirtualTreeColumnStyle);
-    procedure SetWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetWidth(Value: TDimension);
   protected
-    FLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-    procedure ComputeHeaderLayout({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
+    FLeft: TDimension;
+    procedure ComputeHeaderLayout(ACanvas: TCanvas; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
       var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
       CalculateTextRect: Boolean = False);
     procedure DefineProperties(Filer: TFiler); override;
-    procedure GetAbsoluteBounds(var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure GetAbsoluteBounds(var Left, Right: TDimension);
     function GetDisplayName: string; override;
     function GetText: string; virtual; // [IPK]
     procedure SetText(const Value: string); virtual; // [IPK] private to protected & virtual
@@ -1254,7 +1062,7 @@ type
     function UseRightToLeftReading: Boolean;
 
     property CaptionText: string read FCaptionText;
-    property Left: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read GetLeft;
+    property Left: TDimension read GetLeft;
     property Owner: TVirtualTreeColumns read GetOwner;
   published
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
@@ -1269,18 +1077,18 @@ type
     property Hint: string read FHint write FHint;
     property ImageIndex: TImageIndex read FImageIndex write SetImageIndex default -1;
     property Layout: TVTHeaderColumnLayout read FLayout write SetLayout default blGlyphLeft;
-    property Margin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMargin write SetMargin{$IFDEF VT_VCL} default 4{$ENDIF};
-    property MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMaxWidth write SetMaxWidth{$IFDEF VT_VCL} default 10000{$ENDIF};
-    property MinWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMinWidth write SetMinWidth{$IFDEF VT_VCL} default 10{$ENDIF};
+    property Margin: TDimension read FMargin write SetMargin{$IFDEF VT_VCL} default 4{$ENDIF};
+    property MaxWidth: TDimension read FMaxWidth write SetMaxWidth{$IFDEF VT_VCL} default 10000{$ENDIF};
+    property MinWidth: TDimension read FMinWidth write SetMinWidth{$IFDEF VT_VCL} default 10{$ENDIF};
     property Options: TVTColumnOptions read FOptions write SetOptions default DefaultColumnOptions;
     property EditOptions: TVTEditOptions read FEditOptions write FEditOptions default toDefaultEdit;
     property EditNextColumn: Integer read FEditNextColumn write FEditNextColumn default -1;
     property Position: TColumnPosition read FPosition write SetPosition;
-    property Spacing: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FSpacing write SetSpacing{$IFDEF VT_VCL} default 3{$ENDIF};
+    property Spacing: TDimension read FSpacing write SetSpacing{$IFDEF VT_VCL} default 3{$ENDIF};
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
     property Tag: NativeInt read FTag write FTag default 0;
     property Text: string read GetText write SetText;
-    property Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FWidth write SetWidth{$IFDEF VT_VCL} default 50{$ENDIF};
+    property Width: TDimension read FWidth write SetWidth{$IFDEF VT_VCL} default 50{$ENDIF};
   end;
 
   TVirtualTreeColumnClass = class of TVirtualTreeColumn;
@@ -1322,10 +1130,10 @@ type
     procedure AdjustPosition(Column: TVirtualTreeColumn; Position: Cardinal);
     function CanSplitterResize(P: TPoint; Column: TColumnIndex): Boolean;
     procedure DoCanSplitterResize(P: TPoint; Column: TColumnIndex; var Allowed: Boolean); virtual;
-    procedure DrawButtonText({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Caption: string; Bounds: TRect; Enabled, Hot: Boolean; DrawFormat: Cardinal;
+    procedure DrawButtonText(ACanvas: TCanvas; Caption: string; Bounds: TRect; Enabled, Hot: Boolean; DrawFormat: Cardinal;
       WrapCaption: Boolean);
     procedure FixPositions;
-    function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean = True): Integer;
+    function GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: TDimension; Relative: Boolean = True): Integer;
     function GetOwner: TPersistent; override;
     function HandleClick(P: TPoint; Button: TMouseButton;{$IFDEF VT_FMX}Shift: TShiftState;{$ENDIF} Force, DblClick: Boolean): Boolean; virtual;
     procedure HeaderPopupMenuAddHeaderPopupItem(const Sender: TBaseVirtualTree; const Column: TColumnIndex;
@@ -1348,13 +1156,13 @@ type
     destructor Destroy; override;
 
     function Add: TVirtualTreeColumn; virtual;
-    procedure AnimatedResize(Column: TColumnIndex; NewWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure AnimatedResize(Column: TColumnIndex; NewWidth: TDimension);
     procedure Assign(Source: TPersistent); override;
     procedure Clear; virtual;
     function ColumnFromPosition(P: TPoint; Relative: Boolean = True): TColumnIndex; overload; virtual;
     function ColumnFromPosition(PositionIndex: TColumnPosition): TColumnIndex; overload; virtual;
     function Equals(OtherColumnsObj: TObject): Boolean; override;
-    procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure GetColumnBounds(Column: TColumnIndex; var Left, Right: TDimension);
     function GetFirstVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetLastVisibleColumn(ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetFirstColumn: TColumnIndex;
@@ -1362,16 +1170,16 @@ type
     function GetNextVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
     function GetPreviousColumn(Column: TColumnIndex): TColumnIndex;
     function GetPreviousVisibleColumn(Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex;
-    function GetScrollWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function GetScrollWidth: TDimension;
     function GetVisibleColumns: TColumnsArray;
-    function GetVisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function GetVisibleFixedWidth: TDimension;
     function IsValidColumn(Column: TColumnIndex): Boolean;
     procedure LoadFromStream(const Stream: TStream; Version: Integer);
-    procedure PaintHeader({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; R: TRect; HOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); overload; virtual;
-    procedure PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint; RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0); overload; virtual;
+    procedure PaintHeader(ACanvas: TCanvas; R: TRect; HOffset: TDimension); overload; virtual;
+    procedure PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint; RTLOffset: TDimension = 0); overload; virtual;
     procedure SaveToStream(const Stream: TStream);
     procedure EndUpdate(); override;
-    function TotalWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function TotalWidth: TDimension;
 
     property Count: Integer read GetCount;
     property ClickIndex: TColumnIndex read FClickIndex;
@@ -1470,22 +1278,12 @@ type
     crNodeCopied,   // a node has been duplicated
     crNodeMoved     // a node has been moved to a new place
   ); // desribes what made a structure change event happen
-{$IFDEF VT_FMX}
-  TChangeLink = class(TImageLink)
-  private
-    function GetSender: TCustomImageList; inline;
-    procedure SetSender(const Value: TCustomImageList); inline;
-  public
-    constructor Create; override;
-    property Sender: TCustomImageList read GetSender write SetSender;
-  end;
-{$ENDIF}
 
   TVTHeader = class(TPersistent)
   private
     FOwner: TBaseVirtualTree;
     FColumns: TVirtualTreeColumns;
-    FHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FHeight: TDimension;
     FFont: TFont;
     FParentFont: Boolean;
     FOptions: TVTHeaderOptions;
@@ -1494,9 +1292,9 @@ type
     FAutoSizeIndex: TColumnIndex;
     FPopupMenu: TPopupMenu;
     FMainColumn: TColumnIndex;         // the column which holds the tree
-    FMaxHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-    FMinHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-    FDefaultHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    FMaxHeight: TDimension;
+    FMinHeight: TDimension;
+    FDefaultHeight: TDimension;
     FFixedAreaConstraints: TVTFixedAreaConstraints; // Percentages for the fixed area (header, fixed columns).
     FImages: TCustomImageList;
     FImageChangeLink: TChangeLink;     // connections to the image list to get notified about changes
@@ -1506,7 +1304,7 @@ type
   {$IFDEF VT_VCL}
     FDragImage: TVTDragImage;          // drag image management during header drag
   {$ENDIF}
-    FLastWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};               // Used to adjust spring columns. This is the width of all visible columns,
+    FLastWidth: TDimension;               // Used to adjust spring columns. This is the width of all visible columns,
                                        // not the header rectangle.
     procedure FontChanged(Sender: TObject);
     function GetMainColumn: TColumnIndex;
@@ -1515,13 +1313,13 @@ type
     procedure SetAutoSizeIndex(Value: TColumnIndex);
     procedure SetBackground(Value: TColor);
     procedure SetColumns(Value: TVirtualTreeColumns);
-    procedure SetDefaultHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetDefaultHeight(Value: TDimension);
     procedure SetFont(const Value: TFont);
-    procedure SetHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetHeight(Value: TDimension);
     procedure SetImages(const Value: TCustomImageList);
     procedure SetMainColumn(Value: TColumnIndex);
-    procedure SetMaxHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
-    procedure SetMinHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetMaxHeight(Value: TDimension);
+    procedure SetMinHeight(Value: TDimension);
     procedure SetOptions(Value: TVTHeaderOptions);
     procedure SetParentFont(Value: Boolean);
     procedure SetSortColumn(Value: TColumnIndex);
@@ -1536,7 +1334,7 @@ type
 
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
-    procedure ChangeScale(M, D: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure ChangeScale(M, D: TDimension); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
     procedure DoAfterAutoFitColumn(Column: TColumnIndex); virtual;
     procedure DoAfterColumnWidthTracking(Column: TColumnIndex); virtual;
@@ -1580,8 +1378,8 @@ type
     function InHeaderSplitterArea(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False; UpdateNowFlag : Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
-    function ResizeColumns(ChangeBy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
-      Options: TVTColumnOptions = [coVisible]): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function ResizeColumns(ChangeBy: TDimension; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
+      Options: TVTColumnOptions = [coVisible]): TDimension;
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
 {$IFDEF VT_VCL}
@@ -1595,14 +1393,14 @@ type
     property AutoSizeIndex: TColumnIndex read FAutoSizeIndex write SetAutoSizeIndex;
     property Background: TColor read FBackgroundColor write SetBackground default clBtnFace;
     property Columns: TVirtualTreeColumns read FColumns write SetColumns stored False; // Stored by the owner tree to support VFI.
-    property DefaultHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FDefaultHeight write SetDefaultHeight{$IFDEF VT_VCL} default 19{$ENDIF};
+    property DefaultHeight: TDimension read FDefaultHeight write SetDefaultHeight{$IFDEF VT_VCL} default 19{$ENDIF};
     property Font: TFont read FFont write SetFont stored IsFontStored;
     property FixedAreaConstraints: TVTFixedAreaConstraints read FFixedAreaConstraints write FFixedAreaConstraints;
-    property Height: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FHeight write SetHeight{$IFDEF VT_VCL} default 19{$ENDIF};
+    property Height: TDimension read FHeight write SetHeight{$IFDEF VT_VCL} default 19{$ENDIF};
     property Images: TCustomImageList read FImages write SetImages;
     property MainColumn: TColumnIndex read GetMainColumn write SetMainColumn default 0;
-    property MaxHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMaxHeight write SetMaxHeight{$IFDEF VT_VCL} default 10000{$ENDIF};
-    property MinHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMinHeight write SetMinHeight{$IFDEF VT_VCL} default 10{$ENDIF};
+    property MaxHeight: TDimension read FMaxHeight write SetMaxHeight{$IFDEF VT_VCL} default 10000{$ENDIF};
+    property MinHeight: TDimension read FMinHeight write SetMinHeight{$IFDEF VT_VCL} default 10{$ENDIF};
     property Options: TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
     property ParentFont: Boolean read FParentFont write SetParentFont default True;
     property PopupMenu: TPopupMenu read FPopupMenu write FPopupMenu;
@@ -1899,7 +1697,7 @@ type
   TVTImageInfo = record
     Index: TImageIndex;           // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
-    YPos: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};            // Vertical position in the current target canvas.
+    YPos: TDimension;            // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
     Images: TCustomImageList; // The image list to be used for painting.
     function Equals(const pImageInfo2: TVTImageInfo): Boolean;
@@ -1942,14 +1740,14 @@ type
     Position: TColumnPosition;    // the column position of the node
     CellRect: TRect;              // the node cell
     ContentRect: TRect;           // the area of the cell used for the node's content
-    NodeWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};           // the actual node width
+    NodeWidth: TDimension;           // the actual node width
     Alignment: TAlignment;        // how to align within the node rectangle
     CaptionAlignment: TAlignment; // how to align text within the caption rectangle
     BidiMode: TBidiMode;          // directionality to be used for painting
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
     Offsets: TVTOffsets;
-    procedure AdjustImageCoordinates(VAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure AdjustImageCoordinates(VAlign: TDimension);
   end;
 
   // Method called by the Animate routine for each animation step.
@@ -2233,7 +2031,7 @@ type
     FHeader: TVTHeader;
     FRoot: PVirtualNode;
     FDefaultNodeHeight,
-    FIndent: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+    FIndent: TDimension;
     FOptions: TCustomVirtualTreeOptions;
     FUpdateCount: Cardinal;                      // update stopper, updates of the tree control are only done if = 0
     FSynchUpdateCount: Cardinal;                 // synchronizer, causes all events which are usually done via timers
@@ -2287,10 +2085,10 @@ type
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
-    FMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                            // horizontal distance to border and columns
-    FTextMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                        // space between the node's text and its horizontal bounds
+    FMargin: TDimension;                            // horizontal distance to border and columns
+    FTextMargin: TDimension;                        // space between the node's text and its horizontal bounds
     FBackgroundOffsetX,
-    FBackgroundOffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                 // used to fine tune the position of the background image
+    FBackgroundOffsetY: TDimension;                 // used to fine tune the position of the background image
     FAnimationDuration: Cardinal;                // specifies how long an animation shall take (expanding, hint)
     FWantTabs: Boolean;                          // If True then the tree also consumes the tab key.
     FNodeAlignment: TVTNodeAlignment;            // determines how to interpret the align member of a node
@@ -2312,7 +2110,7 @@ type
     FCheckImageKind: TCheckImageKind;            // light or dark, cross marks or tick marks
     FCheckImages: TCustomImageList;              // Reference to global image list to be used for the check images.
     //TODO: Use this margin for other images as well
-    FImagesMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                      // The margin used left and right of the checkboxes.
+    FImagesMargin: TDimension;                      // The margin used left and right of the checkboxes.
     FImageChangeLink,
     FStateChangeLink,
     FCustomCheckChangeLink: TChangeLink;         // connections to the image lists
@@ -2358,12 +2156,12 @@ type
     FAutoScrollDelay: Cardinal;                  // amount of milliseconds to wait until autoscrolling becomes active
     FAutoExpandDelay: Cardinal;                  // amount of milliseconds to wait until a node is expanded if it is the
                                                  // drop target
-    FOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-    FOffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                           // Determines left and top scroll offset.
-    FEffectiveOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};                  // Actual position of the horizontal scroll bar (varies depending on bidi mode).
+    FOffsetX: TDimension;
+    FOffsetY: TDimension;                           // Determines left and top scroll offset.
+    FEffectiveOffsetX: TDimension;                  // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
-    FRangeY: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};                           // current virtual width and height of the tree
-    FBottomSpace: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};                      // Extra space below the last node.
+    FRangeY: TDimension;                           // current virtual width and height of the tree
+    FBottomSpace: TDimension;                      // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
     FSingletonNodeArray: TNodeArray;             // Contains only one element for quick addition of single nodes
@@ -2580,20 +2378,20 @@ type
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
 {$ENDIF}
     procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
-    procedure AdjustTotalHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; relative: Boolean = False);
+    procedure AdjustTotalHeight(Node: PVirtualNode; Value: TDimension; relative: Boolean = False);
     function CalculateCacheEntryCount: Integer;
     procedure CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode; var VAlign,
-      VButtonAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+      VButtonAlign: TDimension);
     function ChangeCheckState(Node: PVirtualNode; Value: TCheckState): Boolean;
-    function CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment; OldRect,
-      NewRect: TRectF): Boolean;
-    function CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment; OldRect,
+    function CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment; OldRect,
+      NewRect: TRect): Boolean;
+    function CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment; OldRect,
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
-    function FindInPositionCache(Node: PVirtualNode; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode; overload;
-    function FindInPositionCache(Position: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode; overload;
+    function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
+    function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
     function GetBottomNode: PVirtualNode;
@@ -2612,7 +2410,7 @@ type
     function GetFullyVisible(Node: PVirtualNode): Boolean;
     function GetHasChildren(Node: PVirtualNode): Boolean;
     function GetMultiline(Node: PVirtualNode): Boolean;
-    function GetNodeHeight(Node: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+    function GetNodeHeight(Node: PVirtualNode): TDimension;
     function GetNodeParent(Node: PVirtualNode): PVirtualNode;
     function GetOffsetXY: TPoint;
     function GetRootNodeCount: Cardinal;
@@ -2622,7 +2420,7 @@ type
     function GetVerticalAlignment(Node: PVirtualNode): Byte;
     function GetVisible(Node: PVirtualNode): Boolean;
     function GetVisiblePath(Node: PVirtualNode): Boolean;
-    function HandleDrawSelection(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean;
+    function HandleDrawSelection(X, Y: TDimension): Boolean;
     function HasVisibleNextSibling(Node: PVirtualNode): Boolean;
     function HasVisiblePreviousSibling(Node: PVirtualNode): Boolean;
     procedure ImageListChange(Sender: TObject);
@@ -2638,10 +2436,10 @@ type
     procedure SetAnimationDuration(const Value: Cardinal);
     procedure SetBackground(const Value: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF});
     procedure SetBackGroundImageTransparent(const Value: Boolean);
-    procedure SetBackgroundOffset(const Index: Integer; const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetBackgroundOffset(const Index: Integer; const Value: TDimension);
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetBottomNode(Node: PVirtualNode);
-    procedure SetBottomSpace(const Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+    procedure SetBottomSpace(const Value: TDimension);
     procedure SetButtonFillMode(const Value: TVTButtonFillMode);
     procedure SetButtonStyle(const Value: TVTButtonStyle);
     procedure SetCheckImageKind(Value: TCheckImageKind);
@@ -2650,7 +2448,7 @@ type
     procedure SetClipboardFormats(const Value: TClipboardFormats);
     procedure SetColors(const Value: TVTColors);
     procedure SetCustomCheckImages(const Value: TCustomImageList);
-    procedure SetDefaultNodeHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+    procedure SetDefaultNodeHeight(Value: TDimension);
     procedure SetDisabled(Node: PVirtualNode; Value: Boolean);
     procedure SetEmptyListMessage(const Value: string);
     procedure SetExpanded(Node: PVirtualNode; Value: Boolean);
@@ -2662,18 +2460,18 @@ type
     procedure SetHotNode(Value: PVirtualNode);
     procedure SetFiltered(Node: PVirtualNode; Value: Boolean);
     procedure SetImages(const Value: TCustomImageList);
-    procedure SetIndent(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+    procedure SetIndent(Value: TDimension);
     procedure SetLineMode(const Value: TVTLineMode);
     procedure SetLineStyle(const Value: TVTLineStyle);
-    procedure SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetMargin(Value: TDimension);
     procedure SetMultiline(Node: PVirtualNode; const Value: Boolean);
     procedure SetNodeAlignment(const Value: TVTNodeAlignment);
     procedure SetNodeDataSize(Value: Integer);
-    procedure SetNodeHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+    procedure SetNodeHeight(Node: PVirtualNode; Value: TDimension);
     procedure SetNodeParent(Node: PVirtualNode; const Value: PVirtualNode);
-    procedure SetOffsetX(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetOffsetX(const Value: TDimension);
     procedure SetOffsetXY(const Value: TPoint);
-    procedure SetOffsetY(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetOffsetY(const Value: TDimension);
     procedure SetOptions(const Value: TCustomVirtualTreeOptions);
     procedure SetRootNodeCount(Value: Cardinal);
     procedure SetScrollBarOptions(Value: TScrollBarOptions);
@@ -2681,13 +2479,13 @@ type
     procedure SetSelected(Node: PVirtualNode; Value: Boolean);
     procedure SetSelectionCurveRadius(const Value: Cardinal);
     procedure SetStateImages(const Value: TCustomImageList);
-    procedure SetTextMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+    procedure SetTextMargin(Value: TDimension);
     procedure SetTopNode(Node: PVirtualNode);
     procedure SetUpdateState(Updating: Boolean);
     procedure SetVerticalAlignment(Node: PVirtualNode; Value: Byte);
     procedure SetVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
-    procedure PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; DrawBitmap: TBitmap; DrawBitmapWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; DrawBitMapHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; ABkgcolor: TColor);
+    procedure PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
     procedure StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
     procedure StopTimer(ID: Integer);
     procedure SetWindowTheme(const Theme: string);
@@ -2751,7 +2549,7 @@ type
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
 {$ENDIF}
-    function GetRangeX: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+    function GetRangeX: TDimension;
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
 {$IFDEF VT_FMX}
@@ -2762,6 +2560,7 @@ type
 
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
+    dummyCanvas: TCanvas; // for painting using native handle
 {$IFDEF VT_FMX}
     FUseRightToLeftAlignment: Boolean;
     procedure SetBevelCut(Index: Integer; const Value: TBevelCut);
@@ -2775,11 +2574,11 @@ type
     procedure AddToSelection(Node: PVirtualNode); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
-    procedure AdjustPanningCursor(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure AdjustPanningCursor(X, Y: TDimension); virtual;
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
     function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
-    function CalculateSelectionRect(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean; virtual;
+    function CalculateSelectionRect(X, Y: TDimension): Boolean; virtual;
     function CanAutoScroll: Boolean; virtual;
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
@@ -2790,7 +2589,7 @@ type
     procedure ClearSelection(pFireChangeEvent: Boolean); overload; virtual;
     procedure ClearTempCache; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
-    function ComputeRTLOffset(ExcludeScrollBar: Boolean = False): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function ComputeRTLOffset(ExcludeScrollBar: Boolean = False): TDimension; virtual;
     function CountLevelDifference(Node1, Node2: PVirtualNode): Integer; virtual;
     function CountVisibleChildren(Node: PVirtualNode): Cardinal; virtual;
 {$IFDEF VT_VCL}
@@ -2802,17 +2601,17 @@ type
     function DetermineDropMode(const P: TPoint; var HitInfo: THitInfo; var NodeRect: TRect): TDropMode; virtual;
     procedure DetermineHiddenChildrenFlag(Node: PVirtualNode); virtual;
     procedure DetermineHiddenChildrenFlagAllNodes; virtual;
-    procedure DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment); virtual;
-    procedure DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment); virtual;
+    procedure DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: TDimension; Alignment: TAlignment); virtual;
+    procedure DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: TDimension; Alignment: TAlignment); virtual;
     function DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer; virtual;
     function DetermineNextCheckState(CheckType: TCheckType; CheckState: TCheckState): TCheckState; virtual;
-    function DetermineScrollDirections(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): TScrollDirections; virtual;
+    function DetermineScrollDirections(X, Y: TDimension): TScrollDirections; virtual;
     procedure DoAdvancedHeaderDraw(var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements); virtual;
     procedure DoAfterCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellRect: TRect); virtual;
     procedure DoAfterItemErase(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect); virtual;
     procedure DoAfterItemPaint(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect); virtual;
     procedure DoAfterPaint(Canvas: TCanvas); virtual;
-    procedure DoAutoScroll(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure DoAutoScroll(X, Y: TDimension); virtual;
     function DoBeforeDrag(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
     procedure DoBeforeCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect); virtual;
@@ -2874,8 +2673,8 @@ type
     procedure DoGetLineStyle(var Bits: Pointer); virtual;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; virtual;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; virtual;
-    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
-    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension; virtual;
+    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension; virtual;
     function DoGetPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint): TPopupMenu; virtual;
 {$IFDEF VT_VCL}   
 	  procedure DoGetUserClipboardFormats(var Formats: TFormatEtcArray); virtual;
@@ -2898,7 +2697,7 @@ type
     procedure DoInitNode(Parent, Node: PVirtualNode; var InitStates: TVirtualNodeInitStates); virtual;
     function DoKeyAction(var CharCode: Word; var Shift: TShiftState): Boolean; virtual;
     procedure DoLoadUserData(Node: PVirtualNode; Stream: TStream); virtual;
-    procedure DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: TDimension); virtual;
     procedure DoMouseEnter(); virtual;
     procedure DoMouseLeave(); virtual;
     procedure DoNodeCopied(Node: PVirtualNode); virtual;
@@ -2922,7 +2721,7 @@ type
 {$ENDIF}	  
     procedure DoReset(Node: PVirtualNode); virtual;
     procedure DoSaveUserData(Node: PVirtualNode; Stream: TStream); virtual;
-    procedure DoScroll(DeltaX, DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure DoScroll(DeltaX, DeltaY: TDimension); virtual;
     function DoSetOffsetXY(Value: TPoint; Options: TScrollUpdateOptions; ClipRect: PRect = nil): Boolean; virtual;
     procedure DoShowScrollBar(Bar: Integer; Show: Boolean); virtual;
     procedure DoStartDrag(var DragObject: TDragObject); {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
@@ -2941,8 +2740,8 @@ type
     procedure DragLeave; virtual;
     function DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
-    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
-    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; UseSelectedBkColor: Boolean = False); virtual;
+    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension); virtual;
+    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; UseSelectedBkColor: Boolean = False); virtual;
     procedure EndOperation(OperationKind: TVTOperationKind);
     procedure EnsureNodeFocused(); virtual;
     function FindNodeInSelection(P: PVirtualNode; var Index: Integer; LowBound, HighBound: Integer): Boolean; virtual;
@@ -2961,14 +2760,14 @@ type
     procedure GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex); virtual;
     function GetImageSize(Node: PVirtualNode; Kind: TVTImageKind = TVTImageKind.ikNormal; Column: TColumnIndex = 0; IncludePadding: Boolean = True): TSize; virtual;
     function GetNodeImageSize(Node: PVirtualNode): TSize; virtual; deprecated 'Use GetImageSize instead';
-    function GetMaxRightExtend: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}; virtual;
+    function GetMaxRightExtend: TDimension; virtual;
 {$IFDEF VT_VCL}	
     procedure GetNativeClipboardFormats(var Formats: TFormatEtcArray); virtual;
 {$ENDIF}
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
     function GetTreeFromDataObject(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}): TBaseVirtualTree; virtual;
-    procedure HandleHotTrack(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure HandleHotTrack(X, Y: TDimension); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
 {$IFDEF VT_FMX}
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
@@ -3004,14 +2803,14 @@ type
     procedure PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVTImageInfo; Selected: Boolean); virtual;
     procedure PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean); virtual;
     procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect; ButtonX,
-      ButtonY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; BidiMode: TBiDiMode); virtual;
-    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const LineImage: TLineImage); virtual;
-    procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const SelectionRect: TRect;
+      ButtonY: TDimension; BidiMode: TBiDiMode); virtual;
+    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: TDimension; const LineImage: TLineImage); virtual;
+    procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: TDimension; const SelectionRect: TRect;
       TargetRect: TRect); virtual;
 {$IFDEF VT_VCL}
     procedure PanningWindowProc(var Message: TMessage); virtual;
 {$ENDIF}
-    procedure PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: TDimension); virtual;
     function ReadChunk(Stream: TStream; Version: Integer; Node: PVirtualNode; ChunkType,
       ChunkSize: Integer): Boolean; virtual;
     procedure ReadNode(Stream: TStream; Version: Integer; Node: PVirtualNode); virtual;
@@ -3026,7 +2825,7 @@ type
     procedure SelectNodes(StartNode, EndNode: PVirtualNode; AddOnly: Boolean); virtual;
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); virtual;
     procedure SetFocusedNodeAndColumn(Node: PVirtualNode; Column: TColumnIndex); virtual;
-    procedure SetRangeX(value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+    procedure SetRangeX(value: TDimension);
     procedure SkipNode(Stream: TStream); virtual;
     procedure StartOperation(OperationKind: TVTOperationKind);
     procedure StartWheelPanning(Position: TPoint); virtual;
@@ -3064,10 +2863,10 @@ type
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
     property Background: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF} read FBackground write SetBackground;
     property BackGroundImageTransparent: Boolean read FBackGroundImageTransparent write SetBackGroundImageTransparent default False;
-    property BackgroundOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} index 0 read FBackgroundOffsetX write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
-    property BackgroundOffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} index 1 read FBackgroundOffsetY write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
-    property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
-    property BottomSpace: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FBottomSpace write SetBottomSpace{$IFDEF VT_VCL} default 0{$ENDIF};
+    property BackgroundOffsetX: TDimension index 0 read FBackgroundOffsetX write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
+    property BackgroundOffsetY: TDimension index 1 read FBackgroundOffsetY write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
+    property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default TFormBorderStyle.bsSingle;
+    property BottomSpace: TDimension read FBottomSpace write SetBottomSpace{$IFDEF VT_VCL} default 0{$ENDIF};
     property ButtonFillMode: TVTButtonFillMode read FButtonFillMode write SetButtonFillMode default fmTreeColor;
     property ButtonStyle: TVTButtonStyle read FButtonStyle write SetButtonStyle default bsRectangle;
     property ChangeDelay: Cardinal read FChangeDelay write FChangeDelay default 0;
@@ -3076,7 +2875,7 @@ type
     property Colors: TVTColors read FColors write SetColors;
     property CustomCheckImages: TCustomImageList read FCustomCheckImages write SetCustomCheckImages;
     property DefaultHintKind: TVTHintKind read GetDefaultHintKind;
-    property DefaultNodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FDefaultNodeHeight write SetDefaultNodeHeight{$IFDEF VT_VCL} default 18{$ENDIF};
+    property DefaultNodeHeight: TDimension read FDefaultNodeHeight write SetDefaultNodeHeight{$IFDEF VT_VCL} default 18{$ENDIF};
     property DefaultPasteMode: TVTNodeAttachMode read FDefaultPasteMode write FDefaultPasteMode default amAddChildLast;
     property DragHeight: Integer read FDragHeight write FDragHeight default 350;
     property DragImageKind: TVTDragImageKind read FDragImageKind write FDragImageKind default diComplete;
@@ -3089,7 +2888,7 @@ type
       default smDottedRectangle;
     property EditColumn: TColumnIndex read FEditColumn write FEditColumn;
     property EditDelay: Cardinal read FEditDelay write FEditDelay default 1000;
-    property EffectiveOffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FEffectiveOffsetX;
+    property EffectiveOffsetX: TDimension read FEffectiveOffsetX;
     property HeaderRect: TRect read FHeaderRect;
     property HintMode: TVTHintMode read FHintMode write FHintMode default hmDefault;
     property HintData: TVTHintData read FHintData write FHintData;
@@ -3099,13 +2898,13 @@ type
     property IncrementalSearchDirection: TVTSearchDirection read FSearchDirection write FSearchDirection default sdForward;
     property IncrementalSearchStart: TVTSearchStart read FSearchStart write FSearchStart default ssFocusedNode;
     property IncrementalSearchTimeout: Cardinal read FSearchTimeout write FSearchTimeout default 1000;
-    property Indent: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FIndent write SetIndent{$IFDEF VT_VCL} default 18{$ENDIF};
+    property Indent: TDimension read FIndent write SetIndent{$IFDEF VT_VCL} default 18{$ENDIF};
     property LastClickPos: TPoint read FLastClickPos write FLastClickPos;
     property LastDropMode: TDropMode read FLastDropMode write FLastDropMode;
     property LastHintRect: TRect read FLastHintRect write FLastHintRect;
     property LineMode: TVTLineMode read FLineMode write SetLineMode default lmNormal;
     property LineStyle: TVTLineStyle read FLineStyle write SetLineStyle default lsDotted;
-    property Margin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FMargin write SetMargin{$IFDEF VT_VCL} default 4{$ENDIF};
+    property Margin: TDimension read FMargin write SetMargin{$IFDEF VT_VCL} default 4{$ENDIF};
     property NextNodeToSelect: PVirtualNode read FNextNodeToSelect; // Next tree node that we would like to select if the current one gets deleted
     property NodeAlignment: TVTNodeAlignment read FNodeAlignment write SetNodeAlignment default naProportional;
     property NodeDataSize: Integer read FNodeDataSize write SetNodeDataSize default -1;
@@ -3114,14 +2913,14 @@ type
     property HotPlusBM: TBitmap read FHotPlusBM;
     property MinusBM: TBitmap read FMinusBM;
     property PlusBM: TBitmap read FPlusBM;
-    property RangeX: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
-    property RangeY: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read FRangeY;
+    property RangeX: TDimension read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
+    property RangeY: TDimension read FRangeY;
     property RootNodeCount: Cardinal read GetRootNodeCount write SetRootNodeCount default 0;
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
     property SelectionBlendFactor: Byte read FSelectionBlendFactor write FSelectionBlendFactor default 128;
     property SelectionCurveRadius: Cardinal read FSelectionCurveRadius write SetSelectionCurveRadius default 0;
     property StateImages: TCustomImageList read FStateImages write SetStateImages;
-    property TextMargin: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FTextMargin write SetTextMargin{$IFDEF VT_VCL} default 4{$ENDIF};
+    property TextMargin: TDimension read FTextMargin write SetTextMargin{$IFDEF VT_VCL} default 4{$ENDIF};
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
     property SyncCheckstateWithSelection[Node: PVirtualNode]: Boolean read GetSyncCheckstateWithSelection;
@@ -3326,7 +3125,7 @@ type
     function GetFirstVisibleChildNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetFirstVisibleNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): PVirtualNode;
-    procedure GetHitTestInfoAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var HitInfo: THitInfo); virtual;
+    procedure GetHitTestInfoAt(X, Y: TDimension; Relative: Boolean; var HitInfo: THitInfo); virtual;
     function GetLast(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastInitialized(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -3338,7 +3137,7 @@ type
     function GetLastVisibleChildNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetLastVisibleNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): PVirtualNode;
-    function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): TDimension; virtual;
     function GetNext(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetNextChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
       ConsiderChildrenAbove: Boolean = False): PVirtualNode; overload;
@@ -3356,8 +3155,8 @@ type
     function GetNextVisibleSibling(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetNextVisibleSiblingNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetNodeAt(const P: TPoint): PVirtualNode; overload; inline;
-    function GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode; overload;
-    function GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var NodeTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode; overload;
+    function GetNodeAt(X, Y: TDimension): PVirtualNode; overload;
+    function GetNodeAt(X, Y: TDimension; Relative: Boolean; var NodeTop: TDimension): PVirtualNode; overload;
     function GetNodeData(Node: PVirtualNode): Pointer; overload;
     function GetNodeData<T>(pNode: PVirtualNode): T; overload; inline;
     function GetSelectedData<T>(): TArray<T>; overload;
@@ -3366,7 +3165,7 @@ type
     function GetFirstSelectedNodeData<T>(): T;
     function GetNodeLevel(Node: PVirtualNode): Cardinal;
     function GetNodeLevelForSelectConstraint(Node: PVirtualNode): integer;
-    function GetOffset(pElement: TVTElement; pNode: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function GetOffset(pElement: TVTElement; pNode: PVirtualNode): TDimension;
     procedure GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffsets; pElement: TVTElement = TVTElement.ofsEndOfClientArea; pColumn: Integer = NoColumn);
     function GetPrevious(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetPreviousChecked(Node: PVirtualNode; State: TCheckState = csCheckedNormal;
@@ -3425,7 +3224,7 @@ type
     procedure ResetNode(Node: PVirtualNode); virtual;
     procedure SaveToFile(const FileName: TFileName);
     procedure SaveToStream(Stream: TStream; Node: PVirtualNode = nil); virtual;
-    function ScaledPixels(pPixels: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    function ScaledPixels(pPixels: TDimension): TDimension;
     function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean; Node: PVirtualNode = nil): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
@@ -3496,11 +3295,11 @@ type
     property IsFiltered[Node: PVirtualNode]: Boolean read GetFiltered write SetFiltered;
     property IsVisible[Node: PVirtualNode]: Boolean read GetVisible write SetVisible;
     property MultiLine[Node: PVirtualNode]: Boolean read GetMultiline write SetMultiline;
-    property NodeHeight[Node: PVirtualNode]: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF} read GetNodeHeight write SetNodeHeight;
+    property NodeHeight[Node: PVirtualNode]: TDimension read GetNodeHeight write SetNodeHeight;
     property NodeParent[Node: PVirtualNode]: PVirtualNode read GetNodeParent write SetNodeParent;
-    property OffsetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FOffsetX write SetOffsetX;
+    property OffsetX: TDimension read FOffsetX write SetOffsetX;
     property OffsetXY: TPoint read GetOffsetXY write SetOffsetXY;
-    property OffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} read FOffsetY write SetOffsetY;
+    property OffsetY: TDimension read FOffsetY write SetOffsetY;
     property OperationCount: Cardinal read FOperationCount;
     property RootNode: PVirtualNode read FRoot;
     property SearchBuffer: string read FSearchBuffer;
@@ -3519,19 +3318,17 @@ type
     property ClientWidth: Single read GetClientWidth;
     property ClientHeight: Single read GetClientHeight;
     property UseRightToLeftAlignment: Boolean read FUseRightToLeftAlignment write FUseRightToLeftAlignment default false;
-    property BevelEdges: TBevelEdges read FBevelEdges write SetBevelEdges default [beLeft, beTop, beRight, beBottom];
-    property BevelInner: TBevelCut index 0 read FBevelInner write SetBevelCut default bvRaised;
-    property BevelOuter: TBevelCut index 1 read FBevelOuter write SetBevelCut default bvLowered;
-    property BevelKind: TBevelKind read FBevelKind write SetBevelKind default bkNone;
+    property BevelEdges: TBevelEdges read FBevelEdges write SetBevelEdges default [TBevelEdge.beLeft, TBevelEdge.beTop, TBevelEdge.beRight, TBevelEdge.beBottom];
+    property BevelInner: TBevelCut index 0 read FBevelInner write SetBevelCut default TBevelCut.bvRaised;
+    property BevelOuter: TBevelCut index 1 read FBevelOuter write SetBevelCut default TBevelCut.bvLowered;
+    property BevelKind: TBevelKind read FBevelKind write SetBevelKind default TBevelKind.bkNone;
     property BevelWidth: TBevelWidth read FBevelWidth write SetBevelWidth default 1;
     property BorderWidth: TBorderWidth read FBorderWidth write SetBorderWidth;
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
     procedure Invalidate();
-{$IFDEF VT_FMX}
     function ClientToScreen(P: TPoint): TPoint;
     function ScreenToClient(P: TPoint): TPoint;
     procedure RecreateWnd;
-{$ENDIF}
 {$ENDIF}
   end;
 
@@ -3737,23 +3534,23 @@ type
     procedure PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer; const Text: string); virtual; // [IPK] - private to protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
-    function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
-    function CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): TDimension; virtual;
+    function CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): TDimension; virtual;
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; override;
     procedure DefineProperties(Filer: TFiler); override;
     function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; override;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
-    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; override;
-    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; override;
+    function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension; override;
+    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension; override;
     procedure DoGetText(var pEventArgs: TVSTGetCellTextEventArgs); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: string): Integer; override;
     procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex;
       TextType: TVSTTextType); virtual;
-    function DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const S: string; Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-      EllipsisWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0): string; virtual;
+    function DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const S: string; Width: TDimension;
+      EllipsisWidth: TDimension = 0): string; virtual;
     procedure DoTextDrawing(var PaintInfo: TVTPaintInfo; const Text: string; CellRect: TRect; DrawFormat: Cardinal); virtual;
     function DoTextMeasuring(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): TSize; virtual;
     function GetOptionsClass: TTreeOptionsClass; override;
@@ -3787,7 +3584,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
     function AddChild(Parent: PVirtualNode; UserData: Pointer = nil): PVirtualNode; override;
-    function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: string = ''): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; virtual;
+    function ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; S: string = ''): TDimension; virtual;
     function ContentToClipboard(Format: Word; Source: TVSTTextSourceType): HGLOBAL;
     procedure ContentToCustom(Source: TVSTTextSourceType);
     function ContentToHTML(Source: TVSTTextSourceType; const Caption: string = ''): String;
@@ -4104,7 +3901,7 @@ type
   protected
     function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
       CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; override;
-    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; override;
+    function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension; override;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     function GetDefaultHintKind: TVTHintKind; override;
 
@@ -4404,9 +4201,7 @@ uses
   System.StrUtils,
 {$IFDEF VT_VCL}
   Vcl.GraphUtil,               // accessibility helper class
-{$ENDIF} 
-  //VirtualTrees.AccessibilityFactory,
-{$IFDEF VT_VCL}
+  VirtualTrees.AccessibilityFactory,
   VirtualTrees.StyleHooks,
 {$ENDIF}  
   VirtualTrees.Classes,
@@ -4458,145 +4253,12 @@ var
     tymed: TYMED_ISTREAM or TYMED_HGLOBAL;
   );
 {$ENDIF}
-{$IFDEF VT_FMX}
-procedure GetTextMetrics(ACanvas: TCanvas; var TM: TTextMetric);
-Var P: TPathData;
-  tx: TTextLayout;
-  R: TRectF;
-begin
-{
-    tmHeight: Single;  //The height (ascent + descent) of characters.
-    tmAscent: Single;  //The ascent (units above the base line) of characters.
-    tmDescent: Single; //The descent (units below the base line) of characters.
-    tmInternalLeading: Single; //The amount of leading (space) inside the bounds set by the tmHeight member. Accent marks and other diacritical characters may occur in this area. The designer may set this member to zero
-    tmExternalLeading: Single; //The amount of extra leading (space) that the application adds between rows. Since this area is outside the font, it contains no marks and is not altered by text output calls in either OPAQUE or TRANSPARENT mode. The designer may set this member to zero.
-    tmAveCharWidth: Single; //The average width of characters in the font (generally defined as the width of the letter x ). This value does not include the overhang required for bold or italic characters.
-    tmMaxCharWidth: Single; //The width of the widest character in the font.
-    tmWeight: Single; //The weight of the font.
-    tmOverhang: Single;
-    tmDigitizedAspectX: Single; //The horizontal aspect of the device for which the font was designed.
-    tmDigitizedAspectY: Single; //The vertical aspect of the device for which the font was designed. The ratio of the tmDigitizedAspectX and tmDigitizedAspectY members is the aspect ratio of the device for which the font was designed.
-    tmFirstChar: WideChar; //The value of the first character defined in the font.
-    tmLastChar: WideChar;  //The value of the last character defined in the font.
-    tmDefaultChar: WideChar; //The value of the character to be substituted for characters not in the font.
-    tmBreakChar: WideChar; //The value of the character that will be used to define word breaks for text justification.
-    tmItalic: Byte; //Specifies an italic font if it is nonzero.
-    tmUnderlined: Byte; //Specifies an underlined font if it is nonzero.
-    tmStruckOut: Byte; //A strikeout font if it is nonzero.
-    tmPitchAndFamily: Byte; //Specifies information about the pitch, the technology, and the family of a physical font.  TMPF_FIXED_PITCH, TMPF_VECTOR, TMPF_TRUETYPE, TMPF_DEVICE
-    tmCharSet: Byte; //The character set of the font. The character set can be one of the following values. ANSI_CHARSET, GREEK_CHARSET....
-}
-  TM.tmExternalLeading:= 0;
-  TM.tmWeight:= 0; //boldness???
-  TM.tmOverhang:= 0;
-  TM.tmDigitizedAspectX:= 0;
-  TM.tmDigitizedAspectY:= 0;
-  TM.tmFirstChar:= 'a'; //???
-  TM.tmLastChar:= 'z'; //???
-  TM.tmDefaultChar:= ' ';
-  TM.tmBreakChar:= ' ';
-  TM.tmItalic:= 0;
-  TM.tmUnderlined:= 0;
-  TM.tmStruckOut:= 0;
-  TM.tmPitchAndFamily:= 0;
-  TM.tmCharSet:= 0;
-
-  tx:= TTextLayoutManager.DefaultTextLayout.Create(ACanvas);
-  P:= TPathData.Create;
-  try
-    tx.Text:= 'W';
-    tx.ConvertToPath(p);
-    R:= P.GetBounds();
-
-    TM.tmHeight:= R.Height;
-    TM.tmMaxCharWidth:= R.Width;
-
-    //------------------------------------
-    tx.Text:= 'Ó';
-    p.Clear;
-    tx.ConvertToPath(p);
-    R:= P.GetBounds();
-    TM.tmInternalLeading:= R.Height - TM.tmHeight;
-
-    //------------------------------------
-    tx.Text:= 'x';
-    p.Clear;
-    tx.ConvertToPath(p);
-    R:= P.GetBounds();
-    TM.tmAscent:= R.Height - TM.tmHeight;
-    TM.tmAveCharWidth:= R.Width;
-
-    //------------------------------------
-    tx.Text:= 'y';
-    p.Clear;
-    tx.ConvertToPath(p);
-    TM.tmDescent:= P.GetBounds().Height - R.Height;
-    TM.tmHeight:= TM.tmHeight + TM.tmDescent;
-  finally
-    FreeAndNil(P);
-    FreeAndNil(tx);
-  end;
-end;
-
-function Rect(ALeft, ATop, ARight, ABottom: Single): TRect;
-begin
-  Result:= RectF(ALeft, ATop, ARight, ABottom);
-end;
-
-function Rect(const ATopLeft, ABottomRight: TPoint): TRect;
-begin
-  Result:= RectF(ATopLeft.X, ATopLeft.Y, ABottomRight.X, ABottomRight.Y);
-end;
-
-function Point(AX, AY: Single): TPoint;
-begin
-  Result.X:= AX;
-  Result.Y:= AY;
-end;
-
-procedure Inc(Var V: Single; OIle: Single=1.0);
-begin
-  V:= V + OIle;
-end;
-
-procedure Dec(Var V: Single; OIle: Single=1.0);
-begin
-  V:= V - OIle;
-end;
-
-function MulDiv(const A, B, C: Single): Single;
-begin
-  Result:= (A * B) / C;
-end;
-
-procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
-begin
-  FillChar(Destination^, Length, Fill);
-end;
-
-procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
-begin
-  FillChar(Destination^, Length, 0);
-end;
-
-procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
-begin
-  Move(Source^, Destination^, Length);
-end;
-
-procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
-begin
-  Move(Source^, Destination^, Length);
-end;
-
-{$ENDIF}
-
 
 type
   // protection against TRect record method that cause problems with with-statements
   TWithSafeRect = record
     case Integer of
-      0: (Left, Top, Right, Bottom: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+      0: (Left, Top, Right, Bottom: TDimension);
       1: (TopLeft, BottomRight: TPoint);
   end;
 
@@ -4611,7 +4273,7 @@ type // streaming support
   // base information about a node
   TBaseChunkBody = packed record
     ChildCount: Cardinal;
-    NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+    NodeHeight: TDimension;
     States: TVirtualNodeStates;
     Align: Byte;
     CheckState: TCheckState;
@@ -6373,7 +6035,7 @@ begin
   else
     BlendMode := bmMasterAlpha;
   with FDragImage do
-    AlphaBlend(Canvas.Handle, FAlphaImage.Canvas.Handle, Rect(0, 0, Width, Height), Point(0, 0), BlendMode,
+    AlphaBlend(Canvas, FAlphaImage.Canvas, Rect(0, 0, Width, Height), Point(0, 0), BlendMode,
       FTransparency, FPostBlendBias);
 
   with FAlphaImage do
@@ -6714,7 +6376,7 @@ begin
       with FDragImage do
         BitBlt(Canvas.Handle, 0, 0, Width, Height, DragImage.Canvas.Handle, 0, 0, SRCCOPY)
     else
-      AlphaBlend(DragImage.Canvas.Handle, FDragImage.Canvas.Handle, Rect(0, 0, Width, Height), Point(0, 0),
+      AlphaBlend(DragImage.Canvas, FDragImage.Canvas, Rect(0, 0, Width, Height), Point(0, 0),
         bmConstantAlpha, 255, FPreBlendBias);
 
     // Create a proper alpha channel also if no fading is required (transparent parts).
@@ -7102,7 +6764,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumn.GetLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TVirtualTreeColumn.GetLeft: TDimension;
 
 begin
   Result := FLeft;
@@ -7265,7 +6927,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumn.SetMargin(Value: TDimension);
 
 begin
   // Compatibility setting for -1.
@@ -7280,7 +6942,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMaxWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumn.SetMaxWidth(Value: TDimension);
 
 begin
   if Value < FMinWidth then
@@ -7291,7 +6953,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMinWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumn.SetMinWidth(Value: TDimension);
 
 begin
   if Value < 0 then
@@ -7404,7 +7066,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetSpacing(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumn.SetSpacing(Value: TDimension);
 
 begin
   if FSpacing <> Value then
@@ -7441,13 +7103,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetWidth(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumn.SetWidth(Value: TDimension);
 
 var
   EffectiveMaxWidth,
   EffectiveMinWidth,
   TotalFixedMaxWidth,
-  TotalFixedMinWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TotalFixedMinWidth: TDimension;
   I: TColumnIndex;
 
 begin
@@ -7505,8 +7167,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.ComputeHeaderLayout({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
-  var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSizeF; var TextBounds: TRect; DrawFormat: Cardinal;
+procedure TVirtualTreeColumn.ComputeHeaderLayout(ACanvas: TCanvas; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
+  var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
   CalculateTextRect: Boolean = False);
 
 // The layout of a column header is determined by a lot of factors. This method takes them all into account and
@@ -7523,7 +7185,7 @@ var
   CurrentAlignment: TAlignment;
   MinLeft,
   MaxRight,
-  TextSpacing: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TextSpacing: TDimension;
   UseText: Boolean;
   R: TRect;
 {$IFDEF VT_VCL}
@@ -7563,7 +7225,7 @@ begin
       begin
         R := Rect(0, 0, 100, 100);
         Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
-        GetThemePartSize(Theme, DC, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, SortGlyphSize);
+        GetThemePartSize(Theme, ACanvas.Handle, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, SortGlyphSize);
         CloseThemeData(Theme);
       end
       else
@@ -7588,7 +7250,7 @@ begin
     if not (coWrapCaption in FOptions) then
     begin
       FCaptionText := FText;
-      GetTextExtentPoint32W({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(FText), Length(FText), TextSize);
+      GetTextExtentPoint32W(ACanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(FText), Length(FText), TextSize);
       Inc(TextSize.cx, 2);
       TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
     end
@@ -7596,9 +7258,9 @@ begin
     begin
       R := Client;
       if FCaptionText = '' then
-        FCaptionText := WrapString({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FText, R, {$IFDEF VT_FMX}false{$ELSE}DT_RTLREADING and DrawFormat <> 0{$ENDIF}, DrawFormat);
+        FCaptionText := WrapString(ACanvas, FText, R, {$IFDEF VT_FMX}false{$ELSE}DT_RTLREADING and DrawFormat <> 0{$ENDIF}, DrawFormat);
 
-      GetStringDrawRect({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FCaptionText, R, DrawFormat);
+      GetStringDrawRect(ACanvas, FCaptionText, R, DrawFormat);
       TextSize.cx := Client.Right - Client.Left;
       TextSize.cy := R.Bottom - R.Top;
       TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
@@ -7840,8 +7502,8 @@ begin
     begin
       // Wrap the column caption if necessary.
       R := TextBounds;
-      FCaptionText := WrapString({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FText, R, {$IFDEF VT_FMX}false{$ELSE}DT_RTLREADING and DrawFormat <> 0{$ENDIF}, DrawFormat);
-      GetStringDrawRect({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, FCaptionText, R, DrawFormat);
+      FCaptionText := WrapString(ACanvas, FText, R, {$IFDEF VT_FMX}false{$ELSE}DT_RTLREADING and DrawFormat <> 0{$ENDIF}, DrawFormat);
+      GetStringDrawRect(ACanvas, FCaptionText, R, DrawFormat);
     end;
   end;
 end;
@@ -7860,7 +7522,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.GetAbsoluteBounds(var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumn.GetAbsoluteBounds(var Left, Right: TDimension);
 
 // Returns the column's left and right bounds in header coordinates, that is, independant of the scrolling position.
 
@@ -8303,7 +7965,7 @@ procedure TVirtualTreeColumns.AdjustAutoSize(CurrentIndex: TColumnIndex; Force: 
 var
   AutoIndex,
   Index: Integer;
-  NewValue, RestWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NewValue, RestWidth: TDimension;
   WasUpdating: Boolean;
 begin
   if Count > 0 then
@@ -8431,24 +8093,24 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.DrawButtonText({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; Caption: string; Bounds: TRect; Enabled, Hot: Boolean;
+procedure TVirtualTreeColumns.DrawButtonText(ACanvas: TCanvas; Caption: string; Bounds: TRect; Enabled, Hot: Boolean;
     DrawFormat: Cardinal; WrapCaption: Boolean);
 
 var
-  TextSpace: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TextSpace: TDimension;
   Size: TSize;
 
 begin
   if not WrapCaption then
   begin
     // Do we need to shorten the caption due to limited space?
-    GetTextExtentPoint32W({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(Caption), Length(Caption), Size);
+    GetTextExtentPoint32W(ACanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, {$IFDEF VT_VCL}PWideChar{$ENDIF}(Caption), Length(Caption), Size);
     TextSpace := Bounds.Right - Bounds.Left;
     if TextSpace < Size.cx then
-      Caption := ShortenString({$IFDEF VT_FMX}ACanvas{$ELSE}DC{$ENDIF}, Caption, TextSpace);
+      Caption := ShortenString(ACanvas, Caption, TextSpace);
   end;
 {$IFDEF VT_VCL}
-  SetBkMode(DC, TRANSPARENT);
+  SetBkMode(ACanvas.Handle, TRANSPARENT);
 {$ENDIF}
   if not Enabled then
     if FHeader.Treeview.VclStyleEnabled then
@@ -8457,8 +8119,8 @@ begin
       ACanvas.Fill.Color:= FHeader.Treeview.FColors.HeaderFontColor;
 	  DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
 {$ELSE}
-      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
-	  Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+      SetTextColor(ACanvas.Handle, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
+	  Winapi.Windows.DrawTextW(ACanvas.Handle, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
 {$ENDIF}
     end
     else
@@ -8468,16 +8130,16 @@ begin
     ACanvas.Fill.Color:= clBtnHighlight;
     DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
 {$ELSE}
-    SetTextColor(DC, ColorToRGB(clBtnHighlight));
-    Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+    SetTextColor(ACanvas.Handle, ColorToRGB(clBtnHighlight));
+    Winapi.Windows.DrawTextW(ACanvas.Handle, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
 {$ENDIF}
     OffsetRect(Bounds, -1, -1);
 {$IFDEF VT_FMX}
     ACanvas.Fill.Color:= clBtnShadow;
     DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
 {$ELSE}
-    SetTextColor(DC, ColorToRGB(clBtnShadow));
-    Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+    SetTextColor(ACanvas.Handle, ColorToRGB(clBtnShadow));
+    Winapi.Windows.DrawTextW(ACanvas.Handle, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
 {$ENDIF}
   end
   else
@@ -8486,18 +8148,18 @@ begin
 {$IFDEF VT_FMX}
       ACanvas.Fill.Color:= FHeader.Treeview.FColors.HeaderHotColor
 {$ELSE}
-      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderHotColor))
+      SetTextColor(ACanvas.Handle, ColorToRGB(FHeader.Treeview.FColors.HeaderHotColor))
 {$ENDIF}
     else
 {$IFDEF VT_FMX}
       ACanvas.Fill.Color:= FHeader.Treeview.FColors.HeaderFontColor;
 {$ELSE}
-      SetTextColor(DC, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
+      SetTextColor(ACanvas.Handle, ColorToRGB(FHeader.Treeview.FColors.HeaderFontColor));
 {$ENDIF}
 {$IFDEF VT_FMX}
     DrawTextW(ACanvas, Caption, Length(Caption), Bounds, DrawFormat);
 {$ELSE}
-    Winapi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
+    Winapi.Windows.DrawTextW(ACanvas.Handle, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
 {$ENDIF}
 
   end;
@@ -8522,7 +8184,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TVirtualTreeColumns.GetColumnAndBounds(P: TPoint; var ColumnLeft, ColumnRight: TDimension;
   Relative: Boolean = True): Integer;
 
 // Returns the column where the mouse is currently in as well as the left and right bound of
@@ -8898,7 +8560,7 @@ procedure TVirtualTreeColumns.UpdatePositions(Force: Boolean = False);
 
 var
   I: Integer;
-  RunningPos: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  RunningPos: TDimension;
 begin
   if not (csDestroying in FHeader.Treeview.ComponentState) and not FNeedPositionsFix and (Force or (UpdateCount = 0)) then
   begin
@@ -8928,16 +8590,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.AnimatedResize(Column: TColumnIndex; NewWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumns.AnimatedResize(Column: TColumnIndex; NewWidth: TDimension);
 
 // Resizes the given column animated by scrolling the window DC.
 
 var
-  OldWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  OldWidth: TDimension;
   {$IFDEF VT_FMX}Canvas: TCanvas{$ELSE}DC: HDC{$ENDIF};
   I: Integer;
   Steps: Integer;
-  DX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  DX: TDimension;
   HeaderScrollRect,
   ScrollRect,
   R: TRect;
@@ -9098,7 +8760,7 @@ function TVirtualTreeColumns.ColumnFromPosition(P: TPoint; Relative: Boolean = T
 
 var
   I: Integer;
-  Sum: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Sum: TDimension;
 begin
   Result := InvalidColumn;
 
@@ -9181,7 +8843,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.GetColumnBounds(Column: TColumnIndex; var Left, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumns.GetColumnBounds(Column: TColumnIndex; var Left, Right: TDimension);
 
 // Returns the left and right bound of the given column. If Column is NoColumn then the entire client width is returned.
 
@@ -9205,7 +8867,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetScrollWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TVirtualTreeColumns.GetScrollWidth: TDimension;
 
 // Returns the average width of all visible, non-fixed columns. If there is no such column the indent is returned.
 
@@ -9406,7 +9068,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetVisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TVirtualTreeColumns.GetVisibleFixedWidth: TDimension;
 
 // Determines the horizontal space all visible and fixed columns occupy.
 
@@ -9465,13 +9127,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.PaintHeader({$IFDEF VT_FMX}ACanvas: TCanvas{$ELSE}DC: HDC{$ENDIF}; R: TRect; HOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVirtualTreeColumns.PaintHeader(ACanvas: TCanvas; R: TRect; HOffset: TDimension);
 
 // Backward compatible header paint method. This method takes care of visually moving floating columns
 
 var
-  VisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  VisibleFixedWidth: TDimension;
+  RTLOffset: TDimension;
 
   procedure PaintFixedArea;
   begin
@@ -9518,14 +9180,14 @@ begin
       , 1.0
       , false);
 {$ELSE}
-    BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
+    BitBlt(ACanvas.Handle, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
 {$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumns.PaintHeader(TargetCanvas: TCanvas; R: TRect; const Target: TPoint;
-  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0);
+  RTLOffset: TDimension = 0);
 
 // Main paint method to draw the header.
 // This procedure will paint the a slice (given in R) out of HeaderRect into TargetCanvas starting at position Target.
@@ -9647,7 +9309,7 @@ var
   // this procedure is called.
 
   var
-    Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    Y: TDimension;
     SavedDC: Integer;
     ColCaptionText: string;
     ColImageInfo: TVTImageInfo;
@@ -9784,7 +9446,7 @@ var
         end;
         if UseRightToLeftReading then
           DrawFormat := DrawFormat + DT_RTLREADING;
-        ComputeHeaderLayout(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, PaintRectangle, ShowHeaderGlyph, ShowSortGlyph, GlyphPos,
+        ComputeHeaderLayout(TargetCanvas, PaintRectangle, ShowHeaderGlyph, ShowSortGlyph, GlyphPos,
           SortGlyphPos, SortGlyphSize, TextRectangle, DrawFormat);
 
         // Move glyph and text one pixel to the right and down to simulate a pressed button.
@@ -9814,7 +9476,7 @@ var
           if not FCheckBox then
           begin
             ColImageInfo.Images := Images;
-            Images.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(GlyphPos.X, GlyphPos.Y, GlyphPos.X+16, GlyphPos.Y+16){$ELSE}GlyphPos.X, GlyphPos.Y({$ENDIF}, FImageIndex{$IFDEF VT_VCL}, IsEnabled{$ENDIF}); //TODO: 16px Image!!!
+            Images.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(GlyphPos.X, GlyphPos.Y, GlyphPos.X+16, GlyphPos.Y+16){$ELSE}GlyphPos.X, GlyphPos.Y{$ENDIF}, FImageIndex{$IFDEF VT_VCL}, IsEnabled{$ENDIF}); //TODO: 16px Image!!!
           end
           else
           begin
@@ -9851,7 +9513,7 @@ var
           else
             DrawHot := (IsHoverIndex and (hoHotTrack in FHeader.FOptions) and not(tsUseThemes in FHeader.Treeview.FStates));
           if not(hpeText in ActualElements) and (Length(Text) > 0) then
-            DrawButtonText(TargetCanvas{$IFDEF VT_VCL}.Handle{$ENDIF}, ColCaptionText, TextRectangle, IsEnabled, DrawHot, DrawFormat, WrapCaption);
+            DrawButtonText(TargetCanvas, ColCaptionText, TextRectangle, IsEnabled, DrawHot, DrawFormat, WrapCaption);
 
         // sort glyph
         if not (hpeSortGlyph in ActualElements) and ShowSortGlyph then
@@ -9913,7 +9575,7 @@ var
 
 var
   TargetRect: TRect;
-  MaxX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  MaxX: TDimension;
 begin
   if IsRectEmpty(R) then
     Exit;
@@ -9969,7 +9631,7 @@ begin
     // TargetRect.Right will be set in the loop
 
     ShowRightBorder := (FHeader.Style = hsThickButtons) or not (hoAutoResize in FHeader.FOptions) or
-      (FHeader.Treeview.BevelKind = bkNone);
+      (FHeader.Treeview.BevelKind = TBevelKind.bkNone);
 
     // Now go for each button.
     while (Run > NoColumn) and (TargetRect.Left < MaxX) do
@@ -10022,7 +9684,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.TotalWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TVirtualTreeColumns.TotalWidth: TDimension;
 
 var
   LastColumn: TColumnIndex;
@@ -10181,7 +9843,7 @@ end;
 procedure TVTHeader.FontChanged(Sender: TObject);
 var
   I: Integer;
-  lMaxHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  lMaxHeight: TDimension;
 begin
   if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then
   begin
@@ -10267,7 +9929,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetDefaultHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVTHeader.SetDefaultHeight(Value: TDimension);
 
 begin
   if Value < FMinHeight then
@@ -10291,13 +9953,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVTHeader.SetHeight(Value: TDimension);
 
 var
   RelativeMaxHeight,
   RelativeMinHeight,
   EffectiveMaxHeight,
-  EffectiveMinHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  EffectiveMinHeight: TDimension;
 
 begin
   if not TreeView.HandleAllocated then
@@ -10392,7 +10054,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetMaxHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVTHeader.SetMaxHeight(Value: TDimension);
 
 begin
   if Value < FMinHeight then
@@ -10403,7 +10065,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetMinHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVTHeader.SetMinHeight(Value: TDimension);
 
 begin
   if Value < 0 then
@@ -10519,7 +10181,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.ChangeScale(M, D: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVTHeader.ChangeScale(M, D: TDimension);
 var
   I: Integer;
 begin
@@ -10545,8 +10207,8 @@ function TVTHeader.DetermineSplitterIndex(P: TPoint): Boolean;
 //       columns possible.
 
 var
-  VisibleFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  SplitPoint: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  VisibleFixedWidth: TDimension;
+  SplitPoint: TDimension;
 
   //--------------- local function --------------------------------------------
 
@@ -10792,7 +10454,7 @@ var
   // optimized drag image move support
   ClientP: TPoint;
   Left,
-  Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Right: TDimension;
   NeedRepaint: Boolean; // True if the screen needs an update (changed drop target or drop side)
 
 begin
@@ -11488,7 +11150,7 @@ var
   Image: TBitmap;
   ImagePos: TPoint;
   DragColumn: TVirtualTreeColumn;
-  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  RTLOffset: TDimension;
 
 begin
   // Determine initial position of drag image (screen coordinates).
@@ -11576,7 +11238,7 @@ procedure TVTHeader.RescaleHeader;
 var
   FixedWidth,
   MaxFixedWidth,
-  MinFixedWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  MinFixedWidth: TDimension;
 
   //--------------- local function --------------------------------------------
 
@@ -12093,8 +11755,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTHeader.ResizeColumns(ChangeBy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
-  Options: TVTColumnOptions = [coVisible]): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TVTHeader.ResizeColumns(ChangeBy: TDimension; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
+  Options: TVTColumnOptions = [coVisible]): TDimension;
 
 // Distribute the given width change to a range of columns. A 'fair' way is used to distribute ChangeBy to the columns,
 // while ensuring that everything that can be distributed will be distributed.
@@ -12104,9 +11766,9 @@ var
   I: TColumnIndex;
   ColCount,
   Sign: Integer;
-  ToGo, MaxDelta, Difference, Rest: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  ToGo, MaxDelta, Difference, Rest: TDimension;
   Constraints,
-  Widths: array of {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Widths: array of TDimension;
   BonusPixel: Boolean;
 
   //--------------- local functions -------------------------------------------
@@ -12133,7 +11795,7 @@ var
 
   //---------------------------------------------------------------------------
 
-  function ChangeWidth(Column: TColumnIndex; Delta: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  function ChangeWidth(Column: TColumnIndex; Delta: TDimension): TDimension;
 
   begin
     if Delta > 0 then
@@ -12151,7 +11813,7 @@ var
   function ReduceConstraints: Boolean;
 
   var
-    MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    MaxWidth: TDimension;
     MaxReserveCol,
     Column: TColumnIndex;
 
@@ -12677,6 +12339,7 @@ begin
   InitializeGlobalStructures();
 
   inherited;
+  dummyCanvas:= TCanvas.Create;
 {$IFDEF VT_FMX}
   FHandleAllocated:= true;
   FUseRightToLeftAlignment:= false;
@@ -12686,10 +12349,10 @@ begin
   FTextMargin:= 4;
   FDefaultNodeHeight:= 18; //???
   FIndent:= 18; //???
-  FBevelEdges:= [beLeft, beTop, beRight, beBottom];
-  FBevelInner:= bvRaised;
-  FBevelOuter:= bvLowered;
-  FBevelKind:= bkNone;
+  FBevelEdges:= [TBevelEdge.beLeft, TBevelEdge.beTop, TBevelEdge.beRight, TBevelEdge.beBottom];
+  FBevelInner:= TBevelCut.bvRaised;
+  FBevelOuter:= TBevelCut.bvLowered;
+  FBevelKind:= TBevelKind.bkNone;
   FBevelWidth:= 1;
   FBorderWidth:= 0;  
 {$ELSE}
@@ -12723,7 +12386,7 @@ begin
   FSelectedHotPlusBM := TBitmap.Create;
   FSelectedHotMinusBM := TBitmap.Create;
 
-  FBorderStyle := bsSingle;
+  FBorderStyle := TFormBorderStyle.bsSingle;
   FButtonStyle := bsRectangle;
   FButtonFillMode := fmTreeColor;
 
@@ -12865,6 +12528,8 @@ begin
   FSelectedHotPlusBM.Free;
   FSelectedHotMinusBM.Free;
 
+  FreeAndNil(dummyCanvas);
+
   inherited;
 end;
 
@@ -12898,12 +12563,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean = False);
+procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: TDimension; Relative: Boolean = False);
 
 // Sets a node's total height to the given value and recursively adjusts the parent's total height.
 
 var
-  Difference: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Difference: TDimension;
   Run: PVirtualNode;
 
 begin
@@ -12950,7 +12615,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode;
-  var VAlign, VButtonAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+  var VAlign, VButtonAlign: TDimension);
 
 // Calculates the vertical alignment of the given node and its associated expand/collapse button during
 // a node paint cycle depending on the required node alignment style.
@@ -13158,7 +12823,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment;
+function TBaseVirtualTree.CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment;
   OldRect, NewRect: TRect): Boolean;
 
 // Helper routine used when a draw selection takes place. This version handles left-to-right directionality.
@@ -13173,17 +12838,17 @@ var
   TextLeft,
   CurrentTop,
   CurrentRight,
-  NextTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NextTop: TDimension;
   NextColumn,
   Dummy: Integer;
 {$IFDEF VT_FMX}
   DummySingle: Single;
 {$ENDIF}
-  MinY, MaxY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  LabelOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  MinY, MaxY: TDimension;
+  LabelOffset: TDimension;
   IsInOldRect,
   IsInNewRect: Boolean;
-  NodeWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NodeWidth: TDimension;
 
   // quick check variables for various parameters
   DoSwitch,
@@ -13312,7 +12977,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment;
+function TBaseVirtualTree.CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment;
   OldRect, NewRect: TRect): Boolean;
 
 // Helper routine used when a draw selection takes place. This version handles right-to-left directionality.
@@ -13332,7 +12997,7 @@ var
   CheckOffset,
   CurrentTop,
   CurrentLeft,  
-  MinY, MaxY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  MinY, MaxY: TDimension;
 
 {$IFDEF VT_FMX}
   DummySingle: Single;
@@ -13564,7 +13229,7 @@ begin
 {$IFDEF VT_FMX}
               DrawRect(RectF(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, AllCorners, 1.0);
 {$ELSE}
-              DrawRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius);
+              RoundRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius);
 {$ENDIF}			
           end
           else
@@ -13651,7 +13316,7 @@ procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H,
 
 var
   HalfWidth,
-  TargetX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TargetX: TDimension;
 
 begin
   HalfWidth := FIndent {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
@@ -13704,7 +13369,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.FindInPositionCache(Node: PVirtualNode; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode;
+function TBaseVirtualTree.FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode;
 
 // Looks through the position cache and returns the node whose top position is the largest one which is smaller or equal
 // to the position of the given node.
@@ -13737,7 +13402,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.FindInPositionCache(Position: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}; var CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF}): PVirtualNode;
+function TBaseVirtualTree.FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode;
 
 // Looks through the position cache and returns the node whose top position is the largest one which is smaller or equal
 // to the given vertical position.
@@ -14009,7 +13674,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): TDimension;
 
 begin
   if Assigned(Node) and (Node <> FRoot) then
@@ -14041,7 +13706,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetOffset(pElement: TVTElement; pNode: PVirtualNode): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TBaseVirtualTree.GetOffset(pElement: TVTElement; pNode: PVirtualNode): TDimension;
 // Calculates the offset of the given element
 var
   lOffsets: TVTOffsets;
@@ -14116,7 +13781,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetRangeX: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+function TBaseVirtualTree.GetRangeX: TDimension;
 begin
   Result := Max(0, FRangeX);
 end;
@@ -14154,7 +13819,7 @@ end;
 function TBaseVirtualTree.GetTopNode: PVirtualNode;
 
 var
-  Dummy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Dummy: TDimension;
 
 begin
   Result := GetNodeAt(0, 0, True, Dummy);
@@ -14276,7 +13941,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.HandleDrawSelection(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean;
+function TBaseVirtualTree.HandleDrawSelection(X, Y: TDimension): Boolean;
 
 // Handles multi-selection with a focus rectangle.
 // Result is True if something changed in selection.
@@ -14289,7 +13954,7 @@ var
 
   // limits of a node and its text
   NodeLeft,
-  NodeRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NodeRight: TDimension;
 
   // alignment and directionality
   CurrentBidiMode: TBidiMode;
@@ -14803,7 +14468,7 @@ begin
                       if FButtonStyle = bsTriangle then
                       begin
                         FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
-                        FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
+                        FMinusBM.Canvas.{$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := clBlack;
                         FMinusBM.Canvas.{$IFDEF VT_FMX}DrawPolygon{$ELSE}Polygon{$ENDIF}([Point(0, 2), Point(8, 2), Point(4, 6)]{$IFDEF VT_FMX}, 1.0{$ENDIF});
                       end
                         else
@@ -15000,8 +14665,6 @@ begin
     DeleteObject(PatternBitmap);
 {$ENDIF}
   end;
-  FMinusBM.SaveToFile('R:\Minus.png');
-  FPlusBM.SaveToFile('R:\Plus.png');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15059,7 +14722,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetBackgroundOffset(const Index: Integer; const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.SetBackgroundOffset(const Index: Integer; const Value: TDimension);
 
 begin
   case Index of
@@ -15117,7 +14780,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetBottomSpace(const Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+procedure TBaseVirtualTree.SetBottomSpace(const Value: TDimension);
 
 begin
   if FBottomSpace <> Value then
@@ -15270,7 +14933,7 @@ var
   Index: Cardinal;
   Child: PVirtualNode;
   Count: Integer;
-  NewHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NewHeight: TDimension;
 begin
   if not (toReadOnly in FOptions.FMiscOptions) then
   begin
@@ -15429,7 +15092,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetDefaultNodeHeight(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+procedure TBaseVirtualTree.SetDefaultNodeHeight(Value: TDimension);
 
 begin
   if Value = 0 then
@@ -15437,11 +15100,11 @@ begin
   if FDefaultNodeHeight <> Value then
   begin
 {$IFDEF VT_FMX}
-    Inc(FRoot.TotalHeight, (Value) - (FDefaultNodeHeight));
-    Inc(FRoot.NodeHeight, (Value) - (FDefaultNodeHeight));
+    Inc(FRoot.TotalHeight, Value - FDefaultNodeHeight);
+    Inc(FRoot.NodeHeight, Value - FDefaultNodeHeight);
 {$ELSE}
-    Inc(Integer(FRoot.TotalHeight), Integer(Value) - Integer(FDefaultNodeHeight));
-    Inc(SmallInt(FRoot.NodeHeight), Integer(Value) - Integer(FDefaultNodeHeight));
+    Inc(FRoot.TotalHeight, Value - FDefaultNodeHeight);
+    Inc(FRoot.NodeHeight, Value - FDefaultNodeHeight);
 {$ENDIF}
     FDefaultNodeHeight := Value;
     InvalidateCache;
@@ -15712,7 +15375,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetIndent(Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+procedure TBaseVirtualTree.SetIndent(Value: TDimension);
 
 begin
   if FIndent <> Value then
@@ -15758,7 +15421,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.SetMargin(Value: TDimension);
 
 begin
   if FMargin <> Value then
@@ -15858,10 +15521,10 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetNodeHeight(Node: PVirtualNode; Value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+procedure TBaseVirtualTree.SetNodeHeight(Node: PVirtualNode; Value: TDimension);
 
 var
-  Difference: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Difference: TDimension;
 
 begin
   if Assigned(Node) and (Node <> FRoot) and (Node.NodeHeight <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
@@ -15903,7 +15566,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetOffsetX(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.SetOffsetX(const Value: TDimension);
 
 begin
   DoSetOffsetXY(Point(Value, FOffsetY), DefaultScrollUpdateFlags);
@@ -15919,7 +15582,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetOffsetY(const Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.SetOffsetY(const Value: TDimension);
 
 begin
   DoSetOffsetXY(Point(FOffsetX, Value), DefaultScrollUpdateFlags);
@@ -15935,7 +15598,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetRangeX(value: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF});
+procedure TBaseVirtualTree.SetRangeX(value: TDimension);
 begin
   FRangeX := value;
 end;
@@ -16072,7 +15735,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetTextMargin(Value: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.SetTextMargin(Value: TDimension);
 
 begin
   if FTextMargin <> Value then
@@ -16220,7 +15883,7 @@ end;
 
 // ----------------------------------------------------------------------------------------------------------------------
 procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF};
-  DrawBitmap: TBitmap; DrawBitmapWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; DrawBitMapHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; ABkgcolor: TColor);
+  DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
 const
   DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
 
@@ -16264,7 +15927,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRectF; aBkgColor: TColor);
+procedure TBaseVirtualTree.StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it stays static in the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -18662,7 +18325,10 @@ begin
     DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
     if DC <> 0 then
       try
-        FHeader.FColumns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
+        begin
+          dummyCanvas.Handle:= DC;
+          FHeader.FColumns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
+        end;
     finally
       ReleaseDC(Handle, DC);
     end;
@@ -18683,11 +18349,13 @@ procedure TBaseVirtualTree.WMPrint(var Message: TWMPrint);
 
 // This message is sent to request that the tree draws itself to a given device context. This includes not only
 // the client area but also the non-client area (header!).
-
 begin
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
-    Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
+    begin
+      dummyCanvas.Handle:= Message.DC;
+      Header.Columns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
+    end;
 
   inherited;
 end;
@@ -19108,7 +18776,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustPanningCursor(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.AdjustPanningCursor(X, Y: TDimension);
 
 // Triggered by a mouse move when wheel panning/scrolling is active.
 // Loads the proper cursor which indicates into which direction scrolling is done.
@@ -19350,13 +19018,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CalculateSelectionRect(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): Boolean;
+function TBaseVirtualTree.CalculateSelectionRect(X, Y: TDimension): Boolean;
 
 // Recalculates old and new selection rectangle given that X, Y are new mouse coordinates.
 // Returns True if there was a change since the last call.
 
 var
-  MaxValue: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  MaxValue: TDimension;
 
 begin
   if tsDrawSelecting in FStates then
@@ -19609,13 +19277,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ComputeRTLOffset(ExcludeScrollBar: Boolean): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TBaseVirtualTree.ComputeRTLOffset(ExcludeScrollBar: Boolean): TDimension;
 
 // Computes the horizontal offset needed when all columns are automatically right aligned (in RTL bidi mode).
 // ExcludeScrollBar determines if the left-hand vertical scrollbar is to be included (if visible) or not.
 
 var
-  HeaderWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  HeaderWidth: TDimension;
   ScrollBarVisible: Boolean;
 begin
   ScrollBarVisible := ({$IFDEF VT_VCL}Integer{$ENDIF}(FRangeY) > ClientHeight) and (ScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth]);
@@ -19895,7 +19563,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+procedure TBaseVirtualTree.DetermineHitPositionLTR(var HitInfo: THitInfo; Offset, Right: TDimension;
   Alignment: TAlignment);
 
 // This method determines the hit position within a node with left-to-right orientation.
@@ -19904,7 +19572,7 @@ var
   MainColumnHit: Boolean;
   lIndent,
   TextWidth,
-  ImageOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  ImageOffset: TDimension;
   lOffsets: TVTOffsets;
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
@@ -20006,7 +19674,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Alignment: TAlignment);
+procedure TBaseVirtualTree.DetermineHitPositionRTL(var HitInfo: THitInfo; Offset, Right: TDimension; Alignment: TAlignment);
 
 // This method determines the hit position within a node with right-to-left orientation.
 
@@ -20015,7 +19683,7 @@ var
   Run: PVirtualNode;
   Indent,
   TextWidth,
-  ImageOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  ImageOffset: TDimension;
 
 begin
   MainColumnHit := HitInfo.HitColumn = FHeader.MainColumn;
@@ -20300,7 +19968,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DetermineScrollDirections(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): TScrollDirections;
+function TBaseVirtualTree.DetermineScrollDirections(X, Y: TDimension): TScrollDirections;
 
 // Determines which direction the client area must be scrolled depending on the given position.
 
@@ -20400,7 +20068,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoAutoScroll(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.DoAutoScroll(X, Y: TDimension);
 
 begin
   FScrollDirections := DetermineScrollDirections(X, Y);
@@ -20914,7 +20582,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; const Formats: TFormatArray;
+procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; const Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 
 begin
@@ -21287,7 +20955,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TBaseVirtualTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension;
 
 // Returns the pixel width of extra space occupied by node contents (for example, static text).
 
@@ -21297,7 +20965,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TBaseVirtualTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension;
 
 // Returns the pixel width of a node.
 
@@ -21511,7 +21179,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.DoMeasureItem(TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: TDimension);
 
 begin
   if not (vsInitialized in Node.States) then
@@ -21745,7 +21413,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoScroll(DeltaX, DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.DoScroll(DeltaX, DeltaY: TDimension);
 
 begin
   if Assigned(FOnScroll) then
@@ -21760,8 +21428,8 @@ function TBaseVirtualTree.DoSetOffsetXY(Value: TPoint; Options: TScrollUpdateOpt
 // Returns True if the offset really changed otherwise False is returned.
 
 var
-  DeltaX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  DeltaX: TDimension;
+  DeltaY: TDimension;
 {$IFDEF VT_VCL}
   DWPStructure: HDWP;
 {$ENDIF}
@@ -22109,7 +21777,7 @@ var
   Index: Cardinal;
   CurrentNode,
   Temp: PVirtualNode;
-  CurrentTop: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  CurrentTop: TDimension;
 begin
   EntryCount := 0;
   if not (tsStopValidation in FStates) then
@@ -22199,7 +21867,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; var DragEffect: Integer);
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; var DragEffect: Integer);
 var
   lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
 begin
@@ -22230,7 +21898,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-function TBaseVirtualTree.DragDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; KeyState: Integer; Pt: TPoint;
+function TBaseVirtualTree.DragDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; KeyState: Integer; Pt: TPoint;
   var Effect: Integer): HResult;
 {$IFDEF VT_VCL}
 var
@@ -22435,7 +22103,7 @@ var
   Tree: TBaseVirtualTree;
   LastNode: PVirtualNode;
   DeltaX,
-  DeltaY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  DeltaY: TDimension;
   ScrollOptions: TScrollUpdateOptions;
 
 begin
@@ -22618,7 +22286,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -22642,7 +22310,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; UseSelectedBkColor: Boolean = False);
+procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; UseSelectedBkColor: Boolean = False);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -23009,7 +22677,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetMaxRightExtend(): {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+function TBaseVirtualTree.GetMaxRightExtend(): TDimension;
 
 // Determines the maximum with of the currently visible part of the tree, depending on the length
 // of the node texts. This method is used for determining the horizontal scroll range if no columns are used.
@@ -23017,8 +22685,8 @@ function TBaseVirtualTree.GetMaxRightExtend(): {$IFDEF VT_FMX}Single{$ELSE}Cardi
 var
   Node,
   NextNode: PVirtualNode;
-  TopPosition: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  CurrentWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TopPosition: TDimension;
+  CurrentWidth: TDimension;
 
 begin
   Node := GetNodeAt(0, 0, True, TopPosition);
@@ -23076,7 +22744,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}): TBaseVirtualTree;
+function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}): TBaseVirtualTree;
 
 // Returns the owner/sender of the given data object by means of a special clipboard format
 // or nil if the sender is in another process or no virtual tree at all.
@@ -23110,7 +22778,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.HandleHotTrack(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.HandleHotTrack(X, Y: TDimension);
 
 // Updates the current "hot" node.
 
@@ -24148,7 +23816,7 @@ procedure TBaseVirtualTree.InternalAddFromStream(Stream: TStream; Version: Integ
 var
   Stop: PVirtualNode;
   Index: Integer;
-  LastTotalHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  LastTotalHeight: TDimension;
   WasFullyVisible: Boolean;
 
 begin
@@ -25040,9 +24708,9 @@ procedure TBaseVirtualTree.Paint;
 var
   Window: TRect;
   Target: TPoint;
-  Temp: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Temp: TDimension;
   Options: TVTInternalPaintOptions;
-  RTLOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  RTLOffset: TDimension;
 
 begin
 
@@ -25104,12 +24772,13 @@ end;
 procedure TBaseVirtualTree.PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVTImageInfo; Selected: Boolean);
 
 var
-{$IFDEF VT_VCL}
-  ForegroundColor: COLORREF;   
+{$IFDEF VT_FMX}
+  ForegroundColor: TColor;
+{$ELSE}
+  ForegroundColor: COLORREF;
   Details: TThemedElementDetails;
   Theme: HTHEME;
 {$ENDIF}
-  ForegroundColor: TColor;
   R: TRect;
   lSize: TSize;
 begin
@@ -25290,11 +24959,11 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect;
-  ButtonX, ButtonY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; BidiMode: TBiDiMode);
+  ButtonX, ButtonY: TDimension; BidiMode: TBiDiMode);
 
 var
   Bitmap: TBitmap;
-  XPos: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  XPos: TDimension;
   IsHot: Boolean;
   IsSelected : boolean;
 {$IFDEF VT_VCL}
@@ -25365,12 +25034,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const LineImage: TLineImage);
+procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: TDimension; const LineImage: TLineImage);
 
 var
   I: Integer;
   XPos,
-  Offset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Offset: TDimension;
   NewStyles: TLineImage;
 begin
   NewStyles := nil;
@@ -25447,7 +25116,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintSelectionRectangle(Target: TCanvas; WindowOrgX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; const SelectionRect: TRect;
+procedure TBaseVirtualTree.PaintSelectionRectangle(Target: TCanvas; WindowOrgX: TDimension; const SelectionRect: TRect;
   TargetRect: TRect);
 
 // Helper routine to draw a selection rectangle in the mode determined by DrawSelectionMode.
@@ -25477,7 +25146,9 @@ begin
     if IntersectRect(BlendRect, OrderRect(SelectionRect), TargetRect) then
     begin
       OffsetRect(BlendRect, -WindowOrgX, 0);
-      AlphaBlend(0, Target.Handle, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
+
+      dummyCanvas.Handle:= 0;
+      AlphaBlend(dummyCanvas, Target, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
         ColorToRGB(FColors.SelectionRectangleBlendColor));
 
       Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.SelectionRectangleBorderColor;
@@ -25518,7 +25189,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: TDimension);
 
 // This method is called immediately before a cell's content is drawn und is responsible to paint selection colors etc.
 {$IFDEF VT_VCL}
@@ -25538,7 +25209,6 @@ const
 
   var
     R: TRect;
-
   begin
     // Take into account any window offset and size limitations in the target bitmap, as this is only as large
     // as necessary and might not cover the whole node. For normal painting this does not matter (because of
@@ -25550,7 +25220,9 @@ const
       R.Left := 0;
     if R.Right > MaxWidth then
       R.Right := MaxWidth;
-    AlphaBlend(0, PaintInfo.Canvas.Handle, R, Point(0, 0), bmConstantAlphaAndColor,
+
+    dummyCanvas.Handle:= 0;
+    AlphaBlend(dummyCanvas, PaintInfo.Canvas, R, Point(0, 0), bmConstantAlphaAndColor,
       FSelectionBlendFactor, ColorToRGB(Color));
   end;
 
@@ -25757,7 +25429,7 @@ function TBaseVirtualTree.ReadChunk(Stream: TStream; Version: Integer; Node: PVi
 type
   TAdvancedVersion2Identifier = packed record
     ChildCount: Cardinal;
-    NodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+    NodeHeight: TDimension;
     States: Word;
     Align: Byte;
     CheckState: TCheckState;
@@ -26653,8 +26325,8 @@ procedure TBaseVirtualTree.UpdateHeaderRect;
 
 var
   OffsetX,
-  OffsetY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  EdgeSize: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  OffsetY: TDimension;
+  EdgeSize: TDimension;
   Size: TSize;
 
 begin
@@ -26667,16 +26339,16 @@ begin
   // ... and bevels.
   OffsetX := BorderWidth;
   OffsetY := BorderWidth;
-  if BevelKind <> bkNone then
+  if BevelKind <> TBevelKind.bkNone then
   begin
     EdgeSize := 0;
-    if BevelInner <> bvNone then
+    if BevelInner <> TBevelCut.bvNone then
       Inc(EdgeSize, BevelWidth);
-    if BevelOuter <> bvNone then
+    if BevelOuter <> TBevelCut.bvNone then
       Inc(EdgeSize, BevelWidth);
-    if beLeft in BevelEdges then
+    if TBevelEdge.beLeft in BevelEdges then
       Inc(OffsetX, EdgeSize);
-    if beTop in BevelEdges then
+    if TBevelEdge.beTop in BevelEdges then
       Inc(OffsetY, EdgeSize);
   end;
 
@@ -26704,7 +26376,7 @@ var
   CurrentAlignment: TAlignment;
   CurrentBidiMode: TBidiMode;
   offsets : TVTOffsets;
-  offset : {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  offset : TDimension;
 
 begin
   if (tsEditing in FStates) and Assigned(FFocusedNode) and
@@ -27288,7 +26960,7 @@ procedure TBaseVirtualTree.AutoScale(isDpiChange: Boolean);
 // isDPIChnage is True, if the DPI of the form has changed. In this case the font may not yet be adapted to this, so do not adjust DefualtNodeHeight.
 
 var
-  lTextHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  lTextHeight: TDimension;
 begin
   if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) and not isDpiChange then
   begin
@@ -27541,7 +27213,7 @@ procedure TBaseVirtualTree.ClearSelection(pFireChangeEvent: Boolean);
 
 var
   Node: PVirtualNode;
-  Dummy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Dummy: TDimension;
   R: TRect;
   Counter: Integer;
 
@@ -27745,7 +27417,7 @@ var
   Run,
   Mark: PVirtualNode;
   LastTop,
-  LastLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  LastLeft: TDimension;
   NewSize: Integer;
   ParentVisible: Boolean;
 
@@ -27839,7 +27511,7 @@ procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode; Reindex: Boolean; Pare
 
 var
   LastTop,
-  LastLeft: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  LastLeft: TDimension;
   LastParent: PVirtualNode;
   WasInSynchMode: Boolean;
 
@@ -28309,15 +27981,15 @@ function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnInde
 
 var
   Temp: PVirtualNode;
-  LeftOffset: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
-  TopOffset: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  LeftOffset: TDimension;
+  TopOffset: TDimension;
   CacheIsAvailable: Boolean;
-  TextWidth: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  TextWidth: TDimension;
   CurrentBidiMode: TBidiMode;
   CurrentAlignment: TAlignment;
-  MaxUnclippedHeight: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  MaxUnclippedHeight: TDimension;
   TM: TTextMetric;
-  ExtraVerticalMargin: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  ExtraVerticalMargin: TDimension;
   lOffsets: TVTOffsets;
 begin
   Assert(Assigned(Node), 'Node must not be nil.');
@@ -28882,7 +28554,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var HitInfo: THitInfo);
+procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: TDimension; Relative: Boolean; var HitInfo: THitInfo);
 
 // Determines the node that occupies the specified point or nil if there's none. The parameter Relative determines
 // whether to consider X and Y as being client coordinates (if True) or as being absolute tree coordinates.
@@ -28890,8 +28562,8 @@ procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}In
 
 var
   ColLeft,
-  ColRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  NodeTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  ColRight: TDimension;
+  NodeTop: TDimension;
   InitialColumn,
   NextColumn: TColumnIndex;
   CurrentBidiMode: TBidiMode;
@@ -29210,7 +28882,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TBaseVirtualTree.GetMaxColumnWidth(Column: TColumnIndex; UseSmartColumnWidth: Boolean = False): TDimension;
 
 // This method determines the width of the largest node in the given column.
 // If UseSmartColumnWidth is True then only the visible nodes which are in view will be considered
@@ -29222,7 +28894,7 @@ var
   LastNode,
   NextNode: PVirtualNode;
   TextLeft,
-  CurrentWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  CurrentWidth: TDimension;
   lOffsets: TVTOffsets;
 begin
   if OperationCanceled then
@@ -29877,13 +29549,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode;
+function TBaseVirtualTree.GetNodeAt(X, Y: TDimension): PVirtualNode;
 
 // Overloaded variant of GetNodeAt to easy life of application developers which do not need to have the exact
 // top position returned and always use client coordinates.
 
 var
-  Dummy: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Dummy: TDimension;
 
 begin
   Result := GetNodeAt(X, Y, True, Dummy);
@@ -29896,7 +29568,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; Relative: Boolean; var NodeTop: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): PVirtualNode;
+function TBaseVirtualTree.GetNodeAt(X, Y: TDimension; Relative: Boolean; var NodeTop: TDimension): PVirtualNode;
 
 // This method returns the node that occupies the specified point, or nil if there's none.
 // If Releative is True then X and Y are given in client coordinates otherwise they are considered as being
@@ -29906,7 +29578,7 @@ function TBaseVirtualTree.GetNodeAt(X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$E
 
 var
   AbsolutePos,
-  CurrentPos: {$IFDEF VT_FMX}Single{$ELSE}Cardinal{$ENDIF};
+  CurrentPos: TDimension;
 begin
   if Y < 0 then
     Y := 0;
@@ -31435,7 +31107,7 @@ procedure TBaseVirtualTree.MeasureItemHeight(const Canvas: TCanvas; Node: PVirtu
 // If the height of the given node has not yet been measured then do it now.
 
 var
-  NewNodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NewNodeHeight: TDimension;
 
 begin
   if not (vsHeightMeasured in Node.States) then
@@ -31683,7 +31355,7 @@ var
 
   VAlign,
   IndentSize,
-  ButtonY: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};            // Y position of toggle button within the node's rect
+  ButtonY: TDimension;            // Y position of toggle button within the node's rect
   LineImage: TLineImage;
   PaintInfo: TVTPaintInfo;     // all necessary information about a node to pass to the paint routines
 
@@ -31692,20 +31364,20 @@ var
   SelectionRect,               // ordered rectangle used for drawing the selection focus rect
   ClipRect: TRect;             // area to which the canvas will be clipped when painting a node's content
   NextColumn: TColumnIndex;
-  BaseOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};         // top position of the top node to draw given in absolute tree coordinates
+  BaseOffset: TDimension;         // top position of the top node to draw given in absolute tree coordinates
   NodeBitmap: TBitmap;         // small buffer to draw flicker free
   MaximumRight,                // maximum horizontal target position
-  MaximumBottom: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};      // maximum vertical target position
+  MaximumBottom: TDimension;      // maximum vertical target position
   SelectLevel: Integer;        // > 0 if current node is selected or child/grandchild etc. of a selected node
   FirstColumn: TColumnIndex;   // index of first column which is at least partially visible in the given window
 
   MaxRight,
   ColLeft,
-  ColRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  ColRight: TDimension;
 
   SavedTargetDC: Integer;
-  PaintWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  CurrentNodeHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  PaintWidth: TDimension;
+  CurrentNodeHeight: TDimension;
   lUseSelectedBkColor: Boolean; // determines if the dotted grid lines need to be painted in selection color of background color
 
   CellIsTouchingClientRight: Boolean;
@@ -32408,7 +32080,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF});
+procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF});
 
 // Initiates an image drag operation. HotSpot is the position of the mouse in client coordinates.
 
@@ -32561,7 +32233,7 @@ begin
           LogFont.lfQuality := ANTIALIASED_QUALITY;
           FHeader.Font.Handle := CreateFontIndirect(LogFont);
           ImgRect.Bottom := FHeader.Height;
-          FHeader.FColumns.PaintHeader(Image.Canvas.Handle, ImgRect, 0);
+          FHeader.FColumns.PaintHeader(Image.Canvas, ImgRect, 0);
           FHeader.Font := SaveHeaderFont;
         finally
           SaveHeaderFont.Free;
@@ -32639,7 +32311,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ProcessDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDragObject{$ENDIF}; TargetNode: PVirtualNode; var Effect: Integer;
+function TBaseVirtualTree.ProcessDrop(const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; TargetNode: PVirtualNode; var Effect: Integer;
   Mode: TVTNodeAttachMode): Boolean;
 
 // Recreates the (sub) tree structure serialized into memory and provided by DataObject. The new nodes are attached to
@@ -33118,7 +32790,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ScaledPixels(pPixels: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TBaseVirtualTree.ScaledPixels(pPixels: TDimension): TDimension;
 
    /// Returns the given pixels scaled to the current dpi assuming that we designed at 96dpi (100%)
 begin
@@ -33136,8 +32808,8 @@ function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean; 
 
 var
   ColumnLeft,
-  ColumnRight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
-  NewOffset: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  ColumnRight: TDimension;
+  NewOffset: TDimension;
   R: TRect;
 
 begin
@@ -33500,7 +33172,7 @@ var
   FirstVisible: PVirtualNode;
   HeightDelta,
   StepsR1,
-  StepsR2: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  StepsR2: TDimension;
   Steps: Integer;
   TogglingTree,
   ChildrenInView,
@@ -33519,7 +33191,7 @@ var
 
   var
     R: TRect;
-    S: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+    S: TDimension;
     M: TToggleAnimationMode;
 
   begin
@@ -34775,7 +34447,7 @@ procedure TStringEditLink.SetBounds(R: TRect);
 // Sets the outer bounds of the edit control and the actual edit area in the control.
 
 var
-  lOffset, tOffset, height: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  lOffset, tOffset, height: TDimension;
   offsets : TVTOffsets;
 begin
 {$IFDEF VT_VCL}
@@ -35066,11 +34738,11 @@ procedure TCustomVirtualStringTree.PaintNormalText(var PaintInfo: TVTPaintInfo; 
 //       the node rectangle. The clipping rectangle comprises the entire node (including tree lines, buttons etc.).
 
 var
-  TripleWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  TripleWidth: TDimension;
   R: TRect;
   DrawFormat: Cardinal;
   Size: TSize;
-  Height: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Height: TDimension;
 
 begin
   InitializeTextProperties(PaintInfo);
@@ -35375,7 +35047,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TCustomVirtualStringTree.CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): TDimension;
 
 begin
   Result := 0;
@@ -35391,7 +35063,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.CalculateTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  const Text: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  const Text: string): TDimension;
 
 // Determines the width of the given text.
 
@@ -35483,7 +35155,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex;
-  Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  Canvas: TCanvas = nil): TDimension;
 
 begin
   if not (toShowStaticText in TreeOptions.FStringOptions) then
@@ -35495,7 +35167,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TCustomVirtualStringTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension;
 
 // Returns the text width of the given node in pixels.
 // This width is stored in the node's data member to increase access speed.
@@ -35631,7 +35303,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  const S: string; Width: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}; EllipsisWidth: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF} = 0): string;
+  const S: string; Width: TDimension; EllipsisWidth: TDimension = 0): string;
 
 var
   Done: Boolean;
@@ -35641,7 +35313,7 @@ begin
   if Assigned(FOnShortenString) then
     FOnShortenString(Self, Canvas, Node, Column, S, Width, Result, Done);
   if not Done then
-    Result := ShortenString(Canvas{$IFDEF VT_VCL}.Handle{$ENDIF}, S, Width, EllipsisWidth);
+    Result := ShortenString(Canvas, S, Width, EllipsisWidth);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35878,7 +35550,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualStringTree.ComputeNodeHeight(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
- S: string): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+ S: string): TDimension;
 
 // Default node height calculation for multi line nodes. This method can be used by the application to delegate the
 // computation to the string tree.
@@ -36109,7 +35781,7 @@ procedure TCustomVirtualStringTree.GetTextInfo(Node: PVirtualNode; Column: TColu
 // bounding rectangle around Text.
 
 var
-  NewHeight: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+  NewHeight: TDimension;
   TM: TTextMetric;
 
 begin
@@ -36269,7 +35941,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualDrawTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF};
+function TCustomVirtualDrawTree.DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension;
 
 begin
   Result := 2 * FTextMargin;
@@ -36452,28 +36124,9 @@ begin
   Result := cSortDirectionToInt[Self];
 end;
 
-{ TChangeLink }
-{$IFDEF VT_FMX}
-constructor TChangeLink.Create;
-begin
-  inherited;
-  IgnoreIndex := True;
-  IgnoreImages := True;
-end;
-
-function TChangeLink.GetSender: TCustomImageList;
-begin
-  Result := TCustomImageList(Images);
-end;
-
-procedure TChangeLink.SetSender(const Value: TCustomImageList);
-begin
-  Images := TBaseImageList(Value);
-end;
-{$ENDIF}
 { TVTPaintInfo }
 
-procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
+procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: TDimension);
 // During painting of the main column some coordinates must be adjusted due to the tree lines.
 begin
   ContentRect := CellRect;
