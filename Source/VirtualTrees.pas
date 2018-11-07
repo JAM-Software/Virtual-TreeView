@@ -13042,9 +13042,9 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.FPaintOptions then
-      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}(({$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run)) + 1) * FIndent) + FMargin)
     else
-      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run) * FIndent) + FMargin);
+      Dec(NodeRight, {$IFDEF VT_VCL}Integer{$ENDIF}({$IFDEF VT_VCL}Integer{$ENDIF}(GetNodeLevel(Run)) * FIndent) + FMargin);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
@@ -16826,7 +16826,7 @@ begin
     begin
       Result := 1;
       WheelFactor := WheelDelta / WHEEL_DELTA;
-      if (FRangeY > Cardinal(ClientHeight)) and (not (ssShift in ShiftState)) then
+      if (FRangeY > ClientHeight) and (not (ssShift in ShiftState)) then
       begin
         // Scroll vertically if there's something to scroll...
         if ssCtrl in ShiftState then
@@ -19047,12 +19047,12 @@ begin
   if FNewSelRect.Bottom < 0 then
     FNewSelRect.Bottom := 0;
   MaxValue := ClientWidth;
-  if FRangeX > {$IFDEF VT_VCL}Cardinal{$ENDIF}(MaxValue) then
+  if FRangeX > MaxValue then
     MaxValue := FRangeX;
   if FNewSelRect.Right > MaxValue then
     FNewSelRect.Right := MaxValue;
   MaxValue := ClientHeight;
-  if FRangeY > {$IFDEF VT_VCL}Cardinal{$ENDIF}(MaxValue) then
+  if FRangeY > MaxValue then
     MaxValue := FRangeY;
   if FNewSelRect.Bottom > MaxValue then
     FNewSelRect.Bottom := MaxValue;
