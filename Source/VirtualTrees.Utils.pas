@@ -90,11 +90,7 @@ function WrapString(ACanvas: TCanvas; const S: string; const Bounds: TRect; RTL:
 
 // Calculates bounds of a drawing rectangle for the given string
 procedure GetStringDrawRect(ACanvas: TCanvas; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
-{$IFDEF VT_FMX}
-procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
-procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSizeF);
-{--}procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
-{$ENDIF}
+
 // Converts the incoming rectangle so that left and top are always less than or equal to right and bottom.
 function OrderRect(const R: TRect): TRect;
 
@@ -189,14 +185,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-{$IFDEF VT_FMX}
-procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
-begin
-  //TTextLayout. render
-  //DrawFormat: Cardinal{this is windows format - must be converted to FMX}
-  ACanvas.FillText(Bounds, CaptionText, false, 1.0, [], TTextAlign.Leading, TTextAlign.Center);
-end;
-{$ELSE}
+{$IFDEF VT_VCL}
 procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer);
 
 // Set the brush origin of a given canvas.

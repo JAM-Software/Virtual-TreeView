@@ -208,8 +208,42 @@ type
   procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
   
 
+procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSizeF);
+{--}procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
+
 implementation
 uses FMX.TextLayout, System.SysUtils;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+begin
+  //TTextLayout. render
+  //DrawFormat: Cardinal{this is windows format - must be converted to FMX}
+  ACanvas.FillText(Bounds, CaptionText, false, 1.0, [], TTextAlign.Leading, TTextAlign.Center);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
+begin
+  //TODO: DrawEdge
+  //NormalButtonStyle
+  //RaisedButtonStyle
+  //RaisedButtonFlags or RightBorderFlag
+  //NormalButtonFlags or RightBorderFlag
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSizeF);
+begin
+  Size.cx:= ACanvas.TextWidth(Copy(CaptionText, 1, Len));
+  Size.cy:= ACanvas.TextHeight(Copy(CaptionText, 1, Len));
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure GetTextMetrics(ACanvas: TCanvas; var TM: TTextMetric);
 Var P: TPathData;
@@ -290,15 +324,21 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function Rect(ALeft, ATop, ARight, ABottom: Single): TRect;
 begin
   Result:= RectF(ALeft, ATop, ARight, ABottom);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function Rect(const ATopLeft, ABottomRight: TPoint): TRect;
 begin
   Result:= RectF(ATopLeft.X, ATopLeft.Y, ABottomRight.X, ABottomRight.Y);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function Point(AX, AY: Single): TPoint;
 begin
@@ -306,35 +346,49 @@ begin
   Result.Y:= AY;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure Inc(Var V: Single; OIle: Single=1.0);
 begin
   V:= V + OIle;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure Dec(Var V: Single; OIle: Single=1.0);
 begin
   V:= V - OIle;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function MulDiv(const A, B, C: Single): Single;
 begin
   Result:= (A * B) / C;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
 begin
   FillChar(Destination^, Length, Fill);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
 begin
   FillChar(Destination^, Length, 0);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
 begin
   Move(Source^, Destination^, Length);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
 begin
@@ -343,6 +397,8 @@ end;
 
 { TChangeLink }
 
+//----------------------------------------------------------------------------------------------------------------------
+
 constructor TChangeLink.Create;
 begin
   inherited;
@@ -350,10 +406,14 @@ begin
   IgnoreImages := True;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TChangeLink.GetSender: TCustomImageList;
 begin
   Result := TCustomImageList(Images);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TChangeLink.SetSender(const Value: TCustomImageList);
 begin
