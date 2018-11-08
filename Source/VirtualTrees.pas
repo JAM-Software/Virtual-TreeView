@@ -4213,7 +4213,8 @@ uses
   VirtualTrees.Export,
   VirtualTrees.HeaderPopup
 {$IFDEF VT_FMX} 
-  ,FMX.TextLayout
+  , FMX.TextLayout
+  , FMX.Utils
 {$ENDIF}   
 ;
 
@@ -14342,17 +14343,19 @@ procedure TBaseVirtualTree.PrepareBitmaps(NeedButtons, NeedLines: Boolean);
 const
   LineBitsDotted: array [0..8] of Word = ($55, $AA, $55, $AA, $55, $AA, $55, $AA, $55);
   LineBitsSolid: array [0..7] of Word = (0, 0, 0, 0, 0, 0, 0, 0);
-
 var
   PatternBitmap: {$IFDEF VT_FMX}TBitmap{$ELSE}HBITMAP{$ENDIF};
   Bits: Pointer;
   Size: TSize;
 {$IFDEF VT_FMX}
   Theme: Integer;
+  BitmapData: TBitmapData;
+  DestPitch: Integer;
 {$ELSE}
   Theme: HTHEME;
 {$ENDIF}
   R: TRect;
+  bit, line, LineLen: Integer;
 
   //--------------- local function --------------------------------------------
 
@@ -14480,7 +14483,10 @@ begin
                               end;
 {$IFDEF VT_FMX}
                               FMinusBM.Canvas.BeginScene();
+                              FMinusBM.Canvas.Blending:= false;
+                              FMinusBM.Canvas.Stroke.Kind := TBrushKind.bkSolid;
                               FMinusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
+                              FMinusBM.Canvas.FillRect(Rect(1, 1, FMinusBM.Width-1, FMinusBM.Height-1), 0, 0, [], 1.0);
                               FMinusBM.Canvas.DrawRect(Rect(1, 1, FMinusBM.Width-1, FMinusBM.Height-1), 0, 0, [], 1.0);
                               FMinusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
                               FMinusBM.Canvas.DrawLine(Point(2, FMinusBM.Width / 2), Point(FMinusBM.Width - 2, FMinusBM.Width / 2), 1.0);
@@ -14554,8 +14560,11 @@ begin
                               end;
 {$IFDEF VT_FMX}
                               FPlusBM.Canvas.BeginScene();
+                              FPlusBM.Canvas.Blending := false;
+                              FPlusBM.Canvas.Stroke.Kind := TBrushKind.bkSolid;
                               FPlusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
-                              FPlusBM.Canvas.DrawRect(Rect(1, 1, FPlusBM.Width-1, FPlusBM.Height-1), 0, 0, [], 1.0); //###!!! czy jeszcze fill
+                              FPlusBM.Canvas.FillRect(Rect(1, 1, FPlusBM.Width-1, FPlusBM.Height-1), 0, 0, [], 1.0);
+                              FPlusBM.Canvas.DrawRect(Rect(1, 1, FPlusBM.Width-1, FPlusBM.Height-1), 0, 0, [], 1.0);
                               FPlusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
                               FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width / 2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width / 2), 1.0);
                               FPlusBM.Canvas.DrawLine(Point(FPlusBM.Canvas.Width / 2, 2), Point(FPlusBM.Canvas.Width / 2, FPlusBM.Canvas.Width - 2), 1.0);
@@ -14643,16 +14652,48 @@ begin
 {$ENDIF}
     case FLineStyle of
       lsDotted:
-        Bits := @LineBitsDotted;
+        begin
+          Bits := @LineBitsDotted;
+          LineLen:= Length(LineBitsDotted);
+        end;
       lsSolid:
-        Bits := @LineBitsSolid;
+        begin
+          Bits := @LineBitsSolid;
+          LineLen:= Length(LineBitsSolid);
+        end
     else // lsCustomStyle
       Bits := @LineBitsDotted;
       DoGetLineStyle(Bits);
+      LineLen:= Length(LineBitsDotted); //??? what if custom
     end;
 {$IFDEF VT_FMX}
-    PatternBitmap := TBitmap.Create(8, 8);   //###!!! CreateBitmap(8, 8, 1, 1, Bits);
-    FDottedBrush := TBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap);
+    PatternBitmap := TBitmap.Create(8, LineLen);   //###!!! CreateBitmap(8, 8, 1, 1, Bits);
+    PatternBitmap.Clear($00FF00FF); //fully transparent
+    PatternBitmap.Canvas.BeginScene;
+
+    PatternBitmap.Map(TMapAccess.ReadWrite, BitmapData);
+    try
+      {
+      //AlphaColorToPixel PixelToAlphaColor ScanlineToAlphaColor
+      DestPitch := PixelFormatBytes[PatternBitmap.PixelFormat];
+      System.Move(PAlphaColorArray(BitmapData.Data)[0], PAlphaColorArray(Bits)[0], 8 * 4);
+      }
+      for line:= 0 to LineLen-1 do
+        begin
+          for bit:= 0 to 7 do
+            begin
+              if PWordArray(Bits)^[line] and (1 shl bit)=0 then
+                BitmapData.SetPixel(bit, line, clWhite) else
+                BitmapData.SetPixel(bit, line, clBlack);
+            end;
+        end;
+    finally
+      PatternBitmap.UnMap(BitmapData);
+    end;
+
+    PatternBitmap.Canvas.EndScene;
+    PatternBitmap.SaveToFile('R:\pattern.bmp');
+    FDottedBrush := TBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
     FDottedBrush.Bitmap.Bitmap.Assign(PatternBitmap);
     FreeAndNil(PatternBitmap);
 {$ELSE}
@@ -18304,6 +18345,7 @@ procedure TBaseVirtualTree.WMPaint(var Message: TWMPaint);
 var
   DC: HDC;
   prevDC: HDC;
+  wasPrevDC: Boolean;
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
@@ -18323,12 +18365,20 @@ begin
     if DC <> 0 then
       try
         begin
-          prevDC:= dummyCanvas.Handle;
+          if dummyCanvas.HandleAllocated then
+            begin
+              prevDC:= dummyCanvas.Handle;
+              wasPrevDC:= true;
+            end else
+            begin
+              wasPrevDC:= false;
+            end;
           dummyCanvas.Handle:= DC;
           try
             FHeader.FColumns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
           finally
-            dummyCanvas.Handle:= prevDC;
+            if wasPrevDC then
+              dummyCanvas.Handle:= prevDC;
           end;
         end;
     finally
@@ -18352,16 +18402,25 @@ procedure TBaseVirtualTree.WMPrint(var Message: TWMPrint);
 // This message is sent to request that the tree draws itself to a given device context. This includes not only
 // the client area but also the non-client area (header!).
 Var prevDC: HDC;
+  wasPrevDC: Boolean;
 begin
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
     begin
-      prevDC:= dummyCanvas.Handle;
+      if dummyCanvas.HandleAllocated then
+        begin
+          prevDC:= dummyCanvas.Handle;
+          wasPrevDC:= true;
+        end else
+        begin
+          wasPrevDC:= false;
+        end;
       try
         dummyCanvas.Handle:= Message.DC;
         Header.Columns.PaintHeader(dummyCanvas, FHeaderRect, -FEffectiveOffsetX);
       finally
-        dummyCanvas.Handle:= prevDC;
+        if wasPrevDC then
+          dummyCanvas.Handle:= prevDC;
       end;
     end;
 
@@ -22306,7 +22365,7 @@ begin
   begin
 {$IFDEF VT_FMX}
     Fill.Color := FColors.BackGroundColor;
-    R := RectF(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
+    R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
     FillRect(R, 0, 0, [], 1.0, FDottedBrush);
 {$ELSE}
     Brush.Color := FColors.BackGroundColor;
@@ -25134,6 +25193,7 @@ var
   TextColorBackup,
   BackColorBackup: COLORREF;   // used to restore forground and background colors when drawing a selection rectangle
   prevDC: HDC;
+  wasPrevDC: Boolean;
 {$ENDIF}
 begin
 {$IFDEF VT_VCL}
@@ -25155,13 +25215,21 @@ begin
     if IntersectRect(BlendRect, OrderRect(SelectionRect), TargetRect) then
     begin
       OffsetRect(BlendRect, -WindowOrgX, 0);
-      prevDC:= dummyCanvas.Handle;
+      if dummyCanvas.HandleAllocated then
+        begin
+          prevDC:= dummyCanvas.Handle;
+          wasPrevDC:= true;
+        end else
+        begin
+          wasPrevDC:= false;
+        end;
       try
         dummyCanvas.Handle:= 0;
         AlphaBlend(dummyCanvas, Target, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
           ColorToRGB(FColors.SelectionRectangleBlendColor));
       finally
-        dummyCanvas.Handle:= prevDC;
+        if wasPrevDC then
+          dummyCanvas.Handle:= prevDC;
       end;
 
       Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.SelectionRectangleBorderColor;
@@ -25205,14 +25273,19 @@ end;
 procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: TDimension);
 
 // This method is called immediately before a cell's content is drawn und is responsible to paint selection colors etc.
-{$IFDEF VT_VCL}
 var
+{$IFDEF VT_FMX}
+  TextColorBackup,
+  BackColorBackup: TColor;
+  Theme: Integer;
+{$ELSE}
   TextColorBackup,
   BackColorBackup: COLORREF;
+  Theme: HTHEME;
+{$ENDIF}
   FocusRect,
   InnerRect: TRect;
   RowRect: TRect;
-  Theme: HTHEME;
 const
   TREIS_HOTSELECTED = 6;
 
@@ -25222,7 +25295,10 @@ const
 
   var
     R: TRect;
+{$IFDEF VT_VCL}
     prevDC: HDC;
+    wasPrevDC: Boolean;
+{$ENDIF}
   begin
     // Take into account any window offset and size limitations in the target bitmap, as this is only as large
     // as necessary and might not cover the whole node. For normal painting this does not matter (because of
@@ -25234,19 +25310,31 @@ const
       R.Left := 0;
     if R.Right > MaxWidth then
       R.Right := MaxWidth;
-
-    prevDC:= dummyCanvas.Handle;
+{$IFDEF VT_FMX}
+    AlphaBlend(nil, PaintInfo.Canvas, R, Point(0, 0), bmConstantAlphaAndColor,
+        FSelectionBlendFactor, Color);
+{$ELSE}
+    if dummyCanvas.HandleAllocated then
+      begin
+        prevDC:= dummyCanvas.Handle;
+        wasPrevDC:= true;
+      end else
+      begin
+        wasPrevDC:= false;
+      end;
     dummyCanvas.Handle:= 0;
     try
       AlphaBlend(dummyCanvas, PaintInfo.Canvas, R, Point(0, 0), bmConstantAlphaAndColor,
         FSelectionBlendFactor, ColorToRGB(Color));
     finally
-      dummyCanvas.Handle:= prevDC;
+      if wasPrevDC then
+        dummyCanvas.Handle:= prevDC;
     end;
+{$ENDIF}
   end;
 
   //---------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
   procedure DrawBackground(State: Integer);
   begin
     // if the full row selection is disabled or toGridExtensions is in the MiscOptions, draw the selection
@@ -25282,6 +25370,7 @@ begin
     if toShowVertGridLines in FOptions.PaintOptions then
       Dec(RowRect.Right);
   end;
+{$ENDIF}
 
   with PaintInfo, Canvas do
   begin
@@ -25289,8 +25378,8 @@ begin
     with FHeader.FColumns do
     if poColumnColor in PaintOptions then
     begin
-      Brush.Color := Items[Column].GetEffectiveColor;
-      FillRect(CellRect);
+      {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := Items[Column].GetEffectiveColor;
+      FillRect(CellRect{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
      end;
 
     // Let the application customize the cell background and the content rectangle.
@@ -25310,7 +25399,7 @@ begin
           with TWithSafeRect(InnerRect) do
             if (Right - Left) > NodeWidth then
             begin
-              Left := (Left + Right - NodeWidth) div 2;
+              Left := (Left + Right - NodeWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
               Right := Left + NodeWidth;
             end;
         taRightJustify:
@@ -25329,43 +25418,57 @@ begin
         begin
           if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
           begin
-            Brush.Color := FColors.DropTargetColor;
-            Pen.Color := FColors.DropTargetBorderColor;
+            {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.DropTargetColor;
+            {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.DropTargetBorderColor;
 
             if (toGridExtensions in FOptions.FMiscOptions) or
               (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
+{$IFDEF VT_VCL}
               if tsUseExplorerTheme in FStates then
                 DrawBackground(TREIS_SELECTED)
               else
+{$ENDIF}
                 if (toUseBlendedSelection in FOptions.PaintOptions) then
-                  AlphaBlendSelection(Brush.Color)
+                  AlphaBlendSelection({$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color)
                 else
                   with TWithSafeRect(InnerRect) do
-                    RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+                    begin
+{$IFDEF VT_FMX}
+                      //TODO: should we also use FillRect?
+                      //FillRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
+                      DrawRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
+{$ELSE}
+                      RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+{$ENDIF}
+                    end;
           end
           else
           begin
+            //TODO: set flag somwhere that Fill is not needed
+{$IFDEF VT_VCL}
             Brush.Style := bsClear;
+{$ENDIF}
           end;
         end
         else
           if vsSelected in Node.States then
           begin
-             if Focused or (toPopupMode in FOptions.FPaintOptions) then
+             if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
              begin
-              Brush.Color := FColors.FocusedSelectionColor;
-              Pen.Color := FColors.FocusedSelectionBorderColor;
+              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.FocusedSelectionColor;
+              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.FocusedSelectionBorderColor;
             end
             else
             begin
-              Brush.Color := FColors.UnfocusedSelectionColor;
-              Pen.Color := FColors.UnfocusedSelectionBorderColor;
+              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.UnfocusedSelectionColor;
+              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.UnfocusedSelectionBorderColor;
             end;
             if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
             if not IsRectEmpty(InnerRect) then
+{$IFDEF VT_VCL}
               if tsUseExplorerTheme in FStates then
               begin
                 // If the node is also hot, its background will be drawn later.
@@ -25374,46 +25477,72 @@ begin
                   DrawBackground(IfThen(Self.Focused, TREIS_SELECTED, TREIS_SELECTEDNOTFOCUS));
               end
               else
+ {$ENDIF}
                 if (toUseBlendedSelection in FOptions.PaintOptions) then
-                  AlphaBlendSelection(Brush.Color)
+                  AlphaBlendSelection({$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color)
                 else
                   with TWithSafeRect(InnerRect) do
-                    RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+{$IFDEF VT_FMX}
+                      //TODO: should we also use FillRect?
+                      //FillRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
+                      DrawRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
+{$ELSE}
+                      RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+{$ENDIF}
           end;
       end;
     end;
 
+{$IFDEF VT_VCL}
     if (tsUseExplorerTheme in FStates) and (toHotTrack in FOptions.FPaintOptions) and (Node = FCurrentHotNode) and
        ((Column = FCurrentHotColumn) or (toFullRowSelect in FOptions.FSelectionOptions)) then
       DrawBackground(IfThen((vsSelected in Node.States) and not (toAlwaysHideSelection in FOptions.FPaintOptions),
                             TREIS_HOTSELECTED, TREIS_HOT));
+{$ENDIF}
 
     if (Column = FFocusedColumn) or (toFullRowSelect in FOptions.FSelectionOptions) then
     begin
       // draw focus rect
       if (poDrawFocusRect in PaintOptions) and
-         (Focused or (toPopupMode in FOptions.FPaintOptions)) and (FFocusedNode = Node) and
-         ( (Column = FFocusedColumn) or
+         ({$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions)) and (FFocusedNode = Node) and
+         ( (Column = FFocusedColumn)
+{$IFDEF VT_VCL}
+             or
              ((not (toExtendedFocus in FOptions.FSelectionOptions) or IsWinVistaOrAbove) and
              (toFullRowSelect in FOptions.FSelectionOptions) and
-             (tsUseExplorerTheme in FStates) ) ) then
+             (tsUseExplorerTheme in FStates)
+             )
+{$ENDIF}
+         ) then
       begin
-        TextColorBackup := GetTextColor(Handle);
-        SetTextColor(Handle, $FFFFFF);
-        BackColorBackup := GetBkColor(Handle);
-        SetBkColor(Handle, 0);
-
+{$IFDEF VT_VCL}
         if not (toExtendedFocus in FOptions.FSelectionOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
           (tsUseExplorerTheme in FStates) then
           FocusRect := RowRect
         else
+{$ENDIF}
           if toGridExtensions in FOptions.FMiscOptions then
             FocusRect := CellRect
           else
             FocusRect := InnerRect;
 
+ {$IFDEF VT_VCL}
         if tsUseExplorerTheme in FStates then
           InflateRect(FocusRect, -1, -1);
+{$ENDIF}
+
+{$IFDEF VT_FMX}
+        TextColorBackup := Stroke.Color;
+        //Fill.Color:= clWhite; font
+        //Fill.Color:= clBlack; background
+        DrawDashRect(FocusRect, 0, 0, AllCorners, 1.0{?}, $A0909090);
+
+        Stroke.Color:= TextColorBackup;
+{$ELSE}
+        TextColorBackup := GetTextColor(Handle);
+        SetTextColor(Handle, $FFFFFF);
+        BackColorBackup := GetBkColor(Handle);
+        SetBkColor(Handle, 0);
 
         if (tsUseExplorerTheme in FStates) and IsWinVistaOrAbove then
         begin
@@ -25425,12 +25554,14 @@ begin
         end
         else
           Winapi.Windows.DrawFocusRect(Handle, FocusRect);
+
         SetTextColor(Handle, TextColorBackup);
         SetBkColor(Handle, BackColorBackup);
+{$ENDIF}
       end;
     end;
   end;
-
+{$IFDEF VT_VCL}
   if tsUseExplorerTheme in FStates then
     CloseThemeData(Theme);
 {$ENDIF}
@@ -31869,7 +32000,7 @@ begin
         end;
 
         // Erase rest of window not covered by a node.
-        if TargetRect.Top < MaximumBottom then
+        if (TargetRect.Top < MaximumBottom) then
         begin
           // Keep the horizontal target position to determine the selection rectangle offset later (if necessary).
           BaseOffset := Target.X;
@@ -31933,6 +32064,11 @@ begin
                     R.Left := Items[FirstColumn].Left;
                     R.Right := R.Left +  Items[FirstColumn].FWidth;
                   end;
+
+{$IFDEF VT_FMX}
+                  R.Top:= TargetRect.Top;
+{$ENDIF}
+
 
                   // Initialize MaxRight.
                   MaxRight := Target.X - 1;

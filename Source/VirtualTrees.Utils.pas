@@ -62,8 +62,9 @@ type
     bmConstantAlphaAndColor  // blend the destination color with the given constant color und the constant alpha value
   );
 
-{$IFDEF VT_VCL}
+
 procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
+{$IFDEF VT_VCL}
 function GetRGBColor(Value: TColor): DWORD;
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
 
@@ -1071,7 +1072,63 @@ end;
 {$endif CPUX64}
 
 //----------------------------------------------------------------------------------------------------------------------
+{$ENDIF}
 
+{$IFDEF VT_FMX}
+procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
+
+// R describes the source rectangle to work on.
+// Target is the place (upper left corner) in the target bitmap where to blend to. Note that source width + X offset
+// must be less or equal to the target width. Similar for the height.
+// If Mode is bmConstantAlpha then the blend operation uses the given ConstantAlpha value for all pixels.
+// If Mode is bmPerPixelAlpha then each pixel is blended using its individual alpha value (the alpha value of the source).
+// If Mode is bmMasterAlpha then each pixel is blended using its individual alpha value multiplied by ConstantAlpha.
+// If Mode is bmConstantAlphaAndColor then each destination pixel is blended using ConstantAlpha but also a constant
+// color which will be obtained from Bias. In this case no offset value is added, otherwise Bias is used as offset.
+// Blending of a color into target only (bmConstantAlphaAndColor) ignores Source (the DC) and Target (the position).
+// CAUTION: This procedure does not check whether MMX instructions are actually available! Call it only if MMX is really
+//          usable.
+
+
+Var SrcRect: TRect;
+begin
+  if not IsRectEmpty(R) then
+  begin
+    SrcRect.Left:= Target.X;
+    SrcRect.Top:= Target.Y;
+    SrcRect.Width:= R.Width;
+    SrcRect.Height:= R.Height;
+
+    // Note: it is tempting to optimize the special cases for constant alpha 0 and 255 by just ignoring soure
+    //       (alpha = 0) or simply do a blit (alpha = 255). But this does not take the bias into account.
+    case Mode of
+      bmConstantAlpha:
+        begin
+          //this should be ok
+          Destination.DrawBitmap(Source.Bitmap, SrcRect, R, ConstantAlpha/255.0, false);
+        end;
+      bmPerPixelAlpha:
+        begin
+          //TODO: AlphaBlend temporary not what asked!  AlphaColorToScanline
+          Destination.DrawBitmap(Source.Bitmap, SrcRect, R, ConstantAlpha/255.0, false);
+        end;
+      bmMasterAlpha:
+        begin
+          //TODO: AlphaBlend temporary not what asked! AlphaColorToScanline
+          Destination.DrawBitmap(Source.Bitmap, SrcRect, R, ConstantAlpha/255.0, false);
+        end;
+      bmConstantAlphaAndColor:
+        begin
+          // Source is ignored since there is a constant color value.
+          // it looks like dummyCanvas is not needed for bmConstantAlphaAndColor as Source is simply ignored and we can pass nil instead of dummyCanvas with handle=0
+          // i leave it. because maybe in the future someone change bmConstantAlphaAndColor to something else
+          Destination.Fill.Color:= bias;
+          Destination.FillRect(R, 0, 0, [], ConstantAlpha/255.0);
+        end;
+    end;
+  end;
+end;
+{$ELSE}
 procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
 
 // Optimized alpha blend procedure using MMX instructions to perform as quick as possible.
@@ -1176,7 +1233,9 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 
+{$IFDEF VT_VCL}
 function GetRGBColor(Value: TColor): DWORD;
 
 // Little helper to convert a Delphi color to an image list color.
