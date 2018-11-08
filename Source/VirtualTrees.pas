@@ -1961,7 +1961,7 @@ type
   TVTGetHintSizeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var R: TRect) of object;
 
   // miscellaneous
-  TVTBeforeDrawLineImageEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Level: Integer; var PosX: Integer) of object;
+  TVTBeforeDrawLineImageEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Level: Integer; var PosX: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}) of object;
   TVTGetNodeDataSizeEvent = procedure(Sender: TBaseVirtualTree; var NodeDataSize: Integer) of object;
   TVTKeyActionEvent = procedure(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState;
     var DoDefault: Boolean) of object;
@@ -2389,7 +2389,7 @@ type
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
-    procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType; Reverse: Boolean);
+    procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
     function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
@@ -2641,7 +2641,7 @@ type
     function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; virtual;
     procedure DoDragging(P: TPoint); virtual;
     procedure DoDragExpand; virtual;
-    procedure DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: Integer); virtual;
+    procedure DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: TDimension); virtual;
     function DoDragOver(Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
       var Effect: Integer): Boolean; virtual;
     procedure DoDragDrop(Source: TObject; const DataObject: {$IFDEF VT_FMX}TDragObject{$ELSE}IDataObject{$ENDIF}; const Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
@@ -12355,7 +12355,8 @@ begin
   FBevelOuter:= TBevelCut.bvLowered;
   FBevelKind:= TBevelKind.bkNone;
   FBevelWidth:= 1;
-  FBorderWidth:= 0;  
+  FBorderWidth:= 0;
+  FFont:= TFont.Create;
 {$ELSE}
   ControlStyle := ControlStyle - [csSetCaption] + [csCaptureMouse, csOpaque, csReplicatable, csDisplayDragImage,
     csReflector];
@@ -12510,6 +12511,7 @@ begin
 {$IFDEF VT_FMX}
   if FDottedBrush <> nil then
     FreeAndNil(FDottedBrush);
+  FreeAndNil(FFont);
 {$ELSE}
   if FDottedBrush <> 0 then
     DeleteObject(FDottedBrush);
@@ -13304,7 +13306,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: Integer; Style: TVTLineType;
+procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType;
   Reverse: Boolean);
 
 // Draws (depending on Style) one of the 5 line types of the tree.
@@ -14486,8 +14488,8 @@ begin
                               FMinusBM.Canvas.Blending:= false;
                               FMinusBM.Canvas.Stroke.Kind := TBrushKind.bkSolid;
                               FMinusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
-                              FMinusBM.Canvas.FillRect(Rect(1, 1, FMinusBM.Width-1, FMinusBM.Height-1), 0, 0, [], 1.0);
-                              FMinusBM.Canvas.DrawRect(Rect(1, 1, FMinusBM.Width-1, FMinusBM.Height-1), 0, 0, [], 1.0);
+                              FMinusBM.Canvas.FillRect(Rect(0, 0, FMinusBM.Width, FMinusBM.Height), 0, 0, [], 1.0);
+                              FMinusBM.Canvas.DrawRect(Rect(0, 0, FMinusBM.Width, FMinusBM.Height), 0, 0, [], 1.0);
                               FMinusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
                               FMinusBM.Canvas.DrawLine(Point(2, FMinusBM.Width / 2), Point(FMinusBM.Width - 2, FMinusBM.Width / 2), 1.0);
                               FMinusBM.Canvas.EndScene();
@@ -14563,8 +14565,8 @@ begin
                               FPlusBM.Canvas.Blending := false;
                               FPlusBM.Canvas.Stroke.Kind := TBrushKind.bkSolid;
                               FPlusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
-                              FPlusBM.Canvas.FillRect(Rect(1, 1, FPlusBM.Width-1, FPlusBM.Height-1), 0, 0, [], 1.0);
-                              FPlusBM.Canvas.DrawRect(Rect(1, 1, FPlusBM.Width-1, FPlusBM.Height-1), 0, 0, [], 1.0);
+                              FPlusBM.Canvas.FillRect(Rect(0, 0, FPlusBM.Width, FPlusBM.Height), 0, 0, [], 1.0);
+                              FPlusBM.Canvas.DrawRect(Rect(0, 0, FPlusBM.Width, FPlusBM.Height), 0, 0, [], 1.0);
                               FPlusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
                               FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width / 2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width / 2), 1.0);
                               FPlusBM.Canvas.DrawLine(Point(FPlusBM.Canvas.Width / 2, 2), Point(FPlusBM.Canvas.Width / 2, FPlusBM.Canvas.Width - 2), 1.0);
@@ -14692,7 +14694,6 @@ begin
     end;
 
     PatternBitmap.Canvas.EndScene;
-    PatternBitmap.SaveToFile('R:\pattern.bmp');
     FDottedBrush := TBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
     FDottedBrush.Bitmap.Bitmap.Assign(PatternBitmap);
     FreeAndNil(PatternBitmap);
@@ -20659,7 +20660,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: Integer);
+procedure TBaseVirtualTree.DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: TDimension);
 
 begin
   if Assigned(FOnBeforeDrawLineImage) then
@@ -25110,7 +25111,7 @@ var
   NewStyles: TLineImage;
 begin
   NewStyles := nil;
-{$IFDEF VT_VCL}
+
   with PaintInfo do
   begin
     if BidiMode = bdLeftToRight then
@@ -25120,7 +25121,7 @@ begin
     end
     else
     begin
-      Offset := -Integer(FIndent);
+      Offset := -FIndent;
       XPos := CellRect.Right - PaintInfo.Offsets[ofsMargin] + Offset;
     end;
 
@@ -25130,7 +25131,7 @@ begin
         begin
           // Convert the line images in correct bands.
           SetLength(NewStyles, Length(LineImage));
-          for I := IndentSize - 1 downto 0 do
+          for I := {$IFDEF VT_FMX}Round{$ENDIF}(IndentSize) - 1 downto 0 do //TODO: round!
           begin
             if (vsExpanded in Node.States) and not (vsAllChildrenHidden in Node.States) then
               NewStyles[I] := ltLeft
@@ -25158,8 +25159,8 @@ begin
               end;
           end;
 
-          PaintInfo.Canvas.Font.Color := FColors.GridLineColor;
-          for I := 0 to IndentSize - 1 do
+          PaintInfo.Canvas.{$IFDEF VT_FMX}Stroke{$ELSE}Font{$ENDIF}.Color := FColors.GridLineColor; //Stroke or Fill? and at this point?
+          for I := 0 to {$IFDEF VT_FMX}Round{$ENDIF}(IndentSize) - 1 do //TODO: round!
           begin
             DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
             DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlignment - 1, NewStyles[I],
@@ -25168,8 +25169,8 @@ begin
           end;
         end;
     else // lmNormal
-      PaintInfo.Canvas.Font.Color := FColors.TreeLineColor;
-      for I := 0 to IndentSize - 1 do
+      PaintInfo.Canvas.{$IFDEF VT_FMX}Stroke{$ELSE}Font{$ENDIF}.Color := FColors.TreeLineColor;
+      for I := 0 to {$IFDEF VT_FMX}Round{$ENDIF}(IndentSize) - 1 do
       begin
         DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
         DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlignment - 1, LineImage[I],
@@ -25178,7 +25179,6 @@ begin
       end;
     end;
   end;
-{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31949,8 +31949,10 @@ begin
                       with PaintInfo do
                       begin
                         Items[NextColumn].GetAbsoluteBounds(CellRect.Left, CellRect.Right);
+{$IFDEF VT_VCL}
                         CellRect.Bottom := Node.NodeHeight;
                         ContentRect.Bottom := Node.NodeHeight;
+{$ENDIF}
                       end;
                   end;
                 end;
