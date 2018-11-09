@@ -1,3 +1,20 @@
+About this prot to Firemonkey:
+
+What is working
+1. It compiles under FMX - this was main task of this pull request.
+2. It draw tree nodes structure with apropiate levels
+3. It draw buttons plus/minus.
+4. It drwa tree lines, horizontal lines, vertical lines, full vertical lines (some pixel improvement needed but it work)
+5. it support cliping during cell draw
+6. it support multiple columns but it does not support header drawing
+
+What is not working yet:
+1. any mouse action like click, drag-drop
+2. clipboard
+3. drawing and supoport of tree border
+4. drawing background
+5. drawing header + point 1.
+
 # Virtual-TreeView
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
 
