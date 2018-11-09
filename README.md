@@ -1,4 +1,4 @@
-About this prot to Firemonkey:
+About this port to Firemonkey:
 
 What is working
 1. It compiles under FMX - this was main task of this pull request.
