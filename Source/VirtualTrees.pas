@@ -2120,7 +2120,7 @@ type
     FButtonFillMode: TVTButtonFillMode;          // for rectangular tree buttons only: how to fill them
     FLineStyle: TVTLineStyle;                    // style of the tree lines
     FLineMode: TVTLineMode;                      // tree lines or bands etc.
-    FDottedBrush: {$IFDEF VT_FMX}TBrush{$ELSE}HBRUSH{$ENDIF};                        // used to paint dotted lines without special pens
+    FDottedBrush: {$IFDEF VT_FMX}TStrokeBrush{$ELSE}HBRUSH{$ENDIF};                        // used to paint dotted lines without special pens
     FSelectionCurveRadius: Cardinal;             // radius for rounded selection rectangles
     FSelectionBlendFactor: Byte;                 // Determines the factor by which the selection rectangle is to be
                                                  // faded if enabled.
@@ -14367,7 +14367,7 @@ var
 {$IFDEF VT_FMX}
     ABitmap.SetSize(9, 9); 
 
-    ABitmap.Canvas.Fill.Color :=  $00FF00FF; // TAlphaColorRec.Fuchsia;
+    ABitmap.Canvas.Fill.Color :=  TAlphaColorRec.Null;
     ABitmap.Clear(ABitmap.Canvas.Fill.Color);
 {$ELSE}
     with ABitmap, Canvas do
@@ -14565,11 +14565,16 @@ begin
                               FPlusBM.Canvas.Blending := false;
                               FPlusBM.Canvas.Stroke.Kind := TBrushKind.bkSolid;
                               FPlusBM.Canvas.Stroke.Color := FColors.TreeLineColor;
-                              FPlusBM.Canvas.FillRect(Rect(0, 0, FPlusBM.Width, FPlusBM.Height), 0, 0, [], 1.0);
-                              FPlusBM.Canvas.DrawRect(Rect(0, 0, FPlusBM.Width, FPlusBM.Height), 0, 0, [], 1.0);
+                              FPlusBM.Canvas.FillRect(Rect(0, 0, FPlusBM.Width-1, FPlusBM.Height), 0, 0, [], 1.0);
+                              FPlusBM.Canvas.DrawRect(Rect(0, 0, FPlusBM.Width-1, FPlusBM.Height), 0, 0, [], 1.0);
                               FPlusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
+                              FPlusBM.Canvas.DrawLine(Point(2, 4.5), Point(FPlusBM.Canvas.Width - 2, 4.5), 1.0);
+                              FPlusBM.Canvas.DrawLine(Point(4.0, 2), Point(4.0, FPlusBM.Canvas.Width - 2), 1.0);
+
+                              {
                               FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width / 2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width / 2), 1.0);
                               FPlusBM.Canvas.DrawLine(Point(FPlusBM.Canvas.Width / 2, 2), Point(FPlusBM.Canvas.Width / 2, FPlusBM.Canvas.Width - 2), 1.0);
+                              }
                               FPlusBM.Canvas.EndScene();
 {$ELSE}
                               Pen.Color := FColors.TreeLineColor;
@@ -14673,7 +14678,7 @@ begin
     PatternBitmap.Clear($00FF00FF); //fully transparent
     PatternBitmap.Canvas.BeginScene;
 
-    PatternBitmap.Map(TMapAccess.ReadWrite, BitmapData);
+    PatternBitmap.Map(TMapAccess.Write, BitmapData);
     try
       {
       //AlphaColorToPixel PixelToAlphaColor ScanlineToAlphaColor
@@ -14694,9 +14699,18 @@ begin
     end;
 
     PatternBitmap.Canvas.EndScene;
-    FDottedBrush := TBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
+
+    //FMX pattern brush is different then VCL. Where color is derived from current one...
+    //We should have 2 brushes 1 for Tree lines 1 for grid lines
+    //and recreate it every time when color is changing
+    FDottedBrush := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
     FDottedBrush.Bitmap.Bitmap.Assign(PatternBitmap);
     FreeAndNil(PatternBitmap);
+    (*
+    FDottedBrush := TStrokeBrush.Create(TBrushKind.Solid, {FColors.GridLineColor}clBlue); //###!!! CreatePatternBrush(PatternBitmap)
+    (FDottedBrush as TStrokeBrush).Dash:= TStrokeDash.Dot;
+    FreeAndNil(PatternBitmap);
+    *)
 {$ELSE}
     PatternBitmap := CreateBitmap(8, 8, 1, 1, Bits);
     FDottedBrush := CreatePatternBrush(PatternBitmap);

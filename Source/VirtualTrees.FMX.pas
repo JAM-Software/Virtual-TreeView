@@ -6,7 +6,7 @@ interface
 uses System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics;
 
 const
-  clBtnFace = TAlphaColorRec.Gray;
+  clBtnFace = TAlphaColor($FFF0F0F0); //TAlphaColorRec.Gray;
   clBtnText = TAlphaColorRec.Black;
   clBtnHighlight = TAlphaColorRec.DkGray;
   clBtnShadow = TAlphaColorRec.Darkgray;
@@ -211,6 +211,12 @@ type
 procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRectF; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
 procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSizeF);
 {--}procedure DrawEdge(TargetCanvas: TCanvas; PaintRectangle: TRectF; PressedButtonStyle, PressedButtonFlags: Cardinal);
+
+type
+  THighQualityBitmap = class(TBitmap)
+    public
+      constructor Create; override;
+  end;
 
 implementation
 uses FMX.TextLayout, System.SysUtils, FMX.Types;
@@ -421,5 +427,14 @@ begin
 end;
 
 
+
+{ THighQualityBitmap }
+
+constructor THighQualityBitmap.Create;
+begin
+
+  inherited;
+
+end;
 
 end.
