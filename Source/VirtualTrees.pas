@@ -2556,6 +2556,7 @@ type
     procedure SetFont(const Value: TFont);
     function GetClientHeight: Single;
     function GetClientWidth: Single;
+    function GetClientRect: TRect;
 {$ENDIF}
 
   protected
@@ -3314,7 +3315,8 @@ type
     property VisiblePath[Node: PVirtualNode]: Boolean read GetVisiblePath write SetVisiblePath;
     property UpdateCount: Cardinal read FUpdateCount;
     property DoubleBuffered: Boolean read GetDoubleBuffered write SetDoubleBuffered default True;
-{$IFDEF VT_FMX}	
+{$IFDEF VT_FMX}
+    property ClientRect: TRect read GetClientRect;
     property ClientWidth: Single read GetClientWidth;
     property ClientHeight: Single read GetClientHeight;
     property UseRightToLeftAlignment: Boolean read FUseRightToLeftAlignment write FUseRightToLeftAlignment default false;
@@ -9146,10 +9148,12 @@ var
 
 begin
   // Adjust size of the header bitmap
+{$IFDEF VT_VCL}
   with TWithSafeRect(FHeader.Treeview.FHeaderRect) do
   begin
-    FHeaderBitmap.SetSize({$IFDEF VT_FMX}Round{$ENDIF}(Max(Right, R.Right - R.Left)), {$IFDEF VT_FMX}Round{$ENDIF}(Bottom)); //TODO: round added!!!
+    FHeaderBitmap.SetSize(Max(Right, R.Right - R.Left), Bottom);
   end;
+{$ENDIF}
 
   VisibleFixedWidth := GetVisibleFixedWidth;
 
@@ -9163,7 +9167,7 @@ begin
     PaintFixedArea;
 
   // Paint the floating part of the header.
-  PaintHeader(FHeaderBitmap.Canvas,
+  PaintHeader({$IFDEF VT_FMX}ACanvas{$ELSE}FHeaderBitmap.Canvas{$ENDIF},
     Rect(VisibleFixedWidth - HOffset, 0, R.Right + VisibleFixedWidth - HOffset, R.Bottom - R.Top),
     Point(R.Left + VisibleFixedWidth, R.Top), RTLOffset);
 
@@ -9172,14 +9176,17 @@ begin
     PaintFixedArea;
 
   // Blit the result to target.
+
   with TWithSafeRect(R) do
 {$IFDEF VT_FMX}
-    ACanvas.DrawBitmap(
+    {ACanvas.DrawBitmap(
         FHeaderBitmap
       , Rect(Left, Top, Right - Left, Bottom - Top)
       , Rect(Left, Top, Left+FHeaderBitmap.Width, Top+FHeaderBitmap.Height)
       , 1.0
-      , false);
+      , false)}
+      ;
+
 {$ELSE}
     BitBlt(ACanvas.Handle, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
 {$ENDIF}
@@ -13563,6 +13570,15 @@ end;
 function TBaseVirtualTree.GetClientWidth: Single;
 begin
   Result:= Width;
+end;
+
+function TBaseVirtualTree.GetClientRect: TRect;
+begin
+  Result:= ClipRect;
+  if hoVisible in FHeader.FOptions then
+    Result.Top:= Result.Top + FHeader.Height;
+  if Result.Top>Result.Bottom then
+    Result.Top:= Result.Bottom;
 end;
 {$ENDIF}
 
@@ -24804,6 +24820,12 @@ begin
     RTLOffset := ComputeRTLOffset(True)
   else
     RTLOffset := 0;
+{$IFDEF VT_FMX}
+  if hoVisible in FHeader.FOptions then
+  begin
+    FHeader.FColumns.PaintHeader(Canvas, FHeaderRect, -FEffectiveOffsetX);
+  end;//if header visible
+{$ENDIF}
 
   // The update rect has already been filled in WMPaint, as it is the window's update rect, which gets
   // reset when BeginPaint is called (in the ancestor).
@@ -24816,7 +24838,7 @@ begin
     Temp := Header.Columns.GetVisibleFixedWidth;
     if Temp = 0 then
     begin
-      Window := {$IFDEF VT_FMX}ClipRect{$ELSE}FUpdateRect{$ENDIF};
+      Window := {$IFDEF VT_FMX}ClientRect{$ELSE}FUpdateRect{$ENDIF};
       Target := Window.TopLeft;
 
       // The clipping rectangle is given in client coordinates of the window. We have to convert it into
@@ -24835,7 +24857,7 @@ begin
       PaintTree(Canvas, Window, Target, Options);
 
       // Second part, other columns
-      Window := {$IFDEF VT_FMX}ClipRect{$ELSE}GetClientRect{$ENDIF};
+      Window := GetClientRect;
 
       if Temp > Window.Right then
         Exit;

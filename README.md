@@ -1,21 +1,22 @@
 About this port to Firemonkey:
 
-What is working
-1. It compiles under FMX - this was main task of this pull request.
-2. It draw tree nodes structure with apropiate levels
-3. It draw nodes text with alignment
-4. It draw buttons plus/minus.
-5. It draw tree lines, horizontal lines, vertical lines, full vertical lines (some pixel improvement needed but it work)
-6. it support cliping during cell draw
-7. it support multiple columns but it does not support header drawing
+What is working:
+1. it compiles under FMX - this was main task of this pull request;
+2. it draw tree nodes structure with apropiate levels;
+3. it draw nodes text with alignment;
+4. it draw buttons plus/minus;
+5. it draw tree lines, horizontal lines, vertical lines, full vertical lines (some pixel improvement needed but it work);
+6. it support cliping during cell draw;
+7. it support multiple columns;
+8. it draw header columns.
 
 What is not working yet:
-1. any mouse action like click, drag-drop
-2. clipboard
-3. drawing and supoport of tree border
-4. drawing background
-5. drawing header + point 1.
-6. drawing selection and focus rect
+1. any mouse action like click, drag-drop;
+2. clipboard;
+3. drawing and supoport of tree border;
+4. drawing background;
+5. mouse ations on header (point 1);
+6. drawing selection and focus rect.
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
