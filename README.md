@@ -20,7 +20,7 @@ What is not working yet:
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
 This will bring more possibilities like have e.g. 2 tree on the form based on same data.
-One will be i scale 1 seconde smaller in scale e.g 0.2 as a preview.
+One will be i scale 1 second smaller in scale e.g 0.2 as a preview.
 
 # Virtual-TreeView
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
