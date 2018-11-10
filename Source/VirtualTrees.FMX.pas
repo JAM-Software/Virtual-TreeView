@@ -2,6 +2,14 @@
 
 {$SCOPEDENUMS ON}
 
+{***********************************************************}
+{ Project          : VirtualTrees                           }
+{                                                           }
+{ author           : Karol Bieniaszewski                    }
+{ year             : 2018                                   }
+{                                                           }
+{***********************************************************}
+
 interface
 uses System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics;
 
@@ -234,71 +242,230 @@ end;
 
 procedure DrawEdge(Canvas: TCanvas; R: TRect; edge, grfFlags: Cardinal);
 Var tmpR: TRect;
+  dL, dT, dR, dB: Integer;
+  IsSoft, IsFlat, IsMono: Boolean;
 begin
+  dL:= 0;
+  dT:= 0;
+  dR:= 0;
+  dB:= 0;
+
+  if grfFlags and BF_SOFT<>0 then
+    IsSoft:= true else
+    IsSoft:= false;
+
+  if grfFlags and BF_FLAT<>0 then
+    IsFlat:= true else
+    IsFlat:= false;
+
+  if grfFlags and BF_MONO<>0 then
+    IsMono:= true else
+    IsMono:= false;
+
   if grfFlags and BF_MIDDLE<>0 then
     begin
-      Canvas.Fill.Color:= clBtnFace;//clBtnFace;
+      Canvas.Fill.Color:= clBtnFace;
       Canvas.FillRect(R, 0, 0, [], 1.0);
     end;
   tmpR:= R;
   if grfFlags and BF_LEFT<>0 then
     begin
       tmpR:= R;
-      if edge and BDR_RAISEDINNER<>0 then
-        begin
-          Canvas.Stroke.Color:= TAlphaColorRec.White;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
-          Inc(tmpR.left);
-        end;
-
-      if edge and BDR_SUNKENINNER<>0 then
-        begin
-          Canvas.Stroke.Color:= $FF696969;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
-        end;
 
       if edge and BDR_RAISEDOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFE3E3E3;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
-          Inc(tmpR.left);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= TColors.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
 
       if edge and BDR_SUNKENOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFA0A0A0;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
+        end;
+
+      if edge and BDR_RAISEDINNER<>0 then
+        begin
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFF0F0F0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end;
+        end;
+
+      if edge and BDR_SUNKENINNER<>0 then
+        begin
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFF0F0F0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Left, tmpR.Bottom), 1.0);
+            end;
         end;
     end;
 
   if grfFlags and BF_TOP<>0 then
     begin
       tmpR:= R;
-      if edge and BDR_RAISEDINNER<>0 then
-        begin
-          Canvas.Stroke.Color:= TAlphaColorRec.White;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
-          Inc(tmpR.Top);
-        end;
-
-      if edge and BDR_SUNKENINNER<>0 then
-        begin
-          Canvas.Stroke.Color:= $FF696969;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
-        end;
 
       if edge and BDR_RAISEDOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFE3E3E3;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
-          Inc(tmpR.Top);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
 
       if edge and BDR_SUNKENOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFA0A0A0;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
+
+      if edge and BDR_RAISEDINNER<>0 then
+        begin
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFF0F0F0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end;
+        end;
+
+      if edge and BDR_SUNKENINNER<>0 then
+        begin
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFF0F0F0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Top), Point(tmpR.Right, tmpR.Top), 1.0);
+            end;
+        end;
+
+
     end;
 
   if grfFlags and BF_RIGHT<>0 then
@@ -306,29 +473,98 @@ begin
       tmpR:= R;
       if edge and BDR_RAISEDOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= $FF696969;
-          Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
-          Dec(tmpR.Right);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
 
       if edge and BDR_SUNKENOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= TAlphaColorRec.White;
-          Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Right-1, tmpR.Top), Point(tmpR.Right-1, tmpR.Bottom), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
 
       Dec(tmpR.Right);
 
       if edge and BDR_RAISEDINNER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFA0A0A0;
-          Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFF0F0F0;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end;
         end;
 
       if edge and BDR_SUNKENINNER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFE3E3E3;
-          Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Right, tmpR.Top), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end;
         end;
     end;
 
@@ -338,27 +574,96 @@ begin
       Dec(tmpR.Bottom);
       if edge and BDR_RAISEDOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= $FF696969;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
-          Dec(tmpR.Bottom);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FF696969;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
 
       if edge and BDR_SUNKENOUTER<>0 then
         begin
-          Canvas.Stroke.Color:= TAlphaColorRec.White;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FF646464;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end;
+          InflateRect(tmpR, -1, -1)
         end;
 
       if edge and BDR_RAISEDINNER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFA0A0A0;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFF0F0F0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= TAlphaColorRec.White;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFA0A0A0;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end;
         end;
 
       if edge and BDR_SUNKENINNER<>0 then
         begin
-          Canvas.Stroke.Color:= $FFE3E3E3;
-          Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+          if isSoft then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if IsFlat then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+          if isMono then
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end else
+            begin
+              Canvas.Stroke.Color:= $FFE3E3E3;
+              Canvas.DrawLine(Point(tmpR.Left, tmpR.Bottom), Point(tmpR.Right, tmpR.Bottom), 1.0);
+            end;
         end;
     end;
 end;
