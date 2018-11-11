@@ -11,7 +11,7 @@
 {***********************************************************}
 
 interface
-uses System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics;
+uses System.Classes, System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics;
 
 const
   clBtnFace = TAlphaColor($FFF0F0F0); //TAlphaColorRec.Gray;
@@ -179,7 +179,178 @@ type
     constructor Create; override;
     property Sender: TCustomImageList read GetSender write SetSender;
   end;
-  
+
+  INT_PTR = Integer; //do not change on Int64 //System.IntPtr;    // NativeInt;
+  {$EXTERNALSYM INT_PTR}
+  UINT_PTR = Cardinal; //do not change on Int64 //System.UIntPtr;  // NativeUInt;
+
+  WPARAM = UINT_PTR;
+  {$EXTERNALSYM WPARAM}
+  LPARAM = INT_PTR;
+  {$EXTERNALSYM LPARAM}
+  LRESULT = INT_PTR;
+  {$EXTERNALSYM LRESULT}
+
+  TDWordFiller = record
+  {$IFDEF CPUX64}
+    Filler: array[1..4] of Byte; // Pad DWORD to make it 8 bytes (4+4) [x64 only]
+  {$ENDIF}
+  end;
+
+const
+  WM_MOUSEFIRST       = $0200;
+  WM_MOUSEMOVE        = $0200;
+  WM_LBUTTONDOWN      = $0201;
+  WM_LBUTTONUP        = $0202;
+  WM_LBUTTONDBLCLK    = $0203;
+  WM_RBUTTONDOWN      = $0204;
+  WM_RBUTTONUP        = $0205;
+  WM_RBUTTONDBLCLK    = $0206;
+  WM_MBUTTONDOWN      = $0207;
+  WM_MBUTTONUP        = $0208;
+  WM_MBUTTONDBLCLK    = $0209;
+  WM_MOUSEWHEEL       = $020A;
+  WM_SIZE             = $0005;
+  WM_NCMBUTTONDOWN    = $00A7;
+  WM_NCMBUTTONUP      = $00A8;
+  WM_NCMBUTTONDBLCLK  = $00A9;
+  WM_NCLBUTTONDBLCLK  = $00A3;
+  WM_NCRBUTTONDOWN    = $00A4;
+  WM_NCRBUTTONUP      = $00A5;
+  WM_NCRBUTTONDBLCLK  = $00A6;
+  WM_NCLBUTTONDOWN    = $00A1;
+  WM_NCLBUTTONUP      = $00A2;
+  WM_NCMOUSEMOVE      = $00A0;
+  WM_KEYDOWN          = $0100;
+  WM_KEYUP            = $0101;
+  WM_SETFOCUS         = $0007;
+  WM_KILLFOCUS        = $0008;
+  WM_SETCURSOR        = $0020;
+
+  CM_BASE                   = $B000;
+{$IF DEFINED(CLR)}
+  CM_CLROFFSET              = $100;
+{$ELSE}
+  CM_CLROFFSET              = $0; // Only applicable in CLR
+{$ENDIF}
+  CM_ACTIVATE               = CM_BASE + 0;
+  CM_DEACTIVATE             = CM_BASE + 1;
+  CM_GOTFOCUS               = CM_BASE + 2;
+  CM_LOSTFOCUS              = CM_BASE + 3;
+  CM_CANCELMODE             = CM_BASE + CM_CLROFFSET + 4;
+  CM_DIALOGKEY              = CM_BASE + 5;
+  CM_DIALOGCHAR             = CM_BASE + 6;
+{$IF NOT DEFINED(CLR)}
+  CM_FOCUSCHANGED           = CM_BASE + 7;
+{$ENDIF}
+  CM_PARENTFONTCHANGED      = CM_BASE + CM_CLROFFSET + 8;
+  CM_PARENTCOLORCHANGED     = CM_BASE + 9;
+  CM_BIDIMODECHANGED        = CM_BASE + 60;
+  CM_PARENTBIDIMODECHANGED  = CM_BASE + 61;
+
+  VK_ESCAPE = 27;
+
+type
+  PMessage = ^TMessage;
+  TMessage = record
+    Msg: Cardinal;                      //4
+    tmp: Integer;                       //4
+    case Integer of
+      0: (
+        WParam: WPARAM;                 //4
+        LParam: LPARAM;                 //4
+        Result: LRESULT                 //4
+        );                              //= 12 + 4 = 16
+      1: (
+        WParamLo: Word;                 //2
+        WParamHi: Word;                 //2
+        //WParamFiller: TDWordFiller;
+        LParamLo: Word;                 //2
+        LParamHi: Word;                 //2
+        //LParamFiller: TDWordFiller;
+        ResultLo: Word;                 //2
+        ResultHi: Word;                 //2
+                                        //=12 + 8 = 20
+        );
+  end;
+
+  TWMMouse = record
+    Msg: Cardinal;                      //4
+    Keys: Longint; //TShiftState;       //4
+    //KeysFiller: TDWordFiller;
+    case Integer of
+      0: (
+        XPos: Single;                   //4
+        YPos: Single;                   //4
+        Result: LRESULT;                //4
+        );
+      1: (
+        Pos: TPoint;                    //8
+        ResultLo: Word;                 //2
+        ResultHi: Word;                 //2
+        );                              //=12 + 8=20
+  end;
+
+  TWMMouseMove = TWMMouse;
+
+  TWMNCHitTest = record
+    Msg: Cardinal;
+    //MsgFiller: TDWordFiller;
+    Unused: WPARAM;
+    case Integer of
+      0: (
+        XPos: Single;
+        YPos: Single;
+        //XYPosFiller: TDWordFiller
+        );
+      1: (
+        Pos: TPoint;
+        //PosFiller: TDWordFiller;
+        Result: LRESULT);
+  end;
+
+  TWMNCHitMessage = record
+    Msg: Cardinal;                       //4
+    //MsgFiller: TDWordFiller;
+    HitTest: Longint;                    //4
+    //HitTestFiller: TDWordFiller;
+    XCursor: Single;                     //4
+    YCursor: Single;                     //4
+    //XYCursorFiller: TDWordFiller;
+    Result: LRESULT;                     //4
+  end;
+
+  TWMNCLButtonDblClk = TWMNCHitMessage;
+  TWMNCLButtonDown   = TWMNCHitMessage;
+  TWMNCLButtonUp     = TWMNCHitMessage;
+  TWMNCMButtonDblClk = TWMNCHitMessage;
+  TWMNCMButtonDown   = TWMNCHitMessage;
+  TWMNCMButtonUp     = TWMNCHitMessage;
+  TWMNCMouseMove     = TWMNCHitMessage;
+  TWMNCRButtonDblClk = TWMNCHitMessage;
+  TWMNCRButtonDown   = TWMNCHitMessage;
+  TWMNCRButtonUp     = TWMNCHitMessage;
+
+  TWMLButtonDblClk = TWMMouse;
+  TWMLButtonDown   = TWMMouse;
+  TWMLButtonUp     = TWMMouse;
+  TWMMButtonDblClk = TWMMouse;
+  TWMMButtonDown   = TWMMouse;
+  TWMMButtonUp     = TWMMouse;
+
+
+  TWMKey = record
+    Msg: Cardinal;                       //4
+    tmp: Integer;                        //4
+    CharCode: Word;                      //4
+    Unused: Word;                        //2
+    KeyData: Longint;                    //4
+    Result: LRESULT;                     //4
+  end;
+
+  TWMKeyDown = TWMKey;
+  TWMKeyUp = TWMKey;
+
   TTextMetric = record
     tmHeight: Single;  //The height (ascent + descent) of characters.
     tmAscent: Single;  //The ascent (units above the base line) of characters.
@@ -226,8 +397,61 @@ type
       constructor Create; override;
   end;
 
+procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean);
 implementation
 uses FMX.TextLayout, System.SysUtils, FMX.Types;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean);
+begin
+  MM.Msg:= 0;
+  if ssDouble in Shift then
+    begin
+      if ssLeft in Shift then
+        begin
+          if IsNC then
+            MM.Msg:= WM_NCLBUTTONDBLCLK else
+            MM.Msg:= WM_LBUTTONDBLCLK;
+        end else
+      if ssRight in Shift then
+        begin
+          if IsNC then
+            MM.Msg:= WM_NCRBUTTONDBLCLK else
+            MM.Msg:= WM_RBUTTONDBLCLK;
+        end else
+      if ssMiddle in Shift then
+        begin
+          if IsNC then
+            MM.Msg:= WM_NCMBUTTONDBLCLK else
+            MM.Msg:= WM_MBUTTONDBLCLK;
+        end;
+    end else
+    begin
+      if ssLeft in Shift then
+        begin
+          if IsNC then
+            MM.Msg:= WM_NCLBUTTONDOWN else
+            MM.Msg:= WM_LBUTTONDOWN;
+        end else
+      if ssRight in Shift then
+        begin
+          if IsNC then
+            MM.Msg:= WM_NCRBUTTONDOWN else
+            MM.Msg:= WM_RBUTTONDOWN;
+        end else
+      if ssMiddle in Shift then
+        begin
+          if IsNC then
+            MM.Msg:= WM_NCMBUTTONDOWN else
+            MM.Msg:= WM_MBUTTONDOWN;
+        end;
+    end;
+
+  MM.XPos:= X;
+  MM.YPos:= Y;
+  MM.Keys:= LongInt(Word(Shift));
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 

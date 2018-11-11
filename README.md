@@ -9,9 +9,10 @@ What is working:
 6. it support cliping during cell draw;
 7. it support multiple columns;
 8. it draw header columns.
+9. expanding, colapsing by mouse click.
 
 What is not working yet:
-1. any mouse action like click, drag-drop;
+1. some mouse action like click, drag-drop, mouse move, hover;
 2. clipboard;
 3. drawing and supoport of tree border;
 4. drawing background;

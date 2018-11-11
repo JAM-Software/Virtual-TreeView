@@ -1355,9 +1355,9 @@ type
     function GetOwner: TPersistent; override;
 {$IFDEF VT_VCL}
     function GetShiftState: TShiftState;
+{$ENDIF}
     function HandleHeaderMouseMove(var Message: TWMMouseMove): Boolean;
     function HandleMessage(var Message: TMessage): Boolean; virtual;
-{$ENDIF}
     procedure ImageListChange(Sender: TObject);
     procedure PrepareDrag(P, Start: TPoint);
     procedure ReadColumns(Reader: TReader);
@@ -2689,9 +2689,9 @@ type
     procedure DoHeaderDraw(Canvas: TCanvas; Column: TVirtualTreeColumn; R: TRect; Hover, Pressed: Boolean;
       DropMark: TVTDropMarkMode); virtual;
     procedure DoHeaderDrawQueryElements(var PaintInfo: THeaderPaintInfo; var Elements: THeaderPaintElements); virtual;
-    procedure DoHeaderMouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); virtual;
-    procedure DoHeaderMouseMove(Shift: TShiftState; X, Y: Integer); virtual;
-    procedure DoHeaderMouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); virtual;
+    procedure DoHeaderMouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure DoHeaderMouseMove(Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
+    procedure DoHeaderMouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF}); virtual;
     procedure DoHotChange(Old, New: PVirtualNode); virtual;
     function DoIncrementalSearch(Node: PVirtualNode; const Text: string): Integer; virtual;
     function DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean; virtual;
@@ -2772,11 +2772,12 @@ type
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
 {$IFDEF VT_FMX}
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
-{$ELSE}
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
+{$ENDIF}
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
     procedure HandleMouseDown(var Message: TWMMouse; var HitInfo: THitInfo); virtual;
     procedure HandleMouseUp(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
-{$ENDIF}
+
     procedure HandleClickSelection(LastFocused, NewNode: PVirtualNode; Shift: TShiftState; DragPending: Boolean);
     function HasImage(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex): Boolean; virtual; deprecated 'Use GetImageSize instead';
     function HasPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Pos: TPoint): Boolean; virtual;
@@ -8254,7 +8255,9 @@ begin
   if (csDesigning in Header.Treeview.ComponentState) then
     exit;
   // Convert vertical position to local coordinates.
+{$IFDEF VT_VCL}
   Inc(P.Y, FHeader.FHeight);
+{$ENDIF}
   NewClickIndex := ColumnFromPosition(P);
   with HitInfo do
   begin
@@ -10581,14 +10584,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-{$IFDEF VT_VCL}
+
 function TVTHeader.HandleHeaderMouseMove(var Message: TWMMouseMove): Boolean;
 
 var
   P: TPoint;
   NextColumn,
   I: TColumnIndex;
-  NewWidth: Integer;
+  NewWidth: TDimension;
 
 begin
   Result := False;
@@ -10613,7 +10616,7 @@ begin
       else
         if hsColumnWidthTracking in FStates then
         begin
-          if DoColumnWidthTracking(FColumns.FTrackIndex, GetShiftState, FTrackPoint, P) then
+          if DoColumnWidthTracking(FColumns.FTrackIndex, {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}GetShiftState{$ENDIF}, FTrackPoint, P) then
           begin
             if Treeview.UseRightToLeftAlignment then
             begin
@@ -10625,7 +10628,8 @@ begin
               NewWidth := XPos - FTrackPoint.X;
               NextColumn := FColumns.GetNextVisibleColumn(FColumns.FTrackIndex);
             end;
-
+            if FColumns.FTrackIndex<0 then
+              exit; //!!!
             // The autosized column cannot be resized using the mouse normally. Instead we resize the next
             // visible column, so it look as we directly resize the autosized column.
             if (hoAutoResize in FOptions) and (FColumns.FTrackIndex = FAutoSizeIndex) and
@@ -10643,8 +10647,8 @@ begin
         else
           if hsHeightTracking in FStates then
           begin
-            if DoHeightTracking(P, GetShiftState) then
-              SetHeight(Integer(FHeight) + P.Y);
+            if DoHeightTracking(P, {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}GetShiftState{$ENDIF}) then
+              SetHeight(FHeight + P.Y);
             HandleHeaderMouseMove := True;
             Result := 0;
           end
@@ -10656,8 +10660,8 @@ begin
               // start actual dragging if allowed
               if (hoDrag in FOptions) and Treeview.DoHeaderDragging(FColumns.FDownIndex) then
               begin
-                if ((Abs(FDragStart.X - P.X) > Mouse.DragThreshold) or
-                   (Abs(FDragStart.Y - P.Y) > Mouse.DragThreshold)) then
+                if ((Abs(FDragStart.X - P.X) > {$IFDEF VT_FMX}3{$ELSE}Mouse.DragThreshold{$ENDIF}) or
+                   (Abs(FDragStart.Y - P.Y) > {$IFDEF VT_FMX}3{$ELSE}Mouse.DragThreshold{$ENDIF})) then
                 begin
                   Treeview.StopTimer(HeaderTimer);
                   I := FColumns.FDownIndex;
@@ -10699,11 +10703,14 @@ var
   I: TColumnIndex;
   OldPosition: Integer;
   HitIndex: TColumnIndex;
-  NewCursor: HCURSOR;
+  NewCursor: {$IFDEF VT_FMX}TCursor{$ELSE}HCURSOR{$ENDIF};
   Button: TMouseButton;
   IsInHeader,
   IsHSplitterHit,
   IsVSplitterHit: Boolean;
+{$IFDEF VT_FMX}
+  cursorService: IFMXCursorService;
+{$ENDIF}
 
   //--------------- local function --------------------------------------------
 
@@ -10718,7 +10725,7 @@ var
     begin
       NextCol := FColumns.GetNextVisibleColumn(FColumns.FTrackIndex);
       if not (coFixed in FColumns[FColumns.FTrackIndex].Options) or (NextCol <= NoColumn) or
-         (coFixed in FColumns[NextCol].Options) or (P.Y > Integer(Treeview.FRangeY)) then
+         (coFixed in FColumns[NextCol].Options) or (P.Y > Treeview.FRangeY) then
         Result := False;
     end;
   end;
@@ -10755,7 +10762,7 @@ begin
         with TWMNCMButtonDown(Message) do
           P := Treeview.ScreenToClient(Point(XCursor, YCursor));
         if InHeader(P) then
-          FOwner.DoHeaderMouseDown(mbMiddle, GetShiftState, P.X, P.Y + Integer(FHeight));
+          FOwner.DoHeaderMouseDown(TMOuseButton.mbMiddle, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
       end;
     WM_NCMBUTTONUP:
       begin
@@ -10763,8 +10770,8 @@ begin
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
         if InHeader(P) then
         begin
-          FColumns.HandleClick(P, mbMiddle, True, False);
-          FOwner.DoHeaderMouseUp(mbMiddle, GetShiftState, P.X, P.Y + Integer(FHeight));
+          FColumns.HandleClick(P, TmouseButton.mbMiddle, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)),{$ENDIF} True, False);
+          FOwner.DoHeaderMouseUp(TmouseButton.mbMiddle, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
           FColumns.FDownIndex := NoColumn;
           FColumns.FCheckBoxHit := False;
         end;
@@ -10783,7 +10790,7 @@ begin
 
         if (hoHeightDblClickResize in FOptions) and InHeaderSplitterArea(P) and (FDefaultHeight > 0) then
         begin
-          if DoHeightDblClickResize(P, GetShiftState) and (FDefaultHeight > 0) then
+          if DoHeightDblClickResize(P, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}) and (FDefaultHeight > 0) then
             SetHeight(FMinHeight);
           Result := True;
         end
@@ -10792,7 +10799,7 @@ begin
              (hoDblClickResize in FOptions) and (FColumns.FTrackIndex > NoColumn) then
           begin
             // If the click was on a splitter then resize column to smallest width.
-            if DoColumnWidthDblClickResize(FColumns.FTrackIndex, P, GetShiftState) then
+            if DoColumnWidthDblClickResize(FColumns.FTrackIndex, P, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}) then
               AutoFitColumns(True, smaUseColumnOption, FColumns[FColumns.FTrackIndex].FPosition,
                              FColumns[FColumns.FTrackIndex].FPosition);
             Message.Result := 0;
@@ -10803,16 +10810,16 @@ begin
             begin
               case Message.Msg of
                 WM_NCMBUTTONDBLCLK:
-                  Button := mbMiddle;
+                  Button := TMouseButton.mbMiddle;
                 WM_NCRBUTTONDBLCLK:
-                  Button := mbRight;
+                  Button := TMouseButton.mbRight;
                 else
                   // WM_NCLBUTTONDBLCLK
-                  Button := mbLeft;
+                  Button := TMouseButton.mbLeft;
               end;
-              if Button = mbLeft then
+              if Button = TMouseButton.mbLeft then
                 Columns.AdjustDownColumn(P);
-              FColumns.HandleClick(P, Button, True, True);
+              FColumns.HandleClick(P, Button, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)),{$ENDIF} True, True);
             end;
       end;
     // The "hot" area of the headers horizontal splitter is partly within the client area of the the tree, so we need
@@ -10860,17 +10867,20 @@ begin
           if IsVSplitterHit then
           begin
             if not (csDesigning in Treeview.ComponentState) then
-              DoBeforeHeightTracking(GetShiftState);
+              DoBeforeHeightTracking({$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF});
             Include(FStates, hsHeightTrackPending);
           end
           else
           begin
             if not (csDesigning in Treeview.ComponentState) then
-              DoBeforeColumnWidthTracking(FColumns.FTrackIndex, GetShiftState);
+              DoBeforeColumnWidthTracking(FColumns.FTrackIndex, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF});
             Include(FStates, hsColumnWidthTrackPending);
           end;
-
+{$IFDEF VT_FMX}
+          Treeview.SetFocus;
+{$ELSE}
           SetCapture(Treeview.Handle);
+{$ENDIF}
           Result := True;
           Message.Result := 0;
         end
@@ -10885,7 +10895,11 @@ begin
               // Show potential drag operation.
               // Disabled columns do not start a drag operation because they can't be clicked.
               Include(FStates, hsDragPending);
-              SetCapture(Treeview.Handle);
+{$IFDEF VT_FMX}
+          Treeview.SetFocus;
+{$ELSE}
+          SetCapture(Treeview.Handle);
+{$ENDIF}
               Result := True;
               Message.Result := 0;
             end;
@@ -10893,14 +10907,14 @@ begin
 
         // This is a good opportunity to notify the application.
         if not (csDesigning in Treeview.ComponentState) and IsInHeader then
-          FOwner.DoHeaderMouseDown(mbLeft, GetShiftState, P.X, P.Y + Integer(FHeight));
+          FOwner.DoHeaderMouseDown(TMouseButton.mbLeft, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
       end;
     WM_NCRBUTTONDOWN:
       begin
         with TWMNCRButtonDown(Message) do
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
         if InHeader(P) then
-          FOwner.DoHeaderMouseDown(mbRight, GetShiftState, P.X, P.Y + Integer(FHeight));
+          FOwner.DoHeaderMouseDown(TMouseButton.mbRight, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
       end;
     WM_NCRBUTTONUP:
       if not (csDesigning in FOwner.ComponentState) then
@@ -10910,8 +10924,8 @@ begin
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
           if InHeader(P) then
           begin
-            HandleMessage := FColumns.HandleClick(P, mbRight, True, False);
-            FOwner.DoHeaderMouseUp(mbRight, GetShiftState, P.X, P.Y + Integer(FHeight));
+            HandleMessage := FColumns.HandleClick(P, TMouseButton.mbRight, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)),{$ENDIF} True, False);
+            FOwner.DoHeaderMouseUp(TMouseButton.mbRight, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
           end;
         end;
     // When the tree window has an active mouse capture then we only get "client-area" messages.
@@ -10922,16 +10936,24 @@ begin
 
         if FStates <> [] then
         begin
+{$IFDEF VT_VCL}
           ReleaseCapture;
+{$ENDIF}
           if hsDragging in FStates then
           begin
             // successfull dragging moves columns
             with TWMLButtonUp(Message) do
               P := Treeview.ClientToScreen(Point(XPos, YPos));
+{$IFDEF VT_FMX}
+            R:= TreeView.BoundsRect;
+{$ELSE}
             GetWindowRect(Treeview.Handle, R);
+{$ENDIF}
             with FColumns do
             begin
+{$IFDEF VT_VCL}
               FDragImage.EndDrag;
+{$ENDIF}
 
               //Problem fixed:
               //Column Header does not paint correctly after a drop in certain conditions
@@ -10986,16 +11008,16 @@ begin
             with TWMLButtonUp(Message) do
             begin
               if FColumns.FDownIndex > NoColumn then
-                FColumns.HandleClick(Point(XPos, YPos), mbLeft, False, False);
+                FColumns.HandleClick(Point(XPos, YPos), TMouseButton.mbLeft, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)), {$ENDIF} False, False);
               if FStates <> [] then
-                FOwner.DoHeaderMouseUp(mbLeft, KeysToShiftState(Keys), XPos, YPos);
+                FOwner.DoHeaderMouseUp(TMouseButton.mbLeft, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}KeysToShiftState(Keys){$ENDIF}, XPos, YPos);
             end;
           WM_NCLBUTTONUP:
             with TWMNCLButtonUp(Message) do
             begin
               P := FOwner.ScreenToClient(Point(XCursor, YCursor));
-              FColumns.HandleClick(P, mbLeft, False, False);
-              FOwner.DoHeaderMouseUp(mbLeft, GetShiftState, P.X, P.Y + Integer(FHeight));
+              FColumns.HandleClick(P, TMouseButton.mbLeft, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)), {$ENDIF} False, False);
+              FOwner.DoHeaderMouseUp(TMouseButton.mbLeft, {$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
             end;
         end;
 
@@ -11023,24 +11045,29 @@ begin
       with TWMNCMouseMove(Message), FColumns do
       begin
         P := Treeview.ScreenToClient(Point(XCursor, YCursor));
-        Treeview.DoHeaderMouseMove(GetShiftState, P.X, P.Y + Integer(FHeight));
+        Treeview.DoHeaderMouseMove({$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
         if InHeader(P) and ((AdjustHoverColumn(P)) or ((FDownIndex >= 0) and (FHoverIndex <> FDownIndex))) then
         begin
           // We need a mouse leave detection from here for the non client area.
           // TODO: The best solution available would be the TrackMouseEvent API.
           // With the drop of the support of Win95 totally and WinNT4 we should replace the timer.
+{$IFDEF VT_VCL}
           Treeview.StopTimer(HeaderTimer);
           SetTimer(Treeview.Handle, HeaderTimer, 50, nil);
+{$ENDIF}
           // use Delphi's internal hint handling for header hints too
           if hoShowHint in FOptions then
           begin
             // client coordinates!
             XCursor := P.X;
-            YCursor := P.Y + Integer(FHeight);
+            YCursor := P.Y + FHeight;
+{$IFDEF VT_VCL}
             Application.HintMouseMessage(Treeview, Message);
+{$ENDIF}
           end;
         end;
       end;
+{$IFDEF VT_VCL}
     WM_TIMER:
       if TWMTimer(Message).TimerID = HeaderTimer then
       begin
@@ -11062,14 +11089,22 @@ begin
           end;
         end;
       end;
+{$ENDIF}
+{$IFDEF VT_FMX}
+    WM_MOUSEMOVE,WM_SETCURSOR: // mouse capture and general message redirection
+      begin
+        Result := HandleHeaderMouseMove(TWMMouseMove(Message));
+{$ELSE}
     WM_MOUSEMOVE: // mouse capture and general message redirection
       Result := HandleHeaderMouseMove(TWMMouseMove(Message));
+//{$IFDEF VT_VCL}
     WM_SETCURSOR:
+{$ENDIF}
       // Feature: design-time header
       if (FStates = []) then
       begin
         // Retrieve last cursor position (GetMessagePos does not work here, I don't know why).
-        GetCursorPos(P);
+        {$IFDEF VT_FMX}P:= TWMMouse(Message).Pos{$ELSE}GetCursorPos(P){$ENDIF};
 
         // Is the mouse in the header rectangle and near the splitters?
         P := Treeview.ScreenToClient(P);
@@ -11082,19 +11117,30 @@ begin
 
         if IsVSplitterHit or IsHSplitterHit then
         begin
+          cursorService:= TPlatformServices.Current.GetPlatformservice(IFMXCursorService) as IFMXCursorService;
+          {$IFDEF VT_FMX}
+          if Assigned(cursorService) then
+            NewCursor:= cursorService.GetCursor;
+          {$ELSE}
           NewCursor := Screen.Cursors[Treeview.Cursor];
+          {$ENDIF}
           if IsVSplitterHit and ((hoHeightResize in FOptions) or (csDesigning in Treeview.ComponentState)) then
-            NewCursor := Screen.Cursors[crVertSplit]
+            NewCursor := {$IFDEF VT_FMX}crVSplit{$ELSE}Screen.Cursors[crVertSplit]{$ENDIF}
           else
             if IsHSplitterHit then
-              NewCursor := Screen.Cursors[crHeaderSplit];
+              NewCursor := {$IFDEF VT_FMX}crHSplit{$ELSE}Screen.Cursors[crHeaderSplit]{$ENDIF};
 
           if not (csDesigning in Treeview.ComponentState) then
             Treeview.DoGetHeaderCursor(NewCursor);
-          Result := NewCursor <> Screen.Cursors[crDefault];
+          Result := NewCursor <> {$IFDEF VT_FMX}crDefault{$ELSE}Screen.Cursors[crDefault]{$ENDIF};
           if Result then
           begin
+{$IFDEF VT_FMX}
+           if Assigned(cursorService) then
+             cursorService.SetCursor(NewCursor);
+{$ELSE}
             Winapi.Windows.SetCursor(NewCursor);
+{$ENDIF}
             Message.Result := 1;
           end;
         end;
@@ -11104,6 +11150,10 @@ begin
         Message.Result := 1;
         Result := True;
       end;
+{$IFDEF VT_FMX}
+    end;
+{$ENDIF}
+//{$ENDIF}
     WM_KEYDOWN,
     WM_KILLFOCUS:
       if (Message.Msg = WM_KILLFOCUS) or
@@ -11111,8 +11161,10 @@ begin
       begin
         if hsDragging in FStates then
         begin
+{$IFDEF VT_VCL}
           ReleaseCapture;
           FDragImage.EndDrag;
+{$ENDIF}
           Exclude(FStates, hsDragging);
           FColumns.FDropTarget := NoColumn;
           Invalidate(nil);
@@ -11123,7 +11175,9 @@ begin
         begin
           if [hsColumnWidthTracking, hsHeightTracking] * FStates <> [] then
           begin
+{$IFDEF VT_VCL}
             ReleaseCapture;
+{$ENDIF}
             if hsColumnWidthTracking in FStates then
               DoAfterColumnWidthTracking(FColumns.FTrackIndex);
             if hsHeightTracking in FStates then
@@ -11138,7 +11192,7 @@ begin
       end;
   end;
 end;
-{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.ImageListChange(Sender: TObject);
@@ -13564,12 +13618,12 @@ end;
 {$IFDEF VT_FMX}
 function TBaseVirtualTree.GetClientHeight: Single;
 begin
-  Result:= Height;
+  Result:= ClientRect.Height;
 end;
 
 function TBaseVirtualTree.GetClientWidth: Single;
 begin
-  Result:= Width;
+  Result:= ClientRect.Width;
 end;
 
 function TBaseVirtualTree.GetClientRect: TRect;
@@ -14585,7 +14639,7 @@ begin
                               FPlusBM.Canvas.DrawRect(Rect(0, 0, FPlusBM.Width-1, FPlusBM.Height), 0, 0, [], 1.0);
                               FPlusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
                               FPlusBM.Canvas.DrawLine(Point(2, 4.5), Point(FPlusBM.Canvas.Width - 2, 4.5), 1.0);
-                              FPlusBM.Canvas.DrawLine(Point(4.0, 2), Point(4.0, FPlusBM.Canvas.Width - 2), 1.0);
+                              FPlusBM.Canvas.DrawLine(Point(4.5, 2), Point(4.5, FPlusBM.Canvas.Width - 2), 1.0);
 
                               {
                               FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width / 2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width / 2), 1.0);
@@ -21186,7 +21240,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoHeaderMouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TBaseVirtualTree.DoHeaderMouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Assigned(FOnHeaderMouseDown) then
@@ -21195,7 +21249,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoHeaderMouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TBaseVirtualTree.DoHeaderMouseMove(Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Assigned(FOnHeaderMouseMove) then
@@ -21204,7 +21258,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoHeaderMouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TBaseVirtualTree.DoHeaderMouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Single{$ELSE}Integer{$ENDIF});
 
 begin
   if Assigned(FOnHeaderMouseUp) then
@@ -23213,13 +23267,61 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 {$IFDEF VT_FMX}
 procedure TBaseVirtualTree.MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single);
+Var MM: TWMMouse;
+  hInfo: THitInfo;
+  P: TPoint;
+  isNC: Boolean;
 begin
-  //TODO: MouseDown
+  P.X:= X;
+  P.Y:= Y;
+  if ClientRect.Contains(P) then
+    begin
+      isNc:= false;
+    end else
+    begin
+      isNC:= true;
+      P:= ClientToScreen(P);
+    end;
+  FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC);
+  if FHeader.HandleMessage(TMessage(MM)) then
+    exit;//!!!
+
+  FillTWMMouse(MM, Button, Shift, X, Y, isNC);
+  // get information about the hit
+  GetHitTestInfoAt(X, Y, True, hInfo);
+
+  HandleMouseDown(MM, hInfo);
+end;
+
+procedure TBaseVirtualTree.MouseUp(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single);
+Var MM: TWMMouse;
+  hInfo: THitInfo;
+  P: TPoint;
+  isNC: Boolean;
+begin
+  P.X:= X;
+  P.Y:= Y;
+  if ClientRect.Contains(P) then
+    begin
+      isNc:= false;
+    end else
+    begin
+      isNC:= true;
+      P:= ClientToScreen(P);
+    end;
+  FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC);
+  if FHeader.HandleMessage(TMessage(MM)) then
+    exit;//!!!
+
+  FillTWMMouse(MM, Button, Shift, X, Y, isNC);
+  // get information about the hit
+  GetHitTestInfoAt(X, Y, True, hInfo);
+  HandleMouseUp(MM, hInfo);
 end;
 
 {$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
-{$IFDEF VT_VCL}
+//{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo);
 
 var
@@ -23238,7 +23340,7 @@ begin
   if not (tsEditing in FStates) or DoEndEdit then
   begin
     if HitInfo.HitColumn = FHeader.FColumns.FClickIndex then
-      DoColumnDblClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
+      DoColumnDblClick(HitInfo.HitColumn, {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF});
 
       if HitInfo.HitNode <> nil then
       DoNodeDblClick(HitInfo);
@@ -23256,10 +23358,14 @@ begin
 
     if Assigned(Node) and (Node <> FRoot) and (toNodeHeightDblClickResize in FOptions.FMiscOptions) then
     begin
-      if DoNodeHeightDblClickResize(Node, HitInfo.HitColumn, KeysToShiftState(Message.Keys), Point(Message.XPos, Message.YPos)) then
+      if DoNodeHeightDblClickResize(Node, HitInfo.HitColumn, {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF}, Point(Message.XPos, Message.YPos)) then
       begin
         SetNodeHeight(Node, FDefaultNodeHeight);
+{$IFDEF VT_FMX}
+        Repaint;
+{$ELSE}
         UpdateWindow(Handle);
+{$ENDIF}
         MayEdit := False;
       end;
     end
@@ -23270,7 +23376,7 @@ begin
         begin
           with HitInfo.HitNode^ do
             NewCheckState := DetermineNextCheckState(CheckType, CheckState);
-          if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
+          if (ssLeft in {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF}) and DoChecking(HitInfo.HitNode, NewCheckState) then
           begin
             DoStateChange([tsMouseCheckPending]);
             FCheckNode := HitInfo.HitNode;
@@ -23308,7 +23414,9 @@ begin
   begin
     DoStateChange([tsEditPending]);
     FEditColumn := FFocusedColumn;
+{$IFDEF VT_VCL}
     SetTimer(Handle, EditTimer, 0, nil);
+{$ENDIF}
   end;
 end;
 
@@ -23400,9 +23508,13 @@ begin
   end;//if tsEditing
 
   // Focus change. Don't use the SetFocus method as this does not work for MDI Winapi.Windows.
-  if not Focused and CanFocus then
+  if not {$IFDEF VT_FMX}IsFocused{$ELSE}Focused and CanFocus{$ENDIF} then
   begin
+{$IFDEF VT_FMX}
+    SetFocus;
+{$ELSE}
     Winapi.Windows.SetFocus(Handle);
+{$ENDIF}
     // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
   end;
@@ -23436,7 +23548,7 @@ begin
   NewNode := FFocusedNode <> HitInfo.HitNode;
 
   // Translate keys and filter out shift and control key.
-  ShiftState := KeysToShiftState(Message.Keys) * [ssShift, ssCtrl, ssAlt];
+  ShiftState := {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF} * [ssShift, ssCtrl, ssAlt];
   if ssAlt in ShiftState then
   begin
     AltPressed := True;
@@ -23481,10 +23593,10 @@ begin
 
   // Dragging might be started in the inherited handler manually (which is discouraged for stability reasons)
   // the test for manual mode is done below (after the focused node is set).
-  AutoDrag := ((DragMode = dmAutomatic) or Dragging) and (not IsCellHit or FullRowDrag);
+  AutoDrag := ((DragMode = TDragMode.dmAutomatic) or Dragging) and (not IsCellHit or FullRowDrag);
 
   // Query the application to learn if dragging may start now (if set to dmManual).
-  if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = dmManual) then
+  if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = TDragMode.dmManual) then
     AutoDrag := DoBeforeDrag(HitInfo.HitNode, Column) and (FullRowDrag or IsLabelHit);
 
   // handle node height tracking
@@ -23519,7 +23631,7 @@ begin
     begin
       with HitInfo.HitNode^ do
         NewCheckState := DetermineNextCheckState(CheckType, CheckState);
-      if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
+      if (ssLeft in {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF}) and DoChecking(HitInfo.HitNode, NewCheckState) then
       begin
         if Self.SelectedCount > 1 then
           SetCheckStateForAll(NewCheckState, True)
@@ -23558,7 +23670,11 @@ begin
   // User starts a selection with a selection rectangle.
   if not (toDisableDrawSelection in FOptions.FSelectionOptions) and not (IsLabelHit or FullRowDrag) and MultiSelect then
   begin
+{$IFDEF VT_FMX}
+    SetFocus;
+{$ELSE}
     SetCapture(Handle);
+{$ENDIF}
     DoStateChange([tsDrawSelPending]);
     FDrawSelShiftState := ShiftState;
     FNewSelRect := Rect(Message.XPos + FEffectiveOffsetX, Message.YPos - FOffsetY, Message.XPos + FEffectiveOffsetX,
@@ -23599,7 +23715,7 @@ begin
     end;
 
   // pending node edit
-  if Focused and
+  if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} and
     ((hiOnItemLabel in HitInfo.HitPositions) or ((toGridExtensions in FOptions.FMiscOptions) and
     (hiOnItem in HitInfo.HitPositions))) and NodeSelected and not NewColumn and ShiftEmpty and (SelectedCount = 1) then
   begin
@@ -23635,11 +23751,13 @@ begin
         invalidateWithAutoSpan(Column, HitInfo.HitNode); //fix: issue 310
       FFocusedColumn := Column;
     end;
+{$IFDEF VT_VCL}
     if DragKind = dkDock then
     begin
       StopTimer(ScrollTimer);
       DoStateChange([], [tsScrollPending, tsScrolling]);
     end;
+{$ENDIF}
     // Get the currently focused node to make multiple multi-selection blocks possible.
     LastFocused := FFocusedNode;
     if NewNode then
@@ -23717,7 +23835,7 @@ begin
       InvalidateNode(HitInfo.HitNode);
     end;
 
-    DoStateChange([], [tsOLEDragPending, tsOLEDragging, tsClearPending, tsDrawSelPending, tsToggleFocusedSelection,
+    DoStateChange([], [{$IFDEF VT_VCL}tsOLEDragPending, tsOLEDragging, {$ENDIF}tsClearPending, tsDrawSelPending, tsToggleFocusedSelection,
       tsScrollPending, tsScrolling]);
     StopTimer(ScrollTimer);
 
@@ -23741,7 +23859,7 @@ begin
     end;
 
     if (FHeader.FColumns.FClickIndex > NoColumn) and (FHeader.FColumns.FClickIndex = HitInfo.HitColumn) then
-      DoColumnClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
+      DoColumnClick(HitInfo.HitColumn, {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF});
 
     if FLastHitInfo.HitNode <> nil then begin // Use THitInfo of mouse down here, see issue #692
       DoNodeClick(FLastHitInfo);
@@ -23757,14 +23875,16 @@ begin
          CanEdit(FFocusedNode, HitInfo.HitColumn) then
       begin
         FEditColumn := FFocusedColumn;
+{$IFDEF VT_VCL}
         SetTimer(Handle, EditTimer, FEditDelay, nil);
+{$ENDIF}
       end
       else
         DoStateChange([], [tsEditPending]);
     end;
   end;
 end;
-{$ENDIF}
+//{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.HasImage(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex): Boolean;
@@ -24543,8 +24663,37 @@ procedure TBaseVirtualTree.MouseMove(Shift: TShiftState; X, Y: {$IFDEF VT_FMX}Si
 
 var
   R: TRect;
-
+{$IFDEF VT_FMX}
+  MM: TWMMouse;
+  P: TPoint;
+  isNC: Boolean;
+{$ENDIF}
 begin
+{$IFDEF VT_FMX}
+  P.X:= X;
+  P.Y:= Y;
+  if ClientRect.Contains(P) then
+    begin
+      isNC:= false;
+    end else
+    begin
+      P:= ClientToScreen(P);
+      isNC:= true;
+    end;
+
+  FillTWMMouse(MM, TMouseButton.mbLeft, Shift, P.X, P.Y, isNC);
+  if isNC then
+    begin
+      MM.Msg:= WM_NCMOUSEMOVE;
+    end else
+    begin
+      MM.Msg:= WM_MOUSEMOVE;
+    end;
+  if FHeader.HandleMessage(TMessage(MM)) then
+    exit;//!!!
+
+
+{$ENDIF}
   if tsNodeHeightTrackPending in FStates then
   begin
     // Remove hint if shown currently.
@@ -29775,7 +29924,11 @@ begin
 
   // CurrentPos tracks a running term of the current position to test for.
   // It corresponds always to the top position of the currently considered node.
+{$IFDEF VT_FMX}
+  CurrentPos := ClientRect.Top;
+{$ELSE}
   CurrentPos := 0;
+{$ENDIF}
 
   // If the cache is available then use it.
   if tsUseCache in FStates then
@@ -32074,8 +32227,10 @@ begin
           Target := TargetRect.TopLeft;
           R := Rect(TargetRect.Left, 0, TargetRect.Left, MaximumBottom - Target.Y);
 {$IFDEF VT_FMX}
-          TargetRect := Rect(0, TargetRect.Top, MaximumRight - Target.X, MaximumBottom - Target.Y);
+          R := Rect(TargetRect.Left, 0, TargetRect.Left, MaximumBottom{ - Target.Y});
+          TargetRect := Rect(0, TargetRect.Top, MaximumRight - Target.X, MaximumBottom{ - Target.Y});
 {$ELSE}
+          R := Rect(TargetRect.Left, 0, TargetRect.Left, MaximumBottom - Target.Y);
           TargetRect := Rect(0, 0, MaximumRight - Target.X, MaximumBottom - Target.Y);
 {$ENDIF}
 
