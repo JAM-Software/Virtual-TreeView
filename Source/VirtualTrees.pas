@@ -11117,18 +11117,18 @@ begin
 
         if IsVSplitterHit or IsHSplitterHit then
         begin
-          cursorService:= TPlatformServices.Current.GetPlatformservice(IFMXCursorService) as IFMXCursorService;
           {$IFDEF VT_FMX}
+          cursorService:= TPlatformServices.Current.GetPlatformservice(IFMXCursorService) as IFMXCursorService;
           if Assigned(cursorService) then
-            NewCursor:= cursorService.GetCursor;
+            NewCursor:= Treeview.Cursor;//cursorService.GetCursor;
           {$ELSE}
           NewCursor := Screen.Cursors[Treeview.Cursor];
           {$ENDIF}
           if IsVSplitterHit and ((hoHeightResize in FOptions) or (csDesigning in Treeview.ComponentState)) then
-            NewCursor := {$IFDEF VT_FMX}crVSplit{$ELSE}Screen.Cursors[crVertSplit]{$ENDIF}
+            NewCursor := {$IFDEF VT_FMX}crSizeNS{$ELSE}Screen.Cursors[crVertSplit]{$ENDIF}
           else
             if IsHSplitterHit then
-              NewCursor := {$IFDEF VT_FMX}crHSplit{$ELSE}Screen.Cursors[crHeaderSplit]{$ENDIF};
+              NewCursor := {$IFDEF VT_FMX}crSizeWE{$ELSE}Screen.Cursors[crHeaderSplit]{$ENDIF};
 
           if not (csDesigning in Treeview.ComponentState) then
             Treeview.DoGetHeaderCursor(NewCursor);
@@ -11136,13 +11136,19 @@ begin
           if Result then
           begin
 {$IFDEF VT_FMX}
-           if Assigned(cursorService) then
-             cursorService.SetCursor(NewCursor);
+           {if Assigned(cursorService) then
+             cursorService.SetCursor(NewCursor);  }
+           TreeView.Cursor:= NewCursor;
 {$ELSE}
             Winapi.Windows.SetCursor(NewCursor);
 {$ENDIF}
             Message.Result := 1;
           end;
+        end else
+        begin
+{$IFDEF VT_FMX}
+           TreeView.Cursor:= crDefault;
+{$ENDIF}
         end;
       end
       else
@@ -23282,11 +23288,11 @@ begin
       isNC:= true;
       P:= ClientToScreen(P);
     end;
-  FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC);
+  FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC, false);
   if FHeader.HandleMessage(TMessage(MM)) then
     exit;//!!!
 
-  FillTWMMouse(MM, Button, Shift, X, Y, isNC);
+  FillTWMMouse(MM, Button, Shift, X, Y, isNC, false);
   // get information about the hit
   GetHitTestInfoAt(X, Y, True, hInfo);
 
@@ -23309,11 +23315,11 @@ begin
       isNC:= true;
       P:= ClientToScreen(P);
     end;
-  FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC);
+  FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC, true);
   if FHeader.HandleMessage(TMessage(MM)) then
     exit;//!!!
 
-  FillTWMMouse(MM, Button, Shift, X, Y, isNC);
+  FillTWMMouse(MM, Button, Shift, X, Y, isNC, true);
   // get information about the hit
   GetHitTestInfoAt(X, Y, True, hInfo);
   HandleMouseUp(MM, hInfo);
@@ -24681,7 +24687,7 @@ begin
       isNC:= true;
     end;
 
-  FillTWMMouse(MM, TMouseButton.mbLeft, Shift, P.X, P.Y, isNC);
+  FillTWMMouse(MM, TMouseButton.mbLeft, Shift, P.X, P.Y, isNC, false);
   if isNC then
     begin
       MM.Msg:= WM_NCMOUSEMOVE;
@@ -24690,7 +24696,16 @@ begin
       MM.Msg:= WM_MOUSEMOVE;
     end;
   if FHeader.HandleMessage(TMessage(MM)) then
-    exit;//!!!
+    exit else
+  begin
+    if MM.Msg=WM_NCMOUSEMOVE then
+      begin
+        MM.Msg:= WM_SETCURSOR;
+        if FHeader.HandleMessage(TMessage(MM)) then
+          exit;//!!!
+      end;
+  end;
+
 
 
 {$ENDIF}

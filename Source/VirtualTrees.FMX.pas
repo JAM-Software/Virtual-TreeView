@@ -397,13 +397,13 @@ type
       constructor Create; override;
   end;
 
-procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean);
+procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
 implementation
 uses FMX.TextLayout, System.SysUtils, FMX.Types;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean);
+procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
 begin
   MM.Msg:= 0;
   if ssDouble in Shift then
@@ -428,23 +428,48 @@ begin
         end;
     end else
     begin
-      if ssLeft in Shift then
+      if (ssLeft in Shift) or (Button=TMouseButton.mbLeft) then
         begin
-          if IsNC then
-            MM.Msg:= WM_NCLBUTTONDOWN else
-            MM.Msg:= WM_LBUTTONDOWN;
+          if IsUp then
+            begin
+              if IsNC then
+                MM.Msg:= WM_NCLBUTTONUP else
+                MM.Msg:= WM_LBUTTONUP;
+            end else
+            begin
+              if IsNC then
+                MM.Msg:= WM_NCLBUTTONDOWN else
+                MM.Msg:= WM_LBUTTONDOWN;
+            end;
         end else
-      if ssRight in Shift then
+      if (ssRight in Shift) or (Button=TMouseButton.mbRight) then
         begin
-          if IsNC then
-            MM.Msg:= WM_NCRBUTTONDOWN else
-            MM.Msg:= WM_RBUTTONDOWN;
+          if IsUp then
+            begin
+              if IsNC then
+                MM.Msg:= WM_NCRBUTTONUP else
+                MM.Msg:= WM_RBUTTONUP;
+            end else
+            begin
+              if IsNC then
+                MM.Msg:= WM_NCRBUTTONDOWN else
+                MM.Msg:= WM_RBUTTONDOWN;
+            end;
+
         end else
-      if ssMiddle in Shift then
+      if (ssMiddle in Shift) or (Button=TMouseButton.mbMiddle) then
         begin
-          if IsNC then
-            MM.Msg:= WM_NCMBUTTONDOWN else
-            MM.Msg:= WM_MBUTTONDOWN;
+          if IsUp then
+            begin
+              if IsNC then
+                MM.Msg:= WM_NCMBUTTONUP else
+                MM.Msg:= WM_MBUTTONUP;
+            end else
+            begin
+              if IsNC then
+                MM.Msg:= WM_NCMBUTTONDOWN else
+                MM.Msg:= WM_MBUTTONDOWN;
+            end;
         end;
     end;
 
