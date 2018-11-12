@@ -45,6 +45,8 @@ unit VirtualTrees;
 //   https://github.com/Virtual-TreeView/Virtual-TreeView
 // Accessability implementation:
 //   Marco Zehe (with help from Sebastian Modersohn)
+// Port to Firemonkey:
+//   Karol Bieniaszewski (github user livius2)
 //----------------------------------------------------------------------------------------------------------------------
 
 interface
@@ -3081,7 +3083,7 @@ type
     function CancelEditNode: Boolean;
     procedure CancelOperation;
     function CanEdit(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
-    function CanFocus: Boolean; {$IFDEF VT_FMX}virtual{$ELSE}override{$ENDIF};
+    {$IFDEF VT_VCL}function CanFocus: Boolean; override;{$ENDIF}
     procedure Clear; virtual;
     procedure ClearChecked;
     procedure ClearSelection(); overload; inline;
@@ -12424,6 +12426,9 @@ begin
   FBevelWidth:= 1;
   FBorderWidth:= 0;
   FFont:= TFont.Create;
+  DisableFocusEffect := True;
+  CanFocus := True;
+  AutoCapture := True;
 {$ELSE}
   ControlStyle := ControlStyle - [csSetCaption] + [csCaptureMouse, csOpaque, csReplicatable, csDisplayDragImage,
     csReflector];
@@ -25684,8 +25689,10 @@ begin
                   with TWithSafeRect(InnerRect) do
 {$IFDEF VT_FMX}
                       //TODO: should we also use FillRect?
-                      //FillRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
+                    begin
+                      FillRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
                       DrawRect(Rect(Left, Top, Right, Bottom), FSelectionCurveRadius, FSelectionCurveRadius, allCorners, 1.0);
+                    end;
 {$ELSE}
                       RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
 {$ENDIF}
@@ -27472,7 +27479,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 function TBaseVirtualTree.CanFocus: Boolean;
 
 var
@@ -27492,6 +27499,7 @@ begin
 {$ENDIF}
   end;
 end;
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------
 

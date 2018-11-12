@@ -11,6 +11,7 @@ What is working:
 8. it draw header columns.
 9. expanding, collapsing by mouse click.
 10. mouse cursor and header column resize by mouse.
+11. it accept focus, it draw focus rect and unfocussed rect
 
 What is not working yet:
 1. some mouse action like click, drag-drop, mouse move, hover;
