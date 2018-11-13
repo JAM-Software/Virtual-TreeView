@@ -7333,7 +7333,7 @@ var
 begin
   // See if we already have a format of that type available.
   Index := FindFormatEtc(FormatEtc, FormatEtcArray);
-  if Index > - 1 then
+  if Index >= 0 then
   begin
     // Just use the TFormatEct in the array after releasing the data.
     LocalStgMedium := FindInternalStgMedium(FormatEtcArray[Index].cfFormat);
