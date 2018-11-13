@@ -17978,6 +17978,13 @@ begin
                   else
                   begin
                     NodeRect := GetDisplayRect(HitInfo.HitNode, HitInfo.HitColumn, True, True, True);
+
+                    //[Avatar-20181112] Don't show a tooltip that is large enough to crash the DWM compositer!
+                    //There's no reason for a hint rect to be 43,000 pixels wide.
+                    //The Windows ListView control, for example, truncates tooltips to 263 characters, and Screen Width wide.
+                    NodeRect.Width  := Math.Min(NodeRect.Width,  GetSystemMetrics(SM_CXVIRTUALSCREEN));
+                    NodeRect.Height := Math.Min(NodeRect.Height, GetSystemMetrics(SM_CYVIRTUALSCREEN));
+
                     BottomRightCellContentMargin := DoGetCellContentMargin(HitInfo.HitNode, HitInfo.HitColumn, ccmtBottomRightOnly);
 
                     ShowOwnHint := (HitInfo.HitColumn > InvalidColumn) and PtInRect(NodeRect, CursorPos) and
