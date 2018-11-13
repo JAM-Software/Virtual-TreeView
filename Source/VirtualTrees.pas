@@ -7291,8 +7291,46 @@ function TVTDataObject.QueryGetData(const FormatEtc: TFormatEtc): HResult;
 
 var
   I: Integer;
-
+  // Start Bug Fix
+  dwAspect : DWORD;
+  // End Bug Fix
 begin
+{
+  Here is the QueryGetData method of the virtual tree DataObject implementation with two bug-fixes.
+
+  There is now an added condition when checking that "dwAspect" is the same, and if "lIndex" is the same. 
+  The problem is that some formats allow multiple values of lindex to be specified, 
+  and you normally use -1 when you first define the format. This means later when the client asks for a format,
+  and specifies a real lindex (0, 1, 2, 3, ...., etc), the VT codes throws a DV_E_LINDEX error.
+
+  Something similar with dwAspect. The caller is allowed to specifiy an aspect of zero (when querying data),
+  where all the "real" aspects start at 1:
+      DVASPECT_CONTENT    = 1,
+      DVASPECT_THUMBNAIL  = 2,
+      DVASPECT_ICON       = 4,
+      DVASPECT_DOCPRINT   = 8
+
+
+  To sum up:
+      - dwAspect is not checked if it is 0, and
+      - lIndex is not checked if it is -1
+
+  [Avatar-20060627]
+
+  Update 20080319
+    We can't look at the lIndex at all.
+    Multiple files in a FileContents format are advertised with the single lIndex of 0,
+    but there are multiple files. The person asks for the file they want by asking for a specific index.
+    Since we can't have a single index represent n files, we have to ignore the index.
+}
+
+// Start Bug Fix
+  // Patch the aspect here if we were passed <= 0
+  dwAspect := FormatEtc.dwAspect;
+  if dwAspect <= 0 then
+    dwAspect := DVASPECT_CONTENT;
+// End Bug Fix
+
   Result := DV_E_CLIPFORMAT;
   for I := 0 to High(FFormatEtcArray) do
   begin
@@ -7300,15 +7338,16 @@ begin
     begin
       if (FormatEtc.tymed and FFormatEtcArray[I].tymed) <> 0 then
       begin
-        if FormatEtc.dwAspect = FFormatEtcArray[I].dwAspect then
+//      if (FFormatEtcArray[I].dwAspect <= 0)  or (FormatEtc.dwAspect = FFormatEtcArray[I].dwAspect) then
+        if (FFormatEtcArray[I].dwAspect <= 0)  or (dwAspect = DWORD(FFormatEtcArray[I].dwAspect)) then
         begin
-          if FormatEtc.lindex = FFormatEtcArray[I].lindex then
-          begin
+//        if (FFormatEtcArray[I].lindex = -1)  or (FormatEtc.lindex = FFormatEtcArray[I].lindex) then
+//        begin
             Result := S_OK;
             Break;
-          end
-          else
-            Result := DV_E_LINDEX;
+//        end
+//        else
+//          Result := DV_E_LINDEX;
         end
         else
           Result := DV_E_DVASPECT;
