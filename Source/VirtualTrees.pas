@@ -7232,8 +7232,19 @@ function TVTDataObject.GetData(const FormatEtcIn: TFormatEtc; out Medium: TStgMe
 var
   I: Integer;
   Data: PVTReference;
-
+  localFormatEtcIn: TFormatEtc;
 begin
+// Start Bug Fix
+// [Avatar-11/20/2009]
+// We may get passed a dwAspect value of 0 or -1 which isn't a valid value in the enumeration
+// and causes excpetions later on. We just assume they are asking for DVASPECT_CONTENT
+// in that situation.
+// We have to create a local copy because FormatEtcIn is const.
+	localFormatEtcIn := FormatEtcIn;
+	if localFormatEtcIn.dwAspect <= 0 then
+		localFormatEtcIn.dwAspect := DVASPECT_CONTENT;
+// End Bug Fix
+
   // The tree reference format is always supported and returned from here.
   if FormatEtcIn.cfFormat = CF_VTREFERENCE then
   begin
@@ -7257,19 +7268,21 @@ begin
   begin
     try
       // See if we accept this type and if not get the correct return value.
-      Result := QueryGetData(FormatEtcIn);
+//    Start Bug Fix: Pass the local version of FormatEtc, rather than the const original
+      Result := QueryGetData(localFormatEtcIn);
       if Result = S_OK then
       begin
         for I := 0 to High(FormatEtcArray) do
         begin
-          if EqualFormatEtc(FormatEtcIn, FormatEtcArray[I]) then
+          if EqualFormatEtc(localFormatEtcIn, FormatEtcArray[I]) then
           begin
-            if not RenderInternalOLEData(FormatEtcIn, Medium, Result) then
-              Result := FOwner.RenderOLEData(FormatEtcIn, Medium, FForClipboard);
+            if not RenderInternalOLEData(localFormatEtcIn, Medium, Result) then
+              Result := FOwner.RenderOLEData(localFormatEtcIn, Medium, FForClipboard);
             Break;
           end;
-        end;
-      end;
+// End Bug Fix
+        end
+      end
     except
       ZeroMemory (@Medium, SizeOf(Medium));
       Result := E_FAIL;
