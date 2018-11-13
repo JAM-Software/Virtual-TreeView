@@ -28194,10 +28194,57 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.CutToClipboard;
+var
+	dataObject: TVTDataObject;
+
+	procedure SetPreferredDropEffect(DropEffect: DWORD);
+	var
+		fmt: TFormatEtc;
+		med: TStgMedium;
+		mem: HGLOBAL;
+		ptr: PDWORD;
+	begin
+		{
+			CFSTR_PREFERREDDROPEFFECT format means it will be an HGLOBAL that contains a DWORD that contains one of the following:
+
+				DROPEFFECT_NONE	0		Drop target cannot accept the data.
+				DROPEFFECT_COPY	1		Drop results in a copy. The original data is untouched by the drag source.
+				DROPEFFECT_MOVE	2		Drag source should remove the data.
+				DROPEFFECT_LINK	4		Drag source should create a link to the original data.
+		}
+		fmt := Default(TFormatEtc);
+		fmt.cfFormat := RegisterClipboardformat(CFSTR_PREFERREDDROPEFFECT);
+		fmt.ptd := nil;
+		fmt.dwAspect := DVASPECT_CONTENT;
+		fmt.lindex := -1;
+		fmt.tymed := TYMED_HGLOBAL;
+
+		mem := GlobalAlloc(GHND, 4); //DWORD is 4-bytes
+		if mem = 0 then
+			Exit;
+		ptr := GlobalLock(mem);
+		try
+			ptr^ := DropEffect;
+		finally
+			GlobalUnlock(mem);
+		end;
+
+		med := Default(TStgMedium);
+		med.tymed := TYMED_HGLOBAL;
+		med.hGlobal := mem;
+		med.unkForRelease := nil;
+
+		dataObject.SetData(fmt, {var}med, True); //True ==> The IDataObject must free the HGLOBAL (we won't do it)
+	end;
+
 begin
   if (FSelectionCount > 0) and not (toReadOnly in FOptions.FMiscOptions) then
   begin
-    if OleSetClipboard(TVTDataObject.Create(Self, True)) = S_OK then
+    //[Avatar-20180917] If you're doing a cut, you need to include the CFSTR_PREFERREDDROPEFFECT format, and set it to DROPEFFECT_MOVE.
+    dataObject := TVTDataObject.Create(Self, True);
+    SetPreferredDropEffect(DROPEFFECT_MOVE);
+
+    if OleSetClipBoard(dataObject) = S_OK then
     begin
       MarkCutCopyNodes;
       DoStateChange([tsCutPending], [tsCopyPending]);
