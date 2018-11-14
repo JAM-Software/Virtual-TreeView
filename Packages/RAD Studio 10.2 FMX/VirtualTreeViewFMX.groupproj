@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{476E8067-4918-45C9-BEC3-C3941CF2E6D0}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="VirtualTreesR_FMX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="VirtualTreesD_FMX.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="VirtualTreesR_FMX">
+        <MSBuild Projects="VirtualTreesR_FMX.dproj"/>
+    </Target>
+    <Target Name="VirtualTreesR_FMX:Clean">
+        <MSBuild Projects="VirtualTreesR_FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VirtualTreesR_FMX:Make">
+        <MSBuild Projects="VirtualTreesR_FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="VirtualTreesD_FMX">
+        <MSBuild Projects="VirtualTreesD_FMX.dproj"/>
+    </Target>
+    <Target Name="VirtualTreesD_FMX:Clean">
+        <MSBuild Projects="VirtualTreesD_FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VirtualTreesD_FMX:Make">
+        <MSBuild Projects="VirtualTreesD_FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="VirtualTreesR_FMX;VirtualTreesD_FMX"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="VirtualTreesR_FMX:Clean;VirtualTreesD_FMX:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="VirtualTreesR_FMX:Make;VirtualTreesD_FMX:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

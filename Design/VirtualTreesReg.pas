@@ -5,20 +5,30 @@ unit VirtualTreesReg;
 
 interface
 
+//{$DEFINE VT_FMX}
+{$IFNDEF VT_FMX}
+  {$DEFINE VT_VCL}
+{$ENDIF}
+
 // For some things to work we need code, which is classified as being unsafe for .NET.
 {$warn UNSAFE_TYPE off}
 {$warn UNSAFE_CAST off}
 {$warn UNSAFE_CODE off}
-
 uses
+{$IFDEF VT_FMX}
+  Classes, VirtualTrees, VirtualTrees.FMX;
+{$ELSE}
   Windows, Classes, DesignIntf, DesignEditors, VCLEditors, PropertyCategories,
   ColnEdit, VirtualTrees, VirtualTrees.HeaderPopup;
+{$ENDIF}
 
+{$IFDEF VT_VCL}
 type
   TVirtualTreeEditor = class (TDefaultEditor)
   public
     procedure Edit; override;
   end;
+{$ENDIF} 
 
 procedure Register;
 
@@ -27,9 +37,14 @@ procedure Register;
 implementation
 
 uses
+{$IFDEF VT_FMX}
+  SysUtils;
+{$ELSE}
   StrEdit, Dialogs, TypInfo, SysUtils, Graphics, CommCtrl, ImgList, Controls,
   VirtualTrees.ClipBoard, VirtualTrees.Actions;
+{$ENDIF}
 
+{$IFDEF VT_VCL}
 type
   // The usual trick to make a protected property accessible in the ShowCollectionEditor call below.
   TVirtualTreeCast = class(TBaseVirtualTree);
@@ -287,11 +302,16 @@ begin
   // Nothing to do here.
 end;
 
+{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure Register;
 
 begin
+{$IFDEF VT_FMX}
+  RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree]);
+{$ELSE}
   RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree, TVTHeaderPopupMenu]);
   RegisterComponentEditor(TVirtualStringTree, TVirtualTreeEditor);
   RegisterComponentEditor(TVirtualDrawTree, TVirtualTreeEditor);
@@ -393,6 +413,7 @@ begin
     RegisterPropertiesInCategory(sVTIncremenalCategoryName,
       TBaseVirtualTree,
       ['*Incremental*']);
+{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
