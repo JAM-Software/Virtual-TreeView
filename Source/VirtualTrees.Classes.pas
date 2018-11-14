@@ -33,8 +33,13 @@ interface
   {$DEFINE VT_VCL}
 {$ENDIF}
 
+{$IFDEF MSWINDOWS}
 uses
   Winapi.Windows;
+{$ELSE}
+uses
+  VirtualTrees.FMX;
+{$ENDIF}
 
 type
   // Helper classes to speed up rendering text formats for clipboard and drag'n drop transfers.
@@ -67,7 +72,6 @@ type
 
     property AsString: string read GetAsString;
   end;
-
 
 implementation
 
@@ -113,8 +117,8 @@ begin
     FPosition := FStart + LastOffset;
     FEnd := FStart + NewLen;
   end;
-  Move(PAnsiChar(S)^, FPosition^, Len);
-  Inc(FPosition, Len);
+  System.Move(PAnsiChar(S)^, FPosition^, Len);
+  System.Inc(FPosition, Len);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -138,9 +142,9 @@ begin
     FEnd := FStart + NewLen;
   end;
   FPosition^ := #13;
-  Inc(FPosition);
+  System.Inc(FPosition);
   FPosition^ := #10;
-  Inc(FPosition);
+  System.Inc(FPosition);
 end;
 
 //----------------- TBufferedString --------------------------------------------------------------------------------
@@ -184,8 +188,8 @@ begin
     FPosition := FStart + LastOffset;
     FEnd := FStart + NewLen;
   end;
-  Move(PWideChar(S)^, FPosition^, 2 * Len);
-  Inc(FPosition, Len);
+  System.Move(PWideChar(S)^, FPosition^, 2 * Len);
+  System.Inc(FPosition, Len);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -209,10 +213,9 @@ begin
     FEnd := FStart + NewLen;
   end;
   FPosition^ := #13;
-  Inc(FPosition);
+  System.Inc(FPosition);
   FPosition^ := #10;
-  Inc(FPosition);
+  System.Inc(FPosition);
 end;
-
 
 end.

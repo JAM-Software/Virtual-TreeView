@@ -11,7 +11,7 @@
 {***********************************************************}
 
 interface
-uses System.Classes, System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics;
+uses System.Classes, System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics, FMX.Controls, FMX.Types;
 
 const
   clBtnFace = TAlphaColor($FFF0F0F0); //TAlphaColorRec.Gray;
@@ -125,6 +125,8 @@ type
 
   TFormBorderStyle = (bsNone, bsSingle, bsSizeable, bsDialog, bsToolWindow, bsSizeToolWin);
   TBorderStyle = TFormBorderStyle.bsNone..TFormBorderStyle.bsSingle;
+
+  PAnsiChar = System.MarshaledAString;
 
   TChangeLink = class(TImageLink)
   private
@@ -361,8 +363,294 @@ type
   end;
 
 procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
+
+procedure FillCheckImages(Parent: TFmxObject; List: TImageList);
+
 implementation
-uses FMX.TextLayout, System.SysUtils, FMX.Types;
+uses FMX.TextLayout, System.SysUtils, FMX.StdCtrls, FMX.MultiResBitmap, FMX.Objects;
+
+type
+  TImageListHelper = class helper for TImageList
+    function Add(aBitmap: TBitmap): integer;
+  end;
+
+function TImageListHelper.Add(aBitmap: TBitmap): integer;
+const
+  SCALE = 1;
+var
+  vSource: TCustomSourceItem;
+  vBitmapItem: TCustomBitmapItem;
+  vDest: TCustomDestinationItem;
+  vLayer: TLayer;
+begin
+  Result := -1;
+  if (aBitmap.Width = 0) or (aBitmap.Height = 0) then exit;
+
+  // add source bitmap
+  vSource := Source.Add;
+  vSource.MultiResBitmap.TransparentColor := TColorRec.Fuchsia;
+  vSource.MultiResBitmap.SizeKind := TSizeKind.Source;
+  vSource.MultiResBitmap.Width := Round(aBitmap.Width / SCALE);
+  vSource.MultiResBitmap.Height := Round(aBitmap.Height / SCALE);
+  vBitmapItem := vSource.MultiResBitmap.ItemByScale(SCALE, True, True);
+  if vBitmapItem = nil then
+  begin
+    vBitmapItem := vSource.MultiResBitmap.Add;
+    vBitmapItem.Scale := Scale;
+  end;
+  vBitmapItem.Bitmap.Assign(aBitmap);
+
+  vDest := Destination.Add;
+  vLayer := vDest.Layers.Add;
+  vLayer.SourceRect.Rect := TRectF.Create(TPoint.Zero, vSource.MultiResBitmap.Width,
+      vSource.MultiResBitmap.Height);
+  vLayer.Name := vSource.Name;
+  Result := vDest.Index;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+//https://stackoverflow.com/questions/22813461/is-there-an-equivalent-to-floodfill-in-fmx-for-a-tbitmap
+procedure Bitmap_FloodFill(fBitmap: TBitmap; StartX,StartY : Integer; FillColor: TAlphaColor);
+var
+  fBitmapData  : TBitmapData;
+  X, Y         : Integer;
+  ReplaceColor : TAlphaColor;
+  Stack        : Array of System.Types.TPoint;
+  fHeight      : Integer;
+  fWidth       : Integer;
+
+  procedure PutInStack(X, Y: Integer);
+  begin
+    SetLength(Stack, Length(Stack)+1);
+    Stack[Length(Stack)-1] := Point(X, Y);
+  end;
+
+  procedure GetFromStack(var X, Y: Integer);
+  begin
+    X := Stack[Length(Stack)-1].X;
+    Y := Stack[Length(Stack)-1].Y;
+    SetLength(Stack, Length(Stack)-1);
+  end;
+
+begin
+  X := StartX;
+  Y := StartY;
+  fHeight := fBitmap.Height;
+  fWidth  := fBitmap.Width;
+  if (X >= fWidth) or (Y >= fHeight) then Exit;
+
+  if fBitmap.Map(TMapAccess.ReadWrite,fBitmapData) then
+  try
+    ReplaceColor := fBitmapData.GetPixel(X,Y);
+    if ReplaceColor <> FillColor then
+    begin
+      PutInStack(X,Y);
+      while Length(Stack) > 0 do
+      begin
+        GetFromStack(X,Y);
+        while (X >      0) and (fBitmapData.GetPixel(X-1, Y) = ReplaceColor) do System.Dec(X);
+        while (X < fWidth) and (fBitmapData.GetPixel(X  , Y) = ReplaceColor) do
+        begin
+          if Y   >       0 then If fBitmapData.GetPixel(X, Y-1) = ReplaceColor then PutInStack(X, Y-1);
+          if Y+1 < fHeight then If fBitmapData.GetPixel(X, Y+1) = ReplaceColor then PutInStack(X, Y+1);
+          fBitmapData.SetPixel(X,Y,FillColor);
+          System.Inc(X);
+        end;
+      end;
+    end;
+  finally
+    fBitmap.Canvas.Bitmap.Unmap(fBitmapData);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+{
+  ckEmpty                  =  0;  // an empty image used as place holder
+  // radio buttons
+  ckRadioUncheckedNormal   =  1;
+  ckRadioUncheckedHot      =  2;
+  ckRadioUncheckedPressed  =  3;
+  ckRadioUncheckedDisabled =  4;
+  ckRadioCheckedNormal     =  5;
+  ckRadioCheckedHot        =  6;
+  ckRadioCheckedPressed    =  7;
+  ckRadioCheckedDisabled   =  8;
+  // check boxes
+  ckCheckUncheckedNormal   =  9;
+  ckCheckUncheckedHot      = 10;
+  ckCheckUncheckedPressed  = 11;
+  ckCheckUncheckedDisabled = 12;
+  ckCheckCheckedNormal     = 13;
+  ckCheckCheckedHot        = 14;
+  ckCheckCheckedPressed    = 15;
+  ckCheckCheckedDisabled   = 16;
+  ckCheckMixedNormal       = 17;
+  ckCheckMixedHot          = 18;
+  ckCheckMixedPressed      = 19;
+  ckCheckMixedDisabled     = 20;
+  // simple button
+  ckButtonNormal           = 21; //???
+  ckButtonHot              = 22; //???
+  ckButtonPressed          = 23; //???
+  ckButtonDisabled         = 24; //???
+}
+procedure FillCheckImages(Parent: TFmxObject; List: TImageList);
+Var cb: TCheckBox;
+  rb: TRadioButton;
+  BMP: TBitmap;
+  procedure AddCtrlBmp(c: TControl; SaveToFile: Boolean=false);
+  Var tmpBMP: TBitmap;
+  begin
+    tmpBMP:= c.MakeScreenshot;
+    try
+      BMP.SetSize(tmpBMP.Height, tmpBMP.Height);
+      BMP.Clear(TAlphaColorRec.Null); //this somehow can sometimes clear  BeginSceneCount
+      if BMP.Canvas.BeginScene() then
+        begin
+          try
+            BMP.Canvas.DrawBitmap(
+                tmpBMP
+                , Rect(0, 0, BMP.Width, BMP.Height)
+                , Rect(0, 0, BMP.Width, BMP.Height)
+                , 1.0
+                , false
+                );
+          finally
+            BMP.Canvas.EndScene;
+          end;
+        end;
+    finally
+      FreeAndNil(tmpBMP);
+    end;
+  end;
+begin
+  BMP:= TBitmap.Create;
+  try
+    BMP.SetSize(16, 16);
+    BMP.Clear(TAlphaColorRec.Null);
+    List.Add(BMP); //ckEmpty
+
+
+    rb:= TRadioButton.Create(Parent);
+    try
+      rb.Parent:= Parent;
+      rb.Text:= ' ';
+
+      //------------------IsUnChecked--------------------------
+
+      rb.IsChecked:= false;
+      //rb.MakeScreenshot
+      AddCtrlBmp(rb);
+      //BMP.SaveToFile('C:\BMP.png');
+      List.Add(BMP); //ckRadioUncheckedNormal
+      List.Add(BMP); //ckRadioUncheckedHot
+
+      //rb.IsPressed:= true;
+      AddCtrlBmp(rb);
+      List.Add(BMP); //ckRadioUncheckedPressed
+
+      //rb.IsPressed:= false;
+      rb.Enabled:= false;
+      AddCtrlBmp(rb);
+      List.Add(BMP); //ckRadioUncheckedDisabled
+
+
+      //------------------IsChecked---------------------------
+
+      rb.IsChecked:= true;
+
+      //rb.IsPressed:= false;
+      rb.Enabled:= true;
+      AddCtrlBmp(rb);
+      List.Add(BMP); //ckRadioCheckedNormal
+      List.Add(BMP); //ckRadioCheckedHot
+
+      //rb.IsPressed:= true;
+      rb.Enabled:= true;
+      AddCtrlBmp(rb);
+      List.Add(BMP); //ckRadioCheckedPressed
+
+      //rb.IsPressed:= false;
+      rb.Enabled:= false;
+      AddCtrlBmp(rb);
+      List.Add(BMP); //ckRadioCheckedDisabled
+    finally
+      FreeAndNil(rb);
+    end;
+
+    cb:= TCheckBox.Create(Parent);
+    try
+      cb.Parent:= Parent;
+      cb.Text:= ' ';
+      //------------------IsUnChecked--------------------------
+
+      cb.IsChecked:= false;
+
+      AddCtrlBmp(cb);
+
+      List.Add(BMP); //ckCheckUncheckedNormal
+      List.Add(BMP); //ckCheckUncheckedHot
+
+      //cb.IsPressed:= true;
+      AddCtrlBmp(cb);
+      List.Add(BMP); //ckCheckUncheckedPressed
+
+      //cb.IsPressed:= false;
+      cb.Enabled:= false;
+      AddCtrlBmp(cb);
+      List.Add(BMP); //ckCheckUncheckedDisabled
+
+      //------------------IsChecked---------------------------
+
+      cb.IsChecked:= true;
+
+      //cb.IsPressed:= false;
+      cb.Enabled:= true;
+      AddCtrlBmp(cb);
+      List.Add(BMP); //ckCheckCheckedNormal
+      List.Add(BMP); //ckCheckCheckedHot
+
+      //cb.IsPressed:= true;
+      cb.Enabled:= true;
+      AddCtrlBmp(cb);
+      List.Add(BMP); //ckCheckCheckedPressed
+
+      //cb.IsPressed:= false;
+      cb.Enabled:= false;
+      AddCtrlBmp(cb);
+      List.Add(BMP); //ckCheckCheckedDisabled
+
+      //------------------Mixed---------------------------
+
+      //how to support mixed style?
+      //maybe draw unchecked and fill in the center of bitmap???
+      //i use teal for fill
+
+      cb.IsChecked:= false;
+
+      AddCtrlBmp(cb);
+      Bitmap_FloodFill(BMP, BMP.Width div 2, BMP.Height div 2, $FF009191{TAlphaColorRec.Teal});
+      List.Add(BMP); //ckCheckMixedNormal
+      List.Add(BMP); //ckCheckMixedHot
+
+      //cb.IsPressed:= true;
+      AddCtrlBmp(cb);
+      Bitmap_FloodFill(BMP, BMP.Width div 2, BMP.Height div 2, $FF009191{TAlphaColorRec.Teal});
+      List.Add(BMP); //ckCheckMixedPressed
+
+      //cb.IsPressed:= false;
+      cb.Enabled:= false;
+      AddCtrlBmp(cb);
+      Bitmap_FloodFill(BMP, BMP.Width div 2, BMP.Height div 2, $FF009191{TAlphaColorRec.Teal});
+      List.Add(BMP); //ckCheckMixedDisabled
+    finally
+      FreeAndNil(cb);
+    end;
+  finally
+    FreeAndNil(BMP);
+  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 

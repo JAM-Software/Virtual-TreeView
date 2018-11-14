@@ -12,7 +12,8 @@ What is working:
 9. expanding, collapsing by mouse click.
 10. mouse cursor and header column resize by mouse.
 11. it accept focus, it draw focus rect and unfocussed rect, toExtendedFocus, toFullRowSelect, toHotTrack, toUseBlendedSelection.
-12. checkbox support (only with custom imageList).
+12. checkbox support system checkboxes (platform specific) + custom checkboxes.
+13. support for Android :)
 
 What is not working yet:
 1. some mouse action like click, drag-drop, mouse move, hover;
@@ -21,7 +22,6 @@ What is not working yet:
 4. drawing background;
 5. some mouse ations on header;
 6. inplace editors.
-7. system check box support (now only custom checkbox list is working).
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 

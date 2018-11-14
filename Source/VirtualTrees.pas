@@ -4624,7 +4624,7 @@ begin
   // This watcher is used whenever a global structure could be modified by more than one thread.
   gWatcher := TCriticalSection.Create();
 
-  IsWinVistaOrAbove := (Win32MajorVersion >= 6);
+  IsWinVistaOrAbove := {$IFDEF MSWINDOWS}(Win32MajorVersion >= 6){$ELSE}false{$ENDIF};
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
   NeedToUnitialize := {$IFDEF VT_FMX}false{$ELSE}not IsLibrary and Succeeded(OleInitialize(nil)){$ENDIF};
@@ -4646,9 +4646,14 @@ begin
   with UtilityImages do
     Handle := ImageList_Create(UtilityImageSize, UtilityImageSize, Flags, 0, AllocBy);
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
+{$ENDIF}
 
+{$IFDEF VT_FMX}
+  SystemCheckImages:= TImageList.Create(nil);
+{$ELSE}
   CreateSystemImageSet(0, SystemCheckImages, Flags, False);
 {$ENDIF}
+
 
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
@@ -11728,7 +11733,7 @@ procedure TVTHeader.LoadFromStream(const Stream: TStream);
 var
   Dummy,
   Version: Integer;
-  S: AnsiString;
+  S: {$IFDEF MSWINDOWS}AnsiString{$ELSE}String{$ENDIF};
   OldOptions: TVTHeaderOptions;
 
 begin
@@ -12022,7 +12027,7 @@ var
 {$IFDEF VT_FMX}  
   DummySingle: Single;
 {$ENDIF}  
-  Tmp: AnsiString;
+  Tmp: {$IFDEF MSWINDOWS}AnsiString{$ELSE}String{$ENDIF};
 
 begin
   with Stream do
@@ -12474,6 +12479,7 @@ begin
   inherited DoubleBuffered := False;
 {$ENDIF}
   FCheckImageKind := ckSystemDefault;
+ 
   FCheckImages := SystemCheckImages;
 
   FImageChangeLink := TChangeLink.Create;
@@ -25006,6 +25012,10 @@ var
   RTLOffset: TDimension;
 
 begin
+{$IFDEF VT_FMX}
+  if SystemCheckImages.Count=0 then
+    FillCheckImages(Self, SystemCheckImages);
+{$ENDIF} 
 
   Options := [poBackground, poColumnColor, poDrawFocusRect, poDrawDropMark, poDrawSelection, poGridLines];
 {$IFDEF VT_FMX}
@@ -26694,8 +26704,10 @@ begin
 {$ELSE}
     ParentForm := GetParentForm(Self);
 {$ENDIF}
+{$IFDEF MSWINDOWS}
     if Assigned(ParentForm) and Assigned(ParentForm.Designer) then
       ParentForm.Designer.Modified;
+{$ENDIF}
   end;
 end;
 

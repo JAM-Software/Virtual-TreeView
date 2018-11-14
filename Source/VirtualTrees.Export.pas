@@ -21,7 +21,6 @@ uses Winapi.Windows, System.SysUtils, Vcl.Graphics, System.Classes, Vcl.Forms,
      VirtualTrees, VirtualTrees.Classes;
 {$ENDIF}
 
-
 function ContentToHTML(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Caption: string = ''): String;
 function ContentToRTF(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType): RawByteString;
 function ContentToUnicodeString(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Separator: string): string;
@@ -31,7 +30,6 @@ function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source
 procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType);
 
 implementation
-
 uses
   UITypes;
 

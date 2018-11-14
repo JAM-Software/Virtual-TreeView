@@ -486,7 +486,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-
+{$IFDEF VT_VCL}
 function CalculateScanline(Bits: Pointer; Width, Height, Row: Integer): Pointer;
 
 // Helper function to calculate the start address for the given row.
@@ -501,7 +501,7 @@ end;
 
 
 //----------------------------------------------------------------------------------------------------------------------
-{$IFDEF VT_VCL}
+
 function GetBitmapBitsFromDeviceContext(ACanvas: TCanvas; var Width, Height: Integer): Pointer;
 
 // Helper function used to retrieve the bitmap selected into the given device context. If there is a bitmap then
