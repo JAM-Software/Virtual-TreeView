@@ -2364,6 +2364,7 @@ type
     FOnEndOperation: TVTOperationEvent;          // Called when an operation ends
 
     FVclStyleEnabled: Boolean;
+    FInCreate: Boolean;
 {$IFDEF VT_FMX}
     FFont: TFont;
     FBevelEdges: TBevelEdges;
@@ -2546,11 +2547,11 @@ type
     procedure WMRButtonUp(var Message: TWMRButtonUp); message WM_RBUTTONUP;
     procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure WMSetFocus(var Msg: TWMSetFocus); message WM_SETFOCUS;
-    procedure WMSize(var Message: TWMSize); message WM_SIZE;
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
 {$ENDIF}
+    procedure WMSize(var Message: TWMSize); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_SIZE;{$ENDIF}
     function GetRangeX: TDimension;
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
@@ -2559,6 +2560,7 @@ type
     function GetClientHeight: Single;
     function GetClientWidth: Single;
     function GetClientRect: TRect;
+    procedure Resize; override;
 {$ENDIF}
 
   protected
@@ -12406,6 +12408,7 @@ end;
 constructor TBaseVirtualTree.Create(AOwner: TComponent);
 
 begin
+  FInCreate:= true;
   InitializeGlobalStructures();
 
   inherited;
@@ -12530,6 +12533,7 @@ begin
 {$IFDEF VT_FMX}
   PrepareBitmaps(True, True);
 {$ENDIF}
+  FInCreate:= false;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -13640,10 +13644,29 @@ end;
 function TBaseVirtualTree.GetClientRect: TRect;
 begin
   Result:= ClipRect;
-  if hoVisible in FHeader.FOptions then
-    Result.Top:= Result.Top + FHeader.Height;
+  if Assigned(FHeader) then
+    begin
+      if hoVisible in FHeader.FOptions then
+        Result.Top:= Result.Top + FHeader.Height;
+    end;
   if Result.Top>Result.Bottom then
     Result.Top:= Result.Bottom;
+end;
+
+procedure TBaseVirtualTree.Resize;
+Var M: TWMSize;
+begin
+  inherited;
+
+  if FInCreate then
+    exit; //!!
+
+  M.Msg:= WM_SIZE;
+  M.SizeType:= SIZE_RESTORED;
+  M.Width:= Width;
+  M.Height:= Height;
+  M.Result:= 0;
+  WMSize(M);
 end;
 {$ENDIF}
 
@@ -18718,7 +18741,7 @@ begin
   if (FSelectionCount > 0) or not (toGhostedIfUnfocused in FOptions.FPaintOptions) then
     Invalidate;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.WMSize(var Message: TWMSize);
@@ -18734,8 +18757,11 @@ begin
   try
     DoStateChange([tsSizing]);
     // This call will invalidate the entire non-client area which needs recalculation on resize.
-    FHeader.RescaleHeader;
-    FHeader.UpdateSpringColumns;
+    if Assigned(FHeader) then
+      begin
+        FHeader.RescaleHeader;
+        FHeader.UpdateSpringColumns;
+      end;
     UpdateScrollBars(True);
 
     if (tsEditing in FStates) and not FHeader.UseColumns then
@@ -18746,7 +18772,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.WMThemeChanged(var Message: TMessage);
 
 begin
@@ -34158,7 +34184,7 @@ procedure TBaseVirtualTree.UpdateVerticalRange;
 
 begin
   // Total node height includes the height of the invisible root node.
-  FRangeY := {$IFDEF VT_VCL}Cardinal{$ENDIF}({$IFDEF VT_VCL}Int64{$ENDIF}(FRoot.TotalHeight) - FRoot.NodeHeight + FBottomSpace);
+  FRangeY := FRoot.TotalHeight - FRoot.NodeHeight + FBottomSpace;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
