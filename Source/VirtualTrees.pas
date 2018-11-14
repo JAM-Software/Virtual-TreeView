@@ -13680,7 +13680,7 @@ begin
   Result := (toSyncCheckboxesWithSelection in FOptions.FSelectionOptions)
             and (toCheckSupport in FOptions.FMiscOptions)
             and Assigned(FCheckImages)
-            and (Node.CheckType = ctCheckBox);              ;
+            and (Node.CheckType = ctCheckBox);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25130,7 +25130,7 @@ begin
         else
 {$IFDEF VT_FMX}
           ForegroundColor := clWhite;
-          Draw(Canvas, Rect(XPos, YPos, 16, 16), Index, 1.0); //TODO: 16px Image! 
+          Draw(Canvas, Rect(XPos, YPos, XPos+16, YPos+16), Index, 1.0); //TODO: 16px Image!
 {$ELSE}
           ForegroundColor := GetRGBColor(BlendColor);
 
