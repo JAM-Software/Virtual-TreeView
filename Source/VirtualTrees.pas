@@ -14623,18 +14623,46 @@ begin
                             end;
 
 {$IFDEF VT_FMX}
-                      FHotMinusBM.Canvas.DrawBitmap(//###!!!
-                            FMinusBM
-                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
-                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
-                            , 1.0
-                            );
-                      FSelectedHotMinusBM.Canvas.DrawBitmap(//###!!!
-                            FMinusBM
-                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
-                            , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
-                            , 1.0
-                            );
+                      if FHotMinusBM.Canvas.BeginScene() then
+                        try
+                          FHotMinusBM.Canvas.DrawBitmap(//###!!!
+                                FMinusBM
+                                , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                                , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                                , 1.0
+                                );
+                          AlphaBlend(
+                                FHotMinusBM.Canvas
+                              , FHotMinusBM.Canvas
+                              , Rect(0, 0, FHotMinusBM.Width, FHotMinusBM.Height)
+                              , Point(0, 0)
+                              , TBlendMode.bmConstantAlphaAndColor
+                              , 40
+                              , TAlphaColorRec.White
+                              );
+                        finally
+                          FHotMinusBM.Canvas.EndScene();
+                        end;
+                      if FSelectedHotMinusBM.Canvas.BeginScene() then
+                        try
+                          FSelectedHotMinusBM.Canvas.DrawBitmap(//###!!!
+                                FMinusBM
+                                , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                                , RectF(0, 0, FMinusBM.Width, FMinusBM.Height)
+                                , 1.0
+                                );
+                          AlphaBlend(
+                                FSelectedHotMinusBM.Canvas
+                              , FSelectedHotMinusBM.Canvas
+                              , Rect(0, 0, FSelectedHotMinusBM.Width, FSelectedHotMinusBM.Height)
+                              , Point(0, 0)
+                              , TBlendMode.bmConstantAlphaAndColor
+                              , 40
+                              , TAlphaColorRec.Blue
+                              );
+                        finally
+                          FSelectedHotMinusBM.Canvas.EndScene();
+                        end;
 {$ELSE}
                       FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
                       FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
@@ -14706,19 +14734,47 @@ begin
                                   end;
 						  end;
 {$IFDEF VT_FMX}
-                         FHotPlusBM.Canvas.DrawBitmap(//###!!!
-                            FMinusBM
-                            , Rect(0, 0, FMinusBM.Width, FMinusBM.Height)
-                            , Rect(0, 0, FMinusBM.Width, FMinusBM.Height)
-                            , 1.0
-                            );
+                         if FHotPlusBM.Canvas.BeginScene() then
+                          try
+                            FHotPlusBM.Canvas.DrawBitmap(//###!!!
+                              FPlusBM
+                              , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
+                              , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
+                              , 1.0
+                              );
+                            AlphaBlend(
+                                FHotPlusBM.Canvas
+                              , FHotPlusBM.Canvas
+                              , Rect(0, 0, FHotPlusBM.Width, FHotPlusBM.Height)
+                              , Point(0, 0)
+                              , TBlendMode.bmConstantAlphaAndColor
+                              , 40
+                              , TAlphaColorRec.White
+                              );
+                          finally
+                            FHotPlusBM.Canvas.EndScene();
+                          end;
 
-                         FSelectedHotPlusBM.Canvas.DrawBitmap(//###!!!
-                            FPlusBM
-                            , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
-                            , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
-                            , 1.0
-                            );
+                         if FSelectedHotPlusBM.Canvas.BeginScene() then
+                          try
+                            FSelectedHotPlusBM.Canvas.DrawBitmap(//###!!!
+                              FPlusBM
+                              , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
+                              , Rect(0, 0, FPlusBM.Width, FPlusBM.Height)
+                              , 1.0
+                              );
+                            AlphaBlend(
+                                FSelectedHotPlusBM.Canvas
+                              , FSelectedHotPlusBM.Canvas
+                              , Rect(0, 0, FSelectedHotPlusBM.Width, FSelectedHotPlusBM.Height)
+                              , Point(0, 0)
+                              , TBlendMode.bmConstantAlphaAndColor
+                              , 40
+                              , TAlphaColorRec.Blue
+                              );
+                          finally
+                            FSelectedHotPlusBM.Canvas.EndScene();
+                          end;
 {$ELSE}
                        FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
                        FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
@@ -34073,6 +34129,9 @@ begin
       if not TogglingTree then
         DoStateChange([], [tsToggling]);
     end;
+{$IFDEF VT_FMX}
+    Repaint; //prevent hide of +/- buttons
+{$ENDIF}
   end;
 end;
 

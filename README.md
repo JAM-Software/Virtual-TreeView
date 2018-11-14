@@ -14,14 +14,16 @@ What is working:
 11. it accept focus, it draw focus rect and unfocussed rect, toExtendedFocus, toFullRowSelect, toHotTrack, toUseBlendedSelection.
 12. checkbox support system checkboxes (platform specific) + custom checkboxes.
 13. support for Android :)
+14. "hot" and "selected" plus/minus buttons.
 
 What is not working yet:
-1. some mouse action like click, drag-drop, mouse move, hover;
+1. some mouse action;
 2. clipboard;
-3. drawing and supoport of tree border;
+3. drawing and support of tree border;
 4. drawing background;
-5. some mouse ations on header;
-6. inplace editors.
+5. some mouse actions on header;
+6. inplace editors;
+8. scrollbars/scrolling.
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
