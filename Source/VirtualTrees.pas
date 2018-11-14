@@ -25013,8 +25013,9 @@ var
 
 begin
 {$IFDEF VT_FMX}
+  //it must be in paint - without this images are empty
   if SystemCheckImages.Count=0 then
-    FillCheckImages(Self, SystemCheckImages);
+    FillSystemCheckImages(Self, SystemCheckImages);
 {$ENDIF} 
 
   Options := [poBackground, poColumnColor, poDrawFocusRect, poDrawDropMark, poDrawSelection, poGridLines];

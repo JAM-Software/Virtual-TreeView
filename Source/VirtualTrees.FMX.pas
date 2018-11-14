@@ -13,6 +13,20 @@
 interface
 uses System.Classes, System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics, FMX.Controls, FMX.Types;
 
+//-------- type aliasing -------------------------------------------------------------------------------------------------------------------
+
+type
+  TRect = System.Types.TRectF;
+  PRect = System.Types.PRectF;
+  TPoint = System.Types.TPointF;
+  PPoint = System.Types.PPointF;
+  PSize = System.Types.PSizeF;
+  TSize = System.Types.TSizeF;
+  TColor = System.UITypes.TAlphaColor;
+  PAnsiChar = System.MarshaledAString;
+
+//------- color aliasing -------------------------------------------------------------------------------------------------------------------
+
 const
   clBtnFace = TAlphaColor($FFF0F0F0); //TAlphaColorRec.Gray;
   clBtnText = TAlphaColorRec.Black;
@@ -29,6 +43,8 @@ const
   clGreen = TAlphaColorRec.Green;
   clBlue =  TAlphaColorRec.Blue;
   clGrayText =  TAlphaColorRec.DkGray;
+
+//------- needed for migration -------------------------------------------------------------------------------------------------------------
 
 const
   { 3D border styles }
@@ -106,16 +122,8 @@ const
   SIZE_MAXIMIZED = 2;
   SIZE_MAXSHOW = 3;
   SIZE_MAXHIDE = 4;
-  
-type
-  TRect = System.Types.TRectF;
-  PRect = System.Types.PRectF;
-  TPoint = System.Types.TPointF;
-  PPoint = System.Types.PPointF;
-  PSize = System.Types.PSizeF;
-  TSize = System.Types.TSizeF;
-  TColor = System.UITypes.TAlphaColor;
 
+type
   TBorderWidth = Single;
   TBevelCut = (bvNone, bvLowered, bvRaised, bvSpace);
   TBevelEdge = (beLeft, beTop, beRight, beBottom);
@@ -126,7 +134,7 @@ type
   TFormBorderStyle = (bsNone, bsSingle, bsSizeable, bsDialog, bsToolWindow, bsSizeToolWin);
   TBorderStyle = TFormBorderStyle.bsNone..TFormBorderStyle.bsSingle;
 
-  PAnsiChar = System.MarshaledAString;
+
 
   TChangeLink = class(TImageLink)
   private
@@ -150,6 +158,8 @@ type
     Filler: array[1..4] of Byte; // Pad DWORD to make it 8 bytes (4+4) [x64 only]
   {$ENDIF}
   end;
+
+//--------- Windows messages simulations ---------------------------------------------------------------------------------------------------
 
 const
   WM_MOUSEFIRST       = $0200;
@@ -316,6 +326,10 @@ type
     Result: LRESULT;                     //4
   end;
 
+procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
+
+//--------- Text metrics -------------------------------------------------------------------------------------------------------------------
+type
   TTextMetric = record
     tmHeight: Single;  //The height (ascent + descent) of characters.
     tmAscent: Single;  //The ascent (units above the base line) of characters.
@@ -339,18 +353,20 @@ type
     tmCharSet: Byte; //The character set of the font. The character set can be one of the following values. ANSI_CHARSET, GREEK_CHARSET....
   end;
   procedure GetTextMetrics(ACanvas: TCanvas; var TM: TTextMetric);
-  function Rect(ALeft, ATop, ARight, ABottom: Single): TRect; overload; inline;
-  function Rect(const ATopLeft, ABottomRight: TPoint): TRect; overload; inline;
-  function Point(AX, AY: Single): TPoint; overload; inline;
 
-  procedure Inc(Var V: Single; OIle: Single=1.0); overload;
-  procedure Dec(Var V: Single; OIle: Single=1.0); overload;
-  function MulDiv(const A, B, C: Single): Single; overload;
-  procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
-  procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
-  procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
-  procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
-  
+//-------- function aliassing --------------------------------------------------------------------------------------------------------------
+
+function Rect(ALeft, ATop, ARight, ABottom: Single): TRect; overload; inline;
+function Rect(const ATopLeft, ABottomRight: TPoint): TRect; overload; inline;
+function Point(AX, AY: Single): TPoint; overload; inline;
+
+procedure Inc(Var V: Single; OIle: Single=1.0); overload;
+procedure Dec(Var V: Single; OIle: Single=1.0); overload;
+function MulDiv(const A, B, C: Single): Single; overload;
+procedure FillMemory(Destination: Pointer; Length: NativeUInt; Fill: Byte);
+procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
+procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
+procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
 
 procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRect; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
 procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSize);
@@ -362,9 +378,8 @@ type
       constructor Create; override;
   end;
 
-procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
-
-procedure FillCheckImages(Parent: TFmxObject; List: TImageList);
+//fill system images
+procedure FillSystemCheckImages(Parent: TFmxObject; List: TImageList);
 
 implementation
 uses FMX.TextLayout, System.SysUtils, FMX.StdCtrls, FMX.MultiResBitmap, FMX.Objects;
@@ -495,7 +510,7 @@ end;
   ckButtonPressed          = 23; //???
   ckButtonDisabled         = 24; //???
 }
-procedure FillCheckImages(Parent: TFmxObject; List: TImageList);
+procedure FillSystemCheckImages(Parent: TFmxObject; List: TImageList);
 Var cb: TCheckBox;
   rb: TRadioButton;
   BMP: TBitmap;
