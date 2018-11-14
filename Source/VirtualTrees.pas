@@ -525,6 +525,7 @@ type
     toCheckSupport,             // Show checkboxes/radio buttons.
     toEditable,                 // Node captions can be edited.
     toFullRepaintOnResize,      // Fully invalidate the tree when its window is resized (CS_HREDRAW/CS_VREDRAW).
+    toBlockPaintWhileScroll,    // Block the paint operations while scroll is performed, an invalidate is raised on the end
     toGridExtensions,           // Use some special enhancements to simulate and support grid behavior.
     toInitOnSave,               // Initialize nodes when saving a tree to a stream.
     toReportMode,               // Tree behaves like TListView in report mode.
@@ -20640,20 +20641,31 @@ begin
         end
         else
         begin
-          if (DeltaX <> 0) and (Header.Columns.GetVisibleFixedWidth > 0) then
-          begin
-            // When fixed columns exists we have to scroll separately horizontally and vertically.
-            // Horizontally is scroll only the client area not occupied by fixed columns and
-            // vertically entire client area (or clipping area if one exists).
-            R := ClientRect;
-            R.Left := Header.Columns.GetVisibleFixedWidth;
+          try
+            if toBlockPaintWhileScroll in FOptions.FMiscOptions then
+              SendMessage(Handle, WM_SETREDRAW, 0, 0);
 
-            ScrollWindow(Handle, DeltaX, 0, @R, @R);
-            if DeltaY <> 0 then
-              ScrollWindow(Handle, 0, DeltaY, ClipRect, ClipRect);
-          end
-          else
-            ScrollWindow(Handle, DeltaX, DeltaY, ClipRect, ClipRect);
+            if (DeltaX <> 0) and (Header.Columns.GetVisibleFixedWidth > 0) then
+            begin
+              // When fixed columns exists we have to scroll separately horizontally and vertically.
+              // Horizontally is scroll only the client area not occupied by fixed columns and
+              // vertically entire client area (or clipping area if one exists).
+              R := ClientRect;
+              R.Left := Header.Columns.GetVisibleFixedWidth;
+
+              ScrollWindow(Handle, DeltaX, 0, @R, @R);
+              if DeltaY <> 0 then
+                ScrollWindow(Handle, 0, DeltaY, ClipRect, ClipRect);
+            end
+            else
+              ScrollWindow(Handle, DeltaX, DeltaY, ClipRect, ClipRect);
+          finally
+            if toBlockPaintWhileScroll in FOptions.FMiscOptions then
+            begin
+              SendMessage(Handle, WM_SETREDRAW, 1, 0);
+              Invalidate;
+            end;
+          end;
         end;
       end;
 
