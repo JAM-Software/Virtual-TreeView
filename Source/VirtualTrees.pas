@@ -1,4 +1,4 @@
-
+﻿
 unit VirtualTrees;
 
 // The contents of this file are subject to the Mozilla Public License
@@ -225,9 +225,6 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 type
   // Alias defintions for convenience
   TImageIndex = System.UITypes.TImageIndex;
-
-  // For Firemonkey support, see #841
-  TDimension = Integer;
 
   // The exception used by the trees.
   EVirtualTreeError = class(Exception);
@@ -999,7 +996,7 @@ type
     FSpacing: TDimension;
     FOptions: TVTColumnOptions;
     FEditOptions: TVTEditOptions;
-    FEditNextColumn: Integer;
+    FEditNextColumn: TDimension;
     FTag: NativeInt;
     FAlignment: TAlignment;
     FCaptionAlignment: TAlignment;     // Alignment of the caption.
@@ -1087,7 +1084,7 @@ type
     property MinWidth: TDimension read FMinWidth write SetMinWidth{$IFDEF VT_VCL} default 10{$ENDIF};
     property Options: TVTColumnOptions read FOptions write SetOptions default DefaultColumnOptions;
     property EditOptions: TVTEditOptions read FEditOptions write FEditOptions default toDefaultEdit;
-    property EditNextColumn: TDimension read FEditNextColumn write FEditNextColumn default -1;
+    property EditNextColumn: TDimension read FEditNextColumn write FEditNextColumn{$IFDEF VT_VCL}  default -1{$ENDIF};
     property Position: TColumnPosition read FPosition write SetPosition;
     property Spacing: TDimension read FSpacing write SetSpacing{$IFDEF VT_VCL} default 3{$ENDIF};
     property Style: TVirtualTreeColumnStyle read FStyle write SetStyle default vsText;
@@ -1117,7 +1114,7 @@ type
     FClearing: Boolean;                   // True if columns are being deleted entirely.
     FColumnPopupMenu: TPopupMenu; // Member for storing the TVTHeaderPopupMenu
 
-    function GetCount: TDimension;
+    function GetCount: Integer;
     function GetItem(Index: TColumnIndex): TVirtualTreeColumn;
     function GetNewIndex(P: TPoint; var OldIndex: TColumnIndex): Boolean;
     procedure SetDefaultWidth(Value: TDimension);
@@ -1411,7 +1408,7 @@ type
     property PopupMenu: TPopupMenu read FPopupMenu write FPopupMenu;
     property SortColumn: TColumnIndex read FSortColumn write SetSortColumn default NoColumn;
     property SortDirection: TSortDirection read FSortDirection write SetSortDirection default sdAscending;
-    property SplitterHitTolerance: Integer read fSplitterHitTolerance write fSplitterHitTolerance default 8; // The area in pixels around a spliter which is sensitive for resizing
+    property SplitterHitTolerance: TDimension read fSplitterHitTolerance write fSplitterHitTolerance{$IFDEF VT_VCL} default 8{$ENDIF}; // The area in pixels around a spliter which is sensitive for resizing
     property Style: TVTHeaderStyle read FStyle write SetStyle default hsThickButtons;
   end;
 
@@ -7963,7 +7960,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.SetDefaultWidth(Value: Integer);
+procedure TVirtualTreeColumns.SetDefaultWidth(Value: TDimension);
 
 begin
   FDefaultWidth := Value;
@@ -10242,7 +10239,7 @@ var
 
   //--------------- local function --------------------------------------------
 
-  function IsNearBy(IsFixedCol: Boolean; LeftTolerance, RightTolerance: Integer): Boolean;
+  function IsNearBy(IsFixedCol: Boolean; LeftTolerance, RightTolerance: TDimension): Boolean;
 
   begin
     if IsFixedCol then
@@ -10255,7 +10252,7 @@ var
 
 var
   I: Integer;
-  LeftTolerance: Integer; // The area left of the column divider which allows column resizing
+  LeftTolerance: TDimension; // The area left of the column divider which allows column resizing
 begin
   Result := False;
 
