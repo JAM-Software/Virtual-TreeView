@@ -17,13 +17,13 @@ What is working:
 14. "hot" and "selected" plus/minus buttons.
 
 What is not working yet:
-1. some mouse action;
+1. some mouse actions;
 2. clipboard;
-3. drawing and support of tree border;
+3. drawing tree border;
 4. drawing background;
 5. some mouse actions on header;
 6. inplace editors;
-8. scrollbars/scrolling.
+7. scrollbars/scrolling.
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 

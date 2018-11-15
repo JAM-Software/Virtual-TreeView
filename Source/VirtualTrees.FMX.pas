@@ -382,7 +382,7 @@ type
 procedure FillSystemCheckImages(Parent: TFmxObject; List: TImageList);
 
 implementation
-uses FMX.TextLayout, System.SysUtils, FMX.StdCtrls, FMX.MultiResBitmap, FMX.Objects;
+uses FMX.TextLayout, System.SysUtils, FMX.StdCtrls, FMX.MultiResBitmap, FMX.Objects, VirtualTrees.Utils, FMX.Effects;
 
 type
   TImageListHelper = class helper for TImageList
@@ -514,20 +514,21 @@ procedure FillSystemCheckImages(Parent: TFmxObject; List: TImageList);
 Var cb: TCheckBox;
   rb: TRadioButton;
   BMP: TBitmap;
-  procedure AddCtrlBmp(c: TControl; SaveToFile: Boolean=false);
+  eff: TInnerGlowEffect;
+  procedure AddCtrlBmp(c: TControl);
   Var tmpBMP: TBitmap;
   begin
     tmpBMP:= c.MakeScreenshot;
     try
       BMP.SetSize(tmpBMP.Height, tmpBMP.Height);
-      BMP.Clear(TAlphaColorRec.Null); //this somehow can sometimes clear  BeginSceneCount
+      BMP.Clear(TAlphaColorRec.Null); //this somehow can sometimes clear  BeginSceneCount and must be before BeginScene
       if BMP.Canvas.BeginScene() then
         begin
           try
             BMP.Canvas.DrawBitmap(
                 tmpBMP
-                , Rect(0, 0, BMP.Width, BMP.Height)
-                , Rect(0, 0, BMP.Width, BMP.Height)
+                , Rect(1, 1, BMP.Width, BMP.Height)
+                , Rect(0, 0, BMP.Width-1, BMP.Height-1)
                 , 1.0
                 , false
                 );
@@ -552,24 +553,42 @@ begin
       rb.Parent:= Parent;
       rb.Text:= ' ';
 
+      eff:= TInnerGlowEffect.Create(rb); //auto free
+      eff.Parent:= rb;
+      eff.GlowColor:= TAlphaColorRec.Teal;
+      eff.Softness:= 8;
+      eff.Opacity:= 0.7;
+      eff.Enabled:= false;
+
       //------------------IsUnChecked--------------------------
 
       rb.IsChecked:= false;
-      //rb.MakeScreenshot
+      eff.Enabled:= false;
       AddCtrlBmp(rb);
-      //BMP.SaveToFile('C:\BMP.png');
       List.Add(BMP); //ckRadioUncheckedNormal
-      List.Add(BMP); //ckRadioUncheckedHot
+      eff.Enabled:= false;
 
-      //rb.IsPressed:= true;
+
+      AddCtrlBmp(rb);
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightyellow;
+      List.Add(BMP); //ckRadioUncheckedHot
+      eff.Enabled:= false;
+
+
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightblue;
       AddCtrlBmp(rb);
       List.Add(BMP); //ckRadioUncheckedPressed
+      eff.Enabled:= false;
 
-      //rb.IsPressed:= false;
+
       rb.Enabled:= false;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Gray;
       AddCtrlBmp(rb);
       List.Add(BMP); //ckRadioUncheckedDisabled
-
+      eff.Enabled:= false;
 
       //------------------IsChecked---------------------------
 
@@ -577,19 +596,33 @@ begin
 
       //rb.IsPressed:= false;
       rb.Enabled:= true;
+      eff.Enabled:= false;
       AddCtrlBmp(rb);
       List.Add(BMP); //ckRadioCheckedNormal
-      List.Add(BMP); //ckRadioCheckedHot
+      eff.Enabled:= false;
 
-      //rb.IsPressed:= true;
+
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightyellow;
+      AddCtrlBmp(rb);
+      List.Add(BMP); //ckRadioCheckedHot
+      eff.Enabled:= false;
+
+
       rb.Enabled:= true;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightblue;
       AddCtrlBmp(rb);
       List.Add(BMP); //ckRadioCheckedPressed
+      eff.Enabled:= false;
 
-      //rb.IsPressed:= false;
+
       rb.Enabled:= false;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Gray;
       AddCtrlBmp(rb);
       List.Add(BMP); //ckRadioCheckedDisabled
+      eff.Enabled:= false;
     finally
       FreeAndNil(rb);
     end;
@@ -598,70 +631,118 @@ begin
     try
       cb.Parent:= Parent;
       cb.Text:= ' ';
+
+      eff:= TInnerGlowEffect.Create(cb); //auto free
+      eff.Parent:= cb;
+      eff.GlowColor:= TAlphaColorRec.Teal;
+      eff.Softness:= 8;
+      eff.Opacity:= 0.7;
+      eff.Enabled:= false;
+
       //------------------IsUnChecked--------------------------
 
       cb.IsChecked:= false;
-
+      eff.Enabled:= false;
       AddCtrlBmp(cb);
-
       List.Add(BMP); //ckCheckUncheckedNormal
+      eff.Enabled:= false;
+
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightyellow;
+      AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckUncheckedHot
+      eff.Enabled:= false;
+
 
       //cb.IsPressed:= true;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightblue;
       AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckUncheckedPressed
+      eff.Enabled:= false;
+
 
       //cb.IsPressed:= false;
       cb.Enabled:= false;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Gray;
       AddCtrlBmp(cb);
+      eff.Enabled:= false;
       List.Add(BMP); //ckCheckUncheckedDisabled
 
       //------------------IsChecked---------------------------
 
       cb.IsChecked:= true;
 
-      //cb.IsPressed:= false;
       cb.Enabled:= true;
+      eff.Enabled:= false;
       AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckCheckedNormal
-      List.Add(BMP); //ckCheckCheckedHot
+      eff.Enabled:= false;
 
-      //cb.IsPressed:= true;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightyellow;
+      List.Add(BMP); //ckCheckCheckedHot
+      eff.Enabled:= false;
+      eff.Enabled:= false;
+
+
       cb.Enabled:= true;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightblue;
       AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckCheckedPressed
+      eff.Enabled:= false;
 
-      //cb.IsPressed:= false;
+
       cb.Enabled:= false;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Gray;
       AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckCheckedDisabled
-
+      eff.Enabled:= false;
       //------------------Mixed---------------------------
 
       //how to support mixed style?
       //maybe draw unchecked and fill in the center of bitmap???
-      //i use teal for fill
+      //i use ~teal for fill
+      //changed to InnerGlowEffect
 
-      cb.IsChecked:= false;
-
+      cb.IsChecked:= true;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Green;
       AddCtrlBmp(cb);
-      Bitmap_FloodFill(BMP, BMP.Width div 2, BMP.Height div 2, $FF009191{TAlphaColorRec.Teal});
       List.Add(BMP); //ckCheckMixedNormal
+      eff.Enabled:= false;
+
+
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightyellow;
+      AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckMixedHot
+      eff.Enabled:= false;
 
-      //cb.IsPressed:= true;
+
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Lightblue;
       AddCtrlBmp(cb);
-      Bitmap_FloodFill(BMP, BMP.Width div 2, BMP.Height div 2, $FF009191{TAlphaColorRec.Teal});
       List.Add(BMP); //ckCheckMixedPressed
+      eff.Enabled:= false;
 
-      //cb.IsPressed:= false;
+
       cb.Enabled:= false;
+      eff.Enabled:= true;
+      eff.GlowColor:= TAlphaColorRec.Gray;
       AddCtrlBmp(cb);
-      Bitmap_FloodFill(BMP, BMP.Width div 2, BMP.Height div 2, $FF009191{TAlphaColorRec.Teal});
       List.Add(BMP); //ckCheckMixedDisabled
+      eff.Enabled:= false;
+
     finally
       FreeAndNil(cb);
     end;
+    eff.Enabled:= false;
+    eff.Parent:= nil;
+
   finally
     FreeAndNil(BMP);
   end;
