@@ -122,20 +122,21 @@ end;
 
 procedure TWorkerThread.CancelValidation(Tree: TBaseVirtualTree);
 
-var
-  Msg: TMsg;
+//var
+//  Msg: TMsg;
 
 begin
   // Wait for any references to this tree to be released.
   // Pump WM_CHANGESTATE messages so the thread doesn't block on SendMessage calls.
   while FCurrentTree = Tree do
   begin
-    if Tree.HandleAllocated and PeekMessage(Msg, Tree.Handle, WM_CHANGESTATE, WM_CHANGESTATE, PM_REMOVE) then
-    begin
-      TranslateMessage(Msg);
-      DispatchMessage(Msg);
-      Continue;
-    end;
+//    if Tree.HandleAllocated and PeekMessage(Msg, Tree.Handle, WM_CHANGESTATE, WM_CHANGESTATE, PM_REMOVE) then
+//    begin
+//      TranslateMessage(Msg);
+//      DispatchMessage(Msg);
+//      Continue;
+//    end;
+    Yield();
     if (toVariableNodeHeight in TBaseVirtualTreeCracker(Tree).TreeOptions.MiscOptions) then
       CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
   end;
