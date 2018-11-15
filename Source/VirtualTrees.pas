@@ -625,7 +625,7 @@ const
     coShowDropmark, coVisible, coAllowFocus, coEditable, coStyleColor];
 
 type
-  TBaseVirtualTree = class;
+  TBaseVirtualTree = class; //forward
   TVirtualTreeClass = class of TBaseVirtualTree;
 
   PVirtualNode = ^TVirtualNode;
@@ -2122,7 +2122,14 @@ type
     FButtonFillMode: TVTButtonFillMode;          // for rectangular tree buttons only: how to fill them
     FLineStyle: TVTLineStyle;                    // style of the tree lines
     FLineMode: TVTLineMode;                      // tree lines or bands etc.
-    FDottedBrush: {$IFDEF VT_FMX}TStrokeBrush{$ELSE}HBRUSH{$ENDIF};                        // used to paint dotted lines without special pens
+    {$IFDEF VT_FMX}
+    FDottedBrush: TStrokeBrush;                  // used to paint dotted lines without special pens
+    FDottedBrushGrid: TStrokeBrush;              // used to paint dotted lines without special pens
+    {$ELSE}
+    FDottedBrush: HBRUSH;                        // used to paint dotted lines without special pens
+    {$ENDIF}
+    
+    
     FSelectionCurveRadius: Cardinal;             // radius for rounded selection rectangles
     FSelectionBlendFactor: Byte;                 // Determines the factor by which the selection rectangle is to be
                                                  // faded if enabled.
@@ -2392,7 +2399,7 @@ type
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
-    procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean);
+    procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean{$IFDEF VT_FMX}; dottedBrush: TBrush{$ENDIF});
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
     function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
@@ -2745,8 +2752,8 @@ type
     procedure DragLeave; virtual;
     function DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
-    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension); virtual;
-    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; UseSelectedBkColor: Boolean = False); virtual;
+    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension{$IFDEF VT_FMX}; dottedBrush: TBrush{$ENDIF}); virtual;
+    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension{$IFDEF VT_FMX}; dottedBrush: TBrush{$ENDIF}; UseSelectedBkColor: Boolean = False); virtual;
     procedure EndOperation(OperationKind: TVTOperationKind);
     procedure EnsureNodeFocused(); virtual;
     function FindNodeInSelection(P: PVirtualNode; var Index: Integer; LowBound, HighBound: Integer): Boolean; virtual;
@@ -12326,12 +12333,23 @@ begin
     begin
       // Cause helper bitmap rebuild if the button color changed.
       case Index of
-        5:
+        4: // GridLineColor
           begin
-            FOwner.PrepareBitmaps(True, False);
+{$IFDEF VT_FMX}   
+            FOwner.PrepareBitmaps(False, True); 
+{$ENDIF}
+            FOwner.Invalidate;         
+          end;
+        5: // TreeLineColor
+          begin
+{$IFDEF VT_FMX}   
+            FOwner.PrepareBitmaps(False, True);       
+{$ELSE}
+            FOwner.PrepareBitmaps(True, False); //TODO: Is this valid for VCL? Why here are not NeedLines=True?
+{$ENDIF}
             FOwner.Invalidate;
           end;
-        7:
+        7: // BorderColor
 {$IFDEF VT_FMX}
           FOwner.Repaint;
 {$ELSE}
@@ -12593,6 +12611,8 @@ begin
 {$IFDEF VT_FMX}
   if FDottedBrush <> nil then
     FreeAndNil(FDottedBrush);
+  if FDottedBrushGrid <> nil then
+    FreeAndNil(FDottedBrushGrid);  
   FreeAndNil(FFont);
 {$ELSE}
   if FDottedBrush <> 0 then
@@ -13389,7 +13409,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType;
-  Reverse: Boolean);
+  Reverse: Boolean{$IFDEF VT_FMX}; dottedBrush: TBrush{$ENDIF});
 
 // Draws (depending on Style) one of the 5 line types of the tree.
 // If Reverse is True then a right-to-left column is being drawn, hence horizontal lines must be mirrored.
@@ -13411,38 +13431,38 @@ begin
     case Style of
       ltBottomRight:
         begin
-          DrawDottedVLine(PaintInfo, Y + VAlign, Y + H, X + HalfWidth);
-          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+          DrawDottedVLine(PaintInfo, Y + VAlign, Y + H, X + HalfWidth{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
+          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
         end;
       ltTopDown:
-        DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth);
+        DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
       ltTopDownRight:
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth);
-          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
+          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
         end;
       ltRight:
-        DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+        DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
       ltTopRight:
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + VAlign, X + HalfWidth);
-          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+          DrawDottedVLine(PaintInfo, Y, Y + VAlign, X + HalfWidth{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
+          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
         end;
       ltLeft: // left can also mean right for RTL context
         if Reverse then
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent)
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent{$IFDEF VT_FMX}, dottedBrush{$ENDIF})
         else
-          DrawDottedVLine(PaintInfo, Y, Y + H, X);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
       ltLeftBottom:
         if Reverse then
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent);
-          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
+          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
         end
         else
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X);
-          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
+          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H{$IFDEF VT_FMX}, dottedBrush{$ENDIF});
         end;
     end;
   end;
@@ -14463,6 +14483,7 @@ var
   Theme: Integer;
   BitmapData: TBitmapData;
   DestPitch: Integer;
+  i_bmp: Integer;
 {$ELSE}
   Theme: HTHEME;
 {$ENDIF}
@@ -14819,6 +14840,7 @@ begin
   begin
 {$IFDEF VT_FMX}
       FreeAndNil(FDottedBrush);
+      FreeAndNil(FDottedBrushGrid);
 {$ELSE}
     if FDottedBrush <> 0 then
       DeleteObject(FDottedBrush);
@@ -14840,38 +14862,53 @@ begin
       LineLen:= Length(LineBitsDotted); //??? what if custom
     end;
 {$IFDEF VT_FMX}
-    PatternBitmap := TBitmap.Create(8, LineLen);   //###!!! CreateBitmap(8, 8, 1, 1, Bits);
-    PatternBitmap.Clear($00FF00FF); //fully transparent
-    PatternBitmap.Canvas.BeginScene;
+    for i_bmp:= 1 to 2 do
+      begin
+        PatternBitmap := TBitmap.Create(8, LineLen);   //###!!! CreateBitmap(8, 8, 1, 1, Bits);
+        PatternBitmap.Clear(TAlphaColorRec.Null); //fully transparent
+        PatternBitmap.Canvas.BeginScene;
 
-    PatternBitmap.Map(TMapAccess.Write, BitmapData);
-    try
-      {
-      //AlphaColorToPixel PixelToAlphaColor ScanlineToAlphaColor
-      DestPitch := PixelFormatBytes[PatternBitmap.PixelFormat];
-      System.Move(PAlphaColorArray(BitmapData.Data)[0], PAlphaColorArray(Bits)[0], 8 * 4);
-      }
-      for line:= 0 to LineLen-1 do
-        begin
-          for bit:= 0 to 7 do
+        PatternBitmap.Map(TMapAccess.Write, BitmapData);
+        try
+          {
+          //AlphaColorToPixel PixelToAlphaColor ScanlineToAlphaColor
+          DestPitch := PixelFormatBytes[PatternBitmap.PixelFormat];
+          System.Move(PAlphaColorArray(BitmapData.Data)[0], PAlphaColorArray(Bits)[0], 8 * 4);
+          }
+          for line:= 0 to LineLen-1 do
             begin
-              if PWordArray(Bits)^[line] and (1 shl bit)=0 then
-                BitmapData.SetPixel(bit, line, clWhite) else
-                BitmapData.SetPixel(bit, line, FColors.TreeLineColor);
+              for bit:= 0 to 7 do
+                begin
+                  if PWordArray(Bits)^[line] and (1 shl bit)=0 then
+                    BitmapData.SetPixel(bit, line, clWhite) else
+                    begin
+                      if i_bmp=1 then                      
+                        BitmapData.SetPixel(bit, line, FColors.TreeLineColor) else
+                        BitmapData.SetPixel(bit, line, FColors.GridLineColor);
+                    end;
+                end;
             end;
+        finally
+          PatternBitmap.UnMap(BitmapData);
         end;
-    finally
-      PatternBitmap.UnMap(BitmapData);
-    end;
 
-    PatternBitmap.Canvas.EndScene;
+        PatternBitmap.Canvas.EndScene;
 
-    //FMX pattern brush is different then VCL. Where color is derived from current one...
-    //We should have 2 brushes 1 for Tree lines 1 for grid lines
-    //and recreate it every time when color is changing
-    FDottedBrush := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
-    FDottedBrush.Bitmap.Bitmap.Assign(PatternBitmap);
-    FreeAndNil(PatternBitmap);
+        //FMX pattern brush is different then VCL. Where color is derived from current one...
+        //We should have 2 brushes 1 for Tree lines 1 for grid lines
+        //and recreate it every time when color is changing
+        if i_bmp=1 then
+          begin
+            FDottedBrush := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
+            FDottedBrush.Bitmap.Bitmap.Assign(PatternBitmap);
+          end else
+          begin
+            FDottedBrushGrid := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite); //###!!! CreatePatternBrush(PatternBitmap)
+            FDottedBrushGrid.Bitmap.Bitmap.Assign(PatternBitmap);
+          end;
+        FreeAndNil(PatternBitmap);
+      end;
+    
     (*
     FDottedBrush := TStrokeBrush.Create(TBrushKind.Solid, {FColors.GridLineColor}clBlue); //###!!! CreatePatternBrush(PatternBitmap)
     (FDottedBrush as TStrokeBrush).Dash:= TStrokeDash.Dot;
@@ -22537,7 +22574,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension);
+procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension{$IFDEF VT_FMX}; dottedBrush: TBrush{$ENDIF});
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -22550,7 +22587,7 @@ begin
 {$IFDEF VT_FMX}
     Fill.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-    FillRect(R, 0, 0, [], 1.0, FDottedBrush);
+    FillRect(R, 0, 0, [], 1.0, dottedBrush);
 {$ELSE}
     Brush.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
@@ -22561,7 +22598,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; UseSelectedBkColor: Boolean = False);
+procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension{$IFDEF VT_FMX}; dottedBrush: TBrush{$ENDIF}; UseSelectedBkColor: Boolean = False);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -22582,7 +22619,7 @@ begin
       {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
 {$IFDEF VT_FMX}
-    FillRect(R, 0, 0, [], 1.0, FDottedBrush);
+    FillRect(R, 0, 0, [], 1.0, dottedBrush);
 {$ELSE}
     Winapi.Windows.FillRect(Handle, R, FDottedBrush);
 {$ENDIF}
@@ -25462,7 +25499,7 @@ begin
           begin
             DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
             DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlignment - 1, NewStyles[I],
-              BidiMode <> bdLeftToRight);
+              BidiMode <> bdLeftToRight{$IFDEF VT_FMX}, FDottedBrush{$ENDIF});
             Inc(XPos, Offset);
           end;
         end;
@@ -25472,7 +25509,7 @@ begin
       begin
         DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
         DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlignment - 1, LineImage[I],
-          BidiMode <> bdLeftToRight);
+          BidiMode <> bdLeftToRight{$IFDEF VT_FMX}, FDottedBrush{$ENDIF});
         Inc(XPos, Offset);
       end;
     end;
@@ -32152,16 +32189,16 @@ begin
                                 if BidiMode = bdLeftToRight then
                                 begin
                                   DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * FIndent, CellRect.Right - 1,
-                                    CellRect.Bottom - 1);
+                                    CellRect.Bottom - 1{$IFDEF VT_FMX}, FDottedBrushGrid{$ENDIF});
                                 end
                                 else
                                 begin
                                   DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.FPaintOptions, 1, IndentSize) * FIndent - 1,
-                                    CellRect.Bottom - 1);
+                                    CellRect.Bottom - 1{$IFDEF VT_FMX}, FDottedBrushGrid{$ENDIF});
                                 end;
                               end
                               else
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - 1);
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - 1{$IFDEF VT_FMX}, FDottedBrushGrid{$ENDIF});
 {$IFDEF VT_FMX}
                               if WasDecLine=0 then
                                 begin
@@ -32207,7 +32244,7 @@ begin
                                       lUseSelectedBkColor := (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.FSelectionOptions) and
                                                             (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions)
                                 {$IFDEF VT_VCL}and not (tsUseExplorerTheme in FStates){$ENDIF};
-                                      DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, lUseSelectedBkColor);
+                                      DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1{$IFDEF VT_FMX}, FDottedBrushGrid{$ENDIF}, lUseSelectedBkColor);
                                     end;
 
                                     Dec(CellRect.Right);
@@ -32432,7 +32469,7 @@ begin
                          (toShowVertGridLines in FOptions.FPaintOptions) and
                          (not (hoAutoResize in FHeader.FOptions) or (Cardinal(FirstColumn) < TColumnPosition(Count - 1))) then
                       begin
-                        DrawDottedVLine(PaintInfo, R.Top, R.Bottom, R.Right - 1);
+                        DrawDottedVLine(PaintInfo, R.Top, R.Bottom, R.Right - 1{$IFDEF VT_FMX}, FDottedBrushGrid{$ENDIF});
                         Dec(R.Right);
                       end;
 
