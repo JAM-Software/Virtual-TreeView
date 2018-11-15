@@ -184,10 +184,10 @@ begin
             EnterStates := [csUseCache];
 
         finally
-          LeaveStates := [csValidating, csStopValidation];
-          TBaseVirtualTreeCracker(FCurrentTree).ChangeTreeStatesAsync(EnterStates, LeaveStates);
           lCurrentTree := FCurrentTree; // Save reference in a local variable for later use
           FCurrentTree := nil; //Clear variable to prevent deadlock in CancelValidation. See #434
+          LeaveStates := [csValidating, csStopValidation];
+          TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, LeaveStates);
           Queue(TBaseVirtualTreeCracker(lCurrentTree).UpdateEditBounds);
         end;
       end;
