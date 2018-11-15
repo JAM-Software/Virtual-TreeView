@@ -680,9 +680,13 @@ begin
       List.Add(BMP); //ckCheckCheckedNormal
       eff.Enabled:= false;
 
+
       eff.Enabled:= true;
       eff.GlowColor:= TAlphaColorRec.Lightyellow;
+      eff.Opacity:= 0.3;
+      AddCtrlBmp(cb);
       List.Add(BMP); //ckCheckCheckedHot
+      eff.Opacity:= 0.7;
       eff.Enabled:= false;
       eff.Enabled:= false;
 
