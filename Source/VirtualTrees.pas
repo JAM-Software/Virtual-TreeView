@@ -10726,6 +10726,7 @@ var
   IsVSplitterHit: Boolean;
 {$IFDEF VT_FMX}
   cursorService: IFMXCursorService;
+  pomMsg: TMessage;
 {$ENDIF}
 
   //--------------- local function --------------------------------------------
@@ -11057,9 +11058,11 @@ begin
                               hsHeightTracking, hsHeightTrackPending];
       end;// WM_NCLBUTTONUP
     // hovering, mouse leave detection
+{$IFDEF VT_VCL} //in FMX it is not needed because we have AutoCapture, and can cause more problems then fixes, and this event can be captured below now. It fixes header column resizes.
     WM_NCMOUSEMOVE:
       with TWMNCMouseMove(Message), FColumns do
-      begin
+      begin         
+        
         P := Treeview.ScreenToClient(Point(XCursor, YCursor));
         Treeview.DoHeaderMouseMove({$IFDEF VT_FMX}TShiftState(Word(TWMMouse(Message).Keys)){$ELSE}GetShiftState{$ENDIF}, P.X, P.Y + FHeight);
         if InHeader(P) and ((AdjustHoverColumn(P)) or ((FDownIndex >= 0) and (FHoverIndex <> FDownIndex))) then
@@ -11067,22 +11070,23 @@ begin
           // We need a mouse leave detection from here for the non client area.
           // TODO: The best solution available would be the TrackMouseEvent API.
           // With the drop of the support of Win95 totally and WinNT4 we should replace the timer.
-{$IFDEF VT_VCL}
+          {$IFDEF VT_VCL}
           Treeview.StopTimer(HeaderTimer);
           SetTimer(Treeview.Handle, HeaderTimer, 50, nil);
-{$ENDIF}
+          {$ENDIF}
           // use Delphi's internal hint handling for header hints too
           if hoShowHint in FOptions then
           begin
             // client coordinates!
             XCursor := P.X;
             YCursor := P.Y + FHeight;
-{$IFDEF VT_VCL}
+            {$IFDEF VT_VCL}
             Application.HintMouseMessage(Treeview, Message);
-{$ENDIF}
+            {$ENDIF}
           end;
         end;
       end;
+{$ENDIF}
 {$IFDEF VT_VCL}
     WM_TIMER:
       if TWMTimer(Message).TimerID = HeaderTimer then
@@ -11107,15 +11111,22 @@ begin
       end;
 {$ENDIF}
 {$IFDEF VT_FMX}
-    WM_MOUSEMOVE,WM_SETCURSOR: // mouse capture and general message redirection
+    WM_MOUSEMOVE, WM_NCMOUSEMOVE{,WM_SETCURSOR}: // mouse capture and general message redirection
       begin
-        Result := HandleHeaderMouseMove(TWMMouseMove(Message));
+        pomMsg:= Message;
+        if Message.Msg<>{WM_SETCURSOR}WM_MOUSEMOVE then
+          begin
+            P := FOwner.ScreenToClient(Point(TWMMouseMove(pomMsg).XPos, TWMMouseMove(pomMsg).YPos));
+            TWMMouseMove(pomMsg).XPos:= P.X;
+            TWMMouseMove(pomMsg).YPos:= P.Y;
+          end;
+        Result := HandleHeaderMouseMove(TWMMouseMove(pomMsg));
+      end;
 {$ELSE}
     WM_MOUSEMOVE: // mouse capture and general message redirection
       Result := HandleHeaderMouseMove(TWMMouseMove(Message));
-//{$IFDEF VT_VCL}
-    WM_SETCURSOR:
 {$ENDIF}
+    WM_SETCURSOR:
       // Feature: design-time header
       if (FStates = []) then
       begin
@@ -11172,10 +11183,6 @@ begin
         Message.Result := 1;
         Result := True;
       end;
-{$IFDEF VT_FMX}
-    end;
-{$ENDIF}
-//{$ENDIF}
     WM_KEYDOWN,
     WM_KILLFOCUS:
       if (Message.Msg = WM_KILLFOCUS) or
@@ -24825,18 +24832,18 @@ begin
     begin
       MM.Msg:= WM_MOUSEMOVE;
     end;
+    
   if FHeader.HandleMessage(TMessage(MM)) then
     exit else
-  begin
+  begin                   
     if MM.Msg=WM_NCMOUSEMOVE then
       begin
+        FillTWMMouse(MM, TMouseButton.mbLeft, Shift, P.X, P.Y, isNC, false); //MM is as Var and can be modified inside above HandleMessage
         MM.Msg:= WM_SETCURSOR;
         if FHeader.HandleMessage(TMessage(MM)) then
-          exit;//!!!
-      end;
-  end;
-
-
+          exit;//!!!  
+      end;    
+  end;     
 
 {$ENDIF}
   if tsNodeHeightTrackPending in FStates then
