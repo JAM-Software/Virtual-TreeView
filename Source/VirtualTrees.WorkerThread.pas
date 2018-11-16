@@ -132,9 +132,8 @@ begin
 //      DispatchMessage(Msg);
 //      Continue;
 //    end;
-    Yield();
-    if (toVariableNodeHeight in TBaseVirtualTreeCracker(Tree).TreeOptions.MiscOptions) then
-      CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
+    Sleep(1);
+    CheckSynchronize(); // We need to call CheckSynchronize here because we are using TThread.Synchronize in TBaseVirtualTree.MeasureItemHeight()
   end;
 end;
 
@@ -145,8 +144,7 @@ procedure TWorkerThread.Execute;
 // Does some background tasks, like validating tree caches.
 
 var
-  EnterStates,
-  LeaveStates: TChangeStates;
+  EnterStates: TChangeStates;
   lCurrentTree: TBaseVirtualTree;
 
 begin
@@ -186,8 +184,7 @@ begin
         finally
           lCurrentTree := FCurrentTree; // Save reference in a local variable for later use
           FCurrentTree := nil; //Clear variable to prevent deadlock in CancelValidation. See #434
-          LeaveStates := [csValidating, csStopValidation];
-          TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, LeaveStates);
+          TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [csValidating, csStopValidation]);
           Queue(TBaseVirtualTreeCracker(lCurrentTree).UpdateEditBounds);
         end;
       end;
