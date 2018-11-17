@@ -32262,8 +32262,14 @@ begin
                 PaintInfo.PaintOptions := PaintOptions;
 
                 // The node background can contain a single color, a bitmap or can be drawn by the application.
-                ClearNodeBackground(PaintInfo, UseBackground, {$IFDEF VT_FMX}False{$ELSE}True{$ENDIF}, Rect(Window.Left, TargetRect.Top, Window.Right,
+                {$IFDEF VT_FMX}
+                ClearNodeBackground(PaintInfo, UseBackground, False,
+                  Rect(Window.Left, Max(Byte(hoVisible in FHeader.Options)*FHeader.Height, TargetRect.Top), Window.Right, TargetRect.Bottom)
+                  );
+                {$ELSE}
+                ClearNodeBackground(PaintInfo, UseBackground, True, Rect(Window.Left, TargetRect.Top, Window.Right,
                   TargetRect.Bottom));
+                {$ENDIF}
 
                 // Prepare column, position and node clipping rectangle.
                 PaintInfo.CellRect := R;
@@ -32358,6 +32364,8 @@ begin
                               if poUnbuffered in PaintOptions then
                               begin
                                 {$IFDEF VT_FMX}
+                                if hoVisible in FHeader.Options then
+                                  ClipRect.Top:= Max(ClipRect.Top, FHeader.Height);
                                 (*
                                 ClipRect.Left := Max(ClipRect.Left, Window.Left);
                                 ClipRect.Right := Min(ClipRect.Right, Window.Right);

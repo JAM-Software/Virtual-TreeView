@@ -15,6 +15,8 @@ What is working:
 12. checkbox support system checkboxes (platform specific) + custom checkboxes.
 13. support for Android :)
 14. "hot" and "selected" plus/minus buttons.
+15. scrollbars/scrolling (with issues: paintin focus rect when horizontal scrollbar and also when horizontal near to max).
+
 
 What is not working yet:
 1. some mouse actions;
@@ -23,7 +25,6 @@ What is not working yet:
 4. drawing background;
 5. some mouse actions on header;
 6. inplace editors;
-7. scrollbars/scrolling.
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
