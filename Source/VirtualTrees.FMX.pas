@@ -11,7 +11,8 @@
 {***********************************************************}
 
 interface
-uses System.Classes, System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics, FMX.Controls, FMX.Types;
+uses System.Classes, System.UITypes, System.Types, System.ImageList, FMX.ImgList, FMX.Graphics, FMX.Controls, FMX.Types
+  , FMX.StdCtrls;
 
 //-------- type aliasing -------------------------------------------------------------------------------------------------------------------
 
@@ -24,6 +25,8 @@ type
   TSize = System.Types.TSizeF;
   TColor = System.UITypes.TAlphaColor;
   PAnsiChar = System.MarshaledAString;
+  UINT = LongWord;
+  PUINT = ^UINT;
 
 //------- color aliasing -------------------------------------------------------------------------------------------------------------------
 
@@ -123,7 +126,50 @@ const
   SIZE_MAXSHOW = 3;
   SIZE_MAXHIDE = 4;
 
+  { Scroll Bar Constants }
+  SB_HORZ = 0;
+  SB_VERT = 1;
+  SB_CTL =  2;
+  SB_BOTH = 3;
+
+  SIF_RANGE = 1;
+  SIF_PAGE = 2;
+  SIF_POS = 4;
+  SIF_DISABLENOSCROLL = 8;
+  SIF_TRACKPOS = $10;
+  SIF_ALL = (SIF_RANGE or SIF_PAGE or SIF_POS or SIF_TRACKPOS);
+
+  { Scroll Bar Commands }
+  SB_LINEUP = 0;
+  SB_LINELEFT = 0;
+  SB_LINEDOWN = 1;
+  SB_LINERIGHT = 1;
+  SB_PAGEUP = 2;
+  SB_PAGELEFT = 2;
+  SB_PAGEDOWN = 3;
+  SB_PAGERIGHT = 3;
+  SB_THUMBPOSITION = 4;
+  SB_THUMBTRACK = 5;
+  SB_TOP = 6;
+  SB_LEFT = 6;
+  SB_BOTTOM = 7;
+  SB_RIGHT = 7;
+  SB_ENDSCROLL = 8;
+
 type
+  tagSCROLLINFO = record
+    cbSize: UINT;
+    fMask: UINT;
+    nMin: Single;
+    nMax: Single;
+    nPage: Single;
+    nPos: Single;
+    nTrackPos: Single;
+  end;
+  PScrollInfo = ^TScrollInfo;
+  TScrollInfo = tagSCROLLINFO;
+  SCROLLINFO = tagSCROLLINFO;
+
   TBorderWidth = Single;
   TBevelCut = (bvNone, bvLowered, bvRaised, bvSpace);
   TBevelEdge = (beLeft, beTop, beRight, beBottom);
@@ -190,6 +236,8 @@ const
   WM_SETFOCUS         = $0007;
   WM_KILLFOCUS        = $0008;
   WM_SETCURSOR        = $0020;
+  WM_HSCROLL          = $0114;
+  WM_VSCROLL          = $0115;
 
   CM_BASE                   = $B000;
 {$IF DEFINED(CLR)}
@@ -282,7 +330,7 @@ type
     YCursor: Single;                     //4
     //XYCursorFiller: TDWordFiller;
     Result: LRESULT;                     //4
-  end;
+  end;                                   //=20
 
   TWMNCLButtonDblClk = TWMNCHitMessage;
   TWMNCLButtonDown   = TWMNCHitMessage;
@@ -307,16 +355,16 @@ type
     Msg: Cardinal;                       //4
     tmp: Integer;                        //4
     CharCode: Word;                      //4
-    Unused: Word;                        //2
+    //Unused: Word;                        //2
     KeyData: Longint;                    //4
     Result: LRESULT;                     //4
-  end;
+  end;                                   //=20
 
   TWMKeyDown = TWMKey;
   TWMKeyUp = TWMKey;
 
-  TWMSize = record                       //4
-    Msg: Cardinal;
+  TWMSize = record
+    Msg: Cardinal;                       //4
     //MsgFiller: TDWordFiller;
     SizeType: WPARAM;  { SIZE_MAXIMIZED, SIZE_MINIMIZED, SIZE_RESTORED,  //4
                          SIZE_MAXHIDE, SIZE_MAXSHOW }
@@ -324,7 +372,20 @@ type
     Height: Single;                      //4
     //WidthHeightFiller: TDWordFiller;
     Result: LRESULT;                     //4
-  end;
+  end;                                   //=20
+
+  TWMScroll = record
+    Msg: Cardinal;                      //4
+    //MsgFiller: TDWordFiller;
+    ScrollCode: {Smallint}Integer; { SB_xxxx }   //4
+    Pos: Single;                        //4
+    //ScrollCodePosFiller: TDWordFiller;
+    ScrollBar: Integer;                 //4  nBar
+    Result: LRESULT;                    //4
+  end;                                  //=20
+
+  TWMHScroll = TWMScroll;
+  TWMVScroll = TWMScroll;
 
 procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
 
@@ -382,7 +443,7 @@ type
 procedure FillSystemCheckImages(Parent: TFmxObject; List: TImageList);
 
 implementation
-uses FMX.TextLayout, System.SysUtils, FMX.StdCtrls, FMX.MultiResBitmap, FMX.Objects, VirtualTrees.Utils, FMX.Effects;
+uses FMX.TextLayout, System.SysUtils, FMX.MultiResBitmap, FMX.Objects, VirtualTrees.Utils, FMX.Effects;
 
 type
   TImageListHelper = class helper for TImageList

@@ -2382,6 +2382,8 @@ type
     FBorderWidth: TBorderWidth;
     FHandleAllocated: Boolean;
     FBiDiMode: TBiDiMode;
+    FHScrollBar: TScrollBar;
+    FVScrollBar: TScrollBar;
 {$ENDIF}
 {$IFDEF VT_VCL}
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
@@ -2530,8 +2532,7 @@ type
     procedure WMEnable(var Message: TWMEnable); message WM_ENABLE;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
-    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
-    procedure WMHScroll(var Message: TWMHScroll); message WM_HSCROLL;
+    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;    
     procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
     procedure WMKeyUp(var Message: TWMKeyUp); message WM_KEYUP;
     procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
@@ -2555,9 +2556,10 @@ type
     procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure WMSetFocus(var Msg: TWMSetFocus); message WM_SETFOCUS;
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
-    procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
-    procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
+    procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;     
 {$ENDIF}
+    procedure WMHScroll(var Message: TWMHScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_HSCROLL;{$ENDIF}
+    procedure WMVScroll(var Message: TWMVScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_VSCROLL;{$ENDIF}
     procedure WMSize(var Message: TWMSize); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_SIZE;{$ENDIF}
     function GetRangeX: TDimension;
     function GetDoubleBuffered: Boolean;
@@ -3249,7 +3251,7 @@ type
     procedure SortTree(Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual;
     procedure ToggleNode(Node: PVirtualNode);
     procedure UpdateHorizontalRange; virtual;
-    procedure UpdateHorizontalScrollBar(DoRepaint: Boolean);
+    procedure UpdateHorizontalScrollBar(DoRepaint: Boolean{$IFDEF VT_FMX}; FromSetOffsetXY: Boolean=False{$ENDIF});
     procedure UpdateRanges;
     procedure UpdateScrollBars(DoRepaint: Boolean); virtual;
     procedure UpdateVerticalRange;
@@ -3339,10 +3341,19 @@ type
     property BevelWidth: TBevelWidth read FBevelWidth write SetBevelWidth default 1;
     property BorderWidth: TBorderWidth read FBorderWidth write SetBorderWidth;
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
+    property HScrollBar: TScrollBar read FHScrollBar;
+    property VScrollBar: TScrollBar read FVScrollBar;
     procedure Invalidate();
     function ClientToScreen(P: TPoint): TPoint;
     function ScreenToClient(P: TPoint): TPoint;
     procedure RecreateWnd;
+    procedure ShowScrollBar(Bar: Integer; AShow: Boolean);
+    function SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+    function GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+    function GetScrollPos(Bar: Integer): TDimension; 
+    function GetScrollBarForBar(Bar: Integer): TScrollBar;
+    procedure HScrollChangeProc(Sender: TObject);
+    procedure VScrollChangeProc(Sender: TObject);
 {$ENDIF}
   end;
 
@@ -12462,6 +12473,24 @@ begin
   DisableFocusEffect := True;
   CanFocus := True;
   AutoCapture := True;
+  
+  FHScrollBar:= TScrollBar.Create(Self);
+  FHScrollBar.Parent:= Self;
+  FHScrollBar.Orientation:= TOrientation.Horizontal;
+  FHScrollBar.Align:= TAlignLayout.MostBottom;
+  FHScrollBar.Visible:= true;
+  FHScrollBar.OnChange:= HScrollChangeProc;
+  FHScrollBar.Margins.Right:= FHScrollBar.Height; 
+  
+  FVScrollBar:= TScrollBar.Create(Self);
+  FVScrollBar.Parent:= Self;
+  FVScrollBar.Orientation:= TOrientation.Vertical;
+  FVScrollBar.Align:= TAlignLayout.MostRight;
+  FVScrollBar.Visible:= true;
+  FVScrollBar.OnChange:= VScrollChangeProc;
+  //FVScrollBar.Margins.Bottom:= FVScrollBar.Width; 
+  
+  SetAcceptsControls(false);
 {$ELSE}
   ControlStyle := ControlStyle - [csSetCaption] + [csCaptureMouse, csOpaque, csReplicatable, csDisplayDragImage,
     csReflector];
@@ -13680,10 +13709,22 @@ begin
   if Assigned(FHeader) then
     begin
       if hoVisible in FHeader.FOptions then
-        Result.Top:= Result.Top + FHeader.Height;
+        Inc(Result.Top, FHeader.Height);
     end;
+  if FVScrollBar.Visible then
+    Dec(Result.Right, FVScrollBar.Width);
+  if FHScrollBar.Visible then
+    Dec(Result.Bottom, FHScrollBar.Height);
+    
+  if Result.Left>Result.Right then
+    Result.Left:= Result.Right;
+    
   if Result.Top>Result.Bottom then
     Result.Top:= Result.Bottom;
+
+  //OffsetRect(Result, OffsetX, OffsetY);
+  //Dec(Result.Left, -OffsetX); //increase width
+  //Dec(Result.Top, -OffsetY);  //increase height
 end;
 
 procedure TBaseVirtualTree.Resize;
@@ -16319,12 +16360,127 @@ procedure TBaseVirtualTree.Invalidate();
 begin
   Repaint;
 end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.RecreateWnd();
 begin
   Repaint;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.ShowScrollBar(Bar: Integer; AShow: Boolean);
+begin
+  if (Bar=SB_HORZ) or (Bar=SB_BOTH) then
+    FHScrollBar.Visible:= AShow;
+
+  if (Bar=SB_VERT) or (Bar=SB_BOTH) then
+    FVScrollBar.Visible:= AShow;
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+Var ScrollBar: TScrollBar;
+begin
+  ScrollBar:= GetScrollBarForBar(Bar);
+  if ScrollBar=nil then  
+    Exit(0); //!!!
+  
+  if ScrollInfo.fMask and SIF_PAGE<>0 then
+    begin
+      ScrollBar.SmallChange:= ScrollInfo.nPage;
+    end;
+
+  if ScrollInfo.fMask and SIF_RANGE<>0 then
+    begin
+      ScrollBar.Min:= ScrollInfo.nMin;
+      ScrollBar.Max:= ScrollInfo.nMax;
+    end;  
+
+  if ScrollInfo.fMask and SIF_POS<>0 then
+    begin
+      ScrollBar.Value:= ScrollInfo.nPos;
+    end;  
+
+  Result:= ScrollBar.Value;
+  
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+Var ScrollBar: TScrollBar;
+begin
+  ScrollBar:= GetScrollBarForBar(Bar);
+  if ScrollBar=nil then  
+    Exit(False); //!!!
+
+  Result:= true;
+
+  ScrollInfo.cbSize:= SizeOf(TScrollInfo);
+  ScrollInfo.fMask:= SIF_ALL; 
+  
+  ScrollInfo.nMin:= ScrollBar.Min;
+  ScrollInfo.nMax:= ScrollBar.Max;
+  ScrollInfo.nPage:= ScrollBar.SmallChange;
+  ScrollInfo.nPos:= ScrollBar.Value;
+  ScrollInfo.nTrackPos:= ScrollBar.Value; 
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetScrollPos(Bar: Integer): TDimension;
+Var ScrollInfo: TScrollInfo;
+begin
+  GetScrollInfo(Bar, ScrollInfo); //ignore result
+  Result:= ScrollInfo.nPos;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetScrollBarForBar(Bar: Integer): TScrollBar;
+begin
+  if (Bar=SB_HORZ) then
+    Result:= FHScrollBar else
+  if (Bar=SB_VERT) then
+    Result:= FVScrollBar else
+    Result:= nil;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.HScrollChangeProc(Sender: TObject);
+Var M: TWMHScroll;
+begin
+  M.Msg:= WM_HSCROLL;
+  M.ScrollCode:= SB_THUMBPOSITION;
+  M.Pos:= GetScrollPos(SB_HORZ);
+  M.ScrollBar:= SB_HORZ;
+  M.Result:= 0;
+
+  WMHScroll(M);
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.VScrollChangeProc(Sender: TObject);
+Var M: TWMHScroll;
+begin
+  M.Msg:= WM_VSCROLL;
+  M.ScrollCode:= SB_THUMBPOSITION;
+  M.Pos:= GetScrollPos(SB_VERT);
+  M.ScrollBar:= SB_VERT;
+  M.Result:= 0;
+  
+  WMVScroll(M);
+  Repaint;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.SetBiDiMode(Value: TBiDiMode);
@@ -17429,14 +17585,14 @@ begin
         Message.Result := 0;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.WMHScroll(var Message: TWMHScroll);
 
   //--------------- local functions -------------------------------------------
 
-  function GetRealScrollPosition: Integer;
+  function GetRealScrollPosition: TDimension;
 
   var
     SI: TScrollInfo;
@@ -17446,7 +17602,7 @@ procedure TBaseVirtualTree.WMHScroll(var Message: TWMHScroll);
     SI.cbSize := SizeOf(TScrollInfo);
     SI.fMask := SIF_TRACKPOS;
     Code := SB_HORZ;
-    GetScrollInfo(Handle, Code, SI);
+    GetScrollInfo({$IFDEF VT_VCL}Handle, {$ENDIF}Code, SI);
     Result := SI.nTrackPos;
   end;
 
@@ -17463,7 +17619,7 @@ begin
 
   case Message.ScrollCode of
     SB_BOTTOM:
-      SetOffsetX(-Integer(FRangeX));
+      SetOffsetX(-FRangeX);
     SB_ENDSCROLL:
       begin
         DoStateChange([], [tsThumbTracking]);
@@ -17484,7 +17640,7 @@ begin
       begin
         DoStateChange([tsThumbTracking]);
         if UseRightToLeftAlignment then
-          SetOffsetX(-Integer(FRangeX) + ClientWidth + GetRealScrollPosition)
+          SetOffsetX(-FRangeX + ClientWidth + GetRealScrollPosition)
         else
           SetOffsetX(-GetRealScrollPosition);
       end;
@@ -17496,7 +17652,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.WMKeyDown(var Message: TWMKeyDown);
 
 // Keyboard event handling for node focus, selection, node specific popup menus and help invokation.
@@ -18943,14 +19099,14 @@ begin
     end;
   end;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.WMVScroll(var Message: TWMVScroll);
 
   //--------------- local functions -------------------------------------------
 
-  function GetRealScrollPosition: Integer;
+  function GetRealScrollPosition: TDimension;
 
   var
     SI: TScrollInfo;
@@ -18960,7 +19116,7 @@ procedure TBaseVirtualTree.WMVScroll(var Message: TWMVScroll);
     SI.cbSize := SizeOf(TScrollInfo);
     SI.fMask := SIF_TRACKPOS;
     Code := SB_VERT;
-    GetScrollInfo(Handle, Code, SI);
+    GetScrollInfo({$IFDEF VT_VCL}Handle, {$ENDIF}Code, SI);
     Result := SI.nTrackPos;
   end;
 
@@ -18969,7 +19125,7 @@ procedure TBaseVirtualTree.WMVScroll(var Message: TWMVScroll);
 begin
   case Message.ScrollCode of
     SB_BOTTOM:
-      SetOffsetY(-Integer(FRoot.TotalHeight));
+      SetOffsetY(-FRoot.TotalHeight);
     SB_ENDSCROLL:
       begin
         DoStateChange([], [tsThumbTracking]);
@@ -18979,7 +19135,11 @@ begin
         // Really weird invalidation needed here (and I do it only because it happens so rarely), because
         // when showing the horizontal scrollbar while scrolling down using the down arrow button,
         // the button will be repainted on mouse up (at the wrong place in the far right lower corner)...
+{$IFDEF VT_FMX}
+        Repaint;
+{$ELSE}
         RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
+{$ENDIF}
       end;
     SB_LINEUP:
       SetOffsetY(FOffsetY + FScrollBarOptions.FIncrementY);
@@ -19001,7 +19161,7 @@ begin
   end;
   Message.Result := 0;
 end;
-{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.AddToSelection(Node: PVirtualNode);
@@ -21755,7 +21915,9 @@ begin
   DeltaY := Value.Y - FOffsetY;
 
   Result := (DeltaX <> 0) or (DeltaY <> 0);
+{$IFDEF VT_VCL}
   if Result then
+{$ENDIF}
   begin
     FOffsetX := Value.X;
     FOffsetY := Value.Y;
@@ -21843,6 +22005,7 @@ begin
       HandleHotTrack(P.X, P.Y);
 
     DoScroll(DeltaX, DeltaY);
+    UpdateHorizontalScrollBar(true, True);
 {$ELSE}
     GetCursorPos(P);
     P := ScreenToClient(P);
@@ -21860,7 +22023,9 @@ end;
 procedure TBaseVirtualTree.DoShowScrollBar(Bar: Integer; Show: Boolean);
 
 begin
-{$IFDEF VT_VCL}
+{$IFDEF VT_FMX}
+  ShowScrollBar(Bar, Show);
+{$ELSE}
   ShowScrollBar(Handle, Bar, Show);
 {$ENDIF}
   if Assigned(FOnShowScrollBar) then
@@ -25156,7 +25321,12 @@ begin
 
       // The clipping rectangle is given in client coordinates of the window. We have to convert it into
       // a sliding window of the tree image.
+      {$IFDEF VT_FMX}
       OffsetRect(Window, FEffectiveOffsetX - RTLOffset, -FOffsetY);
+      {$ELSE}
+      OffsetRect(Window, FEffectiveOffsetX - RTLOffset, -FOffsetY);
+      {$ENDIF}
+
       PaintTree(Canvas, Window, Target, Options);
     end
     else
@@ -26951,10 +27121,11 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-{$IFDEF VT_VCL}
+
 const
   ScrollMasks: array[Boolean] of Cardinal = (0, SIF_DISABLENOSCROLL);
-
+  
+{$IFDEF VT_VCL}
 const // Region identifiers for GetRandomRgn
   CLIPRGN = 1;
   METARGN = 2;
@@ -31893,10 +32064,12 @@ var
   ColumnIsFixed: Boolean;
 {$IFDEF VT_FMX}
   WasDecLine: Integer;
+  tmpR: TRect;
 {$ENDIF}
 begin
 {$IFDEF VT_FMX}
   PaintOptions:= PaintOptions + [poUnbuffered]; //!!!!!!!
+  //TargetCanvas.Offset:= Point(OffsetX, OffsetY);
 {$ENDIF}
 
   if not (tsPainting in FStates) then
@@ -31990,6 +32163,7 @@ begin
         TargetRect := Rect(Target.X, Target.Y - (Window.Top - BaseOffset), MaximumRight, 0);
         TargetRect.Bottom := TargetRect.Top;
 {$IFDEF VT_FMX}
+        OffsetRect(TargetRect, -FEffectiveOffsetX, 0);
         TargetCanvas.Font.Assign(Self.Font);
 {$ELSE}
         TargetCanvas.Font := Self.Font;
@@ -32032,6 +32206,9 @@ begin
             // which are children of selected nodes.
             if (SelectLevel > 0) or not (poSelectedOnly in PaintOptions) then
             begin
+{$IFDEF VT_FMX}
+              //Canvas.Offset:= Point(-EffectiveOffsetX, 0);
+{$ENDIF}
 {$IFDEF VT_VCL}
               if not (poUnbuffered in PaintOptions) then
               begin
@@ -32061,6 +32238,8 @@ begin
               CurrentNodeHeight := PaintInfo.Node.NodeHeight;
 {$IFDEF VT_FMX}
               R := TargetRect;
+              //R.Top:= TargetRect.Top;
+              //R.Bottom:= TargetRect.Bottom;
               if (poGridLines in PaintOptions) and (toShowHorzGridLines in FOptions.FPaintOptions) then
                 begin
                   if WasDecLine=0 then
@@ -32178,10 +32357,21 @@ begin
                               ClipRect := CellRect;
                               if poUnbuffered in PaintOptions then
                               begin
+                                {$IFDEF VT_FMX}
+                                (*
+                                ClipRect.Left := Max(ClipRect.Left, Window.Left);
+                                ClipRect.Right := Min(ClipRect.Right, Window.Right);
+                                if hoVisible in FHeader.Options then
+                                  ClipRect.Top := Max(Max(ClipRect.Top, Window.Top - (BaseOffset - CurrentNodeHeight)), FHeader.Height) else
+                                  ClipRect.Top := Max(ClipRect.Top, Window.Top - (BaseOffset - CurrentNodeHeight));
+                                ClipRect.Bottom := ClipRect.Bottom - Max(TargetRect.Bottom - MaximumBottom, 0){$IFDEF VT_FMX}+1{$ENDIF};
+                                *)
+                                {$ELSE}
                                 ClipRect.Left := Max(ClipRect.Left, Window.Left);
                                 ClipRect.Right := Min(ClipRect.Right, Window.Right);
                                 ClipRect.Top := Max(ClipRect.Top, Window.Top - (BaseOffset - CurrentNodeHeight));
-                                ClipRect.Bottom := ClipRect.Bottom - Max(TargetRect.Bottom - MaximumBottom, 0){$IFDEF VT_FMX}+1{$ENDIF};
+                                ClipRect.Bottom := ClipRect.Bottom - Max(TargetRect.Bottom - MaximumBottom, 0);
+                                {$ENDIF}
                               end;
 {$IFDEF VT_FMX}
                               Canvas.IntersectClipRect(ClipRect);
@@ -32335,8 +32525,13 @@ begin
                     if coVisible in Items[NextColumn].FOptions then
                       with PaintInfo do
                       begin
+{$IFDEF VT_FMX}
+                        tmpR:= CellRect;
+                        CellRect.Left:= CellRect.Right;
+                        Items[NextColumn].GetAbsoluteBounds(tmpR.Left, tmpR.Right);
+                        CellRect.Right:= CellRect.Left + tmpR.Width;
+{$ELSE}
                         Items[NextColumn].GetAbsoluteBounds(CellRect.Left, CellRect.Right);
-{$IFDEF VT_VCL}
                         CellRect.Bottom := Node.NodeHeight;
                         ContentRect.Bottom := Node.NodeHeight;
 {$ENDIF}
@@ -34199,23 +34394,18 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.UpdateHorizontalScrollBar(DoRepaint: Boolean);
-{$IFDEF VT_VCL}
+procedure TBaseVirtualTree.UpdateHorizontalScrollBar(DoRepaint: Boolean{$IFDEF VT_FMX}; FromSetOffsetXY: Boolean=False{$ENDIF});
 var
   ScrollInfo: TScrollInfo;
-{$ENDIF}
 begin
   UpdateHorizontalRange;
 
   if (tsUpdating in FStates) or not HandleAllocated then
     Exit;
 
-
-{$IFDEF VT_VCL}
-
   // Adjust effect scroll offset depending on bidi mode.
   if UseRightToLeftAlignment then
-    FEffectiveOffsetX := Integer(FRangeX) - ClientWidth + FOffsetX
+    FEffectiveOffsetX := FRangeX - ClientWidth + FOffsetX
   else
     FEffectiveOffsetX := -FOffsetX;
 
@@ -34224,9 +34414,9 @@ begin
     ZeroMemory (@ScrollInfo, SizeOf(ScrollInfo));
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
     ScrollInfo.fMask := SIF_ALL;
-    GetScrollInfo(Handle, SB_HORZ, ScrollInfo);
+    GetScrollInfo({$IFDEF VT_VCL}Handle,{$ENDIF} SB_HORZ, ScrollInfo);
 
-    if (Integer(FRangeX) > ClientWidth) or FScrollBarOptions.AlwaysVisible then
+    if (FRangeX > ClientWidth) or FScrollBarOptions.AlwaysVisible then
     begin
       DoShowScrollBar(SB_HORZ, True);
 
@@ -34236,9 +34426,13 @@ begin
       ScrollInfo.nPage := Max(0, ClientWidth + 1);
 
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
-      SetScrollInfo(Handle, SB_HORZ, ScrollInfo, DoRepaint);
+      SetScrollInfo({$IFDEF VT_VCL}Handle,{$ENDIF} SB_HORZ, ScrollInfo, DoRepaint);
       if DoRepaint then
+{$IFDEF VT_FMX}
+        Repaint;
+{$ELSE}
         RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
+{$ENDIF}
     end
     else
     begin
@@ -34247,25 +34441,34 @@ begin
       ScrollInfo.nPos := 0;
       ScrollInfo.nPage := 0;
       DoShowScrollBar(SB_HORZ, False);
-      SetScrollInfo(Handle, SB_HORZ, ScrollInfo, False);
+      SetScrollInfo({$IFDEF VT_VCL}Handle,{$ENDIF} SB_HORZ, ScrollInfo, False);
     end;
 
     // Since the position is automatically changed if it doesn't meet the range
     // we better read the current position back to stay synchronized.
-    FEffectiveOffsetX := GetScrollPos(Handle, SB_HORZ);
-    if UseRightToLeftAlignment then
-      SetOffsetX(-Integer(FRangeX) + ClientWidth + FEffectiveOffsetX)
-    else
-      SetOffsetX(-FEffectiveOffsetX);
+    FEffectiveOffsetX := GetScrollPos({$IFDEF VT_VCL}Handle,{$ENDIF} SB_HORZ);
+{$IFDEF VT_FMX}
+    if not FromSetOffsetXY then
+{$ENDIF}    
+    begin
+      if UseRightToLeftAlignment then
+        SetOffsetX(-FRangeX + ClientWidth + FEffectiveOffsetX)
+      else
+        SetOffsetX(-FEffectiveOffsetX);
+    end;
   end
   else
   begin
     DoShowScrollBar(SB_HORZ, False);
 
     // Reset the current horizontal offset to account for window resize etc.
-    SetOffsetX(FOffsetX);
+{$IFDEF VT_FMX}   
+    if not FromSetOffsetXY then 
+{$ENDIF}   
+      begin
+        SetOffsetX(FOffsetX);
+      end;
   end;
-{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34313,10 +34516,8 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.UpdateVerticalScrollBar(DoRepaint: Boolean);
-{$IFDEF VT_VCL}
 var
   ScrollInfo: TScrollInfo;
-{$ENDIF}
 begin
   UpdateVerticalRange;
 
@@ -34324,14 +34525,14 @@ begin
     Exit;
 {$IFDEF VT_VCL}
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls like ' + Classname + ' and its scrollbars should only be manipulated through the main thread.');
-
-  if FScrollBarOptions.ScrollBars in [ssVertical, ssBoth] then
+{$ENDIF}
+  if FScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth] then
   begin
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
     ScrollInfo.fMask := SIF_ALL;
-    GetScrollInfo(Handle, SB_VERT, ScrollInfo);
+    GetScrollInfo({$IFDEF VT_VCL}Handle, {$ENDIF}SB_VERT, ScrollInfo);
 
-    if (Integer(FRangeY) > ClientHeight) or FScrollBarOptions.AlwaysVisible then
+    if (FRangeY > ClientHeight) or FScrollBarOptions.AlwaysVisible then
     begin
       DoShowScrollBar(SB_VERT, True);
 
@@ -34341,7 +34542,7 @@ begin
       ScrollInfo.nPage := Max(0, ClientHeight + 1);
 
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
-      SetScrollInfo(Handle, SB_VERT, ScrollInfo, DoRepaint);
+      SetScrollInfo({$IFDEF VT_VCL}Handle, {$ENDIF}SB_VERT, ScrollInfo, DoRepaint);
     end
     else
     begin
@@ -34350,12 +34551,12 @@ begin
       ScrollInfo.nPos := 0;
       ScrollInfo.nPage := 0;
       DoShowScrollBar(SB_VERT, False);
-      SetScrollInfo(Handle, SB_VERT, ScrollInfo, False);
+      SetScrollInfo({$IFDEF VT_VCL}Handle, {$ENDIF}SB_VERT, ScrollInfo, False);
     end;
 
     // Since the position is automatically changed if it doesn't meet the range
     // we better read the current position back to stay synchronized.
-    SetOffsetY(-GetScrollPos(Handle, SB_VERT));
+    SetOffsetY(-GetScrollPos({$IFDEF VT_VCL}Handle, {$ENDIF}SB_VERT));
   end
   else
   begin
@@ -34364,7 +34565,6 @@ begin
     // Reset the current vertical offset to account for window resize etc.
     SetOffsetY(FOffsetY);
   end;
-{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
