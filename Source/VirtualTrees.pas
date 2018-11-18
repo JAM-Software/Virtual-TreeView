@@ -32264,7 +32264,7 @@ begin
                 // The node background can contain a single color, a bitmap or can be drawn by the application.
                 {$IFDEF VT_FMX}
                 ClearNodeBackground(PaintInfo, UseBackground, False,
-                  Rect(Window.Left, Max(Byte(hoVisible in FHeader.Options)*FHeader.Height, TargetRect.Top), Window.Right, TargetRect.Bottom)
+                  Rect(Window.Left-FEffectiveOffsetX, Max(Byte(hoVisible in FHeader.Options)*FHeader.Height, TargetRect.Top), Window.Right, TargetRect.Bottom)
                   );
                 {$ELSE}
                 ClearNodeBackground(PaintInfo, UseBackground, True, Rect(Window.Left, TargetRect.Top, Window.Right,
@@ -34429,9 +34429,20 @@ begin
       DoShowScrollBar(SB_HORZ, True);
 
       ScrollInfo.nMin := 0;
-      ScrollInfo.nMax := FRangeX;
       ScrollInfo.nPos := FEffectiveOffsetX;
+      {$IFDEF VT_FMX}
+      if hoVisible in Header.Options then
+        begin
+          ScrollInfo.nPage := Max(0, FRangeX-ClientWidth + 1);
+          ScrollInfo.nMax := Max(0, FRangeX-ClientWidth + 1);
+        end else
+        begin
+          ScrollInfo.nPage := Max(0, ClientWidth + 1);
+          ScrollInfo.nMax := FRangeX;
+        end;
+      {$ELSE}
       ScrollInfo.nPage := Max(0, ClientWidth + 1);
+      {$ENDIF}
 
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
       SetScrollInfo({$IFDEF VT_VCL}Handle,{$ENDIF} SB_HORZ, ScrollInfo, DoRepaint);
@@ -34544,10 +34555,19 @@ begin
     begin
       DoShowScrollBar(SB_VERT, True);
 
+      {$IFDEF VT_FMX}
+      ScrollInfo.nMin := 0;
+      ScrollInfo.nMax := Max(0, FRangeY-ClientHeight+1);
+      ScrollInfo.nPos := -FOffsetY;
+      ScrollInfo.nPage := Max(0, FRangeY-ClientHeight + 1);
+      {$ELSE}
       ScrollInfo.nMin := 0;
       ScrollInfo.nMax := FRangeY;
       ScrollInfo.nPos := -FOffsetY;
       ScrollInfo.nPage := Max(0, ClientHeight + 1);
+      {$ENDIF}
+
+
 
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
       SetScrollInfo({$IFDEF VT_VCL}Handle, {$ENDIF}SB_VERT, ScrollInfo, DoRepaint);
