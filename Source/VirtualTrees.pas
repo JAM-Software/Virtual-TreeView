@@ -32332,7 +32332,7 @@ begin
                         AdjustPaintCellRect(PaintInfo, NextColumn);
 
                         // Paint the cell only if it is in the current window.
-                        if PaintInfo.CellRect.Right > Window.Left then
+                        if PaintInfo.CellRect.Right > Window.Left{$IFDEF VT_FMX}-FEffectiveOffsetX{$ENDIF} then
                         begin
                           with PaintInfo do
                           begin
@@ -32568,9 +32568,7 @@ begin
                 end;
 
                 // Put the constructed node image onto the target canvas.
-{$IFDEF VT_FMX}
-				//TODO:
-{$ELSE}
+{$IFDEF VT_VCL}
                 if not (poUnbuffered in PaintOptions) then
                   with TWithSafeRect(TargetRect), NodeBitmap do
                     BitBlt(TargetCanvas.Handle, Left, Top, Width, Height, Canvas.Handle, Window.Left, 0, SRCCOPY);
