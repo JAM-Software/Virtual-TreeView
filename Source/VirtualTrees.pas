@@ -16377,6 +16377,11 @@ begin
 
   if (Bar=SB_VERT) or (Bar=SB_BOTH) then
     FVScrollBar.Visible:= AShow;
+
+  if FHScrollBar.Visible and FVScrollBar.Visible then
+    FHScrollBar.Margins.Right:= FHScrollBar.Height else
+    FHScrollBar.Margins.Right:= 0;  
+    
   Repaint;
 end;
 
@@ -32467,7 +32472,7 @@ begin
                             end;
 
                             // Prepare background and focus rect for the current cell.
-                            PrepareCell(PaintInfo, Window.Left, PaintWidth);
+                            PrepareCell(PaintInfo, Window.Left{$IFDEF VT_FMX}-FEffectiveOffsetX{$ENDIF}, PaintWidth);
 
                             // Some parts are only drawn for the main column.
                             if IsMainColumn then
@@ -32589,6 +32594,19 @@ begin
           end;
         end;
 
+        {$IFDEF VT_FMX}
+        //Fill the area between two scrollBars
+        if FHScrollBar.Visible and FVScrollBar.Visible then
+          begin
+            TargetCanvas.Fill.Color:= clBtnFace; //this should be color from the style of scrollbar - how to get it?
+            TargetCanvas.FillRect(
+              Rect(Width-FHScrollBar.Margins.Right, Height-FHScrollBar.Margins.Right, Width, Height)
+              , 0, 0, [], 1.0
+              );
+          end;
+        {$ENDIF}
+        
+        
         // Erase rest of window not covered by a node.
         if (TargetRect.Top < MaximumBottom) then
         begin
