@@ -19636,14 +19636,13 @@ procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TChan
 var
   lMessage: TMessage;
 begin
-{$IFDEF VT_VCL}
-  //TODO: If this works reliable, move to TWorkerThread and do not use TMessage as parameter type. See issue #844
+  //TODO: If this works reliable, move to TWorkerThread and do not use TMessage as parameter type, get rid of TChangeStates type. See issue #844
   LMessage.Msg := WM_CHANGESTATE;
   lMessage.WParam := Byte(EnterStates);
   lMessage.LParam := Byte(LeaveStates);
 
   if (Self.HandleAllocated) then
-    TThread.Synchronize(nil, procedure begin WMChangeState(lMessage) end);
+    TThread.Queue(nil, procedure begin WMChangeState(lMessage) end);
 //    SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
 {$ENDIF}
 end;
