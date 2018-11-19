@@ -15,11 +15,11 @@ What is working:
 12. checkbox support system checkboxes (platform specific) + custom checkboxes.
 13. support for Android :)
 14. "hot" and "selected" plus/minus buttons.
-15. scrollbars/scrolling (with issues: paintin focus rect when horizontal scrollbar and also when horizontal near to max).
+15. scrollbars/scrolling.
 
 
 What is not working yet:
-1. some mouse actions;
+1. some mouse actions (drag/drop);
 2. clipboard;
 3. drawing tree border;
 4. drawing background;
