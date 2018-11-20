@@ -88,6 +88,7 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <SanitizedProjectName>VirtualTreesR_FMX</SanitizedProjectName>
+        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
         <DCC_CBuilderOutput>None</DCC_CBuilderOutput>

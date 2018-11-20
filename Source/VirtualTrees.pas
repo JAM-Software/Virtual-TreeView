@@ -2083,7 +2083,7 @@ type
     FEditLink: IVTEditLink;                      // used to comunicate with an application defined editor
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
-    FBackground: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF};                         // A background image loadable at design and runtime.
+    FBackground: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF};                         // A background image loadable at design and runtime.
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
@@ -2446,7 +2446,7 @@ type
     procedure FakeReadIdent(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
-    procedure SetBackground(const Value: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF});
+    procedure SetBackground(const Value: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF});
     procedure SetBackGroundImageTransparent(const Value: Boolean);
     procedure SetBackgroundOffset(const Index: Integer; const Value: TDimension);
     procedure SetBorderStyle(Value: TBorderStyle);
@@ -2497,11 +2497,11 @@ type
     procedure SetVerticalAlignment(Node: PVirtualNode; Value: Byte);
     procedure SetVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
-    procedure PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
-    procedure StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
+    procedure PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF}; ADrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
+    procedure StaticBackground(Source: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
     procedure StopTimer(ID: Integer);
     procedure SetWindowTheme(const Theme: string);
-    procedure TileBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+    procedure TileBackground(Source: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF}; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
 {$IFDEF VT_VCL}
 
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
@@ -2523,8 +2523,7 @@ type
     procedure TVMGetItem(var Message: TMessage); message TVM_GETITEM;
     procedure TVMGetItemRect(var Message: TMessage); message TVM_GETITEMRECT;
     procedure TVMGetNextItem(var Message: TMessage); message TVM_GETNEXTITEM;
-    procedure WMCancelMode(var Message: TWMCancelMode); message WM_CANCELMODE;
-    procedure WMChangeState(var Message: TMessage); message WM_CHANGESTATE;
+    procedure WMCancelMode(var Message: TWMCancelMode); message WM_CANCELMODE;    
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
     procedure WMCopy(var Message: TWMCopy); message WM_COPY;
@@ -2558,6 +2557,7 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;     
 {$ENDIF}
+    procedure WMChangeState(var Message: TMessage); message WM_CHANGESTATE;
     procedure WMHScroll(var Message: TWMHScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_HSCROLL;{$ENDIF}
     procedure WMVScroll(var Message: TWMVScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_VSCROLL;{$ENDIF}
     procedure WMSize(var Message: TWMSize); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_SIZE;{$ENDIF}
@@ -2876,7 +2876,7 @@ type
     property AutoExpandDelay: Cardinal read FAutoExpandDelay write FAutoExpandDelay default 1000;
     property AutoScrollDelay: Cardinal read FAutoScrollDelay write FAutoScrollDelay default 1000;
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
-    property Background: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF} read FBackground write SetBackground;
+    property Background: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF} read FBackground write SetBackground;
     property BackGroundImageTransparent: Boolean read FBackGroundImageTransparent write SetBackGroundImageTransparent default False;
     property BackgroundOffsetX: TDimension index 0 read FBackgroundOffsetX write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
     property BackgroundOffsetY: TDimension index 1 read FBackgroundOffsetY write SetBackgroundOffset{$IFDEF VT_VCL} default 0{$ENDIF};
@@ -9332,8 +9332,8 @@ var
         else
 {$ENDIF}
         begin
-          {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FHeader.FBackgroundColor;
-          FillRect(BackgroundRect{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+          Brush.Color := FHeader.FBackgroundColor;
+          FillRect(BackgroundRect);
         end;
       end;
     end;
@@ -11272,8 +11272,8 @@ begin
 
     // Erase the entire image with the color key value, for the case not everything
     // in the image is covered by the header image.
-    Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBtnFace;
-    Canvas.FillRect(Rect(0, 0, Width, Height){$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Rect(0, 0, Width, Height));
 
     if TreeView.UseRightToLeftAlignment then
       RTLOffset := Treeview.ComputeRTLOffset
@@ -12547,7 +12547,7 @@ begin
   FAutoScrollDelay := 1000;
   FAutoScrollInterval := 1;
 
-  FBackground := {$IFDEF VT_FMX}TImage.Create(Self){$ELSE}TPicture.Create{$ENDIF};
+  FBackground := {$IFDEF VT_FMX}TBitmap.Create{$ELSE}TPicture.Create{$ENDIF};
   // Similar to the Transparent property of TImage,
   // this flag is Off by default.
   FBackGroundImageTransparent := False;
@@ -13347,19 +13347,19 @@ begin
           begin
             if toShowHorzGridLines in FOptions.PaintOptions then
             begin
-              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := BackColor;
-              FillRect(Rect(R.Left, R.Bottom - 1, R.Right, R.Bottom){$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+              Brush.Color := BackColor;
+              FillRect(Rect(R.Left, R.Bottom - 1, R.Right, R.Bottom));
               Dec(R.Bottom);
             end;
             if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
             begin
-              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.FocusedSelectionColor;
-              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.FocusedSelectionBorderColor;
+              Brush.Color := FColors.FocusedSelectionColor;
+              Pen.Color := FColors.FocusedSelectionBorderColor;
             end
             else
             begin
-              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.UnfocusedSelectionColor;
-              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.UnfocusedSelectionBorderColor;
+              Brush.Color := FColors.UnfocusedSelectionColor;
+              Pen.Color := FColors.UnfocusedSelectionBorderColor;
             end;
 
             with TWithSafeRect(R) do
@@ -13371,8 +13371,8 @@ begin
           end
           else
           begin
-            {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := BackColor;
-            FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+            Brush.Color := BackColor;
+            FillRect(R);
           end;
         end;
       end;
@@ -14647,8 +14647,8 @@ begin
                     begin
                       if FButtonStyle = bsTriangle then
                       begin
-                        FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
-                        FMinusBM.Canvas.{$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := clBlack;
+                        FMinusBM.Canvas.Brush.Color := clBlack;
+                        FMinusBM.Canvas.Pen.Color := clBlack;
                         FMinusBM.Canvas.{$IFDEF VT_FMX}DrawPolygon{$ELSE}Polygon{$ENDIF}([Point(0, 2), Point(8, 2), Point(4, 6)]{$IFDEF VT_FMX}, 1.0{$ENDIF});
                       end
                         else
@@ -14658,9 +14658,9 @@ begin
                             begin
                               case FButtonFillMode of
                                 fmTreeColor:
-                                  FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+                                  FMinusBM.Canvas.Brush.Color := FColors.BackGroundColor;
                                 fmWindowColor:
-                                  FMinusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clWindow;
+                                  FMinusBM.Canvas.Brush.Color := clWindow;
                               end;
 {$IFDEF VT_FMX}
                               FMinusBM.Canvas.BeginScene();
@@ -14752,8 +14752,8 @@ begin
                     begin
                       if FButtonStyle = bsTriangle then
                       begin
-                        FPlusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clBlack;
-                        FPlusBM.Canvas.{$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := clBlack;
+                        FPlusBM.Canvas.Brush.Color := clBlack;
+                        FPlusBM.Canvas.Pen.Color := clBlack;
                         FPlusBM.Canvas.{$IFDEF VT_FMX}DrawPolygon{$ELSE}Polygon{$ENDIF}([Point(2, 0), Point(6, 4), Point(2, 8)]{$IFDEF VT_FMX}, 1.0{$ENDIF});
                       end
                         else
@@ -14763,9 +14763,9 @@ begin
                             begin
                               case FButtonFillMode of
                                 fmTreeColor:
-                                  FPlusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+                                  FPlusBM.Canvas.Brush.Color := FColors.BackGroundColor;
                                 fmWindowColor:
-                                  FPlusBM.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clWindow;
+                                  FPlusBM.Canvas.Brush.Color := clWindow;
                               end;
 {$IFDEF VT_FMX}
                               FPlusBM.Canvas.BeginScene();
@@ -15004,7 +15004,7 @@ end;
     set the flag BackgroundTransparentExternalType explicitly in order to properly do
     transparent painting.
 }
-procedure TBaseVirtualTree.SetBackground(const Value: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF});
+procedure TBaseVirtualTree.SetBackground(const Value: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF});
 
 begin
   FBackground.Assign(Value);
@@ -16185,8 +16185,8 @@ begin
 end;
 
 // ----------------------------------------------------------------------------------------------------------------------
-procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF};
-  DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
+procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF};
+  ADrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
 const
   DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
 
@@ -16194,26 +16194,34 @@ const
   // will not disturb non-transparent ones
   procedure FillDrawBitmapWithBackGroundColor;
   begin
-    DrawBitmap.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := ABkgcolor;
-    DrawBitmap.Canvas.FillRect(Rect(0, 0, DrawBitmap.Width, DrawBitmap.Height){$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+    ADrawBitmap.Canvas.Brush.Color := ABkgcolor;
+    ADrawBitmap.Canvas.FillRect(Rect(0, 0, ADrawBitmap.Width, ADrawBitmap.Height));
   end;
 
 begin
-  DrawBitmap.SetSize({$IFDEF VT_FMX}Round{$ENDIF}(DrawBitmapWidth), {$IFDEF VT_FMX}Round{$ENDIF}(DrawBitMapHeight)); //TODO: round is not good at all!!!
+  ADrawBitmap.SetSize({$IFDEF VT_FMX}Round{$ENDIF}(DrawBitmapWidth), {$IFDEF VT_FMX}Round{$ENDIF}(DrawBitMapHeight)); //TODO: round is not good at all!!!
 {$IFDEF VT_FMX}
-  DrawBitmap.Canvas.DrawBitmap(//###!!!
-                          Source.Bitmap
+  if ADrawBitmap.Canvas.BeginScene() then
+    try
+      ADrawBitmap.Canvas.DrawBitmap(//###!!!
+                          Source
                           , Rect(0, 0, Source.Width, Source.Height)
                           , Rect(0, 0, Source.Width, Source.Height)
                           , 1.0
                           );
+
+    finally
+      ADrawBitmap.Canvas.EndScene();
+    end;
+  ADrawBitmap.SaveToFile('C:\ADrawBitmap.bmp');
+  Source.SaveToFile('C:\Source.bmp');
 {$ELSE}
   if (Source.Graphic is TBitmap) and
      (FBackGroundImageTransparent or Source.Bitmap.TRANSPARENT)
   then
   begin
     FillDrawBitmapWithBackGroundColor;
-    MaskBlt(DrawBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
+    MaskBlt(ADrawBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
         Source.Bitmap.Canvas.Handle, 0, 0, Source.Bitmap.MaskHandle, 0, 0,
         MakeROP4(DST, SRCCOPY));
   end
@@ -16223,14 +16231,14 @@ begin
     // to draw transparent if the following flag is OFF.
     if FBackGroundImageTransparent then
       FillDrawBitmapWithBackGroundColor;
-    DrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
+    ADrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
   end
 {$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.StaticBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
+procedure TBaseVirtualTree.StaticBackground(Source: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF}; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it stays static in the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -16248,8 +16256,8 @@ begin
   DrawBitmap := TBitmap.Create;
   try
     // clear background
-    Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := aBkgColor;
-    Target.FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+    Target.Brush.Color := aBkgColor;
+    Target.FillRect(R);
 
   // Picture rect in relation to client viewscreen.
   PicRect := Rect(FBackgroundOffsetX, FBackgroundOffsetY, FBackgroundOffsetX + Source.Width, FBackgroundOffsetY + Source.Height);
@@ -16521,7 +16529,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.TileBackground(Source: {$IFDEF VT_FMX}TImage{$ELSE}TPicture{$ENDIF}; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+procedure TBaseVirtualTree.TileBackground(Source: {$IFDEF VT_FMX}TBitmap{$ELSE}TPicture{$ENDIF}; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it tiles into the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -16531,16 +16539,19 @@ var
   SourceX,
   SourceY,
   TargetX,
-  DeltaY: Integer;
-  DrawBitmap: TBitmap;
-begin
-{$IFDEF VT_VCL}
-  DrawBitmap := TBitmap.Create;
+  DeltaY: TDimension;
+  BMP: TBitmap;
+begin 
+  BMP := TBitmap.Create;
   try
-    PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
+    PrepareBackGroundPicture(Source, BMP, Source.Width, Source.Height, aBkgColor);
     with Target do
     begin
+      {$IFDEF VT_FMX}
+      SourceY := FMod((R.Top + Offset.Y + FBackgroundOffsetY), Source.Height);
+      {$ELSE}
       SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
+      {$ENDIF}
       // Always wrap the source coordinates into positive range.
       if SourceY < 0 then
         SourceY := Source.Height + SourceY;
@@ -16548,7 +16559,11 @@ begin
       // Tile image vertically until target rect is filled.
       while R.Top < R.Bottom do
       begin
+        {$IFDEF VT_FMX}
+        SourceX := FMod((R.Left + Offset.X + FBackgroundOffsetX), Source.Width);
+        {$ELSE}
         SourceX := (R.Left + Offset.X + FBackgroundOffsetX) mod Source.Width;
+        {$ENDIF}
         // always wrap the source coordinates into positive range
         if SourceX < 0 then
           SourceX := Source.Width + SourceX;
@@ -16560,8 +16575,17 @@ begin
         // tile the image horizontally
         while TargetX < R.Right do
         begin
+          {$IFDEF VT_FMX}
+          Target.DrawBitmap(//###!!!
+                BMP
+                , Rect(TargetX, R.Top, TargetX + Min(R.Right - TargetX, Source.Width - SourceX), R.Top+DeltaY)
+                , Rect(SourceX, SourceY, SourceX + Min(R.Right - TargetX, Source.Width - SourceX), SourceY+R.Top+DeltaY)
+                , 1.0
+                );
+          {$ELSE}
           BitBlt(Handle, TargetX, R.Top, Min(R.Right - TargetX, Source.Width - SourceX), DeltaY,
-            DrawBitmap.Canvas.Handle, SourceX, SourceY, SRCCOPY);
+            BMP.Canvas.Handle, SourceX, SourceY, SRCCOPY);
+          {$ENDIF}
           Inc(TargetX, Source.Width - SourceX);
           SourceX := 0;
         end;
@@ -16570,9 +16594,8 @@ begin
       end;
     end;
   finally
-    DrawBitmap.Free;
+    BMP.Free;
   end;
-{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -17467,7 +17490,7 @@ begin
 
   inherited;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.WMChangeState(var Message: TMessage);
@@ -17501,7 +17524,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
+{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.WMChar(var Message: TWMChar);
 
 begin
@@ -19644,7 +19667,6 @@ begin
   if (Self.HandleAllocated) then
     TThread.Queue(nil, procedure begin WMChangeState(lMessage) end);
 //    SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
-{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22794,12 +22816,12 @@ begin
     if UseSelectedBkColor then
     begin
       if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
-        {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.FocusedSelectionColor
+        Brush.Color := FColors.FocusedSelectionColor
       else
-        {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.UnfocusedSelectionColor;
+        Brush.Color := FColors.UnfocusedSelectionColor;
     end
     else
-      {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+      Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
 {$IFDEF VT_FMX}
     FillRect(R, 0, 0, [], 1.0, dottedBrush);
@@ -25268,7 +25290,7 @@ begin
     ExcludeClipRect(DC, RC.Left, RC.Top, RC.Right, RC.Bottom);
 
     // Erase parts not drawn.
-    {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BorderColor;
+    Brush.Color := FColors.BorderColor;
     Winapi.Windows.FillRect(DC, RW, Brush.Handle);
   end;
 {$ENDIF}
@@ -25755,7 +25777,7 @@ begin
           dummyCanvas.Handle:= prevDC;
       end;
 
-      Target.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.SelectionRectangleBorderColor;
+      Target.Brush.Color := FColors.SelectionRectangleBorderColor;
       Target.FrameRect(SelectionRect);
     end;
   end;
@@ -25901,8 +25923,8 @@ begin
     with FHeader.FColumns do
     if poColumnColor in PaintOptions then
     begin
-      {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := Items[Column].GetEffectiveColor;
-      FillRect(CellRect{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+      Brush.Color := Items[Column].GetEffectiveColor;
+      FillRect(CellRect);
      end;
 
     // Let the application customize the cell background and the content rectangle.
@@ -25941,8 +25963,8 @@ begin
         begin
           if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
           begin
-            {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.DropTargetColor;
-            {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.DropTargetBorderColor;
+            Brush.Color := FColors.DropTargetColor;
+            Pen.Color := FColors.DropTargetBorderColor;
 
             if (toGridExtensions in FOptions.FMiscOptions) or
               (toFullRowSelect in FOptions.FSelectionOptions) then
@@ -25954,7 +25976,7 @@ begin
               else
 {$ENDIF}
                 if (toUseBlendedSelection in FOptions.PaintOptions) then
-                  AlphaBlendSelection({$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color)
+                  AlphaBlendSelection(Brush.Color)
                 else
                   with TWithSafeRect(InnerRect) do
                     begin
@@ -25980,13 +26002,13 @@ begin
           begin
              if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
              begin
-              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.FocusedSelectionColor;
-              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.FocusedSelectionBorderColor;
+              Brush.Color := FColors.FocusedSelectionColor;
+              Pen.Color := FColors.FocusedSelectionBorderColor;
             end
             else
             begin
-              {$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.UnfocusedSelectionColor;
-              {$IFDEF VT_FMX}Stroke{$ELSE}Pen{$ENDIF}.Color := FColors.UnfocusedSelectionBorderColor;
+              Brush.Color := FColors.UnfocusedSelectionColor;
+              Pen.Color := FColors.UnfocusedSelectionBorderColor;
             end;
             if (toGridExtensions in FOptions.FMiscOptions) or (toFullRowSelect in FOptions.FSelectionOptions) then
               InnerRect := CellRect;
@@ -26002,7 +26024,7 @@ begin
               else
  {$ENDIF}
                 if (toUseBlendedSelection in FOptions.PaintOptions) then
-                  AlphaBlendSelection({$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color)
+                  AlphaBlendSelection(Brush.Color)
                 else
                   with TWithSafeRect(InnerRect) do
 {$IFDEF VT_FMX}
@@ -32134,7 +32156,7 @@ begin
         R := Rect(0, 0, Max(FRangeX, ClientWidth), 0);
 
         // For quick checks some intermediate variables are used.
-        UseBackground := (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.{$IFDEF VT_FMX}Bitmap{$ELSE}Graphic{$ENDIF}) and
+        UseBackground := (toShowBackground in FOptions.FPaintOptions) and {$IFDEF VT_FMX}Assigned(FBackground) and not FBackground.IsEmpty{$ELSE}Assigned(FBackground.Graphic){$ENDIF} and
           (poBackground in PaintOptions);
         ShowImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
         ShowStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
@@ -32706,10 +32728,10 @@ begin
                       end;
 
                       if not (coParentColor in Items[FirstColumn].FOptions) then
-                        PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := Items[FirstColumn].FColor
+                        PaintInfo.Canvas.Brush.Color := Items[FirstColumn].FColor
                       else
-                        PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
-                      PaintInfo.Canvas.FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+                        PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
+                      PaintInfo.Canvas.FillRect(R);
                     end;
                     FirstColumn := GetNextVisibleColumn(FirstColumn);
                   end;
@@ -32724,8 +32746,8 @@ begin
                        (toFullVertGridLines in FOptions.FPaintOptions) and (toShowVertGridLines in FOptions.FPaintOptions) and
                        (not (hoAutoResize in FHeader.FOptions)) then
                       Inc(R.Left);
-                    PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
-                    PaintInfo.Canvas.FillRect(R{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+                    PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
+                    PaintInfo.Canvas.FillRect(R);
                   end;
                 end;
 {$IFDEF VT_VCL}
@@ -32738,8 +32760,8 @@ begin
 {$IFDEF VT_VCL}
                 SetCanvasOrigin(PaintInfo.Canvas, 0, 0);
 {$ENDIF}
-                PaintInfo.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
-                PaintInfo.Canvas.FillRect(TargetRect{$IFDEF VT_FMX}, 0, 0, [], 1.0{$ENDIF});
+                PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
+                PaintInfo.Canvas.FillRect(TargetRect);
               end;
             end;
           end;
@@ -32898,7 +32920,7 @@ begin
       SetSize(TreeRect.Right - TreeRect.Left, TreeRect.Bottom - TreeRect.Top);
       // Erase the entire image with the color key value, for the case not everything
       // in the image is covered by the tree image.
-      Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := FColors.BackGroundColor;
+      Canvas.Brush.Color := FColors.BackGroundColor;
       Canvas.FillRect(Rect(0, 0, Width, Height));
 
       PaintOptions := [poDrawSelection, poSelectedOnly];
@@ -33051,7 +33073,7 @@ begin
             SrcRect.Bottom := SrcRect.Top + vPageHeight;
 
             // Clear the image
-            PrinterImage.Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Brush{$ENDIF}.Color := clWhite;
+            PrinterImage.Canvas.Brush.Color := clWhite;
             PrinterImage.Canvas.FillRect(Rect(0, 0, PrinterImage.Width, PrinterImage.Height));
             PrinterImage.Canvas.CopyRect(DestRect, Image.Canvas, SrcRect);
             PrtStretchDrawDIB(Printer.Canvas, Rect(0, 0, Printer.PageWidth, Printer.PageHeight - 1), PrinterImage);

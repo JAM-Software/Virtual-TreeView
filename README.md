@@ -25,6 +25,7 @@ What is not working yet:
 4. drawing background;
 5. some mouse actions on header;
 6. inplace editors;
+7. installing package for both VCL and FMX in the same time.
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
@@ -34,6 +35,8 @@ One will be i scale 1 second smaller in scale e.g 0.2 as a preview.
 To test FMX port of VT - you must add in the e.g. Delphi project->Options->Conditional defines
 **VT_FMX**. There is only package for Delphi Tokyo (but you can test it from the code).
 Remember to add also to uses clause unit VirtualTrees.FMX.
+WARNING. if you install package for FMX you can not use installed package for VCL and vice-versa.
+I still look for the way to do this. 
 
 # Virtual-TreeView
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.

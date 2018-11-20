@@ -7,7 +7,7 @@
 {                                                           }
 { author           : Karol Bieniaszewski                    }
 { year             : 2018                                   }
-{                                                           }
+{ contibutors      :                                        }
 {***********************************************************}
 
 interface
@@ -208,6 +208,7 @@ type
 //--------- Windows messages simulations ---------------------------------------------------------------------------------------------------
 
 const
+  WM_APP              = $8000;
   WM_MOUSEFIRST       = $0200;
   WM_MOUSEMOVE        = $0200;
   WM_LBUTTONDOWN      = $0201;
@@ -238,6 +239,7 @@ const
   WM_SETCURSOR        = $0020;
   WM_HSCROLL          = $0114;
   WM_VSCROLL          = $0115;
+  WM_CHANGESTATE = WM_APP + 32;
 
   CM_BASE                   = $B000;
 {$IF DEFINED(CLR)}
@@ -442,8 +444,37 @@ type
 //fill system images
 procedure FillSystemCheckImages(Parent: TFmxObject; List: TImageList);
 
+type
+  TCanvasHelper = class helper for TCanvas
+  private
+    function GetBrush: TBrush; inline;
+    function GetPen: TStrokeBrush; inline;
+  public
+    property Brush: TBrush read GetBrush;
+    property Pen: TStrokeBrush read GetPen;
+    procedure FillRect(const ARect: TRectF); overload; inline;
+  end;
+
 implementation
 uses FMX.TextLayout, System.SysUtils, FMX.MultiResBitmap, FMX.Objects, VirtualTrees.Utils, FMX.Effects;
+
+
+{ TCanvasHelper }
+
+procedure TCanvasHelper.FillRect(const ARect: TRectF);
+begin
+  FillRect(ARect, 0, 0, [], 1.0);
+end;
+
+function TCanvasHelper.GetBrush: TBrush;
+begin
+  Result:= Fill;
+end;
+
+function TCanvasHelper.GetPen: TStrokeBrush;
+begin
+  Result:= Stroke;
+end;
 
 type
   TImageListHelper = class helper for TImageList
@@ -1514,8 +1545,6 @@ begin
   Images := TBaseImageList(Value);
 end;
 
-
-
 { THighQualityBitmap }
 
 constructor THighQualityBitmap.Create;
@@ -1524,5 +1553,7 @@ begin
   inherited;
 
 end;
+
+
 
 end.

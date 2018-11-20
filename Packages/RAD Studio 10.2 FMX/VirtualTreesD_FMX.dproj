@@ -3,7 +3,7 @@
         <ProjectGuid>{2B5EB14C-740A-4933-9110-86A014DED21E}</ProjectGuid>
         <MainSource>VirtualTreesD_FMX.dpk</MainSource>
         <ProjectVersion>18.4</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
