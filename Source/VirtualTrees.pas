@@ -14706,7 +14706,7 @@ begin
                               , Point(0, 0)
                               , TBlendMode.bmConstantAlphaAndColor
                               , 40
-                              , TAlphaColorRec.White
+                              , TAlphaColorRec.Lightyellow
                               );
                         finally
                           FHotMinusBM.Canvas.EndScene();
@@ -14774,8 +14774,8 @@ begin
                               FPlusBM.Canvas.FillRect(Rect(0, 0, FPlusBM.Width-1, FPlusBM.Height), 0, 0, [], 1.0);
                               FPlusBM.Canvas.DrawRect(Rect(0, 0, FPlusBM.Width-1, FPlusBM.Height), 0, 0, [], 1.0);
                               FPlusBM.Canvas.Stroke.Color := FColors.NodeFontColor;
-                              FPlusBM.Canvas.DrawLine(Point(2, 4.5), Point(FPlusBM.Canvas.Width - 2, 4.5), 1.0);
-                              FPlusBM.Canvas.DrawLine(Point(4.5, 2), Point(4.5, FPlusBM.Canvas.Width - 2), 1.0);
+                              FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width/2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width/2), 1.0);
+                              FPlusBM.Canvas.DrawLine(Point(FPlusBM.Canvas.Width/2, 2), Point(FPlusBM.Canvas.Width/2, FPlusBM.Canvas.Width - 2), 1.0);
 
                               {
                               FPlusBM.Canvas.DrawLine(Point(2, FPlusBM.Canvas.Width / 2), Point(FPlusBM.Canvas.Width - 2, FPlusBM.Canvas.Width / 2), 1.0);
