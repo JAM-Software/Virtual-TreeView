@@ -14,11 +14,11 @@ interface
 {$IFDEF VT_FMX}
 uses System.SysUtils, FMX.Graphics, System.Classes, FMX.Forms,
      FMX.Controls, System.StrUtils, System.Generics.Collections,
-     VirtualTrees, VirtualTrees.Classes, FMX.Types, VirtualTrees.FMX;
+     VirtualTrees, VirtualTrees.Classes, FMX.Types, System.UITypes, VirtualTrees.FMX;
 {$ELSE}
 uses Winapi.Windows, System.SysUtils, Vcl.Graphics, System.Classes, Vcl.Forms,
      Vcl.Controls, System.StrUtils, System.Generics.Collections,
-     VirtualTrees, VirtualTrees.Classes;
+     VirtualTrees, VirtualTrees.Classes, UITypes;
 {$ENDIF}
 
 function ContentToHTML(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Caption: string = ''): String;
@@ -30,8 +30,6 @@ function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source
 procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType);
 
 implementation
-uses
-  UITypes;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree)

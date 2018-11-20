@@ -431,7 +431,7 @@ procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
 procedure MoveMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
 procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: NativeUInt);
 
-procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRect; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Bounds: TRect; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
 procedure GetTextExtentPoint32W(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Size: TSize);
 procedure DrawEdge(Canvas: TCanvas; R: TRect; edge, grfFlags: Cardinal);
 
@@ -923,24 +923,42 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Bounds: TRect; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+procedure DrawTextW(ACanvas: TCanvas; CaptionText: String; Len: Integer; Var Bounds: TRect; DrawFormat: Cardinal{this is windows format - must be converted to FMX});
+Var
+  hAlign: TTextAlign;
+  vAlign: TTextAlign;
+  Flags: TFillTextFlags;
 begin
   //TTextLayout. render
-  //DrawFormat: Cardinal{this is windows format - must be converted to FMX}
-  ACanvas.FillText(Bounds, CaptionText, false, 1.0, [], TTextAlign.Leading, TTextAlign.Center);
+  //TODO: DrawFormat: Cardinal{this is windows format - must be converted to FMX}
+
+  hAlign:= TTextAlign.Leading;
+  if DrawFormat and DT_CENTER<>0 then
+    hAlign:= TTextAlign.Center;
+  if DrawFormat and DT_RIGHT<>0 then
+    hAlign:= TTextAlign.Trailing;
+
+
+  vAlign:= TTextAlign.Center;
+  if DrawFormat and DT_VCENTER<>0 then
+    vAlign:= TTextAlign.Center;
+  if DrawFormat and DT_BOTTOM<>0 then
+    vAlign:= TTextAlign.Trailing;
+
+  Flags:= [];
+
+  if DrawFormat and DT_RTLREADING<>0 then
+    Flags:= Flags + [TFillTextFlag.RightToLeft];
+
+  ACanvas.FillText(Bounds, CaptionText, false, 1.0, Flags, hAlign, vAlign);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure DrawEdge(Canvas: TCanvas; R: TRect; edge, grfFlags: Cardinal);
 Var tmpR: TRect;
-  dL, dT, dR, dB: Integer;
   IsSoft, IsFlat, IsMono: Boolean;
 begin
-  dL:= 0;
-  dT:= 0;
-  dR:= 0;
-  dB:= 0;
 
   if grfFlags and BF_SOFT<>0 then
     IsSoft:= true else

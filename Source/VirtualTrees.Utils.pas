@@ -42,7 +42,8 @@ uses
   System.ImageList,
   FMX.Types,
   VirtualTrees,
-  VirtualTrees.FMX;
+  VirtualTrees.FMX,
+  System.UITypes;
 {$ELSE}
   Winapi.Windows,
   Winapi.ActiveX,
@@ -63,7 +64,7 @@ type
   );
 
 
-procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
+procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha: Integer; Bias: {$IFDEF VT_FMX}TAlphaColor{$ELSE}Integer{$ENDIF});
 {$IFDEF VT_VCL}
 function GetRGBColor(Value: TColor): DWORD;
 procedure PrtStretchDrawDIB(Canvas: TCanvas; DestRect: TRect; ABitmap: TBitmap);
@@ -331,7 +332,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function WrapString(ACanvas: TCanvas; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
-
+{$IFDEF VT_VCL}
 var
   Width,
   Len,
@@ -342,6 +343,7 @@ var
   Line: string;
   Words: array of string;
   R: TRect;
+{$ENDIF}
 begin
 {$IFDEF VT_FMX}
   Result:= S;
@@ -1075,7 +1077,7 @@ end;
 {$ENDIF}
 
 {$IFDEF VT_FMX}
-procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha, Bias: Integer);
+procedure AlphaBlend(Source, Destination: TCanvas; R: TRect; Target: TPoint; Mode: TBlendMode; ConstantAlpha: Integer; Bias: {$IFDEF VT_FMX}TAlphaColor{$ELSE}Integer{$ENDIF});
 
 // R describes the source rectangle to work on.
 // Target is the place (upper left corner) in the target bitmap where to blend to. Note that source width + X offset
