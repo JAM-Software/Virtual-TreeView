@@ -25740,18 +25740,19 @@ procedure TBaseVirtualTree.PaintSelectionRectangle(Target: TCanvas; WindowOrgX: 
   TargetRect: TRect);
 
 // Helper routine to draw a selection rectangle in the mode determined by DrawSelectionMode.
-{$IFDEF VT_VCL}
+
 var
   BlendRect: TRect;
   TextColorBackup,
-  BackColorBackup: COLORREF;   // used to restore forground and background colors when drawing a selection rectangle
-  prevDC: HDC;
+  BackColorBackup: {$IFDEF VT_FMX}TColor{$ELSE}COLORREF{$ENDIF};   // used to restore forground and background colors when drawing a selection rectangle
+  prevDC: {$IFDEF VT_FMX}TCanvas{$ELSE}HDC{$ENDIF};
   wasPrevDC: Boolean;
-{$ENDIF}
 begin
-{$IFDEF VT_VCL}
   if ((FDrawSelectionMode = smDottedRectangle) and not (tsUseThemes in FStates)) then
   begin
+    {$IFDEF VT_FMX}
+    Target.DrawFocusRect(SelectionRect)
+    {$ELSE}
     // Classical selection rectangle using dotted borderlines.
     TextColorBackup := GetTextColor(Target.Handle);
     SetTextColor(Target.Handle, $FFFFFF);
@@ -25760,6 +25761,7 @@ begin
     Target.DrawFocusRect(SelectionRect);
     SetTextColor(Target.Handle, TextColorBackup);
     SetBkColor(Target.Handle, BackColorBackup);
+    {$ENDIF}
   end
   else
   begin
@@ -25768,6 +25770,10 @@ begin
     if IntersectRect(BlendRect, OrderRect(SelectionRect), TargetRect) then
     begin
       OffsetRect(BlendRect, -WindowOrgX, 0);
+      {$IFDEF VT_FMX}
+      AlphaBlend(Target, Target, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
+          FColors.SelectionRectangleBlendColor);
+      {$ELSE}
       if dummyCanvas.HandleAllocated then
         begin
           prevDC:= dummyCanvas.Handle;
@@ -25778,18 +25784,18 @@ begin
         end;
       try
         dummyCanvas.Handle:= 0;
+
         AlphaBlend(dummyCanvas, Target, BlendRect, Point(0, 0), bmConstantAlphaAndColor, FSelectionBlendFactor,
           ColorToRGB(FColors.SelectionRectangleBlendColor));
       finally
         if wasPrevDC then
           dummyCanvas.Handle:= prevDC;
       end;
-
+      {$ENDIF}
       Target.Brush.Color := FColors.SelectionRectangleBorderColor;
       Target.FrameRect(SelectionRect);
     end;
   end;
-{$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -26088,10 +26094,7 @@ begin
 
 {$IFDEF VT_FMX}
         TextColorBackup := Stroke.Color;
-        //Fill.Color:= clWhite; font
-        //Fill.Color:= clBlack; background
-        DrawDashRect(FocusRect, 0, 0, AllCorners, 1.0{?}, $A0909090);
-
+        DrawFocusRect(FocusRect);
         Stroke.Color:= TextColorBackup;
 {$ELSE}
         TextColorBackup := GetTextColor(Handle);
@@ -32187,7 +32190,7 @@ begin
 
         // Transform selection rectangle into node bitmap coordinates.
         if DrawSelectionRect then
-          OffsetRect(SelectionRect, 0, -BaseOffset);
+          OffsetRect(SelectionRect, 0, {$IFDEF VT_FMX}0{$ELSE}-BaseOffset{$ENDIF});
 
         // The target rectangle holds the coordinates of the exact area to blit in target canvas coordinates.
         // It is usually smaller than an entire node and wanders while the paint loop advances.
@@ -32597,10 +32600,13 @@ begin
               begin
                 if DrawSelectionRect then
                 begin
+                  {$IFDEF VT_FMX}
+                  PaintSelectionRectangle(PaintInfo.Canvas, Window.Left, SelectionRect, TargetRect);
+                  {$ELSE}
                   PaintSelectionRectangle(PaintInfo.Canvas, Window.Left, SelectionRect, Rect(0, 0, PaintWidth,
                     CurrentNodeHeight));
+                  {$ENDIF}
                 end;
-
                 // Put the constructed node image onto the target canvas.
 {$IFDEF VT_VCL}
                 if not (poUnbuffered in PaintOptions) then
@@ -32616,7 +32622,7 @@ begin
 
             // Keep selection rectangle coordinates in sync.
             if DrawSelectionRect then
-              OffsetRect(SelectionRect, 0, -PaintInfo.Node.NodeHeight);
+              OffsetRect(SelectionRect, 0, {$IFDEF VT_FMX}0{$ELSE}-PaintInfo.Node.NodeHeight{$ENDIF});
 
             // Advance to next visible node.
             PaintInfo.Node := GetNextVisible(PaintInfo.Node, True);

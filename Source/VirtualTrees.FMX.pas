@@ -453,6 +453,9 @@ type
     property Brush: TBrush read GetBrush;
     property Pen: TStrokeBrush read GetPen;
     procedure FillRect(const ARect: TRectF); overload; inline;
+    procedure DrawRect(const ARect: TRectF); overload; inline;
+    procedure DrawFocusRect(const AFocusRect: TRect);
+    procedure FrameRect(const AFocusRect: TRect);
   end;
 
 implementation
@@ -461,9 +464,24 @@ uses FMX.TextLayout, System.SysUtils, FMX.MultiResBitmap, FMX.Objects, VirtualTr
 
 { TCanvasHelper }
 
+procedure TCanvasHelper.DrawFocusRect(const AFocusRect: TRect);
+begin
+  DrawDashRect(AFocusRect, 0, 0, AllCorners, 1.0{?}, $A0909090);
+end;
+
+procedure TCanvasHelper.DrawRect(const ARect: TRectF);
+begin
+  DrawRect(ARect, 0, 0, [], 1.0);
+end;
+
 procedure TCanvasHelper.FillRect(const ARect: TRectF);
 begin
   FillRect(ARect, 0, 0, [], 1.0);
+end;
+
+procedure TCanvasHelper.FrameRect(const AFocusRect: TRect);
+begin
+  DrawRect(AFocusRect);
 end;
 
 function TCanvasHelper.GetBrush: TBrush;
