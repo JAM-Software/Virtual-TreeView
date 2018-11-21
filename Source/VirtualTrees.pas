@@ -11157,9 +11157,9 @@ begin
         if IsVSplitterHit or IsHSplitterHit then
         begin
           {$IFDEF VT_FMX}
-          cursorService:= TPlatformServices.Current.GetPlatformservice(IFMXCursorService) as IFMXCursorService;
-          if Assigned(cursorService) then
-            NewCursor:= Treeview.Cursor;//cursorService.GetCursor;
+          {cursorService:= TPlatformServices.Current.GetPlatformservice(IFMXCursorService) as IFMXCursorService;
+          if Assigned(cursorService) then  }
+            NewCursor:= Treeview.Cursor;// cursorService.GetCursor;
           {$ELSE}
           NewCursor := Screen.Cursors[Treeview.Cursor];
           {$ENDIF}
@@ -11176,7 +11176,7 @@ begin
           begin
 {$IFDEF VT_FMX}
            {if Assigned(cursorService) then
-             cursorService.SetCursor(NewCursor);  }
+             cursorService.SetCursor(NewCursor); }
            TreeView.Cursor:= NewCursor;
 {$ELSE}
             Winapi.Windows.SetCursor(NewCursor);
@@ -24153,7 +24153,9 @@ var
   ReselectFocusedNode: Boolean;
 
 begin
+{$IFDEF VT_VCL}
   ReleaseCapture;
+{$ENDIF}
 
   if not (tsVCLDragPending in FStates) then
   begin
@@ -25050,6 +25052,9 @@ begin
           exit;//!!!
       end;
   end;
+
+  if not isNC then
+    Cursor:= crDefault;
 
 {$ENDIF}
   if tsNodeHeightTrackPending in FStates then

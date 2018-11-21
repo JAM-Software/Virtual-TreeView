@@ -16,6 +16,7 @@ What is working:
 13. support for Android :)
 14. "hot" and "selected" plus/minus buttons.
 15. scrollbars/scrolling.
+16. toMultiSelect with smDottedRectangle and with smBlendedRectangle.
 
 
 What is not working yet:
