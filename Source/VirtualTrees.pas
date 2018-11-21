@@ -16271,7 +16271,7 @@ begin
 {$IFDEF VT_FMX}
       Target.DrawBitmap(DrawBitmap
         ,Rect(DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X), (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top)
-        ,Rect(DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, DrawRect.Left, DrawRect.Top)
+        ,Rect(DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, DrawRect.Left+DrawRect.Width, DrawRect.Top + DrawRect.Height)
         , 1.0
         );
 {$ELSE}
@@ -16539,6 +16539,9 @@ var
   TargetX,
   DeltaY: TDimension;
   BMP: TBitmap;
+{$IFDEF VT_FMX}
+  RSrc, RDest: TRect;
+{$ENDIF}
 begin 
   BMP := TBitmap.Create;
   try
@@ -16574,10 +16577,13 @@ begin
         while TargetX < R.Right do
         begin
           {$IFDEF VT_FMX}
+          RSrc:= Rect(TargetX, R.Top, TargetX + Min(R.Right - TargetX, Source.Width - SourceX), R.Top+DeltaY);
+          RDest:= Rect(SourceX, SourceY, SourceX + Min(R.Right - TargetX, Source.Width - SourceX), SourceY+R.Top+DeltaY);
+
           Target.DrawBitmap(//###!!!
                 BMP
-                , Rect(TargetX, R.Top, TargetX + Min(R.Right - TargetX, Source.Width - SourceX), R.Top+DeltaY)
-                , Rect(SourceX, SourceY, SourceX + Min(R.Right - TargetX, Source.Width - SourceX), SourceY+R.Top+DeltaY)
+                , RSrc
+                , RDest
                 , 1.0
                 );
           {$ELSE}

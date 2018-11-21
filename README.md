@@ -18,13 +18,13 @@
 - [x] scrollbars/scrolling.
 - [x] toMultiSelect with smDottedRectangle and with smBlendedRectangle.
 - [x] mouse wheel scrolling
-
+- [x] it draw static background
 
 ### What is not working yet:
 - [ ] some mouse actions (drag/drop);
 - [ ] clipboard;
 - [ ] drawing tree border;
-- [ ] drawing background;
+- [ ] drawing background tiled;
 - [ ] some mouse actions on header;
 - [ ] inplace editors;
 - [ ] installing package for both VCL and FMX in the same time.
