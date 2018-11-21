@@ -16213,8 +16213,6 @@ begin
     finally
       ADrawBitmap.Canvas.EndScene();
     end;
-  ADrawBitmap.SaveToFile('C:\ADrawBitmap.bmp');
-  Source.SaveToFile('C:\Source.bmp');
 {$ELSE}
   if (Source.Graphic is TBitmap) and
      (FBackGroundImageTransparent or Source.Bitmap.TRANSPARENT)

@@ -1,33 +1,33 @@
-About this port to Firemonkey:
+## About this port to Firemonkey:
 
-What is working:
-1. it compiles under FMX - this was main task of this pull request;
-2. it draw tree nodes structure with apropiate levels;
-3. it draw nodes text with alignment;
-4. it draw buttons plus/minus (toShowButtons);
-5. it draw tree lines (toShowTreeLines), horizontal lines (toShowHorzGridLines), vertical lines (toShowVertGridLines), full vertical lines (toFullVertGridLines) (some pixel improvement needed but it is working);
-6. it support cliping during cell draw;
-7. it support multiple columns;
-8. it draw header columns.
-9. expanding, collapsing by mouse click.
-10. mouse cursor and header column resize by mouse.
-11. it accept focus, it draw focus rect and unfocussed rect, toExtendedFocus, toFullRowSelect, toHotTrack, toUseBlendedSelection.
-12. checkbox support system checkboxes (platform specific) + custom checkboxes.
-13. support for Android :)
-14. "hot" and "selected" plus/minus buttons.
-15. scrollbars/scrolling.
-16. toMultiSelect with smDottedRectangle and with smBlendedRectangle.
-17. mouse wheel scrolling
+### What is working:
+- [x] it compiles under FMX - this was main task of this pull request;
+- [x] it draw tree nodes structure with apropiate levels;
+- [x] it draw nodes text with alignment;
+- [x] it draw buttons plus/minus (toShowButtons);
+- [x] it draw tree lines (toShowTreeLines), horizontal lines (toShowHorzGridLines), vertical lines (toShowVertGridLines), full vertical lines (toFullVertGridLines) (some pixel improvement needed but it is working);
+- [x] it support cliping during cell draw;
+- [x] it support multiple columns;
+- [x] it draw header columns.
+- [x] expanding, collapsing by mouse click.
+- [x] mouse cursor and header column resize by mouse.
+- [x] it accept focus, it draw focus rect and unfocussed rect, toExtendedFocus, toFullRowSelect, toHotTrack, toUseBlendedSelection.
+- [x] checkbox support system checkboxes (platform specific) + custom checkboxes.
+- [x] support for Android :)
+- [x] "hot" and "selected" plus/minus buttons.
+- [x] scrollbars/scrolling.
+- [x] toMultiSelect with smDottedRectangle and with smBlendedRectangle.
+- [x] mouse wheel scrolling
 
 
-What is not working yet:
-1. some mouse actions (drag/drop);
-2. clipboard;
-3. drawing tree border;
-4. drawing background;
-5. some mouse actions on header;
-6. inplace editors;
-7. installing package for both VCL and FMX in the same time.
+### What is not working yet:
+- [ ] some mouse actions (drag/drop);
+- [ ] clipboard;
+- [ ] drawing tree border;
+- [ ] drawing background;
+- [ ] some mouse actions on header;
+- [ ] inplace editors;
+- [ ] installing package for both VCL and FMX in the same time.
 
 Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
@@ -37,7 +37,8 @@ One will be i scale 1 second smaller in scale e.g 0.2 as a preview.
 To test FMX port of VT - you must add in the e.g. Delphi project->Options->Conditional defines
 **VT_FMX**. There is only package for Delphi Tokyo (but you can test it from the code).
 Remember to add also to uses clause unit VirtualTrees.FMX.
-WARNING. if you install package for FMX you can not use installed package for VCL and vice-versa.
+#### WARNING. 
+If you install package for FMX you can not use installed package for VCL and vice-versa.
 I still look for the way to do this. 
 
 # Virtual-TreeView
