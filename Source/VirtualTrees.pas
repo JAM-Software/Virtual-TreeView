@@ -2518,7 +2518,6 @@ type
     procedure CMHintShowPause(var Message: TCMHintShowPause); message CM_HINTSHOWPAUSE;
     procedure CMMouseEnter(var Message: TMessage); message CM_MOUSEENTER;
     procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
-    procedure CMMouseWheel(var Message: TCMMouseWheel); message CM_MOUSEWHEEL;
     procedure CMSysColorChange(var Message: TMessage); message CM_SYSCOLORCHANGE;
     procedure TVMGetItem(var Message: TMessage); message TVM_GETITEM;
     procedure TVMGetItemRect(var Message: TMessage); message TVM_GETITEMRECT;
@@ -2557,6 +2556,7 @@ type
     procedure WMTimer(var Message: TWMTimer); message WM_TIMER;
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;     
 {$ENDIF}
+    procedure CMMouseWheel(var Message: TCMMouseWheel); message CM_MOUSEWHEEL;
     procedure WMChangeState(var Message: TMessage); message WM_CHANGESTATE;
     procedure WMHScroll(var Message: TWMHScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_HSCROLL;{$ENDIF}
     procedure WMVScroll(var Message: TWMVScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_VSCROLL;{$ENDIF}
@@ -2787,6 +2787,7 @@ type
 {$IFDEF VT_FMX}
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
+    procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); override;
     procedure Resize; override;
 {$ENDIF}
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
@@ -17249,13 +17250,13 @@ begin
   DoMouseLeave();
   inherited;
 end;
-
+{$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.CMMouseWheel(var Message: TCMMouseWheel);
 
 var
-  ScrollAmount: Integer;
+  ScrollAmount: TDimension;
   ScrollLines: DWORD;
   RTLFactor: Integer;
   WheelFactor: Double;
@@ -17275,16 +17276,28 @@ begin
       begin
         // Scroll vertically if there's something to scroll...
         if ssCtrl in ShiftState then
-          ScrollAmount := Trunc(WheelFactor * ClientHeight)
+          ScrollAmount := {$IFDEF VT_VCL}Trunc{$ENDIF}(WheelFactor * ClientHeight)
         else
         begin
+          {$IFDEF VT_FMX}
+          ScrollLines:= WHEEL_PAGESCROLL;
+          if ScrollLines = WHEEL_PAGESCROLL then
+            ScrollAmount := WheelFactor * ClientHeight
+          else
+            ScrollAmount := WheelFactor * ScrollLines * FDefaultNodeHeight;
+          {$ELSE}
           SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @ScrollLines, 0);
           if ScrollLines = WHEEL_PAGESCROLL then
             ScrollAmount := Trunc(WheelFactor * ClientHeight)
           else
             ScrollAmount := Integer(Trunc(WheelFactor * ScrollLines * FDefaultNodeHeight));
+          {$ENDIF}
         end;
+        {$IFDEF VT_FMX}
+        FVScrollBar.Value:= FVScrollBar.Value - ScrollAmount;
+        {$ELSE}
         SetOffsetY(FOffsetY + ScrollAmount);
+        {$ENDIF}
       end
       else
       begin
@@ -17295,20 +17308,30 @@ begin
           RTLFactor := 1;
 
         if ssCtrl in ShiftState then
-          ScrollAmount := Trunc(WheelFactor * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth))
+          ScrollAmount := {$IFDEF VT_VCL}Trunc{$ENDIF}(WheelFactor * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth))
         else
         begin
+          {$IFDEF VT_FMX}
+          ScrollLines:= WHEEL_PAGESCROLL;
+          ScrollAmount := WheelFactor * ScrollLines * FHeader.Columns.GetScrollWidth;
+          {$ELSE}
           SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @ScrollLines, 0);
           ScrollAmount := Trunc(WheelFactor * ScrollLines * FHeader.Columns.GetScrollWidth);
+          {$ENDIF}
         end;
+
+        {$IFDEF VT_FMX}
+        FHScrollBar.Value:= FHScrollBar.Value - RTLFactor * ScrollAmount;
+        {$ELSE}
         SetOffsetX(FOffsetX + RTLFactor * ScrollAmount);
+        {$ENDIF}
       end;
     end;
 
   end;
 
 end;
-
+{$IFDEF VT_VCL}
 //----------------------------------------------------------------------------------------------------------------------
 procedure TBaseVirtualTree.CMSysColorChange(var Message: TMessage);
 
@@ -23666,6 +23689,31 @@ begin
   // get information about the hit
   GetHitTestInfoAt(X, Y, True, hInfo);
   HandleMouseUp(MM, hInfo);
+end;
+
+procedure TBaseVirtualTree.MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
+Var M: TCMMouseWheel;
+  hInfo: THitInfo;
+  P: TPoint;
+  isNC: Boolean;
+begin
+  P:= Screen.MousePos;
+  if ClientRect.Contains(P) then
+    begin
+      isNc:= false;
+    end else
+    begin
+      isNC:= true;
+      P:= ClientToScreen(P);
+    end;
+  M.Msg:= CM_MOUSEWHEEL;
+  M.ShiftState:= Shift;
+  M.WheelDelta:= WheelDelta;
+  M.XPos:= P.X;
+  M.YPos:= P.Y;
+  M.Result:= 0;
+  CMMouseWheel(M);
+  Handled:= M.Result<>0;
 end;
 
 {$ENDIF}

@@ -118,6 +118,9 @@ const
   DT_HIDEPREFIX = $00100000;
   DT_PREFIXONLY = $00200000;
 
+  MAXDWORD = DWORD($FFFFFFFF);
+  WHEEL_DELTA = 120;            { Value for rolling one detent }
+  WHEEL_PAGESCROLL = MAXDWORD;  { Scroll one page }
 
   { WM_SIZE message wParam values }
   SIZE_RESTORED = 0;
@@ -261,6 +264,7 @@ const
   CM_PARENTCOLORCHANGED     = CM_BASE + 9;
   CM_BIDIMODECHANGED        = CM_BASE + 60;
   CM_PARENTBIDIMODECHANGED  = CM_BASE + 61;
+  CM_MOUSEWHEEL             = CM_BASE + 67;
 
   VK_ESCAPE = 27;
 
@@ -388,6 +392,26 @@ type
 
   TWMHScroll = TWMScroll;
   TWMVScroll = TWMScroll;
+
+  TCMMouseWheel = record
+    Msg: Cardinal;                      //4
+    //MsgFiller: TDWordFiller;
+    ShiftState: TShiftState;            //2
+    WheelDelta: SmallInt;               //2
+    //ShiftStateWheel: TDWordFiller;
+    case Integer of
+      0: (
+        XPos: Single;                   //4
+        YPos: Single;                   //4
+        //XYPos: TDWordFiller
+        );                              //=24!
+      1: (
+        Pos: TPoint;                    //8
+        //PosFiller: TDWordFiller;
+        Result: LRESULT                 //4
+        );                              //=28!
+  end;
+
 
 procedure FillTWMMouse(Var MM: TWMMouse; Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single; IsNC: Boolean; IsUp: Boolean);
 

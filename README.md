@@ -17,6 +17,7 @@ What is working:
 14. "hot" and "selected" plus/minus buttons.
 15. scrollbars/scrolling.
 16. toMultiSelect with smDottedRectangle and with smBlendedRectangle.
+17. mouse wheel scrolling
 
 
 What is not working yet:
