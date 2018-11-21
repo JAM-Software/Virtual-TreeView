@@ -637,8 +637,8 @@ Var cb: TCheckBox;
           try
             BMP.Canvas.DrawBitmap(
                 tmpBMP
-                , Rect(1, 1, BMP.Width, BMP.Height)
-                , Rect(0, 0, BMP.Width-1, BMP.Height-1)
+                , Rect(2, 2, BMP.Width, BMP.Height)
+                , Rect(0, 0, BMP.Width-2, BMP.Height-2)
                 , 1.0
                 , false
                 );
