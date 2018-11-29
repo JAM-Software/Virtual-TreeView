@@ -137,9 +137,6 @@ const
 
   ThemeChangedTimerDelay = 500;
 
-  // Need to use this message to release the edit link interface asynchronously.
-  WM_CHANGESTATE = WM_APP + 32;
-
   // Virtual Treeview does not need to be subclassed by an eventual Theme Manager instance as it handles
   // Windows XP theme painting itself. Hence the special message is used to prevent subclassing.
   CM_DENYSUBCLASSING = CM_BASE + 2000;
@@ -199,6 +196,7 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 type
   // Alias defintions for convenience
   TImageIndex = System.UITypes.TImageIndex;
+  TCanvas = Vcl.Graphics.TCanvas;
 
   // For Firemonkey support, see #841
   TDimension = Integer;
@@ -1506,13 +1504,6 @@ type
     tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
   );
 
-  TChangeStates = set of (
-    csStopValidation,         // Cache validation can be stopped (usually because a change has occured meanwhile).
-    csUseCache,               // The tree's node caches are validated and non-empty.
-    csValidating,             // The tree's node caches are currently validated.
-    csValidationNeeded        // Something in the structure of the tree has changed. The cache needs validation.
-  );
-
   // determines whether and how the drag image is to show
   TVTDragImageKind = (
     diComplete,       // show a complete drag image with all columns, only visible columns are shown
@@ -2447,7 +2438,6 @@ type
     procedure TVMGetItemRect(var Message: TMessage); message TVM_GETITEMRECT;
     procedure TVMGetNextItem(var Message: TMessage); message TVM_GETNEXTITEM;
     procedure WMCancelMode(var Message: TWMCancelMode); message WM_CANCELMODE;
-    procedure WMChangeState(var Message: TMessage); message WM_CHANGESTATE;
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
     procedure WMCopy(var Message: TWMCopy); message WM_COPY;
@@ -2502,7 +2492,7 @@ type
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
-    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
+    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); override;
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearSelection(pFireChangeEvent: Boolean); overload; virtual;
@@ -16262,38 +16252,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.WMChangeState(var Message: TMessage);
-
-var
-  EnterStates,
-  LeaveStates: TVirtualTreeStates;
-
-begin
-  EnterStates := [];
-  if csStopValidation in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsStopValidation);
-  if csUseCache in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsUseCache);
-  if csValidating in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsValidating);
-  if csValidationNeeded in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsValidationNeeded);
-
-  LeaveStates := [];
-  if csStopValidation in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsStopValidation);
-  if csUseCache in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsUseCache);
-  if csValidating in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsValidating);
-  if csValidationNeeded in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsValidationNeeded);
-
-  DoStateChange(EnterStates, LeaveStates);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.WMChar(var Message: TWMChar);
 
 begin
@@ -18371,17 +18329,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
-var
-  lMessage: TMessage;
+procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
 begin
-  //TODO: If this works reliable, move to TWorkerThread and do not use TMessage as parameter type, get rid of TChangeStates type. See issue #844
-  LMessage.Msg := WM_CHANGESTATE;
-  lMessage.WParam := Byte(EnterStates);
-  lMessage.LParam := Byte(LeaveStates);
+  //TODO: If this works reliable, move to TWorkerThread
   if (Self.HandleAllocated) then
-    TThread.Queue(nil, procedure begin WMChangeState(lMessage) end);
-//    SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
+    TThread.Synchronize(nil, procedure begin DoStateChange(EnterStates, LeaveStates) end);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23611,8 +23563,12 @@ begin
     end;
 
     // Really start dragging if the mouse has been moved more than the threshold.
-    if (tsOLEDragPending in FStates) and ((Abs(FLastClickPos.X - X) >= FDragThreshold) or
-       (Abs(FLastClickPos.Y - Y) >= FDragThreshold)) then
+    if (tsOLEDragPending in FStates) and
+      (
+       ((Abs(FLastClickPos.X - X) >= FDragThreshold) and (X > 0)) or  // Check >0 to fix issue #833
+       ((Abs(FLastClickPos.Y - Y) >= FDragThreshold) and (Y > 0))
+      )
+    then
       DoDragging(FLastClickPos)
     else
     begin
