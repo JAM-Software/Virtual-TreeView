@@ -166,8 +166,6 @@ const
 
   // Decoupling message for auto-adjusting the internal edit window.
   CM_AUTOADJUST = CM_BASE + 2005;
-  {$ENDIF}
-
 
   // VT's own clipboard formats,
   // Note: The reference format is used internally to allow to link to a tree reference
@@ -221,7 +219,6 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 type
   // Alias defintions for convenience
   TImageIndex = System.UITypes.TImageIndex;
-  TCanvas = Vcl.Graphics.TCanvas;
 
   // The exception used by the trees.
   EVirtualTreeError = class(Exception);
@@ -17508,7 +17505,7 @@ begin
 
   inherited;
 end;
-{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.WMChar(var Message: TWMChar);
