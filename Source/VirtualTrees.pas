@@ -160,10 +160,6 @@ const
 
   ThemeChangedTimerDelay = 500;
 
-  // Need to use this message to release the edit link interface asynchronously.
-  {$IFDEF VT_VCL}
-  WM_CHANGESTATE = WM_APP + 32;
-
   // Virtual Treeview does not need to be subclassed by an eventual Theme Manager instance as it handles
   // Windows XP theme painting itself. Hence the special message is used to prevent subclassing.
   CM_DENYSUBCLASSING = CM_BASE + 2000;
@@ -225,6 +221,7 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 type
   // Alias defintions for convenience
   TImageIndex = System.UITypes.TImageIndex;
+  TCanvas = Vcl.Graphics.TCanvas;
 
   // The exception used by the trees.
   EVirtualTreeError = class(Exception);
@@ -1544,13 +1541,6 @@ type
     tsUseExplorerTheme{$ENDIF}        // The tree runs under WinVista+ and is using the explorer theme
   );
 
-  TChangeStates = set of (
-    csStopValidation,         // Cache validation can be stopped (usually because a change has occured meanwhile).
-    csUseCache,               // The tree's node caches are validated and non-empty.
-    csValidating,             // The tree's node caches are currently validated.
-    csValidationNeeded        // Something in the structure of the tree has changed. The cache needs validation.
-  );
-
   // determines whether and how the drag image is to show
   TVTDragImageKind = (
     diComplete,       // show a complete drag image with all columns, only visible columns are shown
@@ -2522,7 +2512,7 @@ type
     procedure TVMGetItem(var Message: TMessage); message TVM_GETITEM;
     procedure TVMGetItemRect(var Message: TMessage); message TVM_GETITEMRECT;
     procedure TVMGetNextItem(var Message: TMessage); message TVM_GETNEXTITEM;
-    procedure WMCancelMode(var Message: TWMCancelMode); message WM_CANCELMODE;    
+    procedure WMCancelMode(var Message: TWMCancelMode); message WM_CANCELMODE;
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
     procedure WMCopy(var Message: TWMCopy); message WM_COPY;
@@ -2557,7 +2547,6 @@ type
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;     
 {$ENDIF}
     procedure CMMouseWheel(var Message: TCMMouseWheel); message CM_MOUSEWHEEL;
-    procedure WMChangeState(var Message: TMessage); message WM_CHANGESTATE;
     procedure WMHScroll(var Message: TWMHScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_HSCROLL;{$ENDIF}
     procedure WMVScroll(var Message: TWMVScroll); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_VSCROLL;{$ENDIF}
     procedure WMSize(var Message: TWMSize); {$IFDEF VT_FMX}virtual;{$ELSE}message WM_SIZE;{$ENDIF}
@@ -2598,7 +2587,7 @@ type
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
-    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
+    procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); {$IFDEF VT_FMX}virtual;{$ELSE}override;{$ENDIF}
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
     procedure ClearSelection(pFireChangeEvent: Boolean); overload; virtual;
@@ -3540,6 +3529,8 @@ type
     FOnMeasureTextWidth: TVTMeasureTextEvent;      // used to adjust the width of the cells
     FOnMeasureTextHeight: TVTMeasureTextEvent;
     FOnDrawText: TVTDrawTextEvent;                 // used to custom draw the node text
+    /// Returns True if the property DefaultText has a value that differs from the default value, False otherwise.
+    function IsDefaultTextStored(): Boolean;
     function GetImageText(Node: PVirtualNode; Kind: TVTImageKind;
       Column: TColumnIndex): string;
     function GetOptions: TCustomStringTreeOptions;
@@ -3594,7 +3585,7 @@ type
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); override;
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); override;
 
-    property DefaultText: string read FDefaultText write SetDefaultText;
+    property DefaultText: string read FDefaultText write SetDefaultText stored IsDefaultTextStored;
     property EllipsisWidth: Integer read FEllipsisWidth;
     property TreeOptions: TCustomStringTreeOptions read GetOptions write SetOptions;
 
@@ -4260,7 +4251,8 @@ const
   ClipboardStates = [tsCopyPending, tsCutPending];
   DefaultScrollUpdateFlags = [suoRepaintHeader, suoRepaintScrollBars, suoScrollClientArea, suoUpdateNCArea];
   TreeNodeSize = (SizeOf(TVirtualNode) + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1); // used for node allocation and access to internal data
-
+  /// Default value of the DefaultText property
+  cDefaultText = 'Node';
   MouseButtonDown = [tsLeftButtonDown, tsMiddleButtonDown, tsRightButtonDown];
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
@@ -17519,38 +17511,6 @@ end;
 {$ENDIF}
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.WMChangeState(var Message: TMessage);
-
-var
-  EnterStates,
-  LeaveStates: TVirtualTreeStates;
-
-begin
-  EnterStates := [];
-  if csStopValidation in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsStopValidation);
-  if csUseCache in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsUseCache);
-  if csValidating in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsValidating);
-  if csValidationNeeded in TChangeStates(Byte(Message.WParam)) then
-    Include(EnterStates, tsValidationNeeded);
-
-  LeaveStates := [];
-  if csStopValidation in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsStopValidation);
-  if csUseCache in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsUseCache);
-  if csValidating in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsValidating);
-  if csValidationNeeded in TChangeStates(Byte(Message.LParam)) then
-    Include(LeaveStates, tsValidationNeeded);
-
-  DoStateChange(EnterStates, LeaveStates);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-{$IFDEF VT_VCL}
 procedure TBaseVirtualTree.WMChar(var Message: TWMChar);
 
 begin
@@ -19681,18 +19641,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TChangeStates);
-var
-  lMessage: TMessage;
+procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
 begin
-  //TODO: If this works reliable, move to TWorkerThread and do not use TMessage as parameter type, get rid of TChangeStates type. See issue #844
-  LMessage.Msg := WM_CHANGESTATE;
-  lMessage.WParam := Byte(EnterStates);
-  lMessage.LParam := Byte(LeaveStates);
-
+  //TODO: If this works reliable, move to TWorkerThread
   if (Self.HandleAllocated) then
-    TThread.Queue(nil, procedure begin WMChangeState(lMessage) end);
-//    SendMessage(Self.Handle, WM_CHANGESTATE, Byte(EnterStates), Byte(LeaveStates));
+    TThread.Synchronize(nil, procedure begin DoStateChange(EnterStates, LeaveStates) end);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25197,8 +25150,12 @@ begin
 
     // Really start dragging if the mouse has been moved more than the threshold.
 {$IFDEF VT_VCL}
-    if (tsOLEDragPending in FStates) and ((Abs(FLastClickPos.X - X) >= FDragThreshold) or
-       (Abs(FLastClickPos.Y - Y) >= FDragThreshold)) then
+    if (tsOLEDragPending in FStates) and
+      (
+       ((Abs(FLastClickPos.X - X) >= FDragThreshold) and (X > 0)) or  // Check >0 to fix issue #833
+       ((Abs(FLastClickPos.Y - Y) >= FDragThreshold) and (Y > 0))
+      )
+    then
       DoDragging(FLastClickPos)
     else
 {$ENDIF}
@@ -35421,7 +35378,7 @@ constructor TCustomVirtualStringTree.Create(AOwner: TComponent);
 begin
   inherited;
   FPreviouslySelected := nil;
-  FDefaultText := 'Node';
+  FDefaultText := cDefaultText;
   FInternalDataOffset := AllocateInternalDataArea(SizeOf(Cardinal));
 end;
 
@@ -36740,6 +36697,11 @@ begin
   Data := InternalData(Node);
   if Assigned(Data) then
     Data^ := 0;
+end;
+
+function TCustomVirtualStringTree.IsDefaultTextStored: Boolean;
+begin
+  Exit(DefaultText <> cDefaultText);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
