@@ -4528,38 +4528,53 @@ var
   //---------------------------------------------------------------------------
 
   procedure AddSystemImage(IL: TImageList; Index: Integer);
-
+  const
+    States: array [0..19] of Integer = (
+      RBS_UNCHECKEDNORMAL, RBS_UNCHECKEDHOT, RBS_UNCHECKEDPRESSED, RBS_UNCHECKEDDISABLED,
+      RBS_CHECKEDNORMAL, RBS_CHECKEDHOT, RBS_CHECKEDPRESSED, RBS_CHECKEDDISABLED,
+      CBS_UNCHECKEDNORMAL, CBS_UNCHECKEDHOT, CBS_UNCHECKEDPRESSED, CBS_UNCHECKEDDISABLED,
+      CBS_CHECKEDNORMAL, CBS_CHECKEDHOT, CBS_CHECKEDPRESSED, CBS_CHECKEDDISABLED,
+      CBS_MIXEDNORMAL, CBS_MIXEDHOT, CBS_MIXEDPRESSED, CBS_MIXEDDISABLED);
   var
     ButtonState: Cardinal;
     ButtonType: Cardinal;
 
   begin
     BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
-    if Index < 8 then
-      ButtonType := DFCS_BUTTONRADIO
-    else
-      ButtonType := DFCS_BUTTONCHECK;
-    if Index >= 16 then
-      ButtonType := ButtonType or DFCS_BUTTON3STATE;
-
-    case Index mod 4 of
-      0:
-        ButtonState := 0;
-      1:
-        ButtonState := DFCS_HOT;
-      2:
-        ButtonState := DFCS_PUSHED;
-      else
-        ButtonState := DFCS_INACTIVE;
-    end;
-    if Index in [4..7, 12..19] then
-      ButtonState := ButtonState or DFCS_CHECKED;
-    if Flat then
-    ButtonState := ButtonState or DFCS_FLAT;
     if StyleServices.Enabled and StyleServices.IsSystemStyle then
-      DrawThemeBackground(Theme, BM.Canvas.Handle, Details.Part, Details.State, Rect(0, 0, BM.Width, BM.Height), nil)
+    begin
+      if Index < 8 then
+        Details.Part := BP_RADIOBUTTON
+      else
+        Details.Part := BP_CHECKBOX;
+      Details.State := States[Index];
+      DrawThemeBackground(Theme, BM.Canvas.Handle, Details.Part, Details.State, Rect(0, 0, BM.Width, BM.Height), nil);
+    end
     else
+    begin
+      if Index < 8 then
+        ButtonType := DFCS_BUTTONRADIO
+      else
+        ButtonType := DFCS_BUTTONCHECK;
+      if Index >= 16 then
+        ButtonType := ButtonType or DFCS_BUTTON3STATE;
+
+      case Index mod 4 of
+        0:
+          ButtonState := 0;
+        1:
+          ButtonState := DFCS_HOT;
+        2:
+          ButtonState := DFCS_PUSHED;
+        else
+          ButtonState := DFCS_INACTIVE;
+      end;
+      if Index in [4..7, 12..19] then
+        ButtonState := ButtonState or DFCS_CHECKED;
+      if Flat then
+        ButtonState := ButtonState or DFCS_FLAT;
       DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
+    end;
     IL.AddMasked(BM, MaskColor);
   end;
 
