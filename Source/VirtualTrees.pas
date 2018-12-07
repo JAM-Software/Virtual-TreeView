@@ -5682,7 +5682,7 @@ begin
 
                   //Space on right--taken from the code in the hmHint branch below.
                   if Assigned(Tree) then
-                    Inc(Result.Right, Tree.FTextMargin + Tree.FMargin);
+                    Inc(Result.Right, Tree.FTextMargin + Tree.FMargin + Tree.ScaledPixels(4));
                 end;
                 // Fix ends.
 
@@ -5705,7 +5705,8 @@ begin
               // Calculate the true size of the text rectangle.
               Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(HintText), Length(HintText), Result, DT_CALCRECT or DT_TOP or DT_NOPREFIX or DT_WORDBREAK);
               // The height of the text plus 2 pixels vertical margin plus the border determine the hint window height.
-              Inc(Result.Bottom, 6);
+              // Minus 4 because THintWindow.ActivateHint adds 4 to Rect.Bottom anyway. Note that it is not scaled because the RTL itself does not do any scaling either.
+              Inc(Result.Bottom, Tree.ScaledPixels(6) - 4);
               // The text is centered horizontally with usual text margin for left and right borders (plus border).
               if not Assigned(Tree) then
                 Exit; // Workaround, because we have seen several exceptions here caught by Eurekalog. Submitted as issue #114 to http://code.google.com/p/virtual-treeview/
@@ -5714,7 +5715,7 @@ begin
                 it looks OK even if the hint font is larger.
               }
               Inc(Result.Right, Tree.FTextMargin
-                  + Tree.FMargin); //Issue #623 space on right
+                  + Tree.FMargin + Tree.ScaledPixels(4)); //Issue #623 space on right
                   //+ FTextHeight); // Old code: We are extending the width here, but the text height scales with the text width and has a similar value as AveCharWdith * 2.
             end;
           end;
