@@ -2111,8 +2111,6 @@ type
     FBottomSpace: Cardinal;                      // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
-    FSingletonNodeArray: TNodeArray;             // Contains only one element for quick addition of single nodes
-                                                 // to the selection.
     FDragScrollStart: Cardinal;                  // Contains the start time when a tree does auto scrolling as drop target.
 
     // search
@@ -11982,7 +11980,6 @@ begin
     Transparency := 200;
   end;
 
-  SetLength(FSingletonNodeArray, 1);
   FAnimationDuration := 200;
   FSearchTimeout := 1000;
   FSearchStart := ssFocusedNode;
@@ -17906,8 +17903,7 @@ begin
   if not FSelectionLocked then
   begin
     Assert(Assigned(Node), 'Node must not be nil!');
-    FSingletonNodeArray[0] := Node;
-    Changed := InternalAddToSelection(FSingletonNodeArray, 1, False);
+    Changed := InternalAddToSelection(Node, False);
     if Changed then
     begin
       UpdateNextNodeToSelect(Node);
@@ -22832,10 +22828,7 @@ begin
       if ivsHasChildren in InitStates then
         Include(States, vsHasChildren);
       if ivsSelected in InitStates then
-      begin
-        FSingletonNodeArray[0] := Node;
-        InternalAddToSelection(FSingletonNodeArray, 1, False);
-      end;
+        InternalAddToSelection(Node, False);
       if ivsMultiline in InitStates then
         Include(States, vsMultiline);
       if ivsFiltered in InitStates then
@@ -22945,11 +22938,13 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.InternalAddToSelection(Node: PVirtualNode; ForceInsert: Boolean): Boolean;
-
+var
+  lSingletonNodeArray: TNodeArray;
 begin
   Assert(Assigned(Node), 'Node must not be nil!');
-  FSingletonNodeArray[0] := Node;
-  Result := InternalAddToSelection(FSingletonNodeArray, 1, ForceInsert);
+  SetLength(lSingletonNodeArray, 1);
+  lSingletonNodeArray[0] := Node;
+  Result := InternalAddToSelection(lSingletonNodeArray, 1, ForceInsert);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22965,7 +22960,7 @@ var
   Constrained,
   SiblingConstrained: Boolean;
   lPreviousSelectedCount: Integer;
-  AddedNodesIndexes: array of Integer;
+  AddedNodesIndexes: TNodeArray;
   AddedNodesSize: Integer;
   PTmpNode: PVirtualNode;
 
@@ -22989,7 +22984,7 @@ begin
       FLastSelectionLevel := GetNodeLevelForSelectConstraint(NewItems[0]);
     for I := 0 to NewLength - 1 do
     begin
-      AddedNodesIndexes[AddedNodesSize] := I;
+      AddedNodesIndexes[AddedNodesSize] := NewItems[I];
       Inc(AddedNodesSize);
     end;
   end
@@ -23009,7 +23004,7 @@ begin
         Inc(PAnsiChar(NewItems[I]))
       else
       begin
-        AddedNodesIndexes[AddedNodesSize] := I;
+        AddedNodesIndexes[AddedNodesSize] := NewItems[I];
         Inc(AddedNodesSize);
       end;
   end;
@@ -23072,7 +23067,7 @@ begin
     // post process added nodes
     for I := 0 to AddedNodesSize - 1 do
     begin
-      PTmpNode := NewItems[AddedNodesIndexes[I]];
+      PTmpNode := AddedNodesIndexes[I];
       //sync path note: on click, multi-select ctrl-click and draw selection
       Include(PTmpNode.States, vsSelected);
       // call on add event callbackevent
