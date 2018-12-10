@@ -1,4 +1,7 @@
-﻿V7.0: (22 Jul 2018)
+﻿V7.1: (Under development)
+See: https://github.com/Virtual-TreeView/Virtual-TreeView/milestone/11?closed=1
+
+V7.0: (22 Jul 2018)
   * The support for Windows XP/2003 has been dropped (issue #707). This means:
     - We did not intentionally break XP support.
 	- We do no longer test on Windows XP/2003
