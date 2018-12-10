@@ -3363,6 +3363,7 @@ type
     function GetStaticText(Node: PVirtualNode; Column: TColumnIndex): string;
     function GetText(Node: PVirtualNode; Column: TColumnIndex): string;
     procedure ReadText(Reader: TReader);
+    procedure WriteText(Writer: TWriter);
     procedure ResetInternalData(Node: PVirtualNode; Recursive: Boolean);
     procedure SetDefaultText(const Value: string);
     procedure SetOptions(const Value: TCustomStringTreeOptions);
@@ -3407,7 +3408,7 @@ type
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); override;
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); override;
 
-    property DefaultText: string read FDefaultText write SetDefaultText stored IsDefaultTextStored;
+    property DefaultText: string read FDefaultText write SetDefaultText stored False;// Stored via own writer
     property EllipsisWidth: Integer read FEllipsisWidth;
     property TreeOptions: TCustomStringTreeOptions read GetOptions write SetOptions;
 
@@ -33820,6 +33821,8 @@ begin
 
   // For backwards compatiblity
   Filer.DefineProperty('WideDefaultText', ReadText, nil, False);
+  // Delphi does never store an empty string unless we define the property in code.
+  Filer.DefineProperty('DefaultText', ReadText, WriteText, IsDefaultTextStored);
   Filer.DefineProperty('StringOptions', ReadOldStringOptions, nil, False);
 end;
 
@@ -34247,6 +34250,11 @@ begin
         Write(PWideChar(S)^, Len);
       end;
     end;
+end;
+
+procedure TCustomVirtualStringTree.WriteText(Writer: TWriter);
+begin
+  Writer.WriteString(DefaultText);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
