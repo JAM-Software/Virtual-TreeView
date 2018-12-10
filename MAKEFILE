@@ -3,17 +3,24 @@ STUDIO = $(PROGRAMFILES)\Embarcadero\Studio
 BDSCOMMONDIRMAIN = %PUBLIC%\Documents\Embarcadero\Studio\
 PROJECT = VirtualTrees
 
-
 clean: 
-	DEL /S Source\*.HPP
-	DEL /S Source\*.DCU
+	DEL /S /Q .\*.HPP
+	DEL /S /Q .\*.DCU
 #TODO: Add demos and package folders
-	
+	 
 _XE8: Lib\*.pas "Package\RAD Studio XE8\$(PROJECT)R.dpk" "Package\RAD Studio XE8\$(PROJECT)R.dproj" "Package\RAD Studio XE8\$(PROJECT)D.dpk" "Package\RAD Studio XE8\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\16.0
 	msbuild "Package\RAD Studio XE8\$(PROJECT)R.dproj"
 	msbuild "Package\RAD Studio XE8\$(PROJECT)D.dproj"
 	msbuild /property:Platform=Win64 "Package\RAD Studio XE8\$(PROJECT)R.dproj"
+	$(MAKE) _samples
+
+# build all packahes for Delphi 10.2
+10_2: Source\*.pas "Packages\RAD Studio 10.2\$(PROJECT)R.dpk" "Packages\RAD Studio 10.2\$(PROJECT)R.dproj" "Packages\RAD Studio 10.2\$(PROJECT)D.dpk" "Package\RAD Studio 10.2\$(PROJECT)D.dproj"
+	SET BDS=$(STUDIO)\19.0
+	msbuild "Packages\RAD Studio 10.2\$(PROJECT)R.dproj"
+	msbuild "Packages\RAD Studio 10.2\$(PROJECT)D.dproj"
+	msbuild /property:Platform=Win64 "Packages\RAD Studio 10.2\$(PROJECT)R.dproj"
 	$(MAKE) _samples
 
 "Demos\Advanced\Advanced.exe": "Demos\Advanced\*.dproj" "Demos\Advanced\*.dpr" "Demos\Advanced\*.pas"
@@ -30,7 +37,7 @@ _XE8: Lib\*.pas "Package\RAD Studio XE8\$(PROJECT)R.dpk" "Package\RAD Studio XE8
 
 _samples: "Demos\Advanced\Advanced.exe" "Demos\Minimal\Minimal.exe" "Demos\Objects\Objects.exe" "Demos\OLE\OLE.exe"
 	
-_continuousbuilds: clean _XE8
+_continuousbuilds: clean 10_2
 
 _release:
 #This small batch file is intended to create a source code release file of the VirtualTreeView as ZIP archive
