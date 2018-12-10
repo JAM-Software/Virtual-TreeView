@@ -22960,7 +22960,6 @@ var
   Constrained,
   SiblingConstrained: Boolean;
   lPreviousSelectedCount: Integer;
-  AddedNodesIndexes: TNodeArray;
   AddedNodesSize: Integer;
   PTmpNode: PVirtualNode;
 
@@ -22969,9 +22968,7 @@ begin
   // The idea behind this code is to use a kind of reverse merge sort. QuickSort is quite fast
   // and would do the job here too but has a serious problem with already sorted lists like FSelection.
 
-  // allocate array with indexes in NewItems (max number of entries)
-  SetLength(AddedNodesIndexes, NewLength);
-  // current number of entries in AddedNodesIndexes
+  // current number of valid entries
   AddedNodesSize := 0;
 
   // 1) Remove already selected items, mark all other as being selected.
@@ -22982,11 +22979,7 @@ begin
     Constrained := toLevelSelectConstraint in FOptions.FSelectionOptions;
     if Constrained and (FLastSelectionLevel = -1) then
       FLastSelectionLevel := GetNodeLevelForSelectConstraint(NewItems[0]);
-    for I := 0 to NewLength - 1 do
-    begin
-      AddedNodesIndexes[AddedNodesSize] := NewItems[I];
-      Inc(AddedNodesSize);
-    end;
+    AddedNodesSize := NewLength;
   end
   else
   begin
@@ -23000,13 +22993,11 @@ begin
     for I := 0 to NewLength - 1 do
       if ([vsSelected, vsDisabled] * NewItems[I].States <> []) or
          (Constrained and (Cardinal(FLastSelectionLevel) <> GetNodeLevel(NewItems[I]))) or
-         (SiblingConstrained and (FRangeAnchor.Parent <> NewItems[I].Parent)) then
-        Inc(PAnsiChar(NewItems[I]))
+         (SiblingConstrained and (FRangeAnchor.Parent <> NewItems[I].Parent))
+      then
+        Inc(PAnsiChar(NewItems[I])) // mark as invalid by setting the LSB
       else
-      begin
-        AddedNodesIndexes[AddedNodesSize] := NewItems[I];
         Inc(AddedNodesSize);
-      end;
   end;
 
   I := PackArray(NewItems, NewLength);
@@ -23067,7 +23058,7 @@ begin
     // post process added nodes
     for I := 0 to AddedNodesSize - 1 do
     begin
-      PTmpNode := AddedNodesIndexes[I];
+      PTmpNode := NewItems[I];
       //sync path note: on click, multi-select ctrl-click and draw selection
       Include(PTmpNode.States, vsSelected);
       // call on add event callbackevent
@@ -33827,7 +33818,7 @@ procedure TCustomVirtualStringTree.DefineProperties(Filer: TFiler);
 begin
   inherited;
 
-  // Delphi still cannot handle wide strings properly while streaming
+  // For backwards compatiblity
   Filer.DefineProperty('WideDefaultText', ReadText, nil, False);
   Filer.DefineProperty('StringOptions', ReadOldStringOptions, nil, False);
 end;
