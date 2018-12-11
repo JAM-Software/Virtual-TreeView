@@ -18323,6 +18323,7 @@ begin
         CreateSystemImageSet(Handle, SystemCheckImages, ILC_COLOR32 or ILC_MASK, False);
         if FCheckImageKind = ckSystemDefault then
           FCheckImages := SystemCheckImages;
+        UpdateHeaderRect();
         // Scale also node heights
         BeginUpdate();
         try
