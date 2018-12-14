@@ -2309,8 +2309,7 @@ type
     procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
     procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
     function CalculateCacheEntryCount: Integer;
-    procedure CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode; var VAlign,
-      VButtonAlign: Integer);
+    procedure CalculateVerticalAlignments(var PaintInfo: TVTPaintInfo; var VButtonAlign: Integer);
     function ChangeCheckState(Node: PVirtualNode; Value: TCheckState): Boolean;
     function CollectSelectedNodesLTR(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment; OldRect,
       NewRect: TRect): Boolean;
@@ -12132,38 +12131,39 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.CalculateVerticalAlignments(ShowImages, ShowStateImages: Boolean; Node: PVirtualNode;
-  var VAlign, VButtonAlign: Integer);
+procedure TBaseVirtualTree.CalculateVerticalAlignments(var PaintInfo: TVTPaintInfo; var VButtonAlign: Integer);
 
 // Calculates the vertical alignment of the given node and its associated expand/collapse button during
 // a node paint cycle depending on the required node alignment style.
 
 begin
-  // For absolute alignment the calculation is trivial.
-  case FNodeAlignment of
-    naFromTop:
-      VAlign := Node.Align;
-    naFromBottom:
-      VAlign := Integer(NodeHeight[Node]) - Node.Align;
-  else // naProportional
-    // Consider button and line alignment, but make sure neither the image nor the button (whichever is taller)
-    // go out of the entire node height (100% means bottom alignment to the node's bounds).
-    if ShowImages or ShowStateImages then
-    begin
-      if ShowImages then
-        VAlign := GetImageSize(Node).cy
+  With PaintInfo do begin
+    // For absolute alignment the calculation is trivial.
+    case FNodeAlignment of
+      naFromTop:
+        VAlign := Node.Align;
+      naFromBottom:
+        VAlign := Integer(NodeHeight[Node]) - Node.Align;
+    else // naProportional
+      // Consider button and line alignment, but make sure neither the image nor the button (whichever is taller)
+      // go out of the entire node height (100% means bottom alignment to the node's bounds).
+      if (ImageInfo[iiNormal].Index >= 0) or (ImageInfo[iiState].Index >= 0) then
+      begin
+        if (ImageInfo[iiNormal].Index >= 0) then
+          VAlign := ImageInfo[iiNormal].Images.Height
+        else
+          VAlign := ImageInfo[iiState].Images.Height;
+        VAlign := MulDiv((Integer(NodeHeight[Node]) - VAlign), Node.Align, 100) + VAlign div 2;
+      end
       else
-        VAlign := FStateImages.Height;
-      VAlign := MulDiv((Integer(NodeHeight[Node]) - VAlign), Node.Align, 100) + VAlign div 2;
-    end
-    else
-      if toShowButtons in FOptions.FPaintOptions then
-        VAlign := MulDiv((Integer(NodeHeight[Node]) - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height div 2
-      else
-        VAlign := MulDiv(Integer(Node.NodeHeight), Node.Align, 100);
-  end;
+        if toShowButtons in FOptions.FPaintOptions then
+          VAlign := MulDiv((Integer(NodeHeight[Node]) - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height div 2
+        else
+          VAlign := MulDiv(Integer(Node.NodeHeight), Node.Align, 100);
+    end;
 
-  VButtonAlign := VAlign - FPlusBM.Height div 2 - (FPlusBM.Height and 1);
+    VButtonAlign := VAlign - FPlusBM.Height div 2 - (FPlusBM.Height and 1);
+  end;// With PaintInfo
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -30500,7 +30500,7 @@ begin
                           GetImageIndex(PaintInfo, ikState, iiState);
                           GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal);
 
-                          CalculateVerticalAlignments(ImageInfo[iiNormal].Index >= 0, ImageInfo[iiState].Index >= 0, PaintInfo.Node, PaintInfo.VAlign, ButtonY);
+                          CalculateVerticalAlignments(PaintInfo, ButtonY);
                           // Take the space for the tree lines into account.
                           PaintInfo.AdjustImageCoordinates();
                           if UseColumns then
