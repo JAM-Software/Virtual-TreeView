@@ -1701,8 +1701,9 @@ type
     BidiMode: TBidiMode;          // directionality to be used for painting
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
-    Offsets: TVTOffsets;
-    procedure AdjustImageCoordinates(VAlign: Integer);
+    Offsets: TVTOffsets;          // The offsets of the various elements of a tree node
+    VAlign: Integer;
+    procedure AdjustImageCoordinates();
   end;
 
   // Method called by the Animate routine for each animation step.
@@ -2695,7 +2696,7 @@ type
     procedure PaintImage(var PaintInfo: TVTPaintInfo; ImageInfoIndex: TVTImageInfoIndex; DoOverlay: Boolean); virtual;
     procedure PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const R: TRect; ButtonX,
       ButtonY: Integer; BidiMode: TBiDiMode); virtual;
-    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer; const LineImage: TLineImage); virtual;
+    procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; IndentSize: Integer; const LineImage: TLineImage); virtual;
     procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: Integer; const SelectionRect: TRect;
       TargetRect: TRect); virtual;
     procedure PanningWindowProc(var Message: TMessage); virtual;
@@ -24023,7 +24024,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; VAlignment, IndentSize: Integer; const LineImage: TLineImage);
+procedure TBaseVirtualTree.PaintTreeLines(const PaintInfo: TVTPaintInfo; IndentSize: Integer; const LineImage: TLineImage);
 
 var
   I: Integer;
@@ -24085,7 +24086,7 @@ begin
           for I := 0 to IndentSize - 1 do
           begin
             DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
-            DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlignment - 1, NewStyles[I],
+            DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlign - 1, NewStyles[I],
               BidiMode <> bdLeftToRight);
             Inc(XPos, Offset);
           end;
@@ -24095,7 +24096,7 @@ begin
       for I := 0 to IndentSize - 1 do
       begin
         DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
-        DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlignment - 1, LineImage[I],
+        DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlign - 1, LineImage[I],
           BidiMode <> bdLeftToRight);
         Inc(XPos, Offset);
       end;
@@ -30237,7 +30238,6 @@ var
   UseColumns,
   IsMainColumn: Boolean;
 
-  VAlign,
   IndentSize,
   ButtonY: Integer;            // Y position of toggle button within the node's rect
   LineImage: TLineImage;
@@ -30422,7 +30422,7 @@ begin
               CurrentNodeHeight := PaintInfo.Node.NodeHeight;
               R.Bottom := CurrentNodeHeight;
               
-              CalculateVerticalAlignments(ShowImages, ShowStateImages, PaintInfo.Node, VAlign, ButtonY);
+              CalculateVerticalAlignments(ShowImages, ShowStateImages, PaintInfo.Node, PaintInfo.VAlign, ButtonY);
 
               // Let application decide whether the node should normally be drawn or by the application itself.
               if not DoBeforeItemPaint(PaintInfo.Canvas, PaintInfo.Node, R) then
@@ -30514,7 +30514,7 @@ begin
                             ImageInfo[iiNormal].Index := -1;
 
                           // Take the space for the tree lines into account.
-                          PaintInfo.AdjustImageCoordinates(VAlign);
+                          PaintInfo.AdjustImageCoordinates();
                           if UseColumns then
                           begin
                             ClipRect := CellRect;
@@ -30599,7 +30599,7 @@ begin
                             if (toShowTreeLines in FOptions.FPaintOptions) and
                                (not (toHideTreeLinesIfThemed in FOptions.FPaintOptions) or
                                 not (tsUseThemes in FStates)) then
-                              PaintTreeLines(PaintInfo, VAlign, IfThen(toFixedIndent in FOptions.FPaintOptions, 1,
+                              PaintTreeLines(PaintInfo, IfThen(toFixedIndent in FOptions.FPaintOptions, 1,
                                              IndentSize), LineImage);
                             // Show node button if allowed, if there child nodes and at least one of the child
                             // nodes is visible or auto button hiding is disabled.
@@ -34831,7 +34831,7 @@ end;
 
 { TVTPaintInfo }
 
-procedure TVTPaintInfo.AdjustImageCoordinates(VAlign: Integer);
+procedure TVTPaintInfo.AdjustImageCoordinates();
 // During painting of the main column some coordinates must be adjusted due to the tree lines.
 begin
   ContentRect := CellRect;
