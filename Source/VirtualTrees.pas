@@ -15959,29 +15959,9 @@ procedure TBaseVirtualTree.CMHintShowPause(var Message: TCMHintShowPause);
 // Tells the application that the tree (and only the tree) does not want a delayed tool tip.
 // Normal hints / header hints use the default delay (except for the first time).
 
-begin
-  // A little workaround is needed here to make the application class using the correct hint window class.
-  // Once the application gets ShowHint set to true (which is the case when we want to show hints in the tree) then
-  // an internal hint window will be created which is not our own class (because we don't set an application wide
-  // hint window class but only one for the tree). Unfortunately, this default hint window class will prevent
-  // hints for the non-client area to show up (e.g. for the header) by calling CancelHint whenever certain messages
-  // arrive. By setting the hint show pause to 0 if our hint class was not used recently we make sure
-  // that the hint timer (in Forms.pas) is not used and our class is created immediately.
-  //
-  // Note for newer Delphi versions: Does not work because TApplication.HintMouseMessage() not only checks (Pause = 0) but also TApplication.FHintActive,
-  // which is initally False. So this code has been commented. See also issue #728.
-//  if FHintWindowDestroyed then
-//  begin
-//    GetCursorPos(P);
-//    // Check if the mouse is in the header or tool tips are enabled, which must be shown without delay anyway.
-//    if FHeader.UseColumns and (hoShowHint in FHeader.FOptions) and FHeader.InHeader(ScreenToClient(P)) or
-//      (FHintMode = hmToolTip) then
-//      Message.Pause^ := 0;
-//  end
-//  else
-
-    if FHintMode = hmToolTip then
-      Message.Pause^ := 0;
+  begin
+  if ShowHint and (FHintMode = hmToolTip) then
+    Message.Pause^ := 0;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19294,10 +19274,7 @@ begin
     FOnBeforeCellPaint(Self, Canvas, Node, Column, CellPaintMode, CellRect, ContentRect);
 
     if CellPaintMode = cpmGetContentMargin then
-    begin
       SetUpdateState(False);
-      InvalidateRect(Handle, @UpdateRect, False);
-    end;
   end;
 end;
 
