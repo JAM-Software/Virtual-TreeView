@@ -30232,8 +30232,6 @@ const
 var
   DrawSelectionRect,
   UseBackground,
-  ShowImages,
-  ShowStateImages,
   ShowCheckImages,
   UseColumns,
   IsMainColumn: Boolean;
@@ -30328,9 +30326,6 @@ begin
         // For quick checks some intermediate variables are used.
         UseBackground := (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.Graphic) and
           (poBackground in PaintOptions);
-        ShowImages := Assigned(FImages) or Assigned(OnGetImageIndexEx);
-        ShowStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
-
         ShowCheckImages := Assigned(FCheckImages) and (toCheckSupport in FOptions.FMiscOptions);
         UseColumns := FHeader.UseColumns;
 
@@ -30421,8 +30416,6 @@ begin
 
               CurrentNodeHeight := PaintInfo.Node.NodeHeight;
               R.Bottom := CurrentNodeHeight;
-              
-              CalculateVerticalAlignments(ShowImages, ShowStateImages, PaintInfo.Node, PaintInfo.VAlign, ButtonY);
 
               // Let application decide whether the node should normally be drawn or by the application itself.
               if not DoBeforeItemPaint(PaintInfo.Canvas, PaintInfo.Node, R) then
@@ -30504,15 +30497,10 @@ begin
                           end
                           else
                             ImageInfo[iiCheck].Index := -1;
-                          if ShowStateImages then
-                            GetImageIndex(PaintInfo, ikState, iiState)
-                          else
-                            ImageInfo[iiState].Index := -1;
-                          if ShowImages then
-                            GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal)
-                          else
-                            ImageInfo[iiNormal].Index := -1;
+                          GetImageIndex(PaintInfo, ikState, iiState);
+                          GetImageIndex(PaintInfo, ImageKind[vsSelected in Node.States], iiNormal);
 
+                          CalculateVerticalAlignments(ImageInfo[iiNormal].Index >= 0, ImageInfo[iiState].Index >= 0, PaintInfo.Node, PaintInfo.VAlign, ButtonY);
                           // Take the space for the tree lines into account.
                           PaintInfo.AdjustImageCoordinates();
                           if UseColumns then
@@ -30666,7 +30654,8 @@ begin
                     (poDrawDropMark in PaintOptions) then
                     DoPaintDropMark(Canvas, Node, R);
                 end;
-              end;
+              end; // if not DoBeforeItemPaint()  (no custom drawing)
+
 
               with PaintInfo.Canvas do
               begin
