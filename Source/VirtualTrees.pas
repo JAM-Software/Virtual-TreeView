@@ -22300,7 +22300,7 @@ var
   NodeSelected: Boolean; // the new node (if any) is selected
   NewColumn: Boolean;    // column changed
   NewNode: Boolean;      // Node changed.
-  NeedChange: Boolean;   // change event is required for selection change
+  NeedChangeEvent: Boolean;   // change event is required for selection change
   CanClear: Boolean;
   NewCheckState: TCheckState;
   AltPressed: Boolean;   // Pressing the Alt key enables special processing for selection.
@@ -22532,6 +22532,7 @@ begin
     FLastSelRect := Rect(0, 0, 0, 0);
   end;
 
+  NeedChangeEvent := FSelectionCount > 1;
   if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
     (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect or (tsRightButtonDown in FStates)))) then
   begin
@@ -22543,10 +22544,9 @@ begin
     // on node captions and images. Here the previous selection state does not matter, though.
     if NodeSelected or (AltPressed and Assigned(HitInfo.HitNode) and (HitInfo.HitColumn = FHeader.MainColumn)) and not (hiNowhere in HitInfo.HitPositions) then
     begin
-      NeedChange := FSelectionCount > 1;
       InternalClearSelection;
       InternalAddToSelection(HitInfo.HitNode, True);
-      if NeedChange then
+      if NeedChangeEvent then
       begin
         Invalidate;
         Change(nil);
@@ -22633,7 +22633,7 @@ begin
     end;
   end;
 
-  if SelectedCount = 0 then
+  if (SelectedCount = 0) and NeedChangeEvent then
     Change(nil);
 
   // Drag'n drop initiation
