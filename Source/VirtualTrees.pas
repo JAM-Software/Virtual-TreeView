@@ -16754,7 +16754,7 @@ begin
                     exit;
                   if (not PerformMultiSelect or (CompareNodePositions(LastFocused, FRangeAnchor) > 0)) and
                     Assigned(FFocusedNode) then
-                    RemoveFromSelection(FFocusedNode);
+                    ClearSelection();
                   if FFocusedColumn <= NoColumn then
                     FFocusedColumn := FHeader.MainColumn;
                   FocusedNode := Node;
@@ -16780,9 +16780,8 @@ begin
                 begin
                   if not EndEditNode then
                     exit;
-                  if (not PerformMultiSelect or (CompareNodePositions(LastFocused, FRangeAnchor) < 0)) and
-                    Assigned(FFocusedNode) then
-                    RemoveFromSelection(FFocusedNode);
+                  if (not PerformMultiSelect or (CompareNodePositions(LastFocused, FRangeAnchor) < 0)) and  Assigned(FFocusedNode) then
+                    ClearSelection();
                   if FFocusedColumn <= NoColumn then
                     FFocusedColumn := FHeader.MainColumn;
                   FocusedNode := Node;
