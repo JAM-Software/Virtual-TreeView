@@ -51,6 +51,7 @@ type
     GroupBox1: TGroupBox;
     Label19: TLabel;
     MainColumnUpDown: TUpDown;
+    ScrollBox1: TScrollBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure VST2InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
