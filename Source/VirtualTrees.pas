@@ -1570,7 +1570,7 @@ type
     etWord,   // supported by external tools
     etPDF,    // supported by external tools
     etPrinter,// supported by external tools
-	etCSV,    // supported by external tools
+    etCSV,    // supported by external tools
     etCustom  // supported by external tools
   );
 
@@ -1607,13 +1607,43 @@ type
   // class to collect all switchable colors into one place
   TVTColors = class(TPersistent)
   private
+  type
+    TVTColorEnum =(cDisabledColor, cDropMarkColor, cDropTargetColor, cFocusedSelectionColor,
+      cGridLineColor, cTreeLineColor, cUnfocusedSelectionColor, cBorderColor, cHotColor,
+      cFocusedSelectionBorderColor, cUnfocusedSelectionBorderColor, cDropTargetBorderColor,
+      cSelectionRectangleBlendColor, cSelectionRectangleBorderColor, cHeaderHotColor,
+      cSelectionTextColor, cUnfocusedColor);
+
+    // Please make sure that the published Color properties at the corresponding index
+    // have the same color if you change anything here!
+  const cDefaultColors : array[TVTColorEnum] of TColor =  (
+    clBtnShadow,            // DisabledColor
+    clHighlight,            // DropMarkColor
+    clHighLight,            // DropTargetColor
+    clHighLight,            // FocusedSelectionColor
+    clBtnFace,              // GridLineColor
+    clBtnShadow,            // TreeLineColor
+    clInactiveCaption,      // UnfocusedSelectionColor
+    clBtnFace,              // BorderColor
+    clWindowText,           // HotColor
+    clHighLight,            // FocusedSelectionBorderColor
+    clInactiveCaption,      // UnfocusedSelectionBorderColor
+    clHighlight,            // DropTargetBorderColor
+    clHighlight,            // SelectionRectangleBlendColor
+    clHighlight,            // SelectionRectangleBorderColor
+    clBtnShadow,            // HeaderHotColor
+    clHighlightText,        // SelectionTextColor
+    clInactiveCaptionText); // UnfocusedColor  [IPK]
+
+  private
     FOwner: TBaseVirtualTree;
-    FColors: array[0..16] of TColor; // [IPK] 15 -> 16
-    function GetColor(const Index: Integer): TColor;
-    procedure SetColor(const Index: Integer; const Value: TColor);
+    FColors: array[TVTColorEnum] of TColor; // [IPK] 15 -> 16
+    function GetColor(const Index: TVTColorEnum): TColor;
+    procedure SetColor(const Index: TVTColorEnum; const Value: TColor);
     function GetBackgroundColor: TColor;
     function GetHeaderFontColor: TColor;
     function GetNodeFontColor: TColor;
+    function GetSelectedNodeFontColor(Focused:boolean): TColor;
   public
     constructor Create(AOwner: TBaseVirtualTree);
 
@@ -1622,33 +1652,33 @@ type
     property HeaderFontColor: TColor read  GetHeaderFontColor;
     property NodeFontColor: TColor read GetNodeFontColor;
   published
-    property BorderColor: TColor index 7 read GetColor write SetColor default clBtnFace;
-    property DisabledColor: TColor index 0 read GetColor write SetColor default clBtnShadow;
-    property DropMarkColor: TColor index 1 read GetColor write SetColor default clHighlight;
-    property DropTargetColor: TColor index 2 read GetColor write SetColor default clHighLight;
-    property DropTargetBorderColor: TColor index 11 read GetColor write SetColor default clHighLight;
+    property BorderColor: TColor index cBorderColor read GetColor write SetColor default clBtnFace;
+    property DisabledColor: TColor index cDisabledColor read GetColor write SetColor default clBtnShadow;
+    property DropMarkColor: TColor index cDropMarkColor read GetColor write SetColor default clHighlight;
+    property DropTargetColor: TColor index cDropTargetColor read GetColor write SetColor default clHighLight;
+    property DropTargetBorderColor: TColor index cDropTargetBorderColor read GetColor write SetColor default clHighLight;
     /// The background color of selected nodes in case the tree has the focus, or the toPopupMode flag is set.
-    property FocusedSelectionColor: TColor index 3 read GetColor write SetColor default clHighLight;
+    property FocusedSelectionColor: TColor index cFocusedSelectionColor read GetColor write SetColor default clHighLight;
     /// The border color of selected nodes when the tree has the focus.
-    property FocusedSelectionBorderColor: TColor index 9 read GetColor write SetColor default clHighLight;
-    property GridLineColor: TColor index 4 read GetColor write SetColor default clBtnFace;
-    property HeaderHotColor: TColor index 14 read GetColor write SetColor default clBtnShadow;
-    property HotColor: TColor index 8 read GetColor write SetColor default clWindowText;
-    property SelectionRectangleBlendColor: TColor index 12 read GetColor write SetColor default clHighlight;
-    property SelectionRectangleBorderColor: TColor index 13 read GetColor write SetColor default clHighlight;
+    property FocusedSelectionBorderColor: TColor index cFocusedSelectionBorderColor read GetColor write SetColor default clHighLight;
+    property GridLineColor: TColor index cGridLineColor read GetColor write SetColor default clBtnFace;
+    property HeaderHotColor: TColor index cHeaderHotColor read GetColor write SetColor default clBtnShadow;
+    property HotColor: TColor index cHotColor read GetColor write SetColor default clWindowText;
+    property SelectionRectangleBlendColor: TColor index cSelectionRectangleBlendColor read GetColor write SetColor default clHighlight;
+    property SelectionRectangleBorderColor: TColor index cSelectionRectangleBorderColor read GetColor write SetColor default clHighlight;
     /// The text color of selected nodes
-    property SelectionTextColor: TColor index 15 read GetColor write SetColor default clHighlightText;
-    property TreeLineColor: TColor index 5 read GetColor write SetColor default clBtnShadow;
-    property UnfocusedColor: TColor index 16 read GetColor write SetColor default clBtnFace; // [IPK] Added
+    property SelectionTextColor: TColor index cSelectionTextColor read GetColor write SetColor default clHighlightText;
+    property TreeLineColor: TColor index cTreeLineColor read GetColor write SetColor default clBtnShadow;
+    property UnfocusedColor: TColor index cUnfocusedColor read GetColor write SetColor default clInactiveCaptionText; // [IPK] Added
     /// The background color of selected nodes in case the tree does not have the focus and the toPopupMode flag is not set.
-    property UnfocusedSelectionColor: TColor index 6 read GetColor write SetColor default clGray;
+    property UnfocusedSelectionColor: TColor index cUnfocusedSelectionColor read GetColor write SetColor default clInactiveCaption;
     /// The border color of selected nodes in case the tree does not have the focus and the toPopupMode flag is not set.
-    property UnfocusedSelectionBorderColor: TColor index 10 read GetColor write SetColor default clGray;
+    property UnfocusedSelectionBorderColor: TColor index cUnfocusedSelectionBorderColor read GetColor write SetColor default clInactiveCaption;
   end;
 
   // For painting a node and its columns/cells a lot of information must be passed frequently around.
   TVTImageInfo = record
-    Index: TImageIndex;           // Index in the associated image list.
+    Index: TImageIndex;       // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
     YPos: Integer;            // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
@@ -11703,26 +11733,12 @@ end;
 //----------------- TVTColors ------------------------------------------------------------------------------------------
 
 constructor TVTColors.Create(AOwner: TBaseVirtualTree);
-
+var
+  CE : TVTColorEnum;
 begin
   FOwner := AOwner;
-  FColors[0] := clBtnShadow;      // DisabledColor
-  FColors[1] := clHighlight;      // DropMarkColor
-  FColors[2] := clHighLight;      // DropTargetColor
-  FColors[3] := clHighLight;      // FocusedSelectionColor
-  FColors[4] := clBtnFace;        // GridLineColor
-  FColors[5] := clBtnShadow;      // TreeLineColor
-  FColors[6] := clGray;           // UnfocusedSelectionColor
-  FColors[7] := clBtnFace;        // BorderColor
-  FColors[8] := clWindowText;     // HotColor
-  FColors[9] := clHighLight;      // FocusedSelectionBorderColor
-  FColors[10] := clGray;          // UnfocusedSelectionBorderColor
-  FColors[11] := clHighlight;     // DropTargetBorderColor
-  FColors[12] := clHighlight;     // SelectionRectangleBlendColor
-  FColors[13] := clHighlight;     // SelectionRectangleBorderColor
-  FColors[14] := clBtnShadow;     // HeaderHotColor
-  FColors[15] := clHighlightText; // SelectionTextColor
-  FColors[16] := clBtnFace;       // UnfocusedColor  [IPK]
+  for CE := Low(TVTColorEnum) to High(TVTColorEnum) do
+    FColors[CE] := cDefaultColors[CE];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11738,51 +11754,40 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTColors.GetColor(const Index: Integer): TColor;
+function TVTColors.GetColor(const Index: TVTColorEnum): TColor;
 begin
   Result := FColors[Index];
-  if FOwner.VclStyleEnabled and not StyleServices.IsSystemStyle  then
-  begin
-    // Only fetch the color via StyleServices if it is the default color
-    // Return user defined color otherwise
-    case Index of
-      0:
-        // DisabledColor
-        if (FColors[Index] = clBtnShadow) and
-          not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemDisabled), ecTextColor, Result)
-        then
-          Result := StyleServices.GetSystemColor(FColors[Index]);
-      5:
-        // TreeLineColor
-        if (FColors[Index] = clBtnShadow) and
-          not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttBranch), ecBorderColor, Result)
-        then
-          Result := StyleServices.GetSystemColor(FColors[Index]);
-      7:
-        // BorderColor
-        if (seBorder in FOwner.StyleElements) then
-          Result := StyleServices.GetSystemColor(clBtnFace);
-      8:
-        // HotColor
-        if FColors[Index] = clWindowText then
-        begin
+  // Only fetch the color via StyleServices if it is the default color
+  // Return user defined color otherwise
+  if (Result = cDefaultColors[Index]) and FOwner.VclStyleEnabled and not StyleServices.IsSystemStyle then
+    begin
+      // If the ElementDetails are not defined, fall back to the SystemColor
+      case Index of
+        cDisabledColor:
+          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemDisabled), ecTextColor, Result) then
+            Result := StyleServices.GetSystemColor(FColors[Index]);
+        cTreeLineColor:
+          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttBranch), ecBorderColor, Result) then
+            Result := StyleServices.GetSystemColor(FColors[Index]);
+        cBorderColor:
+          if (seBorder in FOwner.StyleElements) then
+            Result := StyleServices.GetSystemColor(FColors[Index]);
+        cHotColor:
           if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemHot), ecTextColor, Result) then
-            Result := NodeFontColor;
-        end
+            Result := StyleServices.GetSystemColor(FColors[Index]);
+        cHeaderHotColor:
+          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result) then
+            Result := StyleServices.GetSystemColor(FColors[Index]);
+        cSelectionTextColor:
+          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecTextColor, Result) then
+            Result := StyleServices.GetSystemColor(clHighlightText);
+        cUnfocusedColor:
+          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelectedNotFocus), ecTextColor, Result) then
+            Result := StyleServices.GetSystemColor(FColors[Index]);
         else
           Result := StyleServices.GetSystemColor(FColors[Index]);
-      14:
-        // HeaderHotColor
-        if not StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result) then
-          Result := StyleServices.GetSystemColor(FColors[Index]);
-      15:
-        // SelectionTextColor
-        if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecTextColor, Result) then
-          Result := StyleServices.GetSystemColor(clHighlightText);
-      else
-        Result := StyleServices.GetSystemColor(FColors[Index]);
+      end;
     end;
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11808,7 +11813,17 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTColors.SetColor(const Index: Integer; const Value: TColor);
+function TVTColors.GetSelectedNodeFontColor(Focused: boolean): TColor;
+begin
+  if Focused then
+    Result := SelectionTextColor
+  else
+    Result := UnfocusedColor;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTColors.SetColor(const Index: TVTColorEnum; const Value: TColor);
 
 begin
   if FColors[Index] <> Value then
@@ -11818,12 +11833,12 @@ begin
     begin
       // Cause helper bitmap rebuild if the button color changed.
       case Index of
-        5:
+        cTreeLineColor:
           begin
             FOwner.PrepareBitmaps(True, False);
             FOwner.Invalidate;
           end;
-        7:
+        cBorderColor:
           RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN)
       else
         FOwner.Invalidate;
@@ -33324,7 +33339,7 @@ begin
     // Set default font values first.
     Canvas.Font := Font;
     if Enabled then // Es werden sonst nur die Farben verwendet von Font die an  Canvas.Font übergeben wurden
-       Canvas.Font.Color := FColors.NodeFontColor
+      Canvas.Font.Color := FColors.NodeFontColor
     else
       Canvas.Font.Color := FColors.DisabledColor;
 
@@ -33346,13 +33361,13 @@ begin
         begin
           if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) and not
              (tsUseExplorerTheme in FStates) then
-            Canvas.Font.Color := FColors.SelectionTextColor;
+            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused);
         end
         else
           if vsSelected in Node.States then
           begin
             if not (tsUseExplorerTheme in FStates) then
-              Canvas.Font.Color := FColors.SelectionTextColor;
+              Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused);
           end;
       end;
     end;
@@ -33470,7 +33485,7 @@ begin
       if Node = FDropTargetNode then
       begin
         if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
-          Canvas.Font.Color := FColors.SelectionTextColor
+          Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused)
         else
           Canvas.Font.Color := FColors.NodeFontColor;
       end
@@ -33478,7 +33493,7 @@ begin
         if vsSelected in Node.States then
         begin
           if Focused or (toPopupMode in FOptions.FPaintOptions) then
-          Canvas.Font.Color := FColors.SelectionTextColor
+            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused)
           else
             Canvas.Font.Color := FColors.NodeFontColor;
         end;
