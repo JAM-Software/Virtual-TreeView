@@ -111,7 +111,7 @@ type
     procedure DrawHorzScrollBar(DC: HDC); virtual;
     procedure DrawVertScrollBar(DC: HDC); virtual;
     procedure MouseLeave; override;
-    procedure PaintScrollBars; virtual;
+    procedure PaintScroll; override;
     function PointInTreeHeader(const P: TPoint): Boolean;
     procedure UpdateScrollBarWindow;
   public
@@ -351,10 +351,10 @@ begin
   if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
     FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
 
-  PaintScrollBars;
+  PaintScroll;
 end;
 
-procedure TVclStyleScrollBarsHook.PaintScrollBars();
+procedure TVclStyleScrollBarsHook.PaintScroll();
 begin
   if FVertScrollBarWindow.HandleAllocated then begin
     FVertScrollBarWindow.Repaint;
@@ -432,13 +432,13 @@ begin
     if FVertScrollBarUpButtonState = tsArrowBtnUpPressed then
     begin
       FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-      PaintScrollBars;
+      PaintScroll;
     end;
 
     if FVertScrollBarDownButtonState = tsArrowBtnDownPressed then
     begin
       FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-      PaintScrollBars;
+      PaintScroll;
     end;
   end;
 
@@ -447,13 +447,13 @@ begin
     if FHorzScrollBarUpButtonState = tsArrowBtnLeftPressed then
     begin
       FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-      PaintScrollBars;
+      PaintScroll;
     end;
 
     if FHorzScrollBarDownButtonState = tsArrowBtnRightPressed then
     begin
       FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-      PaintScrollBars;
+      PaintScroll;
     end;
   end;
 
@@ -472,7 +472,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMHScroll(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -480,7 +480,7 @@ procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollbars
   (var Message: TMessage);
 begin
   CalcScrollBarsRect;
-  PaintScrollBars;
+  PaintScroll;
 end;
 
 procedure TVclStyleScrollBarsHook.WMKeyDown(var Msg: TMessage);
@@ -494,7 +494,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMKeyUp(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -522,7 +522,7 @@ begin
           Integer(SmallPoint(SB_ENDSCROLL, 0)), 0);
         FLeftMouseButtonDown := False;
         FVertScrollBarSliderState := tsThumbBtnVertNormal;
-        PaintScrollBars;
+        PaintScroll;
         Handled := True;
         ReleaseCapture;
         Exit;
@@ -543,7 +543,7 @@ begin
           Integer(SmallPoint(SB_ENDSCROLL, 0)), 0);
         FLeftMouseButtonDown := False;
         FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-        PaintScrollBars;
+        PaintScroll;
         Handled := True;
         ReleaseCapture;
         Exit;
@@ -555,7 +555,7 @@ begin
       if FHorzScrollBarDownButtonState = tsArrowBtnRightPressed then
         FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
     end;
-    PaintScrollBars;
+    PaintScroll;
   end;
   FLeftMouseButtonDown := False;
 end;
@@ -591,7 +591,7 @@ begin
       Min(Round(FScrollPos), High(SmallInt)))), 0);
     // Min() prevents range check error
 
-    PaintScrollBars;
+    PaintScroll;
     Handled := True;
     Exit;
   end;
@@ -621,7 +621,7 @@ begin
     PostMessage(Handle, WM_HSCROLL, Integer(SmallPoint(SB_THUMBPOSITION,
       Round(FScrollPos))), 0);
 
-    PaintScrollBars;
+    PaintScroll;
     Handled := True;
     Exit;
   end;
@@ -629,44 +629,44 @@ begin
   if FHorzScrollBarSliderState = tsThumbBtnHorzHot then
   begin
     FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-    PaintScrollBars;
+    PaintScroll;
   end
   else if FVertScrollBarSliderState = tsThumbBtnVertHot then
   begin
     FVertScrollBarSliderState := tsThumbBtnVertNormal;
-    PaintScrollBars;
+    PaintScroll;
   end
   else if FHorzScrollBarUpButtonState = tsArrowBtnLeftHot then
   begin
     FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-    PaintScrollBars;
+    PaintScroll;
   end
   else if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
   begin
     FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-    PaintScrollBars;
+    PaintScroll;
   end
   else if FVertScrollBarUpButtonState = tsArrowBtnUpHot then
   begin
     FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-    PaintScrollBars;
+    PaintScroll;
   end
   else if FVertScrollBarDownButtonState = tsArrowBtnDownHot then
   begin
     FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-    PaintScrollBars;
+    PaintScroll;
   end;
 
   CallDefaultProc(TMessage(Msg));
   if FLeftMouseButtonDown then
-    PaintScrollBars;
+    PaintScroll;
   Handled := True;
 end;
 
 procedure TVclStyleScrollBarsHook.WMMouseWheel(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -709,7 +709,7 @@ begin
         FScrollPos := SF.nPos;
         FPrevScrollPos := Mouse.CursorPos.Y;
         FVertScrollBarSliderState := tsThumbBtnVertPressed;
-        PaintScrollBars;
+        PaintScroll;
         SetCapture(Handle);
         Handled := True;
         Exit;
@@ -736,7 +736,7 @@ begin
         FScrollPos := SF.nPos;
         FPrevScrollPos := Mouse.CursorPos.X;
         FHorzScrollBarSliderState := tsThumbBtnHorzPressed;
-        PaintScrollBars;
+        PaintScroll;
         SetCapture(Handle);
         Handled := True;
         Exit;
@@ -751,7 +751,7 @@ begin
       end;
     end;
     FLeftMouseButtonDown := True;
-    PaintScrollBars;
+    PaintScroll;
   end;
 end;
 
@@ -786,7 +786,7 @@ begin
         begin
           FLeftMouseButtonDown := False;
           FVertScrollBarSliderState := tsThumbBtnVertNormal;
-          PaintScrollBars;
+          PaintScroll;
           Handled := True;
           Exit;
         end;
@@ -809,7 +809,7 @@ begin
         begin
           FLeftMouseButtonDown := False;
           FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-          PaintScrollBars;
+          PaintScroll;
           Handled := True;
           Exit;
         end;
@@ -829,7 +829,7 @@ begin
 
   if not B and (FHorzScrollBarWindow.Visible) or (FVertScrollBarWindow.Visible)
   then
-    PaintScrollBars;
+    PaintScroll;
   Handled := True;
 end;
 
@@ -846,7 +846,7 @@ begin
   if PointInTreeHeader(P) then
   begin
     CallDefaultProc(TMessage(Msg));
-    PaintScrollBars;
+    PaintScroll;
     Handled := True;
     Exit;
   end;
@@ -942,7 +942,7 @@ begin
   end;
 
   if MustUpdateScroll then
-    PaintScrollBars;
+    PaintScroll;
 end;
 
 procedure TVclStyleScrollBarsHook.WMNCPaint(var Msg: TMessage);
@@ -959,7 +959,7 @@ begin
   CallDefaultProc(TMessage(Msg));
   CalcScrollBarsRect;
   UpdateScrollBarWindow;
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -970,7 +970,7 @@ begin
   begin
     CalcScrollBarsRect;
     UpdateScrollBarWindow;
-    PaintScrollBars;
+    PaintScroll;
   end;
   Handled := True;
 end;
@@ -983,7 +983,8 @@ end;
 procedure TVclStyleScrollBarsHook.WMVScroll(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll
+  ;
   Handled := True;
 end;
 
