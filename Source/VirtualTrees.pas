@@ -14896,7 +14896,9 @@ var
   Difference: Integer;
 
 begin
-  if Assigned(Node) and (Node <> FRoot) and (Node.NodeHeight <> Value) and not (toReadOnly in FOptions.FMiscOptions) then
+  Assert(Assigned(Node), 'SetNodeHeight() cannot be called with Node = nil');
+  Assert((Node <> FRoot), 'SetNodeHeight() cannot be called for the root node FRoot');
+  if (Node.NodeHeight <> Value) then
   begin
     Difference := Integer(Value) - Integer(Node.NodeHeight);
     Node.NodeHeight := Value;
@@ -14911,7 +14913,7 @@ begin
 
       InvalidateCache;
       // Stay away from touching the node cache while it is being validated.
-      if not (tsValidating in FStates) and FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
+      if not (tsValidating in FStates) and FullyVisible[Node] then
       begin
         if (FUpdateCount = 0) and ([tsPainting, tsSizing] * FStates = []) then
         begin
@@ -18293,11 +18295,11 @@ begin
         // Scale also node heights
         BeginUpdate();
         try
-          Run := GetFirstInitialized;
+          Run := GetFirst();
           while Assigned(Run) do
           begin
             SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D));
-            Run := GetNextInitialized(Run);
+            Run := GetNext(Run);
           end; // while
         finally
           EndUpdate();
