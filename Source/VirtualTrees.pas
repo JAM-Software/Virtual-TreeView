@@ -11756,10 +11756,9 @@ end;
 
 function TVTColors.GetColor(const Index: TVTColorEnum): TColor;
 begin
-  Result := FColors[Index];
-  // Only fetch the color via StyleServices if it is the default color
-  // Return user defined color otherwise
-  if (Result = cDefaultColors[Index]) and FOwner.VclStyleEnabled and not StyleServices.IsSystemStyle then
+  // Only try to fetch the color via StyleServices if theses are enabled
+  // Return default/user defined color otherwise
+  if FOwner.VclStyleEnabled and not StyleServices.IsSystemStyle then
     begin
       // If the ElementDetails are not defined, fall back to the SystemColor
       case Index of
@@ -11787,7 +11786,9 @@ begin
         else
           Result := StyleServices.GetSystemColor(FColors[Index]);
       end;
-    end;
+    end
+  else
+    Result := FColors[Index];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
