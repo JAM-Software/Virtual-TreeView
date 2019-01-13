@@ -4119,7 +4119,6 @@ var
   gWatcher: TCriticalSection = nil;
   UtilityImages: TImageList;           // some small additional images (e.g for header dragging)
   NodeImages: TImageList;              // Additional node images
-  SystemCheckImages: TImageList;       // global system check images
   gInitialized: Integer = 0;           // >0 if global structures have been initialized; otherwise 0
   NeedToUnitialize: Boolean = False;   // True if the OLE subsystem could be initialized successfully.
 
@@ -4432,8 +4431,6 @@ begin
     Handle := ImageList_Create(UtilityImageSize, UtilityImageSize, ILC_COLOR32 or ILC_MASK, 0, AllocBy);
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
 
-  SystemCheckImages := CreateSystemImageSet(nil);
-
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
   Screen.Cursors[crHeaderSplit] := LoadCursor(HInstance, 'VT_HEADERSPLIT');
@@ -4467,7 +4464,6 @@ begin
 
   FreeAndNil(NodeImages);
   FreeAndNil(UtilityImages);
-  FreeAndNil(SystemCheckImages);
 
   if NeedToUnitialize then
     OleUninitialize;
@@ -9174,10 +9170,7 @@ var
           begin
             with Header.Treeview do
             begin
-              if (CheckImageKind = ckCustom) then
-                ColImageInfo.Images := CustomCheckImages
-              else
-                ColImageInfo.Images := SystemCheckImages;
+              ColImageInfo.Images := FCheckImages;
               ColImageInfo.Index := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
               ColImageInfo.XPos := GlyphPos.X;
               ColImageInfo.YPos := GlyphPos.Y;
@@ -11950,7 +11943,6 @@ begin
   inherited DoubleBuffered := False;
 
   FCheckImageKind := ckSystemDefault;
-  FCheckImages := SystemCheckImages;
 
   FImageChangeLink := TChangeLink.Create;
   FImageChangeLink.OnChange := ImageListChange;
@@ -12036,6 +12028,8 @@ begin
   FImageChangeLink.Free;
   FStateChangeLink.Free;
   FCustomCheckChangeLink.Free;
+  if CheckImageKind = ckSystemDefault then
+    FCheckImages.Free;
   FScrollBarOptions.Free;
 
   // The window handle must be destroyed before the header is freed because it is needed in WM_NCDESTROY.
@@ -14217,26 +14211,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetCheckImageKind(Value: TCheckImageKind);
-
-begin
-  if (Value < Low(Value)) or (Value> High(Value)) then
-    Value := ckSystemDefault;
-  // property is deprected. See issue #622
-  if FCheckImageKind <> Value then
-  begin
-    FCheckImageKind := Value;
-    if Value = ckCustom then
-      FCheckImages := FCustomCheckImages
-    else
-      FCheckImages := SystemCheckImages;
-    if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
-      InvalidateRect(Handle, nil, False);
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.SetCheckState(Node: PVirtualNode; Value: TCheckState);
 
 begin
@@ -14437,6 +14411,27 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.SetCheckImageKind(Value: TCheckImageKind);
+begin
+  if (Value < Low(Value)) or (Value> High(Value)) then
+    Value := ckSystemDefault;
+  // property is deprecated. See issue #622
+  if FCheckImageKind <> Value then
+  begin
+    if FCheckImageKind = ckSystemDefault then
+      FreeAndNil(FCheckImages);
+    FCheckImageKind := Value;
+    if Value = ckCustom then
+      FCheckImages := FCustomCheckImages
+    else if HandleAllocated then
+      FCheckImages := CreateSystemImageSet(Self);
+    if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
+      InvalidateRect(Handle, nil, False);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.SetCustomCheckImages(const Value: TCustomImageList);
 
 begin
@@ -14453,16 +14448,13 @@ begin
     FCustomCheckImages := Value;
     if Assigned(FCustomCheckImages) then
     begin
+      // If custom check images are assigned, we switch the property CheckImageKind to ckCustom so that they are actually used
+      CheckImageKind := ckCustom;
       FCustomCheckImages.RegisterChanges(FCustomCheckChangeLink);
       FCustomCheckImages.FreeNotification(Self);
-      // If custom check images are assigned, we switch the property CheckImageKind to ckCustom so that they are actually used
-      FCheckImageKind := ckCustom;
-      FCheckImages := Value;
     end
-    else begin
-      FCheckImageKind := ckSystemDefault;
-      FCheckImages := SystemCheckImages;
-    end;
+    else
+      CheckImageKind := ckSystemDefault;
     if not (csLoading in ComponentState) then
       Invalidate;
   end;
@@ -18283,10 +18275,10 @@ begin
         // Scale utility images, #796
         if UtilityImages.Height <> MulDiv(UtilityImageSize, M, D) then
           ScaleImageList(UtilityImages, M, D);
-        SystemCheckImages.Free;
-        SystemCheckImages := CreateSystemImageSet(Self);
-        if FCheckImageKind = ckSystemDefault then
-          FCheckImages := SystemCheckImages;
+        if FCheckImageKind = ckSystemDefault then begin
+          FCheckImages.Free;
+          FCheckImages := CreateSystemImageSet(Self);
+        end;
         UpdateHeaderRect();
         // Scale also node heights
         BeginUpdate();
@@ -18536,6 +18528,9 @@ begin
   DoStateChange([tsWindowCreating]);
   inherited;
   DoStateChange([], [tsWindowCreating]);
+
+  if not Assigned(FCheckImages) then
+    FCheckImages := CreateSystemImageSet(Self);
 
   if ((StyleServices.Enabled ) and (toThemeAware in TreeOptions.PaintOptions)  ) then
   begin
