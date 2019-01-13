@@ -4258,13 +4258,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure CreateSystemImageSet(Handle: HWND; var IL: TImageList; Flags: Cardinal; Flat: Boolean);
+function CreateSystemImageSet(pControl: TWinControl): TImageList;
 
 // Creates a system check image set.
 // Note: the DarkCheckImages and FlatImages image lists must already be filled, as some images from them are copied here.
 
 const
   MaskColor: TColor = clRed;
+  cFlags = ILC_COLOR32 or ILC_MASK;
 
 var
   BM: TBitmap;
@@ -4338,8 +4339,8 @@ var
       end;
       if Index in [4..7, 12..19] then
         ButtonState := ButtonState or DFCS_CHECKED;
-      if Flat then
-        ButtonState := ButtonState or DFCS_FLAT;
+//      if Flat then
+//        ButtonState := ButtonState or DFCS_FLAT;
       DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
     end;
     IL.AddMasked(BM, MaskColor);
@@ -4359,7 +4360,10 @@ begin
     if StyleServices.Enabled then
       if StyleServices.IsSystemStyle then
       begin
-        Theme := OpenThemeData(Handle, 'BUTTON');
+        if Assigned(pControl) then
+          Theme := OpenThemeData(pControl.Handle, 'BUTTON')
+        else
+          Theme := OpenThemeData(Application.Handle, 'BUTTON');
         Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal);
         Res := GetThemePartSize(Theme, BM.Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize) = S_OK;
       end
@@ -4368,24 +4372,24 @@ begin
     if not Res then
       lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
 
-    IL := TImageList.CreateSize(lSize.cx, lSize.cy);
-    with IL do
-      Handle := ImageList_Create(Width, Height, Flags, 0, AllocBy);
-    IL.Masked := True;
-    IL.BkColor := clWhite;
+    Result := TImageList.CreateSize(lSize.cx, lSize.cy);
+    with Result do
+      Handle := ImageList_Create(Width, Height, cFlags, 0, AllocBy);
+    Result.Masked := True;
+    Result.BkColor := clWhite;
 
     // Make the bitmap the same size as the image list is to avoid problems when adding.
-    BM.SetSize(IL.Width, IL.Height);
+    BM.SetSize(Result.Width, Result.Height);
     BM.Canvas.Brush.Color := MaskColor;
     BM.Canvas.Brush.Style := bsSolid;
     BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
-    IL.AddMasked(BM, MaskColor);
+    Result.AddMasked(BM, MaskColor);
 
     // Add the 20 system checkbox and radiobutton images.
     for I := 0 to 19 do
-      AddSystemImage(IL, I);
+      AddSystemImage(Result, I);
     // Add the 4 node images
-    AddNodeImages(IL);
+    AddNodeImages(Result);
     if StyleServices.Enabled and StyleServices.IsSystemStyle then
       CloseThemeData(Theme);
 
@@ -4403,10 +4407,6 @@ end;
 procedure InitializeGlobalStructures();
 
 // initialization of stuff global to the unit
-
-var
-  Flags: Cardinal;
-
 begin
   if (gInitialized > 0) or (InterlockedIncrement(gInitialized) <> 1) then // Ensure threadsafe that this code is executed only once
     exit;
@@ -4422,21 +4422,17 @@ begin
   // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
   CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
 
-  // Load all internal image lists and convert their colors to current desktop color scheme.
-  // In order to use high color images we have to create the image list handle ourselves.
-  Flags := ILC_COLOR32 or ILC_MASK;
-
   NodeImages := TImageList.CreateSize(16, 16);
   with NodeImages do
-    Handle := ImageList_Create(16, 16, Flags, 0, AllocBy);
+    Handle := ImageList_Create(16, 16, ILC_COLOR32 or ILC_MASK, 0, AllocBy);
   ConvertImageList(NodeImages, 'VT_NODEIMAGES');
 
   UtilityImages := TImageList.CreateSize(UtilityImageSize, UtilityImageSize);
   with UtilityImages do
-    Handle := ImageList_Create(UtilityImageSize, UtilityImageSize, Flags, 0, AllocBy);
+    Handle := ImageList_Create(UtilityImageSize, UtilityImageSize, ILC_COLOR32 or ILC_MASK, 0, AllocBy);
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
 
-  CreateSystemImageSet(0, SystemCheckImages, Flags, False);
+  SystemCheckImages := CreateSystemImageSet(nil);
 
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
@@ -18288,7 +18284,7 @@ begin
         if UtilityImages.Height <> MulDiv(UtilityImageSize, M, D) then
           ScaleImageList(UtilityImages, M, D);
         SystemCheckImages.Free;
-        CreateSystemImageSet(Handle, SystemCheckImages, ILC_COLOR32 or ILC_MASK, False);
+        SystemCheckImages := CreateSystemImageSet(Self);
         if FCheckImageKind = ckSystemDefault then
           FCheckImages := SystemCheckImages;
         UpdateHeaderRect();
