@@ -2504,7 +2504,7 @@ type
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
     procedure AutoScale(isDpiChange: Boolean); virtual;
-    procedure AddToSelection(Node: PVirtualNode); overload; virtual;
+    procedure AddToSelection(Node: PVirtualNode; NotifySynced: Boolean); overload; virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: Integer); virtual;
@@ -3464,7 +3464,7 @@ type
     function InvalidateNode(Node: PVirtualNode): TRect; override;
     function Path(Node: PVirtualNode; Column: TColumnIndex; Delimiter: Char): string;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
-    procedure AddToSelection(Node: PVirtualNode); override;
+    procedure AddToSelection(Node: PVirtualNode; NotifySynced: Boolean); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     /// Alternate text for images used in Accessibility.
@@ -13395,9 +13395,8 @@ begin
         if vsSelected in NewNode.States then
           RemoveFromSelection(NewNode)
         else
-          AddToSelection(NewNode);
+          AddToSelection(NewNode, True);
     end;
-    Invalidate();
   end
   else
     // Shift key down
@@ -13417,10 +13416,7 @@ begin
     begin
       // any other case
       if not (vsSelected in NewNode.States) then
-      begin
-        AddToSelection(NewNode);
-        InvalidateNode(NewNode);
-      end;
+        AddToSelection(NewNode, True);
       // assign new reference item
       FRangeAnchor := NewNode;
     end;
@@ -15023,7 +15019,7 @@ begin
         if not (toMultiSelect in FOptions.FSelectionOptions) then
           ClearSelection;
 
-      AddToSelection(Node);
+      AddToSelection(Node, True);
 
       if not (toMultiSelect in FOptions.FSelectionOptions) then
         FocusedNode := Node; // if only one node can be selected, make sure the focused node changes with the selected node
@@ -15043,8 +15039,6 @@ begin
       if FSelectionCount = 0 then
         ResetRangeAnchor;
     end;
-    if FullyVisible[Node] and not IsEffectivelyFiltered[Node] then
-      InvalidateNode(Node);
   end;
 end;
 
@@ -16952,7 +16946,7 @@ begin
 
           // Make sure the new focused node is also selected.
           if (LastFocused <> FFocusedNode) or ForceSelection then
-            AddToSelection(FFocusedNode);
+            AddToSelection(FFocusedNode, True);
         end;
 
         // If a repaint is needed then paint the entire tree because of the ClearSelection call,
@@ -17851,11 +17845,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AddToSelection(Node: PVirtualNode);
+procedure TBaseVirtualTree.AddToSelection(Node: PVirtualNode; NotifySynced: Boolean);
 
 var
   Changed: Boolean;
-
+  RemoveSyncAfterChange: Boolean;
 begin
   if not FSelectionLocked then
   begin
@@ -17867,7 +17861,15 @@ begin
       if (SelectedCount = 1) then
         FocusedNode := Node; // if only one node is selected, make sure the focused node changes with the selected node
       InvalidateNode(Node);
-      Change(Node);
+      RemoveSyncAfterChange := NotifySynced and not (tsSynchMode in fStates);
+      if RemoveSyncAfterChange then
+        Include(FStates, tsSynchMode);
+      try
+        Change(Node);
+      finally
+        if RemoveSyncAfterChange then
+          Exclude(FStates, tsSynchMode);
+      end;
     end;
   end;
 end;
@@ -22561,7 +22563,7 @@ begin
 
       // If the hit node is not yet selected then do it now.
       if not NodeSelected then
-        AddToSelection(HitInfo.HitNode);
+        AddToSelection(HitInfo.HitNode, False);
     end;
 
     if NewNode or NewColumn then
@@ -22609,7 +22611,7 @@ begin
       ReselectFocusedNode := Assigned(FFocusedNode) and (vsSelected in FFocusedNode.States);
       ClearSelection;
       if ReselectFocusedNode then
-        AddToSelection(FFocusedNode);
+        AddToSelection(FFocusedNode, False);
     end;
 
     if (tsToggleFocusedSelection in FStates) and (HitInfo.HitNode = FFocusedNode) and Assigned(HitInfo.HitNode) then //Prevent AV when dereferencing HitInfo.HitNode below, see bug #100
@@ -22620,8 +22622,7 @@ begin
           RemoveFromSelection(HitInfo.HitNode);
       end
       else
-        AddToSelection(HitInfo.HitNode);
-      InvalidateNode(HitInfo.HitNode);
+        AddToSelection(HitInfo.HitNode, False);
     end;
 
     DoStateChange([], [tsOLEDragPending, tsOLEDragging, tsClearPending, tsDrawSelPending, tsToggleFocusedSelection,
@@ -24535,6 +24536,7 @@ begin
         UpdateNextNodeToSelect(Node);
 
       DoRemoveFromSelection(Node);
+      InvalidateNode(Node);
       Change(Node);
     end;
   end;
@@ -34292,7 +34294,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCustomVirtualStringTree.AddToSelection(Node: PVirtualNode);
+procedure TCustomVirtualStringTree.AddToSelection(Node: PVirtualNode; NotifySynced: Boolean);
 var
   lSelectedNodeCaption: string;
 begin
