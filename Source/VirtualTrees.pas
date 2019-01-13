@@ -18286,8 +18286,11 @@ begin
           Run := GetFirst();
           while Assigned(Run) do
           begin
-            SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D));
-            Run := GetNext(Run);
+            if vsInitialized in Run.States then
+              SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D))
+            else // prevent initialization of non-initialzed nodes
+              Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
+            Run := GetNextNoInit(Run);
           end; // while
         finally
           EndUpdate();
