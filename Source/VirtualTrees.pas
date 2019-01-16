@@ -22574,7 +22574,7 @@ begin
 
       // If the hit node is not yet selected then do it now.
       if not NodeSelected then
-        AddToSelection(HitInfo.HitNode, False);
+        AddToSelection(HitInfo.HitNode, True);
     end;
 
     if NewNode or NewColumn then
