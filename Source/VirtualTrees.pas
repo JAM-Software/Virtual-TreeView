@@ -16957,7 +16957,7 @@ begin
 
           // Make sure the new focused node is also selected.
           if (LastFocused <> FFocusedNode) or ForceSelection then
-            AddToSelection(FFocusedNode, True);
+            AddToSelection(FFocusedNode, False);
         end;
 
         // If a repaint is needed then paint the entire tree because of the ClearSelection call,
