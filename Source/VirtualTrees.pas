@@ -894,9 +894,16 @@ type
     FColorKey: TColor;                 // color to make fully transparent regardless of any other setting
     FStates: TVTDragImageStates;       // Determines the states of the drag image class.
     function GetVisible: Boolean;      // True if the drag image is currently hidden (used only when dragging)
-  protected
     procedure InternalShowDragImage(ScreenDC: HDC);
     procedure MakeAlphaChannel(Source, Target: TBitmap);
+    procedure RecaptureBackground(Tree: TBaseVirtualTree; R: TRect; VisibleRegion: HRGN; CaptureNCArea,
+      ReshowDragImage: Boolean);
+    function WillMove(P: TPoint): Boolean;
+    property Visible: Boolean read GetVisible;
+    property PreBlendBias: TVTBias read FPreBlendBias write FPreBlendBias default 0;
+    property Transparency: TVTTransparency read FTransparency write FTransparency default 128;
+    property ColorKey: TColor read FColorKey write FColorKey default clWindow;
+    property Fade: Boolean read FFade write FFade default False;
   public
     constructor Create(AOwner: TBaseVirtualTree);
     destructor Destroy; override;
@@ -906,18 +913,9 @@ type
     function GetDragImageRect: TRect;
     procedure HideDragImage;
     procedure PrepareDrag(DragImage: TBitmap; ImagePosition, HotSpot: TPoint; const DataObject: IDataObject);
-    procedure RecaptureBackground(Tree: TBaseVirtualTree; R: TRect; VisibleRegion: HRGN; CaptureNCArea,
-      ReshowDragImage: Boolean);
     procedure ShowDragImage;
-    function WillMove(P: TPoint): Boolean;
 
-    property ColorKey: TColor read FColorKey write FColorKey default clWindow;
-    property Fade: Boolean read FFade write FFade default False;
     property MoveRestriction: TVTDragMoveRestriction read FRestriction write FRestriction default dmrNone;
-    property PostBlendBias: TVTBias read FPostBlendBias write FPostBlendBias default 0;
-    property PreBlendBias: TVTBias read FPreBlendBias write FPreBlendBias default 0;
-    property Transparency: TVTTransparency read FTransparency write FTransparency default 128;
-    property Visible: Boolean read GetVisible;
   end;
 
   // tree columns implementation
@@ -9483,7 +9481,6 @@ begin
   with FDragImage do
   begin
     Fade := False;
-    PostBlendBias := 0;
     PreBlendBias := -50;
     Transparency := 140;
   end;
@@ -11987,7 +11984,6 @@ begin
   with FDragImage do
   begin
     Fade := True;
-    PostBlendBias := 0;
     PreBlendBias := 0;
     Transparency := 200;
   end;
