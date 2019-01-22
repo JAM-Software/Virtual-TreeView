@@ -19907,7 +19907,7 @@ begin
   if Node = FFocusedNode then
     FFocusedNode := nil;
   if Node = FNextNodeToSelect then
-    UpdateNextNodeToSelect(Node);
+    FNextNodeToSelect := nil;
   if Node = FLastHitInfo.HitNode then
     FLastHitInfo.HitNode := nil;
   // fire event
@@ -24565,10 +24565,8 @@ begin
     FNextNodeToSelect := GetNextSibling(Node)
   else if GetPreviousSibling(Node) <> nil then
     FNextNodeToSelect := GetPreviousSibling(Node)
-  else if GetNodeLevel(Node) > 0 then
+  else if Node.Parent <> FRoot then
     FNextNodeToSelect := Node.Parent
-  else if not (vsDeleting in Node.States) then  // Do not try to make a child of a node that is about to be deleted the fNextDodeToSelect. #764
-    FNextNodeToSelect := GetFirstChild(Node)
   else
     FNextNodeToSelect := nil;
 end;//if Assigned(Node);
