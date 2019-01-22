@@ -18285,8 +18285,9 @@ begin
         if UtilityImages.Height <> MulDiv(UtilityImageSize, M, D) then
           ScaleImageList(UtilityImages, M, D);
         if FCheckImageKind = ckSystemDefault then begin
-          FCheckImages.Free;
-          FCheckImages := CreateSystemImageSet(Self);
+          FreeAndNil(FCheckImages);
+          if HandleAllocated then
+            FCheckImages := CreateSystemImageSet(Self);
         end;
         UpdateHeaderRect();
         // Scale also node heights
