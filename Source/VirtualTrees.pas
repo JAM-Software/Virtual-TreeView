@@ -19909,7 +19909,7 @@ begin
   if Node = FFocusedNode then
     FFocusedNode := nil;
   if Node = FNextNodeToSelect then
-    FNextNodeToSelect := nil;
+    UpdateNextNodeToSelect(Node);
   if Node = FLastHitInfo.HitNode then
     FLastHitInfo.HitNode := nil;
   // fire event
