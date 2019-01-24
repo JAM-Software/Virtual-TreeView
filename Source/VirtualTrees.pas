@@ -11162,6 +11162,7 @@ begin
 
   finally
     Treeview.EndOperation(okAutoFitColumns);
+    TreeView.Invalidate();
     FDoingAutoFitColumns := false;
   end;
 end;
@@ -11261,6 +11262,7 @@ begin
           end;
         end;
       end;
+      R.Bottom := Treeview.ClientHeight; // We want to repaint the entire column to bottom, not just the header
 
       // Current position of the owner in screen coordinates.
       GetWindowRect(Handle, RW);
