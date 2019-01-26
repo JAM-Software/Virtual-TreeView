@@ -11815,8 +11815,13 @@ end;
 
 function TVTColors.GetSelectedNodeFontColor(Focused: boolean): TColor;
 begin
-  if Focused then
-    Result := SelectionTextColor
+  if Focused then begin
+    if (tsUseExplorerTheme in FOwner.FStates) and not IsHighContrastEnabled then begin
+      Result := NodeFontColor
+    end
+    else
+      Result := SelectionTextColor
+  end// if Focused
   else
     Result := UnfocusedColor;
 end;
@@ -33366,15 +33371,13 @@ begin
       begin
         if Node = FDropTargetNode then
         begin
-          if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) and not
-             (tsUseExplorerTheme in FStates) then
+          if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) then
             Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused);
         end
         else
           if vsSelected in Node.States then
           begin
-            if not (tsUseExplorerTheme in FStates) then
-              Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused);
+            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused);
           end;
       end;
     end;
