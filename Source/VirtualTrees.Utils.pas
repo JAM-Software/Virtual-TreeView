@@ -92,7 +92,7 @@ function IsMouseCursorVisible(): Boolean;
 procedure ScaleImageList(const ImgList: TImageList; M, D: Integer);
 
 /// Returns True if the high contrast theme is anabled in the system settings, False otherwise.
-function 	: Boolean;
+function IsHighContrastEnabled(): Boolean;
 
 
 implementation
