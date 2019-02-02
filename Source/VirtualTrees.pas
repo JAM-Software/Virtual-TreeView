@@ -178,8 +178,6 @@ const
   // Height changing cursor.
   crVertSplit = TCursor(62);
 
-  UtilityImageSize = 16; // Needed by descendants for hittests.
-
 var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   CF_VIRTUALTREE,
   CF_VTREFERENCE,
@@ -3982,9 +3980,6 @@ type
 // utility routines
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 
-function GetUtilityImages: TCustomImageList;
-procedure ShowError(const Msg: string; HelpContext: Integer);  // [IPK] Surface this to interface
-
 //----------------------------------------------------------------------------------------------------------------------
 
 implementation
@@ -4120,21 +4115,9 @@ const
 
 var
   gWatcher: TCriticalSection = nil;
-  UtilityImages: TImageList;           // some small additional images (e.g for header dragging)
   gInitialized: Integer = 0;           // >0 if global structures have been initialized; otherwise 0
   NeedToUnitialize: Boolean = False;   // True if the OLE subsystem could be initialized successfully.
 
-
-//----------------------------------------------------------------------------------------------------------------------
-
-
-//----------------- utility functions ----------------------------------------------------------------------------------
-
-function GetUtilityImages: TCustomImageList; // [IPK]
-
-begin
-  Result := UtilityImages; 
-end; 
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4400,11 +4383,6 @@ begin
   // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
   CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
 
-  UtilityImages := TImageList.CreateSize(UtilityImageSize, UtilityImageSize);
-  with UtilityImages do
-    Handle := ImageList_Create(UtilityImageSize, UtilityImageSize, ILC_COLOR32 or ILC_MASK, 0, AllocBy);
-  ConvertImageList(UtilityImages, 'VT_UTILITIES');
-
   // Delphi (at least version 6 and lower) does not provide a standard split cursor.
   // Hence we have to load our own.
   Screen.Cursors[crHeaderSplit] := LoadCursor(HInstance, 'VT_HEADERSPLIT');
@@ -4435,8 +4413,6 @@ var
 begin
   if gInitialized = 0 then
     exit; // Was not initialized
-
-  FreeAndNil(UtilityImages);
 
   if NeedToUnitialize then
     OleUninitialize;
@@ -6985,7 +6961,7 @@ begin
       end
       else
       begin
-        PaintInfo.SortGlyphSize.cx := Header.Treeview.ScaledPixels(UtilityImageSize);
+        PaintInfo.SortGlyphSize.cx := Header.Treeview.ScaledPixels(16);
         PaintInfo.SortGlyphSize.cy := Header.Treeview.ScaledPixels(4);
       end;
 
@@ -16041,10 +16017,6 @@ procedure TBaseVirtualTree.CMSysColorChange(var Message: TMessage);
 
 begin
   inherited;
-
-  ConvertImageList(UtilityImages, 'VT_UTILITIES');
-  // XP images do not need to be converted.
-  // System check images do not need to be converted.
   Message.Msg := WM_SYSCOLORCHANGE;
   DefaultHandler(Message);
 end;
@@ -18246,8 +18218,6 @@ begin
         FMargin := MulDiv(FMargin, M, D);
         FImagesMargin := MulDiv(FImagesMargin, M, D);
         // Scale utility images, #796
-        if UtilityImages.Height <> MulDiv(UtilityImageSize, M, D) then
-          ScaleImageList(UtilityImages, M, D);
         if FCheckImageKind = ckSystemDefault then begin
           FreeAndNil(FCheckImages);
           if HandleAllocated then
@@ -23747,9 +23717,6 @@ begin
 
         StyleServices.DrawElement(Canvas.Handle, Details, R);
         Canvas.Refresh;
-
-        if Index in [21..24] then
-          UtilityImages.Draw(Canvas, XPos, YPos, 4);  //Does anyone know what this was good for?
       end
     end
     else
@@ -34746,7 +34713,7 @@ var
   lArrowWidth: Integer;
 begin
   lArrowWidth := Self.Column.Owner.Header.Treeview.ScaledPixels(5);
-  Y := (PaintRectangle.Top + PaintRectangle.Bottom - UtilityImages.Height) div 2;
+  Y := (PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth) div 2;
   if DropMark = dmmLeft then
     DrawArrow(TargetCanvas, TScrollDirection.sdLeft, Point(PaintRectangle.Left, Y), lArrowWidth)
   else
@@ -34756,9 +34723,13 @@ end;
 procedure THeaderPaintInfo.DrawSortArrow(pDirection: TSortDirection);
 const
   cDirection: array[TSortDirection] of TScrollDirection = (TScrollDirection.sdUp, TScrollDirection.sdDown);
+var
+  lOldColor: TColor;
 begin
+  lOldColor := TargetCanvas.Pen.Color;
   TargetCanvas.Pen.Color := clDkGray;
   DrawArrow(TargetCanvas, cDirection[pDirection], Point(SortGlyphPos.X, SortGlyphPos.Y), SortGlyphSize.cy);
+  TargetCanvas.Pen.Color := lOldColor;
 end;
 
 initialization
