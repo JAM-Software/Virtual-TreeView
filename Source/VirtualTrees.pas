@@ -972,7 +972,7 @@ type
     GlyphPos,
     SortGlyphPos: TPoint;
     SortGlyphSize: TSize;
-    procedure DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
+    procedure DrawSortArrow(pDirection: TSortDirection);
     procedure DrawDropMark();
   end;
 
@@ -6986,7 +6986,7 @@ begin
       else
       begin
         PaintInfo.SortGlyphSize.cx := Header.Treeview.ScaledPixels(UtilityImageSize);
-        PaintInfo.SortGlyphSize.cy := PaintInfo.SortGlyphSize.cx;
+        PaintInfo.SortGlyphSize.cy := Header.Treeview.ScaledPixels(4);
       end;
 
       // In any case, the sort glyph is vertically centered.
@@ -9189,7 +9189,7 @@ var
           end
           else
           begin
-            PaintInfo.DrawSortArrow(FHeader.FSortDirection, FHeader.TreeView.ScaledPixels(4));
+            PaintInfo.DrawSortArrow(FHeader.FSortDirection);
           end;
         end;
 
@@ -34743,19 +34743,22 @@ end;
 procedure THeaderPaintInfo.DrawDropMark();
 var
   Y: Integer;
+  lArrowWidth: Integer;
 begin
+  lArrowWidth := Self.Column.Owner.Header.Treeview.ScaledPixels(5);
   Y := (PaintRectangle.Top + PaintRectangle.Bottom - UtilityImages.Height) div 2;
   if DropMark = dmmLeft then
-    UtilityImages.Draw(TargetCanvas, PaintRectangle.Left, Y, 0)
+    DrawArrow(TargetCanvas, TScrollDirection.sdLeft, Point(PaintRectangle.Left, Y), lArrowWidth)
   else
-    UtilityImages.Draw(TargetCanvas, PaintRectangle.Right - 16 , Y,  1);
+    DrawArrow(TargetCanvas, TScrollDirection.sdRight, Point(PaintRectangle.Right - lArrowWidth - (lArrowWidth div 2) {spacing}, Y), lArrowWidth);
 end;
 
-procedure THeaderPaintInfo.DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
+procedure THeaderPaintInfo.DrawSortArrow(pDirection: TSortDirection);
 const
   cDirection: array[TSortDirection] of TScrollDirection = (TScrollDirection.sdUp, TScrollDirection.sdDown);
 begin
-  DrawArrow(TargetCanvas, cDirection[pDirection], Point(SortGlyphPos.X, SortGlyphPos.Y + pHeight), pHeight);
+  TargetCanvas.Pen.Color := clDkGray;
+  DrawArrow(TargetCanvas, cDirection[pDirection], Point(SortGlyphPos.X, SortGlyphPos.Y), SortGlyphSize.cy);
 end;
 
 initialization
