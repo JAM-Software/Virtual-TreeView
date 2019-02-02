@@ -947,6 +947,35 @@ type
     function ToInt(): Integer; inline;
   end;
 
+  // Used during owner draw of the header to indicate which drop mark for the column must be drawn.
+  TVTDropMarkMode = (
+    dmmNone,
+    dmmLeft,
+    dmmRight
+  );
+
+  TVirtualTreeColumn = class;
+
+  // This structure carries all important information about header painting and is used in the advanced header painting.
+  THeaderPaintInfo = record
+    TargetCanvas: TCanvas;
+    Column: TVirtualTreeColumn;
+    PaintRectangle: TRect;
+    TextRectangle: TRect;
+    IsHoverIndex,
+    IsDownIndex,
+    IsEnabled,
+    ShowHeaderGlyph,
+    ShowSortGlyph,
+    ShowRightBorder: Boolean;
+    DropMark: TVTDropMarkMode;
+    GlyphPos,
+    SortGlyphPos: TPoint;
+    SortGlyphSize: TSize;
+    procedure DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
+  end;
+
+
   TVirtualTreeColumn = class(TCollectionItem)
   private
     FText,
@@ -1002,9 +1031,7 @@ type
     procedure SetWidth(Value: TDimension);
   protected
     FLeft: TDimension;
-    procedure ComputeHeaderLayout(DC: HDC; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
-      var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
-      CalculateTextRect: Boolean = False);
+    procedure ComputeHeaderLayout(var PaintInfo: THeaderPaintInfo; DrawFormat: Cardinal;  CalculateTextRect: Boolean = False);
     procedure DefineProperties(Filer: TFiler); override;
     procedure GetAbsoluteBounds(var Left, Right: TDimension);
     function GetDisplayName: string; override;
@@ -1401,31 +1428,6 @@ type
     usEnd,         // The tree just left the update state (EndUpdate called for the last level).
     usEndSynch     // The tree just left the synch update state (EndSynch called for the last level).
   );
-
-  // Used during owner draw of the header to indicate which drop mark for the column must be drawn.
-  TVTDropMarkMode = (
-    dmmNone,
-    dmmLeft,
-    dmmRight
-  );
-
-  // This structure carries all important information about header painting and is used in the advanced header painting.
-  THeaderPaintInfo = record
-    TargetCanvas: TCanvas;
-    Column: TVirtualTreeColumn;
-    PaintRectangle: TRect;
-    TextRectangle: TRect;
-    IsHoverIndex,
-    IsDownIndex,
-    IsEnabled,
-    ShowHeaderGlyph,
-    ShowSortGlyph,
-    ShowRightBorder: Boolean;
-    DropMark: TVTDropMarkMode;
-    GlyphPos,
-    SortGlyphPos: TPoint;
-    procedure DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
-  end;
 
   // These elements are used both to query the application, which of them it wants to draw itself and to tell it during
   // painting, which elements must be drawn during the advanced custom draw events.
@@ -6925,9 +6927,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.ComputeHeaderLayout(DC: HDC; Client: TRect; UseHeaderGlyph, UseSortGlyph: Boolean;
-  var HeaderGlyphPos, SortGlyphPos: TPoint; var SortGlyphSize: TSize; var TextBounds: TRect; DrawFormat: Cardinal;
-  CalculateTextRect: Boolean = False);
+procedure TVirtualTreeColumn.ComputeHeaderLayout(var PaintInfo: THeaderPaintInfo; DrawFormat: Cardinal;  CalculateTextRect: Boolean = False);
 
 // The layout of a column header is determined by a lot of factors. This method takes them all into account and
 // determines all necessary positions and bounds:
@@ -6951,7 +6951,7 @@ var
 begin
   UseText := Length(FText) > 0;
   // If nothing is to show then don't waste time with useless preparation.
-  if not (UseText or UseHeaderGlyph or UseSortGlyph) then
+  if not (UseText or PaintInfo.ShowHeaderGlyph or PaintInfo.ShowSortGlyph) then
     Exit;
 
   CurrentAlignment := CaptionAlignment;
@@ -6959,10 +6959,10 @@ begin
     ChangeBiDiModeAlignment(CurrentAlignment);
 
   // Calculate sizes of the involved items.
-  ClientSize := Point(Client.Right - Client.Left, Client.Bottom - Client.Top);
+  ClientSize := Point(PaintInfo.PaintRectangle.Right - PaintInfo.PaintRectangle.Left, PaintInfo.PaintRectangle.Bottom - PaintInfo.PaintRectangle.Top);
   with Owner, Header do
   begin
-    if UseHeaderGlyph then
+    if PaintInfo.ShowHeaderGlyph then
       if not FCheckBox then
         HeaderGlyphSize := Point(FImages.Width, FImages.Height)
       else
@@ -6973,28 +6973,28 @@ begin
         end
     else
       HeaderGlyphSize := Point(0, 0);
-    if UseSortGlyph then
+    if PaintInfo.ShowSortGlyph then
     begin
       if tsUseExplorerTheme in FHeader.Treeview.FStates then
       begin
         R := Rect(0, 0, 100, 100);
         Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
-        GetThemePartSize(Theme, DC, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, SortGlyphSize);
+        GetThemePartSize(Theme, PaintInfo.TargetCanvas.Handle, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, PaintInfo.SortGlyphSize);
         CloseThemeData(Theme);
       end
       else
       begin
-        SortGlyphSize.cx := Header.Treeview.ScaledPixels(UtilityImageSize);
-        SortGlyphSize.cy := SortGlyphSize.cx;
+        PaintInfo.SortGlyphSize.cx := Header.Treeview.ScaledPixels(UtilityImageSize);
+        PaintInfo.SortGlyphSize.cy := PaintInfo.SortGlyphSize.cx;
       end;
 
       // In any case, the sort glyph is vertically centered.
-      SortGlyphPos.Y := (ClientSize.Y - SortGlyphSize.cy) div 2;
+      PaintInfo.SortGlyphPos.Y := (ClientSize.Y - PaintInfo.SortGlyphSize.cy) div 2;
     end
     else
     begin
-      SortGlyphSize.cx := 0;
-      SortGlyphSize.cy := 0;
+      PaintInfo.SortGlyphSize.cx := 0;
+      PaintInfo.SortGlyphSize.cy := 0;
     end;
   end;
 
@@ -7003,20 +7003,20 @@ begin
     if not (coWrapCaption in FOptions) then
     begin
       FCaptionText := FText;
-      GetTextExtentPoint32W(DC, PWideChar(FText), Length(FText), TextSize);
+      GetTextExtentPoint32W(PaintInfo.TargetCanvas.Handle, PWideChar(FText), Length(FText), TextSize);
       Inc(TextSize.cx, 2);
-      TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
+      PaintInfo.TextRectangle := Rect(0, 0, TextSize.cx, TextSize.cy);
     end
     else
     begin
-      R := Client;
+      R := PaintInfo.PaintRectangle;
       if FCaptionText = '' then
-        FCaptionText := WrapString(DC, FText, R, DT_RTLREADING and DrawFormat <> 0, DrawFormat);
+        FCaptionText := WrapString(PaintInfo.TargetCanvas.Handle, FText, R, DT_RTLREADING and DrawFormat <> 0, DrawFormat);
 
-      GetStringDrawRect(DC, FCaptionText, R, DrawFormat);
-      TextSize.cx := Client.Right - Client.Left;
+      GetStringDrawRect(PaintInfo.TargetCanvas.Handle, FCaptionText, R, DrawFormat);
+      TextSize.cx := PaintInfo.PaintRectangle.Right - PaintInfo.PaintRectangle.Left;
       TextSize.cy := R.Bottom - R.Top;
-      TextBounds := Rect(0, 0, TextSize.cx, TextSize.cy);
+      PaintInfo.TextRectangle := Rect(0, 0, TextSize.cx, TextSize.cy);
     end;
     TextSpacing := FSpacing;
   end
@@ -7028,17 +7028,17 @@ begin
   end;
 
   // Check first for the special case where nothing is shown except the sort glyph.
-  if UseSortGlyph and not (UseText or UseHeaderGlyph) then
+  if PaintInfo.ShowSortGlyph and not (UseText or PaintInfo.ShowHeaderGlyph) then
   begin
     // Center the sort glyph in the available area if nothing else is there.
-    SortGlyphPos := Point((ClientSize.X - SortGlyphSize.cx) div 2, (ClientSize.Y - SortGlyphSize.cy) div 2);
+    PaintInfo.SortGlyphPos := Point((ClientSize.X - PaintInfo.SortGlyphSize.cx) div 2, (ClientSize.Y - PaintInfo.SortGlyphSize.cy) div 2);
   end
   else
   begin
     // Determine extents of text and glyph and calculate positions which are clear from the layout.
-    if (Layout in [blGlyphLeft, blGlyphRight]) or not UseHeaderGlyph then
+    if (Layout in [blGlyphLeft, blGlyphRight]) or not PaintInfo.ShowHeaderGlyph then
     begin
-      HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y) div 2;
+      PaintInfo.GlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y) div 2;
       // If the text is taller than the given height, perform no vertical centration as this
       // would make the text even less readable.
       //Using Max() fixes badly positioned text if Extra Large fonts have been activated in the Windows display options
@@ -7048,13 +7048,13 @@ begin
     begin
       if Layout = blGlyphTop then
       begin
-        HeaderGlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
-        TextPos.Y := HeaderGlyphPos.Y + HeaderGlyphSize.Y + TextSpacing;
+        PaintInfo.GlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
+        TextPos.Y := PaintInfo.GlyphPos.Y + HeaderGlyphSize.Y + TextSpacing;
       end
       else
       begin
         TextPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
-        HeaderGlyphPos.Y := TextPos.Y + TextSize.cy + TextSpacing;
+        PaintInfo.GlyphPos.Y := TextPos.Y + TextSize.cy + TextSpacing;
       end;
     end;
 
@@ -7063,23 +7063,23 @@ begin
       taLeftJustify:
         begin
           MinLeft := FMargin;
-          if UseSortGlyph and (FBiDiMode <> bdLeftToRight) then
+          if PaintInfo.ShowSortGlyph and (FBiDiMode <> bdLeftToRight) then
           begin
             // In RTL context is the sort glyph placed on the left hand side.
-            SortGlyphPos.X := MinLeft;
-            Inc(MinLeft, SortGlyphSize.cx + FSpacing);
+            PaintInfo.SortGlyphPos.X := MinLeft;
+            Inc(MinLeft, PaintInfo.SortGlyphSize.cx + FSpacing);
           end;
           if Layout in [blGlyphTop, blGlyphBottom] then
           begin
             // Header glyph is above or below text, so both must be considered when calculating
             // the left positition of the sort glyph (if it is on the right hand side).
             TextPos.X := MinLeft;
-            if UseHeaderGlyph then
+            if PaintInfo.ShowHeaderGlyph then
             begin
-              HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
-              if HeaderGlyphPos.X < MinLeft then
-                HeaderGlyphPos.X := MinLeft;
-              MinLeft := Max(TextPos.X + TextSize.cx + TextSpacing, HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing);
+              PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+              if PaintInfo.GlyphPos.X < MinLeft then
+                PaintInfo.GlyphPos.X := MinLeft;
+              MinLeft := Max(TextPos.X + TextSize.cx + TextSpacing, PaintInfo.GlyphPos.X + HeaderGlyphSize.X + FSpacing);
             end
             else
               MinLeft := TextPos.X + TextSize.cx + TextSpacing;
@@ -7088,48 +7088,48 @@ begin
           begin
             // Everything is lined up. TextSpacing might be 0 if there is no text.
             // This simplifies the calculation because no extra tests are necessary.
-            if UseHeaderGlyph and (Layout = blGlyphLeft) then
+            if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphLeft) then
             begin
-              HeaderGlyphPos.X := MinLeft;
+              PaintInfo.GlyphPos.X := MinLeft;
               Inc(MinLeft, HeaderGlyphSize.X + FSpacing);
             end;
             TextPos.X := MinLeft;
             Inc(MinLeft, TextSize.cx + TextSpacing);
-            if UseHeaderGlyph and (Layout = blGlyphRight) then
+            if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphRight) then
             begin
-              HeaderGlyphPos.X := MinLeft;
+              PaintInfo.GlyphPos.X := MinLeft;
               Inc(MinLeft, HeaderGlyphSize.X + FSpacing);
             end;
           end;
-          if UseSortGlyph and (FBiDiMode = bdLeftToRight) then
-            SortGlyphPos.X := MinLeft;
+          if PaintInfo.ShowSortGlyph and (FBiDiMode = bdLeftToRight) then
+            PaintInfo.SortGlyphPos.X := MinLeft;
         end;
       taCenter:
         begin
           if Layout in [blGlyphTop, blGlyphBottom] then
           begin
-            HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+            PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
             TextPos.X := (ClientSize.X - TextSize.cx) div 2;
-            if UseSortGlyph then
-              Dec(TextPos.X, SortGlyphSize.cx div 2);
+            if PaintInfo.ShowSortGlyph then
+              Dec(TextPos.X, PaintInfo.SortGlyphSize.cx div 2);
           end
           else
           begin
             MinLeft := (ClientSize.X - HeaderGlyphSize.X - TextSpacing - TextSize.cx) div 2;
-            if UseHeaderGlyph and (Layout = blGlyphLeft) then
+            if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphLeft) then
             begin
-              HeaderGlyphPos.X := MinLeft;
+              PaintInfo.GlyphPos.X := MinLeft;
               Inc(MinLeft, HeaderGlyphSize.X + TextSpacing);
             end;
             TextPos.X := MinLeft;
             Inc(MinLeft, TextSize.cx + TextSpacing);
-            if UseHeaderGlyph and (Layout = blGlyphRight) then
-              HeaderGlyphPos.X := MinLeft;
+            if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphRight) then
+              PaintInfo.GlyphPos.X := MinLeft;
           end;
-          if UseHeaderGlyph then
+          if PaintInfo.ShowHeaderGlyph then
           begin
-            MinLeft := Min(HeaderGlyphPos.X, TextPos.X);
-            MaxRight := Max(HeaderGlyphPos.X + HeaderGlyphSize.X, TextPos.X + TextSize.cx);
+            MinLeft := Min(PaintInfo.GlyphPos.X, TextPos.X);
+            MaxRight := Max(PaintInfo.GlyphPos.X + HeaderGlyphSize.X, TextPos.X + TextSize.cx);
           end
           else
           begin
@@ -7137,37 +7137,37 @@ begin
             MaxRight := TextPos.X + TextSize.cx;
           end;
           // Place the sort glyph directly to the left or right of the larger item.
-          if UseSortGlyph then
+          if PaintInfo.ShowSortGlyph then
             if FBiDiMode = bdLeftToRight then
             begin
               // Sort glyph on the right hand side.
-              SortGlyphPos.X := MaxRight + FSpacing;
+              PaintInfo.SortGlyphPos.X := MaxRight + FSpacing;
             end
             else
             begin
               // Sort glyph on the left hand side.
-              SortGlyphPos.X := MinLeft - FSpacing - SortGlyphSize.cx;
+              PaintInfo.SortGlyphPos.X := MinLeft - FSpacing - PaintInfo.SortGlyphSize.cx;
             end;
         end;
     else
       // taRightJustify
       MaxRight := ClientSize.X - FMargin;
-      if UseSortGlyph and (FBiDiMode = bdLeftToRight) then
+      if PaintInfo.ShowSortGlyph and (FBiDiMode = bdLeftToRight) then
       begin
         // In LTR context is the sort glyph placed on the right hand side.
-        Dec(MaxRight, SortGlyphSize.cx);
-        SortGlyphPos.X := MaxRight;
+        Dec(MaxRight, PaintInfo.SortGlyphSize.cx);
+        PaintInfo.SortGlyphPos.X := MaxRight;
         Dec(MaxRight, FSpacing);
       end;
       if Layout in [blGlyphTop, blGlyphBottom] then
       begin
         TextPos.X := MaxRight - TextSize.cx;
-        if UseHeaderGlyph then
+        if PaintInfo.ShowHeaderGlyph then
         begin
-          HeaderGlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
-          if HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing > MaxRight then
-            HeaderGlyphPos.X := MaxRight - HeaderGlyphSize.X - FSpacing;
-          MaxRight := Min(TextPos.X - TextSpacing, HeaderGlyphPos.X - FSpacing);
+          PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+          if PaintInfo.GlyphPos.X + HeaderGlyphSize.X + FSpacing > MaxRight then
+            PaintInfo.GlyphPos.X := MaxRight - HeaderGlyphSize.X - FSpacing;
+          MaxRight := Min(TextPos.X - TextSpacing, PaintInfo.GlyphPos.X - FSpacing);
         end
         else
           MaxRight := TextPos.X - TextSpacing;
@@ -7176,21 +7176,21 @@ begin
       begin
         // Everything is lined up. TextSpacing might be 0 if there is no text.
         // This simplifies the calculation because no extra tests are necessary.
-        if UseHeaderGlyph and (Layout = blGlyphRight) then
+        if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphRight) then
         begin
-          HeaderGlyphPos.X := MaxRight -  HeaderGlyphSize.X;
-          MaxRight := HeaderGlyphPos.X - FSpacing;
+          PaintInfo.GlyphPos.X := MaxRight -  HeaderGlyphSize.X;
+          MaxRight := PaintInfo.GlyphPos.X - FSpacing;
         end;
         TextPos.X := MaxRight - TextSize.cx;
         MaxRight := TextPos.X - TextSpacing;
-        if UseHeaderGlyph and (Layout = blGlyphLeft) then
+        if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphLeft) then
         begin
-          HeaderGlyphPos.X := MaxRight - HeaderGlyphSize.X;
-          MaxRight := HeaderGlyphPos.X - FSpacing;
+          PaintInfo.GlyphPos.X := MaxRight - HeaderGlyphSize.X;
+          MaxRight := PaintInfo.GlyphPos.X - FSpacing;
         end;
       end;
-      if UseSortGlyph and (FBiDiMode <> bdLeftToRight) then
-        SortGlyphPos.X := MaxRight - SortGlyphSize.cx;
+      if PaintInfo.ShowSortGlyph and (FBiDiMode <> bdLeftToRight) then
+        PaintInfo.SortGlyphPos.X := MaxRight - PaintInfo.SortGlyphSize.cx;
     end;
   end;
 
@@ -7201,62 +7201,62 @@ begin
   // These are the maximum bounds. Nothing goes beyond them.
   MinLeft := FMargin;
   MaxRight := ClientSize.X - FMargin;
-  if UseSortGlyph then
+  if PaintInfo.ShowSortGlyph then
   begin
     if FBiDiMode = bdLeftToRight then
     begin
       // Sort glyph on the right hand side.
-      if SortGlyphPos.X + SortGlyphSize.cx > MaxRight then
-        SortGlyphPos.X := MaxRight - SortGlyphSize.cx;
-      MaxRight := SortGlyphPos.X - FSpacing;
+      if PaintInfo.SortGlyphPos.X + PaintInfo.SortGlyphSize.cx > MaxRight then
+        PaintInfo.SortGlyphPos.X := MaxRight - PaintInfo.SortGlyphSize.cx;
+      MaxRight := PaintInfo.SortGlyphPos.X - FSpacing;
     end;
 
     // Consider also the left side of the sort glyph regardless of the bidi mode.
-    if SortGlyphPos.X < MinLeft then
-      SortGlyphPos.X := MinLeft;
+    if PaintInfo.SortGlyphPos.X < MinLeft then
+      PaintInfo.SortGlyphPos.X := MinLeft;
     // Left border needs only adjustment if the sort glyph marks the left border.
     if FBiDiMode <> bdLeftToRight then
-      MinLeft := SortGlyphPos.X + SortGlyphSize.cx + FSpacing;
+      MinLeft := PaintInfo.SortGlyphPos.X + PaintInfo.SortGlyphSize.cx + FSpacing;
 
     // Finally transform sort glyph to its actual position.
-    Inc(SortGlyphPos.X, Client.Left);
-    Inc(SortGlyphPos.Y, Client.Top);
+    Inc(PaintInfo.SortGlyphPos.X, PaintInfo.PaintRectangle.Left);
+    Inc(PaintInfo.SortGlyphPos.Y, PaintInfo.PaintRectangle.Top);
   end;
-  if UseHeaderGlyph then
+  if PaintInfo.ShowHeaderGlyph then
   begin
-    if HeaderGlyphPos.X + HeaderGlyphSize.X > MaxRight then
-      HeaderGlyphPos.X := MaxRight - HeaderGlyphSize.X;
+    if PaintInfo.GlyphPos.X + HeaderGlyphSize.X > MaxRight then
+      PaintInfo.GlyphPos.X := MaxRight - HeaderGlyphSize.X;
     if Layout = blGlyphRight then
-      MaxRight := HeaderGlyphPos.X - FSpacing;
-    if HeaderGlyphPos.X < MinLeft then
-      HeaderGlyphPos.X := MinLeft;
+      MaxRight := PaintInfo.GlyphPos.X - FSpacing;
+    if PaintInfo.GlyphPos.X < MinLeft then
+      PaintInfo.GlyphPos.X := MinLeft;
     if Layout = blGlyphLeft then
-      MinLeft := HeaderGlyphPos.X + HeaderGlyphSize.X + FSpacing;
+      MinLeft := PaintInfo.GlyphPos.X + HeaderGlyphSize.X + FSpacing;
     if FCheckBox and (Owner.Header.MainColumn = Self.Index) then
-      Dec(HeaderGlyphPos.X, 2)
+      Dec(PaintInfo.GlyphPos.X, 2)
     else
       if Owner.Header.MainColumn <> Self.Index then
-        Dec(HeaderGlyphPos.X, 2);
+        Dec(PaintInfo.GlyphPos.X, 2);
 
     // Finally transform header glyph to its actual position.
-    Inc(HeaderGlyphPos.X, Client.Left);
-    Inc(HeaderGlyphPos.Y, Client.Top);
+    Inc(PaintInfo.GlyphPos.X, PaintInfo.PaintRectangle.Left);
+    Inc(PaintInfo.GlyphPos.Y, PaintInfo.PaintRectangle.Top);
   end;
   if UseText then
   begin
     if TextPos.X < MinLeft then
       TextPos.X := MinLeft;
-    OffsetRect(TextBounds, TextPos.X, TextPos.Y);
-    if TextBounds.Right > MaxRight then
-      TextBounds.Right := MaxRight;
-    OffsetRect(TextBounds, Client.Left, Client.Top);
+    OffsetRect(PaintInfo.TextRectangle, TextPos.X, TextPos.Y);
+    if PaintInfo.TextRectangle.Right > MaxRight then
+      PaintInfo.TextRectangle.Right := MaxRight;
+    OffsetRect(PaintInfo.TextRectangle, PaintInfo.PaintRectangle.Left, PaintInfo.PaintRectangle.Top);
 
     if coWrapCaption in FOptions then
     begin
       // Wrap the column caption if necessary.
-      R := TextBounds;
-      FCaptionText := WrapString(DC, FText, R, DT_RTLREADING and DrawFormat <> 0, DrawFormat);
-      GetStringDrawRect(DC, FCaptionText, R, DrawFormat);
+      R := PaintInfo.TextRectangle;
+      FCaptionText := WrapString(PaintInfo.TargetCanvas.Handle, FText, R, DT_RTLREADING and DrawFormat <> 0, DrawFormat);
+      GetStringDrawRect(PaintInfo.TargetCanvas.Handle, FCaptionText, R, DrawFormat);
     end;
   end;
 end;
@@ -8987,7 +8987,6 @@ var
     SavedDC: Integer;
     ColCaptionText: string;
     ColImageInfo: TVTImageInfo;
-    SortGlyphSize: TSize;
     Glyph: TThemedHeader;
     Details: TThemedElementDetails;
     WrapCaption: Boolean;
@@ -9108,8 +9107,7 @@ var
         end;
         if UseRightToLeftReading then
           DrawFormat := DrawFormat + DT_RTLREADING;
-        ComputeHeaderLayout(TargetCanvas.Handle, PaintRectangle, ShowHeaderGlyph, ShowSortGlyph, GlyphPos,
-          SortGlyphPos, SortGlyphSize, TextRectangle, DrawFormat);
+        ComputeHeaderLayout(PaintInfo, DrawFormat);
 
         // Move glyph and text one pixel to the right and down to simulate a pressed button.
         if IsDownIndex then
