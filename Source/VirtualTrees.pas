@@ -1424,6 +1424,7 @@ type
     DropMark: TVTDropMarkMode;
     GlyphPos,
     SortGlyphPos: TPoint;
+    procedure DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
   end;
 
   // These elements are used both to query the application, which of them it wants to draw itself and to tell it during
@@ -6983,8 +6984,8 @@ begin
       end
       else
       begin
-        SortGlyphSize.cx := UtilityImages.Width;
-        SortGlyphSize.cy := UtilityImages.Height;
+        SortGlyphSize.cx := Header.Treeview.ScaledPixels(UtilityImageSize);
+        SortGlyphSize.cy := SortGlyphSize.cx;
       end;
 
       // In any case, the sort glyph is vertically centered.
@@ -8878,11 +8879,6 @@ procedure TVirtualTreeColumns.PaintHeader(TargetCanvas: TCanvas; R: TRect; const
 // This function does not offer the option to visually move floating columns due to scrolling. To accomplish this you
 // need to call this method twice.
 
-const
-  SortGlyphs: array[TSortDirection, Boolean] of Integer = ( // ascending/descending, normal/XP style
-    (3, 5) {ascending}, (2, 4) {descending}
-  );
-
 var
   Run: TColumnIndex;
   RightBorderFlag,
@@ -8991,7 +8987,6 @@ var
     SavedDC: Integer;
     ColCaptionText: string;
     ColImageInfo: TVTImageInfo;
-    SortIndex: Integer;
     SortGlyphSize: TSize;
     Glyph: TThemedHeader;
     Details: TThemedElementDetails;
@@ -9196,8 +9191,7 @@ var
           end
           else
           begin
-            SortIndex := SortGlyphs[FHeader.FSortDirection, tsUseThemes in FHeader.Treeview.FStates];
-            UtilityImages.Draw(TargetCanvas, SortGlyphPos.X, SortGlyphPos.Y, SortIndex);
+            PaintInfo.DrawSortArrow(FHeader.FSortDirection, FHeader.TreeView.ScaledPixels(4));
           end;
         end;
 
@@ -23733,14 +23727,14 @@ begin
        19 : Details := StyleServices.GetElementDetails(tbCheckBoxMixedPressed);
        20 : Details := StyleServices.GetElementDetails(tbCheckBoxMixedDisabled);
        // ctButton
-       21 : Details := StyleServices.GetElementDetails(tbPushButtonNormal);
-       22 : Details := StyleServices.GetElementDetails(tbPushButtonHot);
-       23 : Details := StyleServices.GetElementDetails(tbPushButtonPressed);
-       24 : Details := StyleServices.GetElementDetails(tbPushButtonDisabled);
+       ckButtonNormal: Details := StyleServices.GetElementDetails(tbPushButtonNormal);
+       ckButtonHot: Details := StyleServices.GetElementDetails(tbPushButtonHot);
+       ckButtonPressed: Details := StyleServices.GetElementDetails(tbPushButtonPressed);
+       ckButtonDisabled: Details := StyleServices.GetElementDetails(tbPushButtonDisabled);
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
-      if StyleServices.IsSystemStyle and not (Index in [21..24]) then
+      if StyleServices.IsSystemStyle and not (Index in [ckButtonNormal..ckButtonDisabled]) then
       begin
         Theme := OpenThemeData(Handle, 'BUTTON');
         GetThemePartSize(Theme, Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize);
@@ -23750,7 +23744,7 @@ begin
       end
       else
       begin
-        if (Index in [21..24]) or   not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
+        if (Index in [ckButtonNormal..ckButtonDisabled]) or   not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
           // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. See issue #615
           if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
             lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
@@ -34748,6 +34742,15 @@ begin
     ImageInfo[iiState].YPos := CellRect.Top + VAlign - ImageInfo[iiState].Images.Height div 2;
   if ImageInfo[iiCheck].Index > -1 then
     ImageInfo[iiCheck].YPos := CellRect.Top + VAlign - ImageInfo[iiCheck].Images.Height div 2;
+end;
+
+{ THeaderPaintInfo }
+
+procedure THeaderPaintInfo.DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
+const
+  cDirection: array[TSortDirection] of TScrollDirection = (TScrollDirection.sdUp, TScrollDirection.sdDown);
+begin
+  DrawArrow(TargetCanvas, cDirection[pDirection], Point(SortGlyphPos.X, SortGlyphPos.Y + pHeight), pHeight);
 end;
 
 initialization
