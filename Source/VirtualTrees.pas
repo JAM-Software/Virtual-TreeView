@@ -973,6 +973,7 @@ type
     SortGlyphPos: TPoint;
     SortGlyphSize: TSize;
     procedure DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
+    procedure DrawDropMark();
   end;
 
 
@@ -8983,7 +8984,6 @@ var
   // this procedure is called.
 
   var
-    Y: Integer;
     SavedDC: Integer;
     ColCaptionText: string;
     ColImageInfo: TVTImageInfo;
@@ -9196,11 +9196,7 @@ var
         // Show an indication if this column is the current drop target in a header drag operation.
         if not (hpeDropMark in ActualElements) and (DropMark <> dmmNone) then
         begin
-          Y := (PaintRectangle.Top + PaintRectangle.Bottom - UtilityImages.Height) div 2;
-          if DropMark = dmmLeft then
-            UtilityImages.Draw(TargetCanvas, PaintRectangle.Left, Y, 0)
-          else
-            UtilityImages.Draw(TargetCanvas, PaintRectangle.Right - 16 , Y,  1);
+          PaintInfo.DrawDropMark();
         end;
 
         if ActualElements <> [] then
@@ -34743,6 +34739,17 @@ begin
 end;
 
 { THeaderPaintInfo }
+
+procedure THeaderPaintInfo.DrawDropMark();
+var
+  Y: Integer;
+begin
+  Y := (PaintRectangle.Top + PaintRectangle.Bottom - UtilityImages.Height) div 2;
+  if DropMark = dmmLeft then
+    UtilityImages.Draw(TargetCanvas, PaintRectangle.Left, Y, 0)
+  else
+    UtilityImages.Draw(TargetCanvas, PaintRectangle.Right - 16 , Y,  1);
+end;
 
 procedure THeaderPaintInfo.DrawSortArrow(pDirection: TSortDirection; pHeight: Integer);
 const
