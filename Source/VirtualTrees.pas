@@ -4117,7 +4117,6 @@ const
 var
   gWatcher: TCriticalSection = nil;
   UtilityImages: TImageList;           // some small additional images (e.g for header dragging)
-  NodeImages: TImageList;              // Additional node images
   gInitialized: Integer = 0;           // >0 if global structures have been initialized; otherwise 0
   NeedToUnitialize: Boolean = False;   // True if the OLE subsystem could be initialized successfully.
 
@@ -4270,27 +4269,6 @@ var
   Theme: HTHEME;
   Details: TThemedElementDetails;
 
-  //--------------- local functions -------------------------------------------
-
-  procedure AddNodeImages(IL: TImageList);
-
-  var
-    I: Integer;
-    OffsetX,
-    OffsetY: Integer;
-
-  begin
-    // The offsets are used to center the node images in case the sizes differ.
-    OffsetX := (IL.Width - NodeImages.Width) div 2;
-    OffsetY := (IL.Height - NodeImages.Height) div 2;
-    for I := 0 to 3 do
-    begin
-      BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
-      NodeImages.Draw(BM.Canvas, OffsetX, OffsetY, I);
-      IL.AddMasked(BM, MaskColor);
-    end;
-  end;
-
   //---------------------------------------------------------------------------
 
   procedure AddSystemImage(IL: TImageList; Index: Integer);
@@ -4386,8 +4364,6 @@ begin
     // Add the 20 system checkbox and radiobutton images.
     for I := 0 to 19 do
       AddSystemImage(Result, I);
-    // Add the 4 node images
-    AddNodeImages(Result);
     if StyleServices.Enabled and StyleServices.IsSystemStyle then
       CloseThemeData(Theme);
 
@@ -4419,11 +4395,6 @@ begin
 
   // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
   CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
-
-  NodeImages := TImageList.CreateSize(16, 16);
-  with NodeImages do
-    Handle := ImageList_Create(16, 16, ILC_COLOR32 or ILC_MASK, 0, AllocBy);
-  ConvertImageList(NodeImages, 'VT_NODEIMAGES');
 
   UtilityImages := TImageList.CreateSize(UtilityImageSize, UtilityImageSize);
   with UtilityImages do
@@ -4461,7 +4432,6 @@ begin
   if gInitialized = 0 then
     exit; // Was not initialized
 
-  FreeAndNil(NodeImages);
   FreeAndNil(UtilityImages);
 
   if NeedToUnitialize then
@@ -16084,7 +16054,6 @@ procedure TBaseVirtualTree.CMSysColorChange(var Message: TMessage);
 begin
   inherited;
 
-  ConvertImageList(NodeImages, 'VT_NODEIMAGES');
   ConvertImageList(UtilityImages, 'VT_UTILITIES');
   // XP images do not need to be converted.
   // System check images do not need to be converted.
