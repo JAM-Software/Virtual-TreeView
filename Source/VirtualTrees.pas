@@ -14963,14 +14963,18 @@ begin
     begin
       if FSelectionCount = 0 then
         FRangeAnchor := Node
-      else
+      else begin
         if not (toMultiSelect in FOptions.FSelectionOptions) then
           ClearSelection;
+         Assert(Assigned(FRangeAnchor), 'We assume that FRangeAnchor is always assigned here. If so, delete the following 2 code lines.');
+        if FRangeAnchor = nil then
+          FRangeAnchor := Node;
+      end;
 
       AddToSelection(Node, True);
 
       if not (toMultiSelect in FOptions.FSelectionOptions) then
-        FocusedNode := Node; // if only one node can be selected, make sure the focused node changes with the selected node
+        FocusedNode := GetFirstSelected; // if only one node can be selected, make sure the focused node changes with the selected node
       // Make sure there is a valid column selected (if there are columns at all).
       if ((FFocusedColumn < 0) or not (coVisible in FHeader.Columns[FFocusedColumn].Options)) and
         (FHeader.MainColumn > NoColumn) then
@@ -14978,8 +14982,6 @@ begin
           FFocusedColumn := FHeader.MainColumn
         else
           FFocusedColumn := FHeader.Columns.GetFirstVisibleColumn(True);
-      if FRangeAnchor = nil then
-        FRangeAnchor := Node;
     end
     else
     begin
