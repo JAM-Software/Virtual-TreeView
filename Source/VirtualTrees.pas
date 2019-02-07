@@ -2353,7 +2353,7 @@ type
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
     function GetChildCount(Node: PVirtualNode): Cardinal;
-    function GetChildrenInitialized(Node: PVirtualNode): Boolean;
+    function GetChildrenInitialized(Node: PVirtualNode): Boolean; inline;
     function GetCutCopyCount: Integer;
     function GetDisabled(Node: PVirtualNode): Boolean;
     function GetSyncCheckstateWithSelection(Node: PVirtualNode): Boolean;
@@ -12987,12 +12987,12 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetChildCount(Node: PVirtualNode): Cardinal;
-
 begin
   if (Node = nil) or (Node = FRoot) then
-    Result := FRoot.ChildCount
-  else
-    Result := Node.ChildCount;
+    Exit(FRoot.ChildCount);
+  if not GetChildrenInitialized(Node) then
+    InitChildren(Node);
+  Exit(Node.ChildCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
