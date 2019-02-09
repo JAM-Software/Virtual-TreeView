@@ -5711,8 +5711,8 @@ function TVirtualTreeHintWindow.IsHintMsg(var Msg: TMsg): Boolean;
 
 begin
   Result := inherited IsHintMsg(Msg) and HandleAllocated and IsWindowVisible(Handle);
-  // Avoid that mouse moves over the non-client area or key presses cancel the current hint.
-  if Result and ((Msg.Message = WM_NCMOUSEMOVE) or ((Msg.Message >= WM_KEYFIRST) and (Msg.Message <= WM_KEYLAST))) then
+  // Avoid that mouse moves over the non-client area or cursor key presses cancel the current hint.
+  if Result and ((Msg.Message = WM_NCMOUSEMOVE) or ((Msg.Message >= WM_KEYFIRST) and (Msg.Message <= WM_KEYLAST) and (Msg.wparam in [VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT]))) then
     Result := False;
 end;
 
