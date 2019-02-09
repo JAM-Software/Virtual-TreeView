@@ -16687,7 +16687,7 @@ begin
                     exit;
                   if (not PerformMultiSelect or (CompareNodePositions(LastFocused, FRangeAnchor) > 0)) and
                     Assigned(FFocusedNode) then
-                    ClearSelection();
+                    ClearSelection(False);
                   if FFocusedColumn <= NoColumn then
                     FFocusedColumn := FHeader.MainColumn;
                   FocusedNode := Node;
@@ -16714,7 +16714,7 @@ begin
                   if not EndEditNode then
                     exit;
                   if (not PerformMultiSelect or (CompareNodePositions(LastFocused, FRangeAnchor) < 0)) and  Assigned(FFocusedNode) then
-                    ClearSelection();
+                    ClearSelection(False);
                   if FFocusedColumn <= NoColumn then
                     FFocusedColumn := FHeader.MainColumn;
                   FocusedNode := Node;
@@ -16872,7 +16872,7 @@ begin
         ForceSelection := False;
         if ClearPending and ((LastFocused <> FFocusedNode) or (FSelectionCount <> 1)) then
         begin
-          ClearSelection;
+          ClearSelection(not Assigned(FFocusedNode));
           ForceSelection := True;
         end;
 
@@ -22419,7 +22419,7 @@ begin
     FLastSelRect := Rect(0, 0, 0, 0);
   end;
 
-  NeedChangeEvent := FSelectionCount > 1;
+  NeedChangeEvent := FSelectionCount >= 1;
   if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
     (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect or (tsRightButtonDown in FStates)))) then
   begin
@@ -22448,7 +22448,7 @@ begin
           DoStateChange([tsClearOnNewSelection], []);
     end
     else
-      ClearSelection(True);
+      ClearSelection(False);
     end;
 
   // pending node edit
@@ -22464,8 +22464,11 @@ begin
   begin
     // The original code here was moved up to fix issue #187.
     // In order not to break the semantics of this procedure, we are leaving these if statements here
-    if not IsCellHit then
+    if not IsCellHit then begin
+      if NeedChangeEvent then
+        Change(nil);
       Exit;
+    end;
   end;
 
   // Keep current mouse position.
@@ -29373,7 +29376,7 @@ procedure TBaseVirtualTree.GetTextInfo(Node: PVirtualNode; Column: TColumnIndex;
 begin
   R := Rect(0, 0, 0, 0);
   Text := '';
-  AFont.Assign(Font);
+  AFont.Assign(Font); // 1 EConvertError due to Font being nil seen here in 01/2019
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
