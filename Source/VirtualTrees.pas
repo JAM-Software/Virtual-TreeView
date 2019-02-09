@@ -5713,12 +5713,7 @@ begin
   Result := inherited IsHintMsg(Msg) and HandleAllocated and IsWindowVisible(Handle);
   // Avoid that mouse moves over the non-client area or key presses cancel the current hint.
   if Result and ((Msg.Message = WM_NCMOUSEMOVE) or ((Msg.Message >= WM_KEYFIRST) and (Msg.Message <= WM_KEYLAST))) then
-    Result := False
-  else
-    // Work around problems with keypresses while doing hint animation.
-    if HandleAllocated and IsWindowVisible(Handle) and (Msg.Message >= WM_KEYFIRST) and (Msg.Message <= WM_KEYLAST) and
-      (tsInAnimation in FHintData.Tree.FStates) and TranslateMessage(Msg) then
-      DispatchMessage(Msg);
+    Result := False;
 end;
 
 //----------------- TVTDragImage ---------------------------------------------------------------------------------------
