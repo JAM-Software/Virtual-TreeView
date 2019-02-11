@@ -1300,7 +1300,6 @@ type
     FDragImage: TVTDragImage;          // drag image management during header drag
     FLastWidth: TDimension;               // Used to adjust spring columns. This is the width of all visible columns,
                                        // not the header rectangle.
-    procedure FontChanged(Sender: TObject);
     function GetMainColumn: TColumnIndex;
     function GetUseColumns: Boolean;
     function IsFontStored: Boolean;
@@ -1326,6 +1325,7 @@ type
     FTrackPoint: TPoint;               // Client coordinate where the tracking started.
     FDoingAutoFitColumns: boolean;     // Flag to avoid using the stored width for Main column
 
+    procedure FontChanged(Sender: TObject); virtual;
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
     procedure ChangeScale(M, D: Integer); virtual;
