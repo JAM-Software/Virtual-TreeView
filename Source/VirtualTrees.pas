@@ -2016,7 +2016,6 @@ type
     FNewSelRect: TRect;                          // used while doing draw selection
     FHotCursor: TCursor;                         // can be set to additionally indicate the current hot node
     FLastHitInfo: THitInfo;                      // The THitInfo of the last mouse-down event.
-                                                 // in Win98 (slide) and Windows 2000 (fade))
     FHintMode: TVTHintMode;                      // determines the kind of the hint window
     FHintData: TVTHintData;                      // used while preparing the hint window
     FChangeDelay: Cardinal;                      // used to delay OnChange event
@@ -20588,6 +20587,7 @@ var
   I: Integer;
   P: TPoint;
   R: TRect;
+  Locked: Boolean;
 
 begin
   // Range check, order is important here.
@@ -20641,9 +20641,16 @@ begin
         end
         else
         begin
+          Locked := False;
+
           try
+            // if toBlockPaintWhileScroll is activated, lock the paint process while scroll is applied
             if toBlockPaintWhileScroll in FOptions.FMiscOptions then
-              SendMessage(Handle, WM_SETREDRAW, 0, 0);
+              // NOTE LockWindowUpdate should be used carefully, see:
+              // https://blogs.msdn.microsoft.com/oldnewthing/20070219-00/?p=27963
+              // However this is the most appropriate function here, because sending WM_SETREDRAW
+              // message puts the scrollbars in a chaotic state until the scroll process ends
+              Locked := LockWindowUpdate(Handle);
 
             if (DeltaX <> 0) and (Header.Columns.GetVisibleFixedWidth > 0) then
             begin
@@ -20660,11 +20667,11 @@ begin
             else
               ScrollWindow(Handle, DeltaX, DeltaY, ClipRect, ClipRect);
           finally
-            if toBlockPaintWhileScroll in FOptions.FMiscOptions then
-            begin
-              SendMessage(Handle, WM_SETREDRAW, 1, 0);
-              Invalidate;
-            end;
+            // unlock the paint process if needed, and invalidate the tree. NOTE as said in doc,
+            // LockWindowUpdate take care of repainting the invalidated regions on unlock, so calling
+            // Invalidate explicitly isn't required here
+            if Locked then
+              LockWindowUpdate(0);
           end;
         end;
       end;
