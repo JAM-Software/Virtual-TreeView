@@ -78,7 +78,7 @@ uses
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
 
 const
-  VTVersion = '7.1.0';
+  VTVersion = '7.2.0';
 
 const
   VTTreeStreamVersion = 3;
