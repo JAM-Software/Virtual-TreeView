@@ -739,6 +739,7 @@ var
   MustUpdateScroll: Boolean;
   B: Boolean;
 begin
+  inherited;
   P := NCMousePosToClient(Point(Msg.XPos, Msg.YPos));
   if PointInTreeHeader(P) then
   begin
