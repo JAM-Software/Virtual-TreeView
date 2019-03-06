@@ -34123,6 +34123,7 @@ var
   PaintInfo: TVTPaintInfo;
   Dummy: TColumnIndex;
   LineImage: TLineImage;
+  lOffsets: TVTOffsets;
 begin
   if Length(S) = 0 then
     S := Text[Node, Column];
@@ -34152,18 +34153,11 @@ begin
   PaintInfo.BidiMode := BidiMode;
   PaintInfo.Column := Column;
   PaintInfo.CellRect := Rect(0, 0, 0, 0);
+  GetOffsets(Node, lOffsets, TVTElement.ofsEndOfClientArea, Column);
   if Column > NoColumn then
   begin
-    PaintInfo.CellRect.Right := FHeader.Columns[Column].Width - FTextMargin;
-    PaintInfo.CellRect.Left := FTextMargin + FMargin;
-    if Column = Header.MainColumn then
-    begin
-      if toFixedIndent in FOptions.FPaintOptions then
-        SetLength(LineImage, 1)
-      else
-        DetermineLineImageAndSelectLevel(Node, LineImage);
-    Inc(PaintInfo.CellRect.Left, Length(LineImage) * Integer(Indent));
-    end;
+    PaintInfo.CellRect.Right := FHeader.Columns[Column].Width - 2 * FTextMargin;
+    PaintInfo.CellRect.Left := lOffsets[TVTElement.ofsLabel];
   end
   else
     PaintInfo.CellRect.Right := ClientWidth;
