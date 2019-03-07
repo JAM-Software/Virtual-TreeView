@@ -34122,7 +34122,6 @@ var
   Alignment: TAlignment;
   PaintInfo: TVTPaintInfo;
   Dummy: TColumnIndex;
-  LineImage: TLineImage;
   lOffsets: TVTOffsets;
 begin
   if Length(S) = 0 then
