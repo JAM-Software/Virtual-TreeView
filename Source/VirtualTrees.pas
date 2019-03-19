@@ -23716,6 +23716,10 @@ begin
 
         StyleServices.DrawElement(Canvas.Handle, Details, R);
         Canvas.Refresh;
+        if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
+          Canvas.Pen.Color := clBlack;
+          DrawArrow(Canvas, TScrollDirection.sdDown, Point(XPos + Round(lSize.cx / 6), YPos + Round(lSize.cy / 3)), Round(lSize.cx / 3));
+        end;//if
       end
     end
     else
