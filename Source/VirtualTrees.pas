@@ -19024,13 +19024,13 @@ function TBaseVirtualTree.DetermineNextCheckState(CheckType: TCheckType; CheckSt
 begin
   case CheckType of
     ctTriStateCheckBox,
-    ctCheckBox: begin
+    ctButton,
+    ctCheckBox:
+    begin
       Result := CheckState.GetToggled();
     end;//ctCheckbox
     ctRadioButton:
       Result := csCheckedNormal;
-    ctButton:
-      Result := csUncheckedNormal;
   else
     Result := csMixedNormal;
   end;
