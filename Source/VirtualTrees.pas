@@ -23657,7 +23657,7 @@ procedure TBaseVirtualTree.PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVT
 var
   ForegroundColor: COLORREF;
   R: TRect;
-  Details: TThemedElementDetails;
+  Details, lSizeDetails: TThemedElementDetails;
   lSize: TSize;
   Theme: HTHEME;
 begin
@@ -23697,30 +23697,37 @@ begin
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
-      if StyleServices.IsSystemStyle and not (Index in [ckButtonNormal..ckButtonDisabled]) then
+      if StyleServices.IsSystemStyle {and not (Index in [ckButtonNormal..ckButtonDisabled])} then
       begin
         Theme := OpenThemeData(Handle, 'BUTTON');
         GetThemePartSize(Theme, Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize);
+        if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
+           lSizeDetails := StyleServices.GetElementDetails(tbCheckBoxCheckedNormal); // Size of dropdown button should be based on size of checkboxes
+           GetThemePartSize(Theme, Canvas.Handle, lSizeDetails.Part, lSizeDetails.State, nil, TS_TRUE, lSize);
+          // dropdown buttons should be slightly larger than checkboxes, see issue #887
+          lSize.cx := Round(lSize.cx * 1.15);
+          lSize.cy := Round(lSize.cy * 1.1);
+        end;
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
         DrawThemeBackground(Theme, Canvas.Handle, Details.Part, Details.State, R, nil);
         CloseThemeData(Theme);
       end
       else
       begin
-        if (Index in [ckButtonNormal..ckButtonDisabled]) or   not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
+        if (Index in [ckButtonNormal..ckButtonDisabled]) or not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
           // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. See issue #615
           if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
             lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
         end;//if
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
-
         StyleServices.DrawElement(Canvas.Handle, Details, R);
-        Canvas.Refresh;
-        if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
-          Canvas.Pen.Color := clBlack;
-          DrawArrow(Canvas, TScrollDirection.sdDown, Point(XPos + Round(lSize.cx / 6), YPos + Round(lSize.cy / 3)), Round(lSize.cx / 3));
-        end;//if
-      end
+        //Canvas.Refresh; // Why is this needed?
+      end;
+      if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
+        Canvas.Pen.Color := clBlack;
+        // These constants have been determined by test using various themes and dpi-scalings
+        DrawArrow(Canvas, TScrollDirection.sdDown, Point(XPos + Round(lSize.cx * 0.22), YPos + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
+      end;//if
     end
     else
       with FCheckImages do
