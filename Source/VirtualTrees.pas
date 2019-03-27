@@ -21546,7 +21546,7 @@ begin
 
   if ImgCheckType = ctTriStateCheckBox then
     ImgCheckType := ctCheckBox;
-  if IsHot and (ImgCheckType = ctButton) and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]) and (GetKeyState(VK_LBUTTON) < 0) then
+  if IsHot and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]) and (GetKeyState(VK_LBUTTON) < 0) and (hiOnItemCheckbox in FLastHitInfo.HitPositions) then
     Inc(ImgCheckState); // Advance to pressed state
 
   if ImgCheckType = ctNone then
