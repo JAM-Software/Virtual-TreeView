@@ -23724,7 +23724,7 @@ begin
         //Canvas.Refresh; // Why is this needed?
       end;
       if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
-        Canvas.Pen.Color := clBlack;
+        Canvas.Pen.Color := clGray;
         // These constants have been determined by test using various themes and dpi-scalings
         DrawArrow(Canvas, TScrollDirection.sdDown, Point(XPos + Round(lSize.cx * 0.22), YPos + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
       end;//if
