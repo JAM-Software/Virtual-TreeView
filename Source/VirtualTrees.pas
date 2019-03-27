@@ -19927,23 +19927,18 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 const
   cTVTImageKind2String: Array [TVTImageKind] of string = ('ikNormal', 'ikSelected', 'ikState', 'ikOverlay');
 begin
+  if Kind = ikState then
+    Result := Self.StateImages
+  else
+    Result := Self.Images;
   // First try the enhanced event to allow for custom image lists.
-  if Assigned(FOnGetImageEx) then begin
-    if Kind = ikState then
-      Result := Self.StateImages
-    else
-      Result := Self.Images;
-    FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result);
-  end
-  else begin
-    if Kind = ikState then
-      Result := Self.StateImages
-    else
-      Result := Self.Images;
-    if Assigned(FOnGetImage) then
-      FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
-  end;
-  Assert((Index < 0) or Assigned(Result), 'An image index was supplied for TVTImageKind.' + cTVTImageKind2String[Kind] + ' but no image list was supplied.');
+  if Assigned(FOnGetImageEx) then
+    FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result)
+  else if Assigned(FOnGetImage) then
+    FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
+
+  if not Assigned(Result) then
+    Index := -1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
