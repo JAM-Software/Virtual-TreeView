@@ -33343,6 +33343,8 @@ begin
     Canvas.TextFlags := 0;
     InflateRect(R, -FTextMargin, 0);
 
+    if (vsDisabled in Node.States) or not Enabled then
+      Canvas.Font.Color := FColors.DisabledColor;
     // Multiline nodes don't need special font handling or text manipulation.
     // Note: multiline support requires the Unicode version of DrawText, which is able to do word breaking.
     //       The emulation in this unit does not support this so we have to use the OS version. However
@@ -33352,9 +33354,6 @@ begin
     begin
       DoPaintText(Node, Canvas, Column, ttNormal);
       Height := ComputeNodeHeight(Canvas, Node, Column);
-      // Disabled node color overrides all other variants.
-      if (vsDisabled in Node.States) or not Enabled then
-        Canvas.Font.Color := FColors.DisabledColor;
 
       // The edit control flag will ensure that no partial line is displayed, that is, only lines
       // which are (vertically) fully visible are drawn.
@@ -33379,10 +33378,6 @@ begin
         GetTextExtentPoint32W(Canvas.Handle, PWideChar(Text), Length(Text), Size);
         NodeWidth := Size.cx + 2 * FTextMargin;
       end;
-
-      // Disabled node color overrides all other variants.
-      if (vsDisabled in Node.States) or not Enabled then
-        Canvas.Font.Color := FColors.DisabledColor;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
       if BidiMode <> bdLeftToRight then
