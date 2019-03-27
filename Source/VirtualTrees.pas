@@ -21550,6 +21550,8 @@ begin
 
   if ImgCheckType = ctTriStateCheckBox then
     ImgCheckType := ctCheckBox;
+  if IsHot and (ImgCheckType = ctButton) and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]) and (GetKeyState(VK_LBUTTON) < 0) then
+    Inc(ImgCheckState); // Advance to pressed state
 
   if ImgCheckType = ctNone then
     Result := -1
@@ -22575,6 +22577,7 @@ begin
 
     if FLastHitInfo.HitNode <> nil then begin // Use THitInfo of mouse down here, see issue #692
       DoNodeClick(FLastHitInfo);
+      InvalidateNode(FLastHitInfo.HitNode);
       FLastHitInfo.HitNode := nil; // prevent firing the event again
     end;
 
