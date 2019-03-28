@@ -33447,8 +33447,10 @@ begin
       Canvas.Font.Color := FColors.DisabledColor;
 
     R := ContentRect;
-    if Alignment = taRightJustify then
-      Dec(R.Right, NodeWidth + FTextMargin)
+    if Alignment = taRightJustify then begin
+      Dec(R.Right, NodeWidth + FTextMargin);
+      DrawFormat := DrawFormat or DT_RIGHT
+    end
     else
       Inc(R.Left, NodeWidth + FTextMargin);
 
@@ -33789,7 +33791,8 @@ begin
   end
   else if Assigned(FOnGetText) then begin
     FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttNormal, pEventArgs.CellText);
-    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText);
+    if toShowStaticText in TreeOptions.StringOptions then
+      FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText);
   end;
 end;
 
