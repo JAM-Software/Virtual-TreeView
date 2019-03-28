@@ -474,7 +474,7 @@ type
     toAutoScroll,               // Scroll if mouse is near the border while dragging or selecting.
     toAutoScrollOnExpand,       // Scroll as many child nodes in view as possible after expanding a node.
     toAutoSort,                 // Sort tree when Header.SortColumn or Header.SortDirection change or sort node if
-                                // child nodes are added.
+                                // child nodes are added. Sorting will take place also if SortColum is NoColumn (-1).
     toAutoSpanColumns,          // Large entries continue into next column(s) if there's no text in them (no clipping).
     toAutoTristateTracking,     // Checkstates are automatically propagated for tri state check boxes.
     toAutoHideButtons,          // Node buttons are hidden when there are child nodes, but all are invisible.
