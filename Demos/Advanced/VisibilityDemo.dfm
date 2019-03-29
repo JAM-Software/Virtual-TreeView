@@ -4141,7 +4141,6 @@ object VisibilityForm: TVisibilityForm
       Header.Height = 24
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
       Header.Style = hsFlatButtons
-      HintAnimation = hatNone
       HintMode = hmTooltip
       IncrementalSearch = isAll
       ParentFont = False
@@ -4151,7 +4150,7 @@ object VisibilityForm: TVisibilityForm
       SelectionCurveRadius = 3
       ShowHint = True
       TabOrder = 0
-      TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoTristateTracking]
+      TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoTristateTracking, toAutoChangeScale]
       TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toHideFocusRect, toShowBackground, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
       TreeOptions.SelectionOptions = [toExtendedFocus]
@@ -4166,10 +4165,10 @@ object VisibilityForm: TVisibilityForm
       Columns = <
         item
           Position = 0
+          Text = 'Main column'
           Width = 204
-          WideText = 'Main column'
         end>
-      WideDefaultText = ''
+      DefaultText = ''
     end
     object VST3: TVirtualStringTree
       Left = 207
@@ -8191,7 +8190,6 @@ object VisibilityForm: TVisibilityForm
       Header.Height = 24
       Header.Options = [hoColumnResize, hoDrag, hoVisible]
       Header.Style = hsFlatButtons
-      HintAnimation = hatNone
       HintMode = hmTooltip
       IncrementalSearch = isAll
       ParentFont = False
@@ -8200,7 +8198,7 @@ object VisibilityForm: TVisibilityForm
       SelectionCurveRadius = 3
       ShowHint = True
       TabOrder = 1
-      TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoTristateTracking]
+      TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoTristateTracking, toAutoChangeScale]
       TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toHideFocusRect, toShowBackground, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
       TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect]
@@ -8217,30 +8215,30 @@ object VisibilityForm: TVisibilityForm
           Color = clWindow
           Options = [coAllowClick, coEnabled, coParentBidiMode, coResizable, coShowDropMark]
           Position = 0
+          Text = 'Column 0'
           Width = 100
-          WideText = 'Column 0'
         end
         item
           Position = 1
+          Text = 'Column 1'
           Width = 100
-          WideText = 'Column 1'
         end
         item
           Position = 2
+          Text = 'Column 2'
           Width = 100
-          WideText = 'Column 2'
         end
         item
           Position = 3
+          Text = 'Column 3'
           Width = 100
-          WideText = 'Column 3'
         end
         item
           Position = 4
+          Text = 'Column 4'
           Width = 100
-          WideText = 'Column 4'
         end>
-      WideDefaultText = ''
+      DefaultText = ''
     end
   end
   object VST1: TVirtualStringTree
@@ -8255,19 +8253,18 @@ object VisibilityForm: TVisibilityForm
     Header.AutoSizeIndex = 0
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
-    HintAnimation = hatNone
     HintMode = hmTooltip
     IncrementalSearch = isAll
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons]
+    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons, toAutoChangeScale]
     TreeOptions.SelectionOptions = [toMultiSelect]
     OnFreeNode = VST1FreeNode
     OnGetText = VST1GetText
     OnInitChildren = VST1InitChildren
     OnInitNode = VST1InitNode
     Columns = <>
-    WideDefaultText = ''
+    DefaultText = ''
   end
 end
