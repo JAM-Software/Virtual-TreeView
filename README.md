@@ -48,9 +48,11 @@ Virtual Treeview is a Delphi treeview control built from ground up. Many years o
 I don't use C++ Builder and my experience with it is very limited. This makes it difficult to take care about bugs that are reported in C++ Builder and to maintain the C++ Builder packages. I would be great if someone would volunteer to do this. Please contact me at joachim.marder+CPP@gmail.com.
 
 ### Downloads
-**V7** official release for **RAD Studio XE3 to 10.3 Rio**: [JAM Software](https://www.jam-software.com/virtual-treeview/VirtualTreeView.zip) ([Changes](https://github.com/Virtual-TreeView/Virtual-TreeView/releases/tag/7.0))
+**V7.0** official release for **RAD Studio XE3 to 10.3 Rio**: [JAM Software](https://www.jam-software.com/virtual-treeview/VirtualTreeView.zip) ([Changes](https://github.com/Virtual-TreeView/Virtual-TreeView/releases/tag/7.0))
 
 An experimetal **FireMonkey** port can be found here: [livius2/Virtual-TreeView](https://github.com/livius2/Virtual-TreeView)
+
+A port to **Lazarus / FPC** can be found here: [blikblum/VirtualTreeView-Lazarus](https://github.com/blikblum/VirtualTreeView-Lazarus)
 
 For a **Delphi XE2** compatible fork see: [Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2](https://github.com/Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2)
 
@@ -61,10 +63,6 @@ For a **Delphi XE** compatible fork see: [sglienke/Virtual-TreeView](https://git
 **V6 latest stable version** tested on Windows XP/2003 support: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V6_stable.zip)
 
 For installation instruction see the "INSTALL.TXT" file in the ZIP. [Delphinus](http://memnarch.bplaced.net/blog/2015/08/delphinus-packagemanager-for-delphi-xe-and-newer/)-Support was added.
-
-### [Recent Changes and Latest News](https://raw.githubusercontent.com/Virtual-TreeView/Virtual-TreeView/master/CHANGES.txt)
-
-**V6.7.0** has been officially released: [Download](https://www.jam-software.de/customers/downloadTrial.php?article_no=407&language=EN)
 
 ### Technical Support
 Please do not contact developers or JAM Software for technical support. Please try to get support from the community e.g. at [Stack Overflow](http://stackoverflow.com/search?q=%22virtual+treeview%22) , [Delphi Pages](http://www.delphipages.com/), [Delphi Praxis](http://www.delphipraxis.net/141465-virtual-treeview-tutorials-mit-beispielen.html) or [Embarcadero forums](https://forums.embarcadero.com/). Please do not use the issue tracker for getting support, only for reporting true bugs (see below).

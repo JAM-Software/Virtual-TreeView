@@ -73,24 +73,8 @@ type
     end;
   {$ENDREGION}
   private
-    FHorzScrollBarDownButtonRect: TRect;
-    FHorzScrollBarDownButtonState: TThemedScrollBar;
-    FHorzScrollBarRect: TRect;
-    FHorzScrollBarSliderState: TThemedScrollBar;
-    FHorzScrollBarSliderTrackRect: TRect;
-    FHorzScrollBarUpButtonRect: TRect;
-    FHorzScrollBarUpButtonState: TThemedScrollBar;
     FHorzScrollBarWindow: TVclStyleScrollBarWindow;
     FLeftMouseButtonDown: Boolean;
-    FPrevScrollPos: Integer;
-    FScrollPos: Single;
-    FVertScrollBarDownButtonRect: TRect;
-    FVertScrollBarDownButtonState: TThemedScrollBar;
-    FVertScrollBarRect: TRect;
-    FVertScrollBarSliderState: TThemedScrollBar;
-    FVertScrollBarSliderTrackRect: TRect;
-    FVertScrollBarUpButtonRect: TRect;
-    FVertScrollBarUpButtonState: TThemedScrollBar;
     FVertScrollBarWindow: TVclStyleScrollBarWindow;
 
     procedure CMUpdateVclStyleScrollbars(var Message: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
@@ -117,12 +101,14 @@ type
     procedure DrawHorzScrollBar(DC: HDC); virtual;
     procedure DrawVertScrollBar(DC: HDC); virtual;
     procedure MouseLeave; override;
-    procedure PaintScrollBars; virtual;
+    procedure PaintScroll; override;
     function PointInTreeHeader(const P: TPoint): Boolean;
     procedure UpdateScrollBarWindow;
   public
     constructor Create(AControl: TWinControl); override;
     destructor Destroy; override;
+    property HorzScrollRect;
+    property VertScrollRect;
   end;
 
 
@@ -156,14 +142,6 @@ var
       not(STATE_SYSTEM_INVISIBLE and BarInfo.rgstate[0] <> 0);
     FVertScrollBarWindow.Enabled :=
       not(STATE_SYSTEM_UNAVAILABLE and BarInfo.rgstate[0] <> 0);
-    if FVertScrollBarWindow.Visible then
-    begin
-      // ScrollBar Rect
-      FVertScrollBarRect := inherited VertScrollRect;
-      FVertScrollBarDownButtonRect := inherited VertDownButtonRect;
-      FVertScrollBarUpButtonRect := inherited VertUpButtonRect;
-      FVertScrollBarSliderTrackRect := inherited VertSliderRect;
-    end;
   end;
 
   procedure CalcHorizontalRects;
@@ -174,13 +152,6 @@ var
       not(STATE_SYSTEM_INVISIBLE and BarInfo.rgstate[0] <> 0);
     FHorzScrollBarWindow.Enabled :=
       not(STATE_SYSTEM_UNAVAILABLE and BarInfo.rgstate[0] <> 0);
-    if FHorzScrollBarWindow.Visible then
-    begin
-      FHorzScrollBarRect := inherited HorzScrollRect;
-      FHorzScrollBarDownButtonRect := inherited HorzDownButtonRect;
-      FHorzScrollBarUpButtonRect := inherited HorzUpButtonRect;
-      FHorzScrollBarSliderTrackRect := inherited HorzSliderRect;
-    end;
   end;
 
 begin
@@ -209,12 +180,12 @@ begin
     (GetParent(Control.Handle));
   FHorzScrollBarWindow.ScrollBarWindowOwner := Self;
 
-  FVertScrollBarSliderState := tsThumbBtnVertNormal;
-  FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-  FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-  FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-  FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-  FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
+  VertSliderState := tsThumbBtnVertNormal;
+  VertUpState := tsArrowBtnUpNormal;
+  VertDownState := tsArrowBtnDownNormal;
+  HorzSliderState := tsThumbBtnHorzNormal;
+  HorzUpState := tsArrowBtnLeftNormal;
+  HorzDownState := tsArrowBtnRightNormal;
 end;
 
 destructor TVclStyleScrollBarsHook.Destroy;
@@ -238,39 +209,37 @@ begin
   begin
     B := TBitmap.Create;
     try
-      B.Width := FHorzScrollBarRect.Width;
-      B.Height := FHorzScrollBarRect.Height;
-      MoveWindowOrg(B.Canvas.Handle, -FHorzScrollBarRect.Left,
-        -FHorzScrollBarRect.Top);
-      R := FHorzScrollBarRect;
-      R.Left := FHorzScrollBarUpButtonRect.Right;
-      R.Right := FHorzScrollBarDownButtonRect.Left;
+      B.Width := HorzScrollRect.Width;
+      B.Height := HorzScrollRect.Height;
+      MoveWindowOrg(B.Canvas.Handle, -HorzScrollRect.Left,
+        -HorzScrollRect.Top);
+      R := HorzScrollRect;
+      R.Left := HorzUpButtonRect.Right;
+      R.Right := HorzDownButtonRect.Left;
 
       Details := StyleServices.GetElementDetails(tsUpperTrackHorzNormal);
       StyleServices.DrawElement(B.Canvas.Handle, Details, R);
 
       if FHorzScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FHorzScrollBarSliderState);
+        Details := StyleServices.GetElementDetails(HorzSliderState);
       StyleServices.DrawElement(B.Canvas.Handle, Details, HorzSliderRect);
 
       if FHorzScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FHorzScrollBarUpButtonState)
+        Details := StyleServices.GetElementDetails(HorzUpState)
       else
         Details := StyleServices.GetElementDetails(tsArrowBtnLeftDisabled);
-      StyleServices.DrawElement(B.Canvas.Handle, Details,
-        FHorzScrollBarUpButtonRect);
+      StyleServices.DrawElement(B.Canvas.Handle, Details, HorzUpButtonRect);
 
       if FHorzScrollBarWindow.Enabled then
         Details := StyleServices.GetElementDetails
-          (FHorzScrollBarDownButtonState)
+          (HorzDownState)
       else
         Details := StyleServices.GetElementDetails(tsArrowBtnRightDisabled);
-      StyleServices.DrawElement(B.Canvas.Handle, Details,
-        FHorzScrollBarDownButtonRect);
+      StyleServices.DrawElement(B.Canvas.Handle, Details, HorzDownButtonRect);
 
-      MoveWindowOrg(B.Canvas.Handle, FHorzScrollBarRect.Left,
-        FHorzScrollBarRect.Top);
-      with FHorzScrollBarRect do
+      MoveWindowOrg(B.Canvas.Handle, HorzScrollRect.Left,
+        HorzScrollRect.Top);
+      with HorzScrollRect do
         BitBlt(DC, Left, Top, B.Width, B.Height, B.Canvas.Handle, 0, 0,
           SRCCOPY);
     finally
@@ -292,43 +261,43 @@ begin
   begin
     B := TBitmap.Create;
     try
-      B.Width := FVertScrollBarRect.Width;
+      B.Width := VertScrollRect.Width;
       B.Height := FVertScrollBarWindow.Height;
-      MoveWindowOrg(B.Canvas.Handle, -FVertScrollBarRect.Left,
-        -FVertScrollBarRect.Top);
-      R := FVertScrollBarRect;
-      R.Bottom := B.Height + FVertScrollBarRect.Top;
+      MoveWindowOrg(B.Canvas.Handle, -VertScrollRect.Left,
+        -VertScrollRect.Top);
+      R := VertScrollRect;
+      R.Bottom := B.Height + VertScrollRect.Top;
       Details := StyleServices.GetElementDetails(tsUpperTrackVertNormal);
       StyleServices.DrawElement(B.Canvas.Handle, Details, R);
-      R.Top := FVertScrollBarUpButtonRect.Bottom;
-      R.Bottom := FVertScrollBarDownButtonRect.Top;
+      R.Top := VertUpButtonRect.Bottom;
+      R.Bottom := VertDownButtonRect.Top;
 
       Details := StyleServices.GetElementDetails(tsUpperTrackVertNormal);
       StyleServices.DrawElement(B.Canvas.Handle, Details, R);
 
       if FVertScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FVertScrollBarSliderState);
+        Details := StyleServices.GetElementDetails(VertSliderState);
       StyleServices.DrawElement(B.Canvas.Handle, Details,
         VertSliderRect);
 
       if FVertScrollBarWindow.Enabled then
-        Details := StyleServices.GetElementDetails(FVertScrollBarUpButtonState)
+        Details := StyleServices.GetElementDetails(VertUpState)
       else
         Details := StyleServices.GetElementDetails(tsArrowBtnUpDisabled);
       StyleServices.DrawElement(B.Canvas.Handle, Details,
-        FVertScrollBarUpButtonRect);
+        VertUpButtonRect);
 
       if FVertScrollBarWindow.Enabled then
         Details := StyleServices.GetElementDetails
-          (FVertScrollBarDownButtonState)
+          (VertDownState)
       else
         Details := StyleServices.GetElementDetails(tsArrowBtnDownDisabled);
       StyleServices.DrawElement(B.Canvas.Handle, Details,
-        FVertScrollBarDownButtonRect);
+        VertDownButtonRect);
 
-      MoveWindowOrg(B.Canvas.Handle, FVertScrollBarRect.Left,
-        FVertScrollBarRect.Top);
-      with FVertScrollBarRect do
+      MoveWindowOrg(B.Canvas.Handle, VertScrollRect.Left,
+        VertScrollRect.Top);
+      with VertScrollRect do
         BitBlt(DC, Left, Top, B.Width, B.Height - TBaseVirtualTreeCracker(Control).BorderWidth, B.Canvas.Handle, 0, 0, SRCCOPY);
     finally
       B.Free;
@@ -339,28 +308,28 @@ end;
 procedure TVclStyleScrollBarsHook.MouseLeave;
 begin
   inherited;
-  if FVertScrollBarSliderState = tsThumbBtnVertHot then
-    FVertScrollBarSliderState := tsThumbBtnVertNormal;
+  if VertSliderState = tsThumbBtnVertHot then
+    VertSliderState := tsThumbBtnVertNormal;
 
-  if FHorzScrollBarSliderState = tsThumbBtnHorzHot then
-    FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
+  if HorzSliderState = tsThumbBtnHorzHot then
+    HorzSliderState := tsThumbBtnHorzNormal;
 
-  if FVertScrollBarUpButtonState = tsArrowBtnUpHot then
-    FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
+  if VertUpState = tsArrowBtnUpHot then
+    VertUpState := tsArrowBtnUpNormal;
 
-  if FVertScrollBarDownButtonState = tsArrowBtnDownHot then
-    FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
+  if VertDownState = tsArrowBtnDownHot then
+    VertDownState := tsArrowBtnDownNormal;
 
-  if FHorzScrollBarUpButtonState = tsArrowBtnLeftHot then
-    FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
+  if HorzUpState = tsArrowBtnLeftHot then
+    HorzUpState := tsArrowBtnLeftNormal;
 
-  if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
-    FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
+  if HorzDownState = tsArrowBtnRightHot then
+    HorzDownState := tsArrowBtnRightNormal;
 
-  PaintScrollBars;
+  PaintScroll;
 end;
 
-procedure TVclStyleScrollBarsHook.PaintScrollBars();
+procedure TVclStyleScrollBarsHook.PaintScroll();
 begin
   if FVertScrollBarWindow.HandleAllocated then begin
     FVertScrollBarWindow.Repaint;
@@ -392,10 +361,10 @@ begin
   BorderWidth := 0;
   // VertScrollBarWindow
 
-  if FVertScrollBarWindow.Visible and (seBorder in TBaseVirtualTree(Control).StyleElements)
+  if FVertScrollBarWindow.Visible and (seBorder in Control.StyleElements)
   then
   begin
-    R := FVertScrollBarRect;
+    R := VertScrollRect;
     if Control.BiDiMode = bdRightToLeft then
     begin
       OffsetRect(R, -R.Left, 0);
@@ -418,9 +387,9 @@ begin
   if FHorzScrollBarWindow.Visible and (seBorder in TBaseVirtualTree(Control).StyleElements)
   then
   begin
-    R := FHorzScrollBarRect;
+    R := HorzScrollRect;
     if Control.BiDiMode = bdRightToLeft then
-      OffsetRect(R, FVertScrollBarRect.Width, 0);
+      OffsetRect(R, VertScrollRect.Width, 0);
     ShowWindow(FHorzScrollBarWindow.Handle, SW_SHOW);
     SetWindowPos(FHorzScrollBarWindow.Handle, HWND_TOP, Control.Left + R.Left +
       TBaseVirtualTreeCracker(Control).BorderWidth, Control.Top + R.Top +
@@ -435,31 +404,31 @@ procedure TVclStyleScrollBarsHook.WMCaptureChanged(var Msg: TMessage);
 begin
   if FVertScrollBarWindow.Visible and FVertScrollBarWindow.Enabled then
   begin
-    if FVertScrollBarUpButtonState = tsArrowBtnUpPressed then
+    if VertUpState = tsArrowBtnUpPressed then
     begin
-      FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-      PaintScrollBars;
+      VertUpState := tsArrowBtnUpNormal;
+      PaintScroll;
     end;
 
-    if FVertScrollBarDownButtonState = tsArrowBtnDownPressed then
+    if VertDownState = tsArrowBtnDownPressed then
     begin
-      FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-      PaintScrollBars;
+      VertDownState := tsArrowBtnDownNormal;
+      PaintScroll;
     end;
   end;
 
   if FHorzScrollBarWindow.Visible and FHorzScrollBarWindow.Enabled then
   begin
-    if FHorzScrollBarUpButtonState = tsArrowBtnLeftPressed then
+    if HorzUpState = tsArrowBtnLeftPressed then
     begin
-      FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-      PaintScrollBars;
+      HorzUpState := tsArrowBtnLeftNormal;
+      PaintScroll;
     end;
 
-    if FHorzScrollBarDownButtonState = tsArrowBtnRightPressed then
+    if HorzDownState = tsArrowBtnRightPressed then
     begin
-      FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-      PaintScrollBars;
+      HorzDownState := tsArrowBtnRightNormal;
+      PaintScroll;
     end;
   end;
 
@@ -478,7 +447,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMHScroll(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -486,7 +455,7 @@ procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollbars
   (var Message: TMessage);
 begin
   CalcScrollBarsRect;
-  PaintScrollBars;
+  PaintScroll;
 end;
 
 procedure TVclStyleScrollBarsHook.WMKeyDown(var Msg: TMessage);
@@ -500,7 +469,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMKeyUp(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -522,46 +491,46 @@ begin
   begin
     if FVertScrollBarWindow.Visible then
     begin
-      if FVertScrollBarSliderState = tsThumbBtnVertPressed then
+      if VertSliderState = tsThumbBtnVertPressed then
       begin
         PostMessage(Handle, WM_VSCROLL,
           Integer(SmallPoint(SB_ENDSCROLL, 0)), 0);
         FLeftMouseButtonDown := False;
-        FVertScrollBarSliderState := tsThumbBtnVertNormal;
-        PaintScrollBars;
+        VertSliderState := tsThumbBtnVertNormal;
+        PaintScroll;
         Handled := True;
         ReleaseCapture;
         Exit;
       end;
 
-      if FVertScrollBarUpButtonState = tsArrowBtnUpPressed then
-        FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
+      if VertUpState = tsArrowBtnUpPressed then
+        VertUpState := tsArrowBtnUpNormal;
 
-      if FVertScrollBarDownButtonState = tsArrowBtnDownPressed then
-        FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
+      if VertDownState = tsArrowBtnDownPressed then
+        VertDownState := tsArrowBtnDownNormal;
     end;
 
     if FHorzScrollBarWindow.Visible then
     begin
-      if FHorzScrollBarSliderState = tsThumbBtnHorzPressed then
+      if HorzSliderState = tsThumbBtnHorzPressed then
       begin
         PostMessage(Handle, WM_HSCROLL,
           Integer(SmallPoint(SB_ENDSCROLL, 0)), 0);
         FLeftMouseButtonDown := False;
-        FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-        PaintScrollBars;
+        HorzSliderState := tsThumbBtnHorzNormal;
+        PaintScroll;
         Handled := True;
         ReleaseCapture;
         Exit;
       end;
 
-      if FHorzScrollBarUpButtonState = tsArrowBtnLeftPressed then
-        FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
+      if HorzUpState = tsArrowBtnLeftPressed then
+        HorzUpState := tsArrowBtnLeftNormal;
 
-      if FHorzScrollBarDownButtonState = tsArrowBtnRightPressed then
-        FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
+      if HorzDownState = tsArrowBtnRightPressed then
+        HorzDownState := tsArrowBtnRightNormal;
     end;
-    PaintScrollBars;
+    PaintScroll;
   end;
   FLeftMouseButtonDown := False;
 end;
@@ -571,108 +540,108 @@ var
   SF: TScrollInfo;
 begin
   inherited;
-  if FVertScrollBarSliderState = tsThumbBtnVertPressed then
+  if VertSliderState = tsThumbBtnVertPressed then
   begin
     SF.fMask := SIF_ALL;
     SF.cbSize := SizeOf(SF);
     GetScrollInfo(Handle, SB_VERT, SF);
-    if SF.nPos <> Round(FScrollPos) then
-      FScrollPos := SF.nPos;
+    if SF.nPos <> Round(ScrollPos) then
+      ScrollPos := SF.nPos;
 
-    FScrollPos := FScrollPos + (SF.nMax - SF.nMin) *
-      ((Mouse.CursorPos.Y - FPrevScrollPos) /
-      FVertScrollBarSliderTrackRect.Height);
-    if FScrollPos < SF.nMin then
-      FScrollPos := SF.nMin;
-    if FScrollPos > SF.nMax then
-      FScrollPos := SF.nMax;
+    ScrollPos := ScrollPos + (SF.nMax - SF.nMin) *
+      ((Mouse.CursorPos.Y - PrevScrollPos) /
+      VertSliderRect.Height);
+    if ScrollPos < SF.nMin then
+      ScrollPos := SF.nMin;
+    if ScrollPos > SF.nMax then
+      ScrollPos := SF.nMax;
     if SF.nPage <> 0 then
-      if Round(FScrollPos) > SF.nMax - Integer(SF.nPage) + 1 then
-        FScrollPos := SF.nMax - Integer(SF.nPage) + 1;
-    FPrevScrollPos := Mouse.CursorPos.Y;
-    SF.nPos := Round(FScrollPos);
+      if Round(ScrollPos) > SF.nMax - Integer(SF.nPage) + 1 then
+        ScrollPos := SF.nMax - Integer(SF.nPage) + 1;
+    PrevScrollPos := Mouse.CursorPos.Y;
+    SF.nPos := Round(ScrollPos);
 
     SetScrollInfo(Handle, SB_VERT, SF, False);
     PostMessage(Handle, WM_VSCROLL, Integer(SmallPoint(SB_THUMBPOSITION,
-      Min(Round(FScrollPos), High(SmallInt)))), 0);
+      Min(Round(ScrollPos), High(SmallInt)))), 0);
     // Min() prevents range check error
 
-    PaintScrollBars;
+    PaintScroll;
     Handled := True;
     Exit;
   end;
 
-  if FHorzScrollBarSliderState = tsThumbBtnHorzPressed then
+  if HorzSliderState = tsThumbBtnHorzPressed then
   begin
     SF.fMask := SIF_ALL;
     SF.cbSize := SizeOf(SF);
     GetScrollInfo(Handle, SB_HORZ, SF);
-    if SF.nPos <> Round(FScrollPos) then
-      FScrollPos := SF.nPos;
+    if SF.nPos <> Round(ScrollPos) then
+      ScrollPos := SF.nPos;
 
-    FScrollPos := FScrollPos + (SF.nMax - SF.nMin) *
-      ((Mouse.CursorPos.X - FPrevScrollPos) /
-      FHorzScrollBarSliderTrackRect.Width);
-    if FScrollPos < SF.nMin then
-      FScrollPos := SF.nMin;
-    if FScrollPos > SF.nMax then
-      FScrollPos := SF.nMax;
+    ScrollPos := ScrollPos + (SF.nMax - SF.nMin) *
+      ((Mouse.CursorPos.X - PrevScrollPos) /
+      HorzSliderRect.Width);
+    if ScrollPos < SF.nMin then
+      ScrollPos := SF.nMin;
+    if ScrollPos > SF.nMax then
+      ScrollPos := SF.nMax;
     if SF.nPage <> 0 then
-      if Round(FScrollPos) > SF.nMax - Integer(SF.nPage) + 1 then
-        FScrollPos := SF.nMax - Integer(SF.nPage) + 1;
-    FPrevScrollPos := Mouse.CursorPos.X;
-    SF.nPos := Round(FScrollPos);
+      if Round(ScrollPos) > SF.nMax - Integer(SF.nPage) + 1 then
+        ScrollPos := SF.nMax - Integer(SF.nPage) + 1;
+    PrevScrollPos := Mouse.CursorPos.X;
+    SF.nPos := Round(ScrollPos);
 
     SetScrollInfo(Handle, SB_HORZ, SF, False);
     PostMessage(Handle, WM_HSCROLL, Integer(SmallPoint(SB_THUMBPOSITION,
-      Round(FScrollPos))), 0);
+      Round(ScrollPos))), 0);
 
-    PaintScrollBars;
+    PaintScroll;
     Handled := True;
     Exit;
   end;
 
-  if FHorzScrollBarSliderState = tsThumbBtnHorzHot then
+  if HorzSliderState = tsThumbBtnHorzHot then
   begin
-    FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-    PaintScrollBars;
+    HorzSliderState := tsThumbBtnHorzNormal;
+    PaintScroll;
   end
-  else if FVertScrollBarSliderState = tsThumbBtnVertHot then
+  else if VertSliderState = tsThumbBtnVertHot then
   begin
-    FVertScrollBarSliderState := tsThumbBtnVertNormal;
-    PaintScrollBars;
+    VertSliderState := tsThumbBtnVertNormal;
+    PaintScroll;
   end
-  else if FHorzScrollBarUpButtonState = tsArrowBtnLeftHot then
+  else if HorzUpState = tsArrowBtnLeftHot then
   begin
-    FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
-    PaintScrollBars;
+    HorzUpState := tsArrowBtnLeftNormal;
+    PaintScroll;
   end
-  else if FHorzScrollBarDownButtonState = tsArrowBtnRightHot then
+  else if HorzDownState = tsArrowBtnRightHot then
   begin
-    FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
-    PaintScrollBars;
+    HorzDownState := tsArrowBtnRightNormal;
+    PaintScroll;
   end
-  else if FVertScrollBarUpButtonState = tsArrowBtnUpHot then
+  else if VertUpState = tsArrowBtnUpHot then
   begin
-    FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
-    PaintScrollBars;
+    VertUpState := tsArrowBtnUpNormal;
+    PaintScroll;
   end
-  else if FVertScrollBarDownButtonState = tsArrowBtnDownHot then
+  else if VertDownState = tsArrowBtnDownHot then
   begin
-    FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
-    PaintScrollBars;
+    VertDownState := tsArrowBtnDownNormal;
+    PaintScroll;
   end;
 
   CallDefaultProc(TMessage(Msg));
   if FLeftMouseButtonDown then
-    PaintScrollBars;
+    PaintScroll;
   Handled := True;
 end;
 
 procedure TVclStyleScrollBarsHook.WMMouseWheel(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -712,10 +681,10 @@ begin
         SF.cbSize := SizeOf(SF);
         GetScrollInfo(Handle, SB_VERT, SF);
         // FListPos := SF.nPos;
-        FScrollPos := SF.nPos;
-        FPrevScrollPos := Mouse.CursorPos.Y;
-        FVertScrollBarSliderState := tsThumbBtnVertPressed;
-        PaintScrollBars;
+        ScrollPos := SF.nPos;
+        PrevScrollPos := Mouse.CursorPos.Y;
+        VertSliderState := tsThumbBtnVertPressed;
+        PaintScroll;
         SetCapture(Handle);
         Handled := True;
         Exit;
@@ -723,10 +692,10 @@ begin
 
       if FVertScrollBarWindow.Enabled then
       begin
-        if PtInRect(FVertScrollBarDownButtonRect, P) then
-          FVertScrollBarDownButtonState := tsArrowBtnDownPressed;
-        if PtInRect(FVertScrollBarUpButtonRect, P) then
-          FVertScrollBarUpButtonState := tsArrowBtnUpPressed;
+        if PtInRect(VertDownButtonRect, P) then
+          VertDownState := tsArrowBtnDownPressed;
+        if PtInRect(VertUpButtonRect, P) then
+          VertUpState := tsArrowBtnUpPressed;
       end;
     end;
 
@@ -739,10 +708,10 @@ begin
         SF.cbSize := SizeOf(SF);
         GetScrollInfo(Handle, SB_HORZ, SF);
         // FListPos := SF.nPos;
-        FScrollPos := SF.nPos;
-        FPrevScrollPos := Mouse.CursorPos.X;
-        FHorzScrollBarSliderState := tsThumbBtnHorzPressed;
-        PaintScrollBars;
+        ScrollPos := SF.nPos;
+        PrevScrollPos := Mouse.CursorPos.X;
+        HorzSliderState := tsThumbBtnHorzPressed;
+        PaintScroll;
         SetCapture(Handle);
         Handled := True;
         Exit;
@@ -750,14 +719,14 @@ begin
 
       if FHorzScrollBarWindow.Enabled then
       begin
-        if PtInRect(FHorzScrollBarDownButtonRect, P) then
-          FHorzScrollBarDownButtonState := tsArrowBtnRightPressed;
-        if PtInRect(FHorzScrollBarUpButtonRect, P) then
-          FHorzScrollBarUpButtonState := tsArrowBtnLeftPressed;
+        if PtInRect(HorzDownButtonRect, P) then
+          HorzDownState := tsArrowBtnRightPressed;
+        if PtInRect(HorzUpButtonRect, P) then
+          HorzUpState := tsArrowBtnLeftPressed;
       end;
     end;
     FLeftMouseButtonDown := True;
-    PaintScrollBars;
+    PaintScroll;
   end;
 end;
 
@@ -788,54 +757,54 @@ begin
     if FVertScrollBarWindow.Visible then
       if FVertScrollBarWindow.Enabled then
       begin
-        if FVertScrollBarSliderState = tsThumbBtnVertPressed then
+        if VertSliderState = tsThumbBtnVertPressed then
         begin
           FLeftMouseButtonDown := False;
-          FVertScrollBarSliderState := tsThumbBtnVertNormal;
-          PaintScrollBars;
+          VertSliderState := tsThumbBtnVertNormal;
+          PaintScroll;
           Handled := True;
           Exit;
         end;
 
-        if PtInRect(FVertScrollBarDownButtonRect, P) then
-          FVertScrollBarDownButtonState := tsArrowBtnDownHot
+        if PtInRect(VertDownButtonRect, P) then
+          VertDownState := tsArrowBtnDownHot
         else
-          FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
+          VertDownState := tsArrowBtnDownNormal;
 
-        if PtInRect(FVertScrollBarUpButtonRect, P) then
-          FVertScrollBarUpButtonState := tsArrowBtnUpHot
+        if PtInRect(VertUpButtonRect, P) then
+          VertUpState := tsArrowBtnUpHot
         else
-          FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
+          VertUpState := tsArrowBtnUpNormal;
       end;
 
     if FHorzScrollBarWindow.Visible then
       if FHorzScrollBarWindow.Enabled then
       begin
-        if FHorzScrollBarSliderState = tsThumbBtnHorzPressed then
+        if HorzSliderState = tsThumbBtnHorzPressed then
         begin
           FLeftMouseButtonDown := False;
-          FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
-          PaintScrollBars;
+          HorzSliderState := tsThumbBtnHorzNormal;
+          PaintScroll;
           Handled := True;
           Exit;
         end;
 
-        if PtInRect(FHorzScrollBarDownButtonRect, P) then
-          FHorzScrollBarDownButtonState := tsArrowBtnRightHot
+        if PtInRect(HorzDownButtonRect, P) then
+          HorzDownState := tsArrowBtnRightHot
         else
-          FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
+          HorzDownState := tsArrowBtnRightNormal;
 
-        if PtInRect(FHorzScrollBarUpButtonRect, P) then
-          FHorzScrollBarUpButtonState := tsArrowBtnLeftHot
+        if PtInRect(HorzUpButtonRect, P) then
+          HorzUpState := tsArrowBtnLeftHot
         else
-          FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
+          HorzUpState := tsArrowBtnLeftNormal;
       end;
     CallDefaultProc(TMessage(Msg));
   end;
 
   if not B and (FHorzScrollBarWindow.Visible) or (FVertScrollBarWindow.Visible)
   then
-    PaintScrollBars;
+    PaintScroll;
   Handled := True;
 end;
 
@@ -852,7 +821,7 @@ begin
   if PointInTreeHeader(P) then
   begin
     CallDefaultProc(TMessage(Msg));
-    PaintScrollBars;
+    PaintScroll;
     Handled := True;
     Exit;
   end;
@@ -873,37 +842,37 @@ begin
   if FVertScrollBarWindow.Enabled then
   begin
     B := PtInRect(VertSliderRect, P);
-    if B and (FVertScrollBarSliderState = tsThumbBtnVertNormal) then
+    if B and (VertSliderState = tsThumbBtnVertNormal) then
     begin
-      FVertScrollBarSliderState := tsThumbBtnVertHot;
+      VertSliderState := tsThumbBtnVertHot;
       MustUpdateScroll := True;
     end
-    else if not B and (FVertScrollBarSliderState = tsThumbBtnVertHot) then
+    else if not B and (VertSliderState = tsThumbBtnVertHot) then
     begin
-      FVertScrollBarSliderState := tsThumbBtnVertNormal;
+      VertSliderState := tsThumbBtnVertNormal;
       MustUpdateScroll := True;
     end;
 
-    B := PtInRect(FVertScrollBarDownButtonRect, P);
-    if B and (FVertScrollBarDownButtonState = tsArrowBtnDownNormal) then
+    B := PtInRect(VertDownButtonRect, P);
+    if B and (VertDownState = tsArrowBtnDownNormal) then
     begin
-      FVertScrollBarDownButtonState := tsArrowBtnDownHot;
+      VertDownState := tsArrowBtnDownHot;
       MustUpdateScroll := True;
     end
-    else if not B and (FVertScrollBarDownButtonState = tsArrowBtnDownHot) then
+    else if not B and (VertDownState = tsArrowBtnDownHot) then
     begin
-      FVertScrollBarDownButtonState := tsArrowBtnDownNormal;
+      VertDownState := tsArrowBtnDownNormal;
       MustUpdateScroll := True;
     end;
-    B := PtInRect(FVertScrollBarUpButtonRect, P);
-    if B and (FVertScrollBarUpButtonState = tsArrowBtnUpNormal) then
+    B := PtInRect(VertUpButtonRect, P);
+    if B and (VertUpState = tsArrowBtnUpNormal) then
     begin
-      FVertScrollBarUpButtonState := tsArrowBtnUpHot;
+      VertUpState := tsArrowBtnUpHot;
       MustUpdateScroll := True;
     end
-    else if not B and (FVertScrollBarUpButtonState = tsArrowBtnUpHot) then
+    else if not B and (VertUpState = tsArrowBtnUpHot) then
     begin
-      FVertScrollBarUpButtonState := tsArrowBtnUpNormal;
+      VertUpState := tsArrowBtnUpNormal;
       MustUpdateScroll := True;
     end;
   end;
@@ -911,44 +880,44 @@ begin
   if FHorzScrollBarWindow.Enabled then
   begin
     B := PtInRect(HorzSliderRect, P);
-    if B and (FHorzScrollBarSliderState = tsThumbBtnHorzNormal) then
+    if B and (HorzSliderState = tsThumbBtnHorzNormal) then
     begin
-      FHorzScrollBarSliderState := tsThumbBtnHorzHot;
+      HorzSliderState := tsThumbBtnHorzHot;
       MustUpdateScroll := True;
     end
-    else if not B and (FHorzScrollBarSliderState = tsThumbBtnHorzHot) then
+    else if not B and (HorzSliderState = tsThumbBtnHorzHot) then
     begin
-      FHorzScrollBarSliderState := tsThumbBtnHorzNormal;
+      HorzSliderState := tsThumbBtnHorzNormal;
       MustUpdateScroll := True;
     end;
 
-    B := PtInRect(FHorzScrollBarDownButtonRect, P);
-    if B and (FHorzScrollBarDownButtonState = tsArrowBtnRightNormal) then
+    B := PtInRect(HorzDownButtonRect, P);
+    if B and (HorzDownState = tsArrowBtnRightNormal) then
     begin
-      FHorzScrollBarDownButtonState := tsArrowBtnRightHot;
+      HorzDownState := tsArrowBtnRightHot;
       MustUpdateScroll := True;
     end
-    else if not B and (FHorzScrollBarDownButtonState = tsArrowBtnRightHot) then
+    else if not B and (HorzDownState = tsArrowBtnRightHot) then
     begin
-      FHorzScrollBarDownButtonState := tsArrowBtnRightNormal;
+      HorzDownState := tsArrowBtnRightNormal;
       MustUpdateScroll := True;
     end;
 
-    B := PtInRect(FHorzScrollBarUpButtonRect, P);
-    if B and (FHorzScrollBarUpButtonState = tsArrowBtnLeftNormal) then
+    B := PtInRect(HorzUpButtonRect, P);
+    if B and (HorzUpState = tsArrowBtnLeftNormal) then
     begin
-      FHorzScrollBarUpButtonState := tsArrowBtnLeftHot;
+      HorzUpState := tsArrowBtnLeftHot;
       MustUpdateScroll := True;
     end
-    else if not B and (FHorzScrollBarUpButtonState = tsArrowBtnLeftHot) then
+    else if not B and (HorzUpState = tsArrowBtnLeftHot) then
     begin
-      FHorzScrollBarUpButtonState := tsArrowBtnLeftNormal;
+      HorzUpState := tsArrowBtnLeftNormal;
       MustUpdateScroll := True;
     end;
   end;
 
   if MustUpdateScroll then
-    PaintScrollBars;
+    PaintScroll;
 end;
 
 procedure TVclStyleScrollBarsHook.WMNCPaint(var Msg: TMessage);
@@ -965,7 +934,7 @@ begin
   CallDefaultProc(TMessage(Msg));
   CalcScrollBarsRect;
   UpdateScrollBarWindow;
-  PaintScrollBars;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -976,7 +945,7 @@ begin
   begin
     CalcScrollBarsRect;
     UpdateScrollBarWindow;
-    PaintScrollBars;
+    PaintScroll;
   end;
   Handled := True;
 end;
@@ -989,7 +958,8 @@ end;
 procedure TVclStyleScrollBarsHook.WMVScroll(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  PaintScrollBars;
+  PaintScroll
+  ;
   Handled := True;
 end;
 
@@ -1041,14 +1011,14 @@ begin
       try
         if FScrollBarVertical then
         begin
-          MoveWindowOrg(DC, -FScrollBarWindowOwner.FVertScrollBarRect.Left,
-            -FScrollBarWindowOwner.FVertScrollBarRect.Top);
+          MoveWindowOrg(DC, -FScrollBarWindowOwner.VertScrollRect.Left,
+            -FScrollBarWindowOwner.VertScrollRect.Top);
           FScrollBarWindowOwner.DrawVertScrollBar(DC);
         end
         else
         begin
-          MoveWindowOrg(DC, -FScrollBarWindowOwner.FHorzScrollBarRect.Left,
-            -FScrollBarWindowOwner.FHorzScrollBarRect.Top);
+          MoveWindowOrg(DC, -FScrollBarWindowOwner.HorzScrollRect.Left,
+            -FScrollBarWindowOwner.HorzScrollRect.Top);
           FScrollBarWindowOwner.DrawHorzScrollBar(DC);
         end;
       finally

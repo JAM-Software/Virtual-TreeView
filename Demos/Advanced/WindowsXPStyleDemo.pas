@@ -58,7 +58,7 @@ var
 implementation
 
 uses
-  Main, ShellAPI, Printers, States;
+  Main, ShellAPI, Printers, States, Vcl.GraphUtil;
 
 {$R *.dfm}
 
@@ -209,8 +209,9 @@ begin
           else
             SortDirection := sdAscending;
 
-        if SortColumn <> NoColumn then
-          Columns[SortColumn].Color := $F7F7F7;
+        if SortColumn <> NoColumn then begin
+          Columns[SortColumn].Color := GetShadowColor(ColorToRGB(XPTree.Colors.BackGroundColor), -32);
+        end;
         SortTree(SortColumn, SortDirection, True);
 
       end;

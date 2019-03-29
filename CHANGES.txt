@@ -1,4 +1,4 @@
-﻿V7.1: (Under development)
+﻿V7.1: (27 Dec 2018)
 See: https://github.com/Virtual-TreeView/Virtual-TreeView/milestone/11?closed=1
 
 V7.0: (22 Jul 2018)
