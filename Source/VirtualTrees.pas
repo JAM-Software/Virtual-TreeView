@@ -12022,7 +12022,7 @@ begin
     // Root node has as parent the tree view.
     while Assigned(Run) and (Run <> Pointer(Self)) do
     begin
-      Inc(Integer(Run.TotalCount), Difference);
+      Inc(Run.TotalCount, Difference);
       Run := Run.Parent;
     end;
   end;
