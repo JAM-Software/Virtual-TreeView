@@ -23708,6 +23708,8 @@ begin
           lSize.cy := Round(lSize.cy * 1.1);
         end;
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
+        if (Index in [ckButtonNormal..ckButtonDisabled]) then
+          R.Offset(-1, 0); // Eliminate 1 pixel border around Windows themed button
         DrawThemeBackground(Theme, Canvas.Handle, Details.Part, Details.State, R, nil);
         CloseThemeData(Theme);
       end
@@ -23725,7 +23727,7 @@ begin
       if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
         Canvas.Pen.Color := clGray;
         // These constants have been determined by test using various themes and dpi-scalings
-        DrawArrow(Canvas, TScrollDirection.sdDown, Point(XPos + Round(lSize.cx * 0.22), YPos + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
+        DrawArrow(Canvas, TScrollDirection.sdDown, Point(R.Left + Round(lSize.cx * 0.22), R.Top + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
       end;//if
     end
     else
