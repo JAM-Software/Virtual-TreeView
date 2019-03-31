@@ -26,15 +26,15 @@ unit VirtualTrees;
 // For a list of recent changes please see file CHANGES.TXT
 //
 // Credits for their valuable assistance and code donations go to:
-//   Freddy Ertl, Marian Aldenhövel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
-//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Bedürftig (BCB)
+//   Freddy Ertl, Marian Aldenhoevel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
+//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Beduerftig (BCB)
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Rösler, Sanjay Kanade,
+//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Roesler, Sanjay Kanade,
 //   and everyone that sent pull requests: https://github.com/Virtual-TreeView/Virtual-TreeView/pulls?q=
 // Beta testers:
-//   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
+//   Freddy Ertl, Hans-Juergen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
 // Indirect contribution (via publicly accessible work of those persons):
 //   Alex Denissov, Hiroyuki Hori (MMXAsm expert)
@@ -45,6 +45,8 @@ unit VirtualTrees;
 //   https://github.com/Virtual-TreeView/Virtual-TreeView
 // Accessability implementation:
 //   Marco Zehe (with help from Sebastian Modersohn)
+// Port to Firemonkey:
+//   Karol Bieniaszewski (github user livius2)
 //----------------------------------------------------------------------------------------------------------------------
 
 interface
@@ -76,6 +78,12 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
+type
+{$IFDEF VT_FMX}
+  TDimension = Single;
+{$ELSE}
+  TDimension = Integer; // For Firemonkey support, see #841
+{$ENDIF}
 
 const
   VTVersion = '7.2.1';
@@ -144,8 +152,6 @@ const
   // Decoupling message for auto-adjusting the internal edit window.
   CM_AUTOADJUST = CM_BASE + 2005;
 
-  
-
   // VT's own clipboard formats,
   // Note: The reference format is used internally to allow to link to a tree reference
   //       to implement optimized moves and other back references.
@@ -191,13 +197,13 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 
   {$MinEnumSize 1, make enumerations as small as possible}
 
+
+
 type
   // Alias defintions for convenience
   TImageIndex = System.UITypes.TImageIndex;
   TCanvas = Vcl.Graphics.TCanvas;
 
-  // For Firemonkey support, see #841
-  TDimension = Integer;
 
   // The exception used by the trees.
   EVirtualTreeError = class(Exception);
@@ -394,7 +400,7 @@ type
     -- hmToolTip shows a hint only when node text is not fully shown. It's meant to
        fully show node text when not visible. It will show multi-line hint only if
        the node itself is multi-line. If you provide a custom multi-line hint then
-       you msut force linebreak style to hlbForceMultiLine in the OnGetHint event 
+       you must force linebreak style to hlbForceMultiLine in the OnGetHint event
        in order to show the complete hint.
   }
   TVTHintMode = (
@@ -461,7 +467,7 @@ type
     The animation does not look good as the image splits and moves with it.
   }
   TVTAnimationOption = (
-    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll). 
+    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll).
                                // **See note above.
     toAdvancedAnimatedToggle   // Do some advanced animation effects when toggling a node.
   );
@@ -991,7 +997,7 @@ type
     FSpacing: TDimension;
     FOptions: TVTColumnOptions;
     FEditOptions: TVTEditOptions;
-    FEditNextColumn: Integer;
+    FEditNextColumn: TDimension;
     FTag: NativeInt;
     FAlignment: TAlignment;
     FCaptionAlignment: TAlignment;     // Alignment of the caption.
@@ -1306,13 +1312,13 @@ type
     procedure SetAutoSizeIndex(Value: TColumnIndex);
     procedure SetBackground(Value: TColor);
     procedure SetColumns(Value: TVirtualTreeColumns);
-    procedure SetDefaultHeight(Value: Integer);
+    procedure SetDefaultHeight(Value: TDimension);
     procedure SetFont(const Value: TFont);
-    procedure SetHeight(Value: Integer);
+    procedure SetHeight(Value: TDimension);
     procedure SetImages(const Value: TCustomImageList);
     procedure SetMainColumn(Value: TColumnIndex);
-    procedure SetMaxHeight(Value: Integer);
-    procedure SetMinHeight(Value: Integer);
+    procedure SetMaxHeight(Value: TDimension);
+    procedure SetMinHeight(Value: TDimension);
     procedure SetOptions(Value: TVTHeaderOptions);
     procedure SetParentFont(Value: Boolean);
     procedure SetSortColumn(Value: TColumnIndex);
@@ -1328,7 +1334,7 @@ type
     procedure FontChanged(Sender: TObject); virtual;
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
-    procedure ChangeScale(M, D: Integer); virtual;
+    procedure ChangeScale(M, D: TDimension); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
     procedure DoAfterAutoFitColumn(Column: TColumnIndex); virtual;
     procedure DoAfterColumnWidthTracking(Column: TColumnIndex); virtual;
@@ -1370,8 +1376,8 @@ type
     function InHeaderSplitterArea(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False; UpdateNowFlag : Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
-    function ResizeColumns(ChangeBy: Integer; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
-      Options: TVTColumnOptions = [coVisible]): Integer;
+    function ResizeColumns(ChangeBy: TDimension; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
+      Options: TVTColumnOptions = [coVisible]): TDimension;
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
 
@@ -1681,7 +1687,7 @@ type
   TVTImageInfo = record
     Index: TImageIndex;       // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
-    YPos: Integer;            // Vertical position in the current target canvas.
+    YPos: TDimension;         // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
     Images: TCustomImageList; // The image list to be used for painting.
     function Equals(const pImageInfo2: TVTImageInfo): Boolean;
@@ -1724,14 +1730,14 @@ type
     Position: TColumnPosition;    // the column position of the node
     CellRect: TRect;              // the node cell
     ContentRect: TRect;           // the area of the cell used for the node's content
-    NodeWidth: Integer;           // the actual node width
+    NodeWidth: TDimension;        // the actual node width
     Alignment: TAlignment;        // how to align within the node rectangle
     CaptionAlignment: TAlignment; // how to align text within the caption rectangle
     BidiMode: TBidiMode;          // directionality to be used for painting
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
     Offsets: TVTOffsets;          // The offsets of the various elements of a tree node
-    VAlign: Integer;
+    VAlign: TDimension;
     procedure AdjustImageCoordinates();
   end;
 
