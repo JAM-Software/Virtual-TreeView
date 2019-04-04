@@ -26,15 +26,15 @@ unit VirtualTrees;
 // For a list of recent changes please see file CHANGES.TXT
 //
 // Credits for their valuable assistance and code donations go to:
-//   Freddy Ertl, Marian Aldenh�vel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
-//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Bed�rftig (BCB)
+//   Freddy Ertl, Marian Aldenhoevel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
+//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Beduerftig (BCB)
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar R�sler, Sanjay Kanade,
+//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Roesler, Sanjay Kanade,
 //   and everyone that sent pull requests: https://github.com/Virtual-TreeView/Virtual-TreeView/pulls?q=
 // Beta testers:
-//   Freddy Ertl, Hans-J�rgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
+//   Freddy Ertl, Hans-Juergen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
 // Indirect contribution (via publicly accessible work of those persons):
 //   Alex Denissov, Hiroyuki Hori (MMXAsm expert)
@@ -97,7 +97,7 @@ type
 {$IFDEF VT_FMX}
   TDimension = Single;
 {$ELSE}
-  TDimension = Integer;
+  TDimension = Integer; // For Firemonkey support, see #841
 {$ENDIF}
 
 const
@@ -12640,7 +12640,7 @@ begin
     // Root node has as parent the tree view.
     while Assigned(Run) and (Run <> Pointer(Self)) do
     begin
-      Inc(Run.TotalCount, Difference);
+      Inc(Integer(Run.TotalCount), Difference);
       Run := Run.Parent;
     end;
   end;
@@ -25320,6 +25320,8 @@ begin
           lSize.cy := Round(lSize.cy * 1.1);
         end;
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
+        if (Index in [ckButtonNormal..ckButtonDisabled]) then
+          R.Offset(-1, 0); // Eliminate 1 pixel border around Windows themed button
         DrawThemeBackground(Theme, Canvas.Handle, Details.Part, Details.State, R, nil);
         CloseThemeData(Theme);
       end
@@ -25337,7 +25339,7 @@ begin
       if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
         Canvas.Pen.Color := clGray;
         // These constants have been determined by test using various themes and dpi-scalings
-        DrawArrow(Canvas, TScrollDirection.sdDown, Point(XPos + Round(lSize.cx * 0.22), YPos + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
+        DrawArrow(Canvas, TScrollDirection.sdDown, Point(R.Left + Round(lSize.cx * 0.22), R.Top + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
       end;//if
     end
     else
