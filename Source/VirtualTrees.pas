@@ -7357,7 +7357,7 @@ begin
           begin
             PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
             TextPos.X := (ClientSize.X - TextSize.cx) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
-            if UseSortGlyph then
+            if PaintInfo.ShowSortGlyph then
               Dec(TextPos.X, PaintInfo.SortGlyphSize.cx {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2);
           end
           else
@@ -9537,13 +9537,13 @@ var
         // Show an indication if this column is the current drop target in a header drag operation.
         if not (hpeDropMark in ActualElements) and (DropMark <> dmmNone) then
         begin
-{
+(*
           Y := (PaintRectangle.Top + PaintRectangle.Bottom - {$IFDEF VT_FMX}16{$ELSE}UtilityImages.Height{$ENDIF}) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;//TODO: 16px Image!!!
           if DropMark = dmmLeft then
             UtilityImages.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(PaintRectangle.Left, Y, PaintRectangle.Left+16, Y+16){$ELSE}PaintRectangle.Left, Y{$ENDIF}, 0)//TODO: 16px Image!!!
           else
             UtilityImages.Draw(TargetCanvas, {$IFDEF VT_FMX}RectF(PaintRectangle.Right - 16, Y, PaintRectangle.Right, Y + 16){$ELSE}PaintRectangle.Right - 16 , Y{$ENDIF},  1);//TODO: 16px Image!!!
-}
+*)
           PaintInfo.DrawDropMark();
         end;
 
@@ -12281,10 +12281,12 @@ end;
 function TVTColors.GetSelectedNodeFontColor(Focused: boolean): TColor;
 begin
   if Focused then begin
+{$IFDEF VT_VCL}
     if (tsUseExplorerTheme in FOwner.FStates) and not IsHighContrastEnabled then begin
       Result := NodeFontColor
     end
     else
+{$ENDIF}
       Result := SelectionTextColor
   end// if Focused
   else
@@ -12640,7 +12642,7 @@ begin
     // Root node has as parent the tree view.
     while Assigned(Run) and (Run <> Pointer(Self)) do
     begin
-      Inc(Integer(Run.TotalCount), Difference);
+      System.Inc(Integer(Run.TotalCount), Difference);
       Run := Run.Parent;
     end;
   end;
@@ -15283,9 +15285,20 @@ begin
     if Value = ckCustom then
       FCheckImages := FCustomCheckImages
     else if HandleAllocated then
-      FCheckImages := CreateSystemImageSet(Self);
+      begin
+        {$IFDEF VT_FMX}
+        FCheckImages:= TImageList.Create(Self);
+        FillSystemCheckImages(Self, FCheckImages as TImageList);
+        {$ELSE}
+        FCheckImages := CreateSystemImageSet(Self);
+        {$ENDIF}
+      end;
+    {$IFDEF VT_FMX}
+    Repaint;
+    {$ELSE}
     if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
       InvalidateRect(Handle, nil, False);
+    {$ENDIF}
   end;
 end;
 
@@ -22942,8 +22955,8 @@ begin
 
   if ImgCheckType = ctTriStateCheckBox then
     ImgCheckType := ctCheckBox;
-  if IsHot and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]) and (GetKeyState(VK_LBUTTON) < 0) and (hiOnItemCheckbox in FLastHitInfo.HitPositions) then
-    Inc(ImgCheckState); // Advance to pressed state
+  if IsHot and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]){$IFDEF VT_VCL}and (GetKeyState(VK_LBUTTON) < 0){$ENDIF} and (hiOnItemCheckbox in FLastHitInfo.HitPositions) then //TODO: GetKeyState
+    System.Inc(ImgCheckState); // Advance to pressed state
 
   if ImgCheckType = ctNone then
     Result := -1
@@ -25186,8 +25199,16 @@ var
 begin
 {$IFDEF VT_FMX}
   //it must be in paint - without this images are empty
-  if SystemCheckImages.Count=0 then
-    FillSystemCheckImages(Self, SystemCheckImages);
+  if not Assigned(FCheckImages) or (FCheckImages.Count=0) then
+    begin
+      if not (FCheckImages is TImageList) then
+        begin
+          FreeAndNil(FCheckImages);
+          FCheckImages:= TImageList.Create(Self);
+        end;
+
+      FillSystemCheckImages(Self, FCheckImages as TImageList);
+    end;
 {$ENDIF}
 
   Options := [poBackground, poColumnColor, poDrawFocusRect, poDrawDropMark, poDrawSelection, poGridLines];
@@ -35408,12 +35429,12 @@ begin
         if Node = FDropTargetNode then
         begin
           if ((FLastDropMode = dmOnNode) or (vsSelected in Node.States)) then
-            Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor(Focused);
+            Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor({$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF});
         end
         else
           if vsSelected in Node.States then
           begin
-            Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor(Focused);
+            Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor({$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF});
           end;
       end;
     end;
@@ -35448,7 +35469,11 @@ begin
     InflateRect(R, -FTextMargin, 0);
 
     if (vsDisabled in Node.States) or not Enabled then
+{$IFDEF VT_FMX}
+      Canvas.Fill.Color := FColors.DisabledColor;
+{$ELSE}
       Canvas.Font.Color := FColors.DisabledColor;
+{$ENDIF}
     // Multiline nodes don't need special font handling or text manipulation.
     // Note: multiline support requires the Unicode version of DrawText, which is able to do word breaking.
     //       The emulation in this unit does not support this so we have to use the OS version. However
@@ -35533,7 +35558,7 @@ begin
       if Node = FDropTargetNode then
       begin
         if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
-          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor(Focused)
+          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor({$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF})
         else
           Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.NodeFontColor;
       end
@@ -35541,7 +35566,7 @@ begin
         if vsSelected in Node.States then
         begin
           if {$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF} or (toPopupMode in FOptions.FPaintOptions) then
-          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor(Focused)
+          Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.GetSelectedNodeFontColor({$IFDEF VT_FMX}IsFocused{$ELSE}Focused{$ENDIF})
           else
             Canvas.{$IFDEF VT_FMX}Fill{$ELSE}Font{$ENDIF}.Color := FColors.NodeFontColor;
         end;
@@ -36889,15 +36914,15 @@ end;
 
 procedure THeaderPaintInfo.DrawDropMark();
 var
-  Y: Integer;
-  lArrowWidth: Integer;
+  Y: TDimension;
+  lArrowWidth: TDimension;
 begin
   lArrowWidth := Self.Column.Owner.Header.Treeview.ScaledPixels(5);
-  Y := (PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth) div 2;
+  Y := (PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth) {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2;
   if DropMark = dmmLeft then
     DrawArrow(TargetCanvas, TScrollDirection.sdLeft, Point(PaintRectangle.Left, Y), lArrowWidth)
   else
-    DrawArrow(TargetCanvas, TScrollDirection.sdRight, Point(PaintRectangle.Right - lArrowWidth - (lArrowWidth div 2) {spacing}, Y), lArrowWidth);
+    DrawArrow(TargetCanvas, TScrollDirection.sdRight, Point(PaintRectangle.Right - lArrowWidth - (lArrowWidth {$IFDEF VT_FMX}/{$ELSE}div{$ENDIF} 2) {spacing}, Y), lArrowWidth);
 end;
 
 procedure THeaderPaintInfo.DrawSortArrow(pDirection: TSortDirection);

@@ -46,6 +46,10 @@ const
   clGreen = TAlphaColorRec.Green;
   clBlue =  TAlphaColorRec.Blue;
   clGrayText =  TAlphaColorRec.DkGray;
+  clInactiveCaption = TAlphaColorRec.Darkblue; //TODO: color
+  clInactiveCaptionText = TAlphaColorRec.Yellow; //TODO: color
+  clDkGray = TAlphaColorRec.DkGray;
+
 
 //------- needed for migration -------------------------------------------------------------------------------------------------------------
 
@@ -482,9 +486,21 @@ type
     procedure FrameRect(const AFocusRect: TRect);
   end;
 
+{ Draws a solid triangular arrow that can point in any TScrollDirection }
+
+type
+  TScrollDirection = (sdLeft, sdRight, sdUp, sdDown);
+  TArrowType = (atSolid, atArrows);
+
+procedure DrawArrow(ACanvas: TCanvas; Direction: TScrollDirection; Location: TPoint; Size: Single);
+
 implementation
 uses FMX.TextLayout, System.SysUtils, FMX.MultiResBitmap, FMX.Objects, VirtualTrees.Utils, FMX.Effects;
 
+procedure DrawArrow(ACanvas: TCanvas; Direction: TScrollDirection; Location: TPoint; Size: Single);
+begin
+  //TODO: DrawArrow implementation
+end;
 
 { TCanvasHelper }
 

@@ -111,10 +111,10 @@ procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 function IsMouseCursorVisible(): Boolean;
 
 procedure ScaleImageList(const ImgList: TImageList; M, D: Integer);
-{$ENDIF}
 
 /// Returns True if the high contrast theme is anabled in the system settings, False otherwise.
 function IsHighContrastEnabled(): Boolean;
+{$ENDIF}
 
 implementation
 uses
@@ -1481,7 +1481,7 @@ begin
     TmpImgList.Free;
   end;
 end;
-{$ENDIF}
+
 
 function IsHighContrastEnabled(): Boolean;
 var
@@ -1491,5 +1491,6 @@ begin
   Result := SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, @l, 0) and ((l.dwFlags and HCF_HIGHCONTRASTON) <> 0);
 end;
 
+{$ENDIF}
 
 end.
