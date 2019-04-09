@@ -31405,7 +31405,7 @@ begin
   ScrolledVertically := False;
   ScrolledHorizontally := False;
 
-  if Assigned(Node) and (Node <> FRoot) then
+  if Assigned(Node) and (Node <> FRoot) and HandleAllocated then // We don't want to create the handle if it has not yet been created, see issue #897
   begin
     // Make sure all parents of the node are expanded.
     Run := Node.Parent;
