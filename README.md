@@ -41,6 +41,10 @@ Remember to add also to uses clause unit VirtualTrees.FMX.
 If you install package for FMX you can not use installed package for VCL and vice-versa.
 I still look for the way to do this. 
 
+Sample view on Android :)
+
+![VT_Android](Screenshots/VT_Android_8_0.jpg)
+
 # Virtual-TreeView
 Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
 
