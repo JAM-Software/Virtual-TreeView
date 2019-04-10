@@ -692,7 +692,7 @@ type
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
     CheckType: TCheckType;   // indicates which check type shall be used for this node
-    Dummy: Byte;             // dummy value to fill DWORD boundary
+    Dummy: Byte;             // dummy value to fill DWORD boundary       TODO: Is this still necessary?
     TotalCount: Cardinal;    // sum of this node, all of its child nodes and their child nodes etc.
     TotalHeight: TDimension; // height in pixels this node covers on screen including the height of all of its
                              // children
@@ -1440,7 +1440,7 @@ type
     ['{2BE3EAFA-5ACB-45B4-9D9A-B58BCC496E17}']
     function BeginEdit: Boolean; stdcall;                  // Called when editing actually starts.
     function CancelEdit: Boolean; stdcall;                 // Called when editing has been cancelled by the tree.
-    function EndEdit: Boolean; stdcall;                    // Called when editing has been finished by the tree. Returns True if successful, False if edit mode is still active.
+    function EndEdit: Boolean; stdcall;                     // Called when editing has been finished by the tree. Returns True if successful, False if edit mode is still active.
     function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
                                                            // Called after creation to allow a setup.
 {$IFDEF VT_VCL}
@@ -20570,6 +20570,7 @@ begin
     if not (csDestroying in ComponentState) then
       FEditLink := nil;
   end;
+  SetFocus();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21043,6 +21044,7 @@ begin
       FOnEdited(Self, FFocusedNode, FEditColumn);
   end;
   DoStateChange([], [tsEditPending]);
+  SetFocus();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23884,7 +23886,7 @@ begin
     NewCheckState := DetermineNextCheckState(HitInfo.HitNode.CheckType, HitInfo.HitNode.CheckState);
     if (ssLeft in {$IFDEF VT_FMX}TShiftState(Word(Message.Keys)){$ELSE}KeysToShiftState(Message.Keys){$ENDIF}) and DoChecking(HitInfo.HitNode, NewCheckState) then
     begin
-      if Self.SelectedCount > 1 then
+      if (Self.SelectedCount > 1) and (Selected[HitInfo.HitNode]) then
         SetCheckStateForAll(NewCheckState, True)
       else
         DoCheckClick(HitInfo.HitNode, NewCheckState);
@@ -33424,7 +33426,7 @@ begin
   ScrolledVertically := False;
   ScrolledHorizontally := False;
 
-  if Assigned(Node) and (Node <> FRoot) then
+  if Assigned(Node) and (Node <> FRoot) and HandleAllocated then // We don't want to create the handle if it has not yet been created, see issue #897
   begin
     // Make sure all parents of the node are expanded.
     Run := Node.Parent;
@@ -34778,7 +34780,6 @@ begin
     VK_ESCAPE:
       begin
         Tree.DoCancelEdit;
-        Tree.SetFocus;
       end;
     VK_RETURN:
       begin
