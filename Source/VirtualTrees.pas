@@ -3283,6 +3283,7 @@ type
     function CalcMinHeight: Integer; virtual;
     procedure CreateParams(var Params: TCreateParams); override;
     function GetTextSize: TSize; virtual;
+    procedure KeyPress(var Key: Char); override;
   public
     constructor Create(Link: TStringEditLink); reintroduce;
 
@@ -32888,6 +32889,13 @@ begin
     SelectObject(DC, LastFont);
     ReleaseDC(Handle, DC);
   end;
+end;
+
+procedure TVTEdit.KeyPress(var Key: Char);
+begin
+  if (Key = #13) and not (vsMultiline in FLink.FNode.States) then
+    Key := #0; // Filter out return keys as they will be added to the text, avoids #895
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
