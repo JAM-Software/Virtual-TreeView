@@ -1,0 +1,89 @@
+object MainForm: TMainForm
+  Left = 0
+  Top = 0
+  Caption = 'Simple Virtual Treeview demo'
+  ClientHeight = 443
+  ClientWidth = 409
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object AddOneButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 128.000000000000000000
+    Position.Y = 352.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Add node(s) to root'
+    OnClick = AddOneButtonClick
+    Left = 96
+    Top = 350
+  end
+  object Button1: TButton
+    Tag = 1
+    Anchors = [akLeft, akBottom]
+    Position.X = 128.000000000000000000
+    Position.Y = 384.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Text = 'Add node(s) as children'
+    OnClick = AddOneButtonClick
+    Left = 96
+    Top = 378
+  end
+  object ClearButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 128.000000000000000000
+    Position.Y = 416.000000000000000000
+    Size.Width = 129.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Clear tree'
+    OnClick = ClearButtonClick
+    Left = 97
+    Top = 410
+  end
+  object CloseButton: TButton
+    Anchors = [akRight, akBottom]
+    Position.X = 328.000000000000000000
+    Position.Y = 416.000000000000000000
+    Size.Width = 75.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Close'
+    OnClick = CloseButtonClick
+    Left = 330
+    Top = 410
+  end
+  object Edit1: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akBottom]
+    TabOrder = 1
+    Text = '3'
+    Position.X = 24.000000000000000000
+    Position.Y = 352.000000000000000000
+    Size.Width = 81.000000000000000000
+    Size.Height = 21.000000000000000000
+    Size.PlatformDefault = False
+    Left = 8
+    Top = 366
+  end
+  object Label1: TLabel
+    Position.X = 8.000000000000000000
+    Position.Y = 320.000000000000000000
+    Size.Width = 116.000000000000000000
+    Size.Height = 13.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Last operation duration:'
+    TabOrder = 6
+    Left = 10
+    Top = 280
+  end
+end

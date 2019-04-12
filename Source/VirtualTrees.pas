@@ -34033,14 +34033,17 @@ begin
               // No animation necessary if the node is below the current client height.
               if R1.Top < ClientHeight then
               begin
+                {$IFDEF VT_FMX}
+                {$ELSE}
                 PrepareAnimation;
                 try
-                  Animate(Steps, FAnimationDuration, {$IFDEF VT_FMX}nil{$ELSE}ToggleCallback{$ENDIF}, @ToggleData);
+                  Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
                 finally
 {$IFDEF VT_VCL}
                   ReleaseDC(Window, DC);
 {$ENDIF}
                 end;
+                {$ENDIF}
               end;
             end;
           end;
@@ -34222,14 +34225,17 @@ begin
 
                   if ClientHeight >= R1.Top then
                   begin
+                    {$IFDEF VT_FMX}
+                    {$ELSE}
                     PrepareAnimation;
                     try
-                      Animate(Steps, FAnimationDuration, {$IFDEF VT_FMX}nil{$ELSE}ToggleCallback{$ENDIF}, @ToggleData);
+                      Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
                     finally
 {$IFDEF VT_VCL}
                       ReleaseDC(Window, DC);
 {$ENDIF}
                     end;
+                    {$ENDIF}
                   end;
                 end;
               end;
