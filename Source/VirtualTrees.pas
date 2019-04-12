@@ -32893,7 +32893,7 @@ end;
 
 procedure TVTEdit.KeyPress(var Key: Char);
 begin
-  if (Key = #13) and not (vsMultiline in FLink.FNode.States) then
+  if (Key = #13) and Assigned(FLink) and not (vsMultiline in FLink.FNode.States) then
     Key := #0; // Filter out return keys as they will be added to the text, avoids #895
   inherited;
 end;
