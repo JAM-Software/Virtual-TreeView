@@ -1,24 +1,22 @@
 Supported Delphi version: RAD Studio XE3 and higher
-Supported Windows Versions: Windows XP and higher
+Supported Windows Versions: Windows Vista and higher
 
-
-The former installer of V4 is no longer maintained, but installation is quite easy:
 Extract the entire(!) ZIP file and follow the instructions below.
-
 
 Delphi / RAD Studio XE3 and higher Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1. Open the project group "Packages\RAD Studio XE*\VirtualTreeView.groupproj"
+1. Open the project group "Packages\RAD Studio *\VirtualTreeView.groupproj"
 2. Right click on "VirtualTreesD*.bpl" and click "Install"
 3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
-   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
-	 Do this for both Win32 and Win64 platform, which you can choose in the dropdown box.
+   Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK"
+   Do this for both Win32 and Win64 platform, which you can choose in the dropdown box.
 4. C++ Builder users only:
-   Go to "Tools > Options > Environment Options > C++ Options > Paths and Directories" 
+   In the Options dialog go to "Environment Options > C++ Options > Paths and Directories" 
    a) Click "Library Path > [...]"                                                      
       Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK"
    b) Click "System Include path > [...]"                                                      
-      Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK""
+      Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", 
+5. Close the RAD Studio Options dialog by clicking "OK" / Save".
 
 
 Troubleshooting
@@ -34,6 +32,7 @@ I recommand using UltraSearch for this task: http://www.jam-software.de/ultrasea
   
 Please send comments and suggestions regarding the packages and the install
 instructions to joachim.marder@gmail.com or open an issue.
+
 
 C++ Builder XE3 and higher Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
