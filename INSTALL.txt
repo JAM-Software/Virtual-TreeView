@@ -12,6 +12,7 @@ Delphi / RAD Studio XE3 and higher Installation
 2. Right click on "VirtualTreesD*.bpl" and click "Install"
 3. Go to "Tools > Options > Environment Options > Delphi Options > Library > Library Path > [...]"
    Browse to the "Source" folder of VirtualTreeView, press "OK", "Add", "OK", "OK"
+	 Do this for both Win32 and Win64 platform, which you can choose in the dropdown box.
 4. C++ Builder users only:
    Go to "Tools > Options > Environment Options > C++ Options > Paths and Directories" 
    a) Click "Library Path > [...]"                                                      
