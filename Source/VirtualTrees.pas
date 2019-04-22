@@ -32791,12 +32791,17 @@ begin
         if Tree.IsEditing then
         begin
           Tree.InvalidateNode(FLink.FNode);
-          NextNode := Tree.GetNextVisible(FLink.FNode, True);
+          if ssShift in KeyDataToShiftState(Message.KeyData) then
+            NextNode := Tree.GetPreviousVisible(FLink.FNode, True) // Shift+Tab goes to previous mode
+          else
+            NextNode := Tree.GetNextVisible(FLink.FNode, True);
           Tree.EndEditNode;
           // check NextNode, otherwise we got AV
           if NextNode <> nil then
           begin
-            Tree.FocusedNode := NextNode;
+            // Continue editing next node 
+            ClearSelection;
+            Tree.Selected[NextNode] := True;
             if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
               Tree.DoEdit;
           end;
