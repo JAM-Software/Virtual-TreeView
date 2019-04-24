@@ -37,7 +37,7 @@ Current VT is derived from TRectangle.
 Will be good to have it as presented control with appropiate TDataModel. 
 This will bring more possibilities like have e.g. 2 tree on the form based on same data.
 One will be i scale 1 second smaller in scale e.g 0.2 as a preview.
-
+#### IMPORTANT. 
 To test FMX port of VT - you must add in the e.g. Delphi project->Options->Conditional defines
 **VT_FMX**. There is only package for Delphi Tokyo (but you can test it from the code).
 Remember to add also to uses clause unit VirtualTrees.FMX.
