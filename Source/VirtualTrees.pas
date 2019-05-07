@@ -19238,7 +19238,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoCancelEdit: Boolean;
+function TBaseVirtualTree.DoCancelEdit(): Boolean;
 
 // Called when the current edit action or a pending edit must be cancelled.
 
@@ -19253,8 +19253,8 @@ begin
       FOnEditCancelled(Self, FEditColumn);
     if not (csDestroying in ComponentState) then
       FEditLink := nil;
+    SetFocus();
   end;
-  SetFocus();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
