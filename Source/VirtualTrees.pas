@@ -10744,6 +10744,11 @@ begin
   Start := Treeview.ScreenToClient(Start);
   Inc(Start.Y, FHeight);
   FColumns.FDragIndex := FColumns.ColumnFromPosition(Start);
+
+  // here ColumnFromPosition() could return an invalid column
+  if FColumns.FDragIndex < 0 then
+    exit;
+
   DragColumn := FColumns[FColumns.FDragIndex];
 
   Image := TBitmap.Create;
