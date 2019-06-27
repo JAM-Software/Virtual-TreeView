@@ -10414,7 +10414,11 @@ begin
         if Message.Msg = WM_LBUTTONDOWN then
           // Coordinates are already client area based.
           with TWMLButtonDown(Message) do
-            P := Point(XPos, YPos)
+          begin
+            P := Point(XPos, YPos);
+            // #909
+            FDragStart := Treeview.ClientToScreen(p);
+          end
         else
           with TWMNCLButtonDown(Message) do
           begin
@@ -17156,6 +17160,9 @@ begin
     // Call inherited after doing our standard handling, as the event handler may close the form or re-fill the control, so our clicked node would be no longer valid.
     // Our standard handling does not do that.
     inherited;
+    // #909
+    // if we show a modal form in the HandleMouseDblClick(), the mouse capture wont be released
+      if csCaptureMouse in ControlStyle then MouseCapture := False;
   finally
     DoStateChange([], [tsLeftDblClick]);
   end;
@@ -22112,7 +22119,7 @@ begin
       DoColumnDblClick(HitInfo.HitColumn, KeysToShiftState(Message.Keys));
 
       if HitInfo.HitNode <> nil then
-      DoNodeDblClick(HitInfo);
+        DoNodeDblClick(HitInfo);
 
     Node := nil;
     if (hiOnItem in HitInfo.HitPositions) and (HitInfo.HitColumn > NoColumn) and
