@@ -1332,6 +1332,7 @@ type
     FDoingAutoFitColumns: boolean;     // Flag to avoid using the stored width for Main column
 
     procedure FontChanged(Sender: TObject); virtual;
+    procedure AutoScale(); virtual;
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
     procedure ChangeScale(M, D: TDimension); virtual;
@@ -9445,6 +9446,12 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.FontChanged(Sender: TObject);
+begin
+  inherited;
+  AutoScale();
+end;
+
+procedure TVTHeader.AutoScale();
 var
   I: Integer;
   lMaxHeight: Integer;
@@ -9468,7 +9475,6 @@ begin
     // Set the calculated size
     Self.SetHeight(lMaxHeight);
   end;
-  Invalidate(nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -9790,6 +9796,7 @@ begin
   begin
     Self.FColumns[I].Width := MulDiv(Self.FColumns[I].Width, M, D);
   end;//for I
+  AutoScale();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
