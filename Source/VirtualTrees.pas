@@ -5484,6 +5484,7 @@ begin
       begin
         if Tree.VclStyleEnabled  then
         begin
+          InflateRect(R, -1, -1); // Fixes missing border when VCL styles are used
           LDetails := StyleServices.GetElementDetails(thHintNormal);
           if StyleServices.GetElementColor(LDetails, ecGradientColor1, LColor) and (LColor <> clNone) then
             LGradientStart := LColor
@@ -20854,7 +20855,7 @@ begin
           // New cache entry to set up.
           with FPositionCache[Index] do
           begin
-            Node := CurrentNode; // EAccessViolation seen here in TreeSize V4.3.1
+            Node := CurrentNode; // 2 EAccessViolation seen here in TreeSize V4.3.1 (Write of address 00000000)
             AbsoluteTop := CurrentTop;
           end;
           Inc(Index);
