@@ -9167,7 +9167,8 @@ var
             else
               Glyph := thHeaderSortArrowSortedDown;
             Details := StyleServices.GetElementDetails(Glyph);
-            StyleServices.DrawElement(TargetCanvas.Handle, Details, Pos, @Pos);
+            if not StyleServices.DrawElement(TargetCanvas.Handle, Details, Pos, @Pos) then
+              PaintInfo.DrawSortArrow(FHeader.FSortDirection);
           end
           else
           begin
