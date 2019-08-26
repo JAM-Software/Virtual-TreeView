@@ -21826,7 +21826,7 @@ begin
     FCurrentHotNode := HitInfo.HitNode;
   if (FCurrentHotNode <> oldHotNode) or (HitInfo.HitColumn <> FCurrentHotColumn) then
   begin
-    DoInvalidate := (toHotTrack in FOptions.PaintOptions) or (toCheckSupport in FOptions.FMiscOptions);
+    DoInvalidate := (toHotTrack in FOptions.PaintOptions) or (toCheckSupport in FOptions.FMiscOptions) or (oldHotNode <> FCurrentHotNode);
     DoHotChange(oldHotNode, HitInfo.HitNode);
     if Assigned(oldHotNode) and DoInvalidate then
       InvalidateNode(oldHotNode);
@@ -21834,7 +21834,7 @@ begin
   end;
 
     ButtonIsHit := (hiOnItemButtonExact in HitInfo.HitPositions);
-  if Assigned(HitInfo.HitNode) and ((FHotNodeButtonHit <> ButtonIsHit) or DoInvalidate) then
+  if Assigned(HitInfo.HitNode) and ((FHotNodeButtonHit <> ButtonIsHit) or (FCurrentHotNode <> oldHotNode) or DoInvalidate) then
   begin
     FHotNodeButtonHit := ButtonIsHit;
     InvalidateNode(HitInfo.HitNode);
@@ -21842,10 +21842,6 @@ begin
   else
     if not Assigned(HitInfo.HitNode) then
       FHotNodeButtonHit := False;
-
-  if (oldHotNode <> FCurrentHotNode) and (oldHotNode <> nil) then
-    InvalidateNode(oldHotNode);
-
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
