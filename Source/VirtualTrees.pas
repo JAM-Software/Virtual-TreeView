@@ -18271,7 +18271,13 @@ procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirt
 begin
   //TODO: If this works reliable, move to TWorkerThread
   if (Self.HandleAllocated) then
-    TThread.Synchronize(nil, procedure begin DoStateChange(EnterStates, LeaveStates) end);
+    TThread.Synchronize(nil, procedure
+      begin
+        // Prevent invalid combination tsUseCache + tsValidationNeeded (#915)
+        if not ((tsUseCache in EnterStates) and (tsValidationNeeded in FStates + LeaveStates)) then
+          DoStateChange(EnterStates, LeaveStates)
+      end);
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20636,6 +20642,7 @@ begin
       FOnStateChange(Self, Enter, Leave);
   end;
   FStates := FStates + Enter - Leave;
+  Assert(FStates * [tsUseCache, tsValidationNeeded] <> [tsUseCache, tsValidationNeeded], 'Invalid state. tsUseCache and tsValidationNeeded are mutually exclusive and must not be set at the same time');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
