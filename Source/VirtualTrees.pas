@@ -5599,7 +5599,6 @@ begin
 
           GetTextMetrics(Canvas.Handle, TM);
           FTextHeight := TM.tmHeight;
-          LineBreakStyle := hlbDefault;
 
           if Length(HintText) = 0 then
             Result := Rect(0, 0, 0, 0)
@@ -15678,7 +15677,6 @@ var
   IsFocusedOrEditing: Boolean;
   ParentForm: TCustomForm;
   BottomRightCellContentMargin: TPoint;
-  DummyLineBreakStyle: TVTTooltipLineBreakStyle;
   HintKind: TVTHintKind;
 begin
   with Message do
@@ -15732,9 +15730,9 @@ begin
         if Assigned(HitInfo.HitNode) and (HitInfo.HitColumn > InvalidColumn) then
         begin
           if HintMode = hmToolTip then
-            HintStr := DoGetNodeToolTip(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle)
+            HintStr := DoGetNodeToolTip(HitInfo.HitNode, HitInfo.HitColumn, fHintData.LineBreakStyle)
           else
-            HintStr := DoGetNodeHint(HitInfo.HitNode, HitInfo.HitColumn, DummyLineBreakStyle);
+            HintStr := DoGetNodeHint(HitInfo.HitNode, HitInfo.HitColumn, fHintData.LineBreakStyle);
         end;
 
         // First check whether there is a header hint to show.
