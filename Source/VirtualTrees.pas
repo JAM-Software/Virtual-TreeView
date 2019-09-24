@@ -1013,6 +1013,7 @@ type
     FHasImage: Boolean;
     FDefaultSortDirection: TSortDirection;
     function GetCaptionAlignment: TAlignment;
+    function GetCaptionWidth: TDimension;
     function GetLeft: TDimension;
     function IsBiDiModeStored: Boolean;
     function IsCaptionAlignmentStored: Boolean;
@@ -1070,6 +1071,7 @@ type
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode stored IsBiDiModeStored;
     property CaptionAlignment: TAlignment read GetCaptionAlignment write SetCaptionAlignment
       stored IsCaptionAlignmentStored default taLeftJustify;
+    property CaptionWidth: TDimension read GetCaptionWidth;
     property CheckType: TCheckType read FCheckType write SetCheckType default ctCheckBox;
     property CheckState: TCheckState read FCheckState write SetCheckState default csUncheckedNormal;
     property CheckBox: Boolean read FCheckBox write SetCheckBox default False;
@@ -1244,7 +1246,8 @@ type
     hoHeightDblClickResize,  // Allow the header to resize itself to its default height.
     hoHeaderClickAutoSort,    // Clicks on the header will make the clicked column the SortColumn or toggle sort direction if
                              // it already was the sort column
-    hoAutoColumnPopupMenu    // Show a context menu for activating and deactivating columns on right click
+    hoAutoColumnPopupMenu,   // Show a context menu for activating and deactivating columns on right click
+    hoAutoResizeInclCaption  // Includes the header caption for the auto resizing
   );
   TVTHeaderOptions = set of TVTHeaderOption;
 
@@ -6504,6 +6507,107 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVirtualTreeColumn.GetCaptionWidth: TDimension;
+var
+  Theme: HTHEME;
+  AdvancedOwnerDraw: Boolean;
+  PaintInfo: THeaderPaintInfo;
+  RequestedElements: THeaderPaintElements;
+
+  TextSize: TSize;
+  HeaderGlyphSize: TPoint;
+  UseText: Boolean;
+  R: TRect;
+begin
+  AdvancedOwnerDraw := (hoOwnerDraw in Owner.FHeader.FOptions) and Assigned(Owner.FHeader.Treeview.FOnAdvancedHeaderDraw) and Assigned(Owner.FHeader.Treeview.FOnHeaderDrawQueryElements) and
+    not(csDesigning in Owner.FHeader.Treeview.ComponentState);
+
+  PaintInfo.Column := Self;
+  PaintInfo.TargetCanvas := Owner.FHeaderBitmap.Canvas;
+
+  with PaintInfo, Column do
+    begin
+      ShowHeaderGlyph := (hoShowImages in Owner.FHeader.FOptions) and ((Assigned(Owner.FHeader.FImages) and (FImageIndex > -1)) or FCheckBox);
+      ShowSortGlyph := ((Owner.FHeader.FSortColumn > -1) and (Self = Owner.Items[Owner.FHeader.FSortColumn])) and (hoShowSortGlyphs in Owner.FHeader.FOptions);
+
+      // This path for text columns or advanced owner draw.
+      // See if the application wants to draw part of the header itself.
+      RequestedElements := [];
+      if AdvancedOwnerDraw then
+        begin
+          PaintInfo.Column := Self;
+          Owner.FHeader.Treeview.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
+        end;
+    end;
+
+  UseText := Length(FText) > 0;
+  // If nothing is to show then don't waste time with useless preparation.
+  if not(UseText or PaintInfo.ShowHeaderGlyph or PaintInfo.ShowSortGlyph) then
+    Exit(0);
+
+  // Calculate sizes of the involved items.
+  with Owner, Header do
+    begin
+      if PaintInfo.ShowHeaderGlyph then
+        if not FCheckBox then
+          begin
+            if Assigned(FImages) then
+              HeaderGlyphSize := Point(FImages.Width, FImages.Height);
+          end
+        else
+          with Self.Owner.Header.Treeview do
+            begin
+              if Assigned(FCheckImages) then
+                HeaderGlyphSize := Point(FCheckImages.Width, FCheckImages.Height);
+            end
+      else
+        HeaderGlyphSize := Point(0, 0);
+      if PaintInfo.ShowSortGlyph then
+        begin
+          if tsUseExplorerTheme in FHeader.Treeview.FStates then
+            begin
+              R := Rect(0, 0, 100, 100);
+              Theme := OpenThemeData(FHeader.Treeview.Handle, 'HEADER');
+              GetThemePartSize(Theme, PaintInfo.TargetCanvas.Handle, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, PaintInfo.SortGlyphSize);
+              CloseThemeData(Theme);
+            end
+          else
+            begin
+              PaintInfo.SortGlyphSize.cx := Header.Treeview.ScaledPixels(16);
+              PaintInfo.SortGlyphSize.cy := Header.Treeview.ScaledPixels(4);
+            end;
+        end
+      else
+        begin
+          PaintInfo.SortGlyphSize.cx := 0;
+          PaintInfo.SortGlyphSize.cy := 0;
+        end;
+    end;
+
+  if UseText then
+    begin
+      GetTextExtentPoint32W(PaintInfo.TargetCanvas.Handle, PWideChar(FText), Length(FText), TextSize);
+      Inc(TextSize.cx, 2);
+    end
+  else
+    begin
+      TextSize.cx := 0;
+      TextSize.cy := 0;
+    end;
+
+  // if CalculateTextRect then
+  Result := TextSize.cx;
+  if PaintInfo.ShowHeaderGlyph then
+    if Layout in [blGlyphLeft, blGlyphRight] then
+      Inc(Result, HeaderGlyphSize.X + FSpacing)
+    else // if Layout in [ blGlyphTop, blGlyphBottom] then
+      Result := Max(Result, HeaderGlyphSize.X);
+  if PaintInfo.ShowSortGlyph then
+    Inc(Result, PaintInfo.SortGlyphSize.cx + FSpacing + 2); // without this +2, there is a slight movement of the sort glyph when expanding the column
+
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualTreeColumn.GetLeft: Integer;
 
 begin
@@ -8040,7 +8144,7 @@ begin
         TVTHeaderPopupMenu(fColumnPopupMenu).OnAddHeaderPopupItem := HeaderPopupMenuAddHeaderPopupItem;
         TVTHeaderPopupMenu(fColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
         fColumnPopupMenu.PopupComponent := Header.Treeview;
-        if (hoDblClickResize in Header.Options) and (Header.Treeview.ChildCount[nil] > 0) then
+        if (hoDblClickResize in Header.Options) and ((Header.Treeview.ChildCount[nil] > 0) or (hoAutoResizeInclCaption in Header.Options)) then
           TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options + [poResizeToFitItem]
         else
           TVTHeaderPopupMenu(fColumnPopupMenu).Options := TVTHeaderPopupMenu(fColumnPopupMenu).Options - [poResizeToFitItem];
@@ -27722,6 +27826,9 @@ begin
       LastNode := GetNextVisible(BottomNode)
     else
       LastNode := nil;
+
+    if hoAutoResizeInclCaption in FHeader.Options then
+      Result := Result + (2 * Header.Columns[Column].FMargin + Header.Columns[Column].CaptionWidth + 2);
 
     while Assigned(Run) and not OperationCanceled do
     begin
