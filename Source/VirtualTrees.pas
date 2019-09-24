@@ -27828,7 +27828,7 @@ begin
       LastNode := nil;
 
     if hoAutoResizeInclCaption in FHeader.Options then
-      Result := Result + (2 * Header.Columns[Column].FMargin + Header.Columns[Column].CaptionWidth + 2); // not sure where this +2 is coming from
+      Result := Result + (2 * Header.Columns[Column].FMargin + Header.Columns[Column].CaptionWidth + 2);
 
     while Assigned(Run) and not OperationCanceled do
     begin
