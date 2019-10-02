@@ -22270,7 +22270,7 @@ begin
         NewCheckState := DetermineNextCheckState(HitInfo.HitNode.CheckType, HitInfo.HitNode.CheckState);
         if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
         begin
-          SetCheckState(HitInfo.HitNode, NewCheckState);
+          SetCheckStateForAll(NewCheckState, True);
           MayEdit := False;
         end;
       end// if hiOnItemCheckBox
