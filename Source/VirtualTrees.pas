@@ -13363,12 +13363,15 @@ var
   i: Integer;
 begin
   SetLEngth(Result, Self.SelectedCount);
+  i := 0;
   lItem := Self.GetFirstSelected;
-  for i := 0 to SelectedCount - 1 do
+  while Assigned(lItem) do
   begin
     Result[i] := Self.GetNodeData<T>(lItem);
     lItem := Self.GetNextSelected(lItem);
+    Inc(i);
   end;
+  SetLength(Result, i); // See issue #927, SelectedCount may not yet be updated.
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
