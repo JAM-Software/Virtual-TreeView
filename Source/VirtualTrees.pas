@@ -15860,6 +15860,12 @@ begin
           if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) then
           begin
             HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
+            if HintStr = '' then
+              with FHeader.FColumns[HitInfo.HitColumn] do
+              begin
+                if (2 * FMargin + CaptionWidth + 1) >= Width then
+                  HintStr := FCaptionText;
+              end;
             if HintStr <> '' then
               ShowOwnHint := True
             else
