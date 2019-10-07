@@ -4324,6 +4324,8 @@ var
 
   //--------------- end local functions ---------------------------------------
 
+const
+  cDefaultCheckboxSize = 13;// Used when no other value is available
 var
   I: Integer;
   lSize: TSize;
@@ -4345,8 +4347,13 @@ begin
       end
       else
         Res := StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize);
-    if not Res then
+    if not Res then begin
       lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
+      if lSize.cx = 0 then begin
+        lSize.cx := ScaledPixels(cDefaultCheckboxSize);
+        lSize.cy := lSize.cx;
+      end;// if
+    end;//if
 
     Result := TImageList.CreateSize(lSize.cx, lSize.cy);
     with Result do
@@ -20069,7 +20076,7 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 const
   cTVTImageKind2String: Array [TVTImageKind] of string = ('ikNormal', 'ikSelected', 'ikState', 'ikOverlay');
 begin
-  if Kind = ikState then
+  if (Kind = ikState) and Assigned(StateImages) then
     Result := Self.StateImages
   else
     Result := Self.Images;
