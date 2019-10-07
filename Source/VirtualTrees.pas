@@ -4349,8 +4349,8 @@ begin
         Res := StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize);
     if not Res then begin
       lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
-      if lSize.cx = 0 then begin
-        lSize.cx := ScaledPixels(cDefaultCheckboxSize);
+      if lSize.cx = 0 then begin // error? (Should happen rarely only)
+        lSize.cx := MulDiv(cDefaultCheckboxSize, Screen.PixelsPerInch, USER_DEFAULT_SCREEN_DPI);
         lSize.cy := lSize.cx;
       end;// if
     end;//if
