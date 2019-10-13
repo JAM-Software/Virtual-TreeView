@@ -23876,7 +23876,7 @@ begin
         end;//if
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
         StyleServices.DrawElement(Canvas.Handle, Details, R);
-        //Canvas.Refresh; // Why is this needed?
+        Canvas.Refresh; // Every time you give a Canvas.Handle away to some other code you can't control you have to call Canvas.Refresh afterwards because the Canvas object and the HDC can be out of sync.
       end;
       if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
         Canvas.Pen.Color := clGray;
