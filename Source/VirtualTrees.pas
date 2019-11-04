@@ -86,7 +86,7 @@ type
 {$ENDIF}
 
 const
-  VTVersion = '7.2.1';
+  VTVersion = '7.3.0';
 
 const
   VTTreeStreamVersion = 3;
