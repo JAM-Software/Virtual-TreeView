@@ -25320,8 +25320,10 @@ begin
   FHeaderRect := Rect(0, 0, Width, Height);
 
   // Consider borders...
-  Size := GetBorderDimensions;
-  InflateRect(FHeaderRect, Size.cx, Size.cy);
+  if HandleAllocated then begin // Prevent preliminary creation of window handle, see issue #933
+    Size := GetBorderDimensions();
+    InflateRect(FHeaderRect, Size.cx, Size.cy);
+  end;
 
   // ... and bevels.
   OffsetX := BorderWidth;
