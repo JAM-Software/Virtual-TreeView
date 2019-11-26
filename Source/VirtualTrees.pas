@@ -2576,7 +2576,7 @@ type
     procedure DoColumnClick(Column: TColumnIndex; Shift: TShiftState); virtual;
     procedure DoColumnDblClick(Column: TColumnIndex; Shift: TShiftState); virtual;
     procedure DoColumnResize(Column: TColumnIndex); virtual;
-    procedure DoColumnVisibilityChanged(const Column: TColumnIndex; Visible: Boolean);
+    procedure DoColumnVisibilityChanged(const Column: TColumnIndex; Visible: Boolean); virtual;
     function DoCompare(Node1, Node2: PVirtualNode; Column: TColumnIndex): Integer; virtual;
     function DoCreateDataObject: IDataObject; virtual;
     function DoCreateDragManager: IVTDragManager; virtual;
