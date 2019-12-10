@@ -86,7 +86,7 @@ type
 {$ENDIF}
 
 const
-  VTVersion = '7.2.1';
+  VTVersion = '7.3.0';
 
 const
   VTTreeStreamVersion = 3;
@@ -1355,7 +1355,7 @@ type
     function DoHeightTracking(var P: TPoint; Shift: TShiftState): Boolean; virtual;
     function DoHeightDblClickResize(var P: TPoint; Shift: TShiftState): Boolean; virtual;
     procedure DoSetSortColumn(Value: TColumnIndex; pSortDirection: TSortDirection); virtual;
-    procedure DragTo(P: TPoint);
+    procedure DragTo(P: TPoint); virtual;
     procedure FixedAreaConstraintsChanged(Sender: TObject);
     function GetColumnsClass: TVirtualTreeColumnsClass; virtual;
     function GetOwner: TPersistent; override;
@@ -2576,7 +2576,7 @@ type
     procedure DoColumnClick(Column: TColumnIndex; Shift: TShiftState); virtual;
     procedure DoColumnDblClick(Column: TColumnIndex; Shift: TShiftState); virtual;
     procedure DoColumnResize(Column: TColumnIndex); virtual;
-    procedure DoColumnVisibilityChanged(const Column: TColumnIndex; Visible: Boolean);
+    procedure DoColumnVisibilityChanged(const Column: TColumnIndex; Visible: Boolean); virtual;
     function DoCompare(Node1, Node2: PVirtualNode; Column: TColumnIndex): Integer; virtual;
     function DoCreateDataObject: IDataObject; virtual;
     function DoCreateDragManager: IVTDragManager; virtual;
@@ -15867,6 +15867,12 @@ begin
           if (HitInfo.HitColumn > NoColumn) and not (csLButtonDown in ControlState) then
           begin
             HintStr := FHeader.FColumns[HitInfo.HitColumn].FHint;
+            if HintStr = '' then
+              with FHeader.FColumns[HitInfo.HitColumn] do
+              begin
+                if (2 * FMargin + CaptionWidth + 1) >= Width then
+                  HintStr := FCaptionText;
+              end;
             if HintStr <> '' then
               ShowOwnHint := True
             else
@@ -23870,7 +23876,7 @@ begin
         end;//if
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
         StyleServices.DrawElement(Canvas.Handle, Details, R);
-        //Canvas.Refresh; // Why is this needed?
+        Canvas.Refresh; // Every time you give a Canvas.Handle away to some other code you can't control you have to call Canvas.Refresh afterwards because the Canvas object and the HDC can be out of sync.
       end;
       if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
         Canvas.Pen.Color := clGray;
@@ -25299,7 +25305,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.UpdateHeaderRect;
+procedure TBaseVirtualTree.UpdateHeaderRect();
 
 // Calculates the rectangle the header occupies in non-client area.
 // These coordinates are in window rectangle.
@@ -25314,8 +25320,10 @@ begin
   FHeaderRect := Rect(0, 0, Width, Height);
 
   // Consider borders...
-  Size := GetBorderDimensions;
-  InflateRect(FHeaderRect, Size.cx, Size.cy);
+  if HandleAllocated then begin // Prevent preliminary creation of window handle, see issue #933
+    Size := GetBorderDimensions();
+    InflateRect(FHeaderRect, Size.cx, Size.cy);
+  end;
 
   // ... and bevels.
   OffsetX := BorderWidth;
