@@ -11837,7 +11837,7 @@ begin
           if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemHot), ecTextColor, Result) then
             Result := StyleServices.GetSystemColor(FColors[Index]);
         cHeaderHotColor:
-          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemNormal), ecTextColor, Result) then
+          if not StyleServices.GetElementColor(StyleServices.GetElementDetails(thHeaderItemHot), ecTextColor, Result) then
             Result := StyleServices.GetSystemColor(FColors[Index]);
         cSelectionTextColor:
           if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemSelected), ecTextColor, Result) then
@@ -20981,7 +20981,7 @@ begin
           // New cache entry to set up.
           with FPositionCache[Index] do
           begin
-            Node := CurrentNode; // 2 EAccessViolation seen here in TreeSize V4.3.1 (Write of address 00000000)
+            Node := CurrentNode; // 2 EAccessViolation seen here in TreeSize V4.3.1, 1 in V4.4.0 (Write of address 00000000)
             AbsoluteTop := CurrentTop;
           end;
           Inc(Index);
