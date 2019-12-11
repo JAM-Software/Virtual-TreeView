@@ -32015,7 +32015,15 @@ var
     begin
       Window := Handle;
       DC := GetDC(Handle);
-      Self.Brush.Color := FColors.BackGroundColor;
+      
+      if (toShowBackground in FOptions.FPaintOptions) and Assigned(FBackground.Graphic) then
+        Self.Brush.Style := bsClear
+      else
+      begin
+        Self.Brush.Style := bsSolid;
+        Self.Brush.Color := FColors.BackGroundColor;
+      end;  
+
       Brush := Self.Brush.Handle;
 
       if (Mode1 <> tamNoScroll) and (Mode2 <> tamNoScroll) then
