@@ -1048,6 +1048,7 @@ type
     function GetOwner: TVirtualTreeColumns; reintroduce;
     procedure ReadHint(Reader: TReader);
     procedure ReadText(Reader: TReader);
+    procedure SetCollection(Value: TCollection); override;
     property HasImage: Boolean read FHasImage;
     property ImageRect: TRect read FImageRect;
   public
@@ -6436,9 +6437,16 @@ begin
 
   inherited Create(Collection);
 
-  FWidth := Owner.FDefaultWidth;
-  FLastWidth := Owner.FDefaultWidth;
-  FPosition := Owner.Count - 1;
+  if Assigned(Owner) then begin
+    FWidth := Owner.FDefaultWidth;
+    FLastWidth := Owner.FDefaultWidth;
+    FPosition := Owner.Count - 1;
+  end;
+end;
+
+procedure TVirtualTreeColumn.SetCollection(Value: TCollection);
+begin
+  inherited;
   // Read parent bidi mode and color values as default values.
   ParentBiDiModeChanged;
   ParentColorChanged;
@@ -10320,7 +10328,7 @@ begin
             begin
               NewWidth := FTrackPoint.X - XPos;
               NextColumn := FColumns.GetPreviousVisibleColumn(FColumns.FTrackIndex);
-          end
+            end
             else
             begin
               NewWidth := XPos - FTrackPoint.X;
