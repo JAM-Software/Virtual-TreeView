@@ -20923,7 +20923,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoValidateCache: Boolean;
+function TBaseVirtualTree.DoValidateCache(): Boolean;
 
 // This method fills the cache, which is used to speed up searching for nodes.
 // The strategy is simple: Take the current number of visible nodes and distribute evenly a number of marks
@@ -20980,8 +20980,8 @@ begin
       while not (tsStopValidation in FStates) do
       begin
         // If the cache is full then stop the loop.
-        if (Integer(Index) > Length(FPositionCache)) then    // ADDED: 17.09.2013 - Veit Zimmermann
-          Break;                                             // ADDED: 17.09.2013 - Veit Zimmermann
+        if (Integer(Index) >= Length(FPositionCache)) then
+          Break;
         if (EntryCount mod CacheThreshold) = 0 then
         begin
           // New cache entry to set up.
