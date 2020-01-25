@@ -11840,7 +11840,9 @@ begin
             Result := StyleServices.GetSystemColor(FColors[Index]);
         cBorderColor:
           if (seBorder in FOwner.StyleElements) then
-            Result := StyleServices.GetSystemColor(FColors[Index]);
+            Result := StyleServices.GetSystemColor(FColors[Index])
+          else
+            Result := FColors[Index];
         cHotColor:
           if not StyleServices.GetElementColor(StyleServices.GetElementDetails(ttItemHot), ecTextColor, Result) then
             Result := StyleServices.GetSystemColor(FColors[Index]);
