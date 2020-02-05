@@ -54,7 +54,9 @@ type
   end;
 
   TVirtualTreeItemAccessibility = class(TVirtualTreeAccessibility, IAccessible)
-    public
+  private
+      FLevel: Integer;
+  public
     { IAccessibility }
     function Get_accParent(out ppdispParent: IDispatch): HResult; stdcall;
     function Get_accChildCount(out pcountChildren: Integer): HResult; stdcall;
@@ -665,7 +667,8 @@ begin
     if FVirtualTree <> nil then
       if FVirtualTree.FocusedNode <> nil then
       begin
-        PSZValue := IntToStr(FVirtualTree.GetNodeLevel(FVirtualTree.FocusedNode));
+        Inc(FLevel);
+        PSZValue := IntToStr(FLevel);
         result := S_OK;
       end;
 end;
