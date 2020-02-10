@@ -56,7 +56,7 @@ procedure SetStatusbarText(const S: string);
 implementation
 
 uses
-  CommCtrl,
+  CommCtrl, VirtualTrees.Accessibility,
   SpeedDemo, GeneralAbilitiesDemo, DrawTreeDemo, PropertiesDemo,
   GridDemo, VisibilityDemo, AlignDemo, WindowsXPStyleDemo, MultilineDemo, HeaderCustomDrawDemo,
   States;
