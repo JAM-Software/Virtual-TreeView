@@ -72,6 +72,7 @@ interface
   {$HPPEMIT '#pragma comment(lib, "VirtualTreesR")'}
 {$endif}
 {$HPPEMIT '#pragma comment(lib, "Shell32")'}
+{$HPPEMIT '#pragma link "VirtualTrees.Accessibility"'}
 
 uses
   Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
