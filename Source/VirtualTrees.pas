@@ -23129,11 +23129,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.InternalClearSelection;
+procedure TBaseVirtualTree.InternalClearSelection();
 
 var
   Count: Integer;
-
+  lNode: PVirtualNode;
 begin
   // It is possible that there are invalid node references in the selection array
   // if the tree update is locked and changes in the structure were made.
@@ -23151,11 +23151,12 @@ begin
   while FSelectionCount > 0 do
   begin
     Dec(FSelectionCount);
+    lNode := FSelection[FSelectionCount];
     //sync path note: deselect when click on another or on outside area
-    Exclude(FSelection[FSelectionCount].States, vsSelected);
-    if SyncCheckstateWithSelection[FSelection[FSelectionCount]] then
-      checkstate[FSelection[FSelectionCount]] := csUncheckedNormal;
-    DoRemoveFromSelection(FSelection[FSelectionCount]);
+    Exclude(lNode.States, vsSelected);
+    if SyncCheckstateWithSelection[lNode] then
+      CheckState[lNode] := csUncheckedNormal;
+    DoRemoveFromSelection(lNode);
   end;
   ResetRangeAnchor;
   FSelection := nil;
