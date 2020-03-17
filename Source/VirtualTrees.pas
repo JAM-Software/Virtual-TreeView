@@ -21516,10 +21516,14 @@ begin
   begin
     if (SelectedCount = 0) and not SelectionLocked then
     begin
-      if Assigned(FNextNodeToSelect) then
-        Selected[FNextNodeToSelect] := True
-      else
-        Selected[GetFirstVisible] := True;
+      if not Assigned(FNextNodeToSelect) then
+      begin
+        FNextNodeToSelect := GetFirstVisible;
+        // Avoid selecting a disabled node, see #954
+        while Assigned(FNextNodeToSelect) and IsDisabled[FNextNodeToSelect] do
+          FNextNodeToSelect := GetNextVisible(FNextNodeToSelect);
+      end;
+      Selected[FNextNodeToSelect] := True;
       Self.ScrollIntoView(Self.GetFirstSelected, False);
     end;// if nothing selected
     EnsureNodeFocused();
