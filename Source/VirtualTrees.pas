@@ -1,4 +1,3 @@
-
 unit VirtualTrees;
 
 // The contents of this file are subject to the Mozilla Public License
@@ -22857,7 +22856,9 @@ begin
             and (Parent <> FRoot)
         then
           SetCheckState(Node, Node.Parent.CheckState);
-      end;
+      end
+      else if (toSyncCheckboxesWithSelection in TreeOptions.SelectionOptions) then
+        Node.CheckType := TCheckType.ctCheckBox;
 
       if ivsDisabled in InitStates then
         Include(States, vsDisabled);
