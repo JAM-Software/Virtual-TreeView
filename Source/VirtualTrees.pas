@@ -23417,7 +23417,7 @@ begin
     //sync path note: deselect when overlapping drawselection is made
     Exclude(Node.States, vsSelected);
     if SyncCheckstateWithSelection[Node] then
-      checkstate[Node] := csUncheckedNormal;
+      Node.CheckState := csUncheckedNormal; // Avoid using SetCheckState() as it handles toSyncCheckboxesWithSelection as well.
     Inc(PAnsiChar(FSelection[Index]));
     DoRemoveFromSelection(Node);
     AdviseChangeEvent(False, Node, crIgnore);
