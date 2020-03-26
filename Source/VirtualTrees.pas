@@ -24643,7 +24643,7 @@ begin
       //sync path note: deselect when a ctrl click removes a selection
       Exclude(Node.States, vsSelected);
       if SyncCheckstateWithSelection[Node] then
-        checkstate[Node] := csUncheckedNormal;
+        Node.CheckState := csUncheckedNormal; // Avoid using SetCheckState() as it handles toSyncCheckboxesWithSelection as well.
 
       if FindNodeInSelection(Node, Index, -1, -1) and (Index < FSelectionCount - 1) then
         Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
