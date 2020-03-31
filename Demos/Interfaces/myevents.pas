@@ -107,7 +107,7 @@ begin
   col.Width := 120;
   col := fVST.header.Columns.Add;
   col.Text := 'Date';
-  col.Text := 'The date of the event';
+  col.Hint := 'The date of the event';
   col.Width := 100;
   col := fVST.header.Columns.Add;
   col.Text := 'Charity Event Name';
