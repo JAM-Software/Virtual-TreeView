@@ -38,6 +38,7 @@ object FormModelView: TFormModelView
     Top = 480
     Width = 201
     Height = 25
+    Hint = 'Removes all items that do not have a star'
     Caption = 'Display Star Events Only'
     TabOrder = 0
     OnClick = btDisplayStarsClick
