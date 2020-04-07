@@ -8290,12 +8290,21 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumns.Notify(Item: TCollectionItem; Action: System.Classes.TCollectionNotification);
-
+var
+  I: Integer;
 begin
   if Action in [cnExtracting, cnDeleting] then
+  begin
+    // Adjust all positions larger than the deleted column's position. Fixes #959
+    for I := 0 to Count - 1 do begin
+      if Items[I].Position > TVirtualTreeColumn(Item).Position then
+        Items[I].Position := Items[I].Position - 1;
+    end;//for I
+
     with Header.Treeview do
       if not (csLoading in ComponentState) and (FFocusedColumn = Item.Index) then
         FFocusedColumn := NoColumn;
+  end;// if cnDeleting
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
