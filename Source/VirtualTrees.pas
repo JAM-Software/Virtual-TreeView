@@ -30884,7 +30884,7 @@ begin
           NodeBitmap.Free;
       end;//try..finally
       
-      if (ChildCount[nil] = 0) and (FEmptyListMessage <> '') then
+      if (FEmptyListMessage <> '') and  ((ChildCount[nil] = 0) or (GetFirstVisible = nil)) then
       begin
         // output a message if no items are to display
         Canvas.Font := Self.Font;
