@@ -30894,7 +30894,7 @@ begin
         R.Right := R.Left + Width - 2;
         R.Bottom := Height -2;
         TargetCanvas.Font.Color := clGrayText;
-        TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft, tfWordBreak]);
+        TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft, tfWordBreak, tfExpandTabs]);
       end;
 
       DoAfterPaint(TargetCanvas);
