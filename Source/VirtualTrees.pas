@@ -33655,11 +33655,16 @@ begin
 
     R := ContentRect;
     if pStaticTextAlignment = taRightJustify then begin
-      Dec(R.Right, NodeWidth + FTextMargin);
-      DrawFormat := DrawFormat or DT_RIGHT
+      DrawFormat := DrawFormat or DT_RIGHT;
+      Dec(R.Right, FTextMargin);
+      if PaintInfo.Alignment = taRightJustify then
+         Dec(R.Right, NodeWidth); // room for node text
     end
-    else
-      Inc(R.Left, NodeWidth + FTextMargin);
+    else begin
+      Inc(R.Left, FTextMargin);
+      if PaintInfo.Alignment = taRightJustify then
+        Inc(R.Left, NodeWidth); // room for node text
+    end;
 
     if Canvas.TextFlags and ETO_OPAQUE = 0 then
       SetBkMode(Canvas.Handle, TRANSPARENT)
