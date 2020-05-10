@@ -3372,6 +3372,7 @@ type
     Column: TColumnIndex;
     CellText: string;
     StaticText: string;
+    StaticTextAlignment: TAlignment;
     ExportType: TVTExportType;
     constructor Create(pNode: PVirtualNode; pColumn: TColumnIndex; pExportType: TVTExportType = TVTExportType.etNone);
   end;
@@ -3415,7 +3416,7 @@ type
     FPreviouslySelected: TStringList;
     procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo); // [IPK] - private to protected
     procedure PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer; Text: string); virtual; // [IPK] - private to protected
-    procedure PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer; const Text: string); virtual; // [IPK] - private to protected
+    procedure PaintStaticText(const PaintInfo: TVTPaintInfo; pStaticTextAlignment: TAlignment; const Text: string); virtual; // [IPK] - private to protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
     function CalculateStaticTextWidth(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string): Integer; virtual;
@@ -33613,8 +33614,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCustomVirtualStringTree.PaintStaticText(const PaintInfo: TVTPaintInfo; TextOutFlags: Integer;
-  const Text: string);
+procedure TCustomVirtualStringTree.PaintStaticText(const PaintInfo: TVTPaintInfo; pStaticTextAlignment: TAlignment; const Text: string);
 
 // This method retrives and draws the static text bound to a particular node.
 
@@ -33654,7 +33654,7 @@ begin
       Canvas.Font.Color := FColors.DisabledColor;
 
     R := ContentRect;
-    if Alignment = taRightJustify then begin
+    if pStaticTextAlignment = taRightJustify then begin
       Dec(R.Right, NodeWidth + FTextMargin);
       DrawFormat := DrawFormat or DT_RIGHT
     end
@@ -34055,6 +34055,7 @@ begin
     lEventArgs := TVSTGetCellTextEventArgs.Create(PaintInfo.Node, PaintInfo.Column);
 
     lEventArgs.CellText := FDefaultText;
+    lEventArgs.StaticTextAlignment := PaintInfo.Alignment;
     DoGetText(lEventArgs);
 
     // Paint the normal text first...
@@ -34063,7 +34064,7 @@ begin
 
     // ... and afterwards the static text if not centered and the node is not multiline enabled.
     if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.FStringOptions) and not lEventArgs.StaticText.IsEmpty then
-      PaintStaticText(PaintInfo, TextOutFlags, lEventArgs.StaticText);
+      PaintStaticText(PaintInfo, lEventArgs.StaticTextAlignment, lEventArgs.StaticText);
   finally
     RestoreFontChangeEvent(PaintInfo.Canvas);
   end;
