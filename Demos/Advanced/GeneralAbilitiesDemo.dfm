@@ -66,7 +66,7 @@ object GeneralForm: TGeneralForm
     OnDragOver = VST2DragOver
     OnFocusChanging = VST2FocusChanging
     OnFreeNode = VST2FreeNode
-    OnGetText = VST2GetText
+    OnGetCellText = VST2GetCellText
     OnPaintText = VST2PaintText
     OnGetImageIndexEx = VST2GetImageIndexEx
     OnGetNodeDataSize = VST2GetNodeDataSize
