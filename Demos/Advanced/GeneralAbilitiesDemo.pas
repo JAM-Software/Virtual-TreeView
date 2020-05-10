@@ -197,9 +197,10 @@ begin
       begin
         E.CellText := Data.Caption;
         E.StaticText := Data.StaticText;
-        //E.StaticTextAlignment := TAlignment.taRightJustify;
+        if Sender.GetNodeLevel(E.Node) > 0 then
+          E.StaticTextAlignment := TAlignment.taRightJustify;
       end;
-    2:
+    1,2:
       E.CellText := Data.ForeignText;
   else
     E.CellText := '';
@@ -232,7 +233,7 @@ begin
     end;
 
     Caption := Format('Level %d, Index %d', [Level, Node.Index]);
-    if Level in [0, 3] then
+    if Level in [0, 2, 3] then
       StaticText := '(static text)';
 
     ForeignText := '';
