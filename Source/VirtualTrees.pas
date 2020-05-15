@@ -22855,7 +22855,7 @@ begin
       // Fix: Any parent check state must be propagated here.
 	    // Because the CheckType is normally set in DoInitNode
       // by the App.
-      if Node.CheckType in [ctTriStateCheckBox] then
+      if (Node.CheckType = ctTriStateCheckBox) and (toAutoTristateTracking in FOptions.FAutoOptions)  then
       begin
         ParentCheckState := Self.GetCheckState(Node.Parent);
         SelfCheckState := Self.GetCheckState(Node);
