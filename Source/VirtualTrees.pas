@@ -5472,6 +5472,7 @@ begin
     if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
     begin
       Canvas.Font := Screen.HintFont;
+      Canvas.Font.Height := Tree.ScaledPixels(Canvas.Font.Height);
       Y := 2;
     end
     else
@@ -5602,7 +5603,10 @@ begin
             ChangeBidiModeAlignment(Alignment);
 
           if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
-            Canvas.Font := Screen.HintFont
+          begin
+            Canvas.Font := Screen.HintFont;
+            Canvas.Font.Height := Tree.ScaledPixels(Canvas.Font.Height);
+          end
           else
           begin
             Canvas.Font := Tree.Font;
