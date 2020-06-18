@@ -32842,7 +32842,7 @@ procedure TVTEdit.WMDestroy(var Message: TWMDestroy);
 begin
   // If editing stopped by other means than accept or cancel then we have to do default processing for
   // pending changes.
-  if Assigned(FLink) and not FLink.FStopping then
+  if Assigned(FLink) and not FLink.FStopping  and not (csRecreating in Self.ControlState) then
   begin
     with FLink, FTree do
     begin
