@@ -33665,7 +33665,7 @@ begin
     end
     else begin
       Inc(R.Left, FTextMargin);
-      if PaintInfo.Alignment = taRightJustify then
+      if PaintInfo.Alignment = taLeftJustify then
         Inc(R.Left, NodeWidth); // room for node text
     end;
 
