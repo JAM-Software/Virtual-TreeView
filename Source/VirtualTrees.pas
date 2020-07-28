@@ -510,8 +510,9 @@ type
                                // selection rectangle.
     toAlwaysSelectNode,        // If this flag is set to true, the tree view tries to always have a node selected.
                                // This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications.
-    toRestoreSelection,         // Set to true if upon refill the previously selected nodes should be selected again.
-                               // The nodes will be identified by its caption only.
+    toRestoreSelection,        // Set to true if upon refill the previously selected nodes should be selected again.
+                               // The nodes will be identified by its caption (text in MainColumn)
+                               // You may use TVTHeader.RestoreSelectiuonColumnIndex to define an other column that should be used for indentification.
     toSyncCheckboxesWithSelection  // If checkboxes are shown, they follow the change in selections. When checkboxes are
                                    // changed, the selections follow them and vice-versa.
                                    // **Only supported for ctCheckBox type checkboxes.
