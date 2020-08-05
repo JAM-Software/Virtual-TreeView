@@ -28638,11 +28638,14 @@ function TBaseVirtualTree.GetNodeData<T>(pNode: PVirtualNode): T;
 
 // Returns the associated data converted to the class given in the generic part of the function.
 
+var
+  P: Pointer;
 begin
-  if Assigned(pNode) then
-    Result := T(Self.GetNodeData(pNode)^)
+  P := Self.GetNodeData(pNode);
+  if Assigned(P) then
+    Exit(T(P^))
   else
-    Result := Default(T);
+    Exit(Default(T));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
