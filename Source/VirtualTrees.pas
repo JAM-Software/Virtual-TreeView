@@ -32795,6 +32795,8 @@ constructor TVTEdit.Create(Link: TStringEditLink);
 
 begin
   inherited Create(nil);
+  if not Assigned(Link) then
+    raise EArgumentException.Create('Paramter Link must not be nil.');
   ShowHint := False;
   ParentShowHint := False;
   // This assignment increases the reference count for the interface.
@@ -33082,6 +33084,8 @@ procedure TVTEdit.CreateParams(var Params: TCreateParams);
 
 begin
   inherited;
+  if not Assigned(FLink.FNode) then
+    exit; // Prevent AV exceptions occasionally seen in code below
 
   // Only with multiline style we can use the text formatting rectangle.
   // This does not harm formatting as single line control, if we don't use word wrapping.
