@@ -13988,8 +13988,8 @@ var
 begin
   if VclStyleEnabled and (seClient in StyleElements) then
   begin
-    if StyleServices.GetElementSize(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), TElementSize.esActual, Size, {$IF CompilerVersion >= 34}CurrentPPI{$IFEND}) then
-      Size.cx := ScaledPixels(Size.cx) // I would have expected that the returned value is dpi-sclaed, but this is not the case in rAD Studio 10.4.1. See issue #984
+    if StyleServices.GetElementSize(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), TElementSize.esActual, Size) then
+      Size.cx := ScaledPixels(Size.cx) // I would have expected that the returned value is dpi-sclaed, but this is not the case in RAD Studio 10.4.1. See issue #984
     else
       Size.cx := ScaledPixels(11);
     Size.cy := Size.cx;
