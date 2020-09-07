@@ -13988,8 +13988,11 @@ var
 begin
   if VclStyleEnabled and (seClient in StyleElements) then
   begin
-    Size.cx := ScaledPixels(11);
-    Size.cy := ScaledPixels(11);
+    if StyleServices.GetElementSize(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), TElementSize.esActual, Size, {$IF CompilerVersion >= 34}CurrentPPI{$IFEND}) then
+      Size.cx := ScaledPixels(Size.cx) // I would have expected that the returned value is dpi-sclaed, but this is not the case in rAD Studio 10.4.1. See issue #984
+    else
+      Size.cx := ScaledPixels(11);
+    Size.cy := Size.cx;
     FillBitmap(FPlusBM);
     FillBitmap(FHotPlusBM);
     FillBitmap(FSelectedHotPlusBM);
@@ -13998,8 +14001,8 @@ begin
     FillBitmap(FSelectedHotMinusBM);
     R := Rect(0,0,Size. cx,Size.cy);
     // tcbCategoryGlyphClosed, tcbCategoryGlyphOpened from CategoryButtons
-    StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R, {$IF CompilerVersion  >= 34}nil, FCurrentPPI{$IFEND});
-    StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R, {$IF CompilerVersion  >= 34}nil, FCurrentPPI{$IFEND});
+    StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R, {$IF CompilerVersion >= 34}nil, FCurrentPPI{$IFEND});
+    StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R, {$IF CompilerVersion >= 34}nil, FCurrentPPI{$IFEND});
     FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
     FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
     FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
@@ -23919,9 +23922,9 @@ begin
       end
       else
       begin
-        if (Index in [ckButtonNormal..ckButtonDisabled]) or not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
+        if (Index in [ckButtonNormal..ckButtonDisabled]) or not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize{$IF CompilerVersion >= 34}, CurrentPPI{$IFEND}) then begin
           // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. See issue #615
-          if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
+          if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize{$IF CompilerVersion >= 34}, CurrentPPI{$IFEND}) then
             lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
         end;//if
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
