@@ -14001,8 +14001,8 @@ begin
     FillBitmap(FSelectedHotMinusBM);
     R := Rect(0,0,Size. cx,Size.cy);
     // tcbCategoryGlyphClosed, tcbCategoryGlyphOpened from CategoryButtons
-    StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R, {$IF CompilerVersion >= 34}nil, FCurrentPPI{$IFEND});
-    StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R, {$IF CompilerVersion >= 34}nil, FCurrentPPI{$IFEND});
+    StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND});
+    StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND});
     FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
     FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
     FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
@@ -23928,7 +23928,7 @@ begin
             lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
         end;//if
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
-        StyleServices.DrawElement(Canvas.Handle, Details, R, {$IF CompilerVersion  >= 34}nil, FCurrentPPI{$IFEND});
+        StyleServices.DrawElement(Canvas.Handle, Details, R {$IF CompilerVersion  >= 34}, nil, FCurrentPPI{$IFEND});
         Canvas.Refresh; // Every time you give a Canvas.Handle away to some other code you can't control you have to call Canvas.Refresh afterwards because the Canvas object and the HDC can be out of sync.
       end;
       if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
