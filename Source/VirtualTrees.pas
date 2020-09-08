@@ -28624,7 +28624,7 @@ function TBaseVirtualTree.GetNodeData(Node: PVirtualNode): Pointer;
 // Returns the address of the user defined data area in the node.
 
 begin
-  Assert(FNodeDataSize > 0, 'NodeDataSize not initialized.');
+  Assert((FNodeDataSize > 0) or not Assigned(Node), 'NodeDataSize not initialized.');
   if (FNodeDataSize <= 0) or (Node = nil) or (Node = FRoot) then
     Result := nil
   else
