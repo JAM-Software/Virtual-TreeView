@@ -2517,6 +2517,7 @@ type
     function GetRangeX: Cardinal;
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
+    function GetVclStyleEnabled: Boolean; inline;
 
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
@@ -2779,7 +2780,7 @@ type
     procedure WriteNode(Stream: TStream; Node: PVirtualNode); virtual;
 
     procedure VclStyleChanged; virtual;
-    property VclStyleEnabled: Boolean read FVclStyleEnabled;
+    property VclStyleEnabled: Boolean read GetVclStyleEnabled;
     property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
 
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
@@ -12112,7 +12113,6 @@ begin
 
   if not (csDesigning in ComponentState) then //Don't create worker thread in IDE, there is no use for it
     TWorkerThread.AddThreadReference();
-  VclStyleChanged();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -13451,6 +13451,11 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetVclStyleEnabled: Boolean;
+begin
+  Exit(FVclStyleEnabled);
+end;
 
 function TBaseVirtualTree.GetVerticalAlignment(Node: PVirtualNode): Byte;
 
@@ -18667,6 +18672,7 @@ procedure TBaseVirtualTree.CreateWnd;
 // Initializes data which depends on a valid window handle.
 
 begin
+  VclStyleChanged(); // Moved here due to issue #986
   DoStateChange([tsWindowCreating]);
   inherited;
   DoStateChange([], [tsWindowCreating]);
