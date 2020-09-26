@@ -12,7 +12,6 @@ object StateForm: TStateForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   PixelsPerInch = 96
   TextHeight = 13
   object EnableCheckBox: TCheckBox
