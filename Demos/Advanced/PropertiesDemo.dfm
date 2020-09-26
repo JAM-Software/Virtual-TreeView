@@ -50,14 +50,8 @@ object PropertiesForm: TPropertiesForm
     Colors.HotColor = clBlack
     DefaultNodeHeight = 20
     Header.AutoSizeIndex = 1
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.Height = 18
     Header.Options = [hoAutoResize, hoColumnResize, hoVisible, hoAutoSpring]
-    HintAnimation = hatFade
     HintMode = hmHint
     Images = TreeImages
     IncrementalSearch = isAll
@@ -68,7 +62,6 @@ object PropertiesForm: TPropertiesForm
     ShowHint = True
     TabOrder = 0
     TreeOptions.AnimationOptions = [toAnimatedToggle]
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toCenterScrollIntoView]
     TreeOptions.StringOptions = [toAutoAcceptEditChange]
@@ -88,14 +81,14 @@ object PropertiesForm: TPropertiesForm
       item
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring]
         Position = 0
+        Text = 'Properties'
         Width = 203
-        WideText = 'Properties'
       end
       item
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring]
         Position = 1
+        Text = 'Values'
         Width = 192
-        WideText = 'Values'
       end>
   end
   object RadioGroup1: TRadioGroup
