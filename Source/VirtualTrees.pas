@@ -15812,7 +15812,6 @@ begin
 
   if not (csLoading in ComponentState) then
   begin
-    PrepareBitmaps(True, False);
     if HandleAllocated then begin
       AutoScale(False);
       Invalidate;
@@ -18439,6 +18438,7 @@ begin
     end;// if M<>D
   end;//if toAutoChangeScale
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
+  PrepareBitmaps(True, False);
   // It is important to do this call after calling inherited, so that the Font has been updated.
   AutoScale(M <> D);
 end;
