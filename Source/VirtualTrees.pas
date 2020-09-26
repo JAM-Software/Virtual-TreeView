@@ -13993,30 +13993,32 @@ var
 begin
   if VclStyleEnabled and (seClient in StyleElements) then
   begin
-    if StyleServices.GetElementSize(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), TElementSize.esActual, Size) then
-      Size.cx := ScaledPixels(Size.cx) // I would have expected that the returned value is dpi-sclaed, but this is not the case in RAD Studio 10.4.1. See issue #984
+    if NeedButtons then begin
+      if StyleServices.GetElementSize(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), TElementSize.esActual, Size) then
+        Size.cx := ScaledPixels(Size.cx) // I would have expected that the returned value is dpi-sclaed, but this is not the case in RAD Studio 10.4.1. See issue #984
+      else
+        Size.cx := ScaledPixels(11);
+      Size.cy := Size.cx;
+      FillBitmap(FPlusBM);
+      FillBitmap(FHotPlusBM);
+      FillBitmap(FSelectedHotPlusBM);
+      FillBitmap(FMinusBM);
+      FillBitmap(FHotMinusBM);
+      FillBitmap(FSelectedHotMinusBM);
+      R := Rect(0,0,Size. cx,Size.cy);
+      // tcbCategoryGlyphClosed, tcbCategoryGlyphOpened from CategoryButtons
+      StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND});
+      StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND});
+      FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+      FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
+      FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+      FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
+      if Assigned(FOnPrepareButtonImages) then
+        FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
+    end;//if NeedButtons
+  end// if VclStyleEnabled
     else
-      Size.cx := ScaledPixels(11);
-    Size.cy := Size.cx;
-    FillBitmap(FPlusBM);
-    FillBitmap(FHotPlusBM);
-    FillBitmap(FSelectedHotPlusBM);
-    FillBitmap(FMinusBM);
-    FillBitmap(FHotMinusBM);
-    FillBitmap(FSelectedHotMinusBM);
-    R := Rect(0,0,Size. cx,Size.cy);
-    // tcbCategoryGlyphClosed, tcbCategoryGlyphOpened from CategoryButtons
-    StyleServices.DrawElement(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND});
-    StyleServices.DrawElement(FMinusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphOpened), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND});
-    FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
-    FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
-    FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-    FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
-    if Assigned(FOnPrepareButtonImages) then
-      FOnPrepareButtonImages(Self, FPlusBM, FHotPlusBM, FSelectedHotPlusBM, FMinusBM, FHotMinusBM, FSelectedHotMinusBM, size);
-  end
-    else
-      begin
+      begin // No stlye
         Size.cx := 9;
         Size.cy := 9;
         if tsUseThemes in FStates then
@@ -14157,8 +14159,8 @@ begin
         end;
         if tsUseThemes in FStates then
           CloseThemeData(Theme);
-      end;
-  end;
+      end;// if NeedButtons
+  end;// else
 
   if NeedLines then
   begin
