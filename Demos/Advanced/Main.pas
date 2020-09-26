@@ -184,11 +184,13 @@ begin
     if Assigned(NewDemoClass) then
     begin
       NewDemo := NewDemoClass.Create(Self);
-      NewDemo.Hide;
       NewDemo.BorderStyle := bsNone;
-      NewDemo.Parent := ContainerPanel;
       NewDemo.Align := alClient;
+      NewDemo.Parent := ContainerPanel;
       NewDemo.Show;
+      {$if CompilerVersion >= 33}
+      NewDemo.ScaleForPPI(FCurrentPPI); // See issue #990
+      {$endif}
     end;
   end;
 end;
