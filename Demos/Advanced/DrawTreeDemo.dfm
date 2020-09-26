@@ -67,9 +67,7 @@ object DrawTreeForm: TDrawTreeForm
     Header.Background = clBtnHighlight
     Header.Height = 22
     Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoRestrictDrag, hoShowSortGlyphs, hoVisible]
-    Header.ParentFont = True
     Header.Style = hsPlates
-    HintAnimation = hatNone
     HintMode = hmHint
     Images = SystemImages
     IncrementalSearch = isAll
@@ -80,8 +78,7 @@ object DrawTreeForm: TDrawTreeForm
     ScrollBarOptions.VerticalIncrement = 32
     ShowHint = True
     TabOrder = 0
-    TreeOptions.AnimationOptions = [toAnimatedToggle]
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
+    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
     TreeOptions.PaintOptions = [toShowBackground, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware]
     TreeOptions.SelectionOptions = [toFullRowSelect]
     OnCompareNodes = VDT1CompareNodes
@@ -100,18 +97,18 @@ object DrawTreeForm: TDrawTreeForm
         BiDiMode = bdLeftToRight
         Options = [coAllowClick, coEnabled, coParentColor, coResizable, coShowDropMark, coVisible]
         Position = 0
+        Text = 'Image file name'
         Width = 217
-        WideText = 'Image file name'
       end
       item
         Position = 1
+        Text = 'Thumbnail'
         Width = 200
-        WideText = 'Thumbnail'
       end
       item
         Position = 2
+        Text = 'Properties'
         Width = 160
-        WideText = 'Properties'
       end>
   end
   object TrackBar1: TTrackBar
