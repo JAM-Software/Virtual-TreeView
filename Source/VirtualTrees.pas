@@ -5476,7 +5476,7 @@ begin
     if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
     begin
       Canvas.Font := Screen.HintFont;
-      Canvas.Font.Height := Tree.ScaledPixels(Canvas.Font.Height);
+      Canvas.Font.Height := MulDiv(Canvas.Font.Height, Tree.ScaledPixels(96), Screen.PixelsPerInch); // See issue #992
       Y := 2;
     end
     else
@@ -5609,7 +5609,7 @@ begin
           if (Node = nil) or (Tree.FHintMode <> hmToolTip) then
           begin
             Canvas.Font := Screen.HintFont;
-            Canvas.Font.Height := Tree.ScaledPixels(Canvas.Font.Height);
+            Canvas.Font.Height := MulDiv(Canvas.Font.Height, Tree.ScaledPixels(96), Screen.PixelsPerInch); // See issue #992
           end
           else
           begin
