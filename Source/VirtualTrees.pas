@@ -14019,12 +14019,12 @@ begin
   end// if VclStyleEnabled
     else
       begin // No stlye
-        Size.cx := 9;
-        Size.cy := 9;
+        Size.cx := ScaledPixels(9);
+        Size.cy := ScaledPixels(9);
         if tsUseThemes in FStates then
         begin
           R := Rect(0, 0, 100, 100);
-          Theme := OpenThemeData(Handle, 'TREEVIEW');
+          Theme:= OpenThemeDataForDPI(Handle, 'TREEVIEW', {$if CompilerVersion > 31}Self.FCurrentPPI{$else}Screen.PixelsPerInch{$ifend});
           GetThemePartSize(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, @R, TS_TRUE, Size);
         end
           else
