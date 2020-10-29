@@ -2518,6 +2518,7 @@ type
     function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
     function GetVclStyleEnabled: Boolean; inline;
+    procedure SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
 
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
@@ -2970,7 +2971,7 @@ type
     property OnNodeMoved: TVTNodeMovedEvent read FOnNodeMoved write FOnNodeMoved;
     property OnNodeMoving: TVTNodeMovingEvent read FOnNodeMoving write FOnNodeMoving;
     property OnPaintBackground: TVTBackgroundPaintEvent read FOnPaintBackground write FOnPaintBackground;
-    property OnPrepareButtonBitmaps : TVTPrepareButtonImagesEvent read FOnPrepareButtonImages write FOnPrepareButtonImages;
+    property OnPrepareButtonBitmaps : TVTPrepareButtonImagesEvent read FOnPrepareButtonImages write SetOnPrepareButtonImages;
     property OnRemoveFromSelection: TVTRemoveFromSelectionEvent read FOnRemoveFromSelection write FOnRemoveFromSelection;
     property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
@@ -15078,6 +15079,12 @@ procedure TBaseVirtualTree.SetOffsetY(const Value: Integer);
 
 begin
   DoSetOffsetXY(Point(FOffsetX, Value), DefaultScrollUpdateFlags);
+end;
+
+procedure TBaseVirtualTree.SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
+begin
+  FOnPrepareButtonImages := Value;
+  PrepareBitmaps(True, False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
