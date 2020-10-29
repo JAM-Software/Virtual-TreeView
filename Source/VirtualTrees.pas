@@ -14024,7 +14024,11 @@ begin
         if tsUseThemes in FStates then
         begin
           R := Rect(0, 0, 100, 100);
-          Theme:= OpenThemeDataForDPI(Handle, 'TREEVIEW', {$if CompilerVersion > 31}Self.FCurrentPPI{$else}Screen.PixelsPerInch{$ifend});
+          {$if CompilerVersion >= 33}
+          Theme := OpenThemeDataForDPI(Handle, 'TREEVIEW', Self.FCurrentPPI);
+          {$else}
+          Theme := OpenThemeData(Handle, 'TREEVIEW');
+          {$ifend}
           GetThemePartSize(Theme, FPlusBM.Canvas.Handle, TVP_GLYPH, GLPS_OPENED, @R, TS_TRUE, Size);
         end
           else
