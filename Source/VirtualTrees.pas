@@ -1389,6 +1389,7 @@ type
       Options: TVTColumnOptions = [coVisible]): TDimension;
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
+    procedure StyleChanged();
 
     property DragImage: TVTDragImage read FDragImage;
     property RestoreSelectionColumnIndex: Integer read GetRestoreSelectionColumnIndex write fRestoreSelectionColumnIndex default NoColumn;
@@ -9915,6 +9916,11 @@ begin
     if not (csLoading in Treeview.ComponentState) then
       Invalidate(nil);
   end;
+end;
+
+procedure TVTHeader.StyleChanged();
+begin
+  AutoScale(); // Elements may have chnaged in size
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25646,12 +25652,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.VclStyleChanged;
+procedure TBaseVirtualTree.VclStyleChanged();
 
   // Updates the member FVclStyleEnabled, should be called initially and when the VCL style changes
 
 begin
   FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle and not (csDesigning in ComponentState);
+  Header.StyleChanged();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
