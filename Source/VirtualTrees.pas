@@ -1389,7 +1389,7 @@ type
       Options: TVTColumnOptions = [coVisible]): TDimension;
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
-    procedure StyleChanged();
+    procedure StyleChanged(); virtual;
 
     property DragImage: TVTDragImage read FDragImage;
     property RestoreSelectionColumnIndex: Integer read GetRestoreSelectionColumnIndex write fRestoreSelectionColumnIndex default NoColumn;
