@@ -14032,7 +14032,10 @@ begin
         begin
           R := Rect(0, 0, 100, 100);
           {$if CompilerVersion >= 33}
-          Theme := OpenThemeDataForDPI(Handle, 'TREEVIEW', Self.FCurrentPPI);
+          if TOSVersion.Check(10) and (TOSVersion.Build >= 15063)  then
+            Theme := OpenThemeDataForDPI(Handle, 'TREEVIEW', Self.FCurrentPPI)
+          else
+            Theme := OpenThemeData(Handle, 'TREEVIEW');
           {$else}
           Theme := OpenThemeData(Handle, 'TREEVIEW');
           {$ifend}
