@@ -1219,7 +1219,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
     property MaxHeightPercent: TVTConstraintPercent index 0 read FMaxHeightPercent write SetConstraints default 0;
-    property MaxWidthPercent: TVTConstraintPercent index 1 read FMaxWidthPercent write SetConstraints default 0;
+    property MaxWidthPercent: TVTConstraintPercent index 1 read FMaxWidthPercent write SetConstraints default 95;
     property MinHeightPercent: TVTConstraintPercent index 2 read FMinHeightPercent write SetConstraints default 0;
     property MinWidthPercent: TVTConstraintPercent index 3 read FMinWidthPercent write SetConstraints default 0;
   end;
@@ -9465,7 +9465,7 @@ constructor TVTFixedAreaConstraints.Create(AOwner: TVTHeader);
 
 begin
   inherited Create;
-
+  FMaxWidthPercent := 95;
   FHeader := AOwner;
 end;
 
@@ -11030,7 +11030,7 @@ begin
     RecalculateHeader;
 
     with FFixedAreaConstraints do
-      if (FMinHeightPercent > 0) or (FMaxHeightPercent > 0) then
+      if (FMaxWidthPercent > 0) or (FMinWidthPercent > 0) or (FMinHeightPercent > 0) or (FMaxHeightPercent > 0) then
       begin
         ComputeConstraints;
 
