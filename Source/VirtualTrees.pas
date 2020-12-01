@@ -12181,6 +12181,11 @@ begin
   FSelectedHotPlusBM.Free;
   FSelectedHotMinusBM.Free;
 
+  // Fixes issue #1002
+  Images := nil;
+  StateImages := nil;
+  CustomCheckImages := nil;
+
   inherited;
 end;
 
