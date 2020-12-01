@@ -1219,7 +1219,7 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
     property MaxHeightPercent: TVTConstraintPercent index 0 read FMaxHeightPercent write SetConstraints default 0;
-    property MaxWidthPercent: TVTConstraintPercent index 1 read FMaxWidthPercent write SetConstraints default 0;
+    property MaxWidthPercent: TVTConstraintPercent index 1 read FMaxWidthPercent write SetConstraints default 95;
     property MinHeightPercent: TVTConstraintPercent index 2 read FMinHeightPercent write SetConstraints default 0;
     property MinWidthPercent: TVTConstraintPercent index 3 read FMinWidthPercent write SetConstraints default 0;
   end;
@@ -1389,6 +1389,7 @@ type
       Options: TVTColumnOptions = [coVisible]): TDimension;
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
+    procedure StyleChanged(); virtual;
 
     property DragImage: TVTDragImage read FDragImage;
     property RestoreSelectionColumnIndex: Integer read GetRestoreSelectionColumnIndex write fRestoreSelectionColumnIndex default NoColumn;
@@ -4048,7 +4049,7 @@ const
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
-  Copyright: string = 'Virtual Treeview © 1999, 2010, 2016 Mike Lischke, Joachim Marder';
+  Copyright: string = 'Virtual Treeview ï¿½ 1999, 2010, 2016 Mike Lischke, Joachim Marder';
 
 var
   StandardOLEFormat: TFormatEtc = (
@@ -9464,7 +9465,7 @@ constructor TVTFixedAreaConstraints.Create(AOwner: TVTHeader);
 
 begin
   inherited Create;
-
+  FMaxWidthPercent := 95;
   FHeader := AOwner;
 end;
 
@@ -9915,6 +9916,11 @@ begin
     if not (csLoading in Treeview.ComponentState) then
       Invalidate(nil);
   end;
+end;
+
+procedure TVTHeader.StyleChanged();
+begin
+  AutoScale(); // Elements may have chnaged in size
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11024,7 +11030,7 @@ begin
     RecalculateHeader;
 
     with FFixedAreaConstraints do
-      if (FMinHeightPercent > 0) or (FMaxHeightPercent > 0) then
+      if (FMaxWidthPercent > 0) or (FMinWidthPercent > 0) or (FMinHeightPercent > 0) or (FMaxHeightPercent > 0) then
       begin
         ComputeConstraints;
 
@@ -14026,7 +14032,10 @@ begin
         begin
           R := Rect(0, 0, 100, 100);
           {$if CompilerVersion >= 33}
-          Theme := OpenThemeDataForDPI(Handle, 'TREEVIEW', Self.FCurrentPPI);
+          if TOSVersion.Check(10) and (TOSVersion.Build >= 15063)  then
+            Theme := OpenThemeDataForDPI(Handle, 'TREEVIEW', Self.FCurrentPPI)
+          else
+            Theme := OpenThemeData(Handle, 'TREEVIEW');
           {$else}
           Theme := OpenThemeData(Handle, 'TREEVIEW');
           {$ifend}
@@ -14059,7 +14068,7 @@ begin
                   FillBitmap(FMinusBM);
                   FillBitmap(FHotMinusBM);
                   FillBitmap(FSelectedHotMinusBM);
-                  // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiße aus
+                  // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiï¿½e aus
                   // Because the self-drawn bitmaps view Vcl Style shit
                   if Theme = 0 then
                   begin
@@ -25646,12 +25655,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.VclStyleChanged;
+procedure TBaseVirtualTree.VclStyleChanged();
 
   // Updates the member FVclStyleEnabled, should be called initially and when the VCL style changes
 
 begin
   FVclStyleEnabled := StyleServices.Enabled and not StyleServices.IsSystemStyle and not (csDesigning in ComponentState);
+  Header.StyleChanged();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34481,7 +34491,7 @@ function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; cons
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
-// Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
+// Based on ideas and code from Frank van den Bergh and Andreas Hï¿½rstemeier.
 
 begin
   Result := VirtualTrees.Export.ContentToHTML(Self, Source, Caption);
@@ -34555,7 +34565,7 @@ end;
 function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): RawByteString;
 
 // Renders the current tree content (depending on Source) as RTF (rich text).
-// Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
+// Based on ideas and code from Frank van den Bergh and Andreas Hï¿½rstemeier.
 
 begin
   Result := VirtualTrees.Export.ContentToRTF(Self, Source);
