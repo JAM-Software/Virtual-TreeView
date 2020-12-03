@@ -28,8 +28,6 @@ type
 
     class procedure AddTree(Tree: TBaseVirtualTree);
     class procedure RemoveTree(Tree: TBaseVirtualTree);
-
-    property CurrentTree: TBaseVirtualTree read FCurrentTree;
   end;
 
 
@@ -98,6 +96,7 @@ begin
       WorkerThread.Dispose(ACanBlock);
     end;
   end;
+  CheckSynchronize(); // Make sure code queued in the main thread by TBaseVirtualTree.ChangeTreeStatesAsync() get processed before the tree is being destroyed. issue #1001
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -180,7 +179,7 @@ begin
           EnterStates := [tsUseCache];
 
       finally
-        FCurrentTree := nil; //Clear variable to prevent deadlock in CancelValidation. See #434
+        FCurrentTree := nil; //Clear variable to prevent deadlock in WaitForValidationTermination()
         TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
         Queue(TBaseVirtualTreeCracker(lCurrentTree).UpdateEditBounds);
       end;
