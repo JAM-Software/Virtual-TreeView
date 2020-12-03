@@ -18480,8 +18480,8 @@ begin
   if (Self.HandleAllocated) then
     TThread.Synchronize(nil, procedure
       begin
-           // issue #1001           // Prevent invalid combination tsUseCache + tsValidationNeeded (#915)
-        if HandleAllocated and not ((tsUseCache in EnterStates) and (tsValidationNeeded in FStates + LeaveStates)) then
+        // Prevent invalid combination tsUseCache + tsValidationNeeded (#915)
+        if not ((tsUseCache in EnterStates) and (tsValidationNeeded in FStates + LeaveStates)) then
           DoStateChange(EnterStates, LeaveStates)
       end);
 end;
