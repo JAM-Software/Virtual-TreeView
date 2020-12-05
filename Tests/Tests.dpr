@@ -12,7 +12,8 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
   VirtualTreeTests in 'VirtualTreeTests.pas',
-  VirtualStringTreeTests in 'VirtualStringTreeTests.pas';
+  VirtualStringTreeTests in 'VirtualStringTreeTests.pas',
+  VTWorkerThreadIssue1001Tests in 'VTWorkerThreadIssue1001Tests.pas';
 
 var
   runner : ITestRunner;
