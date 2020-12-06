@@ -4,7 +4,7 @@ interface
 
 uses
   DUnitX.TestFramework,
-  Windows,
+  WinApi.Windows,
   VirtualTrees,
   VirtualTrees.Utils, Vcl.Graphics;
 
