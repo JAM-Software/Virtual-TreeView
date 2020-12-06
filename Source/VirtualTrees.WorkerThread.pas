@@ -1,4 +1,4 @@
-unit VirtualTrees.WorkerThread;
+﻿unit VirtualTrees.WorkerThread;
 
 interface
 
