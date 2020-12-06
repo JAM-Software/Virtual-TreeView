@@ -18420,6 +18420,7 @@ const
 var
   Flags: TScalingFlags;
   Run: PVirtualNode;
+  lNewNodeTotalHeight: Cardinal;
 begin
   if (toAutoChangeScale in FOptions.FAutoOptions) then
   begin
@@ -18455,7 +18456,10 @@ begin
             else // prevent initialization of non-initialzed nodes
             begin
               Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
-              Run.TotalHeight := MulDiv(Run.TotalHeight, M, D); // Fixes issue #1000
+              // The next three lines fix issue #1000
+              lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
+              FRoot.TotalHeight := FRoot.TotalHeight + lNewNodeTotalHeight - Run.TotalHeight;
+              Run.TotalHeight := lNewNodeTotalHeight;
             end;
             Run := GetNextNoInit(Run);
           end; // while
@@ -18477,7 +18481,7 @@ end;
 procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
 begin
   //TODO: If this works reliable, move to TWorkerThread
-  if (Self.HandleAllocated) then
+  if not (csDestroying in ComponentState) then
     TThread.Synchronize(nil, procedure
       begin
         // Prevent invalid combination tsUseCache + tsValidationNeeded (#915)
