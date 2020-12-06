@@ -637,6 +637,8 @@ type
     procedure SetPaintOptions(const Value: TVTPaintOptions);
     procedure SetSelectionOptions(const Value: TVTSelectionOptions);
   protected
+    // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
+    function StyleServices(AControl: TControl = nil): TCustomStyleServices;
   public
     constructor Create(AOwner: TBaseVirtualTree); virtual;
     procedure AssignTo(Dest: TPersistent); override;
@@ -859,6 +861,8 @@ type
   strict protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Paint; override;
+    // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
+    function StyleServices(AControl: TControl = nil): TCustomStyleServices;
   public
     function CalcHintRect(MaxWidth: TDimension; const AHint: string; AData: Pointer): TRect; override;
     function IsHintMsg(var Msg: TMsg): Boolean; override;
@@ -1158,6 +1162,8 @@ type
     property HoverIndex: TColumnIndex read FHoverIndex;
     property DownIndex: TColumnIndex read FDownIndex;
     property CheckBoxHit: Boolean read FCheckBoxHit;
+    // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
+    function StyleServices(AControl: TControl = nil): TCustomStyleServices;
   public
     constructor Create(AOwner: TVTHeader); virtual;
     destructor Destroy; override;
@@ -1669,6 +1675,8 @@ type
     property BackGroundColor: TColor read GetBackgroundColor;
     property HeaderFontColor: TColor read  GetHeaderFontColor;
     property NodeFontColor: TColor read GetNodeFontColor;
+    // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
+    function StyleServices(AControl: TControl = nil): TCustomStyleServices;
   published
     property BorderColor: TColor index cBorderColor read GetColor write SetColor default clBtnFace;
     property DisabledColor: TColor index cDisabledColor read GetColor write SetColor default clBtnShadow;
@@ -2784,7 +2792,8 @@ type
     procedure VclStyleChanged; virtual;
     property VclStyleEnabled: Boolean read GetVclStyleEnabled;
     property TotalInternalDataSize: Cardinal read FTotalInternalDataSize;
-
+    // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
+    function StyleServices(AControl: TControl = nil): TCustomStyleServices;
     property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
     property AnimationDuration: Cardinal read FAnimationDuration write SetAnimationDuration default 200;
     property AutoExpandDelay: Cardinal read FAutoExpandDelay write FAutoExpandDelay default 1000;
@@ -4280,6 +4289,14 @@ var
 
   //---------------------------------------------------------------------------
 
+  {$if CompilerVersion >= 34}
+  // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
+  function StyleServices: TCustomStyleServices;
+  begin
+    Result := Vcl.Themes.StyleServices(pControl);
+  end;
+  {$ifend}
+
   procedure AddSystemImage(IL: TImageList; Index: Integer);
   const
     States: array [0..19] of Integer = (
@@ -4682,6 +4699,11 @@ begin
         FFocusedColumn := FHeader.MainColumn;
     end;
   end;
+end;
+
+function TCustomVirtualTreeOptions.StyleServices(AControl: TControl): TCustomStyleServices;
+begin
+  Exit(Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(FOwner){$ifend});
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5506,16 +5528,16 @@ begin
         if Tree.VclStyleEnabled  then
         begin
           InflateRect(R, -1, -1); // Fixes missing border when VCL styles are used
-          LDetails := StyleServices.GetElementDetails(thHintNormal);
-          if StyleServices.GetElementColor(LDetails, ecGradientColor1, LColor) and (LColor <> clNone) then
+          LDetails := StyleServices(Tree).GetElementDetails(thHintNormal);
+          if StyleServices(Tree).GetElementColor(LDetails, ecGradientColor1, LColor) and (LColor <> clNone) then
             LGradientStart := LColor
           else
             LGradientStart := clInfoBk;
-          if StyleServices.GetElementColor(LDetails, ecGradientColor2, LColor) and (LColor <> clNone) then
+          if StyleServices(Tree).GetElementColor(LDetails, ecGradientColor2, LColor) and (LColor <> clNone) then
             LGradientEnd := LColor
           else
             LGradientEnd := clInfoBk;
-          if StyleServices.GetElementColor(LDetails, ecTextColor, LColor) and (LColor <> clNone) then
+          if StyleServices(Tree).GetElementColor(LDetails, ecTextColor, LColor) and (LColor <> clNone) then
             Font.Color := LColor
           else
             Font.Color := Screen.HintFont.Color;
@@ -5527,23 +5549,23 @@ begin
           Font.Color := clInfoText;
           Pen.Color := clBlack;
           Brush.Color := clInfoBk;
-          if IsWinVistaOrAbove and StyleServices.Enabled and ((toThemeAware in Tree.TreeOptions.PaintOptions) or
+          if IsWinVistaOrAbove and StyleServices(Tree).Enabled and ((toThemeAware in Tree.TreeOptions.PaintOptions) or
              (toUseExplorerTheme in Tree.TreeOptions.PaintOptions)) then
           begin
             if toUseExplorerTheme in Tree.TreeOptions.PaintOptions then // ToolTip style
-              StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tttStandardNormal), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND})
+              StyleServices(Tree).DrawElement(Canvas.Handle, StyleServices(Tree).GetElementDetails(tttStandardNormal), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND})
             else
               begin // Hint style
                 LClipRect := R;
                 InflateRect(R, 4, 4);
-                StyleServices.DrawElement(Handle, StyleServices.GetElementDetails(tttStandardNormal), R, @LClipRect{$IF CompilerVersion >= 34}, FCurrentPPI{$IFEND});
+                StyleServices(Tree).DrawElement(Handle, StyleServices(Tree).GetElementDetails(tttStandardNormal), R, @LClipRect{$IF CompilerVersion >= 34}, FCurrentPPI{$IFEND});
                 R := LClipRect;
-                StyleServices.DrawEdge(Handle, StyleServices.GetElementDetails(twWindowRoot), R, [eeRaisedOuter], [efRect]);
+                StyleServices(Tree).DrawEdge(Handle, StyleServices(Tree).GetElementDetails(twWindowRoot), R, [eeRaisedOuter], [efRect]);
               end;
           end
           else
             if Tree.VclStyleEnabled then
-              StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tttStandardNormal), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND})
+              StyleServices(Tree).DrawElement(Canvas.Handle, StyleServices(Tree).GetElementDetails(tttStandardNormal), R {$IF CompilerVersion >= 34}, nil, FCurrentPPI{$IFEND})
             else
               Rectangle(R);
         end;
@@ -5558,6 +5580,11 @@ begin
         Winapi.Windows.DrawTextW(Handle, PWideChar(HintText), Length(HintText), R, DrawFormat);
       end;
   end;
+end;
+
+function TVirtualTreeHintWindow.StyleServices(AControl: TControl): TCustomStyleServices;
+begin
+  Result := Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(AControl){$ifend};
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7819,6 +7846,18 @@ procedure TVirtualTreeColumns.SetItem(Index: TColumnIndex; Value: TVirtualTreeCo
 
 begin
   inherited SetItem(Index, Value);
+end;
+
+function TVirtualTreeColumns.StyleServices(AControl: TControl): TCustomStyleServices;
+begin
+{$if CompilerVersion >= 34}
+  if AControl = nil then
+    Result := Vcl.Themes.StyleServices(FHeader.Treeview)
+  else
+    Result := Vcl.Themes.StyleServices(AControl);
+{$else}
+  Result := Vcl.Themes.StyleServices;
+{$ifend}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11964,6 +12003,18 @@ begin
       end;
     end;
   end;
+end;
+
+function TVTColors.StyleServices(AControl: TControl): TCustomStyleServices;
+begin
+{$if CompilerVersion >= 34}
+  if AControl = nil then
+    Result := Vcl.Themes.StyleServices(fOwner)
+  else
+    Result := Vcl.Themes.StyleServices(AControl);
+{$else}
+  Result := Vcl.Themes.StyleServices;
+{$ifend}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25167,6 +25218,18 @@ begin
     else
       DoStructureChange(Node, Reason);
   end;
+end;
+
+function TBaseVirtualTree.StyleServices(AControl: TControl): TCustomStyleServices;
+begin
+{$if CompilerVersion >= 34}
+  if AControl = nil then
+    Result := Vcl.Themes.StyleServices(Self)
+  else
+    Result := Vcl.Themes.StyleServices(AControl);
+{$else}
+  Result := Vcl.Themes.StyleServices;
+{$ifend}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
