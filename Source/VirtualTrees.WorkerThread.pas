@@ -138,11 +138,13 @@ procedure TWorkerThread.Execute();
 var
   EnterStates: TVirtualTreeStates;
   lCurrentTree: TBaseVirtualTree;
-
+  lExceptAddr: Pointer;
+  lException: TObject;
+  
 begin
   TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');
   while not Terminated do
-  begin
+  try
     WaitForSingleObject(FWorkEvent, INFINITE);
     if Terminated then
       exit;
@@ -180,6 +182,17 @@ begin
         TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
         Queue(TBaseVirtualTreeCracker(lCurrentTree).UpdateEditBounds);
       end;
+    end;
+  except
+    on Exception do
+    begin
+      lExceptAddr := ExceptAddr;
+      lException := AcquireExceptionObject;
+      TThread.Synchronize(nil, procedure
+        begin
+          raise lException at lExceptAddr;
+        end);
+      Continue; //the thread should continue to run
     end;
   end;//while
 end;
