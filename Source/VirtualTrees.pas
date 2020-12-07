@@ -1,4 +1,4 @@
-unit VirtualTrees;
+ï»¿unit VirtualTrees;
 
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -4058,7 +4058,7 @@ const
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
-  Copyright: string = 'Virtual Treeview © 1999, 2010, 2016 Mike Lischke, Joachim Marder';
+  Copyright: string = 'Virtual Treeview Â© 1999, 2010, 2016 Mike Lischke, Joachim Marder';
 
 var
   StandardOLEFormat: TFormatEtc = (
@@ -14124,7 +14124,7 @@ begin
                   FillBitmap(FMinusBM);
                   FillBitmap(FHotMinusBM);
                   FillBitmap(FSelectedHotMinusBM);
-                  // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiße aus
+                  // Weil die selbstgezeichneten Bitmaps sehen im Vcl Style scheiÃŸe aus
                   // Because the self-drawn bitmaps view Vcl Style shit
                   if Theme = 0 then
                   begin
@@ -34565,7 +34565,7 @@ function TCustomVirtualStringTree.ContentToHTML(Source: TVSTTextSourceType; cons
 
 // Renders the current tree content (depending on Source) as HTML text encoded in UTF-8.
 // If Caption is not empty then it is used to create and fill the header for the table built here.
-// Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
+// Based on ideas and code from Frank van den Bergh and Andreas HÃ¶rstemeier.
 
 begin
   Result := VirtualTrees.Export.ContentToHTML(Self, Source, Caption);
@@ -34639,7 +34639,7 @@ end;
 function TCustomVirtualStringTree.ContentToRTF(Source: TVSTTextSourceType): RawByteString;
 
 // Renders the current tree content (depending on Source) as RTF (rich text).
-// Based on ideas and code from Frank van den Bergh and Andreas Hörstemeier.
+// Based on ideas and code from Frank van den Bergh and Andreas HÃ¶rstemeier.
 
 begin
   Result := VirtualTrees.Export.ContentToRTF(Self, Source);
