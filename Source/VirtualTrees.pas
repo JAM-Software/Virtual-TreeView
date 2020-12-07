@@ -3595,6 +3595,7 @@ type
     property ShowHint;
     property StateImages;
     property StyleElements;
+    {$if CompilerVersion >= 34}property StyleName;{$ifend}
     property TabOrder;
     property TabStop default True;
     property TextMargin;
