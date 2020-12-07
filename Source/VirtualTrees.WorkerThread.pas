@@ -171,8 +171,8 @@ begin
     if Assigned(lCurrentTree) then
     begin
       try
-        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
         FCurrentTree := lCurrentTree;
+        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
         EnterStates := [];
         if not (tsStopValidation in FCurrentTree.TreeStates) and TBaseVirtualTreeCracker(FCurrentTree).DoValidateCache then
           EnterStates := [tsUseCache];
