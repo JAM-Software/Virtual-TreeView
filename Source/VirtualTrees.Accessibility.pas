@@ -1,4 +1,4 @@
-unit VirtualTrees.Accessibility;
+﻿unit VirtualTrees.Accessibility;
 
 // This unit implements iAccessible interfaces for the VirtualTree visual components
 // and the currently focused node.
