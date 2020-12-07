@@ -104,9 +104,9 @@ end;
 constructor TWorkerThread.Create();
 
 begin
+  FWaiterList := TThreadList.Create;
   inherited Create(False);
   FreeOnTerminate := True;
-  FWaiterList := TThreadList.Create;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
