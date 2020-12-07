@@ -1,4 +1,4 @@
-unit VirtualTrees.AccessibilityFactory;
+﻿unit VirtualTrees.AccessibilityFactory;
 
 // The contents of this file are subject to the Mozilla Public License
 // Version 1.1 (the "License"); you may not use this file except in compliance
@@ -30,7 +30,7 @@ unit VirtualTrees.AccessibilityFactory;
 // the AccessibleItem is returned when the Accessible is being asked for the first child
 // To create your own IAccessibles, use the VTStandardAccessible unit as a reference,
 // and assign your Accessibles to the variables in the unit's initialization.
-// You only need to add the unit to your project, and voil�, you have an accessible string tree!
+// You only need to add the unit to your project, and voilá, you have an accessible string tree!
 //
 // Written by Marco Zehe. (c) 2007
 
