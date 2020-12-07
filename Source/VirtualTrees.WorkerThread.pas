@@ -202,7 +202,7 @@ begin
     WorkerThread.FWaiterList.UnlockList;
   end;
 
-  SetEvent(WorkEvent);
+  SetEvent(WorkerThread.FWorkEvent);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
