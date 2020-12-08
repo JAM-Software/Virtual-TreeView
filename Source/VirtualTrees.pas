@@ -18538,7 +18538,9 @@ begin
       begin
         // Prevent invalid combination tsUseCache + tsValidationNeeded (#915)
         if not ((tsUseCache in EnterStates) and (tsValidationNeeded in FStates + LeaveStates)) then
-          DoStateChange(EnterStates, LeaveStates)
+          DoStateChange(EnterStates, LeaveStates);
+        if (tsValidating in FStates) and (tsValidating in LeaveStates) then
+          UpdateEditBounds();
       end);
 end;
 

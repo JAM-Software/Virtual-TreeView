@@ -175,9 +175,8 @@ begin
           EnterStates := [tsUseCache];
 
       finally
-        FCurrentTree := nil; //Clear variable to prevent deadlock in WaitForValidationTermination()
         TBaseVirtualTreeCracker(FCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
-        Queue(TBaseVirtualTreeCracker(FCurrentTree).UpdateEditBounds);
+        FCurrentTree := nil; //Clear variable to prevent deadlock in WaitForValidationTermination()
       end;
     end;
   except
