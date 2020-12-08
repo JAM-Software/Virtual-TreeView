@@ -88,7 +88,6 @@ begin
       WorkerThread.Dispose(ACanBlock);
     end;
   end;
-  CheckSynchronize(); // Make sure code queued in the main thread by TBaseVirtualTree.ChangeTreeStatesAsync() get processed before the tree is being destroyed. issue #1001
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
