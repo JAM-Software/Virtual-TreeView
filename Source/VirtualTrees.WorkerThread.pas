@@ -137,7 +137,7 @@ var
   EnterStates: TVirtualTreeStates;
   lExceptAddr: Pointer;
   lException: TObject;
-
+  lCurrentTree: TBaseVirtualTree;
 begin
   TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');
   while not Terminated do
@@ -174,8 +174,9 @@ begin
           EnterStates := [tsUseCache];
 
       finally
+        lCurrentTree := FCurrentTree; // Save reference in a local variable as it is going to be cleared in the next line.
+        FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination()
         TBaseVirtualTreeCracker(FCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
-        FCurrentTree := nil; //Clear variable to prevent deadlock in WaitForValidationTermination()
       end;
     end;
   except
