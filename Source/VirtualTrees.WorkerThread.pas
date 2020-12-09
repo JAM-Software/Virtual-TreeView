@@ -176,7 +176,7 @@ begin
       finally
         lCurrentTree := FCurrentTree; // Save reference in a local variable as it is going to be cleared in the next line.
         FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination()
-        TBaseVirtualTreeCracker(FCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
+        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
       end;
     end;
   except
