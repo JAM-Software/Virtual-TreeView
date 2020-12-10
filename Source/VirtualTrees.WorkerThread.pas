@@ -137,7 +137,7 @@ var
   EnterStates: TVirtualTreeStates;
   lExceptAddr: Pointer;
   lException: TObject;
-
+  lCurrentTree: TBaseVirtualTree;
 begin
   TThread.NameThreadForDebugging('VirtualTrees.TWorkerThread');
   while not Terminated do
@@ -151,7 +151,7 @@ begin
     try
       if Count > 0 then
       begin
-        FCurrentTree := Items[0];
+        lCurrentTree := Items[0];
         // Remove this tree from waiter list.
         Delete(0);
         // If there is yet another tree to work on then set the work event to keep looping.
@@ -159,23 +159,24 @@ begin
           SetEvent(FWorkEvent);
       end
       else
-        FCurrentTree := nil;
+        lCurrentTree := nil;
     finally
       FWaiterList.UnlockList;
     end;
 
     // Something to do?
-    if Assigned(FCurrentTree) then
+    if Assigned(lCurrentTree) then
     begin
       try
-        TBaseVirtualTreeCracker(FCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
+        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
+        FCurrentTree := lCurrentTree;
         EnterStates := [];
         if not (tsStopValidation in FCurrentTree.TreeStates) and TBaseVirtualTreeCracker(FCurrentTree).DoValidateCache then
           EnterStates := [tsUseCache];
 
       finally
-        TBaseVirtualTreeCracker(FCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
-        FCurrentTree := nil; //Clear variable to prevent deadlock in WaitForValidationTermination()
+        FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination()
+        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
       end;
     end;
   except
