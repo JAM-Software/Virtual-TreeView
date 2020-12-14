@@ -4012,6 +4012,14 @@ type
 // utility routines
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 
+type
+  TVTStyleServicesFunc = function (AControl: TControl = nil): TCustomStyleServices;
+
+function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
+
+var
+  VTStyleServicesFunc: TVTStyleServicesFunc = nil;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 implementation
@@ -4290,13 +4298,11 @@ var
 
   //---------------------------------------------------------------------------
 
-  {$if CompilerVersion >= 34}
   // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
   function StyleServices: TCustomStyleServices;
   begin
-    Result := Vcl.Themes.StyleServices(pControl);
+    Result := VTStyleServices(pControl);
   end;
-  {$ifend}
 
   procedure AddSystemImage(IL: TImageList; Index: Integer);
   const
@@ -4704,7 +4710,7 @@ end;
 
 function TCustomVirtualTreeOptions.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
-  Exit(Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(FOwner){$ifend});
+  Result := VTStyleServices(FOwner);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5585,7 +5591,7 @@ end;
 
 function TVirtualTreeHintWindow.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
-  Result := Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(AControl){$ifend};
+  Result := VTStyleServices(AControl);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7851,14 +7857,9 @@ end;
 
 function TVirtualTreeColumns.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
-{$if CompilerVersion >= 34}
   if AControl = nil then
-    Result := Vcl.Themes.StyleServices(FHeader.Treeview)
-  else
-    Result := Vcl.Themes.StyleServices(AControl);
-{$else}
-  Result := Vcl.Themes.StyleServices;
-{$ifend}
+    AControl := FHeader.Treeview;
+  Result := VTStyleServices(AControl);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12008,14 +12009,9 @@ end;
 
 function TVTColors.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
-{$if CompilerVersion >= 34}
   if AControl = nil then
-    Result := Vcl.Themes.StyleServices(fOwner)
-  else
-    Result := Vcl.Themes.StyleServices(AControl);
-{$else}
-  Result := Vcl.Themes.StyleServices;
-{$ifend}
+    AControl := fOwner;
+  Result := VTStyleServices(AControl);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25225,14 +25221,9 @@ end;
 
 function TBaseVirtualTree.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
-{$if CompilerVersion >= 34}
   if AControl = nil then
-    Result := Vcl.Themes.StyleServices(Self)
-  else
-    Result := Vcl.Themes.StyleServices(AControl);
-{$else}
-  Result := Vcl.Themes.StyleServices;
-{$ifend}
+    AControl := Self;
+  Result := VTStyleServices(AControl);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35096,6 +35087,14 @@ begin
   TargetCanvas.Pen.Color := clDkGray;
   DrawArrow(TargetCanvas, cDirection[pDirection], Point(SortGlyphPos.X, SortGlyphPos.Y), SortGlyphSize.cy);
   TargetCanvas.Pen.Color := lOldColor;
+end;
+
+function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
+begin
+  if Assigned(VTStyleServicesFunc) then
+    Result := VTStyleServicesFunc(AControl)
+  else
+    Result := Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(AControl){$ifend};
 end;
 
 initialization
