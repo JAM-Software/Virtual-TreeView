@@ -4012,13 +4012,9 @@ type
 // utility routines
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 
-type
-  TVTStyleServicesFunc = function (AControl: TControl = nil): TCustomStyleServices;
-
+/// Wrapper function for styles services that handles differences between RAD Studio 10.4 and older versions,
+/// as well as the case if these controls are used inside the IDE.
 function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
-
-var
-  VTStyleServicesFunc: TVTStyleServicesFunc = nil;
 
 //----------------------------------------------------------------------------------------------------------------------
 

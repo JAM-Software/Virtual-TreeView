@@ -101,6 +101,17 @@ type
     property VertScrollRect;
   end;
 
+type
+  /// prototype for the global callback VTStyleServicesFunc.
+  TVTStyleServicesFunc = function (AControl: TControl = nil): TCustomStyleServices;
+
+
+var
+  /// Callback that can be used to assign an alternative function to supply style services.
+  /// Needed for IDE plugins. See pull request #1011
+  VTStyleServicesFunc: TVTStyleServicesFunc = nil;
+
+
 implementation
 
 uses
