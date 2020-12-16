@@ -4012,9 +4012,6 @@ type
 // utility routines
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 
-/// Wrapper function for styles services that handles differences between RAD Studio 10.4 and older versions,
-/// as well as the case if these controls are used inside the IDE.
-function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -4179,6 +4176,18 @@ begin
     Result := TBaseVirtualTree(Node.Parent)
   else
     Result := nil;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+/// Wrapper function for styles services that handles differences between RAD Studio 10.4 and older versions,
+/// as well as the case if these controls are used inside the IDE.
+function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
+begin
+  if Assigned(VTStyleServicesFunc) then
+    Result := VTStyleServicesFunc(AControl)
+  else
+    Result := Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(AControl){$ifend};
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35083,14 +35092,6 @@ begin
   TargetCanvas.Pen.Color := clDkGray;
   DrawArrow(TargetCanvas, cDirection[pDirection], Point(SortGlyphPos.X, SortGlyphPos.Y), SortGlyphSize.cy);
   TargetCanvas.Pen.Color := lOldColor;
-end;
-
-function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
-begin
-  if Assigned(VTStyleServicesFunc) then
-    Result := VTStyleServicesFunc(AControl)
-  else
-    Result := Vcl.Themes.StyleServices{$if CompilerVersion >= 34}(AControl){$ifend};
 end;
 
 initialization
