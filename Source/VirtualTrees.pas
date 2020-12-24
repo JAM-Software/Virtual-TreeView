@@ -2736,7 +2736,7 @@ type
     function InternalData(Node: PVirtualNode): Pointer;
     procedure InternalDisconnectNode(Node: PVirtualNode; KeepFocus: Boolean; Reindex: Boolean = True; ParentClearing: Boolean = False); virtual;
     procedure InternalRemoveFromSelection(Node: PVirtualNode); virtual;
-    procedure InterruptValidation;
+    procedure InterruptValidation(pWaitForValidationTermination: Boolean = True);
     procedure InvalidateCache;
     procedure Loaded; override;
     procedure MainColumnChanged; virtual;
@@ -12190,7 +12190,7 @@ begin
     fAccessible := nil;
   end;
 
-  InterruptValidation();
+  InterruptValidation(True);
   Exclude(FOptions.FMiscOptions, toReadOnly);
   // Make sure there is no reference remaining to the releasing tree.
   TWorkerThread.ReleaseThreadReference();
@@ -13834,17 +13834,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.InterruptValidation;
+procedure TBaseVirtualTree.InterruptValidation(pWaitForValidationTermination: Boolean = True);
 
 var
   WasValidating: Boolean;
-
 begin
   DoStateChange([tsStopValidation], [tsUseCache]);
 
   // Check the worker thread existance. It might already be gone (usually on destruction of the last tree).
   WasValidating := (tsValidating in FStates);
-  TWorkerThread.RemoveTree(Self);
+  TWorkerThread.RemoveTree(Self, pWaitForValidationTermination);
   if WasValidating then
     InvalidateCache();
 end;
@@ -25705,8 +25704,8 @@ procedure TBaseVirtualTree.ValidateCache();
 // (if not already there) and signalling the thread it can start validating.
 
 begin
-  // Wait for thread to stop validation if it is currently validating this tree's cache.
-  InterruptValidation;
+  // stop validation if it is currently validating this tree's cache.
+  InterruptValidation(False);
 
   FStartIndex := 0;
   if (tsValidationNeeded in FStates) and (FVisibleCount > CacheThreshold) then

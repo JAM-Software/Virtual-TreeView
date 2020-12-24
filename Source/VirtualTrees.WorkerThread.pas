@@ -28,7 +28,7 @@ type
     class procedure ReleaseThreadReference(ACanBlock: Boolean = False);
 
     class procedure AddTree(Tree: TBaseVirtualTree);
-    class procedure RemoveTree(Tree: TBaseVirtualTree);
+    class procedure RemoveTree(pTree: TBaseVirtualTree; pWaitForValidationTermination: Boolean);
   end;
 
 
@@ -168,15 +168,14 @@ begin
     if Assigned(lCurrentTree) then
     begin
       try
-        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
         FCurrentTree := lCurrentTree;
+        TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
         EnterStates := [];
         if not (tsStopValidation in FCurrentTree.TreeStates) and TBaseVirtualTreeCracker(FCurrentTree).DoValidateCache then
           EnterStates := [tsUseCache];
-
       finally
-        FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination()
         TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
+        FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination()
       end;
     end;
   except
@@ -216,20 +215,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class procedure TWorkerThread.RemoveTree(Tree: TBaseVirtualTree);
-
+class procedure TWorkerThread.RemoveTree(pTree: TBaseVirtualTree; pWaitForValidationTermination: Boolean);
 begin
   if not Assigned(WorkerThread) then
     exit;
-  Assert(Assigned(Tree), 'Tree must not be nil.');
+  Assert(Assigned(pTree), 'pTree must not be nil.');
 
   with WorkerThread.FWaiterList.LockList do
   try
-    Remove(Tree);
+    Remove(pTree);
   finally
     WorkerThread.FWaiterList.UnlockList; // Seen several AVs in this line, was called from TWorkerThrea.Destroy. Joachim Marder.
   end;
-  WorkerThread.WaitForValidationTermination(Tree);
+  if pWaitForValidationTermination then
+    WorkerThread.WaitForValidationTermination(pTree);
 end;
 
 
