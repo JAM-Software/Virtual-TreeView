@@ -369,36 +369,42 @@ begin
     Inc(BorderSize, GetSystemMetrics(SM_CYEDGE));
 
   // VertScrollBarWindow
-  if FVertScrollWnd.Visible then
+  if FVertScrollWnd.HandleAllocated then
   begin
-    R := VertScrollRect;
-    if Control.UseRightToLeftScrollBar then
-      OffsetRect(R, -R.Left + BorderSize, 0);
+    if FVertScrollWnd.Visible then
+    begin
+      R := VertScrollRect;
+      if Control.UseRightToLeftScrollBar then
+        OffsetRect(R, -R.Left + BorderSize, 0);
 
-    ShowWindow(FVertScrollWnd.Handle, SW_SHOW);
-    SetWindowPos(FVertScrollWnd.Handle, HWND_TOP,
-      Control.Left + R.Left + PaddingSize,
-      Control.Top + R.Top + HeaderHeight + PaddingSize,
-      R.Width,
-      Control.Height - HeaderHeight - ((PaddingSize + BorderSize) * 2), // <> R.Height
-      SWP_SHOWWINDOW);
-  end else
-    ShowWindow(FVertScrollWnd.Handle, SW_HIDE);
+      ShowWindow(FVertScrollWnd.Handle, SW_SHOW);
+      SetWindowPos(FVertScrollWnd.Handle, HWND_TOP,
+        Control.Left + R.Left + PaddingSize,
+        Control.Top + R.Top + HeaderHeight + PaddingSize,
+        R.Width,
+        Control.Height - HeaderHeight - ((PaddingSize + BorderSize) * 2), // <> R.Height
+        SWP_SHOWWINDOW);
+    end else
+      ShowWindow(FVertScrollWnd.Handle, SW_HIDE);
+  end;// if FVertScrollWnd
 
   // HorzScrollBarWindow
-  if FHorzScrollWnd.Visible then
+  if FHorzScrollWnd.HandleAllocated then
   begin
-    R := HorzScrollRect;
-    if Control.UseRightToLeftScrollBar then
-      OffsetRect(R, VertScrollRect.Width, 0);
+    if FHorzScrollWnd.Visible then
+    begin
+      R := HorzScrollRect;
+      if Control.UseRightToLeftScrollBar then
+        OffsetRect(R, VertScrollRect.Width, 0);
 
-    ShowWindow(FHorzScrollWnd.Handle, SW_SHOW);
-    SetWindowPos(FHorzScrollWnd.Handle, HWND_TOP,
-      Control.Left + R.Left + PaddingSize,
-      Control.Top + R.Top + HeaderHeight + PaddingSize,
-      R.Width, R.Height, SWP_SHOWWINDOW);
-  end else
-    ShowWindow(FHorzScrollWnd.Handle, SW_HIDE);
+      ShowWindow(FHorzScrollWnd.Handle, SW_SHOW);
+      SetWindowPos(FHorzScrollWnd.Handle, HWND_TOP,
+        Control.Left + R.Left + PaddingSize,
+        Control.Top + R.Top + HeaderHeight + PaddingSize,
+        R.Width, R.Height, SWP_SHOWWINDOW);
+    end else
+      ShowWindow(FHorzScrollWnd.Handle, SW_HIDE);
+  end;// if FHorzScrollWnd
 end;
 
 procedure TVclStyleScrollBarsHook.WMCaptureChanged(var Msg: TMessage);
