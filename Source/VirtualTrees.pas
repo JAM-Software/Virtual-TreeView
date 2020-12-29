@@ -12178,7 +12178,8 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 destructor TBaseVirtualTree.Destroy;
-
+var
+  WasValidating: Boolean;
 begin
   // Disconnect all remote MSAA connections
   if Assigned(FAccessibleItem) then begin
@@ -12190,7 +12191,10 @@ begin
     fAccessible := nil;
   end;
 
+  WasValidating := (tsValidating in FStates);
   InterruptValidation(True);
+  if WasValidating then
+    CheckSynchronize(); // Make sure to dequeue all synchronized calls from ChangeTreeStatesAsync(), fixes mem leak reported in issue #1001.
   Exclude(FOptions.FMiscOptions, toReadOnly);
   // Make sure there is no reference remaining to the releasing tree.
   TWorkerThread.ReleaseThreadReference();
@@ -25705,7 +25709,7 @@ procedure TBaseVirtualTree.ValidateCache();
 
 begin
   // stop validation if it is currently validating this tree's cache.
-  InterruptValidation(False);
+  InterruptValidation();
 
   FStartIndex := 0;
   if (tsValidationNeeded in FStates) and (FVisibleCount > CacheThreshold) then
@@ -32628,7 +32632,7 @@ var
 begin
   UpdateHorizontalRange;
 
-  if (tsUpdating in FStates) or not HandleAllocated then
+  if (FUpdateCount > 0) or not HandleAllocated then
     Exit;
 
   // Adjust effect scroll offset depending on bidi mode.
@@ -32735,7 +32739,7 @@ var
 begin
   UpdateVerticalRange;
 
-  if tsUpdating in FStates then
+  if (fUpdateCount > 0) then
     Exit;
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls like ' + Classname + ' and its scrollbars should only be manipulated through the main thread.');
 
