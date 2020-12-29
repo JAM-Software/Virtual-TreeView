@@ -12194,7 +12194,11 @@ begin
   WasValidating := (tsValidating in FStates);
   InterruptValidation(True);
   if WasValidating then
-    CheckSynchronize(); // Make sure to dequeue all synchronized calls from ChangeTreeStatesAsync(), fixes mem leak reported in issue #1001.
+  begin
+    // Make sure we dequeue the two synchronized calls from ChangeTreeStatesAsync(), fixes mem leak and AV reported in issue #1001, but is more a workaround.
+    CheckSynchronize();
+    CheckSynchronize();
+  end;// if
   Exclude(FOptions.FMiscOptions, toReadOnly);
   // Make sure there is no reference remaining to the releasing tree.
   TWorkerThread.ReleaseThreadReference();
