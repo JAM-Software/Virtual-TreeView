@@ -57,7 +57,7 @@ begin
     WorkerThread := TWorkerThread.Create();
 end;
 
-class procedure TWorkerThread.Dispose;
+class procedure TWorkerThread.Dispose(CanBlock: Boolean);
 var
   LRef: TThread;
 begin
@@ -168,14 +168,14 @@ begin
     if Assigned(lCurrentTree) then
     begin
       try
-        FCurrentTree := lCurrentTree;
         TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync([tsValidating], [tsUseCache, tsValidationNeeded]);
+        FCurrentTree := lCurrentTree;
         EnterStates := [];
         if not (tsStopValidation in FCurrentTree.TreeStates) and TBaseVirtualTreeCracker(FCurrentTree).DoValidateCache then
           EnterStates := [tsUseCache];
       finally
+        FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination(). See issue #1001
         TBaseVirtualTreeCracker(lCurrentTree).ChangeTreeStatesAsync(EnterStates, [tsValidating, tsStopValidation]);
-        FCurrentTree := nil; // Important: Clear variable before calling ChangeTreeStatesAsync() to prevent deadlock in WaitForValidationTermination()
       end;
     end;
   except
