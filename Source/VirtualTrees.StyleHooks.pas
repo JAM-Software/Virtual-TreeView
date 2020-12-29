@@ -369,7 +369,7 @@ begin
     Inc(BorderSize, GetSystemMetrics(SM_CYEDGE));
 
   // VertScrollBarWindow
-  if FVertScrollWnd.HandleAllocated then
+  if Control.HandleAllocated then
   begin
     if FVertScrollWnd.Visible then
     begin
@@ -389,7 +389,7 @@ begin
   end;// if FVertScrollWnd
 
   // HorzScrollBarWindow
-  if FHorzScrollWnd.HandleAllocated then
+  if Control.HandleAllocated then
   begin
     if FHorzScrollWnd.Visible then
     begin
