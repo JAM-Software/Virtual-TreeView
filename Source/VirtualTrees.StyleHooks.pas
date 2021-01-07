@@ -86,6 +86,8 @@ type
     procedure WMSize(var Msg: TMessage); message WM_SIZE;
     procedure WMMove(var Msg: TMessage); message WM_MOVE;
     procedure WMPosChanged(var Msg: TMessage); message WM_WINDOWPOSCHANGED;
+
+    procedure InitScrollBars;
   protected
     procedure CalcScrollBarsRect; virtual;
     procedure DrawHorzScrollBar(DC: HDC); virtual;
@@ -161,12 +163,7 @@ end;
 constructor TVclStyleScrollBarsHook.Create(AControl: TWinControl);
 begin
   inherited;
-  FVertScrollWnd := TScrollWindow.CreateParented(GetParent(Control.Handle));
-  FVertScrollWnd.StyleHook := Self;
-  FVertScrollWnd.Vertical := True;
-
-  FHorzScrollWnd := TScrollWindow.CreateParented(GetParent(Control.Handle));
-  FHorzScrollWnd.StyleHook := Self;
+  InitScrollBars;
 
   VertSliderState := tsThumbBtnVertNormal;
   VertUpState := tsArrowBtnUpNormal;
@@ -174,6 +171,16 @@ begin
   HorzSliderState := tsThumbBtnHorzNormal;
   HorzUpState := tsArrowBtnLeftNormal;
   HorzDownState := tsArrowBtnRightNormal;
+end;
+
+procedure TVclStyleScrollBarsHook.InitScrollBars;
+begin
+  FVertScrollWnd := TScrollWindow.CreateParented(GetParent(Control.Handle));
+  FVertScrollWnd.StyleHook := Self;
+  FVertScrollWnd.Vertical := True;
+
+  FHorzScrollWnd := TScrollWindow.CreateParented(GetParent(Control.Handle));
+  FHorzScrollWnd.StyleHook := Self;
 end;
 
 destructor TVclStyleScrollBarsHook.Destroy;
@@ -348,6 +355,18 @@ var
   PaddingSize: Integer;
   BorderSize: Integer;
 begin
+  if ((FVertScrollWnd <> nil) and not FVertScrollWnd.HandleAllocated) or
+     ((FHorzScrollWnd <> nil) and not FHorzScrollWnd.HandleAllocated)
+   then
+  begin
+    if FVertScrollWnd <> nil then
+      FreeAndNil(FVertScrollWnd);
+    if FHorzScrollWnd <> nil then
+      FreeAndNil(FHorzScrollWnd);
+
+    InitScrollBars;
+  end;
+
   // ScrollBarWindow Visible/Enabled Control
   CalcScrollBarsRect;
 
