@@ -18519,7 +18519,7 @@ begin
               Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
               // The next three lines fix issue #1000
               lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
-              FRoot.TotalHeight := FRoot.TotalHeight + lNewNodeTotalHeight - Run.TotalHeight;
+              FRoot.TotalHeight := FRoot.TotalHeight + lNewNodeTotalHeight - Run.TotalHeight; // 1 EIntOverflow exception seen here in debug build in 01/2021
               Run.TotalHeight := lNewNodeTotalHeight;
             end;
             Run := GetNextNoInit(Run);
