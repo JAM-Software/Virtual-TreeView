@@ -12215,9 +12215,7 @@ begin
   FDragImage.Free;
   FColors.Free;
   FBackground.Free;
-  FImageChangeLink.Free;
-  FStateChangeLink.Free;
-  FCustomCheckChangeLink.Free;
+
   if CheckImageKind = ckSystemDefault then
     FCheckImages.Free;
   FScrollBarOptions.Free;
@@ -12248,6 +12246,10 @@ begin
   Images := nil;
   StateImages := nil;
   CustomCheckImages := nil;
+
+  FImageChangeLink.Free;
+  FStateChangeLink.Free;
+  FCustomCheckChangeLink.Free;
 
   inherited;
 end;
