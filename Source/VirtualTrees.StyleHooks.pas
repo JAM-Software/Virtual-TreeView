@@ -131,7 +131,7 @@ type
 // XE2+ VCL Style
 { TVclStyleScrollBarsHook }
 
-procedure TVclStyleScrollBarsHook.CalcScrollBarsRect;
+procedure TVclStyleScrollBarsHook.CalcScrollBarsRect();
 
   procedure CalcVerticalRects;
   var
@@ -156,6 +156,17 @@ procedure TVclStyleScrollBarsHook.CalcScrollBarsRect;
   end;
 
 begin
+  if ((FVertScrollWnd <> nil) and not FVertScrollWnd.HandleAllocated) or
+     ((FHorzScrollWnd <> nil) and not FHorzScrollWnd.HandleAllocated) then
+  begin  // Fixes issue #390
+    if FVertScrollWnd <> nil then
+      FreeAndNil(FVertScrollWnd);
+    if FHorzScrollWnd <> nil then
+      FreeAndNil(FHorzScrollWnd);
+
+    InitScrollBars;
+  end;
+
   CalcVerticalRects;
   CalcHorizontalRects;
 end;
@@ -355,18 +366,6 @@ var
   PaddingSize: Integer;
   BorderSize: Integer;
 begin
-  if ((FVertScrollWnd <> nil) and not FVertScrollWnd.HandleAllocated) or
-     ((FHorzScrollWnd <> nil) and not FHorzScrollWnd.HandleAllocated)
-   then
-  begin
-    if FVertScrollWnd <> nil then
-      FreeAndNil(FVertScrollWnd);
-    if FHorzScrollWnd <> nil then
-      FreeAndNil(FHorzScrollWnd);
-
-    InitScrollBars;
-  end;
-
   // ScrollBarWindow Visible/Enabled Control
   CalcScrollBarsRect;
 
