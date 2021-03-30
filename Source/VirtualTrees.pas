@@ -1349,7 +1349,7 @@ type
     procedure AutoScale(); virtual;
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
-    procedure ChangeScale(M, D: TDimension); virtual;
+    procedure ChangeScale(M, D: TDimension; isDpiChange: Boolean); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
     procedure DoAfterAutoFitColumn(Column: TColumnIndex); virtual;
     procedure DoAfterColumnWidthTracking(Column: TColumnIndex); virtual;
@@ -9984,11 +9984,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.ChangeScale(M, D: Integer);
+procedure TVTHeader.ChangeScale(M, D: Integer; isDpiChange: Boolean);
 var
   I: Integer;
 begin
   // This method is only executed if toAutoChangeScale is set
+  FMinHeight := MulDiv(FMinHeight, M, D);
+  FMaxHeight := MulDiv(FMaxHeight, M, D);
   Self.Height := MulDiv(FHeight, M, D);
   if not ParentFont then
     Font.Height := MulDiv(Font.Height, M, D);
@@ -9997,7 +9999,8 @@ begin
   begin
     Self.FColumns[I].Width := MulDiv(Self.FColumns[I].Width, M, D);
   end;//for I
-  AutoScale();
+  if not isDpiChange then
+    AutoScale();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -18503,7 +18506,7 @@ begin
       else
         Flags := DefaultScalingFlags; // Important for #677
       if (sfHeight in Flags) then begin
-        FHeader.ChangeScale(M, D);
+        FHeader.ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
         SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
         Indent := MulDiv(Indent, M, D);
         FTextMargin := MulDiv(FTextMargin, M, D);
