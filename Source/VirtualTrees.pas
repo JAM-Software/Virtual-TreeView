@@ -9989,6 +9989,8 @@ var
   I: Integer;
 begin
   // This method is only executed if toAutoChangeScale is set
+  FMinHeight := MulDiv(FMinHeight, M, D);
+  FMaxHeight := MulDiv(FMaxHeight, M, D);
   Self.Height := MulDiv(FHeight, M, D);
   if not ParentFont then
     Font.Height := MulDiv(Font.Height, M, D);
