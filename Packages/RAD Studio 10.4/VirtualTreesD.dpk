@@ -27,7 +27,7 @@ package VirtualTreesD;
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'VirtualTreeView Controls'}
-{$LIBSUFFIX '27'}
+{$LIBSUFFIX AUTO}
 {$DESIGNONLY}
 {$IMPLICITBUILD OFF}
 
@@ -39,4 +39,3 @@ contains
   VirtualTreesReg in '..\..\Design\VirtualTreesReg.pas';
 
 end.
-
