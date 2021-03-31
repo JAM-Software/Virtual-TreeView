@@ -515,7 +515,7 @@ begin
     begin
       if VertSliderState = tsThumbBtnVertPressed then
       begin
-        PostMessage(Handle, WM_VSCROLL, WPARAM(SmallPoint(SB_ENDSCROLL, 0)), 0);
+        PostMessage(Handle, WM_VSCROLL, WPARAM(UInt32(SmallPoint(SB_ENDSCROLL, 0))), 0);
         FLeftMouseButtonDown := False;
         VertSliderState := tsThumbBtnVertNormal;
         PaintScroll;
@@ -533,7 +533,7 @@ begin
     begin
       if HorzSliderState = tsThumbBtnHorzPressed then
       begin
-        PostMessage(Handle, WM_HSCROLL, WPARAM(SmallPoint(SB_ENDSCROLL, 0)), 0);
+        PostMessage(Handle, WM_HSCROLL, WPARAM(UInt32(SmallPoint(SB_ENDSCROLL, 0))), 0);
         FLeftMouseButtonDown := False;
         HorzSliderState := tsThumbBtnHorzNormal;
         PaintScroll;
@@ -570,7 +570,7 @@ begin
     SF.fMask := SIF_POS;
     SF.nPos := Round(ScrollPos);
     SetScrollInfo(Handle, SB_VERT, SF, False);
-    PostMessage(Handle, WM_VSCROLL, WPARAM(SmallPoint(SB_THUMBPOSITION, Min(SF.nPos, High(SmallInt)))), 0);
+    PostMessage(Handle, WM_VSCROLL, WPARAM(UInt32(SmallPoint(SB_THUMBPOSITION, Min(SF.nPos, High(SmallInt))))), 0);
 
     PaintScroll;
     Handled := True;
@@ -596,7 +596,7 @@ begin
     SF.fMask := SIF_POS;
     SF.nPos := Round(ScrollPos);
     SetScrollInfo(Handle, SB_HORZ, SF, False);
-    PostMessage(Handle, WM_HSCROLL, WPARAM(SmallPoint(SB_THUMBPOSITION, Min(SF.nPos, High(SmallInt)))), 0);
+    PostMessage(Handle, WM_HSCROLL, WPARAM(UInt32(SmallPoint(SB_THUMBPOSITION, Min(SF.nPos, High(SmallInt))))), 0);
 
     PaintScroll;
     Handled := True;
