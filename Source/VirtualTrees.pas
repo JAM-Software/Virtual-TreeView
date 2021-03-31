@@ -9654,11 +9654,12 @@ var
 begin
   if toAutoChangeScale in Treeview.TreeOptions.AutoOptions then
   begin
-    // Find the largest Columns[].Spacing
+    // Ensure a minimum header size based on the font, so that all text is visible.
+    // First find the largest Columns[].Spacing
     lMaxHeight := 0;
     for I := 0 to Self.Columns.Count - 1 do
       lMaxHeight := Max(lMaxHeight, Columns[I].Spacing);
-    // Calculate the required size based on the font, this is important as the use migth just vave increased the size of the icon font
+    // Calculate the required height based on the font, this is important as the user might just have increased the size of the system icon font.
     with TBitmap.Create do
       try
         Canvas.Font.Assign(FFont);
@@ -9666,7 +9667,7 @@ begin
       finally
         Free;
       end;
-    // Get the maximum of the scaled original value an
+    // Get the maximum of the scaled original value and the minimum needed header height.
     lMaxHeight := Max(lMaxHeight, FHeight);
     // Set the calculated size
     Self.SetHeight(lMaxHeight);

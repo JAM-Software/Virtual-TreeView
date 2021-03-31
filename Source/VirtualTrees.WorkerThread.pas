@@ -65,7 +65,7 @@ begin
   WorkerThread.Terminate();
   SetEvent(WorkerThread.FWorkEvent);
   LRef := WorkerThread;
-  WorkerThread := nil; //Will be freed usinf TThreaf.FreeOnTerminate
+  WorkerThread := nil; //Will be freed usinf TThread.FreeOnTerminate
   if CanBlock then
     LRef.Free;
 end;
