@@ -86,7 +86,7 @@ type
 {$ENDIF}
 
 const
-  VTVersion = '7.4.0' deprecated 'This const is going to be removed in a future version';
+  VTVersion = '7.5.0' deprecated 'This const is going to be removed in a future version';
 
 const
   VTTreeStreamVersion = 3;
