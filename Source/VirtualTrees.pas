@@ -4063,7 +4063,7 @@ const
 
   // Do not modify the copyright in any way! Usage of this unit is prohibited without the copyright notice
   // in the compiled binary file.
-  Copyright: string = 'Virtual Treeview © 1999, 2010, 2016 Mike Lischke, Joachim Marder';
+  Copyright: string = 'Virtual Treeview © 1999-2021 Mike Lischke, Joachim Marder';
 
 var
   StandardOLEFormat: TFormatEtc = (
