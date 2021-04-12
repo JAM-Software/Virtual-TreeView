@@ -71,6 +71,7 @@ interface
   {$HPPEMIT '#pragma comment(lib, "VirtualTreesR")'}
 {$endif}
 {$HPPEMIT '#pragma comment(lib, "Shell32")'}
+{$HPPEMIT '#pragma comment(lib, "uxtheme")'}
 {$HPPEMIT '#pragma link "VirtualTrees.Accessibility"'}
 
 uses
