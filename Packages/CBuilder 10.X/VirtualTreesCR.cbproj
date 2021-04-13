@@ -57,7 +57,7 @@
         <ILINK_Description>VirtualTree CBuilder runtime package</ILINK_Description>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCR</SanitizedProjectName>
-        <ILINK_DelayLoadDll>Shell32.dll;$(ILINK_DelayLoadDll)</ILINK_DelayLoadDll>
+        <ILINK_DelayLoadDll>Shell32.dll;uxtheme.dll;$(ILINK_DelayLoadDll)</ILINK_DelayLoadDll>
         <DCC_UnitSearchPath>$(BDS)\lib;$(BDS)\lib\$(Platform);$(BDS)\lib\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <VerInfo_Locale>4108</VerInfo_Locale>
@@ -184,6 +184,14 @@
         <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
             <BuildOrder>17</BuildOrder>
         </DelphiCompile>
+        <LibFiles Include="uxtheme.lib" Condition="'$(Platform)'=='Win32'">
+            <BuildOrder>18</BuildOrder>
+            <IgnorePath>true</IgnorePath>
+        </LibFiles>
+        <LibFiles Include="uxtheme.a" Condition="'$(Platform)'=='Win64'">
+            <BuildOrder>18</BuildOrder>
+            <IgnorePath>true</IgnorePath>
+        </LibFiles>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
