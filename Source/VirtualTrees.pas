@@ -14083,7 +14083,10 @@ begin
   begin
     if NeedButtons then begin
       if StyleServices.GetElementSize(FPlusBM.Canvas.Handle, StyleServices.GetElementDetails(tcbCategoryGlyphClosed), TElementSize.esActual, Size) then
+      begin
+        Size.cx := Max(Size.cx, 10); // Use min size of 10, see issue #1035
         Size.cx := ScaledPixels(Size.cx) // I would have expected that the returned value is dpi-sclaed, but this is not the case in RAD Studio 10.4.1. See issue #984
+      end
       else
         Size.cx := ScaledPixels(11);
       Size.cy := Size.cx;
