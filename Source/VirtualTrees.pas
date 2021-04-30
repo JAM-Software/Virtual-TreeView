@@ -1046,6 +1046,7 @@ type
     procedure SetWidth(Value: TDimension);
   protected
     FLeft: TDimension;
+    procedure ChangeScale(M, D: TDimension; isDpiChange: Boolean); virtual;
     procedure ComputeHeaderLayout(var PaintInfo: THeaderPaintInfo; DrawFormat: Cardinal;  CalculateTextRect: Boolean = False);
     procedure DefineProperties(Filer: TFiler); override;
     procedure GetAbsoluteBounds(var Left, Right: TDimension);
@@ -7100,6 +7101,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TVirtualTreeColumn.ChangeScale(M, D: TDimension; isDpiChange: Boolean);
+begin
+  FMinWidth := MulDiv(FMinWidth, M, D);
+  FMaxWidth := MulDiv(FMaxWidth, M, D);
+  FSpacing  := MulDiv(FSpacing, M, D);
+  Self.Width := MulDiv(Self.Width, M, D);
+end;
 
 procedure TVirtualTreeColumn.ComputeHeaderLayout(var PaintInfo: THeaderPaintInfo; DrawFormat: Cardinal;  CalculateTextRect: Boolean = False);
 
@@ -10019,9 +10027,7 @@ begin
     Font.Height := MulDiv(Font.Height, M, D);
   // Scale the columns widths too
   for I := 0 to FColumns.Count - 1 do
-  begin
-    Self.FColumns[I].Width := MulDiv(Self.FColumns[I].Width, M, D);
-  end;//for I
+    Self.FColumns[I].ChangeScale(M, D, isDpiChange);
   if not isDpiChange then
     AutoScale();
 end;
