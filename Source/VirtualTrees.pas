@@ -640,6 +640,8 @@ type
   protected
     // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
     function StyleServices(AControl: TControl = nil): TCustomStyleServices;
+    //these bypass the side effects in the regular setters.
+    procedure InternalSetMiscOptions(const Value: TVTMiscOptions);
   public
     constructor Create(AOwner: TBaseVirtualTree); virtual;
     procedure AssignTo(Dest: TPersistent); override;
@@ -4548,6 +4550,13 @@ begin
       if (toAutoSpanColumns in ChangedOptions) and not (csLoading in ComponentState) and HandleAllocated then
         Invalidate;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomVirtualTreeOptions.InternalSetMiscOptions(const Value: TVTMiscOptions);
+begin
+  FMiscOptions := value;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12239,7 +12248,7 @@ begin
     CheckSynchronize();
     CheckSynchronize();
   end;// if
-  FOptions.MiscOptions := FOptions.MiscOptions - [toReadOnly];
+  FOptions.InternalSetMiscOptions(FOptions.FMiscOptions - [toReadOnly]); //SetMiscOptions has side effects
   // Make sure there is no reference remaining to the releasing tree.
   TWorkerThread.ReleaseThreadReference();
   StopWheelPanning;
@@ -23677,14 +23686,14 @@ begin
   begin
     DoStateChange([], [tsNeedRootCountUpdate]);
     IsReadOnly := toReadOnly in FOptions.MiscOptions;
-    FOptions.MiscOptions := FOptions.MiscOptions - [toReadOnly];
+    FOptions.InternalSetMiscOptions(FOptions.MiscOptions - [toReadOnly]);
     LastRootCount := FRoot.ChildCount;
     FRoot.ChildCount := 0;
     BeginUpdate;
     SetChildCount(FRoot, LastRootCount);
     EndUpdate;
     if IsReadOnly then
-      FOptions.MiscOptions := FOptions.MiscOptions + [toReadOnly];
+      FOptions.InternalSetMiscOptions(FOptions.MiscOptions + [toReadOnly]);
   end;
 
   // Prevent the object inspector at design time from marking the header as being modified
