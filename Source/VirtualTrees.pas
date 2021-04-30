@@ -1056,6 +1056,7 @@ type
     function GetText: string; virtual; // [IPK]
     procedure SetText(const Value: string); virtual; // [IPK] private to protected & virtual
     function GetOwner: TVirtualTreeColumns; reintroduce;
+    procedure InternalSetWidth(const value : TDimension); //bypass side effects in SetWidth
     procedure ReadHint(Reader: TReader);
     procedure ReadText(Reader: TReader);
     procedure SetCollection(Value: TCollection); override;
@@ -7511,6 +7512,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TVirtualTreeColumn.InternalSetWidth(const value : TDimension);
+begin
+  FWidth := value;
+end
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVirtualTreeColumn.ReadText(Reader: TReader);
 
 begin
@@ -11095,7 +11103,7 @@ var
       while I > NoColumn do
       begin
         if (coFixed in FColumns[I].Options) and (FColumns[I].Width < FColumns[I].MinWidth) then
-          FColumns[I].FWidth := FColumns[I].MinWidth; //TODO : SetWidth has side effects and this bypasses them, what to do here?
+          FColumns[I].InternalSetWidth(FColumns[I].MinWidth); //SetWidth has side effects and this bypasses them
         I := GetNextVisibleColumn(I);
       end;
       FixedWidth := GetVisibleFixedWidth;
