@@ -7515,7 +7515,7 @@ end;
 procedure TVirtualTreeColumn.InternalSetWidth(const value : TDimension);
 begin
   FWidth := value;
-end
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
