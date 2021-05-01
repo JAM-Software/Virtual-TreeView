@@ -12256,7 +12256,7 @@ begin
     CheckSynchronize();
     CheckSynchronize();
   end;// if
-  FOptions.InternalSetMiscOptions(FOptions.FMiscOptions - [toReadOnly]); //SetMiscOptions has side effects
+  FOptions.InternalSetMiscOptions(FOptions.MiscOptions - [toReadOnly]); //SetMiscOptions has side effects
   // Make sure there is no reference remaining to the releasing tree.
   TWorkerThread.ReleaseThreadReference();
   StopWheelPanning;
@@ -19384,7 +19384,7 @@ begin
   end;
 
   if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0)
-       and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.FAutoOptions)) then
+       and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.AutoOptions)) then
     LineImage[Indent] := ltNone;
 end;
 
@@ -30891,7 +30891,7 @@ begin
                             // nodes is visible or auto button hiding is disabled.
                             if (toShowButtons in FOptions.PaintOptions) and (vsHasChildren in Node.States) and
                               not ((vsAllChildrenHidden in Node.States) and
-                              (toAutoHideButtons in TreeOptions.FAutoOptions)) and
+                              (toAutoHideButtons in TreeOptions.AutoOptions)) and
                               ((toShowRoot in TreeOptions.PaintOptions) or (GetNodeLevel(Node) > 0))
                             then
                               PaintNodeButton(Canvas, Node, Column, CellRect, Offsets[ofsToggleButton], ButtonY, BidiMode); // Relative X position of toggle button is needed for proper BiDi calculation
@@ -34198,7 +34198,7 @@ function TCustomVirtualStringTree.DoGetNodeExtraWidth(Node: PVirtualNode; Column
   Canvas: TCanvas = nil): Integer;
 
 begin
-  if not (toShowStaticText in TreeOptions.FStringOptions) then
+  if not (toShowStaticText in TreeOptions.StringOptions) then
     Exit(0);
   if Canvas = nil then
     Canvas := Self.Canvas;
@@ -34324,7 +34324,7 @@ begin
       PaintNormalText(PaintInfo, TextOutFlags, lEventArgs.CellText);
 
     // ... and afterwards the static text if not centered and the node is not multiline enabled.
-    if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.FStringOptions) and not lEventArgs.StaticText.IsEmpty then
+    if (Alignment <> taCenter) and not (vsMultiline in PaintInfo.Node.States) and (toShowStaticText in TreeOptions.StringOptions) and not lEventArgs.StaticText.IsEmpty then
       PaintStaticText(PaintInfo, lEventArgs.StaticTextAlignment, lEventArgs.StaticText);
   finally
     RestoreFontChangeEvent(PaintInfo.Canvas);
@@ -34506,9 +34506,9 @@ begin
         OldOption := TOldVTStringOption(GetEnumValue(TypeInfo(TOldVTStringOption), EnumName));
         case OldOption of
           soSaveCaptions:
-            StringOptions := FStringOptions + [toSaveCaptions];
+            StringOptions := StringOptions + [toSaveCaptions];
           soShowStaticText:
-            StringOptions := FStringOptions + [toShowStaticText];
+            StringOptions := StringOptions + [toShowStaticText];
         end;
       end;
     end;
@@ -34559,7 +34559,7 @@ var
 
 begin
   inherited;
-  if (toSaveCaptions in TreeOptions.FStringOptions) and (Node <> FRoot) and
+  if (toSaveCaptions in TreeOptions.StringOptions) and (Node <> FRoot) and
     (vsInitialized in Node.States) then
     with Stream do
     begin
