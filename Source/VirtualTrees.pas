@@ -18939,7 +18939,7 @@ begin
   ImageHit := HitInfo.HitPositions * [hiOnNormalIcon, hiOnStateIcon] <> [];
   LabelHit := hiOnItemLabel in HitInfo.HitPositions;
   ItemHit := (hiOnItem in HitInfo.HitPositions) and ((toFullRowDrag in FOptions.MiscOptions) or
-             (toFullRowSelect in FOptions.SelectionOptions)));
+             (toFullRowSelect in FOptions.SelectionOptions));
 
   // In report mode only direct hits of the node captions/images in the main column are accepted as hits.
   if (toReportMode in FOptions.MiscOptions) and not (ItemHit or ((LabelHit or ImageHit) and
