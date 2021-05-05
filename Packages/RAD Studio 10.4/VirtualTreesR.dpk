@@ -9,7 +9,7 @@ package VirtualTreesR;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS ON}
+{$LOCALSYMBOLS OFF}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION ON}
@@ -25,7 +25,7 @@ package VirtualTreesR;
 {$IMAGEBASE $400000}
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
-{$LIBSUFFIX AUTO}
+{$LIBSUFFIX '270'}
 {$RUNONLY}
 {$IMPLICITBUILD OFF}
 
@@ -44,6 +44,18 @@ contains
   VirtualTrees.ClipBoard in '..\..\Source\VirtualTrees.ClipBoard.pas',
   VirtualTrees.Actions in '..\..\Source\VirtualTrees.Actions.pas',
   VirtualTrees.Export in '..\..\Source\VirtualTrees.Export.pas',
-  VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas';
+  VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
+  VirtualTrees.Types in '..\..\Source\VirtualTrees.Types.pas',
+  VirtualTrees.Constants in '..\..\Source\VirtualTrees.Constants.pas',
+  VirtualTrees.Header in '..\..\Source\VirtualTrees.Header.pas',
+  VirtualTrees.Columns in '..\..\Source\VirtualTrees.Columns.pas',
+  VirtualTrees.Options in '..\..\Source\VirtualTrees.Options.pas',
+  VirtualTrees.DataObject in '..\..\Source\VirtualTrees.DataObject.pas',
+  VirtualTrees.DragnDrop in '..\..\Source\VirtualTrees.DragnDrop.pas',
+  VirtualTrees.DragImage in '..\..\Source\VirtualTrees.DragImage.pas',
+  VirtualTrees.EditLink in '..\..\Source\VirtualTrees.EditLink.pas',
+  VirtualTrees.Colors in '..\..\Source\VirtualTrees.Colors.pas';
 
 end.
+
+

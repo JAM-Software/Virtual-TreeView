@@ -8,7 +8,8 @@ interface
 
 uses Winapi.Windows,
      VirtualTrees,
-     VirtualTrees.Classes;
+     VirtualTrees.Classes,
+     VirtualTrees.Options;
 
 function ContentToHTML(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType; const Caption: string = ''): String;
 function ContentToRTF(Tree: TCustomVirtualStringTree; Source: TVSTTextSourceType): RawByteString;
@@ -26,7 +27,11 @@ uses
   System.SysUtils,
   System.StrUtils,
   System.Generics.Collections,
-  System.UITypes;
+  System.UITypes,
+  VirtualTrees.Constants,
+  VirtualTrees.ClipBoard,
+  VirtualTrees.Columns,
+  VirtualTrees.Header;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree)
