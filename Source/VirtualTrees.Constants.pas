@@ -4,7 +4,7 @@ interface
 
 uses
   System.UITypes,
-  Vcl.Themes;
+  Vcl.Controls;
 
 const
   VTVersion              = '7.5.0' deprecated 'This const is going to be removed in a future version';
