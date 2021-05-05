@@ -12234,7 +12234,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-destructor TBaseVirtualTree.Destroy;
+destructor TBaseVirtualTree.Destroy();
 var
   WasValidating: Boolean;
 begin
@@ -12248,7 +12248,7 @@ begin
     fAccessible := nil;
   end;
 
-  WasValidating := (tsValidating in FStates);
+  WasValidating := (tsValidating in FStates) or (tsValidationNeeded in FStates); // Checking tsValidating is not enough, the TWorkerThread may be stuck in the first call to ChangeTreeStatesAsync()
   InterruptValidation(True);
   if WasValidating then
   begin
