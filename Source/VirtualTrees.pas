@@ -9691,7 +9691,9 @@ end;
 procedure TVTHeader.FontChanged(Sender: TObject);
 begin
   inherited;
-  AutoScale();
+  {$IF CompilerVersion < 31} // See issue #1043
+  AutoScale(); 
+  {$IFEND}
 end;
 
 procedure TVTHeader.AutoScale();
@@ -10017,7 +10019,9 @@ end;
 
 procedure TVTHeader.StyleChanged();
 begin
-  AutoScale(); // Elements may have chnaged in size
+  {$IF CompilerVersion < 31} // See issue #1043
+  AutoScale(False); //Elements may have changed in size
+  {$IFEND}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
