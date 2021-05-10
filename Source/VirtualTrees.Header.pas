@@ -145,7 +145,7 @@ type
     FDoingAutoFitColumns : Boolean;       //Flag to avoid using the stored width for Main column
 
     procedure FontChanged(Sender : TObject); virtual;
-    procedure AutoScale(); virtual;
+    procedure AutoScale(isDpiChange: Boolean); virtual;
     function CanSplitterResize(P : TPoint) : Boolean;
     function CanWriteColumns : Boolean; virtual;
     procedure ChangeScale(M, D : TDimension; isDpiChange : Boolean); virtual;
@@ -232,6 +232,7 @@ implementation
 
 uses
   System.Math,
+  System.UITypes,
   Vcl.Forms,
   VirtualTrees;
 
@@ -383,15 +384,17 @@ end;
 procedure TVTHeader.FontChanged(Sender : TObject);
 begin
   inherited;
-  AutoScale();
+  {$IF CompilerVersion < 31}
+  AutoScale(false);
+  {$ENDIF}
 end;
 
-procedure TVTHeader.AutoScale();
+procedure TVTHeader.AutoScale(isDpiChange: Boolean);
 var
   I          : Integer;
   lMaxHeight : Integer;
 begin
-  if toAutoChangeScale in TBaseVirtualTreeCracker(Tree).TreeOptions.AutoOptions then
+  if (toAutoChangeScale in TBaseVirtualTreeCracker(Tree).TreeOptions.AutoOptions) and not isDpiChange then
   begin
     //Ensure a minimum header size based on the font, so that all text is visible.
     //First find the largest Columns[].Spacing
@@ -696,7 +699,9 @@ end;
 
 procedure TVTHeader.StyleChanged();
 begin
-  AutoScale(); //Elements may have chnaged in size
+  {$IF CompilerVersion < 31}
+  AutoScale(False); //Elements may have changed in size
+  {$ENDIF}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -725,7 +730,7 @@ begin
   for I := 0 to FColumns.Count - 1 do
     TVirtualTreeColumnCracker(Self.FColumns[I]).ChangeScale(M, D, isDpiChange);
   if not isDpiChange then
-    AutoScale();
+    AutoScale(isDpiChange);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
