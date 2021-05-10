@@ -381,7 +381,7 @@ type
     property DropBefore : Boolean read FDropBefore write FDropBefore;
     property DropTarget : TColumnIndex read FDropTarget write FDropTarget;
     property Items[Index : TColumnIndex] : TVirtualTreeColumn read GetItem write SetItem; default;
-    //property Header: TPersistent read FHeader;
+    property Header: TPersistent read FHeader;
     property TrackIndex : TColumnIndex read FTrackIndex write FTrackIndex;
   end;
 

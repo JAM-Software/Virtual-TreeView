@@ -201,7 +201,7 @@ type
     property DragImage : TVTDragImage read FDragImage;
     property RestoreSelectionColumnIndex : Integer read GetRestoreSelectionColumnIndex write FRestoreSelectionColumnIndex default NoColumn;
     property States : THeaderStates read FStates;
-    //property Treeview : TCustomControl read FOwner;
+    property Treeview : TCustomControl read FOwner;
     property UseColumns : Boolean read GetUseColumns;
     property doingAutoFitColumns : Boolean read FDoingAutoFitColumns;
   published
