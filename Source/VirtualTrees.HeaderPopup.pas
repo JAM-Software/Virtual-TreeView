@@ -109,7 +109,6 @@ implementation
 
 uses
   Winapi.Windows, System.Types,
-  VirtualTrees.Constants,
   VirtualTrees.Columns,
   VirtualTrees.Header;
 

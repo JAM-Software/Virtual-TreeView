@@ -80,12 +80,36 @@ uses
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
   Winapi.ShlObj, System.UITypes, System.Generics.Collections,
   VirtualTrees.Types,
-  VirtualTrees.Constants,
   VirtualTrees.Colors,
   VirtualTrees.Options,
   VirtualTrees.DragImage,
   VirtualTrees.Columns,
   VirtualTrees.Header;
+
+const
+  //Aliases
+  NoColumn                 = VirtualTrees.Types.NoColumn;
+  InvalidColumn            = VirtualTrees.Types.InvalidColumn;
+  sdAscending              = VirtualTrees.Columns.TSortDirection.sdAscending;
+  sdDescending              = VirtualTrees.Columns.TSortDirection.sdDescending;
+
+  ctNone              = VirtualTrees.Types.TCheckType.ctNone;
+  ctTriStateCheckBox  = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
+  ctCheckBox          = VirtualTrees.Types.TCheckType.ctCheckBox;
+  ctRadioButton       = VirtualTrees.Types.TCheckType.ctRadioButton;
+  ctButton            = VirtualTrees.Types.TCheckType.ctButton;
+
+  csUncheckedNormal   = VirtualTrees.Types.TCheckState.csUncheckedNormal;
+  csUncheckedPressed    = VirtualTrees.Types.TCheckState.csUncheckedPressed;
+  csCheckedNormal   = VirtualTrees.Types.TCheckState.csCheckedNormal;
+  csCheckedPressed    = VirtualTrees.Types.TCheckState.csCheckedPressed;
+  csMixedNormal   = VirtualTrees.Types.TCheckState.csMixedNormal;
+  csMixedPressed    = VirtualTrees.Types.TCheckState.csMixedPressed;
+  csUncheckedDisabled   = VirtualTrees.Types.TCheckState.csUncheckedDisabled;
+  csCheckedDisabled   = VirtualTrees.Types.TCheckState.csCheckedDisabled;
+  csMixedDisable    = VirtualTrees.Types.TCheckState.csMixedDisabled;
+
+
 
 var
   IsWinVistaOrAbove: Boolean;
@@ -135,8 +159,8 @@ type
   TVTColumnOptions = VirtualTrees.Columns.TVTColumnOptions;
   TVirtualTreeColumnStyle = VirtualTrees.Columns.TVirtualTreeColumnStyle;
   TSortDirection = VirtualTrees.Columns.TSortDirection;
-  TCheckType = VirtualTrees.Columns.TCheckType;
-  TCheckState = VirtualTrees.Columns.TCheckState;
+  TCheckType = VirtualTrees.Types.TCheckType;
+  TCheckState = VirtualTrees.Types.TCheckState;
   TVTDropMarkMode = VirtualTrees.Columns.TVTDropMarkMode;
   TScrollDirections = VirtualTrees.Columns.TScrollDirections;
   TVirtualTreeColumn = VirtualTrees.Columns.TVirtualTreeColumn;

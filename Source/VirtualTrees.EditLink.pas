@@ -9,7 +9,7 @@ uses
   Vcl.Controls,
   Vcl.StdCtrls,
   VirtualTrees,
-  VirtualTrees.Constants;
+  VirtualTrees.Types;
 
 type
   //Edit support Classes.

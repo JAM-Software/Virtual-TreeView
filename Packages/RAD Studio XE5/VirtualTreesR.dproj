@@ -118,7 +118,6 @@
         <DCCReference Include="..\..\Source\VirtualTrees.Export.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Utils.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Types.pas"/>
-        <DCCReference Include="..\..\Source\VirtualTrees.Constants.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Header.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Columns.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Options.pas"/>

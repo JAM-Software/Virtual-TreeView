@@ -11,7 +11,6 @@ uses
   Vcl.Menus,
   Vcl.ImgList,
   Vcl.Controls,
-  VirtualTrees.Constants,
   VirtualTrees.Types,
   VirtualTrees.Options,
   VirtualTrees.DragImage,
@@ -386,7 +385,7 @@ begin
   inherited;
   {$IF CompilerVersion < 31}
   AutoScale(false);
-  {$ENDIF}
+  {$IFEND}
 end;
 
 procedure TVTHeader.AutoScale(isDpiChange: Boolean);
@@ -701,7 +700,7 @@ procedure TVTHeader.StyleChanged();
 begin
   {$IF CompilerVersion < 31}
   AutoScale(False); //Elements may have changed in size
-  {$ENDIF}
+  {$IFEND}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

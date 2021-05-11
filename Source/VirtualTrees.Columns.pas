@@ -12,7 +12,6 @@ uses
   Vcl.Menus,
   Vcl.Themes,
   Vcl.GraphUtil,
-  VirtualTrees.Constants,
   VirtualTrees.Types,
   VirtualTrees.Options;
 
@@ -69,51 +68,6 @@ type
     function ToInt() : Integer; inline;
   end;
 
-  TCheckType = (
-    ctNone,
-    ctTriStateCheckBox,
-    ctCheckBox,
-    ctRadioButton,
-    ctButton
-    );
-
-  // The check states include both, transient and fluent (temporary) states. The only temporary state defined so
-  // far is the pressed state.
-  TCheckState = (
-    csUncheckedNormal,   // unchecked and not pressed
-    csUncheckedPressed,  // unchecked and pressed
-    csCheckedNormal,     // checked and not pressed
-    csCheckedPressed,    // checked and pressed
-    csMixedNormal,       // 3-state check box and not pressed
-    csMixedPressed,      // 3-state check box and pressed
-    csUncheckedDisabled, // disabled checkbox, not checkable
-    csCheckedDisabled,   // disabled checkbox, not uncheckable
-    csMixedDisabled      // disabled 3-state checkbox
-    );
-
-  /// Adds some convenience methods to type TCheckState
-  TCheckStateHelper = record helper for TCheckState
-  strict private
-  const
-    // Lookup to quickly convert a specific check state into its pressed counterpart and vice versa.
-    cPressedState : array [TCheckState] of TCheckState   = (
-      csUncheckedPressed, csUncheckedPressed, csCheckedPressed, csCheckedPressed, csMixedPressed, csMixedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
-    cUnpressedState : array [TCheckState] of TCheckState = (
-      csUncheckedNormal, csUncheckedNormal, csCheckedNormal, csCheckedNormal, csMixedNormal, csMixedNormal, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
-    cEnabledState : array [TCheckState] of TCheckState   = (
-      csUncheckedNormal, csUncheckedPressed, csCheckedNormal, csCheckedPressed, csMixedNormal, csMixedPressed, csUncheckedNormal, csCheckedNormal, csMixedNormal);
-    cToggledState : array [TCheckState] of TCheckState   = (
-      csCheckedNormal, csCheckedPressed, csUncheckedNormal, csUncheckedPressed, csCheckedNormal, csCheckedPressed, csUncheckedDisabled, csCheckedDisabled, csMixedDisabled);
-  public
-    function GetPressed() : TCheckState; inline;
-    function GetUnpressed() : TCheckState; inline;
-    function GetEnabled() : TCheckState; inline;
-    function GetToggled() : TCheckState; inline;
-    function IsDisabled() : Boolean; inline;
-    function IsChecked() : Boolean; inline;
-    function IsUnChecked() : Boolean; inline;
-    function IsMixed() : Boolean; inline;
-  end;
 
 // Used during owner draw of the header to indicate which drop mark for the column must be drawn.
   TVTDropMarkMode = (
@@ -307,6 +261,7 @@ type
     function GetNewIndex(P : TPoint; var OldIndex : TColumnIndex) : Boolean;
     procedure SetDefaultWidth(Value : TDimension);
     procedure SetItem(Index : TColumnIndex; Value : TVirtualTreeColumn);
+    function GetTreeView: TCustomControl;
   protected
     // drag support
     FDragIndex  : TColumnIndex; // index of column currently being dragged
@@ -383,6 +338,7 @@ type
     property Items[Index : TColumnIndex] : TVirtualTreeColumn read GetItem write SetItem; default;
     property Header: TPersistent read FHeader;
     property TrackIndex : TColumnIndex read FTrackIndex write FTrackIndex;
+    property TreeView : TCustomControl read GetTreeView;
   end;
 
   TVirtualTreeColumnsClass = class of TVirtualTreeColumns;
@@ -406,13 +362,13 @@ type
   TVTHeaderCracker = class(TVTHeader);
 
   TVirtualTreeColumnHelper = class helper for TVirtualTreeColumn
-    function TreeView : TBaseVirtualTreeCracker;
+    function TreeViewControl : TBaseVirtualTreeCracker;
     function Header : TVTHeaderCracker;
   end;
 
   TVirtualTreeColumnsHelper = class helper for TVirtualTreeColumns
     function Header : TVTHeaderCracker;
-    function TreeView : TBaseVirtualTreeCracker;
+    function TreeViewControl : TBaseVirtualTreeCracker;
   end;
 
 { TSortDirectionHelper }
@@ -421,50 +377,6 @@ function TSortDirectionHelper.ToInt() : Integer;
 begin
   Result := cSortDirectionToInt[Self];
 end;
-
-{ TCheckStateHelper }
-
-function TCheckStateHelper.IsDisabled : Boolean;
-begin
-  Result := Self >= TCheckState.csUncheckedDisabled;
-end;
-
-function TCheckStateHelper.IsChecked : Boolean;
-begin
-  Result := Self in [csCheckedNormal, csCheckedPressed, csCheckedDisabled];
-end;
-
-function TCheckStateHelper.IsUnChecked : Boolean;
-begin
-  Result := Self in [csUncheckedNormal, csUncheckedPressed, csUncheckedDisabled];
-end;
-
-function TCheckStateHelper.IsMixed : Boolean;
-begin
-  Result := Self in [csMixedNormal, csMixedPressed, csMixedDisabled];
-end;
-
-function TCheckStateHelper.GetEnabled : TCheckState;
-begin
-  Result := cEnabledState[Self];
-end;
-
-function TCheckStateHelper.GetPressed() : TCheckState;
-begin
-  Result := cPressedState[Self];
-end;
-
-function TCheckStateHelper.GetUnpressed() : TCheckState;
-begin
-  Result := cUnpressedState[Self];
-end;
-
-function TCheckStateHelper.GetToggled() : TCheckState;
-begin
-  Result := cToggledState[Self];
-end;
-
-
 
 //----------------- TVirtualTreeColumn ---------------------------------------------------------------------------------
 
@@ -540,7 +452,7 @@ begin
     // then we don't need to check the various cached indices individually.
     if not FClearing then
     begin
-      TreeView.CancelEditNode;
+      TreeViewControl.CancelEditNode;
       IndexChanged(Index, - 1);
 
       AdjustColumnIndex(FHoverIndex);
@@ -599,8 +511,8 @@ var
   UseText           : Boolean;
   R                 : TRect;
 begin
-  AdvancedOwnerDraw := (hoOwnerDraw in Header.Options) and Assigned(TreeView.OnAdvancedHeaderDraw) and Assigned(TreeView.OnHeaderDrawQueryElements) and
-    not (csDesigning in TreeView.ComponentState);
+  AdvancedOwnerDraw := (hoOwnerDraw in Header.Options) and Assigned(TreeViewControl.OnAdvancedHeaderDraw) and Assigned(TreeViewControl.OnHeaderDrawQueryElements) and
+    not (csDesigning in TreeViewControl.ComponentState);
 
   PaintInfo.Column := Self;
   PaintInfo.TargetCanvas := Owner.HeaderBitmap.Canvas;
@@ -616,7 +528,7 @@ begin
     if AdvancedOwnerDraw then
     begin
       PaintInfo.Column := Self;
-      TreeView.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
+      TreeViewControl.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
     end;
   end;
 
@@ -635,7 +547,7 @@ begin
           HeaderGlyphSize := Point(Images.Width, Images.Height);
       end
       else
-        with Self.TreeView do
+        with Self.TreeViewControl do
         begin
           if Assigned(CheckImages) then
             HeaderGlyphSize := Point(CheckImages.Width, CheckImages.Height);
@@ -644,17 +556,17 @@ begin
       HeaderGlyphSize := Point(0, 0);
     if PaintInfo.ShowSortGlyph then
     begin
-      if tsUseExplorerTheme in Self.TreeView.TreeStates then
+      if tsUseExplorerTheme in Self.TreeViewControl.TreeStates then
       begin
         R := Rect(0, 0, 100, 100);
-        Theme := OpenThemeData(Self.TreeView.Handle, 'HEADER');
+        Theme := OpenThemeData(Self.TreeViewControl.Handle, 'HEADER');
         GetThemePartSize(Theme, PaintInfo.TargetCanvas.Handle, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, PaintInfo.SortGlyphSize);
         CloseThemeData(Theme);
       end
       else
       begin
-        PaintInfo.SortGlyphSize.cx := Self.TreeView.ScaledPixels(16);
-        PaintInfo.SortGlyphSize.cy := Self.TreeView.ScaledPixels(4);
+        PaintInfo.SortGlyphSize.cx := Self.TreeViewControl.ScaledPixels(16);
+        PaintInfo.SortGlyphSize.cy := Self.TreeViewControl.ScaledPixels(4);
       end;
     end
     else
@@ -693,7 +605,7 @@ function TVirtualTreeColumn.GetLeft : Integer;
 begin
   Result := FLeft;
   if [coVisible, coFixed] * FOptions <> [coVisible, coFixed] then
-    Dec(Result, TreeView.EffectiveOffsetX);
+    Dec(Result, TreeViewControl.EffectiveOffsetX);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -730,7 +642,7 @@ begin
     FAlignment := Value;
     Changed(False);
     // Setting the alignment affects also the tree, hence invalidate it too.
-    TreeView.Invalidate;
+    TreeViewControl.Invalidate;
   end;
 end;
 
@@ -745,7 +657,7 @@ begin
     Exclude(FOptions, coParentBidiMode);
     Changed(False);
     // Setting the alignment affects also the tree, hence invalidate it too.
-    TreeView.Invalidate;
+    TreeViewControl.Invalidate;
   end;
 end;
 
@@ -774,7 +686,7 @@ begin
     Exclude(FOptions, coParentColor);
     Exclude(FOptions, coStyleColor); // Issue #919
     Changed(False);
-    TreeView.Invalidate;
+    TreeViewControl.Invalidate;
   end;
 end;
 
@@ -782,8 +694,8 @@ function TVirtualTreeColumn.GetEffectiveColor() : TColor;
 // Returns the color that should effectively be used as background color for this
 // column considering all flags in the TVirtualTreeColumn.Options property
 begin
-  if (coParentColor in Options) or ((coStyleColor in Options) and TreeView.VclStyleEnabled) then
-    Result := TreeView.Colors.BackGroundColor
+  if (coParentColor in Options) or ((coStyleColor in Options) and TreeViewControl.VclStyleEnabled) then
+    Result := TreeViewControl.Colors.BackGroundColor
   else
     Result := Self.Color;
 end;
@@ -796,7 +708,7 @@ begin
   if Value <> FCheckBox then
   begin
     FCheckBox := Value;
-    if Value and (csDesigning in TreeView.ComponentState) then
+    if Value and (csDesigning in TreeViewControl.ComponentState) then
       Header.Options := Header.Options + [hoShowImages];
     Changed(False);
   end;
@@ -928,13 +840,13 @@ begin
 
     Changed(False);
     // Need to repaint and adjust the owner tree too.
-    if not (csLoading in TreeView.ComponentState) and (VisibleChanged or lParentColorSet) and (Owner.UpdateCount = 0) and TreeView.HandleAllocated then
+    if not (csLoading in TreeViewControl.ComponentState) and (VisibleChanged or lParentColorSet) and (Owner.UpdateCount = 0) and TreeViewControl.HandleAllocated then
     begin
-      TreeView.Invalidate();
+      TreeViewControl.Invalidate();
       if VisibleChanged then
       begin
-        TreeView.DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
-        TreeView.UpdateHorizontalScrollBar(False);
+        TreeViewControl.DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
+        TreeViewControl.UpdateHorizontalScrollBar(False);
       end;
     end;
   end;
@@ -948,7 +860,7 @@ var
   Temp : TColumnIndex;
 
 begin
-  if (csLoading in TreeView.ComponentState) or (Owner.UpdateCount > 0) then
+  if (csLoading in TreeViewControl.ComponentState) or (Owner.UpdateCount > 0) then
     // Only cache the position for final fixup when loading from DFM.
     FPosition := Value
   else
@@ -960,17 +872,17 @@ begin
       with Owner do
       begin
         InitializePositionArray;
-        TreeView.CancelEditNode;
+        TreeViewControl.CancelEditNode;
         AdjustPosition(Self, Value);
         Self.Changed(False);
 
         // Need to repaint.
         with Self.Header do
         begin
-          if (UpdateCount = 0) and TreeView.HandleAllocated then
+          if (UpdateCount = 0) and TreeViewControl.HandleAllocated then
           begin
             Invalidate(Self);
-            TreeView.Invalidate;
+            TreeViewControl.Invalidate;
           end;
         end;
       end;
@@ -1085,11 +997,11 @@ begin
       FWidth := Value;
       Owner.UpdatePositions;
     end;
-    if not (csLoading in TreeView.ComponentState) and (Owner.UpdateCount = 0) then
+    if not (csLoading in TreeViewControl.ComponentState) and (Owner.UpdateCount = 0) then
     begin
       if hoAutoResize in Header.Options then
         Owner.AdjustAutoSize(Index);
-      TreeView.DoColumnResize(Index);
+      TreeViewControl.DoColumnResize(Index);
     end;
   end;
 end;
@@ -1143,7 +1055,7 @@ begin
       if not FCheckBox then
         HeaderGlyphSize := Point(Images.Width, Images.Height)
       else
-        with Self.TreeView do
+        with Self.TreeViewControl do
         begin
           if Assigned(CheckImages) then
             HeaderGlyphSize := Point(CheckImages.Width, CheckImages.Height);
@@ -1152,17 +1064,17 @@ begin
       HeaderGlyphSize := Point(0, 0);
     if PaintInfo.ShowSortGlyph then
     begin
-      if tsUseExplorerTheme in Self.TreeView.TreeStates then
+      if tsUseExplorerTheme in Self.TreeViewControl.TreeStates then
       begin
         R := Rect(0, 0, 100, 100);
-        Theme := OpenThemeData(TreeView.Handle, 'HEADER');
+        Theme := OpenThemeData(TreeViewControl.Handle, 'HEADER');
         GetThemePartSize(Theme, PaintInfo.TargetCanvas.Handle, HP_HEADERSORTARROW, HSAS_SORTEDUP, @R, TS_TRUE, PaintInfo.SortGlyphSize);
         CloseThemeData(Theme);
       end
       else
       begin
-        PaintInfo.SortGlyphSize.cx := Self.TreeView.ScaledPixels(16);
-        PaintInfo.SortGlyphSize.cy := Self.TreeView.ScaledPixels(4);
+        PaintInfo.SortGlyphSize.cx := Self.TreeViewControl.ScaledPixels(16);
+        PaintInfo.SortGlyphSize.cy := Self.TreeViewControl.ScaledPixels(4);
       end;
 
       // In any case, the sort glyph is vertically centered.
@@ -1612,7 +1524,7 @@ function TVirtualTreeColumn.GetRect : TRect;
 
 begin
   with TVirtualTreeColumns(GetOwner).FHeader do
-    Result := TreeView.HeaderRect;
+    Result := TreeViewControl.HeaderRect;
   Inc(Result.Left, FLeft);
   Result.Right := Result.Left + FWidth;
 end;
@@ -1703,9 +1615,9 @@ begin
   if coParentBidiMode in FOptions then
   begin
     Columns := GetOwner as TVirtualTreeColumns;
-    if Assigned(Columns) and (FBiDiMode <> TreeView.BiDiMode) then
+    if Assigned(Columns) and (FBiDiMode <> TreeViewControl.BiDiMode) then
     begin
-      FBiDiMode := TreeView.BiDiMode;
+      FBiDiMode := TreeViewControl.BiDiMode;
       Changed(False);
     end;
   end;
@@ -1722,9 +1634,9 @@ begin
   if coParentColor in FOptions then
   begin
     Columns := GetOwner as TVirtualTreeColumns;
-    if Assigned(Columns) and (FColor <> TreeView.Color) then
+    if Assigned(Columns) and (FColor <> TreeViewControl.Color) then
     begin
-      FColor := TreeView.Color;
+      FColor := TreeViewControl.Color;
       Changed(False);
     end;
   end;
@@ -1807,7 +1719,7 @@ begin
   FHeader := AOwner;
 
   // Determine column class to be used in the header.
-  ColumnClass := Self.TreeView.GetColumnClass;
+  ColumnClass := Self.TreeViewControl.GetColumnClass;
   // The owner tree always returns the default tree column class if not changed by application/descendants.
   inherited Create(ColumnClass);
 
@@ -1941,14 +1853,14 @@ begin
         begin
           FWidth := NewValue;
           UpdatePositions;
-          WasUpdating := csUpdating in TreeView.ComponentState;
+          WasUpdating := csUpdating in TreeViewControl.ComponentState;
           if not WasUpdating then
-            TreeView.Updating(); // Fixes #398
+            TreeViewControl.Updating(); // Fixes #398
           try
-            TreeView.DoColumnResize(AutoIndex);
+            TreeViewControl.DoColumnResize(AutoIndex);
           finally
             if not WasUpdating then
-              TreeView.Updated();
+              TreeViewControl.Updated();
           end;
         end;
       end;
@@ -2029,8 +1941,8 @@ end;
 procedure TVirtualTreeColumns.DoCanSplitterResize(P : TPoint; Column : TColumnIndex; var Allowed : Boolean);
 
 begin
-  if Assigned(TreeView.OnCanSplitterResizeColumn) then
-    TreeView.OnCanSplitterResizeColumn(Header, P, Column, Allowed);
+  if Assigned(TreeViewControl.OnCanSplitterResizeColumn) then
+    TreeViewControl.OnCanSplitterResizeColumn(Header, P, Column, Allowed);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2054,9 +1966,9 @@ begin
 
   SetBkMode(DC, TRANSPARENT);
   if not Enabled then
-    if TreeView.VclStyleEnabled then
+    if TreeViewControl.VclStyleEnabled then
     begin
-      SetTextColor(DC, ColorToRGB(TreeView.Colors.HeaderFontColor));
+      SetTextColor(DC, ColorToRGB(TreeViewControl.Colors.HeaderFontColor));
       WinApi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
     end
     else
@@ -2071,9 +1983,9 @@ begin
   else
   begin
     if Hot then
-      SetTextColor(DC, ColorToRGB(TreeView.Colors.HeaderHotColor))
+      SetTextColor(DC, ColorToRGB(TreeViewControl.Colors.HeaderHotColor))
     else
-      SetTextColor(DC, ColorToRGB(TreeView.Colors.HeaderFontColor));
+      SetTextColor(DC, ColorToRGB(TreeViewControl.Colors.HeaderFontColor));
     WinApi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
   end;
 end;
@@ -2109,12 +2021,12 @@ var
 begin
   Result := InvalidColumn;
   if Relative and (P.X >= Header.Columns.GetVisibleFixedWidth) then
-    ColumnLeft := - TreeView.EffectiveOffsetX
+    ColumnLeft := - TreeViewControl.EffectiveOffsetX
   else
     ColumnLeft := 0;
 
-  if TreeView.UseRightToLeftAlignment then
-    Inc(ColumnLeft, TreeView.ComputeRTLOffset(True));
+  if TreeViewControl.UseRightToLeftAlignment then
+    Inc(ColumnLeft, TreeViewControl.ComputeRTLOffset(True));
 
   for I := 0 to Count - 1 do
     with Items[FPositionToIndex[I]] do
@@ -2161,7 +2073,7 @@ var
   Menu          : TPopupMenu;
 begin
   Result := False;
-  if (csDesigning in TreeView.ComponentState) then
+  if (csDesigning in TreeViewControl.ComponentState) then
     Exit;
   // Convert vertical position to local coordinates.
   Inc(P.Y, Header.Height);
@@ -2189,7 +2101,7 @@ begin
       if Items[NewClickIndex].CheckBox then
       begin
         if Button = mbLeft then
-          TreeView.UpdateColumnCheckState(Items[NewClickIndex]);
+          TreeViewControl.UpdateColumnCheckState(Items[NewClickIndex]);
         Include(HitInfo.HitPosition, hhiOnCheckbox);
       end;
     end;
@@ -2202,7 +2114,7 @@ begin
   end;
 
   if DblClick then
-    TreeView.DoHeaderDblClick(HitInfo)
+    TreeViewControl.DoHeaderDblClick(HitInfo)
   else
   begin
     if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
@@ -2231,16 +2143,16 @@ begin
       Self.FDownIndex := NoColumn;
       Self.FTrackIndex := NoColumn;
       Self.FCheckBoxHit := False;
-      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + Integer(TreeView.Height))), P);
+      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + Integer(TreeViewControl.Height))), P);
       if Assigned(Menu) then
       begin
-        TreeView.StopTimer(ScrollTimer);
-        TreeView.StopTimer(HeaderTimer);
+        TreeViewControl.StopTimer(ScrollTimer);
+        TreeViewControl.StopTimer(HeaderTimer);
         Header.Columns.SetHoverIndex(NoColumn);
-        TreeView.DoStateChange([], [tsScrollPending, tsScrolling]);
+        TreeViewControl.DoStateChange([], [tsScrollPending, tsScrolling]);
 
         Menu.PopupComponent := TreeView;
-        With TreeView.ClientToScreen(P) do
+        With TreeViewControl.ClientToScreen(P) do
           Menu.Popup(X, Y);
         Result := True;
       end
@@ -2250,16 +2162,16 @@ begin
         TVTHeaderPopupMenu(FColumnPopupMenu).OnAddHeaderPopupItem := HeaderPopupMenuAddHeaderPopupItem;
         TVTHeaderPopupMenu(FColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
         FColumnPopupMenu.PopupComponent := TreeView;
-        if (hoDblClickResize in Header.Options) and ((TreeView.ChildCount[nil] > 0) or (hoAutoResizeInclCaption in Header.Options)) then
+        if (hoDblClickResize in Header.Options) and ((TreeViewControl.ChildCount[nil] > 0) or (hoAutoResizeInclCaption in Header.Options)) then
           TVTHeaderPopupMenu(FColumnPopupMenu).Options := TVTHeaderPopupMenu(FColumnPopupMenu).Options + [poResizeToFitItem]
         else
           TVTHeaderPopupMenu(FColumnPopupMenu).Options := TVTHeaderPopupMenu(FColumnPopupMenu).Options - [poResizeToFitItem];
-        With TreeView.ClientToScreen(P) do
+        With TreeViewControl.ClientToScreen(P) do
           FColumnPopupMenu.Popup(X, Y);
         Result := True;
       end; // if  hoAutoColumnPopupMenu
     end;   //if mbRight
-    TreeView.DoHeaderClick(HitInfo);
+    TreeViewControl.DoHeaderClick(HitInfo);
   end;     //else (not DblClick)
 
   if not (hhiNoWhere in HitInfo.HitPosition) then
@@ -2389,7 +2301,7 @@ begin
         Items[I].Position := Items[I].Position - 1;
     end; //for I
 
-    with TreeView do
+    with TreeViewControl do
       if not (csLoading in ComponentState) and (FocusedColumn = Item.Index) then
         InternalSetFocusedColumn(NoColumn); //bypass side effects in SetFocusedColumn
   end;                                      // if cnDeleting
@@ -2441,7 +2353,7 @@ begin
   // This is the only place which gets notified when a new column has been added or removed
   // and we need this event to adjust the column position array.
   InitializePositionArray;
-  if csLoading in TreeView.ComponentState then
+  if csLoading in TreeViewControl.ComponentState then
     FNeedPositionsFix := True
   else
     UpdatePositions;
@@ -2450,7 +2362,7 @@ begin
   if (Count > 0) and (Header.MainColumn < 0) then
     Header.MainColumn := 0;
 
-  if not (csLoading in TreeView.ComponentState) and not (hsLoading in Header.States) then
+  if not (csLoading in TreeViewControl.ComponentState) and not (hsLoading in Header.States) then
   begin
     with Header do
     begin
@@ -2459,18 +2371,18 @@ begin
       if Assigned(Item) then
         Invalidate(Item as TVirtualTreeColumn)
       else
-        if Self.TreeView.HandleAllocated then
+        if Self.TreeViewControl.HandleAllocated then
       begin
-        Self.TreeView.UpdateHorizontalScrollBar(False);
+        Self.TreeViewControl.UpdateHorizontalScrollBar(False);
         Invalidate(nil);
-        TreeView.Invalidate;
+        TreeViewControl.Invalidate;
       end;
 
-      if not (Self.TreeView.IsUpdating) then
+      if not (Self.TreeViewControl.IsUpdating) then
         // This is mainly to let the designer know when a change occurs at design time which
         // doesn't involve the object inspector (like column resizing with the mouse).
         // This does NOT include design time code as the communication is done via an interface.
-        Self.TreeView.UpdateDesigner;
+        Self.TreeViewControl.UpdateDesigner;
     end;
   end;
 end;
@@ -2486,7 +2398,7 @@ var
   I, RunningPos : Integer;
 
 begin
-  if not (csDestroying in TreeView.ComponentState) and not FNeedPositionsFix and (Force or (UpdateCount = 0)) then
+  if not (csDestroying in TreeViewControl.ComponentState) and not FNeedPositionsFix and (Force or (UpdateCount = 0)) then
   begin
     RunningPos := 0;
     for I := 0 to High(FPositionToIndex) do
@@ -2497,7 +2409,7 @@ begin
         if coVisible in FOptions then
           Inc(RunningPos, FWidth);
       end;
-    TreeView.UpdateHorizontalScrollBar(False);
+    TreeViewControl.UpdateHorizontalScrollBar(False);
   end;
 end;
 
@@ -2546,8 +2458,8 @@ begin
     if not ((hoDisableAnimatedResize in Header.Options) or
       (coDisableAnimatedResize in Items[Column].Options)) then
     begin
-      DC := GetWindowDC(TreeView.Handle);
-      with TreeView do
+      DC := GetWindowDC(TreeViewControl.Handle);
+      with TreeViewControl do
         try
           Steps := 32;
           DX := (NewWidth - OldWidth) div Steps;
@@ -2625,7 +2537,7 @@ procedure TVirtualTreeColumns.Clear;
 begin
   FClearing := True;
   try
-    TreeView.CancelEditNode;
+    TreeViewControl.CancelEditNode;
 
     // Since we're freeing all columns, the following have to be true when we're done.
     FHoverIndex := NoColumn;
@@ -2642,7 +2554,7 @@ begin
         InternalSetSortColumn(NoColumn);    //bypass side effects in SetSortColumn
       end;
 
-    with TreeView do
+    with TreeViewControl do
       if not (csLoading in ComponentState) then
         InternalSetFocusedColumn(NoColumn); //bypass side effects in SetFocusedColumn
 
@@ -2665,8 +2577,8 @@ begin
   Result := InvalidColumn;
 
   // The position must be within the header area, but we extend the vertical bounds to the entire treeview area.
-  if (P.X >= 0) and (P.Y >= 0) and (P.Y <= TreeView.Height) then
-    with FHeader, TreeView do
+  if (P.X >= 0) and (P.Y >= 0) and (P.Y <= TreeViewControl.Height) then
+    with FHeader, TreeViewControl do
     begin
       if Relative and (P.X >= GetVisibleFixedWidth) then
         Sum := - EffectiveOffsetX
@@ -2751,16 +2663,16 @@ begin
   if Column <= NoColumn then
   begin
     Left := 0;
-    Right := TreeView.ClientWidth;
+    Right := TreeViewControl.ClientWidth;
   end
   else
   begin
     Left := Items[Column].Left;
     Right := Left + Items[Column].Width;
-    if TreeView.UseRightToLeftAlignment then
+    if TreeViewControl.UseRightToLeftAlignment then
     begin
-      Inc(Left, TreeView.ComputeRTLOffset(True));
-      Inc(Right, TreeView.ComputeRTLOffset(True));
+      Inc(Left, TreeViewControl.ComputeRTLOffset(True));
+      Inc(Right, TreeViewControl.ComputeRTLOffset(True));
     end;
   end;
 end;
@@ -2792,8 +2704,13 @@ begin
   if ScrollColumnCount > 0 then // use average width
     Result := Round(Result / ScrollColumnCount)
   else                          // use indent
-    Result := Integer(TreeView.Indent);
+    Result := Integer(TreeViewControl.Indent);
 
+end;
+
+function TVirtualTreeColumns.GetTreeView: TCustomControl;
+begin
+  Result := TBaseVirtualTreeCracker(Header.GetOwner);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2809,7 +2726,7 @@ var
 
 begin
   Result := InvalidColumn;
-  if (UpdateCount > 0) or (csLoading in TreeView.ComponentState) then
+  if (UpdateCount > 0) or (csLoading in TreeViewControl.ComponentState) then
     Exit; // See issue #760
   for I := 0 to Count - 1 do
     if (coVisible in Items[FPositionToIndex[I]].Options) and
@@ -2835,7 +2752,7 @@ var
 
 begin
   Result := InvalidColumn;
-  if (UpdateCount > 0) or (csLoading in TreeView.ComponentState) then
+  if (UpdateCount > 0) or (csLoading in TreeViewControl.ComponentState) then
     Exit; // See issue #760
   for I := Count - 1 downto 0 do
     if (coVisible in Items[FPositionToIndex[I]].Options) and
@@ -3046,7 +2963,7 @@ var
 
 begin
   // Adjust size of the header bitmap
-  with TWithSafeRect(TreeView.HeaderRect) do
+  with TWithSafeRect(TreeViewControl.HeaderRect) do
   begin
     FHeaderBitmap.SetSize(Max(Right, R.Right - R.Left), Bottom);
   end;
@@ -3054,8 +2971,8 @@ begin
   VisibleFixedWidth := GetVisibleFixedWidth;
 
   // Consider right-to-left directionality.
-  if TreeView.UseRightToLeftAlignment then
-    RTLOffset := TreeView.ComputeRTLOffset
+  if TreeViewControl.UseRightToLeftAlignment then
+    RTLOffset := TreeViewControl.ComputeRTLOffset
   else
     RTLOffset := 0;
 
@@ -3157,19 +3074,19 @@ var
       if hpeBackground in RequestedElements then
       begin
         PaintInfo.PaintRectangle := BackgroundRect;
-        TreeView.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground]);
+        TreeViewControl.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground]);
       end
       else
       begin
-        if (TreeView.VclStyleEnabled and (seClient in TreeView.StyleElements)) then
+        if (TreeViewControl.VclStyleEnabled and (seClient in TreeViewControl.StyleElements)) then
         begin
           Details := StyleServices.GetElementDetails(thHeaderItemRightNormal);
-          StyleServices.DrawElement(Handle, Details, BackgroundRect, @BackgroundRect {$IF CompilerVersion  >= 34}, TreeView.FCurrentPPI{$IFEND});
+          StyleServices.DrawElement(Handle, Details, BackgroundRect, @BackgroundRect {$IF CompilerVersion  >= 34}, TreeViewControl.FCurrentPPI{$IFEND});
         end
         else
-          if tsUseThemes in TreeView.TreeStates then
+          if tsUseThemes in TreeViewControl.TreeStates then
         begin
-          Theme := OpenThemeData(TreeView.Handle, 'HEADER');
+          Theme := OpenThemeData(TreeViewControl.Handle, 'HEADER');
           DrawThemeBackground(Theme, Handle, HP_HEADERITEM, HIS_NORMAL, BackgroundRect, nil);
           CloseThemeData(Theme);
         end
@@ -3233,7 +3150,7 @@ var
         then
           DropMark := dmmNone;
 
-      IsEnabled := (coEnabled in FOptions) and (TreeView.Enabled);
+      IsEnabled := (coEnabled in FOptions) and (TreeViewControl.Enabled);
       ShowHeaderGlyph := (hoShowImages in Header.Options) and ((Assigned(Images) and (FImageIndex > - 1)) or FCheckBox);
       ShowSortGlyph := (AColumn = Header.SortColumn) and (hoShowSortGlyphs in Header.Options);
       WrapCaption := coWrapCaption in FOptions;
@@ -3248,7 +3165,7 @@ var
         if AdvancedOwnerDraw then
         begin
           PaintInfo.Column := Items[AColumn];
-          TreeView.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
+          TreeViewControl.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
         end;
 
         if ShowRightBorder or (AColumn < Count - 1) then
@@ -3257,10 +3174,10 @@ var
           RightBorderFlag := 0;
 
         if hpeBackground in RequestedElements then
-          TreeView.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground])
+          TreeViewControl.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground])
         else
         begin
-          if TreeView.VclStyleEnabled and (seClient in TreeView.StyleElements) then
+          if TreeViewControl.VclStyleEnabled and (seClient in TreeViewControl.StyleElements) then
           begin
             if IsDownIndex then
               Details := StyleServices.GetElementDetails(thHeaderItemPressed)
@@ -3269,13 +3186,13 @@ var
               Details := StyleServices.GetElementDetails(thHeaderItemHot)
             else
               Details := StyleServices.GetElementDetails(thHeaderItemNormal);
-            StyleServices.DrawElement(TargetCanvas.Handle, Details, PaintRectangle, @PaintRectangle{$IF CompilerVersion >= 34}, TreeView.CurrentPPI{$IFEND});
+            StyleServices.DrawElement(TargetCanvas.Handle, Details, PaintRectangle, @PaintRectangle{$IF CompilerVersion >= 34}, TreeViewControl.CurrentPPI{$IFEND});
           end
           else
           begin
-            if tsUseThemes in TreeView.TreeStates then
+            if tsUseThemes in TreeViewControl.TreeStates then
             begin
-              Theme := OpenThemeData(TreeView.Handle, 'HEADER');
+              Theme := OpenThemeData(TreeViewControl.Handle, 'HEADER');
               if IsDownIndex then
                 IdState := HIS_PRESSED
               else
@@ -3349,7 +3266,7 @@ var
           end
           else
           begin
-            with TreeView do
+            with TreeViewControl do
             begin
               ColImageInfo.Images := CheckImages;
               ColImageInfo.Index := GetCheckImage(nil, FCheckType, FCheckState, IsEnabled);
@@ -3374,17 +3291,17 @@ var
           ColCaptionText := FCaptionText
         else
           ColCaptionText := Text;
-        if IsHoverIndex and TreeView.VclStyleEnabled then
+        if IsHoverIndex and TreeViewControl.VclStyleEnabled then
           DrawHot := True
         else
-          DrawHot := (IsHoverIndex and (hoHotTrack in Header.Options) and not (tsUseThemes in TreeView.TreeStates));
+          DrawHot := (IsHoverIndex and (hoHotTrack in Header.Options) and not (tsUseThemes in TreeViewControl.TreeStates));
         if not (hpeText in ActualElements) and (Length(Text) > 0) then
           DrawButtonText(TargetCanvas.Handle, ColCaptionText, TextRectangle, IsEnabled, DrawHot, DrawFormat, WrapCaption);
 
         // sort glyph
         if not (hpeSortGlyph in ActualElements) and ShowSortGlyph then
         begin
-          if tsUseExplorerTheme in TreeView.TreeStates then
+          if tsUseExplorerTheme in TreeViewControl.TreeStates then
           begin
             Pos.TopLeft := SortGlyphPos;
             Pos.Right := Pos.Left + SortGlyphSize.cx;
@@ -3394,7 +3311,7 @@ var
             else
               Glyph := thHeaderSortArrowSortedDown;
             Details := StyleServices.GetElementDetails(Glyph);
-            if not StyleServices.DrawElement(TargetCanvas.Handle, Details, Pos, @Pos {$IF CompilerVersion  >= 34}, TreeView.CurrentPPI {$IFEND}) then
+            if not StyleServices.DrawElement(TargetCanvas.Handle, Details, Pos, @Pos {$IF CompilerVersion  >= 34}, TreeViewControl.CurrentPPI {$IFEND}) then
               PaintInfo.DrawSortArrow(Header.SortDirection);
           end
           else
@@ -3412,12 +3329,12 @@ var
         if ActualElements <> [] then
         begin
           SavedDC := SaveDC(TargetCanvas.Handle);
-          TreeView.DoAdvancedHeaderDraw(PaintInfo, ActualElements);
+          TreeViewControl.DoAdvancedHeaderDraw(PaintInfo, ActualElements);
           RestoreDC(TargetCanvas.Handle, SavedDC);
         end;
       end
       else // Let application draw the header.
-        TreeView.DoHeaderDraw(TargetCanvas, Items[AColumn], PaintRectangle, IsHoverIndex, IsDownIndex,
+        TreeViewControl.DoHeaderDraw(TargetCanvas, Items[AColumn], PaintRectangle, IsHoverIndex, IsDownIndex,
           DropMark);
     end;
   end;
@@ -3433,10 +3350,10 @@ begin
     Exit;
 
   // If both draw posibillities are specified then prefer the advanced way.
-  AdvancedOwnerDraw := (hoOwnerDraw in Header.Options) and Assigned(TreeView.OnAdvancedHeaderDraw) and
-    Assigned(TreeView.OnHeaderDrawQueryElements) and not (csDesigning in TreeView.ComponentState);
-  OwnerDraw := (hoOwnerDraw in Header.Options) and Assigned(TreeView.OnHeaderDraw) and
-    not (csDesigning in TreeView.ComponentState) and not AdvancedOwnerDraw;
+  AdvancedOwnerDraw := (hoOwnerDraw in Header.Options) and Assigned(TreeViewControl.OnAdvancedHeaderDraw) and
+    Assigned(TreeViewControl.OnHeaderDrawQueryElements) and not (csDesigning in TreeViewControl.ComponentState);
+  OwnerDraw := (hoOwnerDraw in Header.Options) and Assigned(TreeViewControl.OnHeaderDraw) and
+    not (csDesigning in TreeViewControl.ComponentState) and not AdvancedOwnerDraw;
 
   ZeroMemory(@PaintInfo, SizeOf(PaintInfo));
   PaintInfo.TargetCanvas := TargetCanvas;
@@ -3455,7 +3372,7 @@ begin
     begin
       PaintRectangle := R;
       Column := nil;
-      TreeView.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
+      TreeViewControl.DoHeaderDrawQueryElements(PaintInfo, RequestedElements);
     end;
 
     // Draw the background.
@@ -3479,7 +3396,7 @@ begin
     TargetRect.Left := Target.X - R.Left + Items[Run].Left + RTLOffset;
     // TargetRect.Right will be set in the loop
 
-    ShowRightBorder := (Header.Style = hsThickButtons) or not (hoAutoResize in Header.Options) or (TreeView.BevelKind = bkNone);
+    ShowRightBorder := (Header.Style = hsThickButtons) or not (hoAutoResize in Header.Options) or (TreeViewControl.BevelKind = bkNone);
 
     // Now go for each button.
     while (Run > NoColumn) and (TargetRect.Left < MaxX) do
@@ -3549,7 +3466,7 @@ var
   Y           : Integer;
   lArrowWidth : Integer;
 begin
-  lArrowWidth := TBaseVirtualTreeCracker(Self.Column.TreeView).ScaledPixels(5);
+  lArrowWidth := TBaseVirtualTreeCracker(Self.Column.TreeViewControl).ScaledPixels(5);
   Y := (PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth) div 2;
   if DropMark = dmmLeft then
     DrawArrow(TargetCanvas, TScrollDirection.sdLeft, Point(PaintRectangle.Left, Y), lArrowWidth)
@@ -3576,7 +3493,7 @@ begin
   Result := TVTHeaderCracker(Owner.Header);
 end;
 
-function TVirtualTreeColumnHelper.TreeView : TBaseVirtualTreeCracker;
+function TVirtualTreeColumnHelper.TreeViewControl : TBaseVirtualTreeCracker;
 begin
   Result := TBaseVirtualTreeCracker(TVTHeaderCracker(Owner.Header).GetOwner);
 end;
@@ -3588,7 +3505,7 @@ begin
   Result := TVTHeaderCracker(FHeader);
 end;
 
-function TVirtualTreeColumnsHelper.TreeView : TBaseVirtualTreeCracker;
+function TVirtualTreeColumnsHelper.TreeViewControl : TBaseVirtualTreeCracker;
 begin
   Result := TBaseVirtualTreeCracker(Header.GetOwner);
 end;

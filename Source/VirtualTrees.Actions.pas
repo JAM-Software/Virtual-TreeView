@@ -8,7 +8,7 @@ uses
   Vcl.Controls,
   Vcl.ActnList,
   VirtualTrees,
-  VirtualTrees.Columns;
+  VirtualTrees.Types;
 
 type
   TVirtualTreeAction = class(TCustomAction)

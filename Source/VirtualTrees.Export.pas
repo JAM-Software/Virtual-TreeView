@@ -28,7 +28,7 @@ uses
   System.StrUtils,
   System.Generics.Collections,
   System.UITypes,
-  VirtualTrees.Constants,
+  VirtualTrees.Types,
   VirtualTrees.ClipBoard,
   VirtualTrees.Columns,
   VirtualTrees.Header;
