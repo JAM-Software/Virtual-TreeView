@@ -12,7 +12,6 @@ uses
   Vcl.ImgList,
   Vcl.Controls,
   VirtualTrees.Types,
-  VirtualTrees.Options,
   VirtualTrees.DragImage,
   VirtualTrees.Columns;
 

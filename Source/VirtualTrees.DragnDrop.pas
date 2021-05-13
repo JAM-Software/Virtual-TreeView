@@ -85,7 +85,6 @@ var
 implementation
 
 uses
-  VirtualTrees.Options,
   VirtualTrees.DataObject;
 
 type

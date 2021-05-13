@@ -130,7 +130,8 @@ uses
   System.Math,
   System.Types,
   VirtualTrees,
-  VirtualTrees.Header;
+  VirtualTrees.Header,
+  VirtualTrees.DrawTree;
 
 function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
 begin

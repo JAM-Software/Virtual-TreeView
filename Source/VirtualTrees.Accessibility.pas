@@ -100,7 +100,7 @@ implementation
 
 uses
   System.SysUtils, Vcl.Forms, System.Variants, System.Math,
-  VirtualTrees.Columns;
+  VirtualTrees.Types;
 
 type
 

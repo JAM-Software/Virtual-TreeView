@@ -48,13 +48,11 @@ contains
   VirtualTrees.Types in '..\..\Source\VirtualTrees.Types.pas',
   VirtualTrees.Header in '..\..\Source\VirtualTrees.Header.pas',
   VirtualTrees.Columns in '..\..\Source\VirtualTrees.Columns.pas',
-  VirtualTrees.Options in '..\..\Source\VirtualTrees.Options.pas',
   VirtualTrees.DataObject in '..\..\Source\VirtualTrees.DataObject.pas',
   VirtualTrees.DragnDrop in '..\..\Source\VirtualTrees.DragnDrop.pas',
   VirtualTrees.DragImage in '..\..\Source\VirtualTrees.DragImage.pas',
   VirtualTrees.EditLink in '..\..\Source\VirtualTrees.EditLink.pas',
-  VirtualTrees.Colors in '..\..\Source\VirtualTrees.Colors.pas';
+  VirtualTrees.Colors in '..\..\Source\VirtualTrees.Colors.pas',
+  VirtualTrees.DrawTree in '..\..\Source\VirtualTrees.DrawTree.pas';
 
 end.
-
-

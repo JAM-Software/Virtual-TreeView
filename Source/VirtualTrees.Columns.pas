@@ -12,77 +12,10 @@ uses
   Vcl.Menus,
   Vcl.Themes,
   Vcl.GraphUtil,
-  VirtualTrees.Types,
-  VirtualTrees.Options;
+  VirtualTrees.Types;
 
 {$MINENUMSIZE 1, make enumerations as small as possible}
 
-
-type
-  // Options per column.
-  TVTColumnOption = (
-    coAllowClick,            // Column can be clicked (must be enabled too).
-    coDraggable,             // Column can be dragged.
-    coEnabled,               // Column is enabled.
-    coParentBidiMode,        // Column uses the parent's bidi mode.
-    coParentColor,           // Column uses the parent's background color.
-    coResizable,             // Column can be resized.
-    coShowDropMark,          // Column shows the drop mark if it is currently the drop target.
-    coVisible,               // Column is shown.
-    coAutoSpring,            // Column takes part in the auto spring feature of the header (must be resizable too).
-    coFixed,                 // Column is fixed and can not be selected or scrolled etc.
-    coSmartResize,           // Column is resized to its largest entry which is in view (instead of its largest
-                             // visible entry).
-    coAllowFocus,            // Column can be focused.
-    coDisableAnimatedResize, // Column resizing is not animated.
-    coWrapCaption,           // Caption could be wrapped across several header lines to fit columns width.
-    coUseCaptionAlignment,   // Column's caption has its own aligment.
-    coEditable,              // Column can be edited
-    coStyleColor             // Prefer background color of VCL style over TVirtualTreeColumn.Color
-    );
-  TVTColumnOptions = set of TVTColumnOption;
-
-  TVirtualTreeColumnStyle = (
-    vsText,
-    vsOwnerDraw
-    );
-
-  TVTHeaderColumnLayout = (
-    blGlyphLeft,
-    blGlyphRight,
-    blGlyphTop,
-    blGlyphBottom
-    );
-
-  TSortDirection = (
-    sdAscending,
-    sdDescending
-    );
-
-  TSortDirectionHelper = record helper for VirtualTrees.Columns.TSortDirection
-  strict private
-  const
-    cSortDirectionToInt : Array [TSortDirection] of Integer = (1, - 1);
-  public
-    /// Returns +1 for ascending and -1 for descending sort order.
-    function ToInt() : Integer; inline;
-  end;
-
-
-// Used during owner draw of the header to indicate which drop mark for the column must be drawn.
-  TVTDropMarkMode = (
-    dmmNone,
-    dmmLeft,
-    dmmRight
-    );
-
-  // auto scroll directions
-  TScrollDirections = set of TScrollDirection;
-//    sdLeft,
-//    sdUp,
-//    sdRight,
-//    sdDown
-//  );
 
 const
   DefaultColumnOptions = [coAllowClick, coDraggable, coEnabled, coParentColor, coParentBidiMode, coResizable,
@@ -371,12 +304,6 @@ type
     function TreeViewControl : TBaseVirtualTreeCracker;
   end;
 
-{ TSortDirectionHelper }
-
-function TSortDirectionHelper.ToInt() : Integer;
-begin
-  Result := cSortDirectionToInt[Self];
-end;
 
 //----------------- TVirtualTreeColumn ---------------------------------------------------------------------------------
 

@@ -86,8 +86,7 @@ uses
   System.SysUtils,
   System.Math,
   Vcl.Graphics,
-  Vcl.Forms,
-  VirtualTrees.Options;
+  Vcl.Forms;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree);
