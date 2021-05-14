@@ -9691,7 +9691,9 @@ end;
 procedure TVTHeader.FontChanged(Sender: TObject);
 begin
   inherited;
-  AutoScale();
+  {$IF CompilerVersion < 31} // See issue #1043
+  AutoScale(); 
+  {$IFEND}
 end;
 
 procedure TVTHeader.AutoScale();
@@ -10017,7 +10019,9 @@ end;
 
 procedure TVTHeader.StyleChanged();
 begin
-  AutoScale(); // Elements may have chnaged in size
+  {$IF CompilerVersion < 31} // See issue #1043
+  AutoScale(False); //Elements may have changed in size
+  {$IFEND}
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12234,7 +12238,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-destructor TBaseVirtualTree.Destroy;
+destructor TBaseVirtualTree.Destroy();
 var
   WasValidating: Boolean;
 begin
@@ -12248,13 +12252,13 @@ begin
     fAccessible := nil;
   end;
 
-  WasValidating := (tsValidating in FStates);
+  WasValidating := (tsValidating in FStates) or (tsValidationNeeded in FStates); // Checking tsValidating is not enough, the TWorkerThread may be stuck in the first call to ChangeTreeStatesAsync()
   InterruptValidation(True);
   if WasValidating then
   begin
     // Make sure we dequeue the two synchronized calls from ChangeTreeStatesAsync(), fixes mem leak and AV reported in issue #1001, but is more a workaround.
-    CheckSynchronize();
-    CheckSynchronize();
+    while CheckSynchronize() do
+      Sleep(1);
   end;// if
   FOptions.InternalSetMiscOptions(FOptions.MiscOptions - [toReadOnly]); //SetMiscOptions has side effects
   // Make sure there is no reference remaining to the releasing tree.
