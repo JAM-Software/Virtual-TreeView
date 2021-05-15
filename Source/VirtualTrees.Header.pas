@@ -22,11 +22,6 @@ type
   //tree columns implementation
   TVTHeader = class;
 
-  TSmartAutoFitType = (smaAllColumns, //consider nodes in view only for all columns
-    smaNoColumn,                      //consider nodes in view only for no column
-    smaUseColumnOption                //use coSmartResize of the corresponding column
-    );                                //describes the used column resize behaviour for AutoFitColumns
-
   TVTConstraintPercent = 0 .. 100;
 
   TVTFixedAreaConstraints = class(TPersistent)

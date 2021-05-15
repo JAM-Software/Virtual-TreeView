@@ -145,6 +145,12 @@ type
         (TopLeft, BottomRight : TPoint);
   end;
 
+  TSmartAutoFitType = (smaAllColumns, //consider nodes in view only for all columns
+    smaNoColumn,                      //consider nodes in view only for no column
+    smaUseColumnOption                //use coSmartResize of the corresponding column
+    );                                //describes the used column resize behaviour for AutoFitColumns
+
+
   TAddPopupItemType = (apNormal, apDisabled, apHidden);
 
   TCheckType = (
