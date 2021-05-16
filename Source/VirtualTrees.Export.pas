@@ -29,7 +29,6 @@ uses
   System.UITypes,
   VirtualTrees.Types,
   VirtualTrees.ClipBoard,
-  VirtualTrees.Columns,
   VirtualTrees.Header;
 
 type

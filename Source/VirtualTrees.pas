@@ -82,7 +82,6 @@ uses
   VirtualTrees.Types,
   VirtualTrees.Colors,
   VirtualTrees.DragImage,
-  VirtualTrees.Columns,
   VirtualTrees.Header;
 
 const
@@ -162,13 +161,12 @@ type
   TCheckState = VirtualTrees.Types.TCheckState;
   TVTDropMarkMode = VirtualTrees.Types.TVTDropMarkMode;
   TScrollDirections = VirtualTrees.Types.TScrollDirections;
-  TVirtualTreeColumn = VirtualTrees.Columns.TVirtualTreeColumn;
-  TVirtualTreeColumns = VirtualTrees.Columns.TVirtualTreeColumns;
-  TVirtualTreeColumnClass = VirtualTrees.Columns.TVirtualTreeColumnClass;
-  TColumnsArray = VirtualTrees.Columns.TColumnsArray;
-  TCardinalArray = VirtualTrees.Columns.TCardinalArray;
-  TIndexArray = VirtualTrees.Columns.TIndexArray;
-
+  TVirtualTreeColumn = VirtualTrees.Header.TVirtualTreeColumn;
+  TVirtualTreeColumns = VirtualTrees.Header.TVirtualTreeColumns;
+  TVirtualTreeColumnClass = VirtualTrees.Header.TVirtualTreeColumnClass;
+  TColumnsArray = VirtualTrees.Header.TColumnsArray;
+  TCardinalArray = VirtualTrees.Header.TCardinalArray;
+  TIndexArray = VirtualTrees.Header.TIndexArray;
 
   TVTHeader = VirtualTrees.Header.TVTHeader;
   TVTHeaderClass = VirtualTrees.Header.TVTHeaderClass;

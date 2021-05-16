@@ -47,7 +47,6 @@ contains
   VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
   VirtualTrees.Types in '..\..\Source\VirtualTrees.Types.pas',
   VirtualTrees.Header in '..\..\Source\VirtualTrees.Header.pas',
-  VirtualTrees.Columns in '..\..\Source\VirtualTrees.Columns.pas',
   VirtualTrees.DataObject in '..\..\Source\VirtualTrees.DataObject.pas',
   VirtualTrees.DragnDrop in '..\..\Source\VirtualTrees.DragnDrop.pas',
   VirtualTrees.DragImage in '..\..\Source\VirtualTrees.DragImage.pas',
