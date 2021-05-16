@@ -8131,7 +8131,7 @@ begin
     SB_LINELEFT:
       SetOffsetX(FOffsetX + RTLFactor * FScrollBarOptions.HorizontalIncrement);
     SB_LINERIGHT:
-      SetOffsetX(FOffsetX - RTLFactor * FScrollBarOptions.VerticalIncrement);
+      SetOffsetX(FOffsetX - RTLFactor * FScrollBarOptions.HorizontalIncrement);
     SB_PAGELEFT:
       SetOffsetX(FOffsetX + RTLFactor * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth));
     SB_PAGERIGHT:
