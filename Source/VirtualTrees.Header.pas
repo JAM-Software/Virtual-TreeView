@@ -5813,7 +5813,7 @@ begin
 
     TargetRect.Top := Target.Y;
     TargetRect.Bottom := Target.Y + R.Bottom - R.Top;
-    TargetRect.Left := Target.X - R.Left + Items[Run].Left + RTLOffset;
+    TargetRect.Left := Target.X - R.Left + Items[Run].FLeft + RTLOffset;
     // TargetRect.Right will be set in the loop
 
     ShowRightBorder := (Header.Style = hsThickButtons) or not (hoAutoResize in Header.Options) or (TreeViewControl.BevelKind = bkNone);
