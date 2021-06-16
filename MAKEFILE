@@ -2,7 +2,16 @@ PROJECT = VirtualTrees
 EMBARCADERO = $(PROGRAMFILES)\Embarcadero\RAD Studio
 STUDIO = $(PROGRAMFILES)\Embarcadero\Studio
 BDSCOMMONDIRMAIN = %PUBLIC%\Documents\Embarcadero\Studio
-BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\msbuild.exe"
+# Default MS Build version
+!IF EXIST("$(PROGRAMFILES)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe")
+BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe"
+!ELSE
+!IF EXIST("$(PROGRAMFILES)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe")
+BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe"
+!ELSE
+BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe"
+!ENDIF
+!ENDIF
 BUILD = $(BUILDEXE) /t:Rebuild
 
 clean:  
@@ -18,20 +27,20 @@ _XE8: Lib\*.pas "Package\RAD Studio XE8\$(PROJECT)R.dpk" "Package\RAD Studio XE8
 	$(BUILD) /property:Platform=Win64 "Package\RAD Studio XE8\$(PROJECT)R.dproj"
 	$(MAKE) _samples
 
-# build all packahes for Delphi 10.2
-10_2: Source\*.pas "Packages\RAD Studio 10.2\$(PROJECT)R.dpk" "Packages\RAD Studio 10.2\$(PROJECT)R.dproj" "Packages\RAD Studio 10.2\$(PROJECT)D.dpk" "Packages\RAD Studio 10.2\$(PROJECT)D.dproj"
-	SET BDS=$(STUDIO)\19.0
-	$(BUILD) "Packages\RAD Studio 10.2\$(PROJECT)R.dproj"
-	$(BUILD) "Packages\RAD Studio 10.2\$(PROJECT)D.dproj"
-	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.2\$(PROJECT)R.dproj"
-	$(MAKE) _samples
-
-# build all packahes for Delphi 10.3
+# build all packages for Delphi 10.3
 10_3: Source\*.pas "Packages\RAD Studio 10.3\$(PROJECT)R.dpk" "Packages\RAD Studio 10.3\$(PROJECT)R.dproj" "Packages\RAD Studio 10.3\$(PROJECT)D.dpk" "Packages\RAD Studio 10.3\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\20.0
 	$(BUILD) "Packages\RAD Studio 10.3\$(PROJECT)R.dproj"
 	$(BUILD) "Packages\RAD Studio 10.3\$(PROJECT)D.dproj"
 	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.3\$(PROJECT)R.dproj"
+	$(MAKE) _samples
+
+# build all packages for Delphi 10.4.   Note: The variable $@ is expanded to the build target name
+10.4: Source\*.pas "Packages\RAD Studio $@\$(PROJECT)R.dpk" "Packages\RAD Studio $@\$(PROJECT)R.dproj" "Packages\RAD Studio $@\$(PROJECT)D.dpk" "Packages\RAD Studio $@\$(PROJECT)D.dproj"
+	SET BDS=$(STUDIO)\21.0
+	$(BUILD) "Packages\RAD Studio $@\$(PROJECT)R.dproj"
+	$(BUILD) "Packages\RAD Studio $@\$(PROJECT)D.dproj"
+	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio $@\$(PROJECT)R.dproj"
 	$(MAKE) _samples
 
 "Demos\Advanced\Advanced.exe": "Demos\Advanced\*.dproj" "Demos\Advanced\*.dpr" "Demos\Advanced\*.pas"
@@ -48,7 +57,7 @@ _XE8: Lib\*.pas "Package\RAD Studio XE8\$(PROJECT)R.dpk" "Package\RAD Studio XE8
 
 _samples: "Demos\Advanced\Advanced.exe" "Demos\Minimal\Minimal.exe" "Demos\Objects\Objects.exe" "Demos\OLE\OLE.exe"
 	
-_continuousbuilds: clean 10_3
+_continuousbuilds: clean 10.4
 
 _release:
 #This small batch file is intended to create a source code release file of the VirtualTreeView as ZIP archive
