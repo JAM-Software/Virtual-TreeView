@@ -78,7 +78,7 @@ uses
   Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
-  Winapi.ShlObj, System.UITypes, System.Generics.Collections;
+  Winapi.ShlObj, System.UITypes, System.Generics.Collections, VirtualTrees.Types;
 type
 {$IFDEF VT_FMX}
   TDimension = Single;
