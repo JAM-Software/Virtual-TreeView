@@ -25199,13 +25199,17 @@ procedure TCustomVirtualStringTree.DoTextDrawing(var PaintInfo: TVTPaintInfo; co
 
 var
   DefaultDraw: Boolean;
-
+  lText: string;
 begin
   DefaultDraw := True;
   if Assigned(FOnDrawText) then
     FOnDrawText(Self, PaintInfo.Canvas, PaintInfo.Node, PaintInfo.Column, Text, CellRect, DefaultDraw);
+  if ((DrawFormat and DT_RIGHT) > 0) and (TFontStyle.fsItalic in PaintInfo.Canvas.Font.Style) then
+    lText := Text + ' '
+  else
+    lText := Text;
   if DefaultDraw then
-    Winapi.Windows.DrawTextW(PaintInfo.Canvas.Handle, PWideChar(Text), Length(Text), CellRect, DrawFormat);
+    Winapi.Windows.DrawTextW(PaintInfo.Canvas.Handle, PWideChar(lText), Length(lText), CellRect, DrawFormat);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
