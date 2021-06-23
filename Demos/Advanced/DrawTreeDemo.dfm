@@ -1,8 +1,8 @@
 object DrawTreeForm: TDrawTreeForm
   Left = 544
   Top = 320
-  Width = 726
-  Height = 513
+  ClientHeight = 474
+  ClientWidth = 710
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,7 @@ object DrawTreeForm: TDrawTreeForm
   OnCreate = FormCreate
   DesignSize = (
     710
-    475)
+    474)
   PixelsPerInch = 96
   TextHeight = 18
   object Label7: TLabel

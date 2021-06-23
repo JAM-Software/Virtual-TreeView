@@ -27,7 +27,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
-  StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes;
+  StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList;
 
 type
   TGeneralForm = class(TForm)
@@ -406,12 +406,12 @@ begin
   with Sender as TRadioGroup do
     if ItemIndex = 0 then
     begin
-      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions + [toShowTreeLines];
+      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions + [TVTPaintOption.toShowTreeLines];
       VST2.ButtonStyle := bsRectangle;
     end
     else
     begin
-      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions - [toShowTreeLines];
+      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions - [TVTPaintOption.toShowTreeLines];
       VST2.ButtonStyle := bsTriangle;
     end;
 end;
@@ -449,11 +449,11 @@ begin
   with VST2.TreeOptions do
     if ThemeRadioGroup.ItemIndex = 0 then
     begin
-      PaintOptions := PaintOptions + [toThemeAware];
+      PaintOptions := PaintOptions + [TVTPaintOption.toThemeAware];
       VST2.CheckImageKind := ckSystemDefault;
     end
     else
-      PaintOptions := PaintOptions - [toThemeAware];
+      PaintOptions := PaintOptions - [TVTPaintOption.toThemeAware];
 
   RadioGroup1.Enabled := ThemeRadioGroup.ItemIndex = 1;
   RadioGroup2.Enabled := ThemeRadioGroup.ItemIndex = 1;

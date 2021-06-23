@@ -26,7 +26,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VirtualTrees, StdCtrls, {$ifdef GraphicEx} GraphicEx, {$else} JPEG, {$endif}
-  ImgList, ComCtrls, UITypes;
+  ImgList, ComCtrls, UITypes, {VirtualTrees.DrawTree,} System.ImageList;
 
 type
   TDrawTreeForm = class(TForm)
@@ -689,7 +689,7 @@ begin
             SortDirection := sdDescending
           else
             SortDirection := sdAscending;
-        Treeview.SortTree(SortColumn, SortDirection, False);
+        TBaseVirtualTree(Treeview).SortTree(SortColumn, SortDirection, False);
       end;
     end;
   end;

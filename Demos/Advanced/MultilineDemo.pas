@@ -146,9 +146,9 @@ procedure TNodeForm.AutoAdjustCheckBoxClick(Sender: TObject);
 
 begin
   if AutoAdjustCheckBox.Checked then
-    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions + [toVariablenodeHeight]
+    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions + [TVTMiscOption.toVariablenodeHeight]
   else
-    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions - [toVariablenodeHeight];
+    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions - [TVTMiscOption.toVariablenodeHeight];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

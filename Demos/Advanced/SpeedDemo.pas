@@ -133,9 +133,9 @@ procedure TSpeedForm.SBCheckBoxClick(Sender: TObject);
 
 begin
   if SBCheckBox.Checked then
-    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions + [toShowBackground]
+    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions + [TVTPaintOption.toShowBackground]
   else
-    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions - [toShowBackground];
+    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions - [TVTPaintOption.toShowBackground];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
