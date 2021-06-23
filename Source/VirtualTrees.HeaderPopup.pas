@@ -68,7 +68,8 @@ interface
 uses
   System.Classes,
   Vcl.Menus,
-  VirtualTrees;
+  VirtualTrees,
+  VirtualTrees.Types;
 
 type
   TVTHeaderPopupOption = (
@@ -78,7 +79,7 @@ type
   );
   TVTHeaderPopupOptions = set of TVTHeaderPopupOption;
 
-  TColumnChangeEvent = procedure(const Sender: TBaseVirtualTree; const Column: TColumnIndex; Visible: Boolean) of object;
+  TColumnChangeEvent = procedure(const Sender: TObject; const Column: TColumnIndex; Visible: Boolean) of object;
 
   TVTHeaderPopupMenu = class(TPopupMenu)
   strict private
@@ -107,7 +108,8 @@ type
 implementation
 
 uses
-  Winapi.Windows, System.Types;
+  Winapi.Windows, System.Types,
+  VirtualTrees.Header;
 
 resourcestring
   sResizeColumnToFit = 'Size &Column to Fit';

@@ -42,9 +42,16 @@ contains
   VirtualTrees.Classes in '..\..\Source\VirtualTrees.Classes.pas',
   VirtualTrees.WorkerThread in '..\..\Source\VirtualTrees.WorkerThread.pas',
   VirtualTrees.ClipBoard in '..\..\Source\VirtualTrees.ClipBoard.pas',
-  VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
+  VirtualTrees.Actions in '..\..\Source\VirtualTrees.Actions.pas',
   VirtualTrees.Export in '..\..\Source\VirtualTrees.Export.pas',
-  VirtualTrees.Actions in '..\..\Source\VirtualTrees.Actions.pas';
+  VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
+  VirtualTrees.Types in '..\..\Source\VirtualTrees.Types.pas',
+  VirtualTrees.Header in '..\..\Source\VirtualTrees.Header.pas',
+  VirtualTrees.DataObject in '..\..\Source\VirtualTrees.DataObject.pas',
+  VirtualTrees.DragnDrop in '..\..\Source\VirtualTrees.DragnDrop.pas',
+  VirtualTrees.DragImage in '..\..\Source\VirtualTrees.DragImage.pas',
+  VirtualTrees.EditLink in '..\..\Source\VirtualTrees.EditLink.pas',
+  VirtualTrees.Colors in '..\..\Source\VirtualTrees.Colors.pas',
+  VirtualTrees.DrawTree in '..\..\Source\VirtualTrees.DrawTree.pas';
 
 end.
-
