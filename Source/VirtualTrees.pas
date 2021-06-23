@@ -2121,6 +2121,7 @@ type
     procedure SaveToFile(const FileName: TFileName);
     procedure SaveToStream(Stream: TStream; Node: PVirtualNode = nil); virtual;
     function ScaledPixels(pPixels: Integer): Integer;
+    procedure ScaleNodeHeights(M, D: Integer);
     function ScrollIntoView(Node: PVirtualNode; Center: Boolean; Horizontally: Boolean = False): Boolean; overload;
     function ScrollIntoView(Column: TColumnIndex; Center: Boolean; Node: PVirtualNode = nil): Boolean; overload;
     procedure SelectAll(VisibleOnly: Boolean);
@@ -10015,8 +10016,6 @@ const
 {$ifend}
 var
   Flags: TScalingFlags;
-  Run: PVirtualNode;
-  lNewNodeTotalHeight: Cardinal;
 begin
   if (toAutoChangeScale in FOptions.AutoOptions) then
   begin
@@ -10041,27 +10040,7 @@ begin
             FCheckImages := CreateSystemImageSet(Self);
         end;
         UpdateHeaderRect();
-        // Scale also node heights
-        BeginUpdate();
-        try
-          Run := GetFirst();
-          while Assigned(Run) do
-          begin
-            if vsInitialized in Run.States then
-              SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D))
-            else // prevent initialization of non-initialzed nodes
-            begin
-              Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
-              // The next three lines fix issue #1000
-              lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
-              FRoot.TotalHeight := FRoot.TotalHeight + lNewNodeTotalHeight - Run.TotalHeight; // 1 EIntOverflow exception seen here in debug build in 01/2021
-              Run.TotalHeight := lNewNodeTotalHeight;
-            end;
-            Run := GetNextNoInit(Run);
-          end; // while
-        finally
-          EndUpdate();
-        end;
+        ScaleNodeHeights(M, D);
       end;//if sfHeight
     end;// if M<>D
   end;//if toAutoChangeScale
@@ -10072,6 +10051,34 @@ begin
   AutoScale(M <> D);
 end;
 
+
+procedure TBaseVirtualTree.ScaleNodeHeights(M, D: Integer);
+var
+  Run: PVirtualNode;
+  lNewNodeTotalHeight: Cardinal;
+begin
+  // Scale also node heights
+  BeginUpdate();
+  try
+    Run := GetFirst();
+    while Assigned(Run) do
+    begin
+      if vsInitialized in Run.States then
+        SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D))
+      else // prevent initialization of non-initialzed nodes
+      begin
+        Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
+        // The next three lines fix issue #1000
+        lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
+        FRoot.TotalHeight := FRoot.TotalHeight + lNewNodeTotalHeight - Run.TotalHeight; // 1 EIntOverflow exception seen here in debug build in 01/2021
+        Run.TotalHeight := lNewNodeTotalHeight;
+      end;
+      Run := GetNextNoInit(Run);
+    end; // while
+  finally
+    EndUpdate();
+  end;
+end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
