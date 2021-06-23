@@ -15,9 +15,6 @@ uses
 {$MINENUMSIZE 1, make enumerations as small as possible}
 
 const
-  VTVersion              = '7.5.0' deprecated 'This const is going to be removed in a future version';
-
-const
   VTTreeStreamVersion    = 3;
   VTHeaderStreamVersion  = 6;    // The header needs an own stream version to indicate changes only relevant to the header.
 
