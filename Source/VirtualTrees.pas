@@ -172,6 +172,8 @@ type
   TVTHeaderClass = VirtualTrees.Header.TVTHeaderClass;
   TVTHeaderOption = VirtualTrees.Header.TVTHeaderOption;
   TVTHeaderOptions = VirtualTrees.Header.TVTHeaderOptions;
+  THeaderPaintInfo = VirtualTrees.Header.THeaderPaintInfo;
+  TVTHeaderColumnLayout = VirtualTrees.Types.TVTHeaderColumnLayout;
   TVTConstraintPercent = VirtualTrees.Header.TVTConstraintPercent;
   TSmartAutoFitType = VirtualTrees.Types.TSmartAutoFitType;
   TVTFixedAreaConstraints = VirtualTrees.Header.TVTFixedAreaConstraints;
