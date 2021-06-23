@@ -627,7 +627,7 @@ begin
 
         { Some shuffling of feet and rectangles. Try for yourself what
           happens here be adding offsets, changing colors etc.. }
-        if (toHotTrack in Self.TreeOptions.PaintOptions) and
+        if (TVTPaintOption.toHotTrack in Self.TreeOptions.PaintOptions) and
            (Node=HotNode)
           then Font.Style:=Font.Style+[fsUnderline]
           else Font.Style:=Font.Style-[fsUnderline];
@@ -669,7 +669,7 @@ begin
 
         if Focused
            and (FocusedNode=Node) and
-           not(toFullRowSelect in Self.TreeOptions.SelectionOptions)
+           not (TVTSelectionOption.toFullRowSelect in Self.TreeOptions.SelectionOptions)
           then
             begin
               if Self.Color=clGray
