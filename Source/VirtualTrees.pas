@@ -11689,7 +11689,6 @@ var
 
 begin
   Result := 0;
-  if ChangeBy <> 0 then
   begin
     // Do some initialization here
     BonusPixel := ChangeBy > 0;
