@@ -11689,6 +11689,7 @@ var
 
 begin
   Result := 0;
+  if (ChangeBy <> 0) and (RangeEndCol >= 0) then // RangeEndCol == -1 means no columns, so nothing to do
   begin
     // Do some initialization here
     BonusPixel := ChangeBy > 0;
