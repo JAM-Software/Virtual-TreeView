@@ -307,7 +307,7 @@ end;
 function TVirtualDrawTree.GetOptions: TVirtualTreeOptions;
 
 begin
-  Result := Self.TreeOptions as TVirtualTreeOptions;
+  Result := inherited TreeOptions as TVirtualTreeOptions;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
