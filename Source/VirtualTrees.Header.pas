@@ -441,8 +441,8 @@ type
 
     function AllowFocus(ColumnIndex : TColumnIndex) : Boolean;
     procedure Assign(Source : TPersistent); override;
-    procedure AutoFitColumns(Animated : Boolean = True; SmartAutoFitType : TSmartAutoFitType = smaUseColumnOption; RangeStartCol : Integer = NoColumn;
-      RangeEndCol : Integer = NoColumn); virtual;
+    procedure AutoFitColumns(); overload;
+    procedure AutoFitColumns(Animated : Boolean; SmartAutoFitType : TSmartAutoFitType = smaUseColumnOption; RangeStartCol : Integer = NoColumn;  RangeEndCol : Integer = NoColumn); overload; virtual;
     function InHeader(P : TPoint) : Boolean; virtual;
     function InHeaderSplitterArea(P : TPoint) : Boolean; virtual;
     procedure Invalidate(Column : TVirtualTreeColumn; ExpandToBorder : Boolean = False; UpdateNowFlag : Boolean = False);
@@ -2231,7 +2231,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.AutoFitColumns(Animated : Boolean = True; SmartAutoFitType : TSmartAutoFitType = smaUseColumnOption; RangeStartCol : Integer = NoColumn;
+procedure TVTHeader.AutoFitColumns();
+begin
+  AutoFitColumns(not Tree.IsUpdating);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTHeader.AutoFitColumns(Animated : Boolean; SmartAutoFitType : TSmartAutoFitType = smaUseColumnOption; RangeStartCol : Integer = NoColumn;
   RangeEndCol : Integer = NoColumn);
 
 //--------------- local functions -------------------------------------------
