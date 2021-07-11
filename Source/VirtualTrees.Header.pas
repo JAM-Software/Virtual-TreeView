@@ -4711,13 +4711,13 @@ end;
 procedure TVirtualTreeColumns.Notify(Item : TCollectionItem; Action : System.Classes.TCollectionNotification);
 var
   I : Integer;
-  lRemovedPosition: Integer;
+  lRemovedPosition: TColumnPosition;
 begin
   if Action in [cnExtracting, cnDeleting] then
   begin
     lRemovedPosition := TVirtualTreeColumn(Item).Position;
     // Adjust all positions larger than the deleted column's position. Fixes #959
-    for I := Count - 1 to 0 do
+    for I := Count - 1 downto 0 do
     begin
       if Items[I].Position > lRemovedPosition then
         Items[I].Position := Items[I].Position - 1;
