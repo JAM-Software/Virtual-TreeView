@@ -9618,8 +9618,10 @@ begin
     if Changed then
     begin
       UpdateNextNodeToSelect(Node);
-      if (SelectedCount = 1) then
+      
+      if (not (toMultiSelect in FOptions.SelectionOptions)) AND (SelectedCount = 1) then
         FocusedNode := Node; // if only one node is selected, make sure the focused node changes with the selected node
+	
       InvalidateNode(Node);
       RemoveSyncAfterChange := NotifySynced and not (tsSynchMode in fStates);
       if RemoveSyncAfterChange then
