@@ -18077,11 +18077,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.CutToClipboard;
+procedure TBaseVirtualTree.CutToClipboard();
+var
+  lDataObject: IDataObject;
 begin
   if (FSelectionCount > 0) and not (toReadOnly in FOptions.MiscOptions) then
   begin
-    if OleSetClipboard(TVTDataObject.Create(Self, True)) = S_OK then
+    lDataObject := TVTDataObject.Create(Self, True);
+    if OleSetClipboard(lDataObject) = S_OK then
     begin
       MarkCutCopyNodes;
       DoStateChange([tsCutPending], [tsCopyPending]);
