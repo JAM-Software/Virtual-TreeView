@@ -3295,7 +3295,7 @@ begin
             begin
               // Determine actual line break style depending on what was returned by the methods and what's in the node.
               if LineBreakStyle = hlbDefault then
-                if vsMultiline in Node.States then
+                if (vsMultiline in Node.States) or HintText.Contains(#13) then
                   LineBreakStyle := hlbForceMultiLine
                 else
                   LineBreakStyle := hlbForceSingleLine;
