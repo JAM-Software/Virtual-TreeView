@@ -4587,7 +4587,6 @@ begin
       begin
         FColumnPopupMenu := TVTHeaderPopupMenu.Create(TreeView);
         TVTHeaderPopupMenu(FColumnPopupMenu).OnAddHeaderPopupItem := HeaderPopupMenuAddHeaderPopupItem;
-        TVTHeaderPopupMenu(FColumnPopupMenu).OnColumnChange := HeaderPopupMenuColumnChange;
         FColumnPopupMenu.PopupComponent := TreeView;
         if (hoDblClickResize in Header.Options) and ((TreeViewControl.ChildCount[nil] > 0) or (hoAutoResizeInclCaption in Header.Options)) then
           TVTHeaderPopupMenu(FColumnPopupMenu).Options := TVTHeaderPopupMenu(FColumnPopupMenu).Options + [poResizeToFitItem]

@@ -549,8 +549,7 @@ begin
       ChildCount := Sender.ChildCount[Node];
 
       // finally sort node
-      if ChildCount > 0 then
-        Sender.Sort(Node, 0, TVirtualStringTree(Sender).Header.SortDirection, False);
+      Sender.Sort(Node, 0, TVirtualStringTree(Sender).Header.SortDirection, False);
     finally
       FindClose(SR);
       Screen.Cursor := crDefault;

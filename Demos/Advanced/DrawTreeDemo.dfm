@@ -92,6 +92,8 @@ object DrawTreeForm: TDrawTreeForm
     OnInitChildren = VDT1InitChildren
     OnInitNode = VDT1InitNode
     OnStateChange = VDT1StateChange
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <
       item
         BiDiMode = bdLeftToRight

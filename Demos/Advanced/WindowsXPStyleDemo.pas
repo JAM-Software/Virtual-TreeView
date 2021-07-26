@@ -122,7 +122,7 @@ procedure TWindowsXPForm.FormCreate(Sender: TObject);
 
 begin
   XPTree.NodeDataSize := SizeOf(TEntry);
-
+  XPTree.HintMode := hmTooltip;
   ConvertToHighColor(LargeImages);
   ConvertToHighColor(SmallImages);
 end;
@@ -249,6 +249,7 @@ begin
   HintText := 'Size larger than 536 MB' + #13 +
     'Folders: addins, AppPatch, Config, Connection Wizard, ...' + #13 +
     'Files: 1280.bmp, 1280x1024.bmp, 2001 94 mars.bmp, ac3api.ini, ...';
+  LineBreakStyle := TVTTooltipLineBreakStyle.hlbForceMultiLine;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

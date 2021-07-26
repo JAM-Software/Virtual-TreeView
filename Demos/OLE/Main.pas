@@ -9,7 +9,7 @@ interface
 uses 
   Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics, 
   VirtualTrees, ActnList, ComCtrls, ExtCtrls, StdCtrls, Controls, Classes,
-  ImgList, System.Actions;
+  ImgList, System.Actions, System.ImageList;
 
 type
   TMainForm = class(TForm)
@@ -208,6 +208,7 @@ begin
   Tree2.NodeDataSize := SizeOf(TNodeData);
   Tree2.RootNodeCount := 30;
 
+  ReportMemoryLeaksOnShutdown := True;
   // There is a small RTF text stored in the resource to have something to display in the rich edit control.
   Stream := TResourceStream.Create(HInstance, 'RTF', 'RCDATA');
   try
@@ -264,7 +265,7 @@ begin
           TargetNode := Target.DropTargetNode;
           if TargetNode = nil then
             TargetNode := Target.FocusedNode;
-            
+
           Head := OLEData;
           try
             while Head^ <> #0 do
@@ -572,7 +573,7 @@ end;
 procedure TMainForm.Tree2DragAllowed(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
 
 // Tree 2 uses manual drag start to tell which node might be dragged.
- 
+
 begin
   Allowed := Odd(Node.Index);
 end;
