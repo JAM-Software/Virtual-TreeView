@@ -18258,7 +18258,10 @@ begin
 
     if not ParentClearing then
     begin
-      DetermineHiddenChildrenFlag(LastParent);
+      if FUpdateCount = 0 then
+        DetermineHiddenChildrenFlag(LastParent)
+      else
+        Include(FStates, tsUpdateHiddenChildrenNeeded);
       InvalidateCache;
       if FUpdateCount = 0 then
       begin
