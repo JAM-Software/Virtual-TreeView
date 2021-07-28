@@ -92,7 +92,7 @@ type
   strict protected
     procedure DoAddHeaderPopupItem(const Column: TColumnIndex; out Cmd: TAddPopupItemType); virtual;
     procedure DoColumnChange(Column: TColumnIndex; Visible: Boolean); virtual;
-    procedure OnMenuItemClick(Sender: TObject);
+    procedure OnMenuItemClick(Sender: TObject); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     procedure Popup(x, y: Integer); override;
