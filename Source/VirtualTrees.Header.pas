@@ -4719,10 +4719,10 @@ var
   I : Integer;
   lRemovedPosition: TColumnPosition;
 begin
-  if Action in [cnExtracting, cnDeleting] then
+  if Action in [cnDeleting] then
   begin
     lRemovedPosition := TVirtualTreeColumn(Item).Position;
-    // Adjust all positions larger than the deleted column's position. Fixes #959
+    // Adjust all positions larger than the deleted column's position. Fixes #959, #1049
     for I := Count - 1 downto 0 do
     begin
       if Items[I].Position > lRemovedPosition then
