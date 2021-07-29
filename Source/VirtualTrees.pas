@@ -8397,9 +8397,9 @@ procedure TVirtualTreeColumns.Notify(Item: TCollectionItem; Action: System.Class
 var
   I: Integer;
 begin
-  if Action in [cnExtracting, cnDeleting] then
+  if Action in [cnDeleting] then
   begin
-    // Adjust all positions larger than the deleted column's position. Fixes #959
+    // Adjust all positions larger than the deleted column's position. Fixes #959, #1049
     for I := 0 to Count - 1 do begin
       if Items[I].Position > TVirtualTreeColumn(Item).Position then
         Items[I].Position := Items[I].Position - 1;
