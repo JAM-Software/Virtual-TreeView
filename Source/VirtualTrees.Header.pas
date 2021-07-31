@@ -222,7 +222,6 @@ type
     function GetOwner : TPersistent; override;
     function HandleClick(P : TPoint; Button : TMouseButton; Force, DblClick : Boolean) : Boolean; virtual;
     procedure HeaderPopupMenuAddHeaderPopupItem(const Sender : TObject; const Column : TColumnIndex; var Cmd : TAddPopupItemType);
-    procedure HeaderPopupMenuColumnChange(const Sender : TObject; const Column : TColumnIndex; Visible : Boolean);
     procedure IndexChanged(OldIndex, NewIndex : Integer);
     procedure InitializePositionArray;
     procedure Notify(Item : TCollectionItem; Action : System.Classes.TCollectionNotification); override;
@@ -4611,13 +4610,6 @@ end;
 procedure TVirtualTreeColumns.HeaderPopupMenuAddHeaderPopupItem(const Sender : TObject; const Column : TColumnIndex; var Cmd : TAddPopupItemType);
 begin
   TBaseVirtualTreeCracker(Sender).DoHeaderAddPopupItem(Column, Cmd);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualTreeColumns.HeaderPopupMenuColumnChange(const Sender : TObject; const Column : TColumnIndex; Visible : Boolean);
-begin
-  TBaseVirtualTreeCracker(Sender).DoColumnVisibilityChanged(Column, Visible);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
