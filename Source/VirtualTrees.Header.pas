@@ -5,6 +5,7 @@ interface
 uses
   System.Classes,
   System.Types,
+  System.Generics.Collections,
   WinApi.Windows,
   WinApi.Messages,
   Vcl.Graphics,
