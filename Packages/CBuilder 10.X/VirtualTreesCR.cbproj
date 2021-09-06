@@ -145,12 +145,12 @@
         <PackageImport Include="vcl.bpi">
             <BuildOrder>4</BuildOrder>
         </PackageImport>
-        <PackageImport Include="vclx.bpi">
-            <BuildOrder>8</BuildOrder>
-        </PackageImport>
         <CppCompile Include="VirtualTreesCR.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
+            <BuildOrder>13</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Accessibility.pas">
             <BuildOrder>14</BuildOrder>
         </DelphiCompile>
