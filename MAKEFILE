@@ -42,7 +42,7 @@ clean:
 
 _samples: "Demos\Advanced\Advanced.exe" "Demos\Minimal\Minimal.exe" "Demos\Objects\Objects.exe" "Demos\OLE\OLE.exe"
 	
-_continuousbuilds: clean 10.4
+_continuousbuilds: clean 10.4+
 
 _release:
 #This small batch file is intended to create a source code release file of the VirtualTreeView as ZIP archive
