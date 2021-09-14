@@ -15,28 +15,13 @@ BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0
 BUILD = $(BUILDEXE) /t:Rebuild
 
 clean:  
-  ECHO Project: $(PROJECT) $(EMBARCADERO)
+	ECHO Project: $(PROJECT) $(EMBARCADERO)
 	DEL /S /Q .\*.HPP
 	DEL /S /Q .\*.DCU
 #TODO: Add demos and package folders
 	 
-_XE8: Lib\*.pas "Package\RAD Studio XE8\$(PROJECT)R.dpk" "Package\RAD Studio XE8\$(PROJECT)R.dproj" "Package\RAD Studio XE8\$(PROJECT)D.dpk" "Package\RAD Studio XE8\$(PROJECT)D.dproj"
-	SET BDS=$(STUDIO)\16.0
-	$(BUILD) "Package\RAD Studio XE8\$(PROJECT)R.dproj"
-	$(BUILD) "Package\RAD Studio XE8\$(PROJECT)D.dproj"
-	$(BUILD) /property:Platform=Win64 "Package\RAD Studio XE8\$(PROJECT)R.dproj"
-	$(MAKE) _samples
-
-# build all packages for Delphi 10.3
-10_3: Source\*.pas "Packages\RAD Studio 10.3\$(PROJECT)R.dpk" "Packages\RAD Studio 10.3\$(PROJECT)R.dproj" "Packages\RAD Studio 10.3\$(PROJECT)D.dpk" "Packages\RAD Studio 10.3\$(PROJECT)D.dproj"
-	SET BDS=$(STUDIO)\20.0
-	$(BUILD) "Packages\RAD Studio 10.3\$(PROJECT)R.dproj"
-	$(BUILD) "Packages\RAD Studio 10.3\$(PROJECT)D.dproj"
-	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.3\$(PROJECT)R.dproj"
-	$(MAKE) _samples
-
 # build all packages for Delphi 10.4.   Note: The variable $@ is expanded to the build target name
-10.4: Source\*.pas "Packages\RAD Studio $@\$(PROJECT)R.dpk" "Packages\RAD Studio $@\$(PROJECT)R.dproj" "Packages\RAD Studio $@\$(PROJECT)D.dpk" "Packages\RAD Studio $@\$(PROJECT)D.dproj"
+10.1 10.2 10.3 10.4+: Source\*.pas "Packages\RAD Studio $@\$(PROJECT)R.dpk" "Packages\RAD Studio $@\$(PROJECT)R.dproj" "Packages\RAD Studio $@\$(PROJECT)D.dpk" "Packages\RAD Studio $@\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\21.0
 	$(BUILD) "Packages\RAD Studio $@\$(PROJECT)R.dproj"
 	$(BUILD) "Packages\RAD Studio $@\$(PROJECT)D.dproj"
