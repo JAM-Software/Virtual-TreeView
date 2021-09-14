@@ -441,7 +441,7 @@ type
     property SelectionOptions : TVTSelectionOptions read FSelectionOptions write SetSelectionOptions default DefaultSelectionOptions;
     property EditOptions : TVTEditOptions read FEditOptions write FEditOptions default toDefaultEdit;
 
-    //property Owner: TBaseVirtualTree read FOwner;
+    property Owner: TCustomControl read FOwner;
   end;
 
   TTreeOptionsClass = class of TCustomVirtualTreeOptions;
