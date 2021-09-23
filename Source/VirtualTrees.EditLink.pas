@@ -56,47 +56,62 @@ type
     FTree : TCustomVirtualStringTree;         //A back reference to the tree calling.
     FNode : PVirtualNode;                     //The node to be edited.
     FColumn : TColumnIndex;                   //The column of the node.
+    FStopping : Boolean;                      //Set to True when the edit link requests stopping the edit action.
+    FAlignment : TAlignment;
+    FBiDiMode: TBiDiMode;
 
     procedure SetEdit(const Value : TControl); //Setter for the FEdit member;
   public
     constructor Create; virtual;
     destructor Destroy; override;
 
-    function BeginEdit : Boolean; virtual; stdcall; abstract;
-    function CancelEdit : Boolean; virtual; stdcall; abstract;
-    function EndEdit : Boolean; virtual; stdcall; abstract;
+    function BeginEdit : Boolean; virtual; stdcall;
+    function CancelEdit : Boolean; virtual; stdcall;
+    function EndEdit : Boolean; virtual; stdcall;
     function GetBounds : TRect; virtual; stdcall; abstract;
     function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; virtual; stdcall;
     procedure ProcessMessage(var Message : TMessage); virtual; stdcall; abstract;
     procedure SetBounds(R : TRect); virtual; stdcall; abstract;
 
+    property Alignment : TAlignment read FAlignment;
+    property BiDiMode: TBiDiMode read FBiDiMode;
     property Column : TColumnIndex read FColumn; //[IPK] Make Column(Index) accessible
     property Node : PVirtualNode read FNode;  //[IPK] Make FNode accessible
     property Tree : TCustomVirtualStringTree read FTree;
+    property Stopping : Boolean read FStopping;
   end;
 
-  TStringEditLink = class(TBaseEditLink)
+  // Edit link that has TWinControl-based Edit
+  TWinControlEditLink = class(TBaseEditLink)
   protected
-    FAlignment : TAlignment;
-    FTextBounds : TRect;                      //Smallest rectangle around the text.
-    FStopping : Boolean;                      //Set to True when the edit link requests stopping the edit action.
-    function GetEdit: TVTEdit;                //Getter for the FEdit member;
-    procedure SetEdit(const Value : TVTEdit); //Setter for the FEdit member;
+    function GetEdit: TWinControl;                //Getter for the FEdit member;
+    procedure SetEdit(const Value : TWinControl); //Setter for the FEdit member;
   public
-    constructor Create; override;
     destructor Destroy; override;
 
     function BeginEdit : Boolean; override; stdcall;
     function CancelEdit : Boolean; override; stdcall;
-    function EndEdit : Boolean; override; stdcall;
     function GetBounds : TRect; override; stdcall;
-    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; override; stdcall;
     procedure ProcessMessage(var Message : TMessage); override; stdcall;
+
+    property Edit : TWinControl read GetEdit write SetEdit;
+  end;
+
+  TStringEditLink = class(TWinControlEditLink)
+  protected
+    FTextBounds : TRect;                      //Smallest rectangle around the text.
+    function GetEdit: TVTEdit;                //Getter for the FEdit member;
+    procedure SetEdit(const Value : TVTEdit); //Setter for the FEdit member;
+  public
+    constructor Create; override;
+
+    function BeginEdit : Boolean; override; stdcall;
+    function CancelEdit : Boolean; override; stdcall;
+    function EndEdit : Boolean; override; stdcall;
+    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; override; stdcall;
     procedure SetBounds(R : TRect); override; stdcall;
 
-    property Alignment : TAlignment read FAlignment;
     property Edit : TVTEdit read GetEdit write SetEdit;
-    property Stopping : Boolean read FStopping;
   end;
 
 implementation
@@ -488,6 +503,43 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseEditLink.BeginEdit : Boolean;
+//Notifies the edit link that editing can start now. descendants may cancel node edit
+//by returning False.
+
+begin
+  Result := not FStopping;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseEditLink.CancelEdit : Boolean;
+begin
+  Result := not FStopping;
+  if Result then
+  begin
+    FStopping := True;
+    FTree.CancelEditNode;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseEditLink.EndEdit : Boolean;
+begin
+  Result := not FStopping;
+  if Result then
+    try
+      FStopping := True;
+      // TODO: call descendants' method
+    except
+      FStopping := False;
+      raise;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseEditLink.PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean;
 begin
   Result := Tree is TCustomVirtualStringTree;
@@ -496,7 +548,78 @@ begin
     FTree := Tree as TCustomVirtualStringTree;
     FNode := Node;
     FColumn := Column;
+    if Column <= NoColumn then
+    begin
+      FBidiMode := FTree.BidiMode;
+      FAlignment := TCustomVirtualStringTreeCracker(FTree).Alignment;
+    end
+    else
+    begin
+      FBidiMode := FTree.Header.Columns[Column].BidiMode;
+      FAlignment := FTree.Header.Columns[Column].Alignment;
+    end;
   end;
+end;
+
+//----------------- TWinControlEditLink ------------------------------------------------------------------------------------
+
+destructor TWinControlEditLink.Destroy;
+begin
+  //FEdit.Free; casues issue #357. Fix:
+  if Edit.HandleAllocated then
+    PostMessage(Edit.Handle, CM_RELEASE, 0, 0);
+  inherited;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TWinControlEditLink.GetEdit: TWinControl;
+begin
+  Result := TWinControl(FEdit);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TWinControlEditLink.SetEdit(const Value: TWinControl);
+begin
+  inherited SetEdit(Value);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TWinControlEditLink.BeginEdit: Boolean;
+begin
+  Result := inherited;
+  if Result then
+  begin
+    Edit.Show;
+    Edit.SetFocus;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TWinControlEditLink.CancelEdit: Boolean;
+begin
+  Result := inherited;
+  if Result then
+  begin
+    Edit.Hide;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TWinControlEditLink.GetBounds : TRect;
+begin
+  Result := FEdit.BoundsRect;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TWinControlEditLink.ProcessMessage(var Message : TMessage);
+begin
+  FEdit.WindowProc(Message);
 end;
 
 //----------------- TStringEditLink ------------------------------------------------------------------------------------
@@ -515,35 +638,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-destructor TStringEditLink.Destroy;
-begin
-  if Assigned(Edit) then
-    Edit.Release;
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TStringEditLink.BeginEdit : Boolean;
-//Notifies the edit link that editing can start now. descendants may cancel node edit
-//by returning False.
-
-begin
-  Result := not FStopping;
-  if Result then
-  begin
-    Edit.Show;
-    Edit.SelectAll;
-    Edit.SetFocus;
-    Edit.AutoAdjustSize;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function TStringEditLink.GetEdit: TVTEdit;
 begin
-  Result := FEdit as TVTEdit;
+  Result := TVTEdit(FEdit);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -555,14 +652,26 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TStringEditLink.CancelEdit : Boolean;
+function TStringEditLink.BeginEdit : Boolean;
+//Notifies the edit link that editing can start now. descendants may cancel node edit
+//by returning False.
+
 begin
-  Result := not FStopping;
+  Result := inherited;
   if Result then
   begin
-    FStopping := True;
-    Edit.Hide;
-    FTree.CancelEditNode;
+    Edit.SelectAll;
+    Edit.AutoAdjustSize;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TStringEditLink.CancelEdit : Boolean;
+begin
+  Result := inherited;
+  if Result then
+  begin
     Edit.ClearLink;
     Edit.ClearRefLink;
   end;
@@ -572,6 +681,7 @@ end;
 
 function TStringEditLink.EndEdit : Boolean;
 begin
+  // TODO: implement as pluggable method
   Result := not FStopping;
   if Result then
     try
@@ -585,13 +695,6 @@ begin
       FStopping := False;
       raise;
     end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TStringEditLink.GetBounds : TRect;
-begin
-  Result := FEdit.BoundsRect;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -619,28 +722,10 @@ begin
     Edit.RecreateWnd;
     Edit.AutoSize := False;
     Edit.Text := Text;
-
-    if Column <= NoColumn then
-    begin
-      Edit.BidiMode := FTree.BidiMode;
-      FAlignment := TCustomVirtualStringTreeCracker(FTree).Alignment;
-    end
-    else
-    begin
-      Edit.BidiMode := FTree.Header.Columns[Column].BidiMode;
-      FAlignment := FTree.Header.Columns[Column].Alignment;
-    end;
-
+    Edit.BidiMode := FBidiMode;
     if Edit.BidiMode <> bdLeftToRight then
       ChangeBidiModeAlignment(FAlignment);
   end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TStringEditLink.ProcessMessage(var Message : TMessage);
-begin
-  FEdit.WindowProc(Message);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
