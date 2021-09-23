@@ -1,4 +1,4 @@
-﻿unit VirtualTrees.EditLink;
+unit VirtualTrees.EditLink;
 
 interface
 
@@ -49,9 +49,24 @@ type
     property PasswordChar;
   end;
 
-  TStringEditLink = class(TInterfacedObject, IVTEditLink)
-  private
-    FEdit : TVTEdit; //A normal custom edit control.
+  // Most abstract base class for implementing IVTEditLink
+  TBaseEditLink = class(TInterfacedObject, IVTEditLink)
+  strict protected
+    FEdit: TControl;        // One of the property editor classes.
+  public
+    constructor Create; virtual;
+    destructor Destroy; override;
+
+    function BeginEdit : Boolean; virtual; stdcall; abstract;
+    function CancelEdit : Boolean; virtual; stdcall; abstract;
+    function EndEdit : Boolean; virtual; stdcall; abstract;
+    function GetBounds : TRect; virtual; stdcall; abstract;
+    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; virtual; stdcall; abstract;
+    procedure ProcessMessage(var Message : TMessage); virtual; stdcall; abstract;
+    procedure SetBounds(R : TRect); virtual; stdcall; abstract;
+  end;
+
+  TStringEditLink = class(TBaseEditLink)
   protected
     FTree : TCustomVirtualStringTree;         //A back reference to the tree calling.
     FNode : PVirtualNode;                     //The node to be edited.
@@ -59,22 +74,23 @@ type
     FAlignment : TAlignment;
     FTextBounds : TRect;                      //Smallest rectangle around the text.
     FStopping : Boolean;                      //Set to True when the edit link requests stopping the edit action.
+    function GetEdit: TVTEdit; //Getter for the FEdit member;
     procedure SetEdit(const Value : TVTEdit); //Setter for the FEdit member;
   public
-    constructor Create; virtual;
+    constructor Create; override;
     destructor Destroy; override;
     property Alignment : TAlignment read FAlignment;
     property Node : PVirtualNode read FNode;  //[IPK] Make FNode accessible
     property Column : TColumnIndex read FColumn; //[IPK] Make Column(Index) accessible
 
-    function BeginEdit : Boolean; virtual; stdcall;
-    function CancelEdit : Boolean; virtual; stdcall;
-    property Edit : TVTEdit read FEdit write SetEdit;
-    function EndEdit : Boolean; virtual; stdcall;
-    function GetBounds : TRect; virtual; stdcall;
+    function BeginEdit : Boolean; override; stdcall;
+    function CancelEdit : Boolean; override; stdcall;
+    property Edit : TVTEdit read GetEdit write SetEdit;
+    function EndEdit : Boolean; override; stdcall;
+    function GetBounds : TRect; override; stdcall;
     function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; virtual; stdcall;
-    procedure ProcessMessage(var Message : TMessage); virtual; stdcall;
-    procedure SetBounds(R : TRect); virtual; stdcall;
+    procedure ProcessMessage(var Message : TMessage); override; stdcall;
+    procedure SetBounds(R : TRect); override; stdcall;
     property Stopping : Boolean read FStopping;
     property Tree : TCustomVirtualStringTree read FTree;
   end;
@@ -147,7 +163,7 @@ end;
 procedure TVTEdit.CMExit(var Message : TMessage);
 begin
   if Assigned(FLink) and not FLink.Stopping then
-    with FLink, TCustomVirtualStringTreeCracker(FTree) do
+    with TCustomVirtualStringTreeCracker(FLink.Tree) do
     begin
       if (toAutoAcceptEditChange in TreeOptions.StringOptions) then
         DoEndEdit
@@ -191,10 +207,10 @@ begin
   //pending changes.
   if Assigned(FLink) and not FLink.Stopping and not (csRecreating in Self.ControlState) then
   begin
-    with FLink, TCustomVirtualStringTreeCracker(FTree) do
+    with TCustomVirtualStringTreeCracker(FLink.Tree) do
     begin
       if (toAutoAcceptEditChange in TreeOptions.StringOptions) and Modified then
-        Text[FNode, FColumn] := FEdit.Text;
+        Text[FLink.Node, FLink.Column] := FLink.Edit.Text;
     end;
     FLink := nil;
     FRefLink := nil;
@@ -443,13 +459,27 @@ begin
     PostMessage(Handle, CM_RELEASE, 0, 0);
 end;
 
+//----------------- TBaseEditLink ------------------------------------------------------------------------------------
+
+constructor TBaseEditLink.Create;
+begin
+  inherited;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+destructor TBaseEditLink.Destroy;
+begin
+  inherited;
+end;
+
 //----------------- TStringEditLink ------------------------------------------------------------------------------------
 
 constructor TStringEditLink.Create;
- begin
+begin
   inherited;
   FEdit := TVTEdit.Create(Self);
-  with FEdit do
+  with Edit do
   begin
     Visible := False;
     BorderStyle := bsSingle;
@@ -461,8 +491,8 @@ end;
 
 destructor TStringEditLink.Destroy;
 begin
-  if Assigned(FEdit) then
-    FEdit.Release;
+  if Assigned(Edit) then
+    Edit.Release;
   inherited;
 end;
 
@@ -476,11 +506,18 @@ begin
   Result := not FStopping;
   if Result then
   begin
-    FEdit.Show;
-    FEdit.SelectAll;
-    FEdit.SetFocus;
-    FEdit.AutoAdjustSize;
+    Edit.Show;
+    Edit.SelectAll;
+    Edit.SetFocus;
+    Edit.AutoAdjustSize;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TStringEditLink.GetEdit: TVTEdit;
+begin
+  Result := FEdit as TVTEdit;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -500,10 +537,10 @@ begin
   if Result then
   begin
     FStopping := True;
-    FEdit.Hide;
+    Edit.Hide;
     FTree.CancelEditNode;
-    FEdit.ClearLink;
-    FEdit.ClearRefLink;
+    Edit.ClearLink;
+    Edit.ClearRefLink;
   end;
 end;
 
@@ -515,11 +552,11 @@ begin
   if Result then
     try
       FStopping := True;
-      if FEdit.Modified then
-        FTree.Text[FNode, FColumn] := FEdit.Text;
-      FEdit.Hide;
-      FEdit.ClearLink;
-      FEdit.ClearRefLink;
+      if Edit.Modified then
+        FTree.Text[FNode, FColumn] := Edit.Text;
+      Edit.Hide;
+      Edit.ClearLink;
+      Edit.ClearRefLink;
     except
       FStopping := False;
       raise;
@@ -544,36 +581,36 @@ begin
   Result := Tree is TCustomVirtualStringTree;
   if Result then
   begin
-    if not Assigned(FEdit) then
+    if not Assigned(Edit) then
     begin
-      FEdit := TVTEdit.Create(Self);
-      FEdit.Visible := False;
-      FEdit.BorderStyle := bsSingle;
+      Edit := TVTEdit.Create(Self);
+      Edit.Visible := False;
+      Edit.BorderStyle := bsSingle;
     end;
-    FEdit.AutoSize := True;
+    Edit.AutoSize := True;
     FTree := Tree as TCustomVirtualStringTree;
     FNode := Node;
     FColumn := Column;
-    FEdit.Parent := Tree;
+    Edit.Parent := Tree;
     //Initial size, font and text of the node.
-    FTree.GetTextInfo(Node, Column, FEdit.Font, FTextBounds, Text);
-    FEdit.Font.Color := clWindowText;
-    FEdit.RecreateWnd;
-    FEdit.AutoSize := False;
-    FEdit.Text := Text;
+    FTree.GetTextInfo(Node, Column, Edit.Font, FTextBounds, Text);
+    Edit.Font.Color := clWindowText;
+    Edit.RecreateWnd;
+    Edit.AutoSize := False;
+    Edit.Text := Text;
 
     if Column <= NoColumn then
     begin
-      FEdit.BidiMode := FTree.BidiMode;
+      Edit.BidiMode := FTree.BidiMode;
       FAlignment := TCustomVirtualStringTreeCracker(FTree).Alignment;
     end
     else
     begin
-      FEdit.BidiMode := FTree.Header.Columns[Column].BidiMode;
+      Edit.BidiMode := FTree.Header.Columns[Column].BidiMode;
       FAlignment := FTree.Header.Columns[Column].Alignment;
     end;
 
-    if FEdit.BidiMode <> bdLeftToRight then
+    if Edit.BidiMode <> bdLeftToRight then
       ChangeBidiModeAlignment(FAlignment);
   end;
 end;
@@ -601,7 +638,7 @@ begin
     if Height < FEdit.ClientHeight then
     begin
       //If the height is smaller than the minimal height we must correct it, otherwise the caret will be invisible.
-      tOffset := FEdit.CalcMinHeight - Height;
+      tOffset := Edit.CalcMinHeight - Height;
       if tOffset > 0 then
         Inc(R.Bottom, tOffset);
     end;
@@ -662,7 +699,7 @@ begin
     end;
     R.Top := Max( - 1, R.Top); //A value smaller than -1 will prevent the edit cursor from being shown by Windows, see issue #159
     R.Left := Max( - 1, R.Left);
-    SendMessage(FEdit.Handle, EM_SETRECTNP, 0, LPARAM(@R));
+    SendMessage(Edit.Handle, EM_SETRECTNP, 0, LPARAM(@R));
   end;
 end;
 
