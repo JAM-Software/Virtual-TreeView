@@ -52,7 +52,12 @@ type
   // Most abstract base class for implementing IVTEditLink
   TBaseEditLink = class(TInterfacedObject, IVTEditLink)
   strict protected
-    FEdit: TControl;        // One of the property editor classes.
+    FEdit: TControl;                          // One of the property editor classes.
+    FTree : TCustomVirtualStringTree;         //A back reference to the tree calling.
+    FNode : PVirtualNode;                     //The node to be edited.
+    FColumn : TColumnIndex;                   //The column of the node.
+
+    procedure SetEdit(const Value : TControl); //Setter for the FEdit member;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -61,38 +66,37 @@ type
     function CancelEdit : Boolean; virtual; stdcall; abstract;
     function EndEdit : Boolean; virtual; stdcall; abstract;
     function GetBounds : TRect; virtual; stdcall; abstract;
-    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; virtual; stdcall; abstract;
+    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; virtual; stdcall;
     procedure ProcessMessage(var Message : TMessage); virtual; stdcall; abstract;
     procedure SetBounds(R : TRect); virtual; stdcall; abstract;
+
+    property Column : TColumnIndex read FColumn; //[IPK] Make Column(Index) accessible
+    property Node : PVirtualNode read FNode;  //[IPK] Make FNode accessible
+    property Tree : TCustomVirtualStringTree read FTree;
   end;
 
   TStringEditLink = class(TBaseEditLink)
   protected
-    FTree : TCustomVirtualStringTree;         //A back reference to the tree calling.
-    FNode : PVirtualNode;                     //The node to be edited.
-    FColumn : TColumnIndex;                   //The column of the node.
     FAlignment : TAlignment;
     FTextBounds : TRect;                      //Smallest rectangle around the text.
     FStopping : Boolean;                      //Set to True when the edit link requests stopping the edit action.
-    function GetEdit: TVTEdit; //Getter for the FEdit member;
+    function GetEdit: TVTEdit;                //Getter for the FEdit member;
     procedure SetEdit(const Value : TVTEdit); //Setter for the FEdit member;
   public
     constructor Create; override;
     destructor Destroy; override;
-    property Alignment : TAlignment read FAlignment;
-    property Node : PVirtualNode read FNode;  //[IPK] Make FNode accessible
-    property Column : TColumnIndex read FColumn; //[IPK] Make Column(Index) accessible
 
     function BeginEdit : Boolean; override; stdcall;
     function CancelEdit : Boolean; override; stdcall;
-    property Edit : TVTEdit read GetEdit write SetEdit;
     function EndEdit : Boolean; override; stdcall;
     function GetBounds : TRect; override; stdcall;
-    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; virtual; stdcall;
+    function PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean; override; stdcall;
     procedure ProcessMessage(var Message : TMessage); override; stdcall;
     procedure SetBounds(R : TRect); override; stdcall;
+
+    property Alignment : TAlignment read FAlignment;
+    property Edit : TVTEdit read GetEdit write SetEdit;
     property Stopping : Boolean read FStopping;
-    property Tree : TCustomVirtualStringTree read FTree;
   end;
 
 implementation
@@ -107,15 +111,15 @@ uses
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree);
 
-  //----------------- TVTEdit --------------------------------------------------------------------------------------------
+//----------------- TVTEdit --------------------------------------------------------------------------------------------
 
-  //Implementation of a generic node caption editor.
+//Implementation of a generic node caption editor.
 
 constructor TVTEdit.Create(Link : TStringEditLink);
 begin
   inherited Create(nil);
   if not Assigned(Link) then
-    raise EArgumentException.Create('Paramter Link must not be nil.');
+    raise EArgumentException.Create('Parameter Link must not be nil.');
   ShowHint := False;
   ParentShowHint := False;
   //This assignment increases the reference count for the interface.
@@ -473,6 +477,28 @@ begin
   inherited;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseEditLink.SetEdit(const Value : TControl);
+begin
+  if Assigned(FEdit) then
+    FEdit.Free;
+  FEdit := Value;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseEditLink.PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNode; Column : TColumnIndex) : Boolean;
+begin
+  Result := Tree is TCustomVirtualStringTree;
+  if Result then
+  begin
+    FTree := Tree as TCustomVirtualStringTree;
+    FNode := Node;
+    FColumn := Column;
+  end;
+end;
+
 //----------------- TStringEditLink ------------------------------------------------------------------------------------
 
 constructor TStringEditLink.Create;
@@ -524,9 +550,7 @@ end;
 
 procedure TStringEditLink.SetEdit(const Value : TVTEdit);
 begin
-  if Assigned(FEdit) then
-    FEdit.Free;
-  FEdit := Value;
+  inherited SetEdit(Value);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -578,7 +602,7 @@ function TStringEditLink.PrepareEdit(Tree : TBaseVirtualTree; Node : PVirtualNod
 var
   Text : string;
 begin
-  Result := Tree is TCustomVirtualStringTree;
+  Result := inherited;
   if Result then
   begin
     if not Assigned(Edit) then
@@ -588,9 +612,6 @@ begin
       Edit.BorderStyle := bsSingle;
     end;
     Edit.AutoSize := True;
-    FTree := Tree as TCustomVirtualStringTree;
-    FNode := Node;
-    FColumn := Column;
     Edit.Parent := Tree;
     //Initial size, font and text of the node.
     FTree.GetTextInfo(Node, Column, Edit.Font, FTextBounds, Text);
