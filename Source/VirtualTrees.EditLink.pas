@@ -608,7 +608,6 @@ begin
   SetEdit(nil); // always dispose edit
 
   DoPrepareEdit(Result);
-  Result := Result and (FEdit <> nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -648,7 +647,7 @@ end;
 destructor TWinControlEditLink.Destroy;
 begin
   //FEdit.Free; casues issue #357. Fix:
-  if Edit.HandleAllocated then
+  if Assigned(FEdit) and Edit.HandleAllocated then
     PostMessage(Edit.Handle, CM_RELEASE, 0, 0);
   inherited;
 end;
