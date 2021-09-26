@@ -10021,7 +10021,7 @@ end;
 procedure TVTHeader.StyleChanged();
 begin
   {$IF CompilerVersion < 31} // See issue #1043
-  AutoScale(False); //Elements may have changed in size
+  AutoScale(); //Elements may have changed in size
   {$IFEND}
 end;
 
