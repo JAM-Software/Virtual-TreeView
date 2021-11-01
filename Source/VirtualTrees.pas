@@ -13920,7 +13920,7 @@ begin
           FSearchBuffer := NewSearchText;
           FLastSearchNode := Run;
           FocusedNode := Run;
-          Selected[Run] := True;
+          AddToSelection(Run, False);
           FLastSearchNode := Run;
         end
         else
