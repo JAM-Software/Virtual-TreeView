@@ -7,8 +7,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ExtDlgs, ImgList, Buttons, ExtCtrls, ComCtrls,
-  Mask;
+  StdCtrls, ExtDlgs, ImgList, Buttons, ExtCtrls, ComCtrls, Mask,
+  VirtualTrees, VirtualTrees.EditLink;
 
 type
   // Describes the type of value a property tree node stores in its data property.
@@ -34,25 +34,19 @@ type
   end;
 
   // Our own edit link to implement several different node editors.
-  TPropertyEditLink = class(TInterfacedObject, IVTEditLink)
-  private
-    FEdit: TWinControl;        // One of the property editor classes.
-    FTree: TVirtualStringTree; // A back reference to the tree calling.
-    FNode: PVirtualNode;       // The node being edited.
-    FColumn: Integer;          // The column of the node being edited.
+
+  // Base class for TPropertyEditLink and TGridEditLink implementing key handling
+  TBasePropertyEditLink = class(TWinControlEditLink)
   protected
     procedure EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-  public
-    destructor Destroy; override;
+    procedure SetBounds(R: TRect); override; stdcall;
+  end;
 
-    function BeginEdit: Boolean; stdcall;
-    function CancelEdit: Boolean; stdcall;
-    function EndEdit: Boolean; stdcall;
-    function GetBounds: TRect; stdcall;
-    function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
-    procedure ProcessMessage(var Message: TMessage); stdcall;
-    procedure SetBounds(R: TRect); stdcall;
+  TPropertyEditLink = class(TBasePropertyEditLink)
+  public
+    procedure DoEndEdit(var Result: Boolean); override;
+    procedure DoPrepareEdit(var Result: Boolean); override;
   end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -176,35 +170,17 @@ type
   // Our own edit link to implement several different node editors.
   TGridEditLink = class(TPropertyEditLink, IVTEditLink)
   public
-    function EndEdit: Boolean; stdcall;
-    function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
+    procedure DoEndEdit(var Result: Boolean); override;
+    procedure DoPrepareEdit(var Result: Boolean); override;
   end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 implementation
 
-uses
-  PropertiesDemo, GridDemo;
+//----------------- TBasePropertyEditLink ----------------------------------------------------------------------------------
 
-//----------------- TPropertyEditLink ----------------------------------------------------------------------------------
-
-// This implementation is used in VST3 to make a connection beween the tree
-// and the actual edit window which might be a simple edit, a combobox
-// or a memo etc.
-
-destructor TPropertyEditLink.Destroy;
-
-begin
-  //FEdit.Free; casues issue #357. Fix:
-  if FEdit.HandleAllocated then
-    PostMessage(FEdit.Handle, CM_RELEASE, 0, 0);
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TPropertyEditLink.EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TBasePropertyEditLink.EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
 var
   CanAdvance: Boolean;
@@ -244,7 +220,9 @@ begin
   end;
 end;
 
-procedure TPropertyEditLink.EditKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBasePropertyEditLink.EditKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   case Key of
     VK_ESCAPE:
@@ -257,26 +235,21 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TPropertyEditLink.BeginEdit: Boolean;
+procedure TBasePropertyEditLink.SetBounds(R: TRect);
+
+var
+  Dummy: Integer;
 
 begin
-  Result := True;
-  FEdit.Show;
-  FEdit.SetFocus;
+  // Since we don't want to activate grid extensions in the tree (this would influence how the selection is drawn)
+  // we have to set the edit's width explicitly to the width of the column.
+  FTree.Header.Columns.GetColumnBounds(FColumn, Dummy, R.Right);
+  FEdit.BoundsRect := R;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
+//----------------- TPropertyEditLink ----------------------------------------------------------------------------------
 
-function TPropertyEditLink.CancelEdit: Boolean;
-
-begin
-  Result := True;
-  FEdit.Hide;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TPropertyEditLink.EndEdit: Boolean;
+procedure TPropertyEditLink.DoEndEdit(var Result: Boolean);
 
 var
   Data: PPropertyData;
@@ -284,14 +257,14 @@ var
   S: UnicodeString;
 
 begin
-  Result := True;
+  inherited;
 
   Data := FNode.GetData();
-  if FEdit is TComboBox then
-    S := TComboBox(FEdit).Text
+  if Edit is TComboBox then
+    S := TComboBox(Edit).Text
   else
   begin
-    GetWindowText(FEdit.Handle, Buffer, 1024);
+    GetWindowText(Edit.Handle, Buffer, 1024);
     S := Buffer;
   end;
 
@@ -301,34 +274,20 @@ begin
     Data.Changed := True;
     FTree.InvalidateNode(FNode);
   end;
-  FEdit.Hide;
   FTree.SetFocus;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TPropertyEditLink.GetBounds: TRect;
-
-begin
-  Result := FEdit.BoundsRect;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TPropertyEditLink.PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean;
+procedure TPropertyEditLink.DoPrepareEdit(var Result: Boolean);
 
 var
   Data: PPropertyData;
 
 begin
-  Result := True;
-  FTree := Tree as TVirtualStringTree;
-  FNode := Node;
-  FColumn := Column;
+  inherited;
 
   // determine what edit type actually is needed
-  FEdit.Free;
-  FEdit := nil;
   Data := Node.GetData();
   case Data.ValueType of
     vtString:
@@ -421,32 +380,9 @@ begin
   end;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TPropertyEditLink.ProcessMessage(var Message: TMessage);
-
-begin
-  FEdit.WindowProc(Message);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TPropertyEditLink.SetBounds(R: TRect);
-
-var
-  Dummy: Integer;
-
-begin
-  // Since we don't want to activate grid extensions in the tree (this would influence how the selection is drawn)
-  // we have to set the edit's width explicitly to the width of the column.
-  FTree.Header.Columns.GetColumnBounds(FColumn, Dummy, R.Right);
-  FEdit.BoundsRect := R;
-end;
-
 //---------------- TGridEditLink ---------------------------------------------------------------------------------------
 
-function TGridEditLink.EndEdit: Boolean;
-
+procedure TGridEditLink.DoEndEdit(var Result: Boolean);
 var
   Data: TGridData;
   Buffer: array[0..1024] of Char;
@@ -454,11 +390,11 @@ var
   I: Integer;
 
 begin
-  Result := True;
+  inherited;
   Data := FNode.GetData<TGridData>();
-  if FEdit is TComboBox then
+  if Edit is TComboBox then
   begin
-    S := TComboBox(FEdit).Text;
+    S := TComboBox(Edit).Text;
     if S <> Data.Value[FColumn - 1] then
     begin
       Data.Value[FColumn - 1] := S;
@@ -466,9 +402,9 @@ begin
     end;
   end
   else
-    if FEdit is TMaskEdit then
+    if Edit is TMaskEdit then
     begin
-      I := StrToInt(Trim(TMaskEdit(FEdit).EditText));
+      I := StrToInt(Trim(TMaskEdit(Edit).EditText));
       if I <> Data.Value[FColumn - 1] then
       begin
         Data.Value[FColumn - 1] := I;
@@ -477,7 +413,7 @@ begin
     end
     else
     begin
-      GetWindowText(FEdit.Handle, Buffer, 1024);
+      GetWindowText(Edit.Handle, Buffer, 1024);
       S := Buffer;
       if S <> Data.Value[FColumn - 1] then
       begin
@@ -488,26 +424,20 @@ begin
 
   if Data.Changed then
     FTree.InvalidateNode(FNode);
-  FEdit.Hide;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TGridEditLink.PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean;
+procedure TGridEditLink.DoPrepareEdit(var Result: Boolean);
 
 var
   Data: TGridData;
 begin
-  Result := True;
-  FTree := Tree as TVirtualStringTree;
-  FNode := Node;
-  FColumn := Column;
+  inherited;
 
   // Determine what edit type actually is needed.
-  FEdit.Free;
-  FEdit := nil;
-  Data := FTree.GetNodeData<TGridData>(Node);
-  case Data.ValueType[FColumn - 1] of
+  Data := Tree.GetNodeData<TGridData>(Node);
+  case Data.ValueType[Column - 1] of
     vtString:
       begin
         FEdit := TEdit.Create(nil);
@@ -515,7 +445,7 @@ begin
         begin
           Visible := False;
           Parent := Tree;
-          Text := Data.Value[FColumn - 1];
+          Text := Data.Value[Column - 1];
           OnKeyDown := EditKeyDown;
           OnKeyUp := EditKeyUp;
         end;
@@ -527,10 +457,10 @@ begin
         begin
           Visible := False;
           Parent := Tree;
-          Text := Data.Value[FColumn - 1];
+          Text := Data.Value[Column - 1];
           // Here you would usually do a lookup somewhere to get
           // values for the combobox. We only add some dummy values.
-          case FColumn of
+          case Column of
             2:
               begin
                 Items.Add('John');
@@ -558,7 +488,7 @@ begin
           Visible := False;
           Parent := Tree;
           EditMask := '9999;0; ';
-          Text := Data.Value[FColumn - 1];
+          Text := Data.Value[Column - 1];
           OnKeyDown := EditKeyDown;
           OnKeyUp := EditKeyUp;
         end;
@@ -570,7 +500,7 @@ begin
         begin
           Visible := False;
           Parent := Tree;
-          Text := Data.Value[FColumn - 1];
+          Text := Data.Value[Column - 1];
           OnKeyDown := EditKeyDown;
           OnKeyUp := EditKeyUp;
         end;
@@ -584,8 +514,8 @@ begin
         begin
           Visible := False;
           Parent := Tree;
-          Text := Data.Value[FColumn - 1];
-          Items.Add(Data.Value[FColumn - 1]);
+          Text := Data.Value[Column - 1];
+          Items.Add(Data.Value[Column - 1]);
           OnKeyDown := EditKeyDown;
           OnKeyUp := EditKeyUp;
         end;
@@ -602,7 +532,7 @@ begin
           CalColors.TitleBackColor := clBtnShadow;
           CalColors.TitleTextColor := clBlack;
           CalColors.TrailingTextColor := clBtnFace;
-          Date := StrToDate(Data.Value[FColumn - 1]);
+          Date := StrToDate(Data.Value[Column - 1]);
           OnKeyDown := EditKeyDown;
           OnKeyUp := EditKeyUp;
         end;

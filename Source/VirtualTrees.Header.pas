@@ -145,6 +145,7 @@ type
 
     property BonusPixel : Boolean read FBonusPixel write FBonusPixel;
     property CaptionText : string read FCaptionText;
+    property LastWidth : TDimension read FLastWidth;
     property Left : TDimension read GetLeft;
     property Owner : TVirtualTreeColumns read GetOwner;
     property SpringRest : Single read FSpringRest write FSpringRest;
