@@ -40,6 +40,57 @@ object PropertiesForm: TPropertiesForm
       'on for node editors. However, neither of them is Unicode aware.'
     WordWrap = True
   end
+  object VST3: TVirtualStringTree
+    Left = 10
+    Top = 6
+    Width = 399
+    Height = 369
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Colors.BorderColor = clWindowText
+    Colors.HotColor = clBlack
+    DefaultNodeHeight = 20
+    Header.AutoSizeIndex = 1
+    Header.Height = 18
+    Header.Options = [hoAutoResize, hoColumnResize, hoVisible, hoAutoSpring]
+    HintMode = hmHint
+    Images = TreeImages
+    IncrementalSearch = isAll
+    IncrementalSearchTimeout = 500
+    Indent = 19
+    ParentShowHint = False
+    RootNodeCount = 2
+    ShowHint = True
+    TabOrder = 0
+    TreeOptions.AnimationOptions = [toAnimatedToggle]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+    TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toCenterScrollIntoView]
+    TreeOptions.StringOptions = [toAutoAcceptEditChange]
+    OnChange = VST3Change
+    OnCreateEditor = VST3CreateEditor
+    OnEditing = VST3Editing
+    OnFreeNode = VST3FreeNode
+    OnGetText = VST3GetText
+    OnPaintText = VST3PaintText
+    OnGetImageIndex = VST3GetImageIndex
+    OnGetHint = VST3GetHint
+    OnIncrementalSearch = VST3IncrementalSearch
+    OnInitChildren = VST3InitChildren
+    OnInitNode = VST3InitNode
+    OnStateChange = VST3StateChange
+    Columns = <
+      item
+        Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring]
+        Position = 0
+        Text = 'Properties'
+        Width = 203
+      end
+      item
+        Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring]
+        Position = 1
+        Text = 'Values'
+        Width = 192
+      end>
+  end
   object RadioGroup1: TRadioGroup
     Left = 416
     Top = 306
@@ -51,14 +102,14 @@ object PropertiesForm: TPropertiesForm
     Items.Strings = (
       'forward'
       'backward')
-    TabOrder = 0
+    TabOrder = 1
     OnClick = RadioGroup1Click
   end
   object TreeImages: TImageList
     Left = 422
     Top = 224
     Bitmap = {
-      494C010112001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101120013000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

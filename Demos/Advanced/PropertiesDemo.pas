@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes, System.ImageList;
+  StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes;
 
 const
   // Helper message to decouple node change handling from edit handling.

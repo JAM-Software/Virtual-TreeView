@@ -40,7 +40,6 @@ type
   protected
     procedure EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-  public
     procedure SetBounds(R: TRect); override; stdcall;
   end;
 
