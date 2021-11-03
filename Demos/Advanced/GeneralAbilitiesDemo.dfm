@@ -15,97 +15,6 @@ object GeneralForm: TGeneralForm
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object VST2: TVirtualStringTree
-    Left = 0
-    Top = 0
-    Width = 486
-    Height = 497
-    Align = alClient
-    AutoExpandDelay = 300
-    BiDiMode = bdLeftToRight
-    ButtonFillMode = fmWindowColor
-    ClipboardFormats.Strings = (
-      'HTML Format'
-      'Unicode text'
-      'Virtual Tree Data')
-    Colors.BorderColor = clScrollBar
-    Colors.DropTargetColor = clActiveBorder
-    Colors.DropTargetBorderColor = clActiveCaption
-    Colors.HotColor = clBlack
-    Colors.UnfocusedSelectionBorderColor = clBtnShadow
-    Ctl3D = True
-    DefaultNodeHeight = 20
-    DragCursor = crHelp
-    DragMode = dmAutomatic
-    DrawSelectionMode = smBlendedRectangle
-    EditDelay = 200
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Lucida Sans Unicode'
-    Font.Style = []
-    Header.AutoSizeIndex = -1
-    Header.Background = clBtnShadow
-    Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoShowHint, hoVisible]
-    Header.PopupMenu = VTHPopup
-    Header.Style = hsFlatButtons
-    HotCursor = crHandPoint
-    Images = TreeImages
-    ParentBiDiMode = False
-    ParentCtl3D = False
-    ParentFont = False
-    RootNodeCount = 5
-    ScrollBarOptions.VerticalIncrement = 19
-    TabOrder = 0
-    TreeOptions.AnimationOptions = [toAnimatedToggle]
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoSpanColumns, toAutoTristateTracking, toAutoHideButtons, toDisableAutoscrollOnFocus, toAutoChangeScale]
-    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
-    TreeOptions.PaintOptions = [toHideSelection, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseBlendedSelection]
-    TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect, toRightClickSelect]
-    TreeOptions.StringOptions = [toSaveCaptions, toShowStaticText, toAutoAcceptEditChange]
-    OnDragOver = VST2DragOver
-    OnFocusChanging = VST2FocusChanging
-    OnFreeNode = VST2FreeNode
-    OnGetCellText = VST2GetCellText
-    OnPaintText = VST2PaintText
-    OnGetImageIndexEx = VST2GetImageIndexEx
-    OnGetNodeDataSize = VST2GetNodeDataSize
-    OnGetPopupMenu = VST2GetPopupMenu
-    OnInitChildren = VST2InitChildren
-    OnInitNode = VST2InitNode
-    OnKeyDown = VST2KeyDown
-    OnNewText = VST2NewText
-    OnStateChange = VST2StateChange
-    Columns = <
-      item
-        Hint = 'Column which initially contains the tree.'
-        ImageIndex = 10
-        Options = [coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible]
-        Position = 1
-        Text = 'Initial main column'
-        Width = 300
-      end
-      item
-        Color = 14737632
-        Hint = 'Image only column.'
-        MaxWidth = 22
-        Options = [coEnabled, coParentBidiMode, coVisible]
-        Position = 0
-        Spacing = 0
-        Width = 22
-      end
-      item
-        BiDiMode = bdLeftToRight
-        Hint = 
-          'Column with mathematic, greek, japanese and german (nonsense) te' +
-          'xt.'
-        ImageIndex = 4
-        Options = [coAllowClick, coEnabled, coParentColor, coResizable, coShowDropMark, coVisible]
-        Position = 2
-        Text = 'Language column'
-        Width = 300
-      end>
-  end
   object ScrollBox1: TScrollBox
     Left = 486
     Top = 0
@@ -116,7 +25,7 @@ object GeneralForm: TGeneralForm
     BevelInner = bvNone
     BevelOuter = bvNone
     BorderStyle = bsNone
-    TabOrder = 1
+    TabOrder = 0
     object Panel1: TPanel
       Left = 0
       Top = 0
@@ -272,6 +181,7 @@ object GeneralForm: TGeneralForm
           Margins.Bottom = 6
           Align = alLeft
           Caption = 'Switch main column:'
+          ExplicitHeight = 13
         end
         object MainColumnUpDown: TUpDown
           Left = 112
@@ -983,10 +893,6 @@ object GeneralForm: TGeneralForm
     object withpopupmenu1: TMenuItem
       Caption = 'with popup menu.'
     end
-  end
-  object VTHPopup: TVTHeaderPopupMenu
-    Left = 56
-    Top = 148
   end
   object SaveDialog: TSaveDialog
     Filter = 
