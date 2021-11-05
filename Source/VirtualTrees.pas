@@ -23313,6 +23313,7 @@ var
   Run: PVirtualNode;
   UseColumns,
   HScrollBarVisible: Boolean;
+  OldOffsetY: Integer;
   ScrolledVertically,
   ScrolledHorizontally: Boolean;
 
@@ -23338,13 +23339,13 @@ begin
 
     // The returned rectangle can never be empty after the expand code above.
     // 1) scroll vertically
+    OldOffsetY := FOffsetY;
     if R.Top < 0 then
     begin
       if Center then
         SetOffsetY(FOffsetY - R.Top + ClientHeight div 2)
       else
         SetOffsetY(FOffsetY - R.Top);
-      ScrolledVertically := True;
     end
     else
       if (R.Bottom > ClientHeight) or Center then
@@ -23360,8 +23361,8 @@ begin
         // in order to avoid that the scroll bar hides the node which we wanted to have in view.
         if not UseColumns and not HScrollBarVisible and (Integer(FRangeX) > ClientWidth) then
           SetOffsetY(FOffsetY - GetSystemMetrics(SM_CYHSCROLL));
-        ScrolledVertically := True;
       end;
+    ScrolledVertically := OldOffsetY <> FOffsetY;
 
     if Horizontally then
       // 2) scroll horizontally
@@ -23389,7 +23390,8 @@ function TBaseVirtualTree.ScrollIntoView(Column: TColumnIndex; Center: Boolean; 
 var
   ColumnLeft,
   ColumnRight: Integer;
-  NewOffset: Integer;
+  NewOffset,
+  OldOffset: Integer;
   R: TRect;
 
 begin
@@ -23406,6 +23408,7 @@ begin
   end else
     Exit;
 
+  OldOffset := FOffsetX;
   NewOffset := FEffectiveOffsetX;
   if not (FHeader.UseColumns and (coFixed in Header.Columns[Column].Options)) and (not Center) then
   begin
@@ -23421,7 +23424,6 @@ begin
       else
         SetOffsetX(-NewOffset);
     end;
-    Result := True;
   end
   else if Center then
   begin
@@ -23433,8 +23435,8 @@ begin
       else
         SetOffsetX(-NewOffset);
     end;
-    Result := True;
-  end
+  end;
+  Result := OldOffset <> FOffsetX;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
