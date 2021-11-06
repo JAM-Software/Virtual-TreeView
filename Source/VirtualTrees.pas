@@ -24626,7 +24626,7 @@ begin
         else
           if vsSelected in Node.States then
           begin
-            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused);
+            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused or (toPopupMode in FOptions.PaintOptions));
           end;
       end;
     end;
@@ -24738,7 +24738,7 @@ begin
       if Node = FDropTargetNode then
       begin
         if (FLastDropMode = dmOnNode) or (vsSelected in Node.States) then
-          Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused)
+          Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused or (toPopupMode in FOptions.PaintOptions))
         else
           Canvas.Font.Color := FColors.NodeFontColor;
       end
@@ -24746,7 +24746,7 @@ begin
         if vsSelected in Node.States then
         begin
           if Focused or (toPopupMode in FOptions.PaintOptions) then
-            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused)
+            Canvas.Font.Color := FColors.GetSelectedNodeFontColor(Focused or (toPopupMode in FOptions.PaintOptions))
           else
             Canvas.Font.Color := FColors.NodeFontColor;
         end;
