@@ -3396,20 +3396,23 @@ begin
             Inc(TotalFixedMinWidth, Columns[I].MinWidth);
           end;
 
-        // The percentage values have precedence over the pixel values.
-        If MaxWidthPercent > 0 then
-          TotalFixedMinWidth := Min((ClientWidth * MaxWidthPercent) div 100, TotalFixedMinWidth);
-        If MinWidthPercent > 0 then
-          TotalFixedMaxWidth := Max((ClientWidth * MinWidthPercent) div 100, TotalFixedMaxWidth);
+        if HandleAllocated then // Prevent premature creation of window handle, see issue #1073
+        begin
+          // The percentage values have precedence over the pixel values.
+          If MaxWidthPercent > 0 then
+            TotalFixedMinWidth := Min((ClientWidth * MaxWidthPercent) div 100, TotalFixedMinWidth);
+          If MinWidthPercent > 0 then
+            TotalFixedMaxWidth := Max((ClientWidth * MinWidthPercent) div 100, TotalFixedMaxWidth);
 
-        EffectiveMaxWidth := Min(TotalFixedMaxWidth - (Columns.GetVisibleFixedWidth - Self.FWidth), FMaxWidth);
-        EffectiveMinWidth := Max(TotalFixedMinWidth - (Columns.GetVisibleFixedWidth - Self.FWidth), FMinWidth);
-        Value := Min(Max(Value, EffectiveMinWidth), EffectiveMaxWidth);
+          EffectiveMaxWidth := Min(TotalFixedMaxWidth - (Columns.GetVisibleFixedWidth - Self.FWidth), FMaxWidth);
+          EffectiveMinWidth := Max(TotalFixedMinWidth - (Columns.GetVisibleFixedWidth - Self.FWidth), FMinWidth);
+          Value := Min(Max(Value, EffectiveMinWidth), EffectiveMaxWidth);
 
-        if MinWidthPercent > 0 then
-          Value := Max((ClientWidth * MinWidthPercent) div 100 - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
-        if MaxWidthPercent > 0 then
-          Value := Min((ClientWidth * MaxWidthPercent) div 100 - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
+          if MinWidthPercent > 0 then
+            Value := Max((ClientWidth * MinWidthPercent) div 100 - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
+          if MaxWidthPercent > 0 then
+            Value := Min((ClientWidth * MaxWidthPercent) div 100 - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
+        end;// if HandleAllocated
       end;
     end
     else
