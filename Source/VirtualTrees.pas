@@ -7072,20 +7072,23 @@ begin
             Inc(TotalFixedMinWidth, FColumns[I].MinWidth);
           end;
 
-        // The percentage values have precedence over the pixel values.
-        If FMaxWidthPercent > 0 then
-          TotalFixedMinWidth:= Min((ClientWidth * FMaxWidthPercent) div 100, TotalFixedMinWidth);
-        If FMinWidthPercent > 0 then
-          TotalFixedMaxWidth := Max((ClientWidth * FMinWidthPercent) div 100, TotalFixedMaxWidth);
+        if HandleAllocated then // Prevent premature creation of window handle, see issue #1073
+        begin
+          // The percentage values have precedence over the pixel values.
+          If FMaxWidthPercent > 0 then
+            TotalFixedMinWidth:= Min((ClientWidth * FMaxWidthPercent) div 100, TotalFixedMinWidth);
+          If FMinWidthPercent > 0 then
+            TotalFixedMaxWidth := Max((ClientWidth * FMinWidthPercent) div 100, TotalFixedMaxWidth);
 
-        EffectiveMaxWidth := Min(TotalFixedMaxWidth - (GetVisibleFixedWidth - Self.FWidth), FMaxWidth);
-        EffectiveMinWidth := Max(TotalFixedMinWidth - (GetVisibleFixedWidth - Self.FWidth), FMinWidth);
-        Value := Min(Max(Value, EffectiveMinWidth), EffectiveMaxWidth);
+          EffectiveMaxWidth := Min(TotalFixedMaxWidth - (GetVisibleFixedWidth - Self.FWidth), FMaxWidth);
+          EffectiveMinWidth := Max(TotalFixedMinWidth - (GetVisibleFixedWidth - Self.FWidth), FMinWidth);
+          Value := Min(Max(Value, EffectiveMinWidth), EffectiveMaxWidth);
 
-        if FMinWidthPercent > 0 then
-          Value := Max((ClientWidth * FMinWidthPercent) div 100 - GetVisibleFixedWidth + Self.FWidth, Value);
-        if FMaxWidthPercent > 0 then
-          Value := Min((ClientWidth * FMaxWidthPercent) div 100 - GetVisibleFixedWidth + Self.FWidth, Value);
+          if FMinWidthPercent > 0 then
+            Value := Max((ClientWidth * FMinWidthPercent) div 100 - GetVisibleFixedWidth + Self.FWidth, Value);
+          if FMaxWidthPercent > 0 then
+            Value := Min((ClientWidth * FMaxWidthPercent) div 100 - GetVisibleFixedWidth + Self.FWidth, Value);
+        end;// if HandleAllocated
       end;
     end
     else
