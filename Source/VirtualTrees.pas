@@ -10559,10 +10559,6 @@ var
   //--------------- local function --------------------------------------------
 
   function HSplitterHit: Boolean;
-
-  var
-    NextCol: TColumnIndex;
-
   begin
     Result := (hoColumnResize in FOptions) and DetermineSplitterIndex(P);
     if Result and not InHeader(P) then
