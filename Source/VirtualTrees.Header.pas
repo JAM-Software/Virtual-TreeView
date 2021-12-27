@@ -1867,9 +1867,9 @@ begin
         begin
           NewCursor := Screen.Cursors[Tree.Cursor];
           if IsVSplitterHit and ((hoHeightResize in FOptions) or (csDesigning in Tree.ComponentState)) then
-            NewCursor := Screen.Cursors[crVertSplit]
+            NewCursor := Screen.Cursors[crVSplit]
           else if IsHSplitterHit then
-            NewCursor := Screen.Cursors[crHeaderSplit];
+            NewCursor := Screen.Cursors[crHSplit];
 
           if not (csDesigning in Tree.ComponentState) then
             Tree.DoGetHeaderCursor(NewCursor);

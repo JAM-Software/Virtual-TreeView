@@ -105,10 +105,10 @@ const
   hcTFCannotSetUserData  = 2008;
 
   // Header standard split cursor.
-  crHeaderSplit          = TCursor(63);
+  crHeaderSplit          = crHSplit deprecated 'Use vrHSplit instead';
 
   // Height changing cursor.
-  crVertSplit            = TCursor(62);
+  crVertSplit            = crVSplit deprecated 'Use vrVSplit instead';
 
 
 type

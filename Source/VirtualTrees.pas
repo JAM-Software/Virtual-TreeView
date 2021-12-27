@@ -3032,11 +3032,6 @@ begin
   // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
   CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
 
-  // Delphi (at least version 6 and lower) does not provide a standard split cursor.
-  // Hence we have to load our own.
-  Screen.Cursors[crHeaderSplit] := LoadCursor(HInstance, 'VT_HEADERSPLIT');
-  Screen.Cursors[crVertSplit] := LoadCursor(HInstance, 'VT_VERTSPLIT');
-
   // Clipboard format registration.
   // Native clipboard format. Needs a new identifier and has an average priority to allow other formats to take over.
   // This format is supposed to use the IStream storage format but unfortunately this does not work when
@@ -9416,7 +9411,7 @@ begin
                   Node := HitInfo.HitNode;
 
                 if CanSplitterResizeNode(P, Node, HitInfo.HitColumn) then
-                  NewCursor := crVertSplit;
+                  NewCursor := crVSplit;
               end;
             end;
 
@@ -25920,3 +25915,4 @@ finalization
   FinalizeGlobalStructures();
 
 end.
+
