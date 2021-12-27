@@ -1490,16 +1490,14 @@ var
   //--------------- local function --------------------------------------------
 
   function HSplitterHit : Boolean;
-
-  var
-    NextCol : TColumnIndex;
-
   begin
     Result := (hoColumnResize in FOptions) and DetermineSplitterIndex(P);
     if Result and not InHeader(P) then
     begin
-      NextCol := FColumns.GetNextVisibleColumn(FColumns.TrackIndex);
-      if not (coFixed in FColumns[FColumns.TrackIndex].Options) or (NextCol <= NoColumn) or (coFixed in FColumns[NextCol].Options) or (P.Y > Integer(Tree.RangeY)) then
+      // Code commented due to issue #1067. What was the orginal inention of this code? It does not make much sense unless you allow column resize outside the header.
+      //NextCol := FColumns.GetNextVisibleColumn(FColumns.TrackIndex);
+      //if not (coFixed in FColumns[FColumns.TrackIndex].Options) or (NextCol <= NoColumn) or
+      //   (coFixed in FColumns[NextCol].Options) or (P.Y > Integer(Treeview.FRangeY)) then
         Result := False;
     end;
   end;
