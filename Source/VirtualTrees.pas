@@ -14167,7 +14167,7 @@ begin
   IsLabelHit := not AltPressed and not (toSimpleDrawSelection in FOptions.SelectionOptions) and
     ((hiOnItemLabel in HitInfo.HitPositions) or (hiOnNormalIcon in HitInfo.HitPositions));
 
-  IsCellHit := not AltPressed and not IsLabelHit and Assigned(HitInfo.HitNode) and
+  IsCellHit := not IsLabelHit and Assigned(HitInfo.HitNode) and
     ([hiOnItemButton, hiOnItemCheckBox, hiNoWhere] * HitInfo.HitPositions = []) and
     ((toFullRowSelect in FOptions.SelectionOptions) or
     ((toGridExtensions in FOptions.MiscOptions) and (HitInfo.HitColumn > NoColumn)));
