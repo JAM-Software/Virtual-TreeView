@@ -24684,9 +24684,6 @@ begin
       begin
         // If the font has been changed then the ellipsis width must be recalculated.
         TripleWidth := 0;
-        // Recalculate also the width of the normal text.
-        GetTextExtentPoint32W(Canvas.Handle, PWideChar(Text), Length(Text), Size);
-        NodeWidth := Size.cx + 2 * FTextMargin;
       end;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
