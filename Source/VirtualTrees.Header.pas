@@ -826,7 +826,7 @@ end;
 procedure TVTHeader.SetMainColumn(Value : TColumnIndex);
 
 begin
-  if csLoading in Tree.ComponentState then
+  if (csLoading in Tree.ComponentState) or (csDestroying in Tree.ComponentState) then
     FMainColumn := Value
   else
   begin
@@ -837,13 +837,10 @@ begin
     if Value <> FMainColumn then
     begin
       FMainColumn := Value;
-      if not (csLoading in Tree.ComponentState) then
-      begin
-        Tree.MainColumnChanged;
-        if not (toExtendedFocus in Tree.TreeOptions.SelectionOptions) then
-          Tree.FocusedColumn := FMainColumn;
-        Tree.Invalidate;
-      end;
+      Tree.MainColumnChanged;
+      if not (toExtendedFocus in Tree.TreeOptions.SelectionOptions) then
+        Tree.FocusedColumn := FMainColumn;
+      Tree.Invalidate;
     end;
   end;
 end;
