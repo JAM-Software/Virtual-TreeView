@@ -1,4 +1,4 @@
-V7.1 and later:
+V7.x:
 https://github.com/JAM-Software/Virtual-TreeView/milestones?state=closed
 
 V7.0: (22 Jul 2018)
