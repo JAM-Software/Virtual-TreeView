@@ -22628,8 +22628,6 @@ var
   //--------------- end local functions ---------------------------------------
 
 begin
-  if IsEmpty then
-    Exit; // Nothing to do
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
   begin
     StopWheelPanning;
@@ -22657,6 +22655,9 @@ begin
     // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
   end;
+
+  if IsEmpty then
+    exit;
 
   // Keep clicked column in case the application needs it.
   FHeader.Columns.FClickIndex := HitInfo.HitColumn;
