@@ -24686,7 +24686,7 @@ begin
         TripleWidth := 0;
         // Recalculate also the width of the normal text.
         NodeWidth := DoTextMeasuring(Canvas, Node, Column, Text).cx + 2 * FTextMargin;
-        InvalidateNode(Node); // repaint node and selection
+        InvalidateNode(Node); // repaint node and selection as the font chnaged, see #1084
       end;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
