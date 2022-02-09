@@ -24684,6 +24684,9 @@ begin
       begin
         // If the font has been changed then the ellipsis width must be recalculated.
         TripleWidth := 0;
+        // Recalculate also the width of the normal text.
+        NodeWidth := DoTextMeasuring(Canvas, Node, Column, Text).cx + 2 * FTextMargin;
+        InvalidateNode(Node); // repaint node and selection
       end;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
