@@ -33808,7 +33808,6 @@ var
   TripleWidth: Integer;
   R: TRect;
   DrawFormat: Cardinal;
-  Size: TSize;
   Height: Integer;
 
 begin
@@ -33851,9 +33850,8 @@ begin
         // If the font has been changed then the ellipsis width must be recalculated.
         TripleWidth := 0;
         // Recalculate also the width of the normal text.
-        NodeWidth := Size.cx + 2 * FTextMargin;
         NodeWidth := DoTextMeasuring(Canvas, Node, Column, Text).cx + 2 * FTextMargin;
-        InvalidateNode(Node); // repaint node and selection
+        InvalidateNode(Node); // repaint node and selection as the font chnaged, see #1084
       end;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
