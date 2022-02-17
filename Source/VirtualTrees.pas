@@ -33809,7 +33809,7 @@ var
   R: TRect;
   DrawFormat: Cardinal;
   Height: Integer;
-
+  lNewNodeWidth: Integer;
 begin
   InitializeTextProperties(PaintInfo);
   with PaintInfo do
@@ -33850,9 +33850,13 @@ begin
         // If the font has been changed then the ellipsis width must be recalculated.
         TripleWidth := 0;
         // Recalculate also the width of the normal text.
-        NodeWidth := DoTextMeasuring(Canvas, Node, Column, Text).cx + 2 * FTextMargin;
-        InvalidateNode(Node); // repaint node and selection as the font chnaged, see #1084
-      end;
+        lNewNodeWidth := DoTextMeasuring(Canvas, Node, Column, Text).cx + 2 * FTextMargin;
+        if lNewNodeWidth <> NodeWidth then
+        begin
+          NodeWidth := lNewNodeWidth;
+          InvalidateNode(Node); // repaint node and selection as the font chnaged, see #1084
+        end;//if
+      end;// if FFontChanged
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
       if BidiMode <> bdLeftToRight then
