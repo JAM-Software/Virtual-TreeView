@@ -4438,8 +4438,7 @@ begin
               Pen.Color := FColors.UnfocusedSelectionBorderColor;
             end;
 
-            with TWithSafeRect(R) do
-              RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+            RoundRect(R.Left, R.Top, R.Right, R.Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end
           else
           begin
@@ -15429,17 +15428,14 @@ begin
         Inc(EdgeSize, BevelWidth);
       if BevelOuter <> bvNone then
         Inc(EdgeSize, BevelWidth);
-      with TWithSafeRect(RC) do
-      begin
-        if beLeft in BevelEdges then
-          Inc(Left, EdgeSize);
-        if beTop in BevelEdges then
-          Inc(Top, EdgeSize);
-        if beRight in BevelEdges then
-          Dec(Right, EdgeSize);
-        if beBottom in BevelEdges then
-          Dec(Bottom, EdgeSize);
-      end;
+      if beLeft in BevelEdges then
+        Inc(RC.Left, EdgeSize);
+      if beTop in BevelEdges then
+        Inc(RC.Top, EdgeSize);
+      if beRight in BevelEdges then
+        Dec(RC.Right, EdgeSize);
+      if beBottom in BevelEdges then
+        Dec(RC.Bottom, EdgeSize);
     end;
 
     // Repaint only the part in the original clipping region and not yet drawn parts.
@@ -16011,20 +16007,17 @@ begin
     begin
       case Alignment of
         taLeftJustify:
-          with TWithSafeRect(InnerRect) do
-            if Left + NodeWidth < Right then
-              Right := Left + NodeWidth;
+          if InnerRect.Left + NodeWidth < InnerRect.Right then
+            InnerRect.Right := InnerRect.Left + NodeWidth;
         taCenter:
-          with TWithSafeRect(InnerRect) do
-            if (Right - Left) > NodeWidth then
-            begin
-              Left := (Left + Right - NodeWidth) div 2;
-              Right := Left + NodeWidth;
-            end;
+          if (InnerRect.Right - InnerRect.Left) > NodeWidth then
+          begin
+            InnerRect.Left := (InnerRect.Left + InnerRect.Right - NodeWidth) div 2;
+            InnerRect.Right := InnerRect.Left + NodeWidth;
+          end;
         taRightJustify:
-          with TWithSafeRect(InnerRect) do
-            if (Right - Left) > NodeWidth then
-              Left := Right - NodeWidth;
+          if (InnerRect.Right - InnerRect.Left) > NodeWidth then
+            InnerRect.Left := InnerRect.Right - NodeWidth;
       end;
     end;
 
@@ -16050,8 +16043,7 @@ begin
                 if (toUseBlendedSelection in FOptions.PaintOptions) then
                   AlphaBlendSelection(Brush.Color)
                 else
-                  with TWithSafeRect(InnerRect) do
-                    RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+                  RoundRect(InnerRect.Left, InnerRect.Top, InnerRect.Right, InnerRect.Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end
           else
           begin
@@ -16085,8 +16077,7 @@ begin
                 if (toUseBlendedSelection in FOptions.PaintOptions) then
                   AlphaBlendSelection(Brush.Color)
                 else
-                  with TWithSafeRect(InnerRect) do
-                    RoundRect(Left, Top, Right, Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
+                  RoundRect(InnerRect.Left, InnerRect.Top, InnerRect.Right, InnerRect.Bottom, FSelectionCurveRadius, FSelectionCurveRadius);
           end;
       end;
     end;
@@ -22458,8 +22449,8 @@ begin
 
                 // Put the constructed node image onto the target canvas.
                 if not (poUnbuffered in PaintOptions) then
-                  with TWithSafeRect(TargetRect), NodeBitmap do
-                    BitBlt(TargetCanvas.Handle, Left, Top, Width, Height, Canvas.Handle, Window.Left, 0, SRCCOPY);
+                  with NodeBitmap do
+                    BitBlt(TargetCanvas.Handle, TargetRect.Left, TargetRect.Top, TargetRect.Width, TargetRect.Height, Canvas.Handle, Window.Left, 0, SRCCOPY);
               end;
             end;
 
@@ -22699,23 +22690,20 @@ begin
 
     // Check that we have a valid rectangle.
     PaintRect := TreeRect;
-    with TWithSafeRect(TreeRect) do
+    if TreeRect.Left < 0 then
     begin
-      if Left < 0 then
-      begin
-        PaintTarget.X := -Left;
-        PaintRect.Left := 0;
-      end
-      else
-        PaintTarget.X := 0;
-      if Top < 0 then
-      begin
-        PaintTarget.Y := -Top;
-        PaintRect.Top := 0;
-      end
-      else
-        PaintTarget.Y := 0;
-    end;
+      PaintTarget.X := -TreeRect.Left;
+      PaintRect.Left := 0;
+    end
+    else
+      PaintTarget.X := 0;
+    if TreeRect.Top < 0 then
+    begin
+      PaintTarget.Y := -TreeRect.Top;
+      PaintRect.Top := 0;
+    end
+    else
+      PaintTarget.Y := 0;
 
     Image := TBitmap.Create;
     with Image do

@@ -5383,10 +5383,7 @@ var
 
 begin
   // Adjust size of the header bitmap
-  with TWithSafeRect(TreeViewControl.HeaderRect) do
-  begin
-    FHeaderBitmap.SetSize(Max(Right, R.Right - R.Left), Bottom);
-  end;
+  FHeaderBitmap.SetSize(Max(TreeViewControl.HeaderRect.Right, R.Right - R.Left), TreeViewControl.HeaderRect.Bottom);
 
   VisibleFixedWidth := GetVisibleFixedWidth;
 
@@ -5409,8 +5406,7 @@ begin
     PaintFixedArea;
 
   // Blit the result to target.
-  with TWithSafeRect(R) do
-    BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
+  BitBlt(DC, R.Left, R.Top, R.Right - R.Left, R.Bottom - R.Top, FHeaderBitmap.Canvas.Handle, R.Left, R.Top, SRCCOPY);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5697,13 +5693,10 @@ var
           end;
 
           FHasImage := True;
-          with TWithSafeRect(FImageRect) do
-          begin
-            Left := GlyphPos.X;
-            Top := GlyphPos.Y;
-            Right := Left + ColImageInfo.Images.Width;
-            Bottom := Top + ColImageInfo.Images.Height;
-          end;
+          FImageRect.Left := GlyphPos.X;
+          FImageRect.Top := GlyphPos.Y;
+          FImageRect.Right := FImageRect.Left + ColImageInfo.Images.Width;
+          FImageRect.Bottom := FImageRect.Top + ColImageInfo.Images.Height;
         end;
 
         // caption

@@ -133,15 +133,6 @@ type
   TFormatEtcArray = array of TFormatEtc;
   TFormatArray = array of Word;
 
-  // protection against TRect record method that cause problems with with-statements
-  TWithSafeRect = record
-    case Integer of
-      0 :
-        (Left, Top, Right, Bottom : Integer);
-      1 :
-        (TopLeft, BottomRight : TPoint);
-  end;
-
   TSmartAutoFitType = (smaAllColumns, //consider nodes in view only for all columns
     smaNoColumn,                      //consider nodes in view only for no column
     smaUseColumnOption                //use coSmartResize of the corresponding column
