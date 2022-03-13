@@ -30834,13 +30834,11 @@ begin
                             begin
                               if BidiMode = bdLeftToRight then
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left + IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * Integer(FIndent), CellRect.Right - 1,
-                                  CellRect.Bottom - 1);
+                                DrawDottedHLine(PaintInfo, CellRect.Left + PaintInfo.Offsets[ofsCheckBox] - fImagesMargin, CellRect.Right - 1,                                CellRect.Bottom - 1);
                               end
                               else
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * Integer(FIndent) - 1,
-                                  CellRect.Bottom - 1);
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * Integer(FIndent) - 1, CellRect.Bottom - 1);
                               end;
                             end
                             else
