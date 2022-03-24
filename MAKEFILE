@@ -3,6 +3,9 @@ EMBARCADERO = $(PROGRAMFILES)\Embarcadero\RAD Studio
 STUDIO = $(PROGRAMFILES)\Embarcadero\Studio
 BDSCOMMONDIRMAIN = %PUBLIC%\Documents\Embarcadero\Studio
 # Default MS Build version
+!IF EXIST("$(PROGRAMFILESX64)\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\msbuild.exe")
+BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\msbuild.exe"
+!ELSE 
 !IF EXIST("$(PROGRAMFILES)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe")
 BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe"
 !ELSE
