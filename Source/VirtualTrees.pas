@@ -14798,8 +14798,6 @@ begin
       if SyncCheckstateWithSelection[PTmpNode] then
         checkstate[PTmpNode] := csCheckedNormal;
     end;
-
-    Assert(FSelectionCount = (lPreviousSelectedCount + NewLength), 'Fixing issue #487 seems to ahve caused a problem here.')
   end;
 end;
 
