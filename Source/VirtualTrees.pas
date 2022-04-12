@@ -98,6 +98,7 @@ const
   FadeAnimationStepCount = 255; // Number of animation steps for hint fading (0..255).
   ShadowSize = 5;               // Size in pixels of the hint shadow. This value has no influence on Win2K and XP systems
                                 // as those OSes have native shadow support.
+  cDefaultTextMargin = 4;       // The default margin of text
 
   // Special identifiers for columns.
   NoColumn = -1;
@@ -30569,6 +30570,7 @@ var
   PaintWidth: Integer;
   CurrentNodeHeight: Integer;
   lUseSelectedBkColor: Boolean; // determines if the dotted grid lines need to be painted in selection color of background color
+  lEmptyListTextMargin: Integer;
 
   CellIsTouchingClientRight: Boolean;
   CellIsInLastColumn: Boolean;
@@ -31136,12 +31138,14 @@ begin
       begin
         // output a message if no items are to display
         Canvas.Font := Self.Font;
+        Canvas.Font.Size := Round(Canvas.Font.Size * 1.25);
         SetBkMode(TargetCanvas.Handle, TRANSPARENT);
-        R.Left := OffSetX + 2;
-        R.Top := 2;
-        R.Right := R.Left + Width - 2;
-        R.Bottom := Height -2;
-        TargetCanvas.Font.Color := clGrayText;
+        lEmptyListTextMargin := ScaledPixels(Max(cDefaultTextMargin, Self.TextMargin) * 2);
+        R.Left := OffSetX + lEmptyListTextMargin;
+        R.Top := lEmptyListTextMargin;
+        R.Right := R.Left + Width - lEmptyListTextMargin;
+        R.Bottom := Height - lEmptyListTextMargin;
+        TargetCanvas.Font.Color := StyleServices.GetStyleFontColor(TStyleFont.sfTreeItemTextDisabled);//clGrayText;
         TargetCanvas.TextRect(R, FEmptyListMessage, [tfNoClip, tfLeft, tfWordBreak, tfExpandTabs]);
       end;
 
