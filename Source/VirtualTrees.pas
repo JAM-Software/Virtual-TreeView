@@ -7808,7 +7808,10 @@ begin
         else
         begin
           SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @ScrollLines, 0);
-          ScrollAmount := Trunc(WheelFactor * ScrollLines * FHeader.Columns.GetScrollWidth);
+		  if ScrollLines = WHEEL_PAGESCROLL then
+		    ScrollAmount := Trunc(WheelFactor * (ClientWidth - FHeader.Columns.GetVisibleFixedWidth))
+          else
+            ScrollAmount := Integer(Trunc(WheelFactor * ScrollLines * FHeader.Columns.GetScrollWidth));
         end;
         SetOffsetX(FOffsetX + RTLFactor * ScrollAmount);
       end;
