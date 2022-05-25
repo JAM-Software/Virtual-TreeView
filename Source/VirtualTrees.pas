@@ -2028,6 +2028,7 @@ type
     function GetLastNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastChild(Node: PVirtualNode): PVirtualNode;
     function GetLastChildNoInit(Node: PVirtualNode): PVirtualNode;
+    function GetLastSelected(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastVisible(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): PVirtualNode;
     function GetLastVisibleChild(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
@@ -19459,6 +19460,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TVirtualStringTree.GetLastSelected(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
+
+// Returns the last node in the current selection while optionally considering toChildrenAbove.
+
+begin
+  Result := GetPreviousSelected(nil, ConsiderChildrenAbove);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetLastVisible(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
   IncludeFiltered: Boolean = False): PVirtualNode;
 
@@ -20677,7 +20688,7 @@ begin
   if FSelectionCount > 0 then
   begin
     if (Node = nil) or (Node = FRoot) then
-      Result := FRoot.LastChild
+      Result := GetLastNoInit(nil, ConsiderChildrenAbove)
     else
       Result := GetPreviousNoInit(Node, ConsiderChildrenAbove);
     while Assigned(Result) and not (vsSelected in Result.States) do
