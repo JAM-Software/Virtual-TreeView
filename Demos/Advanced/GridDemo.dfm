@@ -99,7 +99,7 @@ object GridForm: TGridForm
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoChangeScale]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages]
-    TreeOptions.SelectionOptions = [toMiddleClickSelect, toMultiSelect]
+    TreeOptions.SelectionOptions = [toMiddleClickSelect, toMultiSelect, toExtendedFocus]
     WantTabs = True
     OnAfterCellPaint = VST5AfterCellPaint
     OnBeforeCellPaint = VST5BeforeCellPaint
