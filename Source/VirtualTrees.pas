@@ -19460,7 +19460,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualStringTree.GetLastSelected(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
+function TBaseVirtualTree.GetLastSelected(ConsiderChildrenAbove: Boolean = False): PVirtualNode;
 
 // Returns the last node in the current selection while optionally considering toChildrenAbove.
 
