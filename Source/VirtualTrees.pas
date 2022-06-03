@@ -14791,11 +14791,13 @@ begin
     Inc(FSelectionCount, AddedNodesSize);
 
     // post process added nodes
+    // First set vsSelected flag for all newly selected nodes, then fire event
+    for I := 0 to AddedNodesSize - 1 do
+      Include(NewItems[I].States, vsSelected);
+
     for I := 0 to AddedNodesSize - 1 do
     begin
       PTmpNode := NewItems[I];
-      //sync path note: on click, multi-select ctrl-click and draw selection
-      Include(PTmpNode.States, vsSelected);
       // call on add event callbackevent
       if Assigned(FOnAddToSelection) then
         FOnAddToSelection(Self, PTmpNode);
