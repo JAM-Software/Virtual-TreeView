@@ -1264,27 +1264,8 @@ type
   TCustomImageListCast = class(TCustomImageList);
 
 procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
-
-  procedure DrawDisabledImage(ImageList: TCustomImageList; Canvas: TCanvas; X, Y, Index: Integer);
-  var
-    Params: TImageListDrawParams;
-  begin
-    FillChar(Params, SizeOf(Params), 0);
-    Params.cbSize := SizeOf(Params);
-    Params.himl := ImageList.Handle;
-    Params.i := Index;
-    Params.hdcDst := Canvas.Handle;
-    Params.x := X;
-    Params.y := Y;
-    Params.fState := ILS_SATURATE;
-    ImageList_DrawIndirect(@Params);
-  end;
-
 begin
-  if Enabled then
-    TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style, Enabled)
-  else
-    DrawDisabledImage(ImageList, Canvas, X, Y, Index);
+  TCustomImageListCast(ImageList).DoDraw(Index, Canvas, X, Y, Style, Enabled)
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
