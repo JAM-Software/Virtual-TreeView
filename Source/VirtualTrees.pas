@@ -17744,7 +17744,12 @@ begin
       DoUpdating(usUpdate);
   end;
   Inc(FUpdateCount);
-  DoStateChange([tsUpdating]);
+  try
+    DoStateChange([tsUpdating]);
+  except
+    EndUpdate();
+    raise;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
