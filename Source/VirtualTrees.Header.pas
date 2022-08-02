@@ -1773,7 +1773,7 @@ begin
             with TWMNCLButtonUp(Message) do
             begin
               P := FOwner.ScreenToClient(Point(XCursor, YCursor));
-              TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbLeft, False, False);
+              TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbLeft, True, False);
               TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, GetShiftState, P.X, P.Y + Integer(FHeight));
             end;
         end;
