@@ -169,7 +169,7 @@ type
   end;
 
   // Our own edit link to implement several different node editors.
-  TGridEditLink = class(TPropertyEditLink, IVTEditLink)
+  TGridEditLink = class(TBasePropertyEditLink, IVTEditLink)
   public
     procedure DoEndEdit(var Result: Boolean); override;
     procedure DoPrepareEdit(var Result: Boolean); override;

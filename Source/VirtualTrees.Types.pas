@@ -23,6 +23,7 @@ const
   FadeAnimationStepCount = 255;  // Number of animation steps for hint fading (0..255).
   ShadowSize             = 5;    // Size in pixels of the hint shadow. This value has no influence on Win2K and XP systems
                                 // as those OSes have native shadow support.
+  cDefaultTextMargin = 4;       // The default margin of text
 
   // Special identifiers for columns.
   NoColumn                 = - 1;
@@ -132,15 +133,6 @@ type
   // OLE drag'n drop support
   TFormatEtcArray = array of TFormatEtc;
   TFormatArray = array of Word;
-
-  // protection against TRect record method that cause problems with with-statements
-  TWithSafeRect = record
-    case Integer of
-      0 :
-        (Left, Top, Right, Bottom : Integer);
-      1 :
-        (TopLeft, BottomRight : TPoint);
-  end;
 
   TSmartAutoFitType = (smaAllColumns, //consider nodes in view only for all columns
     smaNoColumn,                      //consider nodes in view only for no column
@@ -402,7 +394,7 @@ type
 const
   DefaultPaintOptions     = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
   DefaultAnimationOptions = [];
-  DefaultAutoOptions      = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort];
+  DefaultAutoOptions      = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort, toAutoHideButtons];
   DefaultSelectionOptions = [];
   DefaultMiscOptions      = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick];
 

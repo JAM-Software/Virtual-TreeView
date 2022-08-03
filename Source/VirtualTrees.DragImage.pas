@@ -260,22 +260,18 @@ begin
             // restore uncovered areas of the screen
             if DeltaX = 0 then
             begin
-              with TWithSafeRect(RDraw2) do
-                BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top, SRCCOPY);
+              BitBlt(ScreenDC, FImagePosition.X + RDraw2.Left, FImagePosition.Y + RDraw2.Top, RDraw2.Right, RDraw2.Bottom, Handle, RDraw2.Left, RDraw2.Top, SRCCOPY);
             end
             else
             begin
               if DeltaY = 0 then
               begin
-                with TWithSafeRect(RDraw1) do
-                  BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top, SRCCOPY);
+                BitBlt(ScreenDC, FImagePosition.X + RDraw1.Left, FImagePosition.Y + RDraw1.Top, RDraw1.Right, RDraw1.Bottom, Handle, RDraw1.Left, RDraw1.Top, SRCCOPY);
               end
               else
               begin
-                with TWithSafeRect(RDraw1) do
-                  BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top, SRCCOPY);
-                with TWithSafeRect(RDraw2) do
-                  BitBlt(ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, Right, Bottom, Handle, Left, Top, SRCCOPY);
+                BitBlt(ScreenDC, FImagePosition.X + RDraw1.Left, FImagePosition.Y + RDraw1.Top, RDraw1.Right, RDraw1.Bottom, Handle, RDraw1.Left, RDraw1.Top, SRCCOPY);
+                BitBlt(ScreenDC, FImagePosition.X + RDraw1.Left, FImagePosition.Y + RDraw1.Top, RDraw1.Right, RDraw1.Bottom, Handle, RDraw1.Left, RDraw1.Top, SRCCOPY);
               end;
             end;
 
@@ -288,20 +284,16 @@ begin
             // Get first and second additional rectangle from screen.
             if DeltaX = 0 then
             begin
-              with TWithSafeRect(RSamp2) do
-                BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, SRCCOPY);
+              BitBlt(Handle, RSamp2.Left, RSamp2.Top, RSamp2.Right, RSamp2.Bottom, ScreenDC, FImagePosition.X + RSamp2.Left, FImagePosition.Y + RSamp2.Top, SRCCOPY);
             end
             else if DeltaY = 0 then
             begin
-              with TWithSafeRect(RSamp1) do
-                BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, SRCCOPY);
+              BitBlt(Handle, RSamp1.Left, RSamp1.Top, RSamp1.Right, RSamp1.Bottom, ScreenDC, FImagePosition.X + RSamp1.Left, FImagePosition.Y + RSamp1.Top, SRCCOPY);
             end
             else
             begin
-              with TWithSafeRect(RSamp1) do
-                BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, SRCCOPY);
-              with TWithSafeRect(RSamp2) do
-                BitBlt(Handle, Left, Top, Right, Bottom, ScreenDC, FImagePosition.X + Left, FImagePosition.Y + Top, SRCCOPY);
+              BitBlt(Handle, RSamp1.Left, RSamp1.Top, RSamp1.Right, RSamp1.Bottom, ScreenDC, FImagePosition.X + RSamp1.Left, FImagePosition.Y + RSamp1.Top, SRCCOPY);
+              BitBlt(Handle, RSamp2.Left, RSamp2.Top, RSamp2.Right, RSamp2.Bottom, ScreenDC, FImagePosition.X + RSamp2.Left, FImagePosition.Y + RSamp2.Top, SRCCOPY);
             end;
           end;
         end;
