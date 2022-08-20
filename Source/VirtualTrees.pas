@@ -16432,8 +16432,8 @@ begin
       if vsExpanded in Node.States then
         Item.state := Item.state or TVIS_EXPANDED;
 
-      // Construct state image and overlay image indices. They are one based, btw.
-      // and zero means there is no image.
+      // Construct state image and overlay image indices. They are zero based, btw.
+      // and -1 means there is no image.
       ImageIndex := -1;
       DoGetImageIndex(Node, ikState, -1, Ghosted, ImageIndex);
       Item.state := Item.state or Byte(IndexToStateImageMask(ImageIndex + 1));
