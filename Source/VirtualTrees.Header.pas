@@ -463,20 +463,20 @@ type
     property AutoSizeIndex        : TColumnIndex read FAutoSizeIndex write SetAutoSizeIndex;
     property Background           : TColor read FBackgroundColor write SetBackground default clBtnFace;
     property Columns              : TVirtualTreeColumns read FColumns write SetColumns stored False; //Stored by the owner tree to support VFI.
-    property DefaultHeight        : Integer read FDefaultHeight write SetDefaultHeight default 19;
+    property DefaultHeight        : TDimension read FDefaultHeight write SetDefaultHeight default 19;
     property Font                 : TFont read FFont write SetFont stored IsFontStored;
     property FixedAreaConstraints : TVTFixedAreaConstraints read FFixedAreaConstraints write FFixedAreaConstraints;
-    property Height               : Integer read FHeight write SetHeight default 19;
+    property Height               : TDimension read FHeight write SetHeight default 19;
     property Images               : TCustomImageList read FImages write SetImages;
     property MainColumn           : TColumnIndex read GetMainColumn write SetMainColumn default 0;
-    property MaxHeight            : Integer read FMaxHeight write SetMaxHeight default 10000;
-    property MinHeight            : Integer read FMinHeight write SetMinHeight default 10;
+    property MaxHeight            : TDimension read FMaxHeight write SetMaxHeight default 10000;
+    property MinHeight            : TDimension read FMinHeight write SetMinHeight default 10;
     property Options              : TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
     property ParentFont           : Boolean read FParentFont write SetParentFont default True;
     property PopupMenu            : TPopupMenu read FPopupMenu write FPopupMenu;
     property SortColumn           : TColumnIndex read FSortColumn write SetSortColumn default NoColumn;
     property SortDirection        : TSortDirection read FSortDirection write SetSortDirection default sdAscending;
-    property SplitterHitTolerance : Integer read fSplitterHitTolerance write fSplitterHitTolerance default 8;
+    property SplitterHitTolerance : TDimension read fSplitterHitTolerance write fSplitterHitTolerance default 8;
     //The area in pixels around a spliter which is sensitive for resizing
     property Style                : TVTHeaderStyle read FStyle write SetStyle default hsThickButtons;
   end;
@@ -659,7 +659,7 @@ end;
 procedure TVTHeader.AutoScale(isDpiChange: Boolean);
 var
   I          : Integer;
-  lMaxHeight : Integer;
+  lMaxHeight : TDimension;
 begin
   if (toAutoChangeScale in TBaseVirtualTreeCracker(Tree).TreeOptions.AutoOptions) and not isDpiChange then
   begin
@@ -740,7 +740,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetDefaultHeight(Value : Integer);
+procedure TVTHeader.SetDefaultHeight(Value : TDimension);
 begin
   if Value < FMinHeight then
     Value := FMinHeight;
@@ -762,9 +762,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetHeight(Value : Integer);
+procedure TVTHeader.SetHeight(Value : TDimension);
 var
-  RelativeMaxHeight, RelativeMinHeight, EffectiveMaxHeight, EffectiveMinHeight : Integer;
+  RelativeMaxHeight, RelativeMinHeight, EffectiveMaxHeight, EffectiveMinHeight : TDimension;
 begin
   if not Tree.HandleAllocated then
   begin
@@ -847,7 +847,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetMaxHeight(Value : Integer);
+procedure TVTHeader.SetMaxHeight(Value : TDimension);
 
 begin
   if Value < FMinHeight then
@@ -858,7 +858,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.SetMinHeight(Value : Integer);
+procedure TVTHeader.SetMinHeight(Value : TDimension);
 
 begin
   if Value < 0 then
@@ -980,7 +980,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.ChangeScale(M, D : Integer; isDpiChange : Boolean);
+procedure TVTHeader.ChangeScale(M, D : TDimension; isDpiChange : Boolean);
 var
   I : Integer;
 begin
@@ -1008,12 +1008,12 @@ function TVTHeader.DetermineSplitterIndex(P : TPoint) : Boolean;
 //columns possible.
 
 var
-  VisibleFixedWidth : Integer;
-  SplitPoint        : Integer;
+  VisibleFixedWidth : TDimension;
+  SplitPoint        : TDimension;
 
   //--------------- local function --------------------------------------------
 
-  function IsNearBy(IsFixedCol : Boolean; LeftTolerance, RightTolerance : Integer) : Boolean;
+  function IsNearBy(IsFixedCol : Boolean; LeftTolerance, RightTolerance : TDimension) : Boolean;
 
   begin
     if IsFixedCol then
@@ -1026,7 +1026,7 @@ var
 
 var
   I             : Integer;
-  LeftTolerance : Integer; //The area left of the column divider which allows column resizing
+  LeftTolerance : TDimension; //The area left of the column divider which allows column resizing
 begin
   Result := False;
 
@@ -1253,7 +1253,7 @@ var
   I, NewTarget : Integer;
   //optimized drag image move support
   ClientP      : TPoint;
-  Left, Right  : Integer;
+  Left, Right  : TDimension;
   NeedRepaint  : Boolean; //True if the screen needs an update (changed drop target or drop side)
 
 begin
@@ -1374,7 +1374,7 @@ function TVTHeader.HandleHeaderMouseMove(var Message : TWMMouseMove) : Boolean;
 var
   P             : TPoint;
   NextColumn, I : TColumnIndex;
-  NewWidth      : Integer;
+  NewWidth      : TDimension;
 
 begin
   Result := False;
@@ -1934,7 +1934,7 @@ var
   Image      : TBitmap;
   ImagePos   : TPoint;
   DragColumn : TVirtualTreeColumn;
-  RTLOffset  : Integer;
+  RTLOffset  : TDimension;
 
 begin
   //Determine initial position of drag image (screen coordinates).
@@ -2543,8 +2543,10 @@ function TVTHeader.ResizeColumns(ChangeBy : Integer; RangeStartCol : TColumnInde
 
 var
   Start, I                                         : TColumnIndex;
-  ColCount, ToGo, Sign, Rest, MaxDelta, Difference : Integer;
-  Constraints, Widths                              : array of Integer;
+  ColCount,
+  Sign: Integer;		   
+  ToGo, MaxDelta, Difference, Rest: TDimension;
+  Constraints, Widths                              : array of TDimension;
   BonusPixel                                       : Boolean;
 
   //--------------- local functions -------------------------------------------
@@ -2571,7 +2573,7 @@ var
 
 //---------------------------------------------------------------------------
 
-  function ChangeWidth(Column : TColumnIndex; Delta : Integer) : Integer;
+  function ChangeWidth(Column : TColumnIndex; Delta : TDimension) : TDimension;
 
   begin
     if Delta > 0 then
@@ -2589,7 +2591,8 @@ var
   function ReduceConstraints : Boolean;
 
   var
-    MaxWidth, MaxReserveCol, Column : TColumnIndex;
+    MaxWidth: TDimension;		  
+    MaxReserveCol, Column : TColumnIndex;
 
   begin
     Result := True;
@@ -3023,7 +3026,7 @@ begin
 end;
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumn.GetLeft : Integer;
+function TVirtualTreeColumn.GetLeft : TDimension;
 
 begin
   Result := FLeft;
@@ -3187,7 +3190,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMargin(Value : Integer);
+procedure TVirtualTreeColumn.SetMargin(Value : TDimension);
 
 begin
   // Compatibility setting for -1.
@@ -3202,7 +3205,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMaxWidth(Value : Integer);
+procedure TVirtualTreeColumn.SetMaxWidth(Value : TDimension);
 
 begin
   if Value < FMinWidth then
@@ -3213,7 +3216,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetMinWidth(Value : Integer);
+procedure TVirtualTreeColumn.SetMinWidth(Value : TDimension);
 
 begin
   if Value < 0 then
@@ -3330,7 +3333,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetSpacing(Value : Integer);
+procedure TVirtualTreeColumn.SetSpacing(Value : TDimension);
 
 begin
   if FSpacing <> Value then
@@ -3367,13 +3370,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.SetWidth(Value : Integer);
+procedure TVirtualTreeColumn.SetWidth(Value : TDimension);
 
 var
   EffectiveMaxWidth,
     EffectiveMinWidth,
     TotalFixedMaxWidth,
-    TotalFixedMinWidth : Integer;
+    TotalFixedMinWidth : TDimension;
   I                    : TColumnIndex;
 
 begin
@@ -3458,7 +3461,7 @@ var
   CurrentAlignment  : TAlignment;
   MinLeft,
     MaxRight,
-    TextSpacing     : Integer;
+    TextSpacing     : TDimension;
   UseText           : Boolean;
   R                 : TRect;
   Theme             : HTHEME;
@@ -3790,7 +3793,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.GetAbsoluteBounds(var Left, Right : Integer);
+procedure TVirtualTreeColumn.GetAbsoluteBounds(var Left, Right : TDimension);
 
 // Returns the column's left and right bounds in header coordinates, that is, independant of the scrolling position.
 
@@ -4242,10 +4245,9 @@ procedure TVirtualTreeColumns.AdjustAutoSize(CurrentIndex : TColumnIndex; Force 
 // CurrentIndex (if not InvalidColumn) describes which column has just been resized.
 
 var
-  NewValue,
     AutoIndex,
-    Index,
-    RestWidth : Integer;
+    Index: Integer;
+    NewValue, RestWidth : TDimension;
   WasUpdating : Boolean;
 begin
   if Count > 0 then
@@ -4377,7 +4379,7 @@ procedure TVirtualTreeColumns.DrawButtonText(DC : HDC; Caption : string; Bounds 
   DrawFormat : Cardinal; WrapCaption : Boolean);
 
 var
-  TextSpace : Integer;
+  TextSpace : TDimension;
   Size      : TSize;
 
 begin
@@ -4435,7 +4437,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetColumnAndBounds(P : TPoint; var ColumnLeft, ColumnRight : Integer;
+function TVirtualTreeColumns.GetColumnAndBounds(P : TPoint; var ColumnLeft, ColumnRight : TDimension;
   Relative : Boolean = True) : Integer;
 
 // Returns the column where the mouse is currently in as well as the left and right bound of
@@ -4815,8 +4817,8 @@ procedure TVirtualTreeColumns.UpdatePositions(Force : Boolean = False);
 // PostionToIndex array which primarily determines where each column is placed visually.
 
 var
-  I, RunningPos : Integer;
-
+  I: Integer;
+  RunningPos: TDimension;
 begin
   if not (csDestroying in TreeViewControl.ComponentState) and not FNeedPositionsFix and (Force or (UpdateCount = 0)) then
   begin
@@ -4991,8 +4993,8 @@ function TVirtualTreeColumns.ColumnFromPosition(P : TPoint; Relative : Boolean =
 // Determines the current column based on the position passed in P.
 
 var
-  I, Sum : Integer;
-
+  I: Integer;
+  Sum: TDimension;
 begin
   Result := InvalidColumn;
 
@@ -5075,7 +5077,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.GetColumnBounds(Column : TColumnIndex; var Left, Right : Integer);
+procedure TVirtualTreeColumns.GetColumnBounds(Column : TColumnIndex; var Left, Right : TDimension);
 
 // Returns the left and right bound of the given column. If Column is NoColumn then the entire client width is returned.
 
@@ -5099,7 +5101,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetScrollWidth : Integer;
+function TVirtualTreeColumns.GetScrollWidth : TDimension;
 
 // Returns the average width of all visible, non-fixed columns. If there is no such column the indent is returned.
 
@@ -5305,7 +5307,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.GetVisibleFixedWidth : Integer;
+function TVirtualTreeColumns.GetVisibleFixedWidth : TDimension;
 
 // Determines the horizontal space all visible and fixed columns occupy.
 
@@ -5364,13 +5366,13 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.PaintHeader(DC : HDC; R : TRect; HOffset : Integer);
+procedure TVirtualTreeColumns.PaintHeader(DC : HDC; R : TRect; HOffset : TDimension);
 
 // Backward compatible header paint method. This method takes care of visually moving floating columns
 
 var
-  VisibleFixedWidth : Integer;
-  RTLOffset         : Integer;
+  VisibleFixedWidth : TDimension;
+  RTLOffset         : TDimension;
 
   procedure PaintFixedArea;
 
@@ -5756,8 +5758,7 @@ var
 
 var
   TargetRect : TRect;
-  MaxX       : Integer;
-
+  MaxX       : TDimension;
 begin
   if IsRectEmpty(R) then
     Exit;
@@ -5854,7 +5855,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVirtualTreeColumns.TotalWidth : Integer;
+function TVirtualTreeColumns.TotalWidth : TDimension;
 
 var
   LastColumn : TColumnIndex;
