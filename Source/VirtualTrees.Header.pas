@@ -198,7 +198,7 @@ type
     FClearing         : Boolean;      // True if columns are being deleted entirely.
     FColumnPopupMenu  : TPopupMenu;   // Member for storing the TVTHeaderPopupMenu
 
-    function GetCount : TDimension;
+    function GetCount : Integer;
     function GetItem(Index : TColumnIndex) : TVirtualTreeColumn;
     function GetNewIndex(P : TPoint; var OldIndex : TColumnIndex) : Boolean;
     procedure SetDefaultWidth(Value : TDimension);
@@ -2116,7 +2116,7 @@ begin
     SpringCount := 0;
     for I := 0 to FColumns.Count - 1 do
       if [coVisible, coAutoSpring] * FColumns[I].Options = [coVisible, coAutoSpring] then
-        Inc(SpringCount);
+        System.Inc(SpringCount);
     if SpringCount > 0 then
     begin
       //Calculate the size to add/sub to each columns.
@@ -2640,7 +2640,7 @@ begin
         for I := RangeStartCol to RangeEndCol do
           if (Options * FColumns[I].Options = Options) and IsResizable(I) then
           begin
-            Inc(ColCount);
+            System.Inc(ColCount);
             IncDelta(I);
           end;
         if MaxDelta < Abs(ChangeBy) then
@@ -2865,7 +2865,7 @@ var
       ColumnIndex := NoColumn
     else
       if Index < ColumnIndex then
-      Dec(ColumnIndex);
+      System.Dec(ColumnIndex);
   end;
 
   //--------------- end local function -----------------------------------------
@@ -3819,7 +3819,7 @@ begin
   begin
     if Ord(FText[I]) > 255 then
       Break;
-    Inc(I);
+    System.Inc(I);
   end;
 
   if I > Length(FText) then
@@ -4639,11 +4639,11 @@ begin
       begin
         // Index found. Move all higher entries one step down and remove the last entry.
         if I < Upper then
-          Move(FPositionToIndex[I + 1], FPositionToIndex[I], (Upper - I) * SizeOf(TColumnIndex));
+          System.Move(FPositionToIndex[I + 1], FPositionToIndex[I], (Upper - I) * SizeOf(TColumnIndex));
       end;
       // Decrease all indices, which are greater than the index to be deleted.
       if FPositionToIndex[I] > OldIndex then
-        Dec(FPositionToIndex[I]);
+        System.Dec(FPositionToIndex[I]);
     end;
     SetLength(FPositionToIndex, High(FPositionToIndex));
   end
@@ -4659,7 +4659,7 @@ begin
     for I := 0 to High(FPositionToIndex) do
     begin
       if (FPositionToIndex[I] >= Lower) and (FPositionToIndex[I] < Upper) then
-        Inc(FPositionToIndex[I], Increment)
+        System.Inc(FPositionToIndex[I], Increment)
       else
         if FPositionToIndex[I] = OldIndex then
         FPositionToIndex[I] := NewIndex;
@@ -4698,7 +4698,7 @@ begin
         for I := 0 to Count - 1 do
           if FPositionToIndex[I] >= Count then
           begin
-            Dec(FPositionToIndex[I]);
+            System.Dec(FPositionToIndex[I]);
             Changed := True;
           end;
       until not Changed;
@@ -5119,7 +5119,7 @@ begin
     if ([coVisible, coFixed] * Header.Columns[I].Options = [coVisible]) then
     begin
       Inc(Result, Header.Columns[I].Width);
-      Inc(ScrollColumnCount);
+      System.Inc(ScrollColumnCount);
     end;
   end;
 
@@ -5299,7 +5299,7 @@ begin
     if coVisible in Items[FPositionToIndex[I]].Options then
     begin
       Result[Counter] := Items[FPositionToIndex[I]];
-      Inc(Counter);
+      System.Inc(Counter);
     end;
   // Set result length to actual visible count.
   SetLength(Result, Counter);

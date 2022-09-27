@@ -363,7 +363,7 @@ type
   // to compile (conversion done by BCB is wrong).
   TCacheEntry = record
     Node: PVirtualNode;
-    AbsoluteTop: Cardinal;
+    AbsoluteTop: TDimension;
   end;
 
   TCache = array of TCacheEntry;
@@ -2798,16 +2798,16 @@ begin
     P := TheArray[(L + R) shr 1];
     repeat
       while PAnsiChar(TheArray[I]) < PAnsiChar(P) do
-        Inc(I);
+        System.Inc(I);
       while PAnsiChar(TheArray[J]) > PAnsiChar(P) do
-        Dec(J);
+        System.Dec(J);
       if I <= J then
       begin
         T := TheArray[I];
         TheArray[I] := TheArray[J];
         TheArray[J] := T;
-        Inc(I);
-        Dec(J);
+        System.Inc(I);
+        System.Dec(J);
       end;
     until I > J;
     if L < J then
@@ -3788,7 +3788,7 @@ begin
     // Root node has as parent the tree view.
     while Assigned(Run) and (Run <> Pointer(Self)) do
     begin
-      Inc(Integer(Run.TotalCount), Difference);
+      System.Inc(Integer(Run.TotalCount), Difference);
       Run := Run.Parent;
     end;
   end;
@@ -3913,7 +3913,7 @@ begin
         DoStateChange([tsCheckPropagation]);
         BeginUpdate();
       end;
-      Inc(FCheckPropagationCount);
+      System.Inc(FCheckPropagationCount);
       try
         // Do actions which are associated with the given check state.
         case CheckType of
@@ -3940,11 +3940,11 @@ begin
                           // node's new check state accordingly.
                           case Self.GetCheckState(Run) of
                             csCheckedNormal, csCheckedDisabled:
-                              Inc(CheckedCount);
+                              System.Inc(CheckedCount);
                             csMixedNormal:
-                              Inc(MixedCheckCount);
+                              System.Inc(MixedCheckCount);
                             csUncheckedNormal, csUncheckedDisabled:
-                              Inc(UncheckedCount);
+                              System.Inc(UncheckedCount);
                           end;
                         end;
                         Run := Run.NextSibling;
@@ -3979,11 +3979,11 @@ begin
                           // node's new check state accordingly.
                           case Self.GetCheckState(Run) of
                             csCheckedNormal:
-                              Inc(CheckedCount);
+                              System.Inc(CheckedCount);
                             csMixedNormal:
-                              Inc(MixedCheckCount);
+                              System.Inc(MixedCheckCount);
                             csUncheckedNormal:
-                              Inc(UncheckedCount);
+                              System.Inc(UncheckedCount);
                           end;
                         end;
                         Run := Run.NextSibling;
@@ -4037,7 +4037,7 @@ begin
 
         InvalidateNode(Node);
       finally
-        Dec(FCheckPropagationCount); // WL, 05.02.2004
+        System.Dec(FCheckPropagationCount); // WL, 05.02.2004
         if FCheckPropagationCount = 0 then begin
           // Allow state change event after all check operations finished
           DoStateChange([], [tsCheckPropagation]);
@@ -4052,7 +4052,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.CollectSelectedNodesLTR(MainColumn, NodeLeft, NodeRight: Integer; Alignment: TAlignment;
+function TBaseVirtualTree.CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment;
   OldRect, NewRect: TRect): Boolean;
 
 // Helper routine used when a draw selection takes place. This version handles left-to-right directionality.
@@ -4261,9 +4261,9 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.PaintOptions then
-      Dec(NodeRight, Integer((GetNodeLevel(Run) + 1) * FIndent) + FMargin)
+      Dec(NodeRight, (Integer((GetNodeLevel(Run) + 1)) * FIndent) + FMargin)
     else
-      Dec(NodeRight, Integer(GetNodeLevel(Run) * FIndent) + FMargin);
+      Dec(NodeRight, (Integer(GetNodeLevel(Run)) * FIndent) + FMargin);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
@@ -4493,13 +4493,13 @@ begin
         while Level1 > Level2 do
         begin
           Run1 := Run1.Parent;
-          Dec(Level1);
+          System.Dec(Level1);
         end;
         Run2 := Node2;
         while Level2 > Level1 do
         begin
           Run2 := Run2.Parent;
-          Dec(Level2);
+          System.Dec(Level2);
         end;
 
         // now go up until we find a common parent node (loop will safely stop at FRoot if the nodes
@@ -4661,7 +4661,7 @@ begin
   while Assigned(Child) do
   begin
     FixupTotalCount(Child);
-    Inc(Node.TotalCount, Child.TotalCount);
+    System.Inc(Node.TotalCount, Child.TotalCount);
     Child := Child.NextSibling;
   end;
 end;
@@ -4721,7 +4721,7 @@ begin
   Node := GetFirstChecked;
   while Assigned(Node) do
   begin
-     Inc(Result);
+     System.Inc(Result);
      Node := GetNextChecked(Node);
   end;
 end;
@@ -4776,7 +4776,7 @@ begin
   Node := GetFirstCutCopy;
   while Assigned(Node) do
   begin
-     Inc(Result);
+     System.Inc(Result);
      Node := GetNextCutCopy(Node);
   end;
 end;
@@ -4931,7 +4931,7 @@ begin
       // plus Indent
       lNodeLevel := GetNodeLevel(pNode);
       if toShowRoot in FOptions.PaintOptions then
-        Inc(lNodeLevel);
+        System.Inc(lNodeLevel);
     end
     else
       lNodeLevel := 1;
@@ -5030,11 +5030,11 @@ function TBaseVirtualTree.GetTotalCount(): Cardinal;
 
 begin
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls may only be used in UI thread.'); // FUpdateCount is not thread-safe! So do not write it in non-UI threads.
-  Inc(FUpdateCount);
+  System.Inc(FUpdateCount);
   try
     ValidateNode(FRoot, True);
   finally
-    Dec(FUpdateCount);
+    System.Dec(FUpdateCount);
   end;
   // The root node itself doesn't count as node.
   Result := FRoot.TotalCount - 1;
@@ -5424,10 +5424,10 @@ begin
       ValidateNodeDataSize(FNodeDataSize);
 
     // Take record alignment into account.
-    Inc(Size, FNodeDataSize);
+    System.Inc(Size, FNodeDataSize);
   end//not csDesigning
   else
-    Inc(Size, SizeOf(Pointer)); // Fixes #702
+    System.Inc(Size, SizeOf(Pointer)); // Fixes #702
 
 
   Result := AllocMem(Size + FTotalInternalDataSize);
@@ -5470,9 +5470,9 @@ begin
   // Do the fastest scan possible to find the first entry
   while (Count <> 0) and {not Odd(NativeInt(Source^))} (NativeInt(Source^) and ConstOne = 0) do
   begin
-    Inc(Result);
-    Inc(Source);
-    Dec(Count);
+    System.Inc(Result);
+    System.Inc(Source);
+    System.Dec(Count);
   end;
 
   if Count <> 0 then
@@ -5483,11 +5483,11 @@ begin
       if {not Odd(NativeInt(Source^))} NativeInt(Source^) and ConstOne = 0 then
       begin
         Dest^ := Source^;
-        Inc(Result);
-        Inc(Dest);
+        System.Inc(Result);
+        System.Inc(Dest);
       end;
-      Inc(Source); // Point to the next entry
-      Dec(Count);
+      System.Inc(Source); // Point to the next entry
+      System.Dec(Count);
     until Count = 0;
   end;
 end;
@@ -6057,7 +6057,7 @@ begin
           end;
           Node.States := Node.States - [vsAllChildrenHidden, vsHeightMeasured];
           if (vsExpanded in Node.States) and FullyVisible[Node] then
-            Inc(FVisibleCount, Count); // Do this before a possible init of the sub-nodes in DoMeasureItem()
+            System.Inc(FVisibleCount, Count); // Do this before a possible init of the sub-nodes in DoMeasureItem()
 
           // New nodes are by default always visible, so we don't need to check the visibility.
           while Remaining > 0 do
@@ -6071,8 +6071,8 @@ begin
             Node.LastChild := Child;
             if Node.FirstChild = nil then
               Node.FirstChild := Child;
-            Dec(Remaining);
-            Inc(Index);
+            System.Dec(Remaining);
+            System.Inc(Index);
 
             if (toVariableNodeHeight in FOptions.MiscOptions) then
               GetNodeHeight(Child);
@@ -6096,7 +6096,7 @@ begin
           while Remaining > 0 do
           begin
             DeleteNode(Node.LastChild);
-            Dec(Remaining);
+            System.Dec(Remaining);
           end;
         end;
 
@@ -6397,7 +6397,7 @@ begin
           AdjustTotalHeight(Node, -Integer(NodeHeight[Node]), True);
         if FullyVisible[Node] then
         begin
-          Dec(FVisibleCount);
+          System.Dec(FVisibleCount);
           NeedUpdate := True;
         end;
         if FocusedNode = Node then
@@ -6417,7 +6417,7 @@ begin
         AdjustTotalHeight(Node, Integer(NodeHeight[Node]), True);
         if FullyVisible[Node] then
         begin
-          Inc(FVisibleCount);
+          System.Inc(FVisibleCount);
           NeedUpdate := True;
         end;
       end;
@@ -6906,7 +6906,7 @@ begin
         AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
       if VisiblePath[Node] then
       begin
-        Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
 
@@ -6921,7 +6921,7 @@ begin
         AdjustTotalHeight(Node.Parent, -Integer(Node.TotalHeight), True);
       if VisiblePath[Node] then
       begin
-        Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
         NeedUpdate := True;
       end;
       Exclude(Node.States, vsVisible);
@@ -9818,7 +9818,7 @@ function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
 begin
   Assert((FRoot = nil) or (FRoot.ChildCount = 0), 'Internal data allocation must be done before any node is created.');
   Result := TreeNodeSize + FTotalInternalDataSize;
-  Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
+  System.Inc(FTotalInternalDataSize, (Size + (SizeOf(Pointer) - 1)) and not (SizeOf(Pointer) - 1));
   InitRootNode(Result);
 end;
 
@@ -9874,8 +9874,8 @@ begin
         // Subtract the time this step really needed.
         if RemainingTime >= CurrentTime - StartTime then
         begin
-          Dec(RemainingTime, CurrentTime - StartTime);
-          Dec(RemainingSteps);
+          System.Dec(RemainingTime, CurrentTime - StartTime);
+          System.Dec(RemainingSteps);
         end
         else
         begin
@@ -9887,7 +9887,7 @@ begin
         if (RemainingSteps > 0) and ((RemainingTime div RemainingSteps) < 1) then
         begin
           repeat
-            Inc(StepSize);
+            System.Inc(StepSize);
             RemainingSteps := RemainingTime div StepSize;
           until (RemainingSteps <= 0) or ((RemainingTime div RemainingSteps) >= 1);
         end;
@@ -9909,7 +9909,7 @@ procedure TBaseVirtualTree.StartOperation(OperationKind: TVTOperationKind);
 // Called to indicate that a long-running operation has been started.
 
 begin
-  Inc(FOperationCount);
+  System.Inc(FOperationCount);
   if FOperationCount = 1 then
     FOperationCanceled := False;
   DoStartOperation(OperationKind);
@@ -10119,18 +10119,18 @@ begin
       // will get if this method returns True.
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
-        Inc(BoxCount);
+        System.Inc(BoxCount);
         if NewCheckState.IsChecked then
-          Inc(CheckCount);
+          System.Inc(CheckCount);
         PartialCheck := PartialCheck or (NewCheckState = csMixedNormal);
       end;
     end
     else
       if Run.CheckType in [ctCheckBox, ctTriStateCheckBox] then
       begin
-        Inc(BoxCount);
+        System.Inc(BoxCount);
         if GetCheckState(Run).IsChecked then
-          Inc(CheckCount);
+          System.Inc(CheckCount);
         PartialCheck := PartialCheck or (GetCheckState(Run) = csMixedNormal);
       end;
     Run := Run.NextSibling;
@@ -10231,14 +10231,14 @@ begin
   Level1 := 0;
   while Node1.Parent <> FRoot do
   begin
-    Inc(Level1);
+    System.Inc(Level1);
     Node1 := Node1.Parent;
   end;
 
   Level2 := 0;
   while Node2.Parent <> FRoot do
   begin
-    Inc(Level2);
+    System.Inc(Level2);
     Node2 := Node2.Parent;
   end;
 
@@ -10262,7 +10262,7 @@ begin
     while Assigned(Node) do
     begin
       if vsVisible in Node.States then
-        Inc(Result, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Inc(Result, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
       Node := Node.NextSibling;
     end;
   end;
@@ -10756,11 +10756,11 @@ begin
   // Determine indentation level of top node.
   while Run.Parent <> FRoot do
   begin
-    Inc(X);
+    System.Inc(X);
     Run := Run.Parent;
     // Count selected nodes (FRoot is never selected).
     if vsSelected in Run.States then
-      Inc(Result);
+      System.Inc(Result);
   end;
 
   // Set initial size of line index array, this will automatically initialized all entries to ltNone.
@@ -10773,7 +10773,7 @@ begin
   begin
     if toChildrenAbove in FOptions.PaintOptions then
     begin
-      Dec(X);
+      System.Dec(X);
       if not HasVisiblePreviousSibling(Node) then
       begin
         if (Node.Parent <> FRoot) or HasVisibleNextSibling(Node) then
@@ -10791,7 +10791,7 @@ begin
       Run := Node.Parent;
       while Run <> FRoot do
       begin
-        Dec(X);
+        System.Dec(X);
         if HasVisiblePreviousSibling(Run) then
           LineImage[X] := ltTopDown
         else
@@ -10818,7 +10818,7 @@ begin
         repeat
           if Run.Parent = FRoot then
             Break;
-          Dec(X);
+          System.Dec(X);
           if HasVisibleNextSibling(Run) then
             LineImage[X - 1] := ltTopDown
           else
@@ -12698,7 +12698,7 @@ begin
           Break;                   // CHANGED: 17.09.2013 - Veit Zimmermann
 
         CurrentNode := Temp;
-        Inc(EntryCount);
+        System.Inc(EntryCount);
       end;
     end;
     // Finalize the position cache so no nil entry remains there.
@@ -13180,7 +13180,7 @@ procedure TBaseVirtualTree.EndOperation(OperationKind: TVTOperationKind);
 
 begin
   Assert(FOperationCount > 0, 'EndOperation must not be called when no operation in progress.');
-  Dec(FOperationCount);
+  System.Dec(FOperationCount);
   DoEndOperation(OperationKind);
 end;
 
@@ -13405,7 +13405,7 @@ begin
   if ImgCheckType = ctTriStateCheckBox then
     ImgCheckType := ctCheckBox;
   if IsHot and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]) and (GetKeyState(VK_LBUTTON) < 0) and (hiOnItemCheckbox in FLastHitInfo.HitPositions) then
-    Inc(ImgCheckState); // Advance to pressed state
+    System.Inc(ImgCheckState); // Advance to pressed state
 
   if ImgCheckType = ctNone then
     Result := -1
@@ -14576,7 +14576,7 @@ begin
         begin
           AdjustTotalHeight(Node, -NodeHeight, True);
           if FullyVisible[Node] then
-            Dec(FVisibleCount);
+            System.Dec(FVisibleCount);
           if FUpdateCount = 0 then
             UpdateScrollBars(True);
         end;
@@ -14635,12 +14635,12 @@ begin
   if not FullyVisible[Node] or IsEffectivelyFiltered[Node] then
   begin
     if WasFullyVisible then
-      Dec(FVisibleCount);
+      System.Dec(FVisibleCount);
   end
   else
     // It can never happen that the node is now fully visible but was not before as this would require
     // that the visibility state of one of its parents has changed, which cannot happen during loading.
-    Inc(FVisibleCount, CountVisibleChildren(Node));
+    System.Inc(FVisibleCount, CountVisibleChildren(Node));
 
   // Fix selection array.
   ClearTempCache;
@@ -14730,9 +14730,9 @@ begin
          (Constrained and (Cardinal(FLastSelectionLevel) <> GetNodeLevel(NewItems[I]))) or
          (SiblingConstrained and (FRangeAnchor.Parent <> NewItems[I].Parent))
       then
-        Inc(PAnsiChar(NewItems[I])) // mark as invalid by setting the LSB
+        System.Inc(PAnsiChar(NewItems[I])) // mark as invalid by setting the LSB
       else
-        Inc(AddedNodesSize);
+        System.Inc(AddedNodesSize);
   end;
 
   I := PackArray(NewItems, NewLength);
@@ -14763,7 +14763,7 @@ begin
         while (J >= 0) and (PAnsiChar(NewItems[J]) > PAnsiChar(FSelection[CurrentEnd])) do
         begin
           FSelection[CurrentEnd + J + 1] := NewItems[J];
-          Dec(J);
+          System.Dec(J);
         end;
         // early out if nothing more needs to be copied
         if J < 0 then
@@ -14772,7 +14772,7 @@ begin
       else
       begin
         // insert remaining new entries at position 0
-        Move(NewItems[0], FSelection[0], (J + 1) * SizeOf(Pointer));
+        System.Move(NewItems[0], FSelection[0], (J + 1) * SizeOf(Pointer));
         // nothing more to do so exit main loop
         Break;
       end;
@@ -14780,15 +14780,15 @@ begin
       // find the last entry in the remaining selection list which is smaller then the largest
       // entry in the remaining new items list
       FindNodeInSelection(NewItems[J], I, 0, CurrentEnd);
-      Dec(I);
+      System.Dec(I);
       // move all entries which are greater than the greatest entry in the new items list up
       // so the remaining gap travels down to where new items must be inserted
-      Move(FSelection[I + 1], FSelection[I + J + 2], (CurrentEnd - I) * SizeOf(Pointer));
+      System.Move(FSelection[I + 1], FSelection[I + J + 2], (CurrentEnd - I) * SizeOf(Pointer));
       CurrentEnd := I;
     end;
 
     // update selection count
-    Inc(FSelectionCount, AddedNodesSize);
+    System.Inc(FSelectionCount, AddedNodesSize);
 
     // post process added nodes
     // First set vsSelected flag for all newly selected nodes, then fire event
@@ -14853,7 +14853,7 @@ begin
 
   while FSelectionCount > 0 do
   begin
-    Dec(FSelectionCount);
+    System.Dec(FSelectionCount);
     lNode := FSelection[FSelectionCount];
     //sync path note: deselect when click on another or on outside area
     Exclude(lNode.States, vsSelected);
@@ -14899,7 +14899,7 @@ begin
           Run := Destination;
           while Assigned(Run) do
           begin
-            Inc(Run.Index);
+            System.Inc(Run.Index);
             Run := Run.NextSibling;
           end;
         end;
@@ -14919,7 +14919,7 @@ begin
           Run := Node;
           while Assigned(Run) do
           begin
-            Inc(Run.Index);
+            System.Inc(Run.Index);
             Run := Run.NextSibling;
           end;
         end;
@@ -14946,7 +14946,7 @@ begin
           Run := Node.NextSibling;
           while Assigned(Run) do
           begin
-            Inc(Run.Index);
+            System.Inc(Run.Index);
             Run := Run.NextSibling;
           end;
         end;
@@ -14980,14 +14980,14 @@ begin
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting];
 
     if (Mode <> amNoWhere) then begin
-      Inc(Node.Parent.ChildCount);
+      System.Inc(Node.Parent.ChildCount);
       Include(Node.Parent.States, vsHasChildren);
       AdjustTotalCount(Node.Parent, Node.TotalCount, True);
 
       // Add the new node's height only if its parent is expanded.
       if (vsExpanded in Node.Parent.States) and (vsVisible in Node.States) then begin
         AdjustTotalHeight(Node.Parent, Node.TotalHeight, True);
-        Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+        System.Inc(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
       end;//if
 
       // Update the hidden children flag of the parent.
@@ -15056,7 +15056,7 @@ begin
     // Some states are only temporary so take them out.
     Node.States := Node.States - [vsChecking];
     Parent := Node.Parent;
-    Dec(Parent.ChildCount);
+    System.Dec(Parent.ChildCount);
     AdjustHeight := (vsExpanded in Parent.States) and (vsVisible in Node.States);
     if Parent.ChildCount = 0 then
     begin
@@ -15068,7 +15068,7 @@ begin
     if AdjustHeight then
       AdjustTotalHeight(Parent, -Node.TotalHeight, True);
     if FullyVisible[Node] then
-      Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
+      System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
 
     if Assigned(Node.PrevSibling) then
       Node.PrevSibling.NextSibling := Node.NextSibling
@@ -15086,7 +15086,7 @@ begin
         while Assigned(Run) do
         begin
           Run.Index := Index;
-          Inc(Index);
+          System.Inc(Index);
           Run := Run.NextSibling;
         end;
       end;
@@ -15116,7 +15116,7 @@ begin
     Exclude(Node.States, vsSelected);
     if SyncCheckstateWithSelection[Node] then
       Node.CheckState := csUncheckedNormal; // Avoid using SetCheckState() as it handles toSyncCheckboxesWithSelection as well.
-    Inc(PAnsiChar(FSelection[Index]));
+    System.Inc(PAnsiChar(FSelection[Index]));
     DoRemoveFromSelection(Node);
     Change(Node); // Calling Change() here fixes issue #1047
   end;
@@ -16203,7 +16203,7 @@ begin
                   ChildCount := IdBody.ChildCount;
                   NodeHeight := IdBody.NodeHeight;
                   States := [];
-                  Move(IdBody.States, States, SizeOf(IdBody.States));
+                  System.Move(IdBody.States, States, SizeOf(IdBody.States));
                   CheckState := IdBody.CheckState;
                   CheckType := IdBody.CheckType;
                   Reserved := IdBody.Reserved;
@@ -16246,7 +16246,7 @@ begin
             Run.Parent := Node;
 
             ReadNode(Stream, Version, Run);
-            Dec(ChunkBody.ChildCount);
+            System.Dec(ChunkBody.ChildCount);
           end;
         end;
         Result := True;
@@ -16340,9 +16340,9 @@ begin
         Node.CheckState := csUncheckedNormal; // Avoid using SetCheckState() as it handles toSyncCheckboxesWithSelection as well.
 
       if FindNodeInSelection(Node, Index, -1, -1) and (Index < FSelectionCount - 1) then
-        Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
+        System.Move(FSelection[Index + 1], FSelection[Index], (FSelectionCount - Index - 1) * SizeOf(Pointer));
       if FSelectionCount > 0 then
-        Dec(FSelectionCount);
+        System.Dec(FSelectionCount);
       SetLength(FSelection, FSelectionCount);
 
       if FSelectionCount = 0 then
@@ -17463,13 +17463,13 @@ begin
     begin
       // if there's a previous sibling then add its total count to the result
       Node := Node.PrevSibling;
-      Inc(Result, Node.TotalCount);
+      System.Inc(Result, Node.TotalCount);
     end
     else
     begin
       Node := Node.Parent;
       if Node <> FRoot then
-        Inc(Result);
+        System.Inc(Result);
     end;
   end;
 end;
@@ -17540,7 +17540,7 @@ begin
 
           while (Stream.Position < Stream.Size) and (Count > 0) do
           begin
-            Dec(Count);
+            System.Dec(Count);
             Node := MakeNewNode;
             InternalConnectNode(Node, TargetNode, Self, amAddChildLast);
             InternalAddFromStream(Stream, Version, Node);
@@ -17723,7 +17723,7 @@ begin
     else
       DoUpdating(usSynch);
   end;
-  Inc(FSynchUpdateCount);
+  System.Inc(FSynchUpdateCount);
   DoStateChange([tsSynchMode]);
 end;
 
@@ -17743,7 +17743,7 @@ begin
     else
       DoUpdating(usUpdate);
   end;
-  Inc(FUpdateCount);
+  System.Inc(FUpdateCount);
   try
     DoStateChange([tsUpdating]);
   except
@@ -17924,7 +17924,7 @@ begin
         if vsSelected in Node.States then
         begin
           InvalidateRect(Handle, @R, False);
-          Dec(Counter);
+          System.Dec(Counter);
           // Only try as many nodes as are selected.
           if Counter = 0 then
             Break;
@@ -18110,7 +18110,7 @@ begin
 
     // The code below uses some flags for speed improvements which may cause invalid pointers if updates of
     // the tree happen. Hence switch updates off until we have finished the operation.
-    Inc(FUpdateCount);
+    System.Inc(FUpdateCount);
     try
       InterruptValidation;
       LastLeft := -FEffectiveOffsetX;
@@ -18127,7 +18127,7 @@ begin
       while Assigned(Run) do
       begin
         if ParentVisible and IsEffectivelyVisible[Run] then
-          Dec(FVisibleCount);
+          System.Dec(FVisibleCount);
 
         Include(Run.States, vsDeleting);
         Mark := Run;
@@ -18155,7 +18155,7 @@ begin
       Node.FirstChild := nil;
       Node.LastChild := nil;
     finally
-      Dec(FUpdateCount);
+      System.Dec(FUpdateCount);
     end;
 
     InvalidateCache;
@@ -18378,7 +18378,7 @@ procedure TBaseVirtualTree.EndSynch;
 
 begin
   if FSynchUpdateCount > 0 then
-    Dec(FSynchUpdateCount);
+    System.Dec(FSynchUpdateCount);
 
   if not (csDestroying in ComponentState) then
   begin
@@ -18401,7 +18401,7 @@ var
 
 begin
   if FUpdateCount > 0 then
-    Dec(FUpdateCount);
+    System.Dec(FUpdateCount);
 
   if not (csDestroying in ComponentState) then
   begin
@@ -20395,7 +20395,7 @@ begin
     while Run <> FRoot do
     begin
       Run := Run.Parent;
-      Inc(Result);
+      System.Inc(Result);
     end;
   end;
 end;
@@ -21173,7 +21173,7 @@ var
       SetLength(Result, Len);
     end;
     Result[Counter] := Node;
-    Inc(Counter);
+    System.Inc(Counter);
   end;
 
   //--------------- end local function ----------------------------------------
@@ -21256,7 +21256,7 @@ begin
         if vsSelected in Run.States then
         begin
           Result[Counter] := Run;
-          Inc(Counter);
+          System.Inc(Counter);
           if Assigned(Run.NextSibling) then
             Run := Run.NextSibling
           else
@@ -21283,7 +21283,7 @@ begin
         if vsSelected in Run.States then
         begin
           Result[Counter] := Run;
-          Inc(Counter);
+          System.Inc(Counter);
         end;
         Run := GetNextNoInit(Run);
       end;
@@ -21770,7 +21770,7 @@ begin
 
           while (Stream.Position < Stream.Size) and (Count > 0) do
           begin
-            Dec(Count);
+            System.Dec(Count);
             Node := MakeNewNode;
             InternalConnectNode(Node, FRoot, Self, amAddChildLast);
             InternalAddFromStream(Stream, Version, Node);
@@ -22175,7 +22175,7 @@ begin
             if not (vsInitialized in PaintInfo.Node.States) then
               InitNode(PaintInfo.Node);
             if (vsSelected in PaintInfo.Node.States) and not (toChildrenAbove in FOptions.PaintOptions) then
-              Inc(SelectLevel);
+              System.Inc(SelectLevel);
 
             // Ensure the node's height is determined.
             MeasureItemHeight(PaintInfo.Canvas, PaintInfo.Node);
@@ -23671,7 +23671,7 @@ begin
         Index := 0;
         repeat
           Run.Index := Index;
-          Inc(Index);
+          System.Inc(Index);
           if Run.NextSibling = nil then
             Break;
           Run.NextSibling.PrevSibling := Run;
@@ -23724,7 +23724,7 @@ begin
     Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
-  Inc(FUpdateCount);
+  System.Inc(FUpdateCount);
   try
     if Column > InvalidColumn then
     begin
@@ -23738,7 +23738,7 @@ begin
     InvalidateCache;
   finally
     if FUpdateCount > 0 then
-      Dec(FUpdateCount);
+      System.Dec(FUpdateCount);
     if FUpdateCount = 0 then
     begin
       ValidateCache;
@@ -23935,7 +23935,7 @@ begin
           // collapse the node
           AdjustTotalHeight(Node, IfThen(IsEffectivelyFiltered[Node], 0, NodeHeight[Node]));
           if FullyVisible[Node] then
-            Dec(FVisibleCount, CountVisibleChildren(Node));
+            System.Dec(FVisibleCount, CountVisibleChildren(Node));
           Exclude(Node.States, vsExpanded);
           DoCollapsed(Node);
 
@@ -24121,7 +24121,7 @@ begin
             Include(Node.States, vsExpanded);
             AdjustTotalHeight(Node, HeightDelta, True);
             if FullyVisible[Node] then
-              Inc(FVisibleCount, CountVisibleChildren(Node));
+              System.Inc(FVisibleCount, CountVisibleChildren(Node));
 
             DoExpanded(Node);
           end;
