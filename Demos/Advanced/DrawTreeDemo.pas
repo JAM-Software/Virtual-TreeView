@@ -376,7 +376,7 @@ begin
           pf32bit:
             Data.Properties := Data.Properties + ', 16M+ colors';
         end;
-        if Cardinal(Data.Image.Height) + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
+        if Data.Image.Height + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
             Sender.NodeHeight[Node] := Data.Image.Height + 4;
       except
         Data.Image.Free;
