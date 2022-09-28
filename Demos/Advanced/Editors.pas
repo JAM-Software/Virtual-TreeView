@@ -174,7 +174,7 @@ type
   end;
 
   // Our own edit link to implement several different node editors.
-  TGridEditLink = class(TBasePropertyEditLink, IVTEditLink)
+  TGridEditLink = class(TPropertyEditLink, IVTEditLink)
   public
     function EndEdit: Boolean; stdcall;
     function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
