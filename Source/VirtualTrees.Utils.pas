@@ -34,7 +34,8 @@ uses
   System.Types,
   Vcl.Graphics,
   Vcl.ImgList,
-  Vcl.Controls;
+  Vcl.Controls,
+  VirtualTrees.Types;
 
 
 type
@@ -64,7 +65,7 @@ procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas
 // Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
 // the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
 // For higher speed (and multiple entries to be shorted) specify this value explicitely.
-function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
+function ShortenString(DC: HDC; const S: string; Width: TDimension; EllipsisWidth: TDimension = 0): string;
 
 // Wrap the given string S so that it fits into a space of given width.
 // RTL determines if right-to-left reading is active.
@@ -233,13 +234,14 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 
-function ShortenString(DC: HDC; const S: string; Width: Integer; EllipsisWidth: Integer = 0): string;
+function ShortenString(DC: HDC; const S: string; Width: TDimension; EllipsisWidth: TDimension = 0): string;
 
 var
   Size: TSize;
   Len: Integer;
-  L, H, N, W: Integer;
-
+  L, H, N: Integer;
+  W: TDimension;
+  
 begin
   Len := Length(S);
   if (Len = 0) or (Width <= 0) then

@@ -95,7 +95,7 @@ type
     procedure OnMenuItemClick(Sender: TObject); virtual;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure Popup(x, y: Integer); override;
+    procedure Popup(x, y: TDimension); override;
   published
     property Options: TVTHeaderPopupOptions read FOptions write FOptions default [poResizeToFitItem];
 
@@ -165,7 +165,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeaderPopupMenu.Popup(x, y: Integer);
+procedure TVTHeaderPopupMenu.Popup(x, y: TDimension);
 var
   ColPos: TColumnPosition;
   ColIdx: TColumnIndex;
