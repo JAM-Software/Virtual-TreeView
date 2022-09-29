@@ -1082,7 +1082,7 @@ type
     FButtonFillMode: TVTButtonFillMode;          // for rectangular tree buttons only: how to fill them
     FLineStyle: TVTLineStyle;                    // style of the tree lines
     FLineMode: TVTLineMode;                      // tree lines or bands etc.
-    FDottedBrush: HBRUSH;                        // used to paint dotted lines without special pens
+    FDottedBrush: TBrush;                        // used to paint dotted lines without special pens
     FSelectionCurveRadius: Cardinal;             // radius for rounded selection rectangles
     FSelectionBlendFactor: Byte;                 // Determines the factor by which the selection rectangle is to be
                                                  // faded if enabled.
@@ -3737,9 +3737,11 @@ begin
     DestroyWindowHandle;
 
   // Release FDottedBrush in case WM_NCDESTROY hasn't been triggered.
-  if FDottedBrush <> 0 then
-    DeleteObject(FDottedBrush);
-  FDottedBrush := 0;
+  if Assigned(FDottedBrush) then
+  begin
+    FDottedBrush.Bitmap.Free();
+    FreeAndNil(FDottedBrush);
+  end;
 
   FHeader.Free;
   FHeader := nil; // Do not use FreeAndNil() before checking issue #497
@@ -5548,7 +5550,6 @@ const
   LineBitsSolid: array [0..7] of Word = (0, 0, 0, 0, 0, 0, 0, 0);
 
 var
-  PatternBitmap: HBITMAP;
   Bits: Pointer;
   Size: TSize;
   Theme: HTHEME;
@@ -5767,8 +5768,11 @@ begin
 
   if NeedLines then
   begin
-    if FDottedBrush <> 0 then
-      DeleteObject(FDottedBrush);
+    if not Assigned(FDottedBrush) then
+    begin
+      FDottedBrush := TBrush.Create;
+      FDottedBrush.Bitmap := TBitmap.Create;
+    end;
     case FLineStyle of
       lsDotted:
         Bits := @LineBitsDotted;
@@ -5778,9 +5782,7 @@ begin
       Bits := @LineBitsDotted;
       DoGetLineStyle(Bits);
     end;
-    PatternBitmap := CreateBitmap(8, 8, 1, 1, Bits);
-    FDottedBrush := CreatePatternBrush(PatternBitmap);
-    DeleteObject(PatternBitmap);
+    FDottedBrush.Bitmap.Handle := CreateBitmap(8, 8, 1, 1, Bits);
   end;
 end;
 
@@ -9126,10 +9128,6 @@ begin
 
   if not (csDesigning in ComponentState) and (toAcceptOLEDrop in FOptions.MiscOptions) then
     RevokeDragDrop(Handle);
-
-  // Clean up other stuff.
-  DeleteObject(FDottedBrush);
-  FDottedBrush := 0;
   inherited;
 end;
 
@@ -13145,8 +13143,7 @@ begin
   begin
     Brush.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-    Winapi.Windows.FillRect(Handle, R, FDottedBrush
-    );
+    Winapi.Windows.FillRect(Handle, R, FDottedBrush.Handle);
   end;
 end;
 
@@ -13172,7 +13169,7 @@ begin
     else
       Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
-    Winapi.Windows.FillRect(Handle, R, FDottedBrush);
+    Winapi.Windows.FillRect(Handle, R, FDottedBrush.Handle);
   end;
 end;
 
