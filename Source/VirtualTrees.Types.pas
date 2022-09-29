@@ -121,14 +121,12 @@ type
   TVTDragDataObject = TDragObject;
   TVTBackground = TBitmap;
   TVTPaintContext = TCanvas;
-  TVTBrush = TBrush;
 {$ELSE}
   TDimension = Integer; // For Firemonkey support, see #841
   TVTCursor = HCURSOR;
   TVTDragDataObject = IDataObject;
   TVTBackground = TPicture;
   TVTPaintContext = HDC;
-  TVTBrush = HBRUSH;
 {$ENDIF}
   TColumnIndex = type Integer;
   TColumnPosition = type Cardinal;

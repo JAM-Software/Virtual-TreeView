@@ -4861,16 +4861,13 @@ procedure TVirtualTreeColumns.AnimatedResize(Column : TColumnIndex; NewWidth : T
 
 var
   OldWidth    : TDimension;
-  DC          : HDC;
+  DC          : TCanvas;
   I,
     Steps,
     DX        : Integer;
   HeaderScrollRect,
     ScrollRect,
     R         : TRect;
-
-  NewBrush,
-    LastBrush : TVTBrush;
 
 begin
   if not IsValidColumn(Column) then
@@ -4889,7 +4886,8 @@ begin
     if not ((hoDisableAnimatedResize in Header.Options) or
       (coDisableAnimatedResize in Items[Column].Options)) then
     begin
-      DC := GetWindowDC(TreeViewControl.Handle);
+      DC := TCanvas.Create;
+      DC.Handle := GetWindowDC(TreeViewControl.Handle);
       with TreeViewControl do
         try
           Steps := 32;
@@ -4913,12 +4911,14 @@ begin
           if NewWidth > OldWidth then
           begin
             R := ScrollRect;
-            NewBrush := CreateSolidBrush(ColorToRGB(Color));
-            LastBrush := SelectObject(DC, NewBrush);
+//            NewBrush := CreateSolidBrush(ColorToRGB(Color));
+//            LastBrush := SelectObject(DC, NewBrush);
             R.Right := R.Left + DX;
-            FillRect(DC, R, NewBrush);
-            SelectObject(DC, LastBrush);
-            DeleteObject(NewBrush);
+//            FillRect(DC, R, NewBrush);
+//            SelectObject(DC, LastBrush);
+//            DeleteObject(NewBrush);
+            DC.Brush.Color := Color;
+            DC.FillRect(R);
           end
           else
           begin
@@ -4928,14 +4928,15 @@ begin
 
           for I := 0 to Steps - 1 do
           begin
-            ScrollDC(DC, DX, 0, HeaderScrollRect, HeaderScrollRect, 0, nil);
+            ScrollDC(DC.Handle, DX, 0, HeaderScrollRect, HeaderScrollRect, 0, nil);
             Inc(HeaderScrollRect.Left, DX);
-            ScrollDC(DC, DX, 0, ScrollRect, ScrollRect, 0, nil);
+            ScrollDC(DC.Handle, DX, 0, ScrollRect, ScrollRect, 0, nil);
             Inc(ScrollRect.Left, DX);
             Sleep(1);
           end;
         finally
-          ReleaseDC(Handle, DC);
+          ReleaseDC(Handle, DC.Handle);
+          DC.Free;
         end;
     end;
     Items[Column].Width := NewWidth;

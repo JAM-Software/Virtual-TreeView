@@ -2718,7 +2718,7 @@ type // streaming support
   TToggleAnimationData = record
     Window: HWND;                 // copy of the tree's window handle
     DC: HDC;                      // the DC of the window to erase uncovered parts
-    Brush: TVTBrush;              // the brush to be used to erase uncovered parts
+    Brush: TBrush;              // the brush to be used to erase uncovered parts
     R1,
     R2: TRect;                    // animation rectangles
     Mode1,
@@ -7151,7 +7151,7 @@ var
       begin
         GetColumnBounds(Column, Run.Left, Run.Right);
         if coParentColor in Items[Column].Options then
-          FillRect(DC, Run, Brush)
+          FillRect(DC, Run, Brush.Handle)
         else
         begin
           if VclStyleEnabled then
@@ -7168,14 +7168,14 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure DoScrollUp(DC: HDC; Brush: HBRUSH; Area: TRect; Steps: Integer);
+  procedure DoScrollUp(DC: HDC; Brush: TBrush; Area: TRect; Steps: Integer);
 
   begin
     ScrollDC(DC, 0, -Steps, Area, Area, 0, nil);
 
     if Step = 0 then
       if not FHeader.UseColumns then
-        FillRect(DC, Rect(Area.Left, Area.Bottom - Steps - 1, Area.Right, Area.Bottom), Brush)
+        FillRect(DC, Rect(Area.Left, Area.Bottom - Steps - 1, Area.Right, Area.Bottom), Brush.Handle)
       else
       begin
         Run := Rect(Area.Left, Area.Bottom - Steps - 1, Area.Right, Area.Bottom);
@@ -7185,14 +7185,14 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure DoScrollDown(DC: HDC; Brush: HBRUSH; Area: TRect; Steps: Integer);
+  procedure DoScrollDown(DC: HDC; Brush: TBrush; Area: TRect; Steps: Integer);
 
   begin
     ScrollDC(DC, 0, Steps, Area, Area, 0, nil);
 
     if Step = 0 then
       if not FHeader.UseColumns then
-        FillRect(DC, Rect(Area.Left, Area.Top, Area.Right, Area.Top + Steps + 1), Brush)
+        FillRect(DC, Rect(Area.Left, Area.Top, Area.Right, Area.Top + Steps + 1), Brush.Handle)
       else
       begin
         Run := Rect(Area.Left, Area.Top, Area.Right, Area.Top + Steps + 1);
@@ -23806,7 +23806,7 @@ var
         Self.Brush.Color := FColors.BackGroundColor;
       end;  
 
-      Brush := Self.Brush.Handle;
+      Brush := Self.Brush;
 
       if (Mode1 <> tamNoScroll) and (Mode2 <> tamNoScroll) then
       begin
