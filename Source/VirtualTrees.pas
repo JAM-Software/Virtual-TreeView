@@ -852,7 +852,7 @@ type
   TVTAfterColumnWidthTrackingEvent = procedure(Sender: TVTHeader; Column: TColumnIndex) of object;
   TVTColumnWidthTrackingEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; Shift: TShiftState; var TrackPoint: TPoint; P: TPoint;
     var Allowed: Boolean) of object;
-  TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: HCURSOR) of object;
+  TVTGetHeaderCursorEvent = procedure(Sender: TVTHeader; var Cursor: TVTCursor) of object;
   TVTBeforeGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var UseSmartColumnWidth: Boolean) of object;
   TVTAfterGetMaxColumnWidthEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var MaxWidth: TDimension) of object;
   TVTCanSplitterResizeColumnEvent = procedure(Sender: TVTHeader; P: TPoint; Column: TColumnIndex; var Allowed: Boolean) of object;
@@ -875,12 +875,12 @@ type
 
   // drag'n drop/OLE events
   TVTCreateDragManagerEvent = procedure(Sender: TBaseVirtualTree; out DragManager: IVTDragManager) of object;
-  TVTCreateDataObjectEvent = procedure(Sender: TBaseVirtualTree; out IDataObject: IDataObject) of object;
+  TVTCreateDataObjectEvent = procedure(Sender: TBaseVirtualTree; out IDataObject: TVTDragDataObject) of object;
   TVTDragAllowedEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     var Allowed: Boolean) of object;
   TVTDragOverEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState;
     Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean) of object;
-  TVTDragDropEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
+  TVTDragDropEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; DataObject: TVTDragDataObject;
     Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode) of object;
   TVTRenderOLEDataEvent = procedure(Sender: TBaseVirtualTree; const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
     ForClipboard: Boolean; var Result: HRESULT) of object;
@@ -1043,7 +1043,7 @@ type
     FEditLink: IVTEditLink;                      // used to comunicate with an application defined editor
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
-    FBackground: TPicture;                       // A background image loadable at design and runtime.
+    FBackground: TVTBackground;                  // A background image loadable at design and runtime.
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
@@ -1134,7 +1134,7 @@ type
 
     // miscellanous
     FPanningWindow: HWND;                        // Helper window for wheel panning
-    FPanningCursor: HCURSOR;                     // Current wheel panning cursor.
+    FPanningCursor: TVTCursor;                   // Current wheel panning cursor.
     FPanningImage: TBitmap;                      // A little 32x32 bitmap to indicate the panning reference point.
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
     FOperationCount: Cardinal;                   // Counts how many nested long-running operations are in progress.
@@ -1320,9 +1320,9 @@ type
     function CalculateCacheEntryCount: Integer;
     procedure CalculateVerticalAlignments(var PaintInfo: TVTPaintInfo; var VButtonAlign: TDimension);
     function ChangeCheckState(Node: PVirtualNode; Value: TCheckState): Boolean;
-    function CollectSelectedNodesLTR(MainColumn, NodeLeft, NodeRight: TDimension; Alignment: TAlignment; OldRect,
+    function CollectSelectedNodesLTR(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment; OldRect,
       NewRect: TRect): Boolean;
-    function CollectSelectedNodesRTL(MainColumn, NodeLeft, NodeRight: TDimension; Alignment: TAlignment; OldRect,
+    function CollectSelectedNodesRTL(MainColumn: Integer; NodeLeft, NodeRight: TDimension; Alignment: TAlignment; OldRect,
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
@@ -1369,9 +1369,9 @@ type
     procedure FakeReadIdent(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
-    procedure SetBackground(const Value: TPicture);
+    procedure SetBackground(const Value: TVTBackground);
     procedure SetBackGroundImageTransparent(const Value: Boolean);
-    procedure SetBackgroundOffset(const Index, Value: TDimension);
+    procedure SetBackgroundOffset(const Index: Integer; const Value: TDimension);
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetBottomNode(Node: PVirtualNode);
     procedure SetBottomSpace(const Value: TDimension);
@@ -1420,9 +1420,9 @@ type
     procedure SetVerticalAlignment(Node: PVirtualNode; Value: Byte);
     procedure SetVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
-    procedure PrepareBackGroundPicture(Source: TPicture; DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
-    procedure StaticBackground(Source: TPicture; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
-    procedure TileBackground(Source: TPicture; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+    procedure PrepareBackGroundPicture(Source: TVTBackground; DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
+    procedure StaticBackground(Source: TVTBackground; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
+    procedure TileBackground(Source: TVTBackground; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
 
     procedure CMColorChange(var Message: TMessage); message CM_COLORCHANGED;
@@ -1559,7 +1559,7 @@ type
     procedure DoBeforeDrawLineImage(Node: PVirtualNode; Level: Integer; var XPos: TDimension); virtual;
     function DoDragOver(Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
       var Effect: Integer): Boolean; virtual;
-    procedure DoDragDrop(Source: TObject; const DataObject: IDataObject; const Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
+    procedure DoDragDrop(Source: TObject; const DataObject: TVTDragDataObject; const Formats: TFormatArray; Shift: TShiftState; Pt: TPoint;
       var Effect: Integer; Mode: TDropMode); virtual;
     procedure DoDrawHint(Canvas: TCanvas; Node: PVirtualNode; R: TRect; Column:
         TColumnIndex);
@@ -1577,7 +1577,7 @@ type
     function DoGetCellContentMargin(Node: PVirtualNode; Column: TColumnIndex;
       CellContentMarginType: TVTCellContentMarginType = ccmtAllSides; Canvas: TCanvas = nil): TPoint; virtual;
     procedure DoGetCursor(var Cursor: TCursor); virtual;
-    procedure DoGetHeaderCursor(var Cursor: HCURSOR); virtual;
+    procedure DoGetHeaderCursor(var Cursor: TVTCursor); virtual;
     procedure DoGetHintSize(Node: PVirtualNode; Column: TColumnIndex; var R:
         TRect); virtual;
     procedure DoGetHintKind(Node: PVirtualNode; Column: TColumnIndex; var Kind:
@@ -1642,9 +1642,9 @@ type
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
     function DoValidateCache: Boolean; virtual;
-    procedure DragAndDrop(AllowedEffects: DWord; const DataObject: IDataObject; var DragEffect: Integer); virtual;
+    procedure DragAndDrop(AllowedEffects: DWord; const DataObject: TVTDragDataObject; var DragEffect: Integer); virtual;
     procedure DragCanceled; override;
-    function DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
+    function DragDrop(const DataObject: TVTDragDataObject; KeyState: Integer; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
     function DragEnter(KeyState: Integer; Pt: TPoint; var Effect: Integer): HResult; virtual;
     procedure DragFinished; virtual;
@@ -1673,7 +1673,7 @@ type
     procedure GetNativeClipboardFormats(var Formats: TFormatEtcArray); virtual;
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
-    function GetTreeFromDataObject(const DataObject: IDataObject): TBaseVirtualTree; virtual;
+    function GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree; virtual;
     procedure HandleHotTrack(X, Y: TDimension); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
@@ -1763,7 +1763,7 @@ type
     property AutoExpandDelay: Cardinal read FAutoExpandDelay write FAutoExpandDelay default 1000;
     property AutoScrollDelay: Cardinal read FAutoScrollDelay write FAutoScrollDelay default 1000;
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
-    property Background: TPicture read FBackground write SetBackground;
+    property Background: TVTBackground read FBackground write SetBackground;
     property BackGroundImageTransparent: Boolean read FBackGroundImageTransparent write SetBackGroundImageTransparent default False;
     property BackgroundOffsetX: TDimension index 0 read FBackgroundOffsetX write SetBackgroundOffset default 0;
     property BackgroundOffsetY: TDimension index 1 read FBackgroundOffsetY write SetBackgroundOffset default 0;
@@ -2109,7 +2109,7 @@ type
     function PasteFromClipboard: Boolean; virtual;
     procedure PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
     procedure Print(Printer: TPrinter; PrintHeader: Boolean);
-    function ProcessDrop(const DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
+    function ProcessDrop(const DataObject: TVTDragDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
       TVTNodeAttachMode): Boolean;
     function ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode;
                             Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
@@ -2718,7 +2718,7 @@ type // streaming support
   TToggleAnimationData = record
     Window: HWND;                 // copy of the tree's window handle
     DC: HDC;                      // the DC of the window to erase uncovered parts
-    Brush: HBRUSH;                // the brush to be used to erase uncovered parts
+    Brush: TVTBrush;              // the brush to be used to erase uncovered parts
     R1,
     R2: TRect;                    // animation rectangles
     Mode1,
@@ -3317,7 +3317,7 @@ begin
                 // If the node height and the column width are both already large enough to cover the entire text,
                 // then we don't need the hint, though.
                 // However if the text is partially scrolled out of the client area then a hint is useful as well.
-                if (Tree.Header.Columns.Count > 0) and ((Integer(Tree.NodeHeight[Node]) + 2) >= (Result.Bottom - Result.Top)) and
+                if (Tree.Header.Columns.Count > 0) and ((Tree.NodeHeight[Node] + 2) >= (Result.Bottom - Result.Top)) and
                    ((Tree.Header.Columns[Column].Width + 2) >= (Result.Right - Result.Left)) and not
                    ((Result.Left < 0) or (Result.Right > Tree.ClientWidth + 3) or
                     (Result.Top < 0) or (Result.Bottom > Tree.ClientHeight + 3)) then
@@ -3646,7 +3646,7 @@ begin
   FAutoScrollDelay := 1000;
   FAutoScrollInterval := 1;
 
-  FBackground := TPicture.Create;
+  FBackground := TVTBackground.Create;
   // Similar to the Transparent property of TImage,
   // this flag is Off by default.
   FBackGroundImageTransparent := False;
@@ -4797,7 +4797,7 @@ begin
   Result := (toSyncCheckboxesWithSelection in FOptions.SelectionOptions)
             and (toCheckSupport in FOptions.MiscOptions)
             and Assigned(FCheckImages)
-            and (Node.CheckType = ctCheckBox);              ;
+            and (Node.CheckType = ctCheckBox);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5046,6 +5046,8 @@ function TBaseVirtualTree.GetVclStyleEnabled: Boolean;
 begin
   Exit(FVclStyleEnabled);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetVerticalAlignment(Node: PVirtualNode): Byte;
 
@@ -5816,7 +5818,7 @@ end;
     set the flag BackgroundTransparentExternalType explicitly in order to properly do
     transparent painting.
 }
-procedure TBaseVirtualTree.SetBackground(const Value: TPicture);
+procedure TBaseVirtualTree.SetBackground(const Value: TVTBackground);
 
 begin
   FBackground.Assign(Value);
@@ -6394,7 +6396,7 @@ begin
         if (vsInitializing in Node.States) and not (vsHasChildren in Node.States) then
           AdjustTotalHeight(Node, 0, False)
         else
-          AdjustTotalHeight(Node, -Integer(NodeHeight[Node]), True);
+          AdjustTotalHeight(Node, -NodeHeight[Node], True);
         if FullyVisible[Node] then
         begin
           System.Dec(FVisibleCount);
@@ -6414,7 +6416,7 @@ begin
       Exclude(Node.States, vsFiltered);
       if not (toShowFilteredNodes in FOptions.PaintOptions) then
       begin
-        AdjustTotalHeight(Node, Integer(NodeHeight[Node]), True);
+        AdjustTotalHeight(Node, NodeHeight[Node], True);
         if FullyVisible[Node] then
         begin
           System.Inc(FVisibleCount);
@@ -6677,6 +6679,8 @@ begin
   DoSetOffsetXY(Point(FOffsetX, Value), DefaultScrollUpdateFlags);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
 begin
   FOnPrepareButtonImages := Value;
@@ -6918,7 +6922,7 @@ begin
     else
     begin
       if vsExpanded in Node.Parent.States then
-        AdjustTotalHeight(Node.Parent, -Integer(Node.TotalHeight), True);
+        AdjustTotalHeight(Node.Parent, -Node.TotalHeight, True);
       if VisiblePath[Node] then
       begin
         System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
@@ -6964,7 +6968,7 @@ begin
 end;
 
 // ----------------------------------------------------------------------------------------------------------------------
-procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: TPicture;
+procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: TVTBackground;
   DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
 const
   DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
@@ -7001,7 +7005,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.StaticBackground(Source: TPicture; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
+procedure TBaseVirtualTree.StaticBackground(Source: TVTBackground; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it stays static in the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -7069,7 +7073,7 @@ begin
 end;
 
 
-procedure TBaseVirtualTree.TileBackground(Source: TPicture; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
+procedure TBaseVirtualTree.TileBackground(Source: TVTBackground; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
 
 // Draws the given source graphic so that it tiles into the given rectangle which is relative to the target bitmap.
 // The graphic is aligned so that it always starts at the upper left corner of the target canvas.
@@ -7263,7 +7267,7 @@ begin
   inherited;
 
   if UseRightToLeftAlignment then
-    FEffectiveOffsetX := Integer(FRangeX) - ClientWidth + FOffsetX
+    FEffectiveOffsetX := FRangeX - ClientWidth + FOffsetX
   else
     FEffectiveOffsetX := -FOffsetX;
   if FEffectiveOffsetX < 0 then
@@ -8481,7 +8485,7 @@ begin
             begin
               // scrolling without selection change
               if ssCtrl in Shift then
-                SetOffsetY(FOffsetY + Integer(FDefaultNodeHeight))
+                SetOffsetY(FOffsetY + FDefaultNodeHeight)
               else
               begin
                 if FFocusedNode = nil then
@@ -8508,7 +8512,7 @@ begin
             begin
               // scrolling without selection change
               if ssCtrl in Shift then
-                SetOffsetY(FOffsetY - Integer(FDefaultNodeHeight))
+                SetOffsetY(FOffsetY - FDefaultNodeHeight)
               else
               begin
                 if FFocusedNode = nil then
@@ -9042,7 +9046,7 @@ begin
 
     // Start wheel panning or scrolling if not already active, allowed and scrolling is useful at all.
     if (toWheelPanning in FOptions.MiscOptions) and ([tsWheelScrolling, tsWheelPanning] * FStates = []) and
-      ((Integer(FRangeX) > ClientWidth) or (Integer(FRangeY) > ClientHeight)) then
+      ((FRangeX > ClientWidth) or (FRangeY > ClientHeight)) then
     begin
       FLastClickPos := SmallPointToPoint(Message.Pos);
       StartWheelPanning(FLastClickPos);
@@ -10360,7 +10364,7 @@ end;
 
 procedure TBaseVirtualTree.DecVisibleCount;
 begin
-  Dec(FVisibleCount);
+  System.Dec(FVisibleCount);
 end;
 
 procedure TBaseVirtualTree.DefineProperties(Filer: TFiler);
@@ -11471,7 +11475,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: IDataObject; const Formats: TFormatArray;
+procedure TBaseVirtualTree.DoDragDrop(Source: TObject; const DataObject: TVTDragDataObject; const Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 
 begin
@@ -11761,7 +11765,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoGetHeaderCursor(var Cursor: HCURSOR);
+procedure TBaseVirtualTree.DoGetHeaderCursor(var Cursor: TVTCursor);
 
 begin
   if Assigned(FOnGetHeaderCursor) then
@@ -12532,7 +12536,7 @@ begin
           DeltaY := -Min(FScrollBarOptions.VerticalIncrement, ClientHeight)
         else
           DeltaY := -Min(FScrollBarOptions.VerticalIncrement, ClientHeight) * Abs(P.Y - R.Bottom);
-      if (ClientHeight - FOffsetY) = Integer(FRangeY) then
+      if (ClientHeight - FOffsetY) = FRangeY then
         Exclude(FScrollDirections, sdDown);
     end;
 
@@ -12687,7 +12691,7 @@ begin
             Node := CurrentNode; // 2 EAccessViolation seen here in TreeSize V4.3.1, 1 in V4.4.0 (Write of address 00000000)
             AbsoluteTop := CurrentTop;
           end;
-          Inc(Index);
+          System.Inc(Index);
         end;
 
         Inc(CurrentTop, NodeHeight[CurrentNode]);
@@ -12725,7 +12729,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: IDataObject; var DragEffect: Integer);
+procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: TVTDragDataObject; var DragEffect: Integer);
 var
   lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
 begin
@@ -12753,7 +12757,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DragDrop(const DataObject: IDataObject; KeyState: Integer; Pt: TPoint;
+function TBaseVirtualTree.DragDrop(const DataObject: TVTDragDataObject; KeyState: Integer; Pt: TPoint;
   var Effect: Integer): HResult;
 
 var
@@ -13580,7 +13584,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: IDataObject): TBaseVirtualTree;
+function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree;
 
 // Returns the owner/sender of the given data object by means of a special clipboard format
 // or nil if the sender is in another process or no virtual tree at all.
@@ -14491,7 +14495,7 @@ end;
 
 procedure TBaseVirtualTree.IncVisibleCount;
 begin
-  Inc(FVisibleCount);
+  System.Inc(FVisibleCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14827,7 +14831,7 @@ begin
     SetLength(FTempNodeCache, Len);
   end;
   FTempNodeCache[FTempNodeCount] := Node;
-  Inc(FTempNodeCount);
+  System.Inc(FTempNodeCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15121,6 +15125,8 @@ begin
     Change(Node); // Calling Change() here fixes issue #1047
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.InternalSetFocusedColumn(const index: TColumnIndex);
 begin
@@ -16940,6 +16946,8 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.TrySetFocus();
 begin
   if Visible and CanFocus then
@@ -18271,6 +18279,8 @@ begin
     end;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DeleteNode(Node: PVirtualNode; pReIndex: Boolean = True);
 begin
@@ -21604,6 +21614,8 @@ begin
   Result := (tsDrawSelPending in FStates) or (tsDrawSelecting in FStates);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.IsUpdating: Boolean;
 // The tree does currently not update its window because a BeginUpdate has not yet ended.
 begin
@@ -22685,7 +22697,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
+procedure TBaseVirtualTree.PrepareDragImage(HotSpot: TPoint; const DataObject: TVTDragDataObject);
 
 // Initiates an image drag operation. HotSpot is the position of the mouse in client coordinates.
 
@@ -22907,7 +22919,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.ProcessDrop(const DataObject: IDataObject; TargetNode: PVirtualNode; var Effect: Integer;
+function TBaseVirtualTree.ProcessDrop(const DataObject: TVTDragDataObject; TargetNode: PVirtualNode; var Effect: Integer;
   Mode: TVTNodeAttachMode): Boolean;
 
 // Recreates the (sub) tree structure serialized into memory and provided by DataObject. The new nodes are attached to
@@ -24232,7 +24244,7 @@ begin
 
   // Adjust effect scroll offset depending on bidi mode.
   if UseRightToLeftAlignment then
-    FEffectiveOffsetX := Integer(FRangeX) - ClientWidth + FOffsetX
+    FEffectiveOffsetX := FRangeX - ClientWidth + FOffsetX
   else
     FEffectiveOffsetX := -FOffsetX;
 
@@ -24243,7 +24255,7 @@ begin
     ScrollInfo.fMask := SIF_ALL;
     GetScrollInfo(Handle, SB_HORZ, ScrollInfo);
 
-    if (Integer(FRangeX) > ClientWidth) or FScrollBarOptions.AlwaysVisible then
+    if (FRangeX > ClientWidth) or FScrollBarOptions.AlwaysVisible then
     begin
       DoShowScrollBar(SB_HORZ, True);
 
@@ -24271,7 +24283,7 @@ begin
     // we better read the current position back to stay synchronized.
     FEffectiveOffsetX := GetScrollPos(Handle, SB_HORZ);
     if UseRightToLeftAlignment then
-      SetOffsetX(-Integer(FRangeX) + ClientWidth + FEffectiveOffsetX)
+      SetOffsetX(-FRangeX + ClientWidth + FEffectiveOffsetX)
     else
       SetOffsetX(-FEffectiveOffsetX);
   end
@@ -25807,7 +25819,6 @@ function TVirtualStringTree.GetOptionsClass: TTreeOptionsClass;
 begin
   Result := TStringTreeOptions;
 end;
-
 
 //----------------------------------------------------------------------------------------------------------------------
 
