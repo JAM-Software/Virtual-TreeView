@@ -2717,8 +2717,8 @@ type // streaming support
   // Internally used data for animations.
   TToggleAnimationData = record
     Window: HWND;                 // copy of the tree's window handle
-    DC: HDC;                      // the DC of the window to erase uncovered parts
-    Brush: TBrush;              // the brush to be used to erase uncovered parts
+    DC: TControlCanvas;                  // the DC of the window to erase uncovered parts
+    Brush: TBrush;                // the brush to be used to erase uncovered parts
     R1,
     R2: TRect;                    // animation rectangles
     Mode1,
@@ -7141,7 +7141,7 @@ var
   procedure EraseLine;
 
   var
-    LocalBrush: HBRUSH;
+    LocalBrush: TBrush;
 
   begin
     with TToggleAnimationData(Data^), FHeader.Columns do
@@ -7153,15 +7153,20 @@ var
       begin
         GetColumnBounds(Column, Run.Left, Run.Right);
         if coParentColor in Items[Column].Options then
-          FillRect(DC, Run, Brush.Handle)
+        begin
+          DC.Brush := Brush;
+          DC.FillRect(Run);
+        end
         else
         begin
+          LocalBrush := TBrush.Create;
           if VclStyleEnabled then
-            LocalBrush := CreateSolidBrush(ColorToRGB(FColors.BackGroundColor))
+            LocalBrush.Color := FColors.BackGroundColor
           else
-            LocalBrush := CreateSolidBrush(ColorToRGB(Items[Column].Color));
-          FillRect(DC, Run, LocalBrush);
-          DeleteObject(LocalBrush);
+            LocalBrush.Color := Items[Column].Color;
+          DC.Brush := LocalBrush;
+          DC.FillRect(Run);
+          LocalBrush.Free;
         end;
         Column := GetNextVisibleColumn(Column);
       end;
@@ -7170,14 +7175,17 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure DoScrollUp(DC: HDC; Brush: TBrush; Area: TRect; Steps: Integer);
+  procedure DoScrollUp(DC: TCanvas; Brush: TBrush; Area: TRect; Steps: Integer);
 
   begin
-    ScrollDC(DC, 0, -Steps, Area, Area, 0, nil);
+    ScrollDC(DC.Handle, 0, -Steps, Area, Area, 0, nil);
 
     if Step = 0 then
       if not FHeader.UseColumns then
-        FillRect(DC, Rect(Area.Left, Area.Bottom - Steps - 1, Area.Right, Area.Bottom), Brush.Handle)
+      begin
+        DC.Brush := Brush;
+        DC.FillRect(Rect(Area.Left, Area.Bottom - Steps - 1, Area.Right, Area.Bottom));
+      end
       else
       begin
         Run := Rect(Area.Left, Area.Bottom - Steps - 1, Area.Right, Area.Bottom);
@@ -7187,14 +7195,17 @@ var
 
   //---------------------------------------------------------------------------
 
-  procedure DoScrollDown(DC: HDC; Brush: TBrush; Area: TRect; Steps: Integer);
+  procedure DoScrollDown(DC: TCanvas; Brush: TBrush; Area: TRect; Steps: Integer);
 
   begin
-    ScrollDC(DC, 0, Steps, Area, Area, 0, nil);
+    ScrollDC(DC.Handle, 0, Steps, Area, Area, 0, nil);
 
     if Step = 0 then
       if not FHeader.UseColumns then
-        FillRect(DC, Rect(Area.Left, Area.Top, Area.Right, Area.Top + Steps + 1), Brush.Handle)
+      begin
+        DC.Brush := Brush;
+        DC.FillRect(Rect(Area.Left, Area.Top, Area.Right, Area.Top + Steps + 1));
+      end
       else
       begin
         Run := Rect(Area.Left, Area.Top, Area.Right, Area.Top + Steps + 1);
@@ -23793,8 +23804,9 @@ var
     with ToggleData do
     begin
       Window := Handle;
-      DC := GetDC(Handle);
-      
+      DC := TControlCanvas.Create;
+      DC.Control := Self;
+
       if (toShowBackground in FOptions.PaintOptions) and Assigned(FBackground.Graphic) then
         Self.Brush.Style := bsClear
       else
@@ -23935,7 +23947,7 @@ begin
                 try
                   Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
                 finally
-                  ReleaseDC(Window, DC);
+                  DC.Free;
                 end;
               end;
             end;
@@ -24118,7 +24130,7 @@ begin
                     try
                       Animate(Steps, FAnimationDuration, ToggleCallback, @ToggleData);
                     finally
-                      ReleaseDC(Window, DC);
+                      DC.Free;
                     end;
                   end;
                 end;
