@@ -763,6 +763,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.SetHeight(Value : TDimension);
+
 var
   RelativeMaxHeight, RelativeMinHeight, EffectiveMaxHeight, EffectiveMinHeight : TDimension;
 begin
@@ -1345,6 +1346,8 @@ begin
   Result := FOwner;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVTHeader.GetRestoreSelectionColumnIndex : Integer;
 begin
   if FRestoreSelectionColumnIndex >= 0 then
@@ -1424,7 +1427,7 @@ begin
     else if hsHeightTracking in FStates then
     begin
       if DoHeightTracking(P, GetShiftState) then
-        SetHeight(Integer(FHeight) + P.Y);
+        SetHeight(FHeight + P.Y);
       HandleHeaderMouseMove := True;
       Result := 0;
     end
@@ -1480,7 +1483,7 @@ var
   I                                          : TColumnIndex;
   OldPosition                                : Integer;
   HitIndex                                   : TColumnIndex;
-  NewCursor                                  : HCURSOR;
+  NewCursor                                  : TVTCursor;
   Button                                     : TMouseButton;
   IsInHeader, IsHSplitterHit, IsVSplitterHit : Boolean;
 
@@ -1494,7 +1497,7 @@ var
       // Code commented due to issue #1067. What was the orginal inention of this code? It does not make much sense unless you allow column resize outside the header.
       //NextCol := FColumns.GetNextVisibleColumn(FColumns.TrackIndex);
       //if not (coFixed in FColumns[FColumns.TrackIndex].Options) or (NextCol <= NoColumn) or
-      //   (coFixed in FColumns[NextCol].Options) or (P.Y > Integer(Treeview.FRangeY)) then
+      //   (coFixed in FColumns[NextCol].Options) or (P.Y > Tree.RangeY) then
         Result := False;
     end;
   end;
@@ -1541,7 +1544,7 @@ begin
           with TVirtualTreeColumnsCracker(FColumns) do
           begin
             HandleClick(P, mbMiddle, True, False);
-            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbMiddle, GetShiftState, P.X, P.Y + Integer(Self.FHeight));
+            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbMiddle, GetShiftState, P.X, P.Y + Self.FHeight);
             DownIndex := NoColumn;
             CheckBoxHit := False;
           end;
@@ -1816,7 +1819,7 @@ begin
           begin
             //client coordinates!
             XCursor := P.X;
-            YCursor := P.Y + Integer(FHeight);
+            YCursor := P.Y + FHeight;
             Application.HintMouseMessage(FOwner, Message);
           end;
         end;
@@ -2358,15 +2361,21 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTHeader.InternalSetAutoSizeIndex(const Index : TColumnIndex);
 begin
   FAutoSizeIndex := index;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTHeader.InternalSetMainColumn(const Index : TColumnIndex);
 begin
   FMainColumn := index;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.InternalSetSortColumn(const Index : TColumnIndex);
 begin
@@ -2536,7 +2545,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTHeader.ResizeColumns(ChangeBy : Integer; RangeStartCol : TColumnIndex; RangeEndCol : TColumnIndex; Options : TVTColumnOptions = [coVisible]) : Integer;
+function TVTHeader.ResizeColumns(ChangeBy : TDimension; RangeStartCol : TColumnIndex; RangeEndCol : TColumnIndex; Options : TVTColumnOptions = [coVisible]) : TDimension;
 
 //Distribute the given width change to a range of columns. A 'fair' way is used to distribute ChangeBy to the columns,
 //while ensuring that everything that can be distributed will be distributed.
@@ -2670,7 +2679,7 @@ begin
             Dec(Rest, ChangeWidth(I, Sign));
             FColumns[I].BonusPixel := BonusPixel;
           end;
-        Inc(I, Sign);
+        System.Inc(I, Sign);
         if (BonusPixel and (I > RangeEndCol)) or (not BonusPixel and (I < RangeStartCol)) then
         begin
           for I := RangeStartCol to RangeEndCol do
@@ -4215,7 +4224,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.SetDefaultWidth(Value : Integer);
+procedure TVirtualTreeColumns.SetDefaultWidth(Value : TDimension);
 
 begin
   FDefaultWidth := Value;
@@ -4571,7 +4580,7 @@ begin
       Self.FDownIndex := NoColumn;
       Self.FTrackIndex := NoColumn;
       Self.FCheckBoxHit := False;
-      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + Integer(TreeViewControl.Height))), P);
+      Menu := Header.DoGetPopupMenu(Self.ColumnFromPosition(Point(P.X, P.Y + TreeViewControl.Height)), P);
       if Assigned(Menu) then
       begin
         TreeViewControl.StopTimer(ScrollTimer);
@@ -4846,12 +4855,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumns.AnimatedResize(Column : TColumnIndex; NewWidth : Integer);
+procedure TVirtualTreeColumns.AnimatedResize(Column : TColumnIndex; NewWidth : TDimension);
 
 // Resizes the given column animated by scrolling the window DC.
 
 var
-  OldWidth    : Integer;
+  OldWidth    : TDimension;
   DC          : HDC;
   I,
     Steps,
@@ -4861,7 +4870,7 @@ var
     R         : TRect;
 
   NewBrush,
-    LastBrush : HBRUSH;
+    LastBrush : TVTBrush;
 
 begin
   if not IsValidColumn(Column) then
@@ -5414,7 +5423,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumns.PaintHeader(TargetCanvas : TCanvas; R : TRect; const Target : TPoint;
-  RTLOffset : Integer = 0);
+  RTLOffset : TDimension = 0);
 
 // Main paint method to draw the header.
 // This procedure will paint the a slice (given in R) out of HeaderRect into TargetCanvas starting at position Target.

@@ -4,13 +4,15 @@ interface
 
 uses
   WinApi.ActiveX,
+  Winapi.Windows,
   System.Types,
   System.Classes,
   System.UITypes,
   System.SysUtils,
   Vcl.Controls,
   Vcl.GraphUtil,
-  Vcl.Themes;
+  Vcl.Themes,
+  Vcl.Graphics;
 
 {$MINENUMSIZE 1, make enumerations as small as possible}
 
@@ -115,8 +117,18 @@ const
 type
 {$IFDEF VT_FMX}
   TDimension = Single;
+  TVTCursor = TCursor;
+  TVTDragDataObject = TDragObject;
+  TVTBackground = TBitmap;
+  TVTPaintContext = TCanvas;
+  TVTBrush = TBrush;
 {$ELSE}
   TDimension = Integer; // For Firemonkey support, see #841
+  TVTCursor = HCURSOR;
+  TVTDragDataObject = IDataObject;
+  TVTBackground = TPicture;
+  TVTPaintContext = HDC;
+  TVTBrush = HBRUSH;
 {$ENDIF}
   TColumnIndex = type Integer;
   TColumnPosition = type Cardinal;
@@ -133,22 +145,26 @@ type
   // OLE drag'n drop support
   TFormatEtcArray = array of TFormatEtc;
   TFormatArray = array of Word;
+  
+  TSmartAutoFitType = (
+    smaAllColumns,      // consider nodes in view only for all columns
+    smaNoColumn,        // consider nodes in view only for no column
+    smaUseColumnOption  // use coSmartResize of the corresponding column
+  );  // describes the used column resize behaviour for AutoFitColumns
 
-  TSmartAutoFitType = (smaAllColumns, //consider nodes in view only for all columns
-    smaNoColumn,                      //consider nodes in view only for no column
-    smaUseColumnOption                //use coSmartResize of the corresponding column
-    );                                //describes the used column resize behaviour for AutoFitColumns
-
-
-  TAddPopupItemType = (apNormal, apDisabled, apHidden);
-
+  TAddPopupItemType = (
+    apNormal,
+    apDisabled,
+    apHidden
+  );
+  
   TCheckType = (
     ctNone,
     ctTriStateCheckBox,
     ctCheckBox,
     ctRadioButton,
     ctButton
-    );
+  );
 
   // The check states include both, transient and fluent (temporary) states. The only temporary state defined so
   // far is the pressed state.
@@ -293,14 +309,16 @@ type
     **Do not use toAnimatedToggle when a background image is used for the tree.
    The animation does not look good as the image splits and moves with it.
   }
-  TVTAnimationOption = (toAnimatedToggle, // Expanding and collapsing a node is animated (quick window scroll).
+  TVTAnimationOption = (
+    toAnimatedToggle,              // Expanding and collapsing a node is animated (quick window scroll).
     // **See note above.
-    toAdvancedAnimatedToggle              // Do some advanced animation effects when toggling a node.
+    toAdvancedAnimatedToggle         // Do some advanced animation effects when toggling a node.
     );
   TVTAnimationOptions = set of TVTAnimationOption;
 
   // Options which toggle automatic handling of certain situations:
-  TVTAutoOption = (toAutoDropExpand, // Expand node if it is the drop target for more than a certain time.
+  TVTAutoOption = (
+    toAutoDropExpand,                // Expand node if it is the drop target for more than a certain time.
     toAutoExpand,                    // Nodes are expanded (collapsed) when getting (losing) the focus.
     toAutoScroll,                    // Scroll if mouse is near the border while dragging or selecting.
     toAutoScrollOnExpand,            // Scroll as many child nodes in view as possible after expanding a node.
@@ -316,12 +334,13 @@ type
     toAutoFreeOnCollapse,            // Frees any child node after a node has been collapsed (HasChildren flag stays there).
     toDisableAutoscrollOnEdit,       // Do not center a node horizontally when it is edited.
     toAutoBidiColumnOrdering         // When set then columns (if any exist) will be reordered from lowest index to highest index
-                                      // and vice versa when the tree's bidi mode is changed.
+                                     // and vice versa when the tree's bidi mode is changed.
     );
   TVTAutoOptions = set of TVTAutoOption;
 
   // Options which determine the tree's behavior when selecting nodes:
-  TVTSelectionOption = (toDisableDrawSelection, // Prevent user from selecting with the selection rectangle in multiselect mode.
+  TVTSelectionOption = (
+	toDisableDrawSelection,                     // Prevent user from selecting with the selection rectangle in multiselect mode.
     toExtendedFocus,                            // Entries other than in the main column can be selected, edited etc.
     toFullRowSelect,                            // Hit test as well as selection highlight are not constrained to the text of a node.
     toLevelSelectConstraint,                    // Constrain selection to the same level as the selection anchor.
@@ -344,13 +363,15 @@ type
     );
   TVTSelectionOptions = set of TVTSelectionOption;
 
-  TVTEditOptions = (toDefaultEdit, // Standard behaviour for end of editing (after VK_RETURN stay on edited cell).
+  TVTEditOptions = (
+    toDefaultEdit,                 // Standard behaviour for end of editing (after VK_RETURN stay on edited cell).
     toVerticalEdit,                // After VK_RETURN switch to next column.
     toHorizontalEdit               // After VK_RETURN switch to next row.
     );
 
   // Options which do not fit into any of the other groups:
-  TVTMiscOption = (toAcceptOLEDrop, // Register tree as OLE accepting drop target
+  TVTMiscOption = (
+    toAcceptOLEDrop,                // Register tree as OLE accepting drop target
     toCheckSupport,                 // Show checkboxes/radio buttons.
     toEditable,                     // Node captions can be edited.
     toFullRepaintOnResize,          // Fully invalidate the tree when its window is resized (CS_HREDRAW/CS_VREDRAW).
@@ -374,7 +395,8 @@ type
   TVTMiscOptions = set of TVTMiscOption;
 
   // Options to control data export
-  TVTExportMode = (emAll,    // export all records (regardless checked state)
+  TVTExportMode = (
+    emAll,                   // export all records (regardless checked state)
     emChecked,               // export checked records only
     emUnchecked,             // export unchecked records only
     emVisibleDueToExpansion, // Do not export nodes that are not visible because their parent is not expanded
@@ -382,7 +404,8 @@ type
     );
 
   // Options regarding strings (useful only for the string tree and descendants):
-  TVTStringOption = (toSaveCaptions, // If set then the caption is automatically saved with the tree node, regardless of what is
+  TVTStringOption = (
+    toSaveCaptions,                  // If set then the caption is automatically saved with the tree node, regardless of what is
                                      // saved in the user data.
     toShowStaticText,                // Show static text in a caption which can be differently formatted than the caption
                                      // but cannot be edited.
@@ -471,7 +494,10 @@ type
     property EditOptions;
   end;
 
-  TScrollBarStyle = (sbmRegular, sbm3D);
+  TScrollBarStyle = (
+    sbmRegular,
+    sbm3D
+  );
 
   // A class to manage scroll bar aspects.
   TScrollBarOptions = class(TPersistent)
@@ -502,8 +528,7 @@ implementation
 
 uses
   VirtualTrees,
-  VirtualTrees.StyleHooks,
-  WinApi.Windows;
+  VirtualTrees.StyleHooks;
 
 type
   TVTCracker = class(TBaseVirtualTree);
