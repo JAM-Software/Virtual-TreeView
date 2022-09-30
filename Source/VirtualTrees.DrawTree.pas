@@ -6,12 +6,13 @@ uses
   System.Types,
   System.Classes,
   VirtualTrees.Types,
-  VirtualTrees;
+  VirtualTrees,
+  VirtualTrees.BaseTree;
 
 
 type
   // Tree descendant to let an application draw its stuff itself.
-  TCustomVirtualDrawTree = class(TBaseVirtualTree)
+  TCustomVirtualDrawTree = class(TVTAncestor)
   private
     FOnDrawNode: TVTDrawNodeEvent;
     FOnGetCellContentMargin: TVTGetCellContentMarginEvent;

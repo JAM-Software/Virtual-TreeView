@@ -16,7 +16,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus, UITypes;
+  StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus, UITypes, VirtualTrees.BaseTree, System.ImageList,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
 
 type
   TAlignForm = class(TForm)

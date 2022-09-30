@@ -58,7 +58,8 @@ implementation
 uses
   VirtualTrees,
   VirtualTrees.ClipBoard,
-  VirtualTrees.DragnDrop;
+  VirtualTrees.DragnDrop,
+  VirtualTrees.BaseTree;
 
 type
   TVTCracker = class(TBaseVirtualTree);

@@ -1,0 +1,435 @@
+unit VirtualTrees.BaseAncestorFMX;
+
+{$SCOPEDENUMS ON}
+
+{****************************************************************************************************************}
+{ Project          : VirtualTrees                                                                                }
+{                                                                                                                }
+{ author           : Karol Bieniaszewski                                                                         }
+{ year             : 2022                                                                                        }
+{ contibutors      :                                                                                             }
+{****************************************************************************************************************}
+
+interface
+uses VirtualTrees.Types;
+
+
+type
+  TVTBaseAncestorFMX = class abstract(TRectangle)
+  strict private
+    FFont: TFont;
+    procedure SetFont(const Value: TFont);
+  protected
+    FDottedBrush: TStrokeBrush;                  // used to paint dotted lines without special pens
+    FDottedBrushGrid: TStrokeBrush;              // used to paint dotted lines without special pens
+
+    FBevelEdges: TBevelEdges;
+    FBevelInner: TBevelCut;
+    FBevelOuter: TBevelCut;
+    FBevelKind: TBevelKind;
+    FBevelWidth: TBevelWidth;
+    FBorderWidth: TBorderWidth;
+    FHandleAllocated: Boolean;
+    FBiDiMode: TBiDiMode;
+    FHScrollBar: TScrollBar;
+    FVScrollBar: TScrollBar;
+
+    FUseRightToLeftAlignment: Boolean;
+
+    procedure SetBevelCut(Index: Integer; const Value: TBevelCut);
+    procedure SetBevelEdges(const Value: TBevelEdges);
+    procedure SetBevelKind(const Value: TBevelKind);
+    procedure SetBevelWidth(const Value: TBevelWidth);
+    procedure SetBorderWidth(Value: TBorderWidth);
+    procedure SetBiDiMode(Value: TBiDiMode);	
+
+    function GetClientHeight: Single;
+    function GetClientWidth: Single;
+    function GetClientRect: TRect;
+    procedure UpdateStyleElements; virtual; abstract;
+
+    procedure DoStartDrag(var DragObject: TDragObject); virtual; abstract;
+    procedure DoEndDrag(Target: TObject; X, Y: TDimension); virtual; abstract;
+    procedure DragCanceled; virtual; abstract;
+
+    procedure Resize; override;
+    
+    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
+    function GetControlsAlignment: TAlignment; virtual; abstract;	
+  public
+    property Font: TFont read FFont write SetFont;
+    property ClientRect: TRect read GetClientRect;
+    property ClientWidth: Single read GetClientWidth;
+    property ClientHeight: Single read GetClientHeight;
+    property UseRightToLeftAlignment: Boolean read FUseRightToLeftAlignment write FUseRightToLeftAlignment default false;
+    property BevelEdges: TBevelEdges read FBevelEdges write SetBevelEdges default [TBevelEdge.beLeft, TBevelEdge.beTop, TBevelEdge.beRight, TBevelEdge.beBottom];
+    property BevelInner: TBevelCut index 0 read FBevelInner write SetBevelCut default TBevelCut.bvRaised;
+    property BevelOuter: TBevelCut index 1 read FBevelOuter write SetBevelCut default TBevelCut.bvLowered;
+    property BevelKind: TBevelKind read FBevelKind write SetBevelKind default TBevelKind.bkNone;
+    property BevelWidth: TBevelWidth read FBevelWidth write SetBevelWidth default 1;
+    property BorderWidth: TBorderWidth read FBorderWidth write SetBorderWidth;
+    property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
+    property HScrollBar: TScrollBar read FHScrollBar;
+    property VScrollBar: TScrollBar read FVScrollBar;
+
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    procedure Invalidate();
+    function ClientToScreen(P: TPoint): TPoint;
+    function ScreenToClient(P: TPoint): TPoint;
+    procedure RecreateWnd;
+    procedure ShowScrollBar(Bar: Integer; AShow: Boolean);
+    function SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+    function GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+    function GetScrollPos(Bar: Integer): TDimension; 
+    function GetScrollBarForBar(Bar: Integer): TScrollBar;
+    procedure HScrollChangeProc(Sender: TObject);
+    procedure VScrollChangeProc(Sender: TObject);
+  end;
+
+implementation
+uses FMX.TextLayout, FMX.Utils;
+
+function TVTBaseAncestorFMX.GetClientHeight: Single;
+begin
+  Result:= ClientRect.Height;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetClientWidth: Single;
+begin
+  Result:= ClientRect.Width;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetClientRect: TRect;
+begin
+  Result:= ClipRect;
+  if Assigned(FHeader) then
+    begin
+      if hoVisible in FHeader.FOptions then
+        Inc(Result.Top, FHeader.Height);
+    end;
+  if FVScrollBar.Visible then
+    Dec(Result.Right, FVScrollBar.Width);
+  if FHScrollBar.Visible then
+    Dec(Result.Bottom, FHScrollBar.Height);
+    
+  if Result.Left>Result.Right then
+    Result.Left:= Result.Right;
+    
+  if Result.Top>Result.Bottom then
+    Result.Top:= Result.Bottom;
+
+  //OffsetRect(Result, OffsetX, OffsetY);
+  //Dec(Result.Left, -OffsetX); //increase width
+  //Dec(Result.Top, -OffsetY);  //increase height
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.Resize;
+Var M: TWMSize;
+begin
+  inherited;
+
+  if FInCreate then
+    exit; //!!
+
+  M.Msg:= WM_SIZE;
+  M.SizeType:= SIZE_RESTORED;
+  M.Width:= Width;
+  M.Height:= Height;
+  M.Result:= 0;
+  WMSize(M);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+constructor TVTBaseAncestorFMX.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FHandleAllocated:= true;
+  FUseRightToLeftAlignment:= false;
+  FBackgroundOffsetX:= 0;
+  FBackgroundOffsetY:= 0;
+  FMargin:= 4;
+  FTextMargin:= 4;
+  FDefaultNodeHeight:= 18; //???
+  FIndent:= 18; //???
+  FBevelEdges:= [TBevelEdge.beLeft, TBevelEdge.beTop, TBevelEdge.beRight, TBevelEdge.beBottom];
+  FBevelInner:= TBevelCut.bvRaised;
+  FBevelOuter:= TBevelCut.bvLowered;
+  FBevelKind:= TBevelKind.bkNone;
+  FBevelWidth:= 1;
+  FBorderWidth:= 0;
+  FFont:= TFont.Create;
+  DisableFocusEffect := True;
+  CanFocus := True;
+  AutoCapture := True;
+  
+  FHScrollBar:= TScrollBar.Create(Self);
+  FHScrollBar.Parent:= Self;
+  FHScrollBar.Orientation:= TOrientation.Horizontal;
+  FHScrollBar.Align:= TAlignLayout.MostBottom;
+  FHScrollBar.Visible:= true;
+  FHScrollBar.OnChange:= HScrollChangeProc;
+  FHScrollBar.Margins.Right:= FHScrollBar.Height; 
+  
+  FVScrollBar:= TScrollBar.Create(Self);
+  FVScrollBar.Parent:= Self;
+  FVScrollBar.Orientation:= TOrientation.Vertical;
+  FVScrollBar.Align:= TAlignLayout.MostRight;
+  FVScrollBar.Visible:= true;
+  FVScrollBar.OnChange:= VScrollChangeProc;
+  //FVScrollBar.Margins.Bottom:= FVScrollBar.Width; 
+  
+  SetAcceptsControls(false);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+destructor TVTBaseAncestorFMX.Destroy();
+begin
+  inherited;
+  
+  if FDottedBrush <> nil then
+    FreeAndNil(FDottedBrush);
+  if FDottedBrushGrid <> nil then
+    FreeAndNil(FDottedBrushGrid);
+  FreeAndNil(FFont);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetBevelCut(Index: Integer; const Value: TBevelCut);
+begin
+  case Index of
+    0: { BevelInner }
+      if Value <> FBevelInner then
+      begin
+        FBevelInner := Value;
+        Repaint;
+      end;
+    1: { BevelOuter }
+      if Value <> FBevelOuter then
+      begin
+        FBevelOuter := Value;
+        Repaint;
+      end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetBevelEdges(const Value: TBevelEdges);
+begin
+  if Value <> FBevelEdges then
+    begin
+      FBevelEdges := Value;
+      Repaint;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetBevelKind(const Value: TBevelKind);
+begin
+  if Value <> FBevelKind then
+    begin
+      FBevelKind := Value;
+      Repaint;
+    end;
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetBevelWidth(const Value: TBevelWidth);
+begin
+  if Value <> FBevelWidth then
+    begin
+      FBevelWidth := Value;
+      Repaint;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.ScreenToClient(P: TPoint): TPoint;
+								   
+begin
+  Result:= AbsoluteToLocal(P);
+end;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.ClientToScreen(P: TPoint): TPoint;
+begin
+  Result:= LocalToAbsolute(P);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.Invalidate();
+begin
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.RecreateWnd();
+begin
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.ShowScrollBar(Bar: Integer; AShow: Boolean);
+begin
+  if (Bar=SB_HORZ) or (Bar=SB_BOTH) then
+    FHScrollBar.Visible:= AShow;
+
+  if (Bar=SB_VERT) or (Bar=SB_BOTH) then
+    FVScrollBar.Visible:= AShow;
+
+  if FHScrollBar.Visible and FVScrollBar.Visible then
+    FHScrollBar.Margins.Right:= FHScrollBar.Height else
+    FHScrollBar.Margins.Right:= 0;  
+    
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+Var ScrollBar: TScrollBar;
+begin
+  ScrollBar:= GetScrollBarForBar(Bar);
+  if ScrollBar=nil then  
+    Exit(0); //!!!
+  
+  if ScrollInfo.fMask and SIF_PAGE<>0 then
+    begin
+      ScrollBar.SmallChange:= ScrollInfo.nPage;
+    end;
+
+  if ScrollInfo.fMask and SIF_RANGE<>0 then
+    begin
+      ScrollBar.Min:= ScrollInfo.nMin;
+      ScrollBar.Max:= ScrollInfo.nMax;
+    end;  
+
+  if ScrollInfo.fMask and SIF_POS<>0 then
+    begin
+      ScrollBar.Value:= ScrollInfo.nPos;
+    end;  
+
+  Result:= ScrollBar.Value;
+  
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+Var ScrollBar: TScrollBar;
+begin
+  ScrollBar:= GetScrollBarForBar(Bar);
+  if ScrollBar=nil then  
+    Exit(False); //!!!
+
+  Result:= true;
+
+  ScrollInfo.cbSize:= SizeOf(TScrollInfo);
+  ScrollInfo.fMask:= SIF_ALL; 
+  
+  ScrollInfo.nMin:= ScrollBar.Min;
+  ScrollInfo.nMax:= ScrollBar.Max;
+  ScrollInfo.nPage:= ScrollBar.SmallChange;
+  ScrollInfo.nPos:= ScrollBar.Value;
+  ScrollInfo.nTrackPos:= ScrollBar.Value; 
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetScrollPos(Bar: Integer): TDimension;
+Var ScrollInfo: TScrollInfo;
+begin
+  GetScrollInfo(Bar, ScrollInfo); //ignore result
+  Result:= ScrollInfo.nPos;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetScrollBarForBar(Bar: Integer): TScrollBar;
+begin
+  if (Bar=SB_HORZ) then
+    Result:= FHScrollBar else
+  if (Bar=SB_VERT) then
+    Result:= FVScrollBar else
+    Result:= nil;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.HScrollChangeProc(Sender: TObject);
+Var M: TWMHScroll;
+begin
+  M.Msg:= WM_HSCROLL;
+  M.ScrollCode:= SB_THUMBPOSITION;
+  M.Pos:= GetScrollPos(SB_HORZ);
+  M.ScrollBar:= SB_HORZ;
+  M.Result:= 0;
+
+  WMHScroll(M);
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.VScrollChangeProc(Sender: TObject);
+Var M: TWMHScroll;
+begin
+  M.Msg:= WM_VSCROLL;
+  M.ScrollCode:= SB_THUMBPOSITION;
+  M.Pos:= GetScrollPos(SB_VERT);
+  M.ScrollBar:= SB_VERT;
+  M.Result:= 0;
+  
+  WMVScroll(M);
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetBiDiMode(Value: TBiDiMode);
+begin
+  if FBiDiMode <> Value then
+    begin
+      FBiDiMode := Value;
+      Repaint;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetBorderWidth(Value: TBorderWidth);
+begin
+  if FBorderWidth <> Value then
+    begin
+      FBorderWidth := Value;
+      Repaint;
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetFont(const Value: TFont);
+begin
+  FFont.Assign(Value);
+end;
+
+
+end.
