@@ -39,7 +39,9 @@ uses
 
 
 type
-  // Describes the mode how to blend pixels.
+  /// <summary>
+  /// Describes the mode how to blend pixels.
+  /// </summary>
   TBlendMode = (
     bmConstantAlpha,         // apply given constant alpha
     bmPerPixelAlpha,         // use alpha value of the source pixel
@@ -56,45 +58,79 @@ procedure SetBrushOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
 procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer); inline;
 
-// Clip a given canvas to ClipRect while transforming the given rect to device coordinates.
+/// <summary>
+/// Clip a given canvas to ClipRect while transforming the given rect to device coordinates.
+/// </summary>
 procedure ClipCanvas(Canvas: TCanvas; ClipRect: TRect; VisibleRegion: HRGN = 0);
 
 procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas; X, Y: Integer; Style: Cardinal; Enabled: Boolean);
 
-
-// Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
-// the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
-// For higher speed (and multiple entries to be shorted) specify this value explicitely.
+/// <summary>
+/// Adjusts the given string S so that it fits into the given width. EllipsisWidth gives the width of
+/// the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
+/// For higher speed (and multiple entries to be shorted) specify this value explicitely.
+/// </summary>
 function ShortenString(DC: HDC; const S: string; Width: TDimension; EllipsisWidth: TDimension = 0): string;
 
-// Wrap the given string S so that it fits into a space of given width.
-// RTL determines if right-to-left reading is active.
+/// <summary>
+/// Wrap the given string S so that it fits into a space of given width.
+/// RTL determines if right-to-left reading is active.
+/// </summary>
 function WrapString(DC: HDC; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
 
-// Calculates bounds of a drawing rectangle for the given string
+/// <summary>
+/// Calculates bounds of a drawing rectangle for the given string
+/// </summary>
 procedure GetStringDrawRect(DC: HDC; const S: string; var Bounds: TRect; DrawFormat: Cardinal);
 
-// Converts the incoming rectangle so that left and top are always less than or equal to right and bottom.
+/// <summary>
+/// Converts the incoming rectangle so that left and top are always less than or equal to right and bottom.
+/// </summary>
 function OrderRect(const R: TRect): TRect;
 
-// Fills the given rectangles with values which can be used while dragging around an image
-// (used in DragMove of the drag manager and DragTo of the header columns).
+/// <summary>
+/// Fills the given rectangles with values which can be used while dragging around an image
+/// </summary>
+/// <remarks>
+/// (used in DragMove of the drag manager and DragTo of the header columns).
+/// </remarks>
 procedure FillDragRectangles(DragWidth, DragHeight, DeltaX, DeltaY: Integer; var RClip, RScroll, RSamp1, RSamp2, RDraw1, RDraw2: TRect);
 
-// Attaches a bitmap as drag image to an IDataObject, see issue #405
-// Usage: Set property DragImageKind to diNoImage, in your event handler OnCreateDataObject
-//        call VirtualTrees.Utils.ApplyDragImage() with your `IDataObject` and your bitmap.
+/// <summary>
+/// Attaches a bitmap as drag image to an IDataObject, see issue #405
+/// <code>
+/// Usage: Set property DragImageKind to diNoImage, in your event handler OnCreateDataObject
+/// <para>       call VirtualTrees.Utils.ApplyDragImage() with your `IDataObject` and your bitmap.</para>
+/// </code>
+/// </summary>
 procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 
+/// <summary>
 /// Returns True if the mouse cursor is currently visible and False in case it is suppressed.
 /// Useful when doing hot-tracking on touchscreens, see issue #766
+/// </summary>
 function IsMouseCursorVisible(): Boolean;
 
 procedure ScaleImageList(const ImgList: TImageList; M, D: Integer);
 
+/// <summary>
 /// Returns True if the high contrast theme is anabled in the system settings, False otherwise.
+/// </summary>
 function IsHighContrastEnabled(): Boolean;
 
+/// <summary>
+/// Divide depend of parameter type uses different division operator:
+/// <code>Integer uses div</code>
+/// <code>Single uses /</code>
+/// </summary>
+function Divide(const Dimension: Integer; const DivideBy: Integer): Integer; overload; inline;
+
+/// <summary>
+/// Divide depend of parameter type uses different division operator:
+/// <code>Integer uses div</code>
+/// <code>Single uses /</code>
+/// </summary>
+function Divide(const Dimension: Single; const DivideBy: Integer): Single; overload; inline;
 
 implementation
 
@@ -1358,5 +1394,14 @@ begin
   Result := SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, @l, 0) and ((l.dwFlags and HCF_HIGHCONTRASTON) <> 0);
 end;
 
+function Divide(const Dimension: Single; const DivideBy: Integer): Single;
+begin
+  Result:= Dimension / DivideBy;
+end;
+
+function Divide(const Dimension: Integer; const DivideBy: Integer): Integer;
+begin
+  Result:= Dimension div DivideBy;
+end;
 
 end.

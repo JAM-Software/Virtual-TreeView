@@ -2680,6 +2680,8 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualTreeHintWindow.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
   Result := VTStyleServices(AControl);
@@ -3343,6 +3345,7 @@ begin
     Run := Node;
     repeat
       Inc(Run.TotalHeight, Difference);
+
       // If the node is not visible or the parent node is not expanded or we are already at the top
       // then nothing more remains to do.
       if not (vsVisible in Run.States) or (Run = FRoot) or
@@ -3393,11 +3396,11 @@ begin
           VAlign := ImageInfo[iiNormal].Images.Height
         else
           VAlign := ImageInfo[iiState].Images.Height;
-        VAlign := MulDiv((NodeHeight[Node] - VAlign), Node.Align, 100) + VAlign div 2;
+        VAlign := MulDiv((NodeHeight[Node] - VAlign), Node.Align, 100) + Divide(VAlign, 2);
       end
       else
         if toShowButtons in FOptions.PaintOptions then
-          VAlign := MulDiv((NodeHeight[Node] - FPlusBM.Height), Node.Align, 100) + FPlusBM.Height div 2
+          VAlign := MulDiv((NodeHeight[Node] - FPlusBM.Height), Node.Align, 100) + Divide(FPlusBM.Height, 2)
         else
           VAlign := MulDiv(Node.NodeHeight, Node.Align, 100);
     end;
@@ -3682,7 +3685,7 @@ begin
                   TextRight := TextLeft + NodeWidth;
                 taCenter:
                   begin
-                    TextLeft := (TextLeft + CurrentRight - NodeWidth) div 2;
+                    TextLeft := Divide(TextLeft + CurrentRight - NodeWidth, 2);
                     TextRight := TextLeft + NodeWidth;
                   end;
               else
@@ -3849,7 +3852,7 @@ begin
                 end;
               taCenter:
                 begin
-                  TextLeft := (TextRight + CurrentLeft - NodeWidth) div 2;
+                  TextLeft := Divide(TextRight + CurrentLeft - NodeWidth, 2);
                   TextRight := TextLeft + NodeWidth;
                 end;
               else
@@ -4057,7 +4060,7 @@ var
   TargetX: TDimension;
 
 begin
-  HalfWidth := (FIndent div 2);
+  HalfWidth := Divide(FIndent, 2);
   if Reverse then
     TargetX := 0
   else
@@ -4466,7 +4469,7 @@ begin
       lNodeLevel := 1;
     Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * FIndent);
     // toggle buttons
-    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - ((FIndent - FPlusBM.Width) div 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - Divide(FIndent - FPlusBM.Width, 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
   end;//if MainColumn
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
@@ -6601,6 +6604,7 @@ begin
   FVisibleCount := value;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.TileBackground(Source: TVTBackground; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
 
@@ -9738,7 +9742,7 @@ var
   HeaderWidth: TDimension;
   ScrollBarVisible: Boolean;
 begin
-  ScrollBarVisible := (FRangeY > ClientHeight) and (ScrollBarOptions.ScrollBars in [ssVertical, ssBoth]);
+  ScrollBarVisible := (FRangeY > ClientHeight) and (ScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth]);
   if ScrollBarVisible then
     Result := GetSystemMetrics(SM_CXVSCROLL)
   else
@@ -9897,11 +9901,14 @@ begin
   Reader.ReadIdent;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DecVisibleCount;
 begin
   System.Dec(FVisibleCount);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DefineProperties(Filer: TFiler);
 
@@ -9968,7 +9975,7 @@ begin
     if LabelHit or ImageHit or not (toShowDropmark in FOptions.PaintOptions) then
       Result := dmOnNode
     else
-      if ((NodeRect.Top + NodeRect.Bottom) div 2) > P.Y then
+      if Divide(NodeRect.Top + NodeRect.Bottom, 2) > P.Y then
         Result := dmAbove
       else
         Result := dmBelow;
@@ -10103,7 +10110,7 @@ begin
               case Alignment of
                 taCenter:
                   begin
-                    lIndent := (ImageOffset + Right - TextWidth) div 2;
+                    lIndent := Divide(ImageOffset + Right - TextWidth, 2);
                     if Offset < lIndent then
                       Include(HitInfo.HitPositions, hiOnItemLeft)
                     else
@@ -10242,7 +10249,7 @@ begin
               case Alignment of
                 taCenter:
                   begin
-                    Indent := (ImageOffset - TextWidth) div 2;
+                    Indent := Divide(ImageOffset - TextWidth, 2);
                     if Offset < Indent then
                       Include(HitInfo.HitPositions, hiOnItemLeft)
                     else
@@ -12171,11 +12178,10 @@ function TBaseVirtualTree.DoValidateCache(): Boolean;
 
 var
   EntryCount,
-  CurrentTop,
   Index: Cardinal;
   CurrentNode,
   Temp: PVirtualNode;
-
+  CurrentTop: TDimension;
 begin
   EntryCount := 0;
   if not (tsStopValidation in FStates) then
@@ -12466,7 +12472,7 @@ begin
   UpdateWindow(Handle);
 
   Effect := 0;
-  DoDragOver(nil, [], dsDragLeave, Point(0, 0), FLastDropMode, Effect);
+  DoDragOver(nil, [], TDragState.dsDragLeave, Point(0, 0), FLastDropMode, Effect);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15556,7 +15562,7 @@ begin
         taCenter:
           if (InnerRect.Right - InnerRect.Left) > NodeWidth then
           begin
-            InnerRect.Left := (InnerRect.Left + InnerRect.Right - NodeWidth) div 2;
+            InnerRect.Left := Divide(InnerRect.Left + InnerRect.Right - NodeWidth, 2);
             InnerRect.Right := InnerRect.Left + NodeWidth;
           end;
         taRightJustify:
@@ -16602,16 +16608,16 @@ begin
   // ... and bevels.
   OffsetX := BorderWidth;
   OffsetY := BorderWidth;
-  if BevelKind <> bkNone then
+  if BevelKind <> TBevelKind.bkNone then
   begin
     EdgeSize := 0;
-    if BevelInner <> bvNone then
+    if BevelInner <> TBevelCut.bvNone then
       Inc(EdgeSize, BevelWidth);
-    if BevelOuter <> bvNone then
+    if BevelOuter <> TBevelCut.bvNone then
       Inc(EdgeSize, BevelWidth);
-    if beLeft in BevelEdges then
+    if TBevelEdge.beLeft in BevelEdges then
       Inc(OffsetX, EdgeSize);
-    if beTop in BevelEdges then
+    if TBevelEdge.beTop in BevelEdges then
       Inc(OffsetY, EdgeSize);
   end;
 
@@ -18324,12 +18330,12 @@ begin
       GetTextMetrics(Self.Canvas.Handle, TM);
       ExtraVerticalMargin := System.Math.Min(TM.tmHeight, MaxUnclippedHeight) - (Result.Bottom - Result.Top);
       if ExtraVerticalMargin > 0 then
-        InflateRect(Result, 0, (ExtraVerticalMargin + 1) div 2);
+        InflateRect(Result, 0, Divide(ExtraVerticalMargin + 1, 2));
 
       case CurrentAlignment of
         taCenter:
           begin
-            Result.Left := (Result.Left + Result.Right - TextWidth) div 2;
+            Result.Left := Divide(Result.Left + Result.Right - TextWidth, 2);
             Result.Right := Result.Left + TextWidth;
           end;
         taRightJustify:
@@ -18344,7 +18350,7 @@ begin
         case CurrentAlignment of
           taCenter:
             begin
-              Result.Left := (Result.Left + Result.Right - TextWidth) div 2;
+              Result.Left := Divide(Result.Left + Result.Right - TextWidth, 2);
               Result.Right := Result.Left + TextWidth;
             end;
           taRightJustify:
@@ -22893,7 +22899,7 @@ begin
     if R.Top < 0 then
     begin
       if Center then
-        SetOffsetY(FOffsetY - R.Top + ClientHeight div 2)
+        SetOffsetY(FOffsetY - R.Top + Divide(ClientHeight, 2))
       else
         SetOffsetY(FOffsetY - R.Top);
     end
@@ -22903,7 +22909,7 @@ begin
         HScrollBarVisible := (ScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssBoth, System.UITypes.TScrollStyle.ssHorizontal]) and
           (ScrollBarOptions.AlwaysVisible or (FRangeX > ClientWidth));
         if Center then
-          SetOffsetY(FOffsetY - R.Bottom + ClientHeight div 2)
+          SetOffsetY(FOffsetY - R.Bottom + Divide(ClientHeight, 2))
         else
           SetOffsetY(FOffsetY - R.Bottom + ClientHeight);
         // When scrolling up and the horizontal scroll appears because of the operation
@@ -22977,7 +22983,7 @@ begin
   end
   else if Center then
   begin
-    NewOffset := FEffectiveOffsetX + ColumnLeft - (Header.Columns.GetVisibleFixedWidth div 2) - (ClientWidth div 2) + ((ColumnRight - ColumnLeft) div 2);
+    NewOffset := FEffectiveOffsetX + ColumnLeft - Divide(Header.Columns.GetVisibleFixedWidth, 2) - Divide(ClientWidth, 2) + Divide(ColumnRight - ColumnLeft, 2);
     if NewOffset <> FEffectiveOffsetX then
     begin
       if UseRightToLeftAlignment then
