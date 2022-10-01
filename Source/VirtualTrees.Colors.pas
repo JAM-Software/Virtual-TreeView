@@ -86,7 +86,8 @@ uses
   WinApi.Windows,
   VirtualTrees,
   VirtualTrees.Utils,
-  VirtualTrees.StyleHooks;
+  VirtualTrees.StyleHooks,
+  VirtualTrees.BaseTree;
 
 type
   TBaseVirtualTreeCracker = class(TBaseVirtualTree);

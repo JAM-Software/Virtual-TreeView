@@ -77,7 +77,8 @@ uses
   VirtualTrees,
   VirtualTrees.DragnDrop,
   VirtualTrees.Types,
-  VirtualTrees.Utils;
+  VirtualTrees.Utils,
+  VirtualTrees.BaseTree;
 
 //----------------- TVTDragImage ---------------------------------------------------------------------------------------
 

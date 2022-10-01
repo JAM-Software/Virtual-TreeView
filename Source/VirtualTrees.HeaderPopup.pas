@@ -69,7 +69,8 @@ uses
   System.Classes,
   Vcl.Menus,
   VirtualTrees,
-  VirtualTrees.Types;
+  VirtualTrees.Types,
+  VirtualTrees.BaseTree;
 
 type
   TVTHeaderPopupOption = (

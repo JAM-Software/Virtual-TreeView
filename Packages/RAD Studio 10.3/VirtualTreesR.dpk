@@ -9,7 +9,7 @@ package VirtualTreesR;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS ON}
+{$LOCALSYMBOLS OFF}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION ON}
@@ -52,6 +52,9 @@ contains
   VirtualTrees.DragImage in '..\..\Source\VirtualTrees.DragImage.pas',
   VirtualTrees.EditLink in '..\..\Source\VirtualTrees.EditLink.pas',
   VirtualTrees.Colors in '..\..\Source\VirtualTrees.Colors.pas',
-  VirtualTrees.DrawTree in '..\..\Source\VirtualTrees.DrawTree.pas';
+  VirtualTrees.DrawTree in '..\..\Source\VirtualTrees.DrawTree.pas',
+  VirtualTrees.AncestorVcl in '..\..\Source\VirtualTrees.AncestorVcl.pas',
+  VirtualTrees.BaseAncestorVcl in '..\..\Source\VirtualTrees.BaseAncestorVcl.pas',
+  VirtualTrees.BaseTree in '..\..\source\VirtualTrees.BaseTree.pas';
 
 end.

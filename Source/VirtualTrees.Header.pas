@@ -492,7 +492,8 @@ uses
   System.SysUtils,
   Vcl.Forms,
   VirtualTrees,
-  VirtualTrees.HeaderPopup;
+  VirtualTrees.HeaderPopup,
+  VirtualTrees.BaseTree;
 
 type
   TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);

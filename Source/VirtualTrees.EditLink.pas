@@ -12,7 +12,8 @@ uses
   Vcl.Controls,
   Vcl.StdCtrls,
   VirtualTrees,
-  VirtualTrees.Types;
+  VirtualTrees.Types,
+  VirtualTrees.BaseTree;
 
 type
   //Edit support Classes.

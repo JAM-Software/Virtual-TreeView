@@ -9,7 +9,7 @@ interface
 
 uses
   Winapi.Windows, System.Classes, Winapi.ActiveX, System.Types, Winapi.oleacc,
-  VirtualTrees, VirtualTrees.AccessibilityFactory, Vcl.Controls;
+  VirtualTrees, VirtualTrees.AccessibilityFactory, Vcl.Controls, VirtualTrees.BaseTree;
 
 type
   TVirtualTreeAccessibility = class(TInterfacedObject, IDispatch, IAccessible)

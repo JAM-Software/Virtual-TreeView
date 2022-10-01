@@ -9,8 +9,9 @@ uses
   System.Types,
   Vcl.Graphics,
   Vcl.Controls,
+  VirtualTrees,
   VirtualTrees.Types,
-  VirtualTrees;
+  VirtualTrees.BaseTree;
 
 type
   TEnumFormatEtc = class(TInterfacedObject, IEnumFormatEtc)

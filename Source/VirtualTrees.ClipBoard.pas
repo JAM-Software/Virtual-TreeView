@@ -33,7 +33,8 @@ uses
   Winapi.ActiveX,
   System.Classes,
   VirtualTrees,
-  VirtualTrees.Types;
+  VirtualTrees.Types,
+  VirtualTrees.BaseTree;
 
 type
   TClipboardFormatEntry = record

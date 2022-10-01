@@ -29,7 +29,8 @@ uses
   System.UITypes,
   VirtualTrees.Types,
   VirtualTrees.ClipBoard,
-  VirtualTrees.Header;
+  VirtualTrees.Header,
+  VirtualTrees.BaseTree;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree)
