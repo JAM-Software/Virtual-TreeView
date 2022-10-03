@@ -834,8 +834,6 @@ type
     Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean) of object;
   TVTDragDropEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; DataObject: TVTDragDataObject;
     Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode) of object;
-  TVTRenderOLEDataEvent = procedure(Sender: TBaseVirtualTree; const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
-    ForClipboard: Boolean; var Result: HRESULT) of object;
   TVTGetUserClipboardFormatsEvent = procedure(Sender: TBaseVirtualTree; var Formats: TFormatEtcArray) of object;
 
   // paint events
@@ -1232,7 +1230,6 @@ type
     FOnHeaderDragged: TVTHeaderDraggedEvent;     // header (column) drag'n drop
     FOnHeaderDraggedOut: TVTHeaderDraggedOutEvent; // header (column) drag'n drop, which did not result in a valid drop.
     FOnHeaderDragging: TVTHeaderDraggingEvent;   // header (column) drag'n drop
-    FOnRenderOLEData: TVTRenderOLEDataEvent;     // application/descendant defined clipboard formats
     FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
                                                  // add own clipboard formats on the fly
 
@@ -1580,8 +1577,6 @@ type
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); virtual;
     procedure DoPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint); virtual;
     procedure DoRemoveFromSelection(Node: PVirtualNode); virtual;
-    function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
-      ForClipboard: Boolean): HRESULT; virtual;
     procedure DoReset(Node: PVirtualNode); virtual;
     procedure DoSaveUserData(Node: PVirtualNode; Stream: TStream); virtual;
     procedure DoScroll(DeltaX, DeltaY: TDimension); virtual;
@@ -1673,7 +1668,6 @@ type
     procedure RedirectFontChangeEvent(Canvas: TCanvas); virtual;
     procedure RemoveFromSelection(Node: PVirtualNode); virtual;
     procedure UpdateNextNodeToSelect(Node: PVirtualNode); virtual;
-    function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual;
     procedure ResetRangeAnchor; virtual;
     procedure RestoreFontChangeEvent(Canvas: TCanvas); virtual;
     procedure SelectNodes(StartNode, EndNode: PVirtualNode; AddOnly: Boolean); virtual;
@@ -1899,7 +1893,6 @@ type
     property OnPaintBackground: TVTBackgroundPaintEvent read FOnPaintBackground write FOnPaintBackground;
     property OnPrepareButtonBitmaps : TVTPrepareButtonImagesEvent read FOnPrepareButtonImages write SetOnPrepareButtonImages;
     property OnRemoveFromSelection: TVTRemoveFromSelectionEvent read FOnRemoveFromSelection write FOnRemoveFromSelection;
-    property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
     property OnSaveNode: TVTSaveNodeEvent read FOnSaveNode write FOnSaveNode;
     property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
@@ -2260,7 +2253,7 @@ type
   // Internally used data for animations.
   TToggleAnimationData = record
     Window: HWND;                 // copy of the tree's window handle
-    DC: TControlCanvas;                  // the DC of the window to erase uncovered parts
+    DC: TControlCanvas;           // the DC of the window to erase uncovered parts
     Brush: TBrush;                // the brush to be used to erase uncovered parts
     R1,
     R2: TRect;                    // animation rectangles
@@ -11805,17 +11798,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
-  ForClipboard: Boolean): HRESULT;
-
-begin
-  Result := E_FAIL;
-  if Assigned(FOnRenderOLEData) then
-    FOnRenderOLEData(Self, FormatEtcIn, Medium, ForClipboard, Result);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.DoReset(Node: PVirtualNode);
 
 begin
@@ -15924,103 +15906,6 @@ begin
   else
     FNextNodeToSelect := nil;
 end;//if Assigned(Node);
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium;
-  ForClipboard: Boolean): HResult;
-
-// Returns a memory expression of all currently selected nodes in the Medium structure.
-// Note: The memory requirement of this method might be very high. This depends however on the requested storage format.
-//       For HGlobal (a global memory block) we need to render first all nodes to local memory and copy this then to
-//       the global memory in Medium. This is necessary because we have first to determine how much
-//       memory is needed before we can allocate it. Hence for a short moment we need twice the space as used by the
-//       nodes alone (plus the amount the nodes need in the tree anyway)!
-//       With IStream this does not happen. We directly stream out the nodes and pass the constructed stream along.
-
-  //--------------- local function --------------------------------------------
-
-  procedure WriteNodes(Stream: TStream);
-
-  var
-    Selection: TNodeArray;
-    I: Integer;
-
-  begin
-    if ForClipboard then
-      Selection := GetSortedCutCopySet(True)
-    else
-      Selection := GetSortedSelection(True);
-    for I := 0 to High(Selection) do
-      WriteNode(Stream, Selection[I]);
-  end;
-
-  //--------------- end local function ----------------------------------------
-
-var
-  Data: PCardinal;
-  ResPointer: Pointer;
-  ResSize: Integer;
-  OLEStream: IStream;
-  VCLStream: TStream;
-
-begin
-  ZeroMemory (@Medium, SizeOf(Medium));
-
-  // We can render the native clipboard format in two different storage media.
-  if (FormatEtcIn.cfFormat = CF_VIRTUALTREE) and (FormatEtcIn.tymed and (TYMED_HGLOBAL or TYMED_ISTREAM) <> 0) then
-  begin
-    VCLStream := nil;
-    try
-      Medium.unkForRelease := nil;
-      // Return data in one of the supported storage formats, prefer IStream.
-      if FormatEtcIn.tymed and TYMED_ISTREAM <> 0 then
-      begin
-        // Create an IStream on a memory handle (here it is 0 which indicates to implicitely allocated a handle).
-        // Do not use TStreamAdapter as it is not compatible with OLE (when flushing the clipboard OLE wants the HGlobal
-        // back which is not supported by TStreamAdapater).
-        CreateStreamOnHGlobal(0, True, OLEStream);
-        VCLStream := TOLEStream.Create(OLEStream);
-        WriteNodes(VCLStream);
-        // Rewind stream.
-        VCLStream.Position := 0;
-        Medium.tymed := TYMED_ISTREAM;
-        IUnknown(Medium.stm) := OLEStream;
-        Result := S_OK;
-      end
-      else
-      begin
-        VCLStream := TMemoryStream.Create;
-        WriteNodes(VCLStream);
-        ResPointer := TMemoryStream(VCLStream).Memory;
-        ResSize := VCLStream.Position;
-
-        // Allocate memory to hold the string.
-        if ResSize > 0 then
-        begin
-          Medium.hGlobal := GlobalAlloc(GHND or GMEM_SHARE, ResSize + SizeOf(Cardinal));
-          Data := GlobalLock(Medium.hGlobal);
-          // Store the size of the data too, for easy retrival.
-          Data^ := ResSize;
-          Inc(Data);
-          Move(ResPointer^, Data^, ResSize);
-          GlobalUnlock(Medium.hGlobal);
-          Medium.tymed := TYMED_HGLOBAL;
-
-          Result := S_OK;
-        end
-        else
-          Result := E_FAIL;
-      end;
-    finally
-      // We can free the VCL stream here since it was either a pure memory stream or only a wrapper around
-      // the OLEStream which exists independently.
-      VCLStream.Free;
-    end;
-  end
-  else // Ask application descendants to render self defined formats.
-    Result := DoRenderOLEData(FormatEtcIn, Medium, ForClipboard);
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
