@@ -19,6 +19,9 @@ type
   strict private
     FFont: TFont;
     procedure SetFont(const Value: TFont);
+  private
+    function GetFillColor: TAlphaColor;
+    procedure SetFillColor(const Value: TAlphaColor);
   protected
     FDottedBrush: TStrokeBrush;                  // used to paint dotted lines without special pens
     FDottedBrushGrid: TStrokeBrush;              // used to paint dotted lines without special pens
@@ -56,7 +59,7 @@ type
     
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
     function GetControlsAlignment: TAlignment; virtual; abstract;	
-  public
+  public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;
     property ClientWidth: Single read GetClientWidth;
@@ -72,6 +75,11 @@ type
     property HScrollBar: TScrollBar read FHScrollBar;
     property VScrollBar: TScrollBar read FVScrollBar;
 
+    /// <summary>
+    /// Alias for Fill.Color to make same use as Vcl Color property
+    /// </summary>
+	  property Color: TAlphaColor read GetFillColor write SetFillColor;
+  public //methods
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
@@ -86,10 +94,30 @@ type
     function GetScrollBarForBar(Bar: Integer): TScrollBar;
     procedure HScrollChangeProc(Sender: TObject);
     procedure VScrollChangeProc(Sender: TObject);
+	
+    /// <summary>
+    /// Alias for IsFocused to make same as Vcl Focused
+    /// </summary>
+    function Focused(): Boolean; inline;
+	
+    /// <summary>
+    /// Convert mouse message to TMouseButton
+	/// Created as method, to be available in whole hierarchy without specifing Unit file name (prevent circular unit ref).
+    /// </summary>
+    class function KeysToShiftState(Keys: LongInt): TShiftState; static;
   end;
 
 implementation
 uses FMX.TextLayout, FMX.Utils;
+
+//-------- TVTBaseAncestorFMX ------------------------------------------------------------------------------------------
+
+class function TVTBaseAncestorFMX.KeysToShiftState(Keys: LongInt): TShiftState;
+begin
+  Result := TShiftState(Word(Keys));
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TVTBaseAncestorFMX.GetClientHeight: Single;
 begin
@@ -101,6 +129,13 @@ end;
 function TVTBaseAncestorFMX.GetClientWidth: Single;
 begin
   Result:= ClientRect.Width;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetFillColor: TAlphaColor;
+begin
+  Result:= Fill.Color;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -426,10 +461,23 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TVTBaseAncestorFMX.SetFillColor(const Value: TAlphaColor);
+begin
+  Fill.Color:= Value;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTBaseAncestorFMX.SetFont(const Value: TFont);
 begin
   FFont.Assign(Value);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.Focused(): Boolean
+begin
+  Result:= IsFocused;
+end;
 
 end.
