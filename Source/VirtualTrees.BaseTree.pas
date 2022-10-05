@@ -27,7 +27,7 @@ interface
 {$HPPEMIT '#pragma link "VirtualTrees.Accessibility"'}
 
 uses
-  Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
   Winapi.ShlObj, System.UITypes, System.Generics.Collections,
@@ -1092,11 +1092,6 @@ type
     FChangingTheme: Boolean;                     // Used to indicate that a theme change is goi ng on
     FNextNodeToSelect: PVirtualNode;             // Next tree node that we would like to select if the current one gets deleted or looses selection for other reasons.
 
-    // MSAA support
-    FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
-    FAccessibleItem: IAccessible;                // The IAccessible to the item that currently has focus.
-    FAccessibleName: string;                     // The name the window is given for screen readers.
-
     // export
     FOnBeforeNodeExport: TVTNodeExportEvent;     // called before exporting a node
     FOnNodeExport: TVTNodeExportEvent;
@@ -1399,7 +1394,6 @@ type
     procedure WMEnable(var Message: TWMEnable); message WM_ENABLE;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
-    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
     procedure WMHScroll(var Message: TWMHScroll); message WM_HSCROLL;
     procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
     procedure WMKeyUp(var Message: TWMKeyUp); message WM_KEYUP;
@@ -2103,9 +2097,6 @@ type
     function VisibleChildNoInitNodes(Node: PVirtualNode; IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
     function VisibleNoInitNodes(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
-    property Accessible: IAccessible read FAccessible write FAccessible;
-    property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
-    property AccessibleName: string read FAccessibleName write FAccessibleName;
     property BottomNode: PVirtualNode read GetBottomNode write SetBottomNode;
     property CheckedCount: Integer read GetCheckedCount;
     property CheckImages: TCustomImageList read FCheckImages;
@@ -2184,7 +2175,6 @@ uses
   System.StrUtils,
   Vcl.GraphUtil,               // accessibility helper class
   VirtualTrees,
-  VirtualTrees.AccessibilityFactory,
   VirtualTrees.StyleHooks,
   VirtualTrees.Classes,
   VirtualTrees.DataObject,
@@ -3217,16 +3207,6 @@ destructor TBaseVirtualTree.Destroy();
 var
   WasValidating: Boolean;
 begin
-  // Disconnect all remote MSAA connections
-  if Assigned(FAccessibleItem) then begin
-    CoDisconnectObject(FAccessibleItem, 0);
-    FAccessibleItem := nil;
-  end;
-  if Assigned(fAccessible) then begin
-    CoDisconnectObject(fAccessible, 0);
-    fAccessible := nil;
-  end;
-
   WasValidating := (tsValidating in FStates) or (tsValidationNeeded in FStates); // Checking tsValidating is not enough, the TWorkerThread may be stuck in the first call to ChangeTreeStatesAsync()
   InterruptValidation(True);
   if WasValidating then
@@ -7611,26 +7591,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.WMGetObject(var Message: TMessage);
-
-begin
-  if TVTAccessibilityFactory.GetAccessibilityFactory <> nil then
-  begin
-    // Create the IAccessibles for the tree view and tree view items, if necessary.
-    if FAccessible = nil then
-      FAccessible := TVTAccessibilityFactory.GetAccessibilityFactory.CreateIAccessible(Self);
-    if FAccessibleItem = nil then
-      FAccessibleItem := TVTAccessibilityFactory.GetAccessibilityFactory.CreateIAccessible(Self);
-    if Cardinal(Message.LParam) = OBJID_CLIENT then
-      if Assigned(Accessible) then
-        Message.Result := LresultFromObject(IID_IAccessible, Message.WParam, FAccessible)
-      else
-        Message.Result := 0;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.WMHScroll(var Message: TWMHScroll);
 
   //--------------- local functions -------------------------------------------
@@ -10700,8 +10660,6 @@ procedure TBaseVirtualTree.DoChecked(Node: PVirtualNode);
 begin
   if Assigned(FOnChecked) then
     FOnChecked(Self, Node);
-  if Assigned(FAccessibleItem) then
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10731,8 +10689,7 @@ begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
 
-  if Assigned(FAccessibleItem) then
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
+  NotifyAccessibilityCollapsed();
 
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
@@ -11120,9 +11077,6 @@ procedure TBaseVirtualTree.DoExpanded(Node: PVirtualNode);
 begin
   if Assigned(FOnExpanded) then
     FOnExpanded(Self, Node);
-
-  if Assigned(FAccessibleItem) then
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11142,16 +11096,6 @@ procedure TBaseVirtualTree.DoFocusChange(Node: PVirtualNode; Column: TColumnInde
 begin
   if Assigned(FOnFocusChanged) then
     FOnFocusChanged(Self, Node, Column);
-
-  if Assigned(FAccessibleItem) then
-  begin
-    NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_VALUECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_SELECTION, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_FOCUS, Handle, OBJID_CLIENT, CHILDID_SELF);
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14750,9 +14694,6 @@ procedure TBaseVirtualTree.MainColumnChanged;
 
 begin
   DoCancelEdit;
-
-  if Assigned(FAccessibleItem) then
-    NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

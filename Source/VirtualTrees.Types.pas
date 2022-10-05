@@ -268,7 +268,6 @@ type
     function ToInt() : Integer; inline;
   end;
 
-
 // Used during owner draw of the header to indicate which drop mark for the column must be drawn.
   TVTDropMarkMode = (
     dmmNone,
@@ -766,6 +765,8 @@ begin
     end;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TCustomVirtualTreeOptions.StyleServices(AControl : TControl) : TCustomStyleServices;
 begin
