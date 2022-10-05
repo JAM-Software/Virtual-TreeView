@@ -1369,7 +1369,7 @@ type
     procedure SetVerticalAlignment(Node: PVirtualNode; Value: Byte);
     procedure SetVisible(Node: PVirtualNode; Value: Boolean);
     procedure SetVisiblePath(Node: PVirtualNode; Value: Boolean);
-    procedure PrepareBackGroundPicture(Source: TVTBackground; DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
+    procedure PrepareBackGroundPicture(Source: TVTBackground; DrawingBitmap: TBitmap; DrawingBitmapWidth: TDimension; DrawingBitmapHeight: TDimension; ABkgcolor: TColor);
     procedure StaticBackground(Source: TVTBackground; Target: TCanvas; OffsetPosition: TPoint; R: TRect; aBkgColor: TColor);
     procedure TileBackground(Source: TVTBackground; Target: TCanvas; Offset: TPoint; R: TRect; aBkgColor: TColor);
     function ToggleCallback(Step, StepSize: Integer; Data: Pointer): Boolean;
@@ -2052,7 +2052,7 @@ type
     procedure PaintTree(TargetCanvas: TCanvas; Window: TRect; Target: TPoint; PaintOptions: TVTInternalPaintOptions;
       PixelFormat: TPixelFormat = pfDevice); virtual;
     function PasteFromClipboard: Boolean; virtual;
-    procedure PrepareDragImage(HotSpot: TPoint; const DataObject: IDataObject);
+    procedure PrepareDragImage(HotSpot: TPoint; const DataObject: TVTDragDataObject);
     procedure Print(Printer: TPrinter; PrintHeader: Boolean);
     function ProcessDrop(const DataObject: TVTDragDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
       TVTNodeAttachMode): Boolean;
@@ -3146,7 +3146,7 @@ begin
   FSelectedHotPlusBM := TBitmap.Create;
   FSelectedHotMinusBM := TBitmap.Create;
 
-  FBorderStyle := bsSingle;
+  FBorderStyle := TFormBorderStyle.bsSingle;
   FButtonStyle := bsRectangle;
   FButtonFillMode := fmTreeColor;
 
@@ -5160,7 +5160,7 @@ begin
         if NeedButtons then
         begin
           //VCL Themes do not really have ability to provide tree plus/minus images when not using the
-          //windows theme. The bitmap style designer doesn't have any elements for for them, and you
+          //windows theme. The bitmap style designer doesn't have any elements for them, and you
           //cannot name any elements you add, which makes it useless.
           //To mitigate this, Hook up the OnPrepareButtonImages and draw them yourself.
           if Assigned(FOnPrepareButtonImages) then
@@ -6494,7 +6494,7 @@ end;
 
 // ----------------------------------------------------------------------------------------------------------------------
 procedure TBaseVirtualTree.PrepareBackGroundPicture(Source: TVTBackground;
-  DrawBitmap: TBitmap; DrawBitmapWidth: TDimension; DrawBitMapHeight: TDimension; ABkgcolor: TColor);
+  DrawingBitmap: TBitmap; DrawingBitmapWidth: TDimension; DrawingBitmapHeight: TDimension; ABkgcolor: TColor);
 const
   DST = $00AA0029; // Ternary Raster Operation - Destination unchanged
 
@@ -6502,19 +6502,19 @@ const
   // will not disturb non-transparent ones
   procedure FillDrawBitmapWithBackGroundColor;
   begin
-    DrawBitmap.Canvas.Brush.Color := ABkgcolor;
-    DrawBitmap.Canvas.FillRect(Rect(0, 0, DrawBitmap.Width, DrawBitmap.Height));
+    DrawingBitmap.Canvas.Brush.Color := ABkgcolor;
+    DrawingBitmap.Canvas.FillRect(Rect(0, 0, DrawingBitmap.Width, DrawingBitmap.Height));
   end;
 
 begin
-  DrawBitmap.SetSize(DrawBitmapWidth, DrawBitMapHeight);
+  DrawingBitmap.SetSize(DrawingBitmapWidth, DrawingBitmapHeight);
 
   if (Source.Graphic is TBitmap) and
      (FBackGroundImageTransparent or Source.Bitmap.TRANSPARENT)
   then
   begin
     FillDrawBitmapWithBackGroundColor;
-    MaskBlt(DrawBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
+    MaskBlt(DrawingBitmap.Canvas.Handle, 0, 0, Source.Width, Source.Height,
         Source.Bitmap.Canvas.Handle, 0, 0, Source.Bitmap.MaskHandle, 0, 0,
         MakeROP4(DST, SRCCOPY));
   end
@@ -6524,7 +6524,7 @@ begin
     // to draw transparent if the following flag is OFF.
     if FBackGroundImageTransparent then
       FillDrawBitmapWithBackGroundColor;
-    DrawBitmap.Canvas.Draw(0, 0, Source.Graphic);
+    DrawingBitmap.Canvas.Draw(0, 0, Source.Graphic);
   end
 end;
 
@@ -6543,9 +6543,9 @@ var
   PicRect: TRect;
   AreaRect: TRect;
   DrawRect: TRect;
-  DrawBitmap: TBitmap;
+  DrawingBitmap: TBitmap;
 begin
-  DrawBitmap := TBitmap.Create;
+  DrawingBitmap := TBitmap.Create;
   try
     // clear background
     Target.Brush.Color := aBkgColor;
@@ -6560,14 +6560,14 @@ begin
   // If picture falls in AreaRect, return intersection (DrawRect).
   if IntersectRect(DrawRect, PicRect, AreaRect) then
   begin
-      PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
+      PrepareBackGroundPicture(Source, DrawingBitmap, Source.Width, Source.Height, aBkgColor);
       // copy image to destination
       BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
-      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, 
+      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawingBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, 
         SRCCOPY);
     end;
   finally
-    DrawBitmap.Free;
+    DrawingBitmap.Free;
   end;
 end;
 
@@ -6610,11 +6610,11 @@ var
   SourceY,
   TargetX,
   DeltaY: TDimension;
-  DrawBitmap: TBitmap;
+  DrawingBitmap: TBitmap;
 begin
-  DrawBitmap := TBitmap.Create;
+  DrawingBitmap := TBitmap.Create;
   try
-    PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
+    PrepareBackGroundPicture(Source, DrawingBitmap, Source.Width, Source.Height, aBkgColor);
     with Target do
     begin
       SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
@@ -6638,7 +6638,7 @@ begin
         while TargetX < R.Right do
         begin
           BitBlt(Handle, TargetX, R.Top, Min(R.Right - TargetX, Source.Width - SourceX), DeltaY,
-            DrawBitmap.Canvas.Handle, SourceX, SourceY, SRCCOPY);
+            DrawingBitmap.Canvas.Handle, SourceX, SourceY, SRCCOPY);
           Inc(TargetX, Source.Width - SourceX);
           SourceX := 0;
         end;
@@ -6647,7 +6647,7 @@ begin
       end;
     end;
   finally
-    DrawBitmap.Free;
+    DrawingBitmap.Free;
   end;
 end;
 
@@ -13726,10 +13726,10 @@ begin
 
   // Dragging might be started in the inherited handler manually (which is discouraged for stability reasons)
   // the test for manual mode is done below (after the focused node is set).
-  AutoDrag := ((DragMode = dmAutomatic) or Dragging) and (not IsCellHit or FullRowDrag);
+  AutoDrag := ((DragMode = TDragMode.dmAutomatic) or Dragging) and (not IsCellHit or FullRowDrag);
 
   // Query the application to learn if dragging may start now (if set to dmManual).
-  if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = dmManual) then
+  if Assigned(HitInfo.HitNode) and not AutoDrag and (DragMode = TDragMode.dmManual) then
     AutoDrag := DoBeforeDrag(HitInfo.HitNode, Column) and (FullRowDrag or IsLabelHit);
 
   // handle node height tracking
@@ -23585,7 +23585,7 @@ begin
                   NeedFullInvalidate := True;
                   if (PosHoldable and ChildrenInView and NodeInView) or not
                      (toAutoScrollOnExpand in FOptions.AutoOptions) then
-                    SetOffsetY(FOffsetY - Integer(HeightDelta))
+                    SetOffsetY(FOffsetY - HeightDelta)
                   else
                     if TotalFit and NodeInView then
                     begin
@@ -23613,7 +23613,7 @@ begin
                 // If we have collapsed the node or toAutoScrollOnExpand is not set, we try to keep the nodes
                 // visual position.
                 if toChildrenAbove in FOptions.PaintOptions then
-                  SetOffsetY(FOffsetY - Integer(HeightDelta));
+                  SetOffsetY(FOffsetY - HeightDelta);
                 NeedFullInvalidate := True;
               end;
             end;
@@ -23776,7 +23776,7 @@ begin
     Exit;
   Assert(GetCurrentThreadId = MainThreadId, 'UI controls like ' + Classname + ' and its scrollbars should only be manipulated through the main thread.');
 
-  if FScrollBarOptions.ScrollBars in [ssVertical, ssBoth] then
+  if FScrollBarOptions.ScrollBars in [TScrollStyle.ssVertical, TScrollStyle.ssBoth] then
   begin
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
     ScrollInfo.fMask := SIF_ALL;
