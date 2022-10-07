@@ -1426,7 +1426,6 @@ type
     procedure SetDoubleBuffered(const Value: Boolean);
     function GetVclStyleEnabled: Boolean; inline;
     procedure SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
-
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
     procedure AutoScale(isDpiChange: Boolean); virtual;
@@ -1614,7 +1613,7 @@ type
     procedure GetNativeClipboardFormats(var Formats: TFormatEtcArray); virtual;
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
-	function GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree; virtual;
+    function GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree; virtual;
     procedure HandleHotTrack(X, Y: TDimension); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
@@ -1692,6 +1691,7 @@ type
     procedure WndProc(var Message: TMessage); override;
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); virtual;
     procedure WriteNode(Stream: TStream; Node: PVirtualNode); virtual;
+    class procedure RaiseVTError(const Msg: string; HelpContext: Integer); static;
 
     procedure VclStyleChanged; virtual;
     property VclStyleEnabled: Boolean read GetVclStyleEnabled;
@@ -1922,8 +1922,6 @@ type
       ChildrenOnly: Boolean): PVirtualNode; overload;
     function CopyTo(Source, Target: PVirtualNode; Mode: TVTNodeAttachMode;
       ChildrenOnly: Boolean): PVirtualNode; overload;
-    procedure CopyToClipboard; virtual;
-    procedure CutToClipboard; virtual;
     procedure DeleteChildren(Node: PVirtualNode; ResetHasChildren: Boolean = False);
     procedure DeleteNode(Node: PVirtualNode; pReIndex: Boolean = True); overload; inline;
     procedure DeleteNodes(const pNodes: TNodeArray);
@@ -2045,7 +2043,6 @@ type
       ChildrenOnly: Boolean); overload;
     procedure PaintTree(TargetCanvas: TCanvas; Window: TRect; Target: TPoint; PaintOptions: TVTInternalPaintOptions;
       PixelFormat: TPixelFormat = pfDevice); virtual;
-    function PasteFromClipboard: Boolean; virtual;
     procedure PrepareDragImage(HotSpot: TPoint; const DataObject: TVTDragDataObject);
     procedure Print(Printer: TPrinter; PrintHeader: Boolean);
     function ProcessDrop(const DataObject: TVTDragDataObject; TargetNode: PVirtualNode; var Effect: Integer; Mode:
@@ -2195,7 +2192,6 @@ resourcestring
   SStreamTooSmall = 'Unable to load tree structure, not enough data available.';
   SCorruptStream1 = 'Stream data corrupt. A node''s anchor chunk is missing.';
   SCorruptStream2 = 'Stream data corrupt. Unexpected data after node''s end position.';
-  SClipboardFailed = 'Clipboard operation failed.';
 
 const
   ClipboardStates = [tsCopyPending, tsCutPending];
@@ -2271,15 +2267,6 @@ var
   gWatcher: TCriticalSection = nil;
   gInitialized: Integer = 0;           // >0 if global structures have been initialized; otherwise 0
   NeedToUnitialize: Boolean = False;   // True if the OLE subsystem could be initialized successfully.
-
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure ShowError(const Msg: string; HelpContext: Integer);
-
-begin
-  raise EVirtualTreeError.CreateHelp(Msg, HelpContext);
-end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2998,7 +2985,7 @@ procedure InitializeGlobalStructures();
 
 // initialization of stuff global to the unit
 begin
-  if (gInitialized > 0) or (InterlockedIncrement(gInitialized) <> 1) then // Ensure threadsafe that this code is executed only once
+  if (gInitialized > 0) or (AtomicIncrement(gInitialized) <> 1) then // Ensure threadsafe that this code is executed only once
     exit;
 
   // This watcher is used whenever a global structure could be modified by more than one thread.
@@ -3575,6 +3562,8 @@ var
   NextTop: TDimension;
   NextColumn,
   Dummy: Integer;
+  DummyLeft: TDimension;
+												 
   MinY, MaxY: TDimension;
   LabelOffset: TDimension;
   IsInOldRect,
@@ -3640,7 +3629,7 @@ begin
             if NextColumn = MainColumn then
               CurrentRight := NodeRight
             else
-              GetColumnBounds(NextColumn, Dummy, CurrentRight);
+              GetColumnBounds(NextColumn, DummyLeft, CurrentRight);
           end;
         end
         else
@@ -3720,6 +3709,7 @@ var
   NextColumn,
   Dummy: Integer;   
   
+  DummyRight,
   TextRight,
   TextLeft,
   CheckOffset,
@@ -3805,7 +3795,7 @@ begin
           if NextColumn = MainColumn then
             CurrentLeft := NodeLeft
           else
-            FHeader.Columns.GetColumnBounds(NextColumn, CurrentLeft, Dummy);
+            FHeader.Columns.GetColumnBounds(NextColumn, CurrentLeft, DummyRight);
         end
         else
           CurrentLeft := NodeLeft;
@@ -15609,6 +15599,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+class procedure TBaseVirtualTree.RaiseVTError(const Msg: string; HelpContext: Integer);
+
+begin
+  raise EVirtualTreeError.CreateHelp(Msg, HelpContext);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.ReadChunk(Stream: TStream; Version: Integer; Node: PVirtualNode; ChunkType,
   ChunkSize: Integer): Boolean;
 
@@ -15769,10 +15767,10 @@ begin
       end;
       // If the last chunk does not end at the given end position then there is something wrong.
       if Position <> EndPosition then
-        ShowError(SCorruptStream2, hcTFCorruptStream2);
+        RaiseVTError(SCorruptStream2, hcTFCorruptStream2);
     end
     else
-      ShowError(SCorruptStream1, hcTFCorruptStream1);
+      RaiseVTError(SCorruptStream1, hcTFCorruptStream1);
   end;
 end;
 
@@ -15979,7 +15977,7 @@ begin
     if Header.ChunkType = NodeChunk then
       Stream.Position := Stream.Position + Header.ChunkSize
     else
-      ShowError(SCorruptStream1, hcTFCorruptStream1);
+      RaiseVTError(SCorruptStream1, hcTFCorruptStream1);
   end;
 end;
 
@@ -16928,10 +16926,10 @@ begin
         end;
       end
       else
-        ShowError(SWrongStreamVersion, hcTFWrongStreamVersion);
+        RaiseVTError(SWrongStreamVersion, hcTFWrongStreamVersion);
     end
     else
-      ShowError(SWrongStreamVersion, hcTFWrongStreamVersion);
+      RaiseVTError(SWrongStreamVersion, hcTFWrongStreamVersion);
   end;
 end;
 
@@ -17421,44 +17419,6 @@ begin
         end;
         StructureChange(Source, crNodeCopied);
       end;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.CopyToClipboard;
-
-var
-  DataObject: IDataObject;
-
-begin
-  if FSelectionCount > 0 then
-  begin
-    DataObject := TVTDataObject.Create(Self, True) as IDataObject;
-    if OleSetClipboard(DataObject) = S_OK then
-    begin
-      MarkCutCopyNodes;
-      DoStateChange([tsCopyPending]);
-      Invalidate;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.CutToClipboard();
-var
-  lDataObject: IDataObject;
-begin
-  if (FSelectionCount > 0) and not (toReadOnly in FOptions.MiscOptions) then
-  begin
-    lDataObject := TVTDataObject.Create(Self, True);
-    if OleSetClipboard(lDataObject) = S_OK then
-    begin
-      MarkCutCopyNodes;
-      DoStateChange([tsCutPending], [tsCopyPending]);
-      Invalidate;
     end;
   end;
 end;
@@ -21129,7 +21089,7 @@ begin
     Clear;
     // Check first whether this is a stream we can read.
     if Stream.Read(ThisID, SizeOf(TMagicID)) < SizeOf(TMagicID) then
-      ShowError(SStreamTooSmall, hcTFStreamTooSmall);
+      RaiseVTError(SStreamTooSmall, hcTFStreamTooSmall);
 
     if (ThisID[0] = MagicID[0]) and
        (ThisID[1] = MagicID[1]) and
@@ -21161,10 +21121,10 @@ begin
         end;
       end
       else
-        ShowError(SWrongStreamVersion, hcTFWrongStreamVersion);
+        RaiseVTError(SWrongStreamVersion, hcTFWrongStreamVersion);
     end
     else
-      ShowError(SWrongStreamFormat, hcTFWrongStreamFormat);
+      RaiseVTError(SWrongStreamFormat, hcTFWrongStreamFormat);
   end;
 end;
 
@@ -21277,7 +21237,7 @@ begin
         // is already a child of Source.
         // Consider the case Source and Target are the same node, but only child nodes are moved.
         if (Source <> Target) and HasAsParent(Target, Source) then
-            ShowError(SWrongMoveError, hcTFWrongMoveError);
+          RaiseVTError(SWrongMoveError, hcTFWrongMoveError);
 
         if not ChildrenOnly then
         begin
@@ -22022,41 +21982,6 @@ begin
       DoAfterPaint(TargetCanvas);
     finally
       DoStateChange([], [tsPainting]);
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.PasteFromClipboard: Boolean;
-
-// Reads what is currently on the clipboard into the tree (if the format is supported).
-// Note: If the application wants to have text or special formats to be inserted then it must implement
-//       its own code (OLE). Here only the native tree format is accepted.
-
-var
-  Data: IDataObject;
-  Source: TBaseVirtualTree;
-
-begin
-  Result := False;
-  if not (toReadOnly in FOptions.MiscOptions) then
-  begin
-    if OleGetClipboard(Data) <> S_OK then
-      ShowError(SClipboardFailed, hcTFClipboardFailed)
-    else
-    begin
-      // Try to get the source tree of the operation to optimize the operation.
-      Source := GetTreeFromDataObject(Data);
-      Result := ProcessOLEData(Source, Data, FFocusedNode, FDefaultPasteMode, Assigned(Source) and
-        (tsCutPending in Source.FStates));
-      if Assigned(Source) then
-      begin
-        if Source <> Self then
-          Source.FinishCutOrCopy
-        else
-          DoStateChange([], [tsCutPending]);
-      end;    
     end;
   end;
 end;

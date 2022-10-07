@@ -19,6 +19,13 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
     procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); override;
+
+    //TODO: CopyCutPaste - need to be implemented
+    {
+    function PasteFromClipboard(): Boolean; override;
+    procedure CopyToClipboard(); override;
+    procedure CutToClipboard(); override;
+    }
   end;
 
 implementation
