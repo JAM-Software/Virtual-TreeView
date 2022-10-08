@@ -28,6 +28,10 @@ type
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT; virtual; abstract;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual; abstract;
     procedure NotifyAccessibilityCollapsed(); virtual; abstract;
+  public // methods
+    procedure CopyToClipboard; virtual; abstract;
+    procedure CutToClipboard; virtual; abstract;
+    function PasteFromClipboard: Boolean; virtual; abstract;
   public //properties
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;

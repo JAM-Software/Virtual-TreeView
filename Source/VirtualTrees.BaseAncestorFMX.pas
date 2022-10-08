@@ -94,15 +94,19 @@ type
     function GetScrollBarForBar(Bar: Integer): TScrollBar;
     procedure HScrollChangeProc(Sender: TObject);
     procedure VScrollChangeProc(Sender: TObject);
-	
+
+    procedure CopyToClipboard; virtual; abstract;
+    procedure CutToClipboard; virtual; abstract;
+    function PasteFromClipboard: Boolean; virtual; abstract;
+
     /// <summary>
     /// Alias for IsFocused to make same as Vcl Focused
     /// </summary>
     function Focused(): Boolean; inline;
-	
+
     /// <summary>
     /// Convert mouse message to TMouseButton
-	/// Created as method, to be available in whole hierarchy without specifing Unit file name (prevent circular unit ref).
+    /// Created as method, to be available in whole hierarchy without specifing Unit file name (prevent circular unit ref).
     /// </summary>
     class function KeysToShiftState(Keys: LongInt): TShiftState; static;
   end;
