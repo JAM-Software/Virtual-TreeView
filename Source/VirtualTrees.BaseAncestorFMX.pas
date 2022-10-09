@@ -23,7 +23,6 @@ type
     function GetFillColor: TAlphaColor;
     procedure SetFillColor(const Value: TAlphaColor);
   protected
-    FDottedBrush: TStrokeBrush;                  // used to paint dotted lines without special pens
     FDottedBrushGrid: TStrokeBrush;              // used to paint dotted lines without special pens
 
     FBevelEdges: TBevelEdges;
@@ -59,6 +58,7 @@ type
     
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
     function GetControlsAlignment: TAlignment; virtual; abstract;	
+    function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual; abstract;
   public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;

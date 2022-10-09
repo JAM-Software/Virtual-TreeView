@@ -20,6 +20,8 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Single; Y: Single); override;
     procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); override;
 
+    function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; override;
+
     //TODO: CopyCutPaste - need to be implemented
     {
     function PasteFromClipboard(): Boolean; override;
@@ -114,5 +116,62 @@ begin
   Handled:= M.Result<>0;
 end;
 
-end.
+//----------------------------------------------------------------------------------------------------------------------
 
+function TVTAncestorFMX.PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush;
+Var PatternBitmap: TBitmap;
+  i_bmp, line, bit: Integer;
+begin
+  //FMX pattern brush is different then VCL. Where color is derived from current one...
+  //We should have 2 brushes 1 for Tree lines 1 for grid lines
+  //and recreate it every time when color is changing
+
+  CurrentDottedBrush.Free;
+  FDottedBrushGrid.Free;
+
+  Result := nil;
+  for i_bmp:= 1 to 2 do
+    begin
+      PatternBitmap := TBitmap.Create(8, BitsLinesCount);
+      PatternBitmap.Clear(TAlphaColorRec.Null); //fully transparent
+      PatternBitmap.Canvas.BeginScene;
+
+      PatternBitmap.Map(TMapAccess.Write, BitmapData);
+      try
+        {
+        DestPitch := PixelFormatBytes[PatternBitmap.PixelFormat];
+        System.Move(PAlphaColorArray(BitmapData.Data)[0], PAlphaColorArray(Bits)[0], 8 * 4);
+        }
+        for line:= 0 to LineLen-1 do
+          begin
+            for bit:= 0 to 7 do
+              begin
+                if PWordArray(Bits)^[line] and (1 shl bit)=0 then
+                  BitmapData.SetPixel(bit, line, clWhite) else
+                  begin
+                    if i_bmp=1 then
+                      BitmapData.SetPixel(bit, line, TreeColors.TreeLineColor) else
+                      BitmapData.SetPixel(bit, line, TreeColors.GridLineColor);
+                  end;
+              end;
+          end;
+      finally
+        PatternBitmap.UnMap(BitmapData);
+      end;
+
+      PatternBitmap.Canvas.EndScene;
+
+      if i_bmp=1 then
+        begin
+          Result := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite);
+          Result.Bitmap.Bitmap.Assign(PatternBitmap);
+        end else
+        begin
+          FDottedBrushGrid := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite);
+          FDottedBrushGrid.Bitmap.Bitmap.Assign(PatternBitmap);
+        end;
+      FreeAndNil(PatternBitmap);
+    end;
+end;
+
+end.

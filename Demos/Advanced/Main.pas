@@ -138,6 +138,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   // Show hints 10 seconds.
   Application.HintHidePause := 10000;
+  System.ReportMemoryLeaksOnShutdown:= true;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
