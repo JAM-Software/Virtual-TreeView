@@ -5047,6 +5047,7 @@ var
   Size: TSize;
   Theme: HTHEME;
   R: TRect;
+  BitsLinesCount: Word;
 
   //--------------- local function --------------------------------------------
 
@@ -5261,21 +5262,23 @@ begin
 
   if NeedLines then
   begin
-    if not Assigned(FDottedBrush) then
-    begin
-      FDottedBrush := TBrush.Create;
-      FDottedBrush.Bitmap := TBitmap.Create;
-    end;
     case FLineStyle of
       lsDotted:
-        Bits := @LineBitsDotted;
+        begin
+          Bits := @LineBitsDotted;
+          BitsLinesCount:= Length(LineBitsDotted);
+        end;
       lsSolid:
-        Bits := @LineBitsSolid;
+        begin
+          Bits := @LineBitsSolid;
+          BitsLinesCount:= Length(LineBitsSolid);
+        end;
     else // lsCustomStyle
       Bits := @LineBitsDotted;
       DoGetLineStyle(Bits);
+      BitsLinesCount:= Length(LineBitsDotted);
     end;
-    FDottedBrush.Bitmap.Handle := CreateBitmap(8, 8, 1, 1, Bits);
+    FDottedBrush:= PrepareDottedBrush(FDottedBrush, Bits, BitsLinesCount);
   end;
 end;
 

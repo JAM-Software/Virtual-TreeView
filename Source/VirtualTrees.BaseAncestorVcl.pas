@@ -15,7 +15,8 @@ uses
   Winapi.Windows,
   Winapi.oleacc,
   Winapi.ActiveX,
-  Vcl.Controls;
+  Vcl.Controls,
+  Vcl.Graphics;
 
 type
   TVTBaseAncestorVcl = class abstract(TCustomControl)
@@ -28,6 +29,7 @@ type
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT; virtual; abstract;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual; abstract;
     procedure NotifyAccessibilityCollapsed(); virtual; abstract;
+    function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual;
   public // methods
     procedure CopyToClipboard; virtual; abstract;
     procedure CutToClipboard; virtual; abstract;
@@ -39,5 +41,20 @@ type
   end;
 
 implementation
+
+//----------------------------------------------------------------------------------------------------------------------
+function TVTBaseAncestorVcl.PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush;
+begin
+  if Assigned(CurrentDottedBrush) then
+    begin
+      Result := CurrentDottedBrush;
+    end else
+    begin
+      Result := TBrush.Create;
+      Result.Bitmap := TBitmap.Create;
+    end;
+
+  Result.Bitmap.Handle := CreateBitmap(8, 8, 1, 1, Bits);
+end;
 
 end.
