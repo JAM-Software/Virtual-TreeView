@@ -59,31 +59,10 @@ type
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
     function GetControlsAlignment: TAlignment; virtual; abstract;	
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual; abstract;
-  public //properties
-    property Font: TFont read FFont write SetFont;
-    property ClientRect: TRect read GetClientRect;
-    property ClientWidth: Single read GetClientWidth;
-    property ClientHeight: Single read GetClientHeight;
-    property UseRightToLeftAlignment: Boolean read FUseRightToLeftAlignment write FUseRightToLeftAlignment default false;
-    property BevelEdges: TBevelEdges read FBevelEdges write SetBevelEdges default [TBevelEdge.beLeft, TBevelEdge.beTop, TBevelEdge.beRight, TBevelEdge.beBottom];
-    property BevelInner: TBevelCut index 0 read FBevelInner write SetBevelCut default TBevelCut.bvRaised;
-    property BevelOuter: TBevelCut index 1 read FBevelOuter write SetBevelCut default TBevelCut.bvLowered;
-    property BevelKind: TBevelKind read FBevelKind write SetBevelKind default TBevelKind.bkNone;
-    property BevelWidth: TBevelWidth read FBevelWidth write SetBevelWidth default 1;
-    property BorderWidth: TBorderWidth read FBorderWidth write SetBorderWidth;
-    property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
-    property HScrollBar: TScrollBar read FHScrollBar;
-    property VScrollBar: TScrollBar read FVScrollBar;
-
-    /// <summary>
-    /// Alias for Fill.Color to make same use as Vcl Color property
-    /// </summary>
-	  property Color: TAlphaColor read GetFillColor write SetFillColor;
   public //methods
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure Invalidate();
     function ClientToScreen(P: TPoint): TPoint;
     function ScreenToClient(P: TPoint): TPoint;
     procedure RecreateWnd;
@@ -109,6 +88,30 @@ type
     /// Created as method, to be available in whole hierarchy without specifing Unit file name (prevent circular unit ref).
     /// </summary>
     class function KeysToShiftState(Keys: LongInt): TShiftState; static;
+
+    procedure Invalidate(); inline;
+    function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
+    function UpdateWindow(): BOOL; inline;
+  public //properties
+    property Font: TFont read FFont write SetFont;
+    property ClientRect: TRect read GetClientRect;
+    property ClientWidth: Single read GetClientWidth;
+    property ClientHeight: Single read GetClientHeight;
+    property UseRightToLeftAlignment: Boolean read FUseRightToLeftAlignment write FUseRightToLeftAlignment default false;
+    property BevelEdges: TBevelEdges read FBevelEdges write SetBevelEdges default [TBevelEdge.beLeft, TBevelEdge.beTop, TBevelEdge.beRight, TBevelEdge.beBottom];
+    property BevelInner: TBevelCut index 0 read FBevelInner write SetBevelCut default TBevelCut.bvRaised;
+    property BevelOuter: TBevelCut index 1 read FBevelOuter write SetBevelCut default TBevelCut.bvLowered;
+    property BevelKind: TBevelKind read FBevelKind write SetBevelKind default TBevelKind.bkNone;
+    property BevelWidth: TBevelWidth read FBevelWidth write SetBevelWidth default 1;
+    property BorderWidth: TBorderWidth read FBorderWidth write SetBorderWidth;
+    property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
+    property HScrollBar: TScrollBar read FHScrollBar;
+    property VScrollBar: TScrollBar read FVScrollBar;
+
+    /// <summary>
+    /// Alias for Fill.Color to make same use as Vcl Color property
+    /// </summary>
+	  property Color: TAlphaColor read GetFillColor write SetFillColor;
   end;
 
 implementation
@@ -314,6 +317,22 @@ end;
 procedure TVTBaseAncestorFMX.Invalidate();
 begin
   Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL;
+begin
+  Repaint;
+  Result:= true;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.UpdateWindow(): BOOL;
+begin
+  Repaint;
+  Result:= true;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

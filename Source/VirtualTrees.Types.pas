@@ -12,12 +12,7 @@ uses
   Vcl.Controls,
   Vcl.GraphUtil,
   Vcl.Themes,
-  Vcl.Graphics,
-{$IFDEF VT_FMX}
-  VirtualTrees.BaseAncestorFMX,
-{$ELSE}
-  VirtualTrees.BaseAncestorVCL
-{$ENDIF}
+  Vcl.Graphics
   ;
 
 {$MINENUMSIZE 1, make enumerations as small as possible}
@@ -134,7 +129,6 @@ type
   TVTBackground = TBitmap;
   TVTPaintContext = TCanvas;
   TVTBrush = TBrush;
-  TVTBaseAncestor = TVTBaseAncestorFMX;
 {$ELSE}
   TDimension = Integer; // For Firemonkey support, see #841
   TVTCursor = HCURSOR;
@@ -142,7 +136,6 @@ type
   TVTBackground = TPicture;
   TVTPaintContext = HDC;
   TVTBrush = HBRUSH;
-  TVTBaseAncestor = TVTBaseAncestorVcl;
 {$ENDIF}
   TColumnIndex = type Integer;
   TColumnPosition = type Cardinal;

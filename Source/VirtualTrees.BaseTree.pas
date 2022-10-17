@@ -34,7 +34,13 @@ uses
   VirtualTrees.Types,
   VirtualTrees.Colors,
   VirtualTrees.DragImage,
-  VirtualTrees.Header;
+  VirtualTrees.Header
+{$IFDEF VT_FMX}
+  , VirtualTrees.BaseAncestorFMX
+{$ELSE}
+  , VirtualTrees.BaseAncestorVCL
+{$ENDIF}
+  ;
 
 const
   //Aliases
@@ -65,6 +71,12 @@ var
   {$MinEnumSize 1, make enumerations as small as possible}
 
 type
+  {$IFDEF VT_FMX}
+    TVTBaseAncestor = TVTBaseAncestorFMX;
+  {$ELSE}
+    TVTBaseAncestor = TVTBaseAncestorVcl;
+  {$ENDIF}
+
   // Alias defintions for convenience
   TImageIndex              = System.UITypes.TImageIndex;
   TCanvas                  = Vcl.Graphics.TCanvas;
@@ -4956,7 +4968,7 @@ function TBaseVirtualTree.PackArray({*}const TheArray: TNodeArray; Count: Intege
 // The returned value is the number of remaining entries in the array, so the caller can reallocate (shorten)
 // the selection array if needed or -1 if nothing needs to be changed.
 
-{$ifdef CPUX64}
+{$IF Defined(CPUX64) or Defined(VT_FMX)}
 var
   Source, Dest: ^PVirtualNode;
   ConstOne: NativeInt;
@@ -5030,7 +5042,7 @@ asm
         POP     EDI
         POP     EBX
 end;
-{$endif CPUX64}
+{$IFEND}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -5656,7 +5668,7 @@ begin
     else if HandleAllocated then
       FCheckImages := CreateSystemImageSet(Self);
     if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
-      InvalidateRect(Handle, nil, False);
+      InvalidateRect(nil, False);
   end;
 end;
 
@@ -7592,13 +7604,13 @@ procedure TBaseVirtualTree.WMHScroll(var Message: TWMHScroll);
 
   var
     SI: TScrollInfo;
-    Code: Integer;
+    Bar: Integer;
 
   begin
     SI.cbSize := SizeOf(TScrollInfo);
     SI.fMask := SIF_TRACKPOS;
-    Code := SB_HORZ;
-    GetScrollInfo(Handle, Code, SI);
+    Bar := SB_HORZ;
+    GetScrollInfo(Bar, SI);
     Result := SI.nTrackPos;
   end;
 
@@ -9043,13 +9055,13 @@ procedure TBaseVirtualTree.WMVScroll(var Message: TWMVScroll);
 
   var
     SI: TScrollInfo;
-    Code: Integer;
+    Bar: Integer;
 
   begin
     SI.cbSize := SizeOf(TScrollInfo);
     SI.fMask := SIF_TRACKPOS;
-    Code := SB_VERT;
-    GetScrollInfo(Handle, Code, SI);
+    Bar := SB_VERT;
+    GetScrollInfo(Bar, SI);
     Result := SI.nTrackPos;
   end;
 
@@ -10740,15 +10752,15 @@ var
 
 begin
   if not (csLoading in ComponentState) and HandleAllocated then
-begin
-  // Reset all vsHeightMeasured flags if we are in multiline mode.
-  Run := GetFirstInitialized;
-  while Assigned(Run) do
   begin
-      if vsMultiline in Run.States then
-      Exclude(Run.States, vsHeightMeasured);
-    Run := GetNextInitialized(Run);
-  end;
+    // Reset all vsHeightMeasured flags if we are in multiline mode.
+    Run := GetFirstInitialized;
+    while Assigned(Run) do
+    begin
+        if vsMultiline in Run.States then
+        Exclude(Run.States, vsHeightMeasured);
+      Run := GetNextInitialized(Run);
+    end;
 
     UpdateHorizontalScrollBar(True);
     if Column > NoColumn then
@@ -10760,11 +10772,11 @@ begin
           R.Right := FHeader.Columns[Column].Left + FHeader.Columns[Column].Width + ComputeRTLOffset
         else
           R.Left := FHeader.Columns[Column].Left;
-      InvalidateRect(Handle, @R, False);
+      InvalidateRect(@R, False);
       FHeader.Invalidate(FHeader.Columns[Column], True);
     end;
     if [hsColumnWidthTracking, hsResizing] * FHeader.States = [hsColumnWidthTracking] then
-      UpdateWindow(Handle);
+      UpdateWindow();
 
     if not (IsUpdating) then
       UpdateDesigner; // design time only
@@ -10877,7 +10889,7 @@ begin
     InvalidateNode(FFocusedNode);
   end;
 
-  UpdateWindow(Handle);
+  UpdateWindow();
 
   // Keep a list of all currently selected nodes as this list might change,
   // but we have probably to delete currently selected nodes.
@@ -10942,7 +10954,7 @@ begin
     if not DragManager.DropTargetHelperSupported and Assigned(SourceTree) then
       SourceTree.FDragImage.HideDragImage;
     ToggleNode(FDropTargetNode);
-    UpdateWindow(Handle);
+    UpdateWindow();
     if not DragManager.DropTargetHelperSupported and Assigned(SourceTree) then
       SourceTree.FDragImage.ShowDragImage;
   end;
@@ -11826,7 +11838,7 @@ begin
             end;
           if DWPStructure <> 0 then
             EndDeferWindowPos(DWPStructure);
-          InvalidateRect(Handle, nil, False);
+          InvalidateRect(nil, False);
         end
         else
         begin
@@ -11886,7 +11898,7 @@ end;
 procedure TBaseVirtualTree.DoShowScrollBar(Bar: Integer; Show: Boolean);
 
 begin
-  ShowScrollBar(Handle, Bar, Show);
+  ShowScrollBar(Bar, Show);
   if Assigned(FOnShowScrollBar) then
     FOnShowScrollBar(Self, Bar, Show);
 end;
@@ -12043,7 +12055,7 @@ begin
       // client area otherwise (to avoid the time consuming task of determining the display rectangles of every
       // changed node).
       if CalculateSelectionRect(ClientP.X, ClientP.Y) and HandleDrawSelection(ClientP.X, ClientP.Y) then
-        InvalidateRect(Handle, nil, False)
+        InvalidateRect(nil, False)
       else
       begin
         // The selection did not change so invalidate only the part of the window which really needs an update.
@@ -12051,12 +12063,12 @@ begin
         //    scroll only one stripe but have to update two.
         OffsetRect(ClipRect, DeltaX, DeltaY);
         SubtractRect(ClipRect, ClientRect, ClipRect);
-        InvalidateRect(Handle, @ClipRect, False);
+        InvalidateRect(@ClipRect, False);
 
         // 2) Invalidate the selection rectangles.
         UnionRect(ClipRect, OrderRect(FNewSelRect), OrderRect(FLastSelRect));
         OffsetRect(ClipRect, FOffsetX, FOffsetY);
-        InvalidateRect(Handle, @ClipRect, False);
+        InvalidateRect(@ClipRect, False);
       end;
     end
     else
@@ -12065,7 +12077,7 @@ begin
       if ((FDragManager = nil) or not DragManager.IsDropTarget) and ((DeltaX <> 0) or (DeltaY <> 0)) then
         DoSetOffsetXY(Point(FOffsetX + DeltaX, FOffsetY + DeltaY), DefaultScrollUpdateFlags, nil);
     end;
-    UpdateWindow(Handle);
+    UpdateWindow();
 
     if (FScrollDirections = []) and ([tsWheelPanning, tsWheelScrolling] * FStates = []) then
     begin
@@ -12388,7 +12400,7 @@ begin
     InvalidateNode(FDropTargetNode);
     FDropTargetNode := nil;
   end;
-  UpdateWindow(Handle);
+  UpdateWindow();
 
   Effect := 0;
   DoDragOver(nil, [], TDragState.dsDragLeave, Point(0, 0), FLastDropMode, Effect);
@@ -12517,7 +12529,7 @@ begin
               UpdateWindowAndDragImage(Tree, R, False, not DragImageWillMove);
           end
           else
-            InvalidateRect(Handle, @R, False);
+            InvalidateRect(@R, False);
         end
         else
         begin
@@ -12533,7 +12545,7 @@ begin
                 UpdateWindowAndDragImage(Tree, OldR, False, not DragImageWillMove);
             end
             else
-              InvalidateRect(Handle, @OldR, False);
+              InvalidateRect(@OldR, False);
           end
           else
           begin
@@ -12545,7 +12557,7 @@ begin
                 UpdateWindowAndDragImage(Tree, R, False, not DragImageWillMove);
             end
             else
-              InvalidateRect(Handle, @R, False);
+              InvalidateRect(@R, False);
           end;
         end;
 
@@ -12565,7 +12577,7 @@ begin
             UpdateWindowAndDragImage(Tree, R, False, not DragImageWillMove);
         end
         else
-          InvalidateRect(Handle, @R, False);
+          InvalidateRect(@R, False);
       end;
     end
     else
@@ -13437,7 +13449,7 @@ begin
       if DoNodeHeightDblClickResize(Node, HitInfo.HitColumn, KeysToShiftState(Message.Keys), Point(Message.XPos, Message.YPos)) then
       begin
         SetNodeHeight(Node, FDefaultNodeHeight);
-        UpdateWindow(Handle);
+        UpdateWindow();
         MayEdit := False;
       end;
     end
@@ -14724,8 +14736,8 @@ begin
     // and moved the mouse.
     if CalculateSelectionRect(X, Y) then
     begin
-      InvalidateRect(Handle, @FNewSelRect, False);
-      UpdateWindow(Handle);
+      InvalidateRect(@FNewSelRect, False);
+      UpdateWindow();
       if (Abs(FNewSelRect.Right - FNewSelRect.Left) > Mouse.DragThreshold) or
          (Abs(FNewSelRect.Bottom - FNewSelRect.Top) > Mouse.DragThreshold) then
       begin
@@ -14741,7 +14753,7 @@ begin
 
         // The current rectangle may already include some node captions. Handle this.
         if HandleDrawSelection(X, Y) then
-          InvalidateRect(Handle, nil, False);
+          InvalidateRect(nil, False);
       end;
     end;
   end
@@ -14756,7 +14768,7 @@ begin
         if FHeightTrackPoint.Y >= Y then
           Y := FHeightTrackPoint.Y + 1;
         SetNodeHeight(FHeightTrackNode, Y - FHeightTrackPoint.Y);
-        UpdateWindow(Handle);
+        UpdateWindow();
         Exit;
       end;
     end;
@@ -14797,14 +14809,14 @@ begin
           // If something in the selection changed then invalidate the entire
           // tree instead trying to figure out the display rects of all changed nodes.
           if HandleDrawSelection(X, Y) then
-            InvalidateRect(Handle, nil, False)
+            InvalidateRect(nil, False)
           else
           begin
             UnionRect(R, OrderRect(FNewSelRect), OrderRect(FLastSelRect));
             OffsetRect(R, -FEffectiveOffsetX, FOffsetY);
-            InvalidateRect(Handle, @R, False);
+            InvalidateRect(@R, False);
           end;
-          UpdateWindow(Handle);
+          UpdateWindow();
         end;
       end;
     end;
@@ -17298,7 +17310,7 @@ begin
         R.Bottom := R.Top + NodeHeight[Node];
         if vsSelected in Node.States then
         begin
-          InvalidateRect(Handle, @R, False);
+          InvalidateRect(@R, False);
           System.Dec(Counter);
           // Only try as many nodes as are selected.
           if Counter = 0 then
@@ -20818,7 +20830,7 @@ begin
   begin
     R := ClientRect;
     FHeader.Columns.GetColumnBounds(Column, R.Left, R.Right);
-    InvalidateRect(Handle, @R, False);
+    InvalidateRect(@R, False);
   end;
 end;
 
@@ -20836,7 +20848,7 @@ begin
   if (FUpdateCount = 0) and HandleAllocated then
   begin
     Result := GetDisplayRect(Node, NoColumn, False);
-    InvalidateRect(Handle, @Result, False);
+    InvalidateRect(@Result, False);
   end
   else
     result := Rect(-1,-1,-1,-1);
@@ -20866,7 +20878,7 @@ begin
           if (toChildrenAbove in FOptions.PaintOptions) and (vsExpanded in Node.States) then
             Dec(R.Top, Node.TotalHeight + NodeHeight[Node]);
           R.Bottom := ClientHeight;
-          InvalidateRect(Handle, @R, False);
+          InvalidateRect(@R, False);
         end;
       end;
   end;
@@ -23167,7 +23179,7 @@ begin
           begin
             if tsHint in Self.FStates then
               Application.CancelHint;
-            UpdateWindow(Handle);
+            UpdateWindow();
 
             // animated collapsing
             with ToggleData do
@@ -23315,7 +23327,7 @@ begin
               begin
                 if tsHint in Self.FStates then
                   Application.CancelHint;
-                UpdateWindow(Handle);
+                UpdateWindow();
                 // animated expanding
                 with ToggleData do
                 begin
@@ -23548,7 +23560,7 @@ begin
     ZeroMemory (@ScrollInfo, SizeOf(ScrollInfo));
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
     ScrollInfo.fMask := SIF_ALL;
-    GetScrollInfo(Handle, SB_HORZ, ScrollInfo);
+    GetScrollInfo(SB_HORZ, ScrollInfo);
 
     if (FRangeX > ClientWidth) or FScrollBarOptions.AlwaysVisible then
     begin
@@ -23560,7 +23572,7 @@ begin
       ScrollInfo.nPage := Max(0, ClientWidth + 1);
 
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
-      SetScrollInfo(Handle, SB_HORZ, ScrollInfo, DoRepaint); // 1 app freeze seen here in TreeSize 8.1.0 after ScaleForPpi()
+      SetScrollInfo(SB_HORZ, ScrollInfo, DoRepaint); // 1 app freeze seen here in TreeSize 8.1.0 after ScaleForPpi()
       if DoRepaint then
         RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
     end
@@ -23571,12 +23583,12 @@ begin
       ScrollInfo.nPos := 0;
       ScrollInfo.nPage := 0;
       DoShowScrollBar(SB_HORZ, False);
-      SetScrollInfo(Handle, SB_HORZ, ScrollInfo, False);
+      SetScrollInfo(SB_HORZ, ScrollInfo, False);
     end;
 
     // Since the position is automatically changed if it doesn't meet the range
     // we better read the current position back to stay synchronized.
-    FEffectiveOffsetX := GetScrollPos(Handle, SB_HORZ);
+    FEffectiveOffsetX := GetScrollPos(SB_HORZ);
     if UseRightToLeftAlignment then
       SetOffsetX(-FRangeX + ClientWidth + FEffectiveOffsetX)
     else
@@ -23649,7 +23661,7 @@ begin
   begin
     ScrollInfo.cbSize := SizeOf(ScrollInfo);
     ScrollInfo.fMask := SIF_ALL;
-    GetScrollInfo(Handle, SB_VERT, ScrollInfo);
+    GetScrollInfo(SB_VERT, ScrollInfo);
 
     if (FRangeY > ClientHeight) or FScrollBarOptions.AlwaysVisible then
     begin
@@ -23661,7 +23673,7 @@ begin
       ScrollInfo.nPage := Max(0, ClientHeight + 1);
 
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
-      SetScrollInfo(Handle, SB_VERT, ScrollInfo, DoRepaint);
+      SetScrollInfo(SB_VERT, ScrollInfo, DoRepaint);
     end
     else
     begin
@@ -23670,12 +23682,12 @@ begin
       ScrollInfo.nPos := 0;
       ScrollInfo.nPage := 0;
       DoShowScrollBar(SB_VERT, False);
-      SetScrollInfo(Handle, SB_VERT, ScrollInfo, False);
+      SetScrollInfo(SB_VERT, ScrollInfo, False);
     end;
 
     // Since the position is automatically changed if it doesn't meet the range
     // we better read the current position back to stay synchronized.
-    SetOffsetY(-GetScrollPos(Handle, SB_VERT));
+    SetOffsetY(-GetScrollPos(SB_VERT));
   end
   else
   begin

@@ -16,7 +16,9 @@ uses
   Winapi.oleacc,
   Winapi.ActiveX,
   Vcl.Controls,
-  Vcl.Graphics;
+  Vcl.Graphics,
+  Vcl.StdCtrls,
+  VirtualTrees.Types;
 
 type
   TVTBaseAncestorVcl = class abstract(TCustomControl)
@@ -34,6 +36,14 @@ type
     procedure CopyToClipboard; virtual; abstract;
     procedure CutToClipboard; virtual; abstract;
     function PasteFromClipboard: Boolean; virtual; abstract;
+
+    function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
+    function UpdateWindow(): BOOL; inline;
+
+    procedure ShowScrollBar(Bar: Integer; AShow: Boolean);
+    function SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+    function GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+    function GetScrollPos(Bar: Integer): TDimension;
   public //properties
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
@@ -55,6 +65,48 @@ begin
     end;
 
   Result.Bitmap.Handle := CreateBitmap(8, 8, 1, 1, Bits);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL;
+begin
+  Result:= WinApi.Windows.InvalidateRect(Handle, lpRect, bErase);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.UpdateWindow(): BOOL;
+begin
+  Result:= WinApi.Windows.UpdateWindow(Handle);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorVcl.ShowScrollBar(Bar: Integer; AShow: Boolean);
+begin
+  WinApi.Windows.ShowScrollBar(Handle, Bar, AShow);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+begin
+  Result:= WinApi.Windows.SetScrollInfo(Handle, Bar, ScrollInfo, Redraw);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+begin
+  Result:= WinApi.Windows.GetScrollInfo(Handle, Bar, ScrollInfo);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.GetScrollPos(Bar: Integer): TDimension;
+begin
+  Result:= WinApi.Windows.GetScrollPos(Handle, Bar);
 end;
 
 end.
