@@ -27,11 +27,17 @@ type
     FAccessible: IAccessible;                    // The IAccessible interface to the window itself.
     FAccessibleItem: IAccessible;                // The IAccessible to the item that currently has focus.
     FAccessibleName: string;                     // The name the window is given for screen readers.
-  protected
+    FDottedBrushTreeLines: TBrush;               // used to paint dotted lines without special pens
+
+    function GetDottedBrushGridLines: TBrush;
+  protected // methods
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT; virtual; abstract;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual; abstract;
     procedure NotifyAccessibilityCollapsed(); virtual; abstract;
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual;
+  protected //properties
+    property DottedBrushTreeLines: TBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
+    property DottedBrushGridLines: TBrush read GetDottedBrushGridLines;
   public // methods
     procedure CopyToClipboard; virtual; abstract;
     procedure CutToClipboard; virtual; abstract;
@@ -93,6 +99,13 @@ end;
 function TVTBaseAncestorVcl.SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
 begin
   Result:= WinApi.Windows.SetScrollInfo(Handle, Bar, ScrollInfo, Redraw);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.GetDottedBrushGridLines: TBrush;
+begin
+  Result:= FDottedBrushTreeLines;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -20,11 +20,12 @@ type
     FFont: TFont;
     procedure SetFont(const Value: TFont);
   private
+    FDottedBrushTreeLines: TStrokeBrush;                  // used to paint dotted lines without special pens
+    FDottedBrushGridLines: TStrokeBrush;                  // used to paint dotted lines without special pens
+
     function GetFillColor: TAlphaColor;
     procedure SetFillColor(const Value: TAlphaColor);
   protected
-    FDottedBrushGrid: TStrokeBrush;              // used to paint dotted lines without special pens
-
     FBevelEdges: TBevelEdges;
     FBevelInner: TBevelCut;
     FBevelOuter: TBevelCut;
@@ -59,6 +60,9 @@ type
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
     function GetControlsAlignment: TAlignment; virtual; abstract;	
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual; abstract;
+  protected //properties
+    property DottedBrushTreeLines: TStrokeBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
+    property DottedBrushGridLines: TStrokeBrush read FDottedBrushGridLines write FDottedBrushGridLines;
   public //methods
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -92,6 +96,7 @@ type
     procedure Invalidate(); inline;
     function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
     function UpdateWindow(): BOOL; inline;
+	//jeszcze RedrawWindow i SendMessage
   public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;
@@ -239,10 +244,10 @@ destructor TVTBaseAncestorFMX.Destroy();
 begin
   inherited;
   
-  if FDottedBrush <> nil then
-    FreeAndNil(FDottedBrush);
-  if FDottedBrushGrid <> nil then
-    FreeAndNil(FDottedBrushGrid);
+  if FDottedBrushTreeLines <> nil then
+    FreeAndNil(FDottedBrushTreeLines);
+  if FDottedBrushGridLines <> nil then
+    FreeAndNil(FDottedBrushGridLines);
   FreeAndNil(FFont);
 end;
 

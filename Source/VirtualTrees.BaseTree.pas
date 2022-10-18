@@ -1044,7 +1044,6 @@ type
     FButtonFillMode: TVTButtonFillMode;          // for rectangular tree buttons only: how to fill them
     FLineStyle: TVTLineStyle;                    // style of the tree lines
     FLineMode: TVTLineMode;                      // tree lines or bands etc.
-    FDottedBrush: TBrush;                        // used to paint dotted lines without special pens
     FSelectionCurveRadius: Cardinal;             // radius for rounded selection rectangles
     FSelectionBlendFactor: Byte;                 // Determines the factor by which the selection rectangle is to be
                                                  // faded if enabled.
@@ -1282,7 +1281,7 @@ type
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
-    procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean);
+    procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean; dottedBrush: TBrush);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
     function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
@@ -1603,8 +1602,8 @@ type
     procedure DragLeave; virtual;
     function DragOver(Source: TObject; KeyState: Integer; DragState: TDragState; Pt: TPoint;
       var Effect: Integer): HResult; reintroduce; virtual;
-    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension); virtual;
-    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; UseSelectedBkColor: Boolean = False); virtual;
+    procedure DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension; dottedBrush: TBrush); virtual;
+    procedure DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; dottedBrush: TBrush; UseSelectedBkColor: Boolean = False); virtual;
     procedure EndOperation(OperationKind: TVTOperationKind);
     procedure EnsureNodeFocused(); virtual;
     function FindNodeInSelection(P: PVirtualNode; var Index: Integer; LowBound, HighBound: Integer): Boolean; virtual;
@@ -3238,10 +3237,11 @@ begin
     DestroyWindowHandle;
 
   // Release FDottedBrush in case WM_NCDESTROY hasn't been triggered.
-  if Assigned(FDottedBrush) then
+  if Assigned(DottedBrushTreeLines) then
   begin
-    FDottedBrush.Bitmap.Free();
-    FreeAndNil(FDottedBrush);
+    DottedBrushTreeLines.Bitmap.Free();
+    DottedBrushTreeLines.Free;
+    DottedBrushTreeLines:= nil;
   end;
 
   FHeader.Free;
@@ -4024,7 +4024,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType;
-  Reverse: Boolean);
+  Reverse: Boolean; dottedBrush: TBrush);
 
 // Draws (depending on Style) one of the 5 line types of the tree.
 // If Reverse is True then a right-to-left column is being drawn, hence horizontal lines must be mirrored.
@@ -4046,38 +4046,38 @@ begin
     case Style of
       ltBottomRight:
         begin
-          DrawDottedVLine(PaintInfo, Y + VAlign, Y + H, X + HalfWidth);
-          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+          DrawDottedVLine(PaintInfo, Y + VAlign, Y + H, X + HalfWidth, dottedBrush);
+          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign, dottedBrush);
         end;
       ltTopDown:
-        DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth);
+        DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth, dottedBrush);
       ltTopDownRight:
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth);
-          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + HalfWidth, dottedBrush);
+          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign, dottedBrush);
         end;
       ltRight:
-        DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+        DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign, dottedBrush);
       ltTopRight:
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + VAlign, X + HalfWidth);
-          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign);
+          DrawDottedVLine(PaintInfo, Y, Y + VAlign, X + HalfWidth, dottedBrush);
+          DrawDottedHLine(PaintInfo, X + HalfWidth, X + TargetX, Y + VAlign, dottedBrush);
         end;
       ltLeft: // left can also mean right for RTL context
         if Reverse then
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent)
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent, dottedBrush)
         else
-          DrawDottedVLine(PaintInfo, Y, Y + H, X);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X, dottedBrush);
       ltLeftBottom:
         if Reverse then
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent);
-          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X + FIndent, dottedBrush);
+          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H, dottedBrush);
         end
         else
         begin
-          DrawDottedVLine(PaintInfo, Y, Y + H, X);
-          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H);
+          DrawDottedVLine(PaintInfo, Y, Y + H, X, dottedBrush);
+          DrawDottedHLine(PaintInfo, X, X + FIndent, Y + H, dottedBrush);
         end;
     end;
   end;
@@ -5290,7 +5290,7 @@ begin
       DoGetLineStyle(Bits);
       BitsLinesCount:= Length(LineBitsDotted);
     end;
-    FDottedBrush:= PrepareDottedBrush(FDottedBrush, Bits, BitsLinesCount);
+    DottedBrushTreeLines:= PrepareDottedBrush(DottedBrushTreeLines, Bits, BitsLinesCount);
   end;
 end;
 
@@ -8628,6 +8628,7 @@ begin
 
   if not (csDesigning in ComponentState) and (toAcceptOLEDrop in FOptions.MiscOptions) then
     RevokeDragDrop(Handle);
+
   inherited;
 end;
 
@@ -11899,6 +11900,7 @@ procedure TBaseVirtualTree.DoShowScrollBar(Bar: Integer; Show: Boolean);
 
 begin
   ShowScrollBar(Bar, Show);
+
   if Assigned(FOnShowScrollBar) then
     FOnShowScrollBar(Self, Bar, Show);
 end;
@@ -12400,6 +12402,7 @@ begin
     InvalidateNode(FDropTargetNode);
     FDropTargetNode := nil;
   end;
+
   UpdateWindow();
 
   Effect := 0;
@@ -12606,7 +12609,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension);
+procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension; dottedBrush: TBrush);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -12618,13 +12621,13 @@ begin
   begin
     Brush.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-    Winapi.Windows.FillRect(Handle, R, FDottedBrush.Handle);
+    Winapi.Windows.FillRect(Handle, R, dottedBrush.Handle);
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; UseSelectedBkColor: Boolean = False);
+procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension; dottedBrush: TBrush; UseSelectedBkColor: Boolean = False);
 
 // Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
 
@@ -12644,7 +12647,7 @@ begin
     else
       Brush.Color := FColors.BackGroundColor;
     R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
-    Winapi.Windows.FillRect(Handle, R, FDottedBrush.Handle);
+    Winapi.Windows.FillRect(Handle, R, dottedBrush.Handle);
   end;
 end;
 
@@ -15305,7 +15308,7 @@ begin
           begin
             DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
             DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node] - 1, VAlign - 1, NewStyles[I],
-              BidiMode <> bdLeftToRight);
+              BidiMode <> bdLeftToRight, DottedBrushTreeLines);
             Inc(XPos, Offset);
           end;
         end;
@@ -15315,7 +15318,7 @@ begin
       begin
         DoBeforeDrawLineImage(PaintInfo.Node, I + Ord(not (toShowRoot in TreeOptions.PaintOptions)), XPos);
         DrawLineImage(PaintInfo, XPos, CellRect.Top, NodeHeight[Node], VAlign - 1, LineImage[I],
-          BidiMode <> bdLeftToRight);
+          BidiMode <> bdLeftToRight, DottedBrushTreeLines);
         Inc(XPos, Offset);
       end;
     end;
@@ -21679,15 +21682,15 @@ begin
                             begin
                               if BidiMode = bdLeftToRight then
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left + PaintInfo.Offsets[ofsCheckBox] - fImagesMargin, CellRect.Right - 1, CellRect.Bottom - 1);
+                                DrawDottedHLine(PaintInfo, CellRect.Left + PaintInfo.Offsets[ofsCheckBox] - fImagesMargin, CellRect.Right - 1, CellRect.Bottom - 1, DottedBrushGridLines);
                               end
                               else
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * Integer(FIndent) - 1, CellRect.Bottom - 1);
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * Integer(FIndent) - 1, CellRect.Bottom - 1, DottedBrushGridLines);
                               end;
                             end
                             else
-                              DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - 1);
+                              DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - 1, DottedBrushGridLines);
 
                             Dec(CellRect.Bottom);
                             Dec(ContentRect.Bottom);
@@ -21721,7 +21724,7 @@ begin
                                     lUseSelectedBkColor := (poDrawSelection in PaintOptions) and (toFullRowSelect in FOptions.SelectionOptions) and
                                                           (vsSelected in Node.States) and not (toUseBlendedSelection in FOptions.PaintOptions) and not
                                                           (tsUseExplorerTheme in FStates);
-                                    DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, lUseSelectedBkColor);
+                                    DrawDottedVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, DottedBrushGridLines, lUseSelectedBkColor);
                                   end;
 
                                   Dec(CellRect.Right);
@@ -21917,7 +21920,7 @@ begin
                          (toShowVertGridLines in FOptions.PaintOptions) and
                          (not (hoAutoResize in FHeader.Options) or (Cardinal(FirstColumn) < TColumnPosition(Count - 1))) then
                       begin
-                        DrawDottedVLine(PaintInfo, R.Top, R.Bottom, R.Right - 1);
+                        DrawDottedVLine(PaintInfo, R.Top, R.Bottom, R.Right - 1, DottedBrushGridLines);
                         Dec(R.Right);
                       end;
 
@@ -23328,6 +23331,7 @@ begin
                 if tsHint in Self.FStates then
                   Application.CancelHint;
                 UpdateWindow();
+
                 // animated expanding
                 with ToggleData do
                 begin
