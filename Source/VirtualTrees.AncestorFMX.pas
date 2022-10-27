@@ -127,7 +127,7 @@ begin
   //and recreate it every time when color is changing
 
   CurrentDottedBrush.Free;
-  FDottedBrushGrid.Free;
+  FDottedBrushGridLines.Free;
 
   Result := nil;
   for i_bmp:= 1 to 2 do
@@ -167,8 +167,8 @@ begin
           Result.Bitmap.Bitmap.Assign(PatternBitmap);
         end else
         begin
-          FDottedBrushGrid := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite);
-          FDottedBrushGrid.Bitmap.Bitmap.Assign(PatternBitmap);
+          FDottedBrushGridLines := TStrokeBrush.Create(TBrushKind.Bitmap, clWhite);
+          FDottedBrushGridLines.Bitmap.Bitmap.Assign(PatternBitmap);
         end;
       FreeAndNil(PatternBitmap);
     end;
