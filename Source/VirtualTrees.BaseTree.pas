@@ -349,10 +349,11 @@ type
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
     CheckType: TCheckType;   // indicates which check type shall be used for this node
-    Dummy: Byte;             // dummy value to fill DWORD boundary       TODO: Is this still necessary?
+    Dummy: Byte;             // dummy value to fill DWORD boundary
     TotalCount: Cardinal;    // sum of this node, all of its child nodes and their child nodes etc.
     TotalHeight: TDimension; // height in pixels this node covers on screen including the height of all of its
                              // children
+    _Filler: TDWordFiller;   // Ensure 8 Byte alignment of following pointers for 64bit builds. Issue #1136
     // Note: Some copy routines require that all pointers (as well as the data area) in a node are
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
     //       data) then put them before field Parent.
