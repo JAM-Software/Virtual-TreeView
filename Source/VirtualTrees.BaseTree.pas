@@ -4928,17 +4928,16 @@ var
 
 begin
   Size := TreeNodeSize;
-  if not (csDesigning in ComponentState) then
+  if (csDesigning in ComponentState) and (FNodeDataSize < SizeOf(Pointer)) then
+    System.Inc(Size, SizeOf(Pointer)) // Fixes #702
+  else
   begin  // Make sure FNodeDataSize is valid.
     if FNodeDataSize <= 0 then
       ValidateNodeDataSize(FNodeDataSize);
 
     // Take record alignment into account.
     System.Inc(Size, FNodeDataSize);
-  end//not csDesigning
-  else
-    System.Inc(Size, SizeOf(Pointer)); // Fixes #702
-
+  end;
 
   Result := AllocMem(Size + FTotalInternalDataSize);
 
