@@ -390,6 +390,7 @@ type
     HitPositions: THitPositions;
     HitColumn: TColumnIndex;
     HitPoint: TPoint;
+    ShiftState: TShiftState;
   end;
 
 
@@ -1445,7 +1446,7 @@ type
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: TDimension); virtual;
-    procedure AdjustTotalHeight(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
+    procedure AdjustTotalHeight(Node: PVirtualNode; Value: TDimension; relative: Boolean = False);
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
     function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
@@ -1970,7 +1971,7 @@ type
     function GetFirstVisibleChildNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetFirstVisibleNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): PVirtualNode;
-    procedure GetHitTestInfoAt(X, Y: TDimension; Relative: Boolean; var HitInfo: THitInfo); virtual;
+    procedure GetHitTestInfoAt(X, Y: TDimension; Relative: Boolean; var HitInfo: THitInfo; ShiftState: TShiftState=[]); virtual;
     function GetLast(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastInitialized(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
     function GetLastNoInit(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = False): PVirtualNode;
@@ -6997,7 +6998,7 @@ begin
 
     // Determine node for which to show hint/tooltip.
     with HintInfo^ do
-      GetHitTestInfoAt(CursorPos.X, CursorPos.Y, True, HitInfo);
+      GetHitTestInfoAt(CursorPos.X, CursorPos.Y, True, HitInfo, []);
 
     // Make sure a hint is only shown if the tree or at least its parent form is active.
     // Active editing is ok too as long as we don't want the hint for the current edit node.
@@ -8467,7 +8468,7 @@ begin
   DoStateChange([tsLeftDblClick]);
   try
     // get information about the hit, before calling inherited, is this may change the scroll postion and so the node under the mouse would chnage and would no longer be the one the user actually clicked
-      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
       HandleMouseDblClick(Message, HitInfo);
     // Call inherited after doing our standard handling, as the event handler may close the form or re-fill the control, so our clicked node would be no longer valid.
     // Our standard handling does not do that.
@@ -8492,7 +8493,7 @@ begin
   inherited;
 
   // get information about the hit
-  GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+  GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
   HandleMouseDown(Message, HitInfo);
 end;
 
@@ -8507,7 +8508,7 @@ begin
   DoStateChange([], [tsLeftButtonDown, tsNodeHeightTracking, tsNodeHeightTrackPending]);
 
   // get information about the hit
-  GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+  GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
   HandleMouseUp(Message, HitInfo);
 
   inherited;
@@ -8527,7 +8528,7 @@ begin
   // get information about the hit
   if toMiddleClickSelect in FOptions.SelectionOptions then
   begin
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
     HandleMouseDblClick(Message, HitInfo);
   end;
   DoStateChange([], [tsMiddleDblClick]);
@@ -8561,7 +8562,7 @@ begin
       // Get information about the hit.
       if toMiddleClickSelect in FOptions.SelectionOptions then
       begin
-        GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+        GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
         HandleMouseDown(Message, HitInfo);
       end;
     end;
@@ -8595,7 +8596,7 @@ begin
       // get information about the hit
       if toMiddleClickSelect in FOptions.SelectionOptions then
       begin
-        GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+        GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
         HandleMouseUp(Message, HitInfo);
       end;
     end;
@@ -8804,7 +8805,7 @@ begin
   // get information about the hit
   if toMiddleClickSelect in FOptions.SelectionOptions then
   begin
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
     HandleMouseDblClick(Message, HitInfo);
   end;
   DoStateChange([], [tsRightDblClick]);
@@ -8828,7 +8829,7 @@ begin
     // get information about the hit
     if toRightClickSelect in FOptions.SelectionOptions then
     begin
-      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+      GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
       // Go temporarily into sync mode to avoid a delayed change event for the node when selecting. #679
       RemoveSynchMode := not (tsSynchMode in FStates);
       Include(FStates, tsSynchMode);
@@ -8865,7 +8866,7 @@ begin
     inherited;
 
     // get information about the hit
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
 
     if toRightClickSelect in FOptions.SelectionOptions then
       HandleMouseUp(Message, HitInfo);
@@ -8908,7 +8909,7 @@ begin
             begin
               GetCursorPos(P);
               P := ScreenToClient(P);
-              GetHitTestInfoAt(P.X, P.Y, True, HitInfo);
+              GetHitTestInfoAt(P.X, P.Y, True, HitInfo, []);
               if (hiOnItem in HitInfo.HitPositions) and
                  ([hiUpperSplitter, hiLowerSplitter] * HitInfo.HitPositions <> []) then
               begin
@@ -12328,7 +12329,7 @@ begin
     else
     begin
       // Set initial drop target node and drop mode.
-      GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo);
+      GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo, Shift);
       if Assigned(HitInfo.HitNode) then
       begin
         FDropTargetNode := HitInfo.HitNode;
@@ -12492,7 +12493,7 @@ begin
       Include(Shift, ssMiddle);
     if tsRightButtonDown in FStates then
       Include(Shift, ssRight);
-    GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo);
+    GetHitTestInfoAt(Pt.X, Pt.Y, True, HitInfo, Shift);
 
     if Assigned(HitInfo.HitNode) then
       R := GetDisplayRect(HitInfo.HitNode, NoColumn, False)
@@ -13113,7 +13114,7 @@ begin
   DoInvalidate := False;
   oldHotNode := FCurrentHotNode;
   // Get information about the hit.
-  GetHitTestInfoAt(X, Y, True, HitInfo);
+  GetHitTestInfoAt(X, Y, True, HitInfo, []);
 
   // Only make the new node being "hot" if its label is hit or full row selection is enabled.
   CheckPositions := [hiOnItemLabel, hiOnItemCheckbox];
@@ -13591,7 +13592,7 @@ begin
     if not DoEndEdit then
       exit;
     // Repeat the hit test as an OnEdited event might got triggered that could modify the tree.
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
   end;//if tsEditing
 
   // Focus change. Don't use the SetFocus method as this does not work for MDI Winapi.Windows.
@@ -13599,7 +13600,7 @@ begin
   begin
     Winapi.Windows.SetFocus(Handle);
     // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo);
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
   end;
 
   if IsEmpty then
@@ -18586,7 +18587,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: TDimension; Relative: Boolean; var HitInfo: THitInfo);
+procedure TBaseVirtualTree.GetHitTestInfoAt(X, Y: TDimension; Relative: Boolean; var HitInfo: THitInfo; ShiftState: TShiftState=[]);
 
 // Determines the node that occupies the specified point or nil if there's none. The parameter Relative determines
 // whether to consider X and Y as being client coordinates (if True) or as being absolute tree coordinates.
@@ -18606,6 +18607,10 @@ begin
   HitInfo.HitNode := nil;
   HitInfo.HitPositions := [];
   HitInfo.HitColumn := NoColumn;
+
+  if ShiftState=[] then
+    ShiftState:= KeyboardStateToShiftState();
+  HitInfo.ShiftState:= ShiftState;
 
   // Determine if point lies in the tree's client area.
   if X < 0 then
