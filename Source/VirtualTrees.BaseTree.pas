@@ -4929,11 +4929,11 @@ var
 
 begin
   Size := TreeNodeSize;
-  if (csDesigning in ComponentState) and (FNodeDataSize < SizeOf(Pointer)) then
+  if (csDesigning in ComponentState) and (FNodeDataSize < 0) then
     System.Inc(Size, SizeOf(Pointer)) // Fixes #702
   else
   begin  // Make sure FNodeDataSize is valid.
-    if FNodeDataSize <= 0 then
+    if FNodeDataSize < 0 then // NodeDataSize may be 0 for descendant controls that use only InternalData.
       ValidateNodeDataSize(FNodeDataSize);
 
     // Take record alignment into account.
