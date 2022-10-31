@@ -1439,6 +1439,12 @@ type
     procedure SetDoubleBuffered(const Value: Boolean);
     function GetVclStyleEnabled: Boolean; inline;
     procedure SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
+    function IsStored_BackgroundOffsetXY(const Index: Integer): Boolean;
+    function IsStored_BottomSpace: Boolean;
+    function IsStored_DefaultNodeHeight: Boolean;
+    function IsStored_Indent: Boolean;
+    function IsStored_Margin: Boolean;
+    function IsStored_TextMargin: Boolean;
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
     procedure AutoScale(isDpiChange: Boolean); virtual;
@@ -1718,10 +1724,10 @@ type
     property AutoScrollInterval: TAutoScrollInterval read FAutoScrollInterval write FAutoScrollInterval default 1;
     property Background: TVTBackground read FBackground write SetBackground;
     property BackGroundImageTransparent: Boolean read FBackGroundImageTransparent write SetBackGroundImageTransparent default False;
-    property BackgroundOffsetX: TDimension index 0 read FBackgroundOffsetX write SetBackgroundOffset default 0;
-    property BackgroundOffsetY: TDimension index 1 read FBackgroundOffsetY write SetBackgroundOffset default 0;
-    property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
-    property BottomSpace: TDimension read FBottomSpace write SetBottomSpace default 0;
+    property BackgroundOffsetX: TDimension index 0 read FBackgroundOffsetX write SetBackgroundOffset stored IsStored_BackgroundOffsetXY; // default 0;
+    property BackgroundOffsetY: TDimension index 1 read FBackgroundOffsetY write SetBackgroundOffset stored IsStored_BackgroundOffsetXY; // default 0;
+    property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default TFormBorderStyle.bsSingle;
+    property BottomSpace: TDimension read FBottomSpace write SetBottomSpace stored IsStored_BottomSpace; //default 0;
     property ButtonFillMode: TVTButtonFillMode read FButtonFillMode write SetButtonFillMode default fmTreeColor;
     property ButtonStyle: TVTButtonStyle read FButtonStyle write SetButtonStyle default bsRectangle;
     property ChangeDelay: Cardinal read FChangeDelay write FChangeDelay default 0;
@@ -1730,7 +1736,7 @@ type
     property Colors: TVTColors read FColors write SetColors;
     property CustomCheckImages: TCustomImageList read FCustomCheckImages write SetCustomCheckImages;
     property DefaultHintKind: TVTHintKind read GetDefaultHintKind;
-    property DefaultNodeHeight: TDimension read FDefaultNodeHeight write SetDefaultNodeHeight default 18;
+    property DefaultNodeHeight: TDimension read FDefaultNodeHeight write SetDefaultNodeHeight stored IsStored_DefaultNodeHeight; // default 18;
     property DefaultPasteMode: TVTNodeAttachMode read FDefaultPasteMode write FDefaultPasteMode default amAddChildLast;
     property DragHeight: Integer read FDragHeight write FDragHeight default 350;
     property DragImageKind: TVTDragImageKind read FDragImageKind write FDragImageKind default diComplete;
@@ -1753,13 +1759,13 @@ type
     property IncrementalSearchDirection: TVTSearchDirection read FSearchDirection write FSearchDirection default sdForward;
     property IncrementalSearchStart: TVTSearchStart read FSearchStart write FSearchStart default ssFocusedNode;
     property IncrementalSearchTimeout: Cardinal read FSearchTimeout write FSearchTimeout default 1000;
-    property Indent: TDimension read FIndent write SetIndent default 18;
+    property Indent: TDimension read FIndent write SetIndent stored IsStored_Indent; // default 18;
     property LastClickPos: TPoint read FLastClickPos write FLastClickPos;
     property LastDropMode: TDropMode read FLastDropMode write FLastDropMode;
     property LastHintRect: TRect read FLastHintRect write FLastHintRect;
     property LineMode: TVTLineMode read FLineMode write SetLineMode default lmNormal;
     property LineStyle: TVTLineStyle read FLineStyle write SetLineStyle default lsDotted;
-    property Margin: TDimension read FMargin write SetMargin default 4;
+    property Margin: TDimension read FMargin write SetMargin stored IsStored_Margin; // default 4;
     property NextNodeToSelect: PVirtualNode read FNextNodeToSelect; // Next tree node that we would like to select if the current one gets deleted
     property NodeAlignment: TVTNodeAlignment read FNodeAlignment write SetNodeAlignment default naProportional;
     property NodeDataSize: Integer read FNodeDataSize write SetNodeDataSize default -1;
@@ -1775,7 +1781,7 @@ type
     property SelectionBlendFactor: Byte read FSelectionBlendFactor write FSelectionBlendFactor default 128;
     property SelectionCurveRadius: Cardinal read FSelectionCurveRadius write SetSelectionCurveRadius default 0;
     property StateImages: TCustomImageList read FStateImages write SetStateImages;
-    property TextMargin: TDimension read FTextMargin write SetTextMargin default 4;
+    property TextMargin: TDimension read FTextMargin write SetTextMargin stored IsStored_TextMargin; // default 4;
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
     property WantTabs: Boolean read FWantTabs write FWantTabs default False;
     property SyncCheckstateWithSelection[Node: PVirtualNode]: Boolean read GetSyncCheckstateWithSelection;
@@ -20961,6 +20967,57 @@ function TBaseVirtualTree.IsMouseSelecting: Boolean;
 
 begin
   Result := (tsDrawSelPending in FStates) or (tsDrawSelecting in FStates);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsStored_BackgroundOffsetXY(const Index: Integer): Boolean;
+begin
+  case Index of
+    0:
+      Result:= CompareValue(FBackgroundOffsetX, 0)=EqualsValue;
+    1:
+      Result:= CompareValue(FBackgroundOffsetY, 0)=EqualsValue;
+    else
+      // Clear warning only
+      Result:= false;
+      RaiseVTError('Unknown index in TBaseVirtualTree.IsStored_BackgroundOffsetXY', 0);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsStored_BottomSpace: Boolean;
+begin
+  Result:= CompareValue(FBottomSpace, 0)=EqualsValue;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsStored_DefaultNodeHeight: Boolean;
+begin
+  Result:= CompareValue(FBottomSpace, 18)=EqualsValue;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsStored_Indent: Boolean;
+begin
+  Result:= CompareValue(FBottomSpace, 18)=EqualsValue;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsStored_Margin: Boolean;
+begin
+  Result:= CompareValue(FBottomSpace, 4)=EqualsValue;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsStored_TextMargin: Boolean;
+begin
+  Result:= CompareValue(FBottomSpace, 4)=EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
