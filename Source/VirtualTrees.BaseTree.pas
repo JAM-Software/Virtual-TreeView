@@ -20996,28 +20996,28 @@ end;
 
 function TBaseVirtualTree.IsStored_DefaultNodeHeight: Boolean;
 begin
-  Result:= CompareValue(FBottomSpace, 18)=EqualsValue;
+  Result:= CompareValue(FDefaultNodeHeight, 18)=EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_Indent: Boolean;
 begin
-  Result:= CompareValue(FBottomSpace, 18)=EqualsValue;
+  Result:= CompareValue(FIndent, 18)=EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_Margin: Boolean;
 begin
-  Result:= CompareValue(FBottomSpace, 4)=EqualsValue;
+  Result:= CompareValue(FMargin, 4)=EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_TextMargin: Boolean;
 begin
-  Result:= CompareValue(FBottomSpace, 4)=EqualsValue;
+  Result:= CompareValue(FTextMargin, 4)=EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
