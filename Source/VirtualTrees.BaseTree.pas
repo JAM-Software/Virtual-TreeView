@@ -20975,9 +20975,9 @@ function TBaseVirtualTree.IsStored_BackgroundOffsetXY(const Index: Integer): Boo
 begin
   case Index of
     0:
-      Result:= CompareValue(FBackgroundOffsetX, 0)=EqualsValue;
+      Result:= CompareValue(FBackgroundOffsetX, 0)<>EqualsValue;
     1:
-      Result:= CompareValue(FBackgroundOffsetY, 0)=EqualsValue;
+      Result:= CompareValue(FBackgroundOffsetY, 0)<>EqualsValue;
     else
       // Clear warning only
       Result:= false;
@@ -20989,35 +20989,35 @@ end;
 
 function TBaseVirtualTree.IsStored_BottomSpace: Boolean;
 begin
-  Result:= CompareValue(FBottomSpace, 0)=EqualsValue;
+  Result:= CompareValue(FBottomSpace, 0)<>EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_DefaultNodeHeight: Boolean;
 begin
-  Result:= CompareValue(FDefaultNodeHeight, 18)=EqualsValue;
+  Result:= CompareValue(FDefaultNodeHeight, 18)<>EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_Indent: Boolean;
 begin
-  Result:= CompareValue(FIndent, 18)=EqualsValue;
+  Result:= CompareValue(FIndent, 18)<>EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_Margin: Boolean;
 begin
-  Result:= CompareValue(FMargin, 4)=EqualsValue;
+  Result:= CompareValue(FMargin, 4)<>EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsStored_TextMargin: Boolean;
 begin
-  Result:= CompareValue(FTextMargin, 4)=EqualsValue;
+  Result:= CompareValue(FTextMargin, 4)<>EqualsValue;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
