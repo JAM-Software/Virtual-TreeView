@@ -96,28 +96,28 @@ type
     function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;	
 
     /// <summary>
-    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     procedure Invalidate(); inline;
     /// <summary>
-    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
     /// <summary>
-    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     function UpdateWindow(): BOOL; inline;
     /// <summary>
-    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
     /// <summary>
-    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
 
     /// <summary>
-    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     function SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
   public //properties
