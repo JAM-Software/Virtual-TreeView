@@ -92,11 +92,34 @@ type
     /// Created as method, to be available in whole hierarchy without specifing Unit file name (prevent circular unit ref).
     /// </summary>
     class function KeysToShiftState(Keys: LongInt): TShiftState; static;
-
+	
+	function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;	
+	
+	/// <summary>
+    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// </summary>
     procedure Invalidate(); inline;
+	/// <summary>
+    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// </summary>
     function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
+	/// <summary>
+    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// </summary>
     function UpdateWindow(): BOOL; inline;
-	//jeszcze RedrawWindow i SendMessage
+	/// <summary>
+    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// </summary>
+	function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+	/// <summary>
+    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// </summary>
+	function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+	
+	/// <summary>
+    /// Alias for Repaint on FMX to be compatibile with VCL
+    /// </summary>
+	function SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
   public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;
@@ -112,6 +135,7 @@ type
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
     property HScrollBar: TScrollBar read FHScrollBar;
     property VScrollBar: TScrollBar read FVScrollBar;
+	property HandleAllocated: Boolean read FHandleAllocated;
 
     /// <summary>
     /// Alias for Fill.Color to make same use as Vcl Color property
@@ -342,6 +366,22 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL;
+begin
+  Repaint;
+  Result:= true;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL;
+begin
+  Repaint;
+  Result:= true;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTBaseAncestorFMX.RecreateWnd();
 begin
   Repaint;
@@ -506,6 +546,21 @@ end;
 function TVTBaseAncestorFMX.Focused(): Boolean
 begin
   Result:= IsFocused;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;
+begin
+  Result:= Control.Root.GetObject as TCustomForm;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
+begin
+  Repaint;
+  Result:= true;
 end;
 
 end.

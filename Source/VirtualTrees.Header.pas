@@ -493,7 +493,9 @@ uses
   Vcl.Forms,
   VirtualTrees,
   VirtualTrees.HeaderPopup,
-  VirtualTrees.BaseTree;
+  VirtualTrees.BaseTree,
+  VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}
+  ;
 
 type
   TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
@@ -2439,7 +2441,7 @@ begin
       Flags := RDW_FRAME or RDW_INVALIDATE or RDW_VALIDATE or RDW_NOINTERNALPAINT or RDW_NOERASE or RDW_NOCHILDREN;
       if UpdateNowFlag then
         Flags := Flags or RDW_UPDATENOW;
-      RedrawWindow(Handle, @R, 0, Flags);
+      RedrawWindow(@R, 0, Flags);
     end;
 end;
 

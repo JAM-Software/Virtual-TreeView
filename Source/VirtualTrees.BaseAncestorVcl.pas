@@ -43,12 +43,43 @@ type
     procedure CutToClipboard; virtual; abstract;
     function PasteFromClipboard: Boolean; virtual; abstract;
 
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.InvalidateRect
+    /// </summary>
     function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.UpdateWindow
+    /// </summary>
     function UpdateWindow(): BOOL; inline;
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.RedrawWindow
+    /// </summary>
+    function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: HRGN; flags: UINT): BOOL; overload; inline;
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.RedrawWindow
+    /// </summary>
+    function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: HRGN; flags: UINT): BOOL; overload; inline;
 
+    /// <summary>
+    /// Handle less and with limited parameters version
+    /// </summary>
+    function SendWM_SETREDRAW(Updating: Boolean): LRESULT; inline;
+
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.ShowScrollBar
+    /// </summary>
     procedure ShowScrollBar(Bar: Integer; AShow: Boolean);
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.SetScrollInfo
+    /// </summary>
     function SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.GetScrollInfo
+    /// </summary>
     function GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
+    /// <summary>
+    /// Handle less alias for WinApi.Windows.GetScrollPos
+    /// </summary>
     function GetScrollPos(Bar: Integer): TDimension;
   public //properties
     property Accessible: IAccessible read FAccessible write FAccessible;
@@ -57,6 +88,7 @@ type
   end;
 
 implementation
+uses Winapi.Messages;
 
 //----------------------------------------------------------------------------------------------------------------------
 function TVTBaseAncestorVcl.PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush;
@@ -71,6 +103,20 @@ begin
     end;
 
   Result.Bitmap.Handle := CreateBitmap(8, 8, 1, 1, Bits);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: HRGN; flags: UINT): BOOL;
+begin
+  Result:= Winapi.Windows.RedrawWindow(Handle, lprcUpdate, hrgnUpdate, flags);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.RedrawWindow(lprcUpdate: PRect; hrgnUpdate: HRGN; flags: UINT): BOOL;
+begin
+  Result:= Winapi.Windows.RedrawWindow(Handle, lprcUpdate, hrgnUpdate, flags);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -92,6 +138,13 @@ end;
 procedure TVTBaseAncestorVcl.ShowScrollBar(Bar: Integer; AShow: Boolean);
 begin
   WinApi.Windows.ShowScrollBar(Handle, Bar, AShow);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorVcl.SendWM_SETREDRAW(Updating: Boolean): LRESULT;
+begin
+  Result:= SendMessage(Handle, WM_SETREDRAW, Ord(not Updating), 0);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
