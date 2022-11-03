@@ -92,34 +92,34 @@ type
     /// Created as method, to be available in whole hierarchy without specifing Unit file name (prevent circular unit ref).
     /// </summary>
     class function KeysToShiftState(Keys: LongInt): TShiftState; static;
-	
-	function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;	
-	
-	/// <summary>
+
+    function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;	
+
+    /// <summary>
     /// Alias for Repaint on FMX to be compatibile with VCL
     /// </summary>
     procedure Invalidate(); inline;
-	/// <summary>
+    /// <summary>
     /// Alias for Repaint on FMX to be compatibile with VCL
     /// </summary>
     function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
-	/// <summary>
+    /// <summary>
     /// Alias for Repaint on FMX to be compatibile with VCL
     /// </summary>
     function UpdateWindow(): BOOL; inline;
-	/// <summary>
+    /// <summary>
     /// Alias for Repaint on FMX to be compatibile with VCL
     /// </summary>
-	function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
-	/// <summary>
+    function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+    /// <summary>
     /// Alias for Repaint on FMX to be compatibile with VCL
     /// </summary>
-	function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
-	
-	/// <summary>
+    function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+
+    /// <summary>
     /// Alias for Repaint on FMX to be compatibile with VCL
     /// </summary>
-	function SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
+    function SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
   public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;
@@ -135,12 +135,12 @@ type
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
     property HScrollBar: TScrollBar read FHScrollBar;
     property VScrollBar: TScrollBar read FVScrollBar;
-	property HandleAllocated: Boolean read FHandleAllocated;
+    property HandleAllocated: Boolean read FHandleAllocated;
 
     /// <summary>
     /// Alias for Fill.Color to make same use as Vcl Color property
     /// </summary>
-	  property Color: TAlphaColor read GetFillColor write SetFillColor;
+    property Color: TAlphaColor read GetFillColor write SetFillColor;
   end;
 
 implementation
@@ -242,7 +242,7 @@ begin
   DisableFocusEffect := True;
   CanFocus := True;
   AutoCapture := True;
-  
+
   FHScrollBar:= TScrollBar.Create(Self);
   FHScrollBar.Parent:= Self;
   FHScrollBar.Orientation:= TOrientation.Horizontal;
@@ -250,7 +250,7 @@ begin
   FHScrollBar.Visible:= true;
   FHScrollBar.OnChange:= HScrollChangeProc;
   FHScrollBar.Margins.Right:= FHScrollBar.Height; 
-  
+
   FVScrollBar:= TScrollBar.Create(Self);
   FVScrollBar.Parent:= Self;
   FVScrollBar.Orientation:= TOrientation.Vertical;
@@ -330,7 +330,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTBaseAncestorFMX.ScreenToClient(P: TPoint): TPoint;
-								   
+
 begin
   Result:= AbsoluteToLocal(P);
 end;
