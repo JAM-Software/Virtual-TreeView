@@ -1017,4 +1017,3 @@ finalization
   TCustomStyleEngine.UnRegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
 
 end.
-
