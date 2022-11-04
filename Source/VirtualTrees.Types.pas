@@ -540,7 +540,9 @@ implementation
 uses
   VirtualTrees,
   VirtualTrees.StyleHooks,
-  VirtualTrees.BaseTree;
+  VirtualTrees.BaseTree,
+  VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}
+  ;
 
 type
   TVTCracker = class(TBaseVirtualTree);
@@ -710,7 +712,7 @@ begin
               DoStateChange([], [tsUseThemes]);
 
             PrepareBitmaps(True, False);
-            RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME);
+            RedrawWindow(nil, 0, RDW_INVALIDATE or RDW_VALIDATE or RDW_FRAME);
           end;
 
           if toChildrenAbove in ToBeSet + ToBeCleared then

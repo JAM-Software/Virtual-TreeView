@@ -174,5 +174,3 @@ finalization
   TVTAccessibilityFactory.FreeFactory;
 
 end.
-
-

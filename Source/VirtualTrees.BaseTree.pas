@@ -6386,7 +6386,7 @@ begin
   // updating is allowed. As this happens internally the VCL does not get notified and
   // still assumes the control is hidden. This results in weird "cannot focus invisible control" errors.
   if Visible and HandleAllocated and (FUpdateCount = 0) then
-    SendMessage(Handle, WM_SETREDRAW, Ord(not Updating), 0);
+    SendWM_SETREDRAW(Updating);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -6944,7 +6944,7 @@ begin
 
   // Need to invalidate the non-client area as well, since the header must be redrawn too.
   if csDesigning in ComponentState then
-    RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
+    RedrawWindow(nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7580,7 +7580,7 @@ procedure TBaseVirtualTree.WMEnable(var Message: TWMEnable);
 
 begin
   inherited;
-  RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
+  RedrawWindow(nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -9088,7 +9088,7 @@ begin
         // Really weird invalidation needed here (and I do it only because it happens so rarely), because
         // when showing the horizontal scrollbar while scrolling down using the down arrow button,
         // the button will be repainted on mouse up (at the wrong place in the far right lower corner)...
-        RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
+        RedrawWindow(nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN);
       end;
     SB_LINEUP:
       SetOffsetY(FOffsetY + FScrollBarOptions.VerticalIncrement);
@@ -9559,6 +9559,7 @@ begin
   AutoScale(M <> D);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ScaleNodeHeights(M, D: Integer);
 var
@@ -15090,7 +15091,7 @@ begin
       begin
         if Selected and not Ghosted then
         begin
-          if Focused or (toPopupMode in FOptions.PaintOptions) then
+          if Focused or (TVTPaintOption.toPopupMode in FOptions.PaintOptions) then
             ForegroundColor := ColorToRGB(FColors.FocusedSelectionColor)
           else
             ForegroundColor := ColorToRGB(FColors.UnfocusedSelectionColor);
@@ -16183,6 +16184,8 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.StyleServices(AControl: TControl): TCustomStyleServices;
 begin
   if AControl = nil then
@@ -16641,7 +16644,7 @@ begin
       CombineRgn(NCRegion, NCRegion, UpdateRegion, RGN_DIFF);
       // Subtract also out what is hidden by the drag image.
       CombineRgn(NCRegion, NCRegion, DragRegion, RGN_DIFF);
-      RedrawWindow(Handle, nil, NCRegion, RDW_FRAME or RDW_NOERASE or RDW_NOCHILDREN or RDW_INVALIDATE or RDW_VALIDATE or
+      RedrawWindow(nil, NCRegion, RDW_FRAME or RDW_NOERASE or RDW_NOCHILDREN or RDW_INVALIDATE or RDW_VALIDATE or
         RDW_UPDATENOW);
       DeleteObject(NCRegion);
       DeleteObject(UpdateRegion);
@@ -16651,7 +16654,7 @@ begin
     RedrawFlags := RDW_INVALIDATE or RDW_VALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_NOCHILDREN;
     // Remove the part of the update region which is covered by the drag image.
     CombineRgn(UpdateRegion, UpdateRegion, DragRegion, RGN_DIFF);
-    RedrawWindow(Handle, nil, UpdateRegion, RedrawFlags);
+    RedrawWindow(nil, UpdateRegion, RedrawFlags);
     DeleteObject(UpdateRegion);
     DeleteObject(DragRegion);
     DeleteObject(VisibleTreeRegion);
@@ -22389,6 +22392,8 @@ begin
     Kind := DefaultHintKind;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetDefaultHintKind: TVTHintKind;
 
 begin
@@ -22600,7 +22605,7 @@ begin
   if Assigned(Node) and (Node <> FRoot) then
   begin
     R := GetDisplayRect(Node, NoColumn, False);
-    RedrawWindow(Handle, @R, 0, RDW_INVALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_VALIDATE or RDW_NOCHILDREN);
+    RedrawWindow(@R, 0, RDW_INVALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_VALIDATE or RDW_NOCHILDREN);
   end;
 end;
 
@@ -23640,7 +23645,7 @@ begin
       ScrollInfo.fMask := SIF_ALL or ScrollMasks[FScrollBarOptions.AlwaysVisible];
       SetScrollInfo(SB_HORZ, ScrollInfo, DoRepaint); // 1 app freeze seen here in TreeSize 8.1.0 after ScaleForPpi()
       if DoRepaint then
-        RedrawWindow(Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
+        RedrawWindow(nil, 0, RDW_FRAME or RDW_INVALIDATE); // Fixes issue #698
     end
     else
     begin
@@ -23692,6 +23697,8 @@ begin
     Perform(CM_UPDATE_VCLSTYLE_SCROLLBARS,0,0);
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.UpdateStyleElements;
 begin
@@ -23841,6 +23848,8 @@ begin
   Include(States, vsOnFreeNodeCallRequired);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualNode.GetData<T>: T;
 
 // Returns the associated data converted to the class given in the generic part of the function.
@@ -23850,6 +23859,8 @@ begin
   Include(States, vsOnFreeNodeCallRequired);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualNode.IsAssigned: Boolean;
 
 // Returns False if this node is nil, True otherwise
@@ -23857,6 +23868,8 @@ function TVirtualNode.IsAssigned: Boolean;
 begin
   Exit(@Self <> nil);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualNode.SetData(pUserData: Pointer);
 
@@ -23871,6 +23884,8 @@ begin
   Include(Self.States, vsOnFreeNodeCallRequired);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVirtualNode.SetData(const pUserData: IInterface);
 
 
@@ -23883,6 +23898,8 @@ begin
   Include(Self.States, vsReleaseCallOnUserDataRequired);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVirtualNode.SetData<T>(pUserData: T);
 
 begin
@@ -23891,6 +23908,8 @@ begin
     Include(Self.States, vsReleaseCallOnUserDataRequired);
   Include(Self.States, vsOnFreeNodeCallRequired);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 { TVTImageInfo }
 
@@ -23901,6 +23920,8 @@ function TVTImageInfo.Equals(const pImageInfo2: TVTImageInfo): Boolean;
 begin
   Result := (Self.Index = pImageInfo2.Index) and (Self.Images = pImageInfo2.Images);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 { TVTPaintInfo }
 

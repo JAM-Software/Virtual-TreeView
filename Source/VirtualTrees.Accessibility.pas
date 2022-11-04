@@ -793,6 +793,3 @@ initialization
   TVirtualTreeAccessibility.RegisterDefaultAccessibleProviders();
 
 end.
-
-
-

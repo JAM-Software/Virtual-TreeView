@@ -93,10 +93,33 @@ type
     /// </summary>
     class function KeysToShiftState(Keys: LongInt): TShiftState; static;
 
+    function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;	
+
+    /// <summary>
+    /// Alias for Repaint on FMX to be compatible with VCL
+    /// </summary>
     procedure Invalidate(); inline;
+    /// <summary>
+    /// Alias for Repaint on FMX to be compatible with VCL
+    /// </summary>
     function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
+    /// <summary>
+    /// Alias for Repaint on FMX to be compatible with VCL
+    /// </summary>
     function UpdateWindow(): BOOL; inline;
-	//jeszcze RedrawWindow i SendMessage
+    /// <summary>
+    /// Alias for Repaint on FMX to be compatible with VCL
+    /// </summary>
+    function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+    /// <summary>
+    /// Alias for Repaint on FMX to be compatible with VCL
+    /// </summary>
+    function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+
+    /// <summary>
+    /// Alias for Repaint on FMX to be compatible with VCL
+    /// </summary>
+    function SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
   public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;
@@ -112,11 +135,12 @@ type
     property BiDiMode: TBiDiMode read FBiDiMode write SetBiDiMode;
     property HScrollBar: TScrollBar read FHScrollBar;
     property VScrollBar: TScrollBar read FVScrollBar;
+    property HandleAllocated: Boolean read FHandleAllocated;
 
     /// <summary>
     /// Alias for Fill.Color to make same use as Vcl Color property
     /// </summary>
-	  property Color: TAlphaColor read GetFillColor write SetFillColor;
+    property Color: TAlphaColor read GetFillColor write SetFillColor;
   end;
 
 implementation
@@ -218,7 +242,7 @@ begin
   DisableFocusEffect := True;
   CanFocus := True;
   AutoCapture := True;
-  
+
   FHScrollBar:= TScrollBar.Create(Self);
   FHScrollBar.Parent:= Self;
   FHScrollBar.Orientation:= TOrientation.Horizontal;
@@ -226,7 +250,7 @@ begin
   FHScrollBar.Visible:= true;
   FHScrollBar.OnChange:= HScrollChangeProc;
   FHScrollBar.Margins.Right:= FHScrollBar.Height; 
-  
+
   FVScrollBar:= TScrollBar.Create(Self);
   FVScrollBar.Parent:= Self;
   FVScrollBar.Orientation:= TOrientation.Vertical;
@@ -306,7 +330,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTBaseAncestorFMX.ScreenToClient(P: TPoint): TPoint;
-								   
+
 begin
   Result:= AbsoluteToLocal(P);
 end;
@@ -335,6 +359,22 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTBaseAncestorVcl.UpdateWindow(): BOOL;
+begin
+  Repaint;
+  Result:= true;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL;
+begin
+  Repaint;
+  Result:= true;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL;
 begin
   Repaint;
   Result:= true;
@@ -506,6 +546,21 @@ end;
 function TVTBaseAncestorFMX.Focused(): Boolean
 begin
   Result:= IsFocused;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;
+begin
+  Result:= Control.Root.GetObject as TCustomForm;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
+begin
+  Repaint;
+  Result:= true;
 end;
 
 end.
