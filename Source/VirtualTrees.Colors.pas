@@ -12,14 +12,31 @@ type
   //class to collect all switchable colors into one place
   TVTColors = class(TPersistent)
   private type
-    TVTColorEnum = (cDisabledColor, cDropMarkColor, cDropTargetColor, cFocusedSelectionColor, cGridLineColor, cTreeLineColor, cUnfocusedSelectionColor, cBorderColor, cHotColor,
-      cFocusedSelectionBorderColor, cUnfocusedSelectionBorderColor, cDropTargetBorderColor, cSelectionRectangleBlendColor, cSelectionRectangleBorderColor, cHeaderHotColor,
-      cSelectionTextColor, cUnfocusedColor);
+    TVTColorEnum = (
+	    cDisabledColor
+	  , cDropMarkColor
+	  , cDropTargetColor
+	  , cFocusedSelectionColor
+	  , cGridLineColor
+	  , cTreeLineColor
+	  , cUnfocusedSelectionColor
+	  , cBorderColor
+	  , cHotColor
+	  , cFocusedSelectionBorderColor
+	  , cUnfocusedSelectionBorderColor
+	  , cDropTargetBorderColor
+	  , cSelectionRectangleBlendColor
+	  , cSelectionRectangleBorderColor
+	  , cHeaderHotColor
+	  , cSelectionTextColor
+	  , cUnfocusedColor
+	  );
 
     //Please make sure that the published Color properties at the corresponding index
     //have the same color if you change anything here!
   const
-    cDefaultColors : array [TVTColorEnum] of TColor = (clBtnShadow, //DisabledColor
+    cDefaultColors : array [TVTColorEnum] of TColor = (
+	  clBtnShadow,            //DisabledColor
       clHighlight,            //DropMarkColor
       clHighlight,            //DropTargetColor
       clHighlight,            //FocusedSelectionColor
@@ -35,8 +52,8 @@ type
       clHighlight,            //SelectionRectangleBorderColor
       clBtnShadow,            //HeaderHotColor
       clHighlightText,        //SelectionTextColor
-      clInactiveCaptionText); //UnfocusedColor  [IPK]
-
+      clInactiveCaptionText //UnfocusedColor  [IPK]
+    );
   private
     FOwner  : TCustomControl;
     FColors : array [TVTColorEnum] of TColor; //[IPK] 15 -> 16
@@ -221,6 +238,8 @@ begin
     end;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TVTColors.StyleServices(AControl : TControl) : TCustomStyleServices;
 begin

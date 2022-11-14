@@ -307,12 +307,14 @@ type
     property MinWidthPercent  : TVTConstraintPercent index 3 read FMinWidthPercent write SetConstraints default 0;
   end;
 
-  TVTHeaderStyle = (hsThickButtons, //TButton look and feel
+  TVTHeaderStyle = (
+    hsThickButtons,                 //TButton look and feel
     hsFlatButtons,                  //flatter look than hsThickButton, like an always raised flat TToolButton
     hsPlates                        //flat TToolButton look and feel (raise on hover etc.)
     );
 
-  TVTHeaderOption = (hoAutoResize,  //Adjust a column so that the header never exceeds the client width of the owner control.
+  TVTHeaderOption = (
+    hoAutoResize,                   //Adjust a column so that the header never exceeds the client width of the owner control.
     hoColumnResize,                 //Resizing columns with the mouse is allowed.
     hoDblClickResize,               //Allows a column to resize itself to its largest entry.
     hoDrag,                         //Dragging columns is allowed.
@@ -334,17 +336,18 @@ type
     );
   TVTHeaderOptions = set of TVTHeaderOption;
 
-  THeaderState = (hsAutoSizing, //auto size chain is in progess, do not trigger again on WM_SIZE
-    hsDragging,                 //header dragging is in progress (only if enabled)
-    hsDragPending,              //left button is down, user might want to start dragging a column
-    hsLoading,                  //The header currently loads from stream, so updates are not necessary.
-    hsColumnWidthTracking,      //column resizing is in progress
-    hsColumnWidthTrackPending,  //left button is down, user might want to start resize a column
-    hsHeightTracking,           //height resizing is in progress
-    hsHeightTrackPending,       //left button is down, user might want to start changing height
-    hsResizing,                 //multi column resizing in progress
-    hsScaling,                  //the header is scaled after a change of FixedAreaConstraints or client size
-    hsNeedScaling               //the header needs to be scaled
+  THeaderState = (
+    hsAutoSizing,                   //auto size chain is in progess, do not trigger again on WM_SIZE
+    hsDragging,                     //header dragging is in progress (only if enabled)
+    hsDragPending,                  //left button is down, user might want to start dragging a column
+    hsLoading,                      //The header currently loads from stream, so updates are not necessary.
+    hsColumnWidthTracking,          //column resizing is in progress
+    hsColumnWidthTrackPending,      //left button is down, user might want to start resize a column
+    hsHeightTracking,               //height resizing is in progress
+    hsHeightTrackPending,           //left button is down, user might want to start changing height
+    hsResizing,                     //multi column resizing in progress
+    hsScaling,                      //the header is scaled after a change of FixedAreaConstraints or client size
+    hsNeedScaling                   //the header needs to be scaled
     );
   THeaderStates = set of THeaderState;
 
@@ -659,6 +662,8 @@ begin
   {$IFEND}
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTHeader.AutoScale(isDpiChange: Boolean);
 var
   I          : Integer;
@@ -964,6 +969,8 @@ begin
       Invalidate(nil);
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.StyleChanged();
 begin
@@ -1296,7 +1303,8 @@ begin
   //Fix for various problems mentioned in issue 248.
   if NeedRepaint then
   begin
-    UpdateWindow(FOwner.Handle);
+    TBaseVirtualTreeCracker(FOwner).UpdateWindow();
+
     //The new routine recaptures the backup image after the updatewindow
     //Note: We could have called this unconditionally but when called
     //over the tree, doesn't capture the background image. Since our
@@ -1536,7 +1544,7 @@ begin
         with TWMNCMButtonDown(Message) do
           P := Tree.ScreenToClient(Point(XCursor, YCursor));
         if InHeader(P) then
-          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbMiddle, GetShiftState, P.X, P.Y + Integer(FHeight));
+          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbMiddle, GetShiftState, P.X, P.Y + FHeight);
       end;
     WM_NCMBUTTONUP :
       begin
@@ -1547,7 +1555,7 @@ begin
           with TVirtualTreeColumnsCracker(FColumns) do
           begin
             HandleClick(P, mbMiddle, True, False);
-            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbMiddle, GetShiftState, P.X, P.Y + Self.FHeight);
+            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(TmouseButton.mbMiddle, GetShiftState, P.X, P.Y + Self.FHeight);
             DownIndex := NoColumn;
             CheckBoxHit := False;
           end;
@@ -1676,14 +1684,14 @@ begin
 
         //This is a good opportunity to notify the application.
         if not (csDesigning in Tree.ComponentState) and IsInHeader then
-          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbLeft, GetShiftState, P.X, P.Y + Integer(FHeight));
+          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbLeft, GetShiftState, P.X, P.Y + FHeight);
       end;
     WM_NCRBUTTONDOWN :
       begin
         with TWMNCRButtonDown(Message) do
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
         if InHeader(P) then
-          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbRight, GetShiftState, P.X, P.Y + Integer(FHeight));
+          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbRight, GetShiftState, P.X, P.Y + FHeight);
       end;
     WM_NCRBUTTONUP :
       if not (csDesigning in FOwner.ComponentState) then
@@ -1694,7 +1702,7 @@ begin
           if InHeader(P) then
           begin
             HandleMessage := TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbRight, True, False);
-            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbRight, GetShiftState, P.X, P.Y + Integer(FHeight));
+            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbRight, GetShiftState, P.X, P.Y + FHeight);
           end;
         end;
     //When the tree window has an active mouse capture then we only get "client-area" messages.
@@ -1780,7 +1788,7 @@ begin
             begin
               P := FOwner.ScreenToClient(Point(XCursor, YCursor));
               TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbLeft, True, False);
-              TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, GetShiftState, P.X, P.Y + Integer(FHeight));
+              TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, GetShiftState, P.X, P.Y + FHeight);
             end;
         end;
 
@@ -1809,7 +1817,7 @@ begin
       with TWMNCMouseMove(Message), TVirtualTreeColumnsCracker(FColumns) do
       begin
         P := Tree.ScreenToClient(Point(XCursor, YCursor));
-        Tree.DoHeaderMouseMove(GetShiftState, P.X, P.Y + Integer(FHeight));
+        Tree.DoHeaderMouseMove(GetShiftState, P.X, P.Y + FHeight);
         if InHeader(P) and ((AdjustHoverColumn(P)) or ((DownIndex >= 0) and (HoverIndex <> DownIndex))) then
         begin
           //We need a mouse leave detection from here for the non client area.
@@ -3395,7 +3403,7 @@ begin
   if not (hsScaling in Header.States) then
     if ([coVisible, coFixed] * FOptions = [coVisible, coFixed]) then
     begin
-      with Header, FixedAreaConstraints, TreeView do
+      with Header, FixedAreaConstraints, TreeViewControl do
       begin
         TotalFixedMinWidth := 0;
         TotalFixedMaxWidth := 0;
@@ -3438,7 +3446,7 @@ begin
       FWidth := Value;
       Owner.UpdatePositions;
     end;
-    if not (csLoading in TreeViewControl.ComponentState) and (Owner.UpdateCount = 0) then
+    if not (csLoading in TreeViewControl.ComponentState) and (TreeViewControl.UpdateCount = 0) then
     begin
       if hoAutoResize in Header.Options then
         Owner.AdjustAutoSize(Index);
@@ -3456,6 +3464,8 @@ begin
   FSpacing := MulDiv(FSpacing, M, D);
   Self.Width := MulDiv(Self.Width, M, D);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumn.ComputeHeaderLayout(var PaintInfo : THeaderPaintInfo; DrawFormat : Cardinal; CalculateTextRect : Boolean = False);
 
@@ -4241,6 +4251,8 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVirtualTreeColumns.StyleServices(AControl : TControl) : TCustomStyleServices;
 begin
   if AControl = nil then
@@ -4273,7 +4285,7 @@ begin
 
     if AutoIndex >= 0 then
     begin
-      with TreeView do
+      with TreeViewControl do
       begin
         if HandleAllocated then
           RestWidth := ClientWidth
@@ -4540,7 +4552,7 @@ begin
       Include(HitInfo.HitPosition, hhiOnIcon);
       if Items[NewClickIndex].CheckBox then
       begin
-        if Button = mbLeft then
+        if Button = TMouseButton.mbLeft then
           TreeViewControl.UpdateColumnCheckState(Items[NewClickIndex]);
         Include(HitInfo.HitPosition, hhiOnCheckbox);
       end;
@@ -4555,9 +4567,8 @@ begin
 
   if DblClick then
     TreeViewControl.DoHeaderDblClick(HitInfo)
-  else
-  begin
-    if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
+  else begin
+    if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = TMouseButton.mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
     begin
       // handle automatic setting of SortColumn and toggling of the sort order
       if HitInfo.Column <> Header.SortColumn then
@@ -4576,7 +4587,7 @@ begin
       Result := True;
     end;   //if
 
-    if (Button = mbRight) then
+    if (Button = TMouseButton.mbRight) then
     begin
       Dec(P.Y, Header.Height);      // popup menus at actual clicked point
       FreeAndNil(FColumnPopupMenu); // Attention: Do not free the TVTHeaderPopupMenu at the end of this method, otherwise the clikc events of the menu item will not be fired.
@@ -4591,16 +4602,16 @@ begin
         Header.Columns.SetHoverIndex(NoColumn);
         TreeViewControl.DoStateChange([], [tsScrollPending, tsScrolling]);
 
-        Menu.PopupComponent := TreeView;
+        Menu.PopupComponent := TreeViewControl;
         With TreeViewControl.ClientToScreen(P) do
           Menu.Popup(X, Y);
         Result := True;
       end
       else if (hoAutoColumnPopupMenu in Header.Options) then
       begin
-        FColumnPopupMenu := TVTHeaderPopupMenu.Create(TreeView);
+        FColumnPopupMenu := TVTHeaderPopupMenu.Create(TreeViewControl);
         TVTHeaderPopupMenu(FColumnPopupMenu).OnAddHeaderPopupItem := HeaderPopupMenuAddHeaderPopupItem;
-        FColumnPopupMenu.PopupComponent := TreeView;
+        FColumnPopupMenu.PopupComponent := TreeViewControl;
         if (hoDblClickResize in Header.Options) and ((TreeViewControl.ChildCount[nil] > 0) or (hoAutoResizeInclCaption in Header.Options)) then
           TVTHeaderPopupMenu(FColumnPopupMenu).Options := TVTHeaderPopupMenu(FColumnPopupMenu).Options + [poResizeToFitItem]
         else
@@ -4865,9 +4876,8 @@ procedure TVirtualTreeColumns.AnimatedResize(Column : TColumnIndex; NewWidth : T
 var
   OldWidth    : TDimension;
   DC          : TCanvas;
-  I,
-    Steps,
-    DX        : Integer;
+  I, Steps    : Integer;
+  DX          : TDimension;
   HeaderScrollRect,
     ScrollRect,
     R         : TRect;
@@ -5139,9 +5149,11 @@ begin
   if ScrollColumnCount > 0 then // use average width
     Result := Round(Result / ScrollColumnCount)
   else                          // use indent
-    Result := Integer(TreeViewControl.Indent);
+    Result := TreeViewControl.Indent;
 
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumns.GetTreeView: TCustomControl;
 begin
@@ -5890,8 +5902,8 @@ end;
 
 procedure THeaderPaintInfo.DrawDropMark();
 var
-  Y           : Integer;
-  lArrowWidth : Integer;
+  Y           : TDimension;
+  lArrowWidth : TDimension;
 begin
   lArrowWidth := TBaseVirtualTreeCracker(Self.Column.TreeViewControl).ScaledPixels(5);
   Y := (PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth) div 2;

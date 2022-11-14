@@ -530,7 +530,9 @@ uses
   VirtualTrees.Export,
   VirtualTrees.HeaderPopup,
   VirtualTrees.DragnDrop,
-  VirtualTrees.EditLink;
+  VirtualTrees.EditLink,
+  VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}
+  ;
 
 const
   cDefaultText = 'Node';
@@ -705,7 +707,7 @@ begin
     begin
       if not (tsUseExplorerTheme in TreeStates) then
       begin
-        Canvas.Font.Style := Canvas.Font.Style + [fsUnderline];
+        Canvas.Font.Style := Canvas.Font.Style + [TFontStyle.fsUnderline];
         Canvas.Font.Color := Colors.HotColor;
       end;
     end;
@@ -961,7 +963,7 @@ begin
   MemDC := CreateCompatibleDC(0);
   try
     SelectObject(MemDC, Msg.Font);
-    GetTextMetrics(MemDC, TM);
+    WinApi.Windows.GetTextMetrics(MemDC, TM);
     FTextHeight := TM.tmHeight;
 
     GetTextExtentPoint32W(MemDC, '...', 3, Size);
@@ -1164,7 +1166,7 @@ function TCustomVirtualStringTree.DoGetNodeWidth(Node: PVirtualNode; Column: TCo
 // This width is stored in the node's data member to increase access speed.
 
 var
-  Data: PInteger;
+  Data: PDimension;
 
 begin
   if (Column > NoColumn) and (vsMultiline in Node.States) then
@@ -1771,7 +1773,7 @@ begin
   if FFontChanged then
   begin
     AFont.Assign(Canvas.Font);
-    GetTextMetrics(Canvas.Handle, TM);
+    GetTextMetrics(Canvas, TM);
     NewHeight := TM.tmHeight;
   end
   else // Otherwise the correct font is already there and we only need to set the correct height.
@@ -1904,6 +1906,8 @@ begin
 end;
 
 { TVSTGetCellTextEventArgs }
+
+//----------------------------------------------------------------------------------------------------------------------
 
 constructor TVSTGetCellTextEventArgs.Create(pNode: PVirtualNode; pColumn: TColumnIndex; pExportType: TVTExportType);
 begin

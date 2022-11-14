@@ -124,6 +124,7 @@ const
 type
 {$IFDEF VT_FMX}
   TDimension = Single;
+  PDimension = ^Single;
   TVTCursor = TCursor;
   TVTDragDataObject = TDragObject;
   TVTBackground = TBitmap;
@@ -131,6 +132,7 @@ type
   TVTBrush = TBrush;
 {$ELSE}
   TDimension = Integer; // For Firemonkey support, see #841
+  PDimension = ^Integer;
   TVTCursor = HCURSOR;
   TVTDragDataObject = IDataObject;
   TVTBackground = TPicture;

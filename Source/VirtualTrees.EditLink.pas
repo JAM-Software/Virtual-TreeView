@@ -197,6 +197,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTEdit.ClearRefLink;
 begin
   FRefLink := nil
@@ -509,6 +510,7 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------																														
 procedure TVTEdit.KeyPress(var Key : Char);
 begin
   if (Key = #13) and Assigned(FLink) and not (vsMultiline in FLink.Node.States) then
@@ -524,7 +526,7 @@ begin
     PostMessage(Handle, CM_RELEASE, 0, 0);
 end;
 
-//----------------- TBaseEditLink ------------------------------------------------------------------------------------
+//----------------- TBaseEditLink --------------------------------------------------------------------------------------
 
 procedure TBaseEditLink.SetEdit(const Value : TControl);
 begin
@@ -816,7 +818,7 @@ procedure TStringEditLink.SetBounds(R : TRect);
 //Sets the outer bounds of the edit control and the actual edit area in the control.
 
 var
-  lOffset, tOffset, Height : Integer;
+  lOffset, tOffset, Height : TDimension;
   offsets : TVTOffsets;
 begin
   if not FStopping then

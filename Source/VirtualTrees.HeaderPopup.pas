@@ -215,7 +215,7 @@ begin
         with Columns[ColIdx] do
         begin
           if coVisible in Options then
-            Inc(VisibleCounter);
+            System.Inc(VisibleCounter);
           DoAddHeaderPopupItem(ColIdx, Cmd);
           if Cmd <> apHidden then
           begin
