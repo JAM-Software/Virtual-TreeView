@@ -81,6 +81,10 @@ type
     /// Handle less alias for WinApi.Windows.GetScrollPos
     /// </summary>
     function GetScrollPos(Bar: Integer): TDimension;
+    /// <summary>
+    /// Canvas based without HDC alias for WinApi.Windows.GetTextMetrics
+    /// </summary>
+    function GetTextMetrics(Canvas: TCanvas; var TM: TTextMetric): BOOL; overload; inline;
   public //properties
     property Accessible: IAccessible read FAccessible write FAccessible;
     property AccessibleItem: IAccessible read FAccessibleItem write FAccessibleItem;
@@ -173,6 +177,11 @@ end;
 function TVTBaseAncestorVcl.GetScrollPos(Bar: Integer): TDimension;
 begin
   Result:= WinApi.Windows.GetScrollPos(Handle, Bar);
+end;
+
+function TVTBaseAncestorVcl.GetTextMetrics(Canvas: TCanvas; var TM: TTextMetric): BOOL;
+begin
+  Result:= WinApi.Windows.GetTextMetrics(Canvas.Handle, TM);
 end;
 
 end.

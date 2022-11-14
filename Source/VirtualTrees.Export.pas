@@ -71,15 +71,15 @@ var
 
       Value := 48 + (Component shr 4);
       if Value > $39 then
-        Inc(Value, 7);
+        System.Inc(Value, 7);
       Buffer.Add(AnsiChar(Value));
-      Inc(I);
+      System.Inc(I);
 
       Value := 48 + (Component and $F);
       if Value > $39 then
-        Inc(Value, 7);
+        System.Inc(Value, 7);
       Buffer.Add(AnsiChar(Value));
-      Inc(I);
+      System.Inc(I);
 
       WinColor := WinColor shr 8;
     end;
@@ -108,9 +108,9 @@ var
     else
       Buffer.Add(Format('font-size: %dpt; ', [Font.Size]));
 
-    Buffer.Add(Format('font-style: %s; ', [IfThen(fsItalic in Font.Style, 'italic', 'normal')]));
-    Buffer.Add(Format('font-weight: %s; ', [IfThen(fsBold in Font.Style, 'bold', 'normal')]));
-    Buffer.Add(Format('text-decoration: %s; ', [IfThen(fsUnderline in Font.Style, 'underline', 'none')]));
+    Buffer.Add(Format('font-style: %s; ', [IfThen(TFontStyle.fsItalic in Font.Style, 'italic', 'normal')]));
+    Buffer.Add(Format('font-weight: %s; ', [IfThen(TFontStyle.fsBold in Font.Style, 'bold', 'normal')]));
+    Buffer.Add(Format('text-decoration: %s; ', [IfThen(TFontStyle.fsUnderline in Font.Style, 'underline', 'none')]));
 
     Buffer.Add('color: ');
     WriteColorAsHex(Font.Color);
@@ -159,7 +159,7 @@ begin
     // Add title if adviced so by giving a caption.
     if Length(Caption) > 0 then
       AddHeader := AddHeader + 'caption="' + Caption + '"';
-    if CrackTree.Borderstyle <> bsNone then
+    if CrackTree.Borderstyle <> TFormBorderStyle.bsNone then
       AddHeader := AddHeader + Format(' border="%d" frame=box', [CrackTree.BorderWidth + 1]);
 
     Buffer.Add('<META http-equiv="Content-Type" content="text/html; charset=utf-8">');
@@ -438,7 +438,7 @@ begin
 
         if not RenderColumns then
           Break;
-        Inc(I);
+        System.Inc(I);
       end;
       if Assigned(CrackTree.OnAfterNodeExport) then
         CrackTree.OnAfterNodeExport(CrackTree, etHTML, Run);
@@ -539,13 +539,13 @@ var
   begin
     if Length(Text) > 0 then
     begin
-      UseUnderline := fsUnderline in Font.Style;
+      UseUnderline := TFontStyle.fsUnderline in Font.Style;
       if UseUnderline then
         Buffer.Add('\ul');
-      UseItalic := fsItalic in Font.Style;
+      UseItalic := TFontStyle.fsItalic in Font.Style;
       if UseItalic then
         Buffer.Add('\i');
-      UseBold := fsBold in Font.Style;
+      UseBold := TFontStyle.fsBold in Font.Style;
       if UseBold then
         Buffer.Add('\b');
       SelectFont(Font.Name);
@@ -634,7 +634,7 @@ begin
     begin
       for I := 0 to High(Columns) do
       begin
-        Inc(J, Columns[I].Width);
+        System.Inc(J, Columns[I].Width);
         // This value must be expressed in twips (1 inch = 1440 twips).
         Twips := Round(1440 * J / Screen.PixelsPerInch);
         Buffer.Add('\cellx');
@@ -768,7 +768,7 @@ begin
 
         if not RenderColumns then
           Break;
-        Inc(I);
+        System.Inc(I);
       end;
       Buffer.Add('\row');
       Buffer.AddNewLine;

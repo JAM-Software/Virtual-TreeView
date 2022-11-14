@@ -11,7 +11,10 @@ unit VirtualTrees.BaseAncestorFMX;
 {****************************************************************************************************************}
 
 interface
-uses VirtualTrees.Types;
+uses	
+    System.Classes, System.UITypes
+  , FMX.Objects, FMX.Graphics, FMX.StdCtrls
+  , VirtualTrees.Types, VirtualTrees.FMX;
 
 
 type
@@ -46,12 +49,12 @@ type
     procedure SetBorderWidth(Value: TBorderWidth);
     procedure SetBiDiMode(Value: TBiDiMode);	
 
-    function GetClientHeight: Single;
-    function GetClientWidth: Single;
-    function GetClientRect: TRect;
+    function GetClientHeight: Single; virtual; abstract;
+    function GetClientWidth: Single; virtual; abstract;
+    function GetClientRect: TRect; virtual; abstract;
     procedure UpdateStyleElements; virtual; abstract;
 
-    procedure DoStartDrag(var DragObject: TDragObject); virtual; abstract;
+    procedure DoStartDrag(var DragObject: TVTDragDataObject); virtual; abstract;
     procedure DoEndDrag(Target: TObject; X, Y: TDimension); virtual; abstract;
     procedure DragCanceled; virtual; abstract;
 
@@ -102,24 +105,29 @@ type
     /// <summary>
     /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
-    function InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL; inline;
+    function InvalidateRect(lpRect: PRect; bErase: Boolean): Boolean; inline;
     /// <summary>
     /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
-    function UpdateWindow(): BOOL; inline;
+    function UpdateWindow(): Boolean; inline;
     /// <summary>
     /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
-    function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+    function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): Boolean; overload; inline;
     /// <summary>
     /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
-    function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL; inline;
+    function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): Boolean; overload; inline;
 
     /// <summary>
     /// Alias for Repaint on FMX to be compatible with VCL
     /// </summary>
     function SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
+
+    /// <summary>
+    /// Simulate Windows GetSystemMetrics
+    /// </summary>
+    function GetSystemMetrics(nIndex: Integer): Integer;
   public //properties
     property Font: TFont read FFont write SetFont;
     property ClientRect: TRect read GetClientRect;
@@ -143,8 +151,19 @@ type
     property Color: TAlphaColor read GetFillColor write SetFillColor;
   end;
 
+{$IFNDEF MSWINDOWS}
+const
+  { GetSystemMetrics() codes }
+  SM_CXVSCROLL = 2;
+  SM_CYHSCROLL = 3;
+{$ENDIF}
+
 implementation
-uses FMX.TextLayout, FMX.Utils;
+uses FMX.TextLayout, FMX.Utils
+  {$IFNDEF MSWINDOWS}
+  , WinApi.Windows
+  {$ENDIF}
+  ;
 
 //-------- TVTBaseAncestorFMX ------------------------------------------------------------------------------------------
 
@@ -560,7 +579,23 @@ end;
 function TVTBaseAncestorFMX.SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
 begin
   Repaint;
-  Result:= true;
+  Result:= 0;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.GetSystemMetrics(nIndex: Integer): Integer;
+begin
+  {$IFNDEF MSWINDOWS}
+  Result:= GetSystemMetrics(nIndex);
+  {$ELSE}
+  case nIndex of
+    SM_CXVSCROLL: Result:= 16;
+    SM_CYHSCROLL: Result:= 3;
+    else
+      raise Exception.Create('Unknown code for GetSystemMetrics: ' + IntToStr(nIndex));
+  end;
+  {$ENDIF}
 end;
 
 end.

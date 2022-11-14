@@ -81,7 +81,8 @@ var
     // No specific page of multipage data (we don't use multipage data by default).
     lindex : - 1;
     // Acceptable storage formats are IStream and global memory. The first is preferred.
-    tymed : TYMED_ISTREAM or TYMED_HGLOBAL;);
+    tymed : TYMED_ISTREAM or TYMED_HGLOBAL;
+  );
 
 implementation
 

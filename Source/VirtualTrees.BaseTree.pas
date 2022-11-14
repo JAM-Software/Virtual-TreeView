@@ -18141,7 +18141,7 @@ begin
           CurrentAlignment := taRightJustify;
 
       // Increase cell height (up to MaxUnclippedHeight determined above) if text does not fit.
-      GetTextMetrics(Self.Canvas.Handle, TM);
+      GetTextMetrics(Self.Canvas, TM);
       ExtraVerticalMargin := System.Math.Min(TM.tmHeight, MaxUnclippedHeight) - (Result.Bottom - Result.Top);
       if ExtraVerticalMargin > 0 then
         InflateRect(Result, 0, Divide(ExtraVerticalMargin + 1, 2));
@@ -21751,7 +21751,7 @@ begin
                               end
                               else
                               begin
-                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * Integer(FIndent) - 1, CellRect.Bottom - 1, DottedBrushGridLines);
+                                DrawDottedHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * FIndent - 1, CellRect.Bottom - 1, DottedBrushGridLines);
                               end;
                             end
                             else
@@ -22705,7 +22705,7 @@ var
   Run: PVirtualNode;
   UseColumns,
   HScrollBarVisible: Boolean;
-  OldOffsetY: Integer;
+  OldOffsetY: TDimension;
   ScrolledVertically,
   ScrolledHorizontally: Boolean;
 
