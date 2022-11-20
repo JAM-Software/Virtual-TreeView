@@ -23110,6 +23110,9 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
 begin
   if RootNode.TotalCount <= 2 then
     Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
+  if not Assigned(OnCompareNodes) then
+    exit;// no sorting will take place without an event handler. Issue #1146
+
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
   System.Inc(FUpdateCount);
@@ -23121,7 +23124,7 @@ begin
         DoSort(FRoot);
       finally
         EndOperation(okSortTree);
-      end; 
+      end;
     end;
     InvalidateCache;
   finally
