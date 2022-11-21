@@ -31712,7 +31712,7 @@ begin
       InitNode(Node);
   end;
 
-  if Recursive then
+  if Recursive and (Node.ChildCount > 0) then // Prevent previoulsy uninitilaized children from being initialized. Issue #1145
     ReinitChildren(Node, True);
 end;
 
