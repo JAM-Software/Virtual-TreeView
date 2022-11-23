@@ -2069,9 +2069,9 @@ type
     function ProcessOLEData(Source: TBaseVirtualTree; const DataObject: IDataObject; TargetNode: PVirtualNode;
                             Mode: TVTNodeAttachMode; Optimized: Boolean): Boolean;
     procedure RepaintNode(Node: PVirtualNode);
-    procedure ReinitChildren(Node: PVirtualNode; Recursive: Boolean); virtual;
+    procedure ReinitChildren(Node: PVirtualNode; Recursive: Boolean; ForceReinit: Boolean = False); virtual;
     procedure InitRecursive(Node: PVirtualNode; Levels: Cardinal = MaxInt; pVisibleOnly: Boolean = True);
-    procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); virtual;
+    procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean; ForceReinit: Boolean = False); virtual;
     procedure ResetNode(Node: PVirtualNode); virtual;
     procedure SaveToFile(const FileName: TFileName);
     procedure SaveToStream(Stream: TStream; Node: PVirtualNode = nil); virtual;
@@ -22545,7 +22545,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ReinitChildren(Node: PVirtualNode; Recursive: Boolean);
+procedure TBaseVirtualTree.ReinitChildren(Node: PVirtualNode; Recursive:
+    Boolean; ForceReinit: Boolean = False);
 
 // Forces all child nodes of Node to be reinitialized.
 // If Recursive is True then also the grandchildren are reinitialized.
@@ -22567,28 +22568,35 @@ begin
 
   while Assigned(Run) do
   begin
-    ReinitNode(Run, Recursive);
+    ReinitNode(Run, Recursive, ForceReinit);
     Run := Run.NextSibling;
   end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ReinitNode(Node: PVirtualNode; Recursive: Boolean);
+procedure TBaseVirtualTree.ReinitNode(Node: PVirtualNode; Recursive: Boolean;
+    ForceReinit: Boolean = False);
 
-// Forces the given node and all its children (if recursive is True) to be initialized again without
-// modifying any data in the nodes nor deleting children (unless the application requests a different amount).
+// Reinitializes Node if it has previously been initialized
+// If Recursive, initialized children are also re-initialized recursively
+// If ForceReinit, Node is always initialized and if Recursive children
+// are always re-initialized as well
+// InitNode is called with ivsReInit in InitialStates, if the Node has already
+// been initialized.
 
 begin
   if Assigned(Node) and (Node <> FRoot) then
   begin
     // Remove dynamic styles.
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsHeightMeasured];
-    if vsInitialized in Node.States then
+    if (vsInitialized in Node.States) or ForceReinit then
       InitNode(Node);
   end;
 
-  if Recursive and (Node.ChildCount > 0) then // Prevent previoulsy uninitilaized children from being initialized. Issue #1145
+  // Prevent previoulsy uninitilaized children from being initialized
+  // unless ForceReinit is True. Issue #1145
+  if Recursive and (ForceReinit or (Node.ChildCount > 0)) then
     ReinitChildren(Node, True);
 end;
 

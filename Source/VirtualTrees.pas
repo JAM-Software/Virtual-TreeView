@@ -249,7 +249,8 @@ type
       var Text: string); override;
     function InvalidateNode(Node: PVirtualNode): TRect; override;
     function Path(Node: PVirtualNode; Column: TColumnIndex; Delimiter: Char): string;
-    procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
+    procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean; ForceReinit:
+        Boolean = False); override;
     procedure AddToSelection(Node: PVirtualNode; NotifySynced: Boolean); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
@@ -1863,7 +1864,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCustomVirtualStringTree.ReinitNode(Node: PVirtualNode; Recursive: Boolean);
+procedure TCustomVirtualStringTree.ReinitNode(Node: PVirtualNode; Recursive: Boolean; ForceReinit: Boolean = False);
 
 begin
   inherited;
