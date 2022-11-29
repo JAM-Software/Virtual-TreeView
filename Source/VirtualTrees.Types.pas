@@ -154,7 +154,7 @@ type
   // OLE drag'n drop support
   TFormatEtcArray = array of TFormatEtc;
   TFormatArray = array of Word;
-  
+
   TSmartAutoFitType = (
     smaAllColumns,       // consider nodes in view only for all columns
     smaNoColumn,         // consider nodes in view only for no column
@@ -166,7 +166,7 @@ type
     apDisabled,
     apHidden
   );
-  
+
   TCheckType = (
     ctNone,
     ctTriStateCheckBox,
