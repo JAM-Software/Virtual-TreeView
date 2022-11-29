@@ -487,7 +487,7 @@ type
     hpeText,
     // New in 7.0: Use this in FOnHeaderDrawQueryElements and OnAdvancedHeaderDraw
     // for additional custom header drawing while keeping the default drawing
-    hpeOverlay 
+    hpeOverlay
   );
 
   // Various events must be handled at different places than they were initiated or need
@@ -997,7 +997,7 @@ type
     FStartIndex: Cardinal;                       // index to start validating cache from
     FSelection: TNodeArray;                      // list of currently selected nodes
     FSelectionCount: Integer;                    // number of currently selected nodes (size of FSelection might differ)
-    FSelectionLocked: Boolean;                   // prevents the tree from changing the selection 
+    FSelectionLocked: Boolean;                   // prevents the tree from changing the selection
     FRangeAnchor: PVirtualNode;                  // anchor node for selection with the keyboard, determines start of a
                                                  // selection range
     FCheckPropagationCount: Cardinal;            // nesting level of check propagation (WL, 05.02.2004)
@@ -3583,12 +3583,12 @@ var
   NextColumn,
   Dummy: Integer;
   DummyLeft: TDimension;
-												 
+
   MinY, MaxY: TDimension;
   LabelOffset: TDimension;
   IsInOldRect,
   IsInNewRect: Boolean;
-  NodeWidth: TDimension;			   
+  NodeWidth: TDimension;
 
   // quick check variables for various parameters
   DoSwitch,
@@ -3727,8 +3727,8 @@ var
   Run,
   NextNode: PVirtualNode;
   NextColumn,
-  Dummy: Integer;   
-  
+  Dummy: Integer;
+
   DummyRight,
   TextRight,
   TextLeft,
@@ -6555,7 +6555,7 @@ begin
       PrepareBackGroundPicture(Source, DrawingBitmap, Source.Width, Source.Height, aBkgColor);
       // copy image to destination
       BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
-      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawingBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, 
+      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawingBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
         SRCCOPY);
     end;
   finally
@@ -8663,7 +8663,7 @@ var
   TempRgn: HRGN;
   BorderWidth,
   BorderHeight: Integer;
- 
+
 begin
   if tsUseThemes in FStates then
   begin
@@ -9788,7 +9788,7 @@ const
 
 begin
   inherited CreateParams(Params);
- 
+
   with Params do
   begin
     Style := Style or WS_CLIPCHILDREN or WS_CLIPSIBLINGS or ScrollBar[ScrollBarOptions.ScrollBars];
@@ -14036,7 +14036,7 @@ begin
         if ((ParentCheckState = csCheckedNormal)
              or (ParentCheckState = csUncheckedNormal))
             and (not SelfCheckState.IsDisabled())
-            and (SelfCheckState <> ParentCheckState) 
+            and (SelfCheckState <> ParentCheckState)
             and (Parent <> FRoot)
         then
           SetCheckState(Node, Node.Parent.CheckState);
@@ -21227,7 +21227,7 @@ begin
     if (toVariableNodeHeight in FOptions.MiscOptions) then
     begin
       NewNodeHeight := Node.NodeHeight;
-      // Anonymous methods help to make this thread safe easily. 
+      // Anonymous methods help to make this thread safe easily.
       if (MainThreadId <> GetCurrentThreadId) then
         TThread.Synchronize(nil,
           procedure
@@ -22046,7 +22046,7 @@ begin
         else
           NodeBitmap.Free;
       end;//try..finally
-      
+
       if (FEmptyListMessage <> '') and  ((ChildCount[nil] = 0) or (GetFirstVisible = nil)) then
       begin
         // output a message if no items are to display
@@ -22597,7 +22597,7 @@ begin
   // Prevent previoulsy uninitilaized children from being initialized
   // unless ForceReinit is True. Issue #1145
   if Recursive and (ForceReinit or (Node.ChildCount > 0)) then
-    ReinitChildren(Node, True);
+    ReinitChildren(Node, True, ForceReinit);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -23192,7 +23192,7 @@ var
       begin
         Self.Brush.Style := bsSolid;
         Self.Brush.Color := FColors.BackGroundColor;
-      end;  
+      end;
 
       Brush := Self.Brush;
 
@@ -23254,7 +23254,7 @@ begin
           NeedUpdate := True;
 
           // Calculate the height delta right now as we need it for toChildrenAbove anyway.
-          HeightDelta := -Node.TotalHeight + NodeHeight[Node]; 
+          HeightDelta := -Node.TotalHeight + NodeHeight[Node];
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.AnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
