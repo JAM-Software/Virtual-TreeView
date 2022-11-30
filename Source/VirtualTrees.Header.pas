@@ -2564,7 +2564,7 @@ function TVTHeader.ResizeColumns(ChangeBy : TDimension; RangeStartCol : TColumnI
 var
   Start, I                                         : TColumnIndex;
   ColCount,
-  Sign: Integer;		   
+  Sign: Integer;
   ToGo, MaxDelta, Difference, Rest: TDimension;
   Constraints, Widths                              : array of TDimension;
   BonusPixel                                       : Boolean;
@@ -2611,7 +2611,7 @@ var
   function ReduceConstraints : Boolean;
 
   var
-    MaxWidth: TDimension;		  
+    MaxWidth: TDimension;
     MaxReserveCol, Column : TColumnIndex;
 
   begin

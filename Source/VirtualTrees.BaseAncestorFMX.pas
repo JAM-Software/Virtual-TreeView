@@ -11,7 +11,7 @@ unit VirtualTrees.BaseAncestorFMX;
 {****************************************************************************************************************}
 
 interface
-uses	
+uses
     System.Classes, System.UITypes
   , FMX.Objects, FMX.Graphics, FMX.StdCtrls
   , VirtualTrees.Types, VirtualTrees.FMX;
@@ -47,7 +47,7 @@ type
     procedure SetBevelKind(const Value: TBevelKind);
     procedure SetBevelWidth(const Value: TBevelWidth);
     procedure SetBorderWidth(Value: TBorderWidth);
-    procedure SetBiDiMode(Value: TBiDiMode);	
+    procedure SetBiDiMode(Value: TBiDiMode);
 
     function GetClientHeight: Single; virtual; abstract;
     function GetClientWidth: Single; virtual; abstract;
@@ -59,9 +59,9 @@ type
     procedure DragCanceled; virtual; abstract;
 
     procedure Resize; override;
-    
+
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
-    function GetControlsAlignment: TAlignment; virtual; abstract;	
+    function GetControlsAlignment: TAlignment; virtual; abstract;
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual; abstract;
   protected //properties
     property DottedBrushTreeLines: TStrokeBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
@@ -76,7 +76,7 @@ type
     procedure ShowScrollBar(Bar: Integer; AShow: Boolean);
     function SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
     function GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollInfo): Boolean;
-    function GetScrollPos(Bar: Integer): TDimension; 
+    function GetScrollPos(Bar: Integer): TDimension;
     function GetScrollBarForBar(Bar: Integer): TScrollBar;
     procedure HScrollChangeProc(Sender: TObject);
     procedure VScrollChangeProc(Sender: TObject);
@@ -96,7 +96,7 @@ type
     /// </summary>
     class function KeysToShiftState(Keys: LongInt): TShiftState; static;
 
-    function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;	
+    function GetParentForm(Control: TControl; TopForm: Boolean = True): TCustomForm;
 
     /// <summary>
     /// Alias for Repaint on FMX to be compatible with VCL
@@ -207,10 +207,10 @@ begin
     Dec(Result.Right, FVScrollBar.Width);
   if FHScrollBar.Visible then
     Dec(Result.Bottom, FHScrollBar.Height);
-    
+
   if Result.Left>Result.Right then
     Result.Left:= Result.Right;
-    
+
   if Result.Top>Result.Bottom then
     Result.Top:= Result.Bottom;
 
@@ -268,7 +268,7 @@ begin
   FHScrollBar.Align:= TAlignLayout.MostBottom;
   FHScrollBar.Visible:= true;
   FHScrollBar.OnChange:= HScrollChangeProc;
-  FHScrollBar.Margins.Right:= FHScrollBar.Height; 
+  FHScrollBar.Margins.Right:= FHScrollBar.Height;
 
   FVScrollBar:= TScrollBar.Create(Self);
   FVScrollBar.Parent:= Self;
@@ -276,8 +276,8 @@ begin
   FVScrollBar.Align:= TAlignLayout.MostRight;
   FVScrollBar.Visible:= true;
   FVScrollBar.OnChange:= VScrollChangeProc;
-  //FVScrollBar.Margins.Bottom:= FVScrollBar.Width; 
-  
+  //FVScrollBar.Margins.Bottom:= FVScrollBar.Width;
+
   SetAcceptsControls(false);
 end;
 
@@ -286,7 +286,7 @@ end;
 destructor TVTBaseAncestorFMX.Destroy();
 begin
   inherited;
-  
+
   if FDottedBrushTreeLines <> nil then
     FreeAndNil(FDottedBrushTreeLines);
   if FDottedBrushGridLines <> nil then
@@ -418,8 +418,8 @@ begin
 
   if FHScrollBar.Visible and FVScrollBar.Visible then
     FHScrollBar.Margins.Right:= FHScrollBar.Height else
-    FHScrollBar.Margins.Right:= 0;  
-    
+    FHScrollBar.Margins.Right:= 0;
+
   Repaint;
 end;
 
@@ -429,9 +429,9 @@ function TVTBaseAncestorFMX.SetScrollInfo(Bar: Integer; const ScrollInfo: TScrol
 Var ScrollBar: TScrollBar;
 begin
   ScrollBar:= GetScrollBarForBar(Bar);
-  if ScrollBar=nil then  
+  if ScrollBar=nil then
     Exit(0); //!!!
-  
+
   if ScrollInfo.fMask and SIF_PAGE<>0 then
     begin
       ScrollBar.SmallChange:= ScrollInfo.nPage;
@@ -441,15 +441,15 @@ begin
     begin
       ScrollBar.Min:= ScrollInfo.nMin;
       ScrollBar.Max:= ScrollInfo.nMax;
-    end;  
+    end;
 
   if ScrollInfo.fMask and SIF_POS<>0 then
     begin
       ScrollBar.Value:= ScrollInfo.nPos;
-    end;  
+    end;
 
   Result:= ScrollBar.Value;
-  
+
   Repaint;
 end;
 
@@ -459,19 +459,19 @@ function TVTBaseAncestorFMX.GetScrollInfo(Bar: Integer; var ScrollInfo: TScrollI
 Var ScrollBar: TScrollBar;
 begin
   ScrollBar:= GetScrollBarForBar(Bar);
-  if ScrollBar=nil then  
+  if ScrollBar=nil then
     Exit(False); //!!!
 
   Result:= true;
 
   ScrollInfo.cbSize:= SizeOf(TScrollInfo);
-  ScrollInfo.fMask:= SIF_ALL; 
-  
+  ScrollInfo.fMask:= SIF_ALL;
+
   ScrollInfo.nMin:= ScrollBar.Min;
   ScrollInfo.nMax:= ScrollBar.Max;
   ScrollInfo.nPage:= ScrollBar.SmallChange;
   ScrollInfo.nPos:= ScrollBar.Value;
-  ScrollInfo.nTrackPos:= ScrollBar.Value; 
+  ScrollInfo.nTrackPos:= ScrollBar.Value;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -519,7 +519,7 @@ begin
   M.Pos:= GetScrollPos(SB_VERT);
   M.ScrollBar:= SB_VERT;
   M.Result:= 0;
-  
+
   WMVScroll(M);
   Repaint;
 end;
