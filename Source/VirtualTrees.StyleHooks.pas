@@ -565,7 +565,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMKeyDown(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
-  UpdateScroll;
+  PaintScroll;
   Handled := True;
 end;
 
