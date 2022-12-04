@@ -3827,27 +3827,8 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumn.GetDisplayName : string;
-
-// Returns the column text if it only contains ANSI characters, otherwise the column id is returned because the IDE
-// still cannot handle Unicode strings.
-
-var
-  I : Integer;
-
 begin
-  // Check if the text of the column contains characters > 255
-  I := 1;
-  while I <= Length(FText) do
-  begin
-    if Ord(FText[I]) > 255 then
-      Break;
-    System.Inc(I);
-  end;
-
-  if I > Length(FText) then
-    Result := FText // implicit conversion
-  else
-    Result := Format('Column %d', [Index]);
+  Result := FText; // Use column header caption as display name
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
