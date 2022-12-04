@@ -545,10 +545,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMHScroll(var Msg: TWMHScroll);
 begin
   CallDefaultProc(TMessage(Msg));
-  if not (Msg.ScrollCode in [SB_THUMBTRACK, SB_THUMBPOSITION]) then
-    UpdateScroll
-  else
-    PaintScroll;
+  PaintScroll;
   Handled := True;
 end;
 
@@ -1009,10 +1006,7 @@ end;
 procedure TVclStyleScrollBarsHook.WMVScroll(var Msg: TWMVScroll);
 begin
   CallDefaultProc(TMessage(Msg));
-  if not (Msg.ScrollCode in [SB_THUMBTRACK, SB_THUMBPOSITION]) then
-    UpdateScroll
-  else
-    PaintScroll;
+  PaintScroll;
   Handled := True;
 end;
 
