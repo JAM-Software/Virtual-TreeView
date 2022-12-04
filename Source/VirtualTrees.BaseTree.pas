@@ -22051,9 +22051,9 @@ begin
       begin
         // output a message if no items are to display
         Canvas.Font := Self.Font;
-        Canvas.Font.Size := Round(Canvas.Font.Size * 1.25);
+        Canvas.Font.Size := Round(Canvas.Font.Size * 1.25); // Use slightly larger font to attract awareness of user, there is enough space ince the list is empty.
         SetBkMode(TargetCanvas.Handle, TRANSPARENT);
-        lEmptyListTextMargin := ScaledPixels(Max(cDefaultTextMargin, Self.TextMargin) * 2);
+        lEmptyListTextMargin := ScaledPixels(Max(cDefaultTextMargin, Self.TextMargin) * 2); // Since the list is empty and the font is slightly larger make sure text id not too close at the edges so that it looks good.
         R.Left := OffSetX + lEmptyListTextMargin;
         R.Top := lEmptyListTextMargin;
         R.Right := R.Left + Width - lEmptyListTextMargin;
