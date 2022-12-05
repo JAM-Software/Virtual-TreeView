@@ -28,6 +28,9 @@ interface
 {$WARN UNSAFE_TYPE OFF}
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
+{$if CompilerVersion < 34}
+  {$DEFINE NOT_USE_VCL_STYLEHOOK}
+{$ifend}
 
 uses
   Winapi.Windows,
@@ -46,7 +49,7 @@ const
 type
   // XE2+ VCL Style
   TVclStyleScrollBarsHook = class(TScrollingStyleHook)
-  {$if CompilerVersion < 34}
+  {$ifdef NOT_USE_VCL_STYLEHOOK}
   strict private type
   {$REGION 'TVclStyleScrollBarWindow'}
       TScrollWindow = class(TWinControl)
@@ -84,8 +87,7 @@ type
     procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
     procedure WMCaptureChanged(var Msg: TMessage); message WM_CAPTURECHANGED;
     procedure InitScrollBars;
-    procedure PaintScroll; override;
-    {$ifend}
+    {$endif}
     procedure WMNCMouseMove(var Msg: TWMMouse); message WM_NCMOUSEMOVE;
     procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
     function NCMousePosToClient(const P: TPoint): TPoint;    procedure CMUpdateVclStyleScrollbars(var Msg: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
@@ -97,14 +99,15 @@ type
     procedure DrawVertScrollBar(DC: HDC); virtual;
     procedure MouseLeave; override;
     procedure UpdateScroll;{$if CompilerVersion >= 34}override;{$ifend}
-    {$if CompilerVersion < 34}
+    {$ifdef NOT_USE_VCL_STYLEHOOK}
+    procedure PaintScroll; override;
     property HorzScrollWnd: TScrollWindow read FHorzScrollWnd;
     property VertScrollWnd: TScrollWindow read FVertScrollWnd;
     property LeftButtonDown: Boolean read FLeftButtonDown;
     {$ifend}
   public
     constructor Create(AControl: TWinControl); override;
-    {$if CompilerVersion < 34}
+    {$ifdef NOT_USE_VCL_STYLEHOOK}
     destructor Destroy; override;
     {$ifend}
     /// Draws an expand arrow like used in the RAD Studio IDE.
@@ -207,7 +210,7 @@ begin
   inherited;
   InitScrollBars;
 
-  {$if CompilerVersion < 34}
+  {$if NOT_USE_VCL_STYLEHOOK}
   VertSliderState := tsThumbBtnVertNormal;
   VertUpState := tsArrowBtnUpNormal;
   VertDownState := tsArrowBtnDownNormal;
@@ -465,7 +468,7 @@ begin
   end;// if FHorzScrollWnd
 end;
 
-{$if CompilerVersion < 34}
+{$ifdef NOT_USE_VCL_STYLEHOOK}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVclStyleScrollBarsHook.WMCaptureChanged(var Msg: TMessage);
@@ -640,7 +643,7 @@ begin
     begin
       if PtInRect(VertSliderRect, P) then
       begin
-        FMouseButtonDown := True;
+        FLeftButtonDown := True;
         SF.fMask := SIF_ALL;
         SF.cbSize := SizeOf(SF);
         GetScrollInfo(Handle, SB_VERT, SF);
@@ -663,7 +666,7 @@ begin
     begin
       if PtInRect(HorzSliderRect, P) then
       begin
-        FMouseButtonDown := True;
+        FLeftButtonDown := True;
         SF.fMask := SIF_ALL;
         SF.cbSize := SizeOf(SF);
         GetScrollInfo(Handle, SB_HORZ, SF);
@@ -681,7 +684,7 @@ begin
       else if PtInRect(HorzUpButtonRect, P) then
         HorzUpState := tsArrowBtnLeftPressed;
     end;
-    FMouseButtonDown := True;
+    FLeftButtonDown := True;
     PaintScroll;
   end;
 end;
@@ -701,7 +704,7 @@ begin
     begin
       if VertSliderState = tsThumbBtnVertPressed then
       begin
-        FMouseButtonDown := False;
+        FLeftButtonDown := False;
         VertSliderState := tsThumbBtnVertNormal;
         PaintScroll;
         Handled := True;
@@ -723,7 +726,7 @@ begin
     begin
       if HorzSliderState = tsThumbBtnHorzPressed then
       begin
-        FMouseButtonDown := False;
+        FLeftButtonDown := False;
         HorzSliderState := tsThumbBtnHorzNormal;
         PaintScroll;
         Handled := True;
@@ -984,7 +987,7 @@ begin
     PaintScroll;
 end;
 
-{$if CompilerVersion < 34}
+{$ifdef NOT_USE_VCL_STYLEHOOK}
 
 //----------------------------------------------------------------------------------------------------------------------
 
