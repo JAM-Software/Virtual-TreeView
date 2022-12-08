@@ -22592,7 +22592,9 @@ begin
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting, vsHeightMeasured];
     if (vsInitialized in Node.States) or ForceReinit then
       InitNode(Node);
-  end;
+  end
+  else if not Assigned(Node) then
+    Node := FRoot;
 
   // Prevent previoulsy uninitilaized children from being initialized
   // unless ForceReinit is True. Issue #1145
