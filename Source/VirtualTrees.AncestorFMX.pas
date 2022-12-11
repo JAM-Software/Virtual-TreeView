@@ -22,6 +22,10 @@ type
 
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; override;
 
+    function GetClientHeight: Single; override;
+    function GetClientWidth: Single; override;
+    function GetClientRect: TRect; override;											   
+ 
     //TODO: CopyCutPaste - need to be implemented
     {
     function PasteFromClipboard(): Boolean; override;
@@ -172,6 +176,46 @@ begin
         end;
       FreeAndNil(PatternBitmap);
     end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTAncestorFMX.GetClientHeight: Single;
+begin
+  Result:= ClientRect.Height;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTAncestorFMX.GetClientWidth: Single;
+begin
+  Result:= ClientRect.Width;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTAncestorFMX.GetClientRect: TRect;
+begin
+  Result:= ClipRect;
+  if Assigned(Header) then
+    begin
+      if hoVisible in Header.Options then
+        Inc(Result.Top, Header.Height);
+    end;
+  if FVScrollBar.Visible then
+    Dec(Result.Right, VScrollBar.Width);
+  if HScrollBar.Visible then
+    Dec(Result.Bottom, HScrollBar.Height);
+    
+  if Result.Left>Result.Right then
+    Result.Left:= Result.Right;
+    
+  if Result.Top>Result.Bottom then
+    Result.Top:= Result.Bottom;
+
+  //OffsetRect(Result, OffsetX, OffsetY);
+  //Dec(Result.Left, -OffsetX); //increase width
+  //Dec(Result.Top, -OffsetY);  //increase height
 end;
 
 end.
