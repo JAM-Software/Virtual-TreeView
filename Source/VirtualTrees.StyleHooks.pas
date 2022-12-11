@@ -192,9 +192,9 @@ begin
      ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
   begin  // Fixes issue #390
     if VertScrollWnd <> nil then
-      FreeAndNil(VertScrollWnd);
+      FreeAndNil(FVertScrollWnd);
     if HorzScrollWnd <> nil then
-      FreeAndNil(HorzScrollWnd);
+      FreeAndNil(FHorzScrollWnd);
 
     InitScrollBars;
   end;
