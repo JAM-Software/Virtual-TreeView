@@ -29,7 +29,7 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 {$if CompilerVersion < 34}
-  {$DEFINE NOT_USE_VCL_STYLEHOOK}
+  {$DEFINE NOT_USE_VCL_STYLEHOOK}  // Do not use inherited style hook but own code in this class. Needed for older Delphi versions 10.3 and below
 {$ifend}
 
 uses
@@ -188,17 +188,6 @@ procedure TVclStyleScrollBarsHook.CalcScrollBarsRect();
   end;
 
 begin
-  if ((VertScrollWnd <> nil) and not VertScrollWnd.HandleAllocated) or
-     ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
-  begin  // Fixes issue #390
-    if VertScrollWnd <> nil then
-      FreeAndNil(VertScrollWnd);
-    if HorzScrollWnd <> nil then
-      FreeAndNil(HorzScrollWnd);
-
-    InitScrollBars;
-  end;
-
   CalcVerticalRects;
   CalcHorizontalRects;
 end;
@@ -210,7 +199,7 @@ begin
   inherited;
   InitScrollBars;
 
-  {$if NOT_USE_VCL_STYLEHOOK}
+  {$ifdef NOT_USE_VCL_STYLEHOOK}
   VertSliderState := tsThumbBtnVertNormal;
   VertUpState := tsArrowBtnUpNormal;
   VertDownState := tsArrowBtnDownNormal;
@@ -409,6 +398,17 @@ var
   PaddingSize: Integer;
   BorderSize: Integer;
 begin
+  if ((VertScrollWnd <> nil) and not VertScrollWnd.HandleAllocated) or
+     ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
+  begin  // Fixes issue #390
+    if VertScrollWnd <> nil then
+      FreeAndNil(VertScrollWnd);
+    if HorzScrollWnd <> nil then
+      FreeAndNil(HorzScrollWnd);
+
+    InitScrollBars;
+  end;
+
   // ScrollBarWindow Visible/Enabled Control
   CalcScrollBarsRect;
 
