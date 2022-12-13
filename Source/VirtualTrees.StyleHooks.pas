@@ -393,9 +393,9 @@ begin
      ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
   begin  // Fixes issue #390
     if VertScrollWnd <> nil then
-      FreeAndNil(VertScrollWnd);
+      FreeAndNil({$ifdef NOT_USE_VCL_STYLEHOOK}FVertScrollWnd{$else}VertScrollWnd{$ifend});
     if HorzScrollWnd <> nil then
-      FreeAndNil(HorzScrollWnd);
+      FreeAndNil({$ifdef NOT_USE_VCL_STYLEHOOK}FHorzScrollWnd{$else}HorzScrollWnd{$ifend});
 
     InitScrollBars;
   end;
