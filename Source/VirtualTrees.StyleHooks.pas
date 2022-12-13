@@ -97,9 +97,9 @@ type
     procedure CalcScrollBarsRect; virtual;
     procedure DrawHorzScrollBar(DC: HDC); virtual;
     procedure DrawVertScrollBar(DC: HDC); virtual;
-    procedure MouseLeave; override;
     procedure UpdateScroll;{$if CompilerVersion >= 34}override;{$ifend}
     {$ifdef NOT_USE_VCL_STYLEHOOK}
+    procedure MouseLeave; override;
     procedure PaintScroll; override;
     property HorzScrollWnd: TScrollWindow read FHorzScrollWnd;
     property VertScrollWnd: TScrollWindow read FVertScrollWnd;
@@ -343,32 +343,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVclStyleScrollBarsHook.MouseLeave;
-begin
-  inherited;
-  if VertSliderState = tsThumbBtnVertHot then
-    VertSliderState := tsThumbBtnVertNormal;
-
-  if HorzSliderState = tsThumbBtnHorzHot then
-    HorzSliderState := tsThumbBtnHorzNormal;
-
-  if VertUpState = tsArrowBtnUpHot then
-    VertUpState := tsArrowBtnUpNormal;
-
-  if VertDownState = tsArrowBtnDownHot then
-    VertDownState := tsArrowBtnDownNormal;
-
-  if HorzUpState = tsArrowBtnLeftHot then
-    HorzUpState := tsArrowBtnLeftNormal;
-
-  if HorzDownState = tsArrowBtnRightHot then
-    HorzDownState := tsArrowBtnRightNormal;
-
-  PaintScroll;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function TVclStyleScrollBarsHook.NCMousePosToClient(const P: TPoint): TPoint;
 begin
   Result := P;
@@ -398,20 +372,6 @@ var
   PaddingSize: Integer;
   BorderSize: Integer;
 begin
-  if ((VertScrollWnd <> nil) and not VertScrollWnd.HandleAllocated) or
-     ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
-  begin  // Fixes issue #390
-    if VertScrollWnd <> nil then
-      FreeAndNil(VertScrollWnd);
-    if HorzScrollWnd <> nil then
-      FreeAndNil(HorzScrollWnd);
-
-    InitScrollBars;
-  end;
-
-  // ScrollBarWindow Visible/Enabled Control
-  CalcScrollBarsRect;
-
   HeaderHeight := 0;
   if (hoVisible in TBaseVirtualTree(Control).Header.Options) then
     Inc(HeaderHeight, TBaseVirtualTree(Control).Header.Height);
@@ -428,6 +388,17 @@ begin
   BorderSize := 0;
   if HasBorder then
     Inc(BorderSize, GetSystemMetrics(SM_CYEDGE));
+
+  if ((VertScrollWnd <> nil) and not VertScrollWnd.HandleAllocated) or
+     ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
+  begin  // Fixes issue #390
+    if VertScrollWnd <> nil then
+      FreeAndNil(VertScrollWnd);
+    if HorzScrollWnd <> nil then
+      FreeAndNil(HorzScrollWnd);
+
+    InitScrollBars;
+  end;
 
   // VertScrollBarWindow
   if Control.HandleAllocated then
@@ -466,9 +437,38 @@ begin
     end else
       ShowWindow(HorzScrollWnd.Handle, SW_HIDE);
   end;// if FHorzScrollWnd
+  // ScrollBarWindow Visible/Enabled Control
+  CalcScrollBarsRect;
+
 end;
 
 {$ifdef NOT_USE_VCL_STYLEHOOK}
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVclStyleScrollBarsHook.MouseLeave;
+begin
+  inherited;
+  if VertSliderState = tsThumbBtnVertHot then
+    VertSliderState := tsThumbBtnVertNormal;
+
+  if HorzSliderState = tsThumbBtnHorzHot then
+    HorzSliderState := tsThumbBtnHorzNormal;
+
+  if VertUpState = tsArrowBtnUpHot then
+    VertUpState := tsArrowBtnUpNormal;
+
+  if VertDownState = tsArrowBtnDownHot then
+    VertDownState := tsArrowBtnDownNormal;
+
+  if HorzUpState = tsArrowBtnLeftHot then
+    HorzUpState := tsArrowBtnLeftNormal;
+
+  if HorzDownState = tsArrowBtnRightHot then
+    HorzDownState := tsArrowBtnRightNormal;
+
+  PaintScroll;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVclStyleScrollBarsHook.WMCaptureChanged(var Msg: TMessage);
