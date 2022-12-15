@@ -72,14 +72,16 @@ var
 
 type
   {$IFDEF VT_FMX}
-    TVTBaseAncestor = TVTBaseAncestorFMX;
+    TVTBaseAncestor        = TVTBaseAncestorFMX;
+    TCanvas                = FMX.Graphics.TCanvas;																	  
   {$ELSE}
-    TVTBaseAncestor = TVTBaseAncestorVcl;
+    TVTBaseAncestor        = TVTBaseAncestorVcl;
+    TCanvas                = Vcl.Graphics.TCanvas;
+    TFormatEtcArray        = VirtualTrees.Types.TFormatEtcArray;											  
   {$ENDIF}
 
   // Alias defintions for convenience
   TImageIndex              = System.UITypes.TImageIndex;
-  TCanvas                  = Vcl.Graphics.TCanvas;
 
   //these were moved, aliases are for backwards compatibility.
   //some may be removed once we sort out excactly what is needed.
@@ -91,7 +93,6 @@ type
   TAutoScrollInterval      = VirtualTrees.Types.TAutoScrollInterval;
   TVTScrollIncrement       = VirtualTrees.Types.TVTScrollIncrement;
   TFormatArray             = VirtualTrees.Types.TFormatArray;
-  TFormatEtcArray          = VirtualTrees.Types.TFormatEtcArray;
 
   TVTPaintOption           = VirtualTrees.Types.TVTPaintOption;
   TVTPaintOptions          = VirtualTrees.Types.TVTPaintOptions;
@@ -839,6 +840,8 @@ type
   TVTCanSplitterResizeNodeEvent = procedure(Sender: TBaseVirtualTree; P: TPoint; Node: PVirtualNode;
     Column: TColumnIndex; var Allowed: Boolean) of object;
 
+  TVTGetUserClipboardFormatsEvent = procedure(Sender: TBaseVirtualTree; var Formats: TFormatEtcArray) of object;
+
   // drag'n drop/OLE events
   TVTCreateDragManagerEvent = procedure(Sender: TBaseVirtualTree; out DragManager: IVTDragManager) of object;
   TVTCreateDataObjectEvent = procedure(Sender: TBaseVirtualTree; out IDataObject: TVTDragDataObject) of object;
@@ -848,7 +851,6 @@ type
     Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean) of object;
   TVTDragDropEvent = procedure(Sender: TBaseVirtualTree; Source: TObject; DataObject: TVTDragDataObject;
     Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode) of object;
-  TVTGetUserClipboardFormatsEvent = procedure(Sender: TBaseVirtualTree; var Formats: TFormatEtcArray) of object;
 
   // paint events
   TVTBeforeItemEraseEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect;
@@ -1059,12 +1061,12 @@ type
     FDragOperations: TDragOperations;            // determines which operations are allowed during drag'n drop
     FDragThreshold: Integer;                     // used to determine when to actually start a drag'n drop operation
     FDragManager: IVTDragManager;                // drag'n drop, cut'n paste
+    FDragImage: TVTDragImage;                    // drag image management																		 
     FDropTargetNode: PVirtualNode;               // node currently selected as drop target
     FLastDropMode: TDropMode;                    // set while dragging and used to track changes
     FDragSelection: TNodeArray;                  // temporary copy of FSelection used during drag'n drop
     FLastDragEffect: Integer;                    // The last executed drag effect
     FDragType: TVTDragType;                      // used to switch between OLE and VCL drag'n drop
-    FDragImage: TVTDragImage;                    // drag image management
     FDragWidth,
     FDragHeight: Integer;                        // size of the drag image, the larger the more CPU power is needed
     FClipboardFormats: TClipboardFormats;        // a list of clipboard format descriptions enabled for this tree
@@ -1228,7 +1230,8 @@ type
                                                  // not covered by any node
     FOnMeasureItem: TVTMeasureItemEvent;         // Triggered when a node is about to be drawn and its height was not yet
                                                  // determined by the application.
-
+    FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
+                                                 // add own clipboard formats on the fly
     // drag'n drop events
     FOnCreateDragManager: TVTCreateDragManagerEvent; // called to allow for app./descendant defined drag managers
     FOnCreateDataObject: TVTCreateDataObjectEvent; // called to allow for app./descendant defined data objects
@@ -1238,8 +1241,6 @@ type
     FOnHeaderDragged: TVTHeaderDraggedEvent;     // header (column) drag'n drop
     FOnHeaderDraggedOut: TVTHeaderDraggedOutEvent; // header (column) drag'n drop, which did not result in a valid drop.
     FOnHeaderDragging: TVTHeaderDraggingEvent;   // header (column) drag'n drop
-    FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
-                                                 // add own clipboard formats on the fly
 
     // miscellanous events
     FOnGetNodeDataSize: TVTGetNodeDataSizeEvent; // Called if NodeDataSize is -1.
