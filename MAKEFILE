@@ -15,6 +15,7 @@ BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2019\Professional\MSBuild\Cu
 BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe"
 !ENDIF
 !ENDIF
+!ENDIF
 BUILD = $(BUILDEXE) /t:Rebuild
 
 clean:  
