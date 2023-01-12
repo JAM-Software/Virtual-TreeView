@@ -95,6 +95,11 @@ uses
   {$MinEnumSize 1, make enumerations as small as possible}
 
 type
+  // Some aliases for backward compatiblity
+  PVirtualNode = VirtualTrees.BaseTree.PVirtualNode;
+  TVirtualNode = VirtualTrees.BaseTree.TVirtualNode;
+  TBaseVirtualTree = VirtualTrees.BaseTree.TBaseVirtualTree;
+
   TCustomVirtualStringTree = class;
 
 {$IFDEF VT_FMX}
