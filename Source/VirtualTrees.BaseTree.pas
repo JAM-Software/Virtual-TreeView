@@ -810,6 +810,8 @@ type
     var Allowed: Boolean) of object;
   TVTAfterAutoFitColumnEvent = procedure(Sender: TVTHeader; Column: TColumnIndex) of object;
   TVTAfterAutoFitColumnsEvent = procedure(Sender: TVTHeader) of object;
+  TVTColumnCheckChangingEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var NewState: TCheckState;
+    var Allowed: Boolean) of object;
   TVTColumnClickEvent = procedure (Sender: TBaseVirtualTree; Column: TColumnIndex; Shift: TShiftState) of object;
   TVTColumnDblClickEvent = procedure (Sender: TBaseVirtualTree; Column: TColumnIndex; Shift: TShiftState) of object;
   TColumnChangeEvent = procedure(const Sender: TBaseVirtualTree; const Column: TColumnIndex; Visible: Boolean) of object;
@@ -1193,6 +1195,8 @@ type
     FOnHeaderMouseMove: TVTHeaderMouseMoveEvent;
     FOnAfterGetMaxColumnWidth: TVTAfterGetMaxColumnWidthEvent;
     FOnBeforeGetMaxColumnWidth: TVTBeforeGetMaxColumnWidthEvent;
+    FOnColumnChecked: TVTHeaderNotifyEvent;      // triggered when the column is about to be checked
+    FOnColumnChecking: TVTColumnCheckChangingEvent;
     FOnColumnClick: TVTColumnClickEvent;
     FOnColumnDblClick: TVTColumnDblClickEvent;
     FOnColumnResize: TVTHeaderNotifyEvent;
@@ -1508,6 +1512,8 @@ type
     function DoChecking(Node: PVirtualNode; var NewCheckState: TCheckState): Boolean; virtual;
     procedure DoCollapsed(Node: PVirtualNode); virtual;
     function DoCollapsing(Node: PVirtualNode): Boolean; virtual;
+    procedure DoColumnChecked(Column: TColumnIndex); virtual;
+    function DoColumnChecking(Column: TColumnIndex; var NewCheckState: TCheckState): Boolean; virtual;
     procedure DoColumnClick(Column: TColumnIndex; Shift: TShiftState); virtual;
     procedure DoColumnDblClick(Column: TColumnIndex; Shift: TShiftState); virtual;
     procedure DoColumnResize(Column: TColumnIndex); virtual;
@@ -1827,6 +1833,8 @@ type
     property OnChecking: TVTCheckChangingEvent read FOnChecking write FOnChecking;
     property OnCollapsed: TVTChangeEvent read FOnCollapsed write FOnCollapsed;
     property OnCollapsing: TVTChangingEvent read FOnCollapsing write FOnCollapsing;
+    property OnColumnChecked: TVTHeaderNotifyEvent read FOnColumnChecked write FOnColumnChecked;
+    property OnColumnChecking: TVTColumnCheckChangingEvent read FOnColumnChecking write FOnColumnChecking;
     property OnColumnClick: TVTColumnClickEvent read FOnColumnClick write FOnColumnClick;
     property OnColumnDblClick: TVTColumnDblClickEvent read FOnColumnDblClick write FOnColumnDblClick;
     property OnColumnExport : TVTColumnExportEvent read FOnColumnExport write FOnColumnExport;
@@ -10736,6 +10744,26 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DoColumnChecked(Column: TColumnIndex);
+begin
+  if Assigned(FOnColumnChecked) then
+    FOnColumnChecked(Self.FHeader, Column);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.DoColumnChecking(Column: TColumnIndex; var NewCheckState: TCheckState): Boolean;
+
+// Determines if a column is allowed to change its check state to NewCheckState.
+
+begin
+  Result := True;
+  if Assigned(FOnColumnChecking) then
+    FOnColumnChecking(Self.Header, Column, NewCheckState, Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DoColumnClick(Column: TColumnIndex; Shift: TShiftState);
 
 begin
@@ -16415,9 +16443,15 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.UpdateColumnCheckState(Col: TVirtualTreeColumn);
-
+var
+  NewCheckState: TCheckState;
 begin
-  Col.CheckState := DetermineNextCheckState(Col.CheckType, Col.CheckState);
+  NewCheckState := DetermineNextCheckState(Col.CheckType, Col.CheckState);
+  if (Col.CheckState <> NewCheckState) and DoColumnChecking(Col.Index, NewCheckState) then
+  begin
+    Col.CheckState := NewCheckState;
+    DoColumnChecked(Col.Index);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
