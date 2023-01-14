@@ -156,6 +156,8 @@ type
     property OnClick;
     property OnCollapsed;
     property OnCollapsing;
+    property OnColumnChecked;
+    property OnColumnChecking;
     property OnColumnClick;
     property OnColumnDblClick;
     property OnColumnExport;
