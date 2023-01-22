@@ -3520,6 +3520,7 @@ type
     function Path(Node: PVirtualNode; Column: TColumnIndex; Delimiter: Char): string;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean); override;
     procedure AddToSelection(Node: PVirtualNode; NotifySynced: Boolean); override;
+    procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     /// Alternate text for images used in Accessibility.
@@ -34719,6 +34720,21 @@ begin
     Self.OnGetText(Self, Node, Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
     FPreviouslySelected.Add(lSelectedNodeCaption);
   end;//if
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomVirtualStringTree.AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean);
+var
+  i: Integer;
+  lSelectedNodeCaption: string;
+begin
+  inherited;
+  for i := 0 to NewLength - 1 do
+  begin
+    Self.OnGetText(Self, NewItems[i], Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
+    FPreviouslySelected.Add(lSelectedNodeCaption);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
