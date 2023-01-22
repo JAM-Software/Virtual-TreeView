@@ -107,7 +107,7 @@ type
 {$ELSE}
   TVTAncestor = TVTAncestorVcl;
 {$ENDIF}
-  
+
   // Describes the type of text to return in the text and draw info retrival events.
   TVSTTextType = (
     ttNormal,      // normal label of the node, this is also the text which can be edited
@@ -188,9 +188,11 @@ type
     procedure WMSetFont(var Msg: TWMSetFont); message WM_SETFONT;
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean = True);
   protected
+    /// <summary>Contains the name of the string that should be restored as selection</summary>
+    /// <seealso cref="TVTSelectionOption.toRestroeSelection">
     FPreviouslySelected: TStringList;
-    procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo); // [IPK] - private to protected
-    procedure PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer; Text: string); virtual; // [IPK] - private to protected
+    procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo);
+    procedure PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer; Text: string); virtual;
     procedure PaintStaticText(const PaintInfo: TVTPaintInfo; pStaticTextAlignment: TAlignment; const Text: string); virtual; // [IPK] - private to protected
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); override;
     function CanExportNode(Node: PVirtualNode): Boolean;
@@ -257,6 +259,7 @@ type
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean; ForceReinit:
         Boolean = False); override;
     procedure AddToSelection(Node: PVirtualNode; NotifySynced: Boolean); override;
+    procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     /// Alternate text for images used in Accessibility.
@@ -1017,7 +1020,6 @@ begin
   end;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
 
 procedure TCustomVirtualStringTree.AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex);
 
@@ -1683,6 +1685,21 @@ begin
     Self.OnGetText(Self, Node, Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
     FPreviouslySelected.Add(lSelectedNodeCaption);
   end;//if
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCustomVirtualStringTree.AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean);
+var
+  i: Integer;
+  lSelectedNodeCaption: string;
+begin
+  inherited;
+  for i := 0 to NewLength - 1 do
+  begin
+    Self.OnGetText(Self, NewItems[i], Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
+    FPreviouslySelected.Add(lSelectedNodeCaption);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
