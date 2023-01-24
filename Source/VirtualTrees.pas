@@ -189,7 +189,7 @@ type
     procedure GetDataFromGrid(const AStrings : TStringList; const IncludeHeading : Boolean = True);
   protected
     /// <summary>Contains the name of the string that should be restored as selection</summary>
-    /// <seealso cref="TVTSelectionOption.toRestroeSelection">
+    /// <seealso cref="TVTSelectionOption.toRestoreSelection">
     FPreviouslySelected: TStringList;
     procedure InitializeTextProperties(var PaintInfo: TVTPaintInfo);
     procedure PaintNormalText(var PaintInfo: TVTPaintInfo; TextOutFlags: Integer; Text: string); virtual;
@@ -201,6 +201,7 @@ type
     function ColumnIsEmpty(Node: PVirtualNode; Column: TColumnIndex): Boolean; override;
     procedure DefineProperties(Filer: TFiler); override;
     function DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink; override;
+    procedure DoAddToSelection(Node: PVirtualNode); override;
     function DoGetNodeHint(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
     function DoGetNodeTooltip(Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle): string; override;
     function DoGetNodeExtraWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): TDimension; override;
@@ -258,8 +259,6 @@ type
     function Path(Node: PVirtualNode; Column: TColumnIndex; Delimiter: Char): string;
     procedure ReinitNode(Node: PVirtualNode; Recursive: Boolean; ForceReinit:
         Boolean = False); override;
-    procedure AddToSelection(Node: PVirtualNode; NotifySynced: Boolean); override;
-    procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); override;
     procedure RemoveFromSelection(Node: PVirtualNode); override;
     function SaveToCSVFile(const FileNameWithPath : TFileName; const IncludeHeading : Boolean) : Boolean;
     /// Alternate text for images used in Accessibility.
@@ -1122,8 +1121,30 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TCustomVirtualStringTree.DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink;
+procedure TCustomVirtualStringTree.DoAddToSelection(Node: PVirtualNode);
+var
+  lSelectedNodeCaption: string;
+begin
+  inherited;
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and not (tsPreviouslySelectedLocked in TreeStates) then
+  begin
+    if not Assigned(FPreviouslySelected) then
+    begin
+      FPreviouslySelected := TStringList.Create();
+      FPreviouslySelected.Duplicates := dupIgnore;
+      FPreviouslySelected.Sorted := True; //Improves performance, required to use Find()
+      FPreviouslySelected.CaseSensitive := False;
+    end;
+    if Self.SelectedCount = 1 then
+      FPreviouslySelected.Clear();
+    Self.OnGetText(Self, Node, Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
+    FPreviouslySelected.Add(lSelectedNodeCaption);
+  end;//if
+end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCustomVirtualStringTree.DoCreateEditor(Node: PVirtualNode; Column: TColumnIndex): IVTEditLink;
 begin
   Result := inherited DoCreateEditor(Node, Column);
   // Enable generic label editing support if the application does not have own editors.
@@ -1663,44 +1684,6 @@ begin
       Result := Selected[Node];
     else
       Result := True;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomVirtualStringTree.AddToSelection(Node: PVirtualNode; NotifySynced: Boolean);
-var
-  lSelectedNodeCaption: string;
-begin
-  inherited;
-  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and Self.Selected[Node] and not (tsPreviouslySelectedLocked in TreeStates) then
-  begin
-    if not Assigned(FPreviouslySelected) then
-    begin
-      FPreviouslySelected := TStringList.Create();
-      FPreviouslySelected.Duplicates := dupIgnore;
-      FPreviouslySelected.Sorted := True; //Improves performance, required to use Find()
-      FPreviouslySelected.CaseSensitive := False;
-    end;
-    if Self.SelectedCount = 1 then
-      FPreviouslySelected.Clear();
-    Self.OnGetText(Self, Node, Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
-    FPreviouslySelected.Add(lSelectedNodeCaption);
-  end;//if
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TCustomVirtualStringTree.AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean);
-var
-  i: Integer;
-  lSelectedNodeCaption: string;
-begin
-  inherited;
-  for i := 0 to NewLength - 1 do
-  begin
-    Self.OnGetText(Self, NewItems[i], Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
-    FPreviouslySelected.Add(lSelectedNodeCaption);
   end;
 end;
 
