@@ -1489,6 +1489,7 @@ type
     function DetermineLineImageAndSelectLevel(Node: PVirtualNode; var LineImage: TLineImage): Integer; virtual;
     function DetermineNextCheckState(CheckType: TCheckType; CheckState: TCheckState): TCheckState; virtual;
     function DetermineScrollDirections(X, Y: TDimension): TScrollDirections; virtual;
+    procedure DoAddToSelection(Node: PVirtualNode); virtual;
     procedure DoAdvancedHeaderDraw(var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements); virtual;
     procedure DoAfterCellPaint(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellRect: TRect); virtual;
     procedure DoAfterItemErase(Canvas: TCanvas; Node: PVirtualNode; ItemRect: TRect); virtual;
@@ -10464,6 +10465,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DoAddToSelection(Node: PVirtualNode);
+begin
+  if Assigned(FOnAddToSelection) then
+    FOnAddToSelection(Self, Node);
+end;
+
 procedure TBaseVirtualTree.DoAdvancedHeaderDraw(var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements);
 
 begin
@@ -14314,8 +14321,7 @@ begin
     begin
       PTmpNode := NewItems[I];
       // call on add event callbackevent
-      if Assigned(FOnAddToSelection) then
-        FOnAddToSelection(Self, PTmpNode);
+      DoAddToSelection(PTmpNode);
       if SyncCheckstateWithSelection[PTmpNode] then
         checkstate[PTmpNode] := csCheckedNormal;
     end;
