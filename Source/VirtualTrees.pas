@@ -34729,12 +34729,22 @@ var
   i: Integer;
   lSelectedNodeCaption: string;
 begin
-  inherited;
-  for i := 0 to NewLength - 1 do
+  if (toRestoreSelection in TreeOptions.SelectionOptions) and Assigned(Self.OnGetText) and not (tsPreviouslySelectedLocked in FStates) then
   begin
-    Self.OnGetText(Self, NewItems[i], Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
-    FPreviouslySelected.Add(lSelectedNodeCaption);
-  end;
+    if not Assigned(FPreviouslySelected) then
+    begin
+      FPreviouslySelected := TStringList.Create();
+      FPreviouslySelected.Duplicates := dupIgnore;
+      FPreviouslySelected.Sorted := True; //Improves performance, required to use Find()
+      FPreviouslySelected.CaseSensitive := False;
+    end;
+    for i := 0 to NewLength - 1 do
+    begin
+      Self.OnGetText(Self, NewItems[i], Header.RestoreSelectionColumnIndex, ttNormal, lSelectedNodeCaption);
+      FPreviouslySelected.Add(lSelectedNodeCaption);
+    end;
+  end; // if toRestoreSelection
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
