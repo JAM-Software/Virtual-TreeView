@@ -76,6 +76,9 @@ implementation
 
 {$R *.dfm}
 
+uses
+  VirtualTrees.Types;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure UpdateStateDisplay(CurrentStates, Enter, Leave: TVirtualTreeStates);

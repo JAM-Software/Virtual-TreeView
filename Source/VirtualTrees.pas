@@ -96,10 +96,47 @@ uses
 
 type
   // Some aliases for backward compatiblity
-  PVirtualNode = VirtualTrees.BaseTree.PVirtualNode;
-  TVirtualNode = VirtualTrees.BaseTree.TVirtualNode;
-  TBaseVirtualTree = VirtualTrees.BaseTree.TBaseVirtualTree;
+  PVirtualNode             = VirtualTrees.Types.PVirtualNode;
+  TVirtualNode             = VirtualTrees.Types.TVirtualNode;
+  TBaseVirtualTree         = VirtualTrees.BaseTree.TBaseVirtualTree;
+  IVTEditLink              = VirtualTrees.BaseTree.IVTEditLink;
+  TVTHeader                = VirtualTrees.Header.TVTHeader;
+  TVTHeaderClass           = VirtualTrees.Header.TVTHeaderClass;
+  TVTHeaderOption          = VirtualTrees.Header.TVTHeaderOption;
+  TVTHeaderOptions         = VirtualTrees.Header.TVTHeaderOptions;
+  THeaderPaintInfo         = VirtualTrees.Header.THeaderPaintInfo;
+  TVTHeaderColumnLayout    = VirtualTrees.Types.TVTHeaderColumnLayout;
+  TVTConstraintPercent     = VirtualTrees.Header.TVTConstraintPercent;
+  TSmartAutoFitType        = VirtualTrees.Types.TSmartAutoFitType;
+  TVirtualTreeStates       = VirtualTrees.Types.TVirtualTreeStates;
+  TVTFixedAreaConstraints  = VirtualTrees.Header.TVTFixedAreaConstraints;
+  TVTHeaderStyle           = VirtualTrees.Header.TVTHeaderStyle;
+  THeaderState             = VirtualTrees.Header.THeaderState;
+  THeaderStates            = VirtualTrees.Header.THeaderStates;
+const
+  //Aliases
+  NoColumn                 = VirtualTrees.Types.NoColumn;
+  InvalidColumn            = VirtualTrees.Types.InvalidColumn;
+  sdAscending              = VirtualTrees.Types.TSortDirection.sdAscending;
+  sdDescending             = VirtualTrees.Types.TSortDirection.sdDescending;
 
+  ctNone                   = VirtualTrees.Types.TCheckType.ctNone;
+  ctTriStateCheckBox       = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
+  ctCheckBox               = VirtualTrees.Types.TCheckType.ctCheckBox;
+  ctRadioButton            = VirtualTrees.Types.TCheckType.ctRadioButton;
+  ctButton                 = VirtualTrees.Types.TCheckType.ctButton;
+
+  csUncheckedNormal        = VirtualTrees.Types.TCheckState.csUncheckedNormal;
+  csUncheckedPressed       = VirtualTrees.Types.TCheckState.csUncheckedPressed;
+  csCheckedNormal          = VirtualTrees.Types.TCheckState.csCheckedNormal;
+  csCheckedPressed         = VirtualTrees.Types.TCheckState.csCheckedPressed;
+  csMixedNormal            = VirtualTrees.Types.TCheckState.csMixedNormal;
+  csMixedPressed           = VirtualTrees.Types.TCheckState.csMixedPressed;
+  csUncheckedDisabled      = VirtualTrees.Types.TCheckState.csUncheckedDisabled;
+  csCheckedDisabled        = VirtualTrees.Types.TCheckState.csCheckedDisabled;
+  csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
+
+type
   TCustomVirtualStringTree = class;
 
 {$IFDEF VT_FMX}

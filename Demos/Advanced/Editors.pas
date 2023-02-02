@@ -8,7 +8,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtDlgs, ImgList, Buttons, ExtCtrls, ComCtrls, Mask,
-  VirtualTrees, VirtualTrees.EditLink, VirtualTrees.BaseTree;
+  VirtualTrees, VirtualTrees.EditLink, VirtualTrees.Types;
 
 type
   // Describes the type of value a property tree node stores in its data property.

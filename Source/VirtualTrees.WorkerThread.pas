@@ -4,6 +4,7 @@ interface
 
 uses
   System.Classes,
+  VirtualTrees.Types,
   VirtualTrees.BaseTree;
 
 type

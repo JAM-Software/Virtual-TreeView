@@ -11,8 +11,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ComCtrls, ExtCtrls, ImgList, VirtualTrees.BaseTree, VirtualTrees.BaseAncestorVCL,
-  VirtualTrees.AncestorVCL;
+  StdCtrls, VirtualTrees, ComCtrls, ExtCtrls, ImgList, VirtualTrees.Types;
 
 type
   TVisibilityForm = class(TForm)

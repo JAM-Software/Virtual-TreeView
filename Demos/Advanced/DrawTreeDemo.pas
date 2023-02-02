@@ -26,8 +26,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VirtualTrees, StdCtrls, {$ifdef GraphicEx} GraphicEx, {$else} JPEG, {$endif}
-  ImgList, ComCtrls, UITypes, VirtualTrees.DrawTree, System.ImageList, VirtualTrees.BaseTree,
-  VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
+  ImgList, ComCtrls, UITypes, VirtualTrees.DrawTree, System.ImageList, VirtualTrees.Types;
 
 type
   TDrawTreeForm = class(TForm)

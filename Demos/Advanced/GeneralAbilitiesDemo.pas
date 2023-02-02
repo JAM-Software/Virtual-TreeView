@@ -28,7 +28,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
   StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList, VirtualTrees.BaseTree,
-  VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
+  VirtualTrees.Types;
 
 type
   TGeneralForm = class(TForm)

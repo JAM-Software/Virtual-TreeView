@@ -11,7 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes, VirtualTrees.BaseTree, System.ImageList,
-  VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
+  VirtualTrees.Types;
 
 const
   // Helper message to decouple node change handling from edit handling.

@@ -102,6 +102,7 @@ implementation
 uses
   WinApi.Windows,
   VirtualTrees,
+  VirtualTrees.Types,
   VirtualTrees.Utils,
   VirtualTrees.StyleHooks,
   VirtualTrees.BaseTree;

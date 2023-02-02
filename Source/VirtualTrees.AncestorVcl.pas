@@ -17,6 +17,7 @@ uses
   Winapi.oleacc,
   Winapi.ActiveX,
   Winapi.Messages,
+  VirtualTrees.Types,
   VirtualTrees.BaseTree;
 
 type
@@ -49,7 +50,6 @@ implementation
 uses
   System.Classes,
   Vcl.AxCtrls,
-  VirtualTrees.Types,
   VirtualTrees.ClipBoard,
   VirtualTrees.AccessibilityFactory,
   VirtualTrees.DataObject;

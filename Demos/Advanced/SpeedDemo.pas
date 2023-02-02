@@ -9,8 +9,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, VirtualTrees.BaseTree, ExtDlgs, ComCtrls, jpeg, Menus, VirtualTrees.BaseAncestorVCL,
-  VirtualTrees.AncestorVCL;
+  StdCtrls, VirtualTrees, VirtualTrees.Types, ExtDlgs, ComCtrls, jpeg, Menus;
 
 type
   TSpeedForm = class(TForm)

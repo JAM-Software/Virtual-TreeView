@@ -42,29 +42,6 @@ uses
 {$ENDIF}
   ;
 
-const
-  //Aliases
-  NoColumn                 = VirtualTrees.Types.NoColumn;
-  InvalidColumn            = VirtualTrees.Types.InvalidColumn;
-  sdAscending              = VirtualTrees.Types.TSortDirection.sdAscending;
-  sdDescending             = VirtualTrees.Types.TSortDirection.sdDescending;
-
-  ctNone                   = VirtualTrees.Types.TCheckType.ctNone;
-  ctTriStateCheckBox       = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
-  ctCheckBox               = VirtualTrees.Types.TCheckType.ctCheckBox;
-  ctRadioButton            = VirtualTrees.Types.TCheckType.ctRadioButton;
-  ctButton                 = VirtualTrees.Types.TCheckType.ctButton;
-
-  csUncheckedNormal        = VirtualTrees.Types.TCheckState.csUncheckedNormal;
-  csUncheckedPressed       = VirtualTrees.Types.TCheckState.csUncheckedPressed;
-  csCheckedNormal          = VirtualTrees.Types.TCheckState.csCheckedNormal;
-  csCheckedPressed         = VirtualTrees.Types.TCheckState.csCheckedPressed;
-  csMixedNormal            = VirtualTrees.Types.TCheckState.csMixedNormal;
-  csMixedPressed           = VirtualTrees.Types.TCheckState.csMixedPressed;
-  csUncheckedDisabled      = VirtualTrees.Types.TCheckState.csUncheckedDisabled;
-  csCheckedDisabled        = VirtualTrees.Types.TCheckState.csCheckedDisabled;
-  csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
-
 var
   IsWinVistaOrAbove: Boolean;
 
@@ -73,7 +50,7 @@ var
 type
   {$IFDEF VT_FMX}
     TVTBaseAncestor        = TVTBaseAncestorFMX;
-    TCanvas                = FMX.Graphics.TCanvas;																	  
+    TCanvas                = FMX.Graphics.TCanvas;
   {$ELSE}
     TVTBaseAncestor        = TVTBaseAncestorVcl;
     TCanvas                = Vcl.Graphics.TCanvas;
@@ -132,197 +109,13 @@ type
   TCardinalArray           = VirtualTrees.Header.TCardinalArray;
   TIndexArray              = VirtualTrees.Header.TIndexArray;
 
-  TVTHeader                = VirtualTrees.Header.TVTHeader;
-  TVTHeaderClass           = VirtualTrees.Header.TVTHeaderClass;
-  TVTHeaderOption          = VirtualTrees.Header.TVTHeaderOption;
-  TVTHeaderOptions         = VirtualTrees.Header.TVTHeaderOptions;
-  THeaderPaintInfo         = VirtualTrees.Header.THeaderPaintInfo;
-  TVTHeaderColumnLayout    = VirtualTrees.Types.TVTHeaderColumnLayout;
-  TVTConstraintPercent     = VirtualTrees.Header.TVTConstraintPercent;
-  TSmartAutoFitType        = VirtualTrees.Types.TSmartAutoFitType;
-  TVTFixedAreaConstraints  = VirtualTrees.Header.TVTFixedAreaConstraints;
-  TVTHeaderStyle           = VirtualTrees.Header.TVTHeaderStyle;
-  THeaderState             = VirtualTrees.Header.THeaderState;
-  THeaderStates            = VirtualTrees.Header.THeaderStates;
-
   TVTColors                = VirtualTrees.Colors.TVTColors;
   //
-
-  // Be careful when adding new states as this might change the size of the type which in turn
-  // changes the alignment in the node record as well as the stream chunks.
-  // Do not reorder the states and always add new states at the end of this enumeration in order to avoid
-  // breaking existing code.
-  TVirtualNodeState = (
-    vsInitialized,       // Set after the node has been initialized.
-    vsChecking,          // Node's check state is changing, avoid propagation.
-    vsCutOrCopy,         // Node is selected as cut or copy and paste source.
-    vsDisabled,          // Set if node is disabled.
-    vsDeleting,          // Set when the node is about to be freed.
-    vsExpanded,          // Set if the node is expanded.
-    vsHasChildren,       // Indicates the presence of child nodes without actually setting them.
-    vsVisible,           // Indicate whether the node is visible or not (independant of the expand states of its parents).
-    vsSelected,          // Set if the node is in the current selection.
-    vsOnFreeNodeCallRequired,   // Set if user data has been set which requires OnFreeNode.
-    vsAllChildrenHidden, // Set if vsHasChildren is set and no child node has the vsVisible flag set.
-    vsReleaseCallOnUserDataRequired, // Indicates that the user data is a reference to an interface which should be released.
-    vsMultiline,         // Node text is wrapped at the cell boundaries instead of being shorted.
-    vsHeightMeasured,    // Node height has been determined and does not need a recalculation.
-    vsToggling,          // Set when a node is expanded/collapsed to prevent recursive calls.
-    vsFiltered,          // Indicates that the node should not be painted (without effecting its children).
-    vsInitializing       // Set when the node is being initialized
-  );
-  TVirtualNodeStates = set of TVirtualNodeState;
-
-  // States used in InitNode to indicate states a node shall initially have.
-  TVirtualNodeInitState = (
-    ivsDisabled,
-    ivsExpanded,
-    ivsHasChildren,
-    ivsMultiline,
-    ivsSelected,
-    ivsFiltered,
-    ivsReInit
-  );
-  TVirtualNodeInitStates = set of TVirtualNodeInitState;
-
-
-
-  // These flags are used to indicate where a click in the header happened.
-  TVTHeaderHitPosition = (
-    hhiNoWhere,         // No column is involved (possible only if the tree is smaller than the client area).
-    hhiOnColumn,        // On a column.
-    hhiOnIcon,          // On the bitmap associated with a column.
-    hhiOnCheckbox       // On the checkbox if enabled.
-  );
-  TVTHeaderHitPositions = set of TVTHeaderHitPosition;
-
-  // These flags are returned by the hit test method.
-  THitPosition = (
-    hiAbove,             // above the client area (if relative) or the absolute tree area
-    hiBelow,             // below the client area (if relative) or the absolute tree area
-    hiNowhere,           // no node is involved (possible only if the tree is not as tall as the client area)
-    hiOnItem,            // on the bitmaps/buttons or label associated with an item
-    hiOnItemButton,      // on the button associated with an item
-    hiOnItemButtonExact, // exactly on the button associated with an item
-    hiOnItemCheckbox,    // on the checkbox if enabled
-    hiOnItemIndent,      // in the indentation area in front of a node
-    hiOnItemLabel,       // on the normal text area associated with an item
-    hiOnItemLeft,        // in the area to the left of a node's text area (e.g. when right aligned or centered)
-    hiOnItemRight,       // in the area to the right of a node's text area (e.g. if left aligned or centered)
-    hiOnNormalIcon,      // on the "normal" image
-    hiOnStateIcon,       // on the state image
-    hiToLeft,            // to the left of the client area (if relative) or the absolute tree area
-    hiToRight,           // to the right of the client area (if relative) or the absolute tree area
-    hiUpperSplitter,     // in the upper splitter area of a node
-    hiLowerSplitter      // in the lower splitter area of a node
-  );
-  THitPositions = set of THitPosition;
-
-
-  TCheckImageKind = (
-    ckCustom,         // application defined check images
-    ckSystemDefault   // Uses the system check images, theme aware.
-  );
-
-  // mode to describe a move action
-  TVTNodeAttachMode = (
-    amNoWhere,        // just for simplified tests, means to ignore the Add/Insert command
-    amInsertBefore,   // insert node just before destination (as sibling of destination)
-    amInsertAfter,    // insert node just after destionation (as sibling of destination)
-    amAddChildFirst,  // add node as first child of destination
-    amAddChildLast    // add node as last child of destination
-  );
-
-  // modes to determine drop position further
-  TDropMode = (
-    dmNowhere,
-    dmAbove,
-    dmOnNode,
-    dmBelow
-  );
-
-  // operations basically allowed during drag'n drop
-  TDragOperation = (
-    doCopy,
-    doMove,
-    doLink
-  );
-  TDragOperations = set of TDragOperation;
-
-  TVTImageKind = (
-    ikNormal,
-    ikSelected,
-    ikState,
-    ikOverlay
-  );
-
-  {
-    Fine points: Observed when fixing issue #623
-    -- hmHint allows multiline hints automatically if provided through OnGetHint event.
-       This is irresptive of whether node itself is multi-line or not.
-
-    -- hmToolTip shows a hint only when node text is not fully shown. It's meant to
-       fully show node text when not visible. It will show multi-line hint only if
-       the node itself is multi-line. If you provide a custom multi-line hint then
-       you must force linebreak style to hlbForceMultiLine in the OnGetHint event
-       in order to show the complete hint.
-  }
-  TVTHintMode = (
-    hmDefault,            // show the hint of the control
-    hmHint,               // show node specific hint string returned by the application
-    hmHintAndDefault,     // same as hmHint but show the control's hint if no node is concerned
-    hmTooltip             // show the text of the node if it isn't already fully shown
-  );
-
-  // Indicates how to format a tooltip.
-  TVTTooltipLineBreakStyle = (
-    hlbDefault,           // Use multi-line style of the node.
-    hlbForceSingleLine,   // Use single line hint.
-    hlbForceMultiLine     // Use multi line hint.
-  );
-
-  TMouseButtons = set of TMouseButton;
-
-  // Used to describe the action to do when using the OnBeforeItemErase event.
-  TItemEraseAction = (
-    eaColor,   // Use the provided color to erase the background instead the one of the tree.
-    eaDefault, // The tree should erase the item's background (bitmap or solid).
-    eaNone     // Do nothing. Let the application paint the background.
-  );
-
-
-  // Kinds of operations
-  TVTOperationKind = (
-    okAutoFitColumns,
-    okGetMaxColumnWidth,
-    okSortNode,
-    okSortTree,
-    okExport,
-    okExpand
-  );
-  TVTOperationKinds = set of TVTOperationKind;
-
-  // content elements of the control from left to right, used when calculatin left margins.
-  TVTElement = (
-    ofsMargin, // right of the margin
-    ofsToggleButton, // the exact x-postition of the toggle button
-    ofsCheckBox,
-    ofsStateImage,
-    ofsImage,
-    ofsLabel, // where drawing a selection begins
-    ofsText, // includes TextMargin
-    ofsRightOfText, // Includes NodeWidth and ExtraNodeWidth
-    ofsEndOfClientArea // The end of the paint area
-  );
-
-  /// An array that can be used to calculate the offsets ofthe elements in the tree.
-  TVTOffsets = array [TVTElement] of TDimension;
 
 type
   TBaseVirtualTree = class;
   TVirtualTreeClass = class of TBaseVirtualTree;
 
-  PVirtualNode = ^TVirtualNode;
 
   // This record must already be defined here and not later because otherwise BCB users will not be able
   // to compile (conversion done by BCB is wrong).
@@ -341,59 +134,6 @@ type
     Process: Cardinal;
     Tree: TBaseVirtualTree;
   end;
-
-  TVirtualNode = packed record
-    Index,                   // index of node with regard to its parent
-    ChildCount: Cardinal;    // number of child nodes
-    NodeHeight: TDimension;  // height in pixels
-    States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
-    Align: Byte;             // line/button alignment
-    CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
-    CheckType: TCheckType;   // indicates which check type shall be used for this node
-    Dummy: Byte;             // dummy value to fill DWORD boundary
-    TotalCount: Cardinal;    // sum of this node, all of its child nodes and their child nodes etc.
-    TotalHeight: TDimension; // height in pixels this node covers on screen including the height of all of its
-                             // children
-    _Filler: TDWordFiller;   // Ensure 8 Byte alignment of following pointers for 64bit builds. Issue #1136
-    // Note: Some copy routines require that all pointers (as well as the data area) in a node are
-    //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
-    //       data) then put them before field Parent.
-    Parent,                  // reference to the node's parent (for the root this contains the treeview)
-    PrevSibling,             // link to the node's previous sibling or nil if it is the first node
-    NextSibling,             // link to the node's next sibling or nil if it is the last node
-    FirstChild,              // link to the node's first child...
-    LastChild: PVirtualNode; // link to the node's last child...
-  private
-    Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
-  public
-    function IsAssigned(): Boolean; inline;
-    function GetData(): Pointer; overload; inline;
-    function GetData<T>(): T; overload; inline;
-    procedure SetData(pUserData: Pointer); overload;
-    procedure SetData<T>(pUserData: T); overload;
-    procedure SetData(const pUserData: IInterface); overload;
-  end;
-
-
-  // Structure used when info about a certain position in the header is needed.
-  TVTHeaderHitInfo = record
-    X,
-    Y: TDimension;
-    Button: TMouseButton;
-    Shift: TShiftState;
-    Column: TColumnIndex;
-    HitPosition: TVTHeaderHitPositions;
-  end;
-
-  // Structure used when info about a certain position in the tree is needed.
-  THitInfo = record
-    HitNode: PVirtualNode;
-    HitPositions: THitPositions;
-    HitColumn: TColumnIndex;
-    HitPoint: TPoint;
-    ShiftState: TShiftState;
-  end;
-
 
 
   // ----- OLE drag'n drop handling
@@ -443,16 +183,6 @@ type
     function IsHintMsg(var Msg: TMsg): Boolean; override;
   end;
 
-  TChangeReason = (
-    crIgnore,       // used as placeholder
-    crAccumulated,  // used for delayed changes
-    crChildAdded,   // one or more child nodes have been added
-    crChildDeleted, // one or more child nodes have been deleted
-    crNodeAdded,    // a node has been added
-    crNodeCopied,   // a node has been duplicated
-    crNodeMoved     // a node has been moved to a new place
-  ); // desribes what made a structure change event happen
-
   // Communication interface between a tree editor and the tree itself (declared as using stdcall in case it
   // is implemented in a (C/C++) DLL). The GUID is not nessecary in Delphi but important for BCB users
   // to allow QueryInterface and _uuidof calls.
@@ -468,272 +198,10 @@ type
     procedure SetBounds(R: TRect); stdcall;                // Called to place the editor.
   end;
 
-  // Indicates in the OnUpdating event what state the tree is currently in.
-  TVTUpdateState = (
-    usBegin,       // The tree just entered the update state (BeginUpdate call for the first time).
-    usBeginSynch,  // The tree just entered the synch update state (BeginSynch call for the first time).
-    usSynch,       // Begin/EndSynch has been called but the tree did not change the update state.
-    usUpdate,      // Begin/EndUpdate has been called but the tree did not change the update state.
-    usEnd,         // The tree just left the update state (EndUpdate called for the last level).
-    usEndSynch     // The tree just left the synch update state (EndSynch called for the last level).
-  );
-
-  // These elements are used both to query the application, which of them it wants to draw itself and to tell it during
-  // painting, which elements must be drawn during the advanced custom draw events.
-  THeaderPaintElements = set of (
-    hpeBackground,
-    hpeDropMark,
-    hpeHeaderGlyph,
-    hpeSortGlyph,
-    hpeText,
-    // New in 7.0: Use this in FOnHeaderDrawQueryElements and OnAdvancedHeaderDraw
-    // for additional custom header drawing while keeping the default drawing
-    hpeOverlay
-  );
-
-  // Various events must be handled at different places than they were initiated or need
-  // a persistent storage until they are reset.
-  TVirtualTreeStates = set of (
-    tsChangePending,          // A selection change is pending.
-    tsCheckPropagation,       // Set during automatic check state propagation.
-    tsCollapsing,             // A full collapse operation is in progress.
-    tsToggleFocusedSelection, // Node selection was modifed using Ctrl-click. Change selection state on next mouse up.
-    tsClearPending,           // Need to clear the current selection on next mouse move.
-    tsClearOnNewSelection,    // Need to clear the current selection before selecting a new node
-    tsClipboardFlushing,      // Set during flushing the clipboard to avoid freeing the content.
-    tsCopyPending,            // Indicates a pending copy operation which needs to be finished.
-    tsCutPending,             // Indicates a pending cut operation which needs to be finished.
-    tsDrawSelPending,         // Multiselection only. User held down the left mouse button on a free
-                              // area and might want to start draw selection.
-    tsDrawSelecting,          // Multiselection only. Draw selection has actually started.
-    tsEditing,                // Indicates that an edit operation is currently in progress.
-    tsEditPending,            // An mouse up start edit if dragging has not started.
-    tsExpanding,              // A full expand operation is in progress.
-    tsNodeHeightTracking,     // A node height changing operation is in progress.
-    tsNodeHeightTrackPending, // left button is down, user might want to start changing a node's height.
-    tsHint,                   // Set when our hint is visible or soon will be.
-    tsInAnimation,            // Set if the tree is currently in an animation loop.
-    tsIncrementalSearching,   // Set when the user starts incremental search.
-    tsIncrementalSearchPending, // Set in WM_KEYDOWN to tell to use the char in WM_CHAR for incremental search.
-    tsIterating,              // Set when IterateSubtree is currently in progress.
-    tsLeftButtonDown,         // Set when the left mouse button is down.
-    tsLeftDblClick,           // Set when the left mouse button was doubly clicked.
-    tsMiddleButtonDown,       // Set when the middle mouse button is down.
-    tsMiddleDblClick,         // Set when the middle mouse button was doubly clicked.
-    tsNeedRootCountUpdate,    // Set if while loading a root node count is set.
-    tsOLEDragging,            // OLE dragging in progress.
-    tsOLEDragPending,         // User has requested to start delayed dragging.
-    tsPainting,               // The tree is currently painting itself.
-    tsRightButtonDown,        // Set when the right mouse button is down.
-    tsRightDblClick,          // Set when the right mouse button was doubly clicked.
-    tsPopupMenuShown,         // The user clicked the right mouse button, which might cause a popup menu to appear.
-    tsScrolling,              // Set when autoscrolling is active.
-    tsScrollPending,          // Set when waiting for the scroll delay time to elapse.
-    tsSizing,                 // Set when the tree window is being resized. This is used to prevent recursive calls
-                              // due to setting the scrollbars when sizing.
-    tsStopValidation,         // Cache validation can be stopped (usually because a change has occured meanwhile).
-    tsStructureChangePending, // The structure of the tree has been changed while the update was locked.
-    tsSynchMode,              // Set when the tree is in synch mode, where no timer events are triggered.
-    tsThumbTracking,          // Stop updating the horizontal scroll bar while dragging the vertical thumb and vice versa.
-    tsToggling,               // A toggle operation (for some node) is in progress.
-    tsUpdateHiddenChildrenNeeded, // Pending update for the hidden children flag after massive visibility changes.
-    tsUpdating,               // The tree does currently not update its window because a BeginUpdate has not yet ended.
-    tsUseCache,               // The tree's node caches are validated and non-empty.
-    tsUserDragObject,         // Signals that the application created an own drag object in OnStartDrag.
-    tsUseThemes,              // The tree runs under WinXP+, is theme aware and themes are enabled.
-    tsValidating,             // The tree's node caches are currently validated.
-    tsPreviouslySelectedLocked,// The member FPreviouslySelected should not be changed
-    tsValidationNeeded,       // Something in the structure of the tree has changed. The cache needs validation.
-    tsVCLDragging,            // VCL drag'n drop in progress.
-    tsVCLDragPending,         // One-shot flag to avoid clearing the current selection on implicit mouse up for VCL drag.
-    tsVCLDragFinished,        // Flag to avoid triggering the OnColumnClick event twice
-    tsWheelPanning,           // Wheel mouse panning is active or soon will be.
-    tsWheelScrolling,         // Wheel mouse scrolling is active or soon will be.
-    tsWindowCreating,         // Set during window handle creation to avoid frequent unnecessary updates.
-    tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
-  );
-
-  // determines whether and how the drag image is to show
-  TVTDragImageKind = (
-    diComplete,       // show a complete drag image with all columns, only visible columns are shown
-    diMainColumnOnly, // show only the main column (the tree column)
-    diNoImage         // don't show a drag image at all
-  );
-
-  // Switch for OLE and VCL drag'n drop. Because it is not possible to have both simultanously.
-  TVTDragType = (
-    dtOLE,
-    dtVCL
-  );
-
-  // options which determine what to draw in PaintTree
-  TVTInternalPaintOption = (
-    poBackground,       // draw background image if there is any and it is enabled
-    poColumnColor,      // erase node's background with the column's color
-    poDrawFocusRect,    // draw focus rectangle around the focused node
-    poDrawSelection,    // draw selected nodes with the normal selection color
-    poDrawDropMark,     // draw drop mark if a node is currently the drop target
-    poGridLines,        // draw grid lines if enabled
-    poMainOnly,         // draw only the main column
-    poSelectedOnly,     // draw only selected nodes
-    poUnbuffered        // draw directly onto the target canvas; especially useful when printing
-  );
-  TVTInternalPaintOptions = set of TVTInternalPaintOption;
-
-  // Determines the look of a tree's lines.
-  TVTLineStyle = (
-    lsCustomStyle,           // application provides a line pattern
-    lsDotted,                // usual dotted lines (default)
-    lsSolid                  // simple solid lines
-  );
-
-  // TVTLineType is used during painting a tree
-  TVTLineType = (
-    ltNone,          // no line at all
-    ltBottomRight,   // a line from bottom to the center and from there to the right
-    ltTopDown,       // a line from top to bottom
-    ltTopDownRight,  // a line from top to bottom and from center to the right
-    ltRight,         // a line from center to the right
-    ltTopRight,      // a line from bottom to center and from there to the right
-    // special styles for alternative drawings of tree lines
-    ltLeft,          // a line from top to bottom at the left
-    ltLeftBottom     // a combination of ltLeft and a line at the bottom from left to right
-  );
-
-  // Determines how to draw tree lines.
-  TVTLineMode = (
-    lmNormal,        // usual tree lines (as in TTreeview)
-    lmBands          // looks similar to a Nassi-Schneidermann diagram
-  );
-
-  // A collection of line type IDs which is used while painting a node.
-  TLineImage = array of TVTLineType;
-
-
-  // Export type
-  TVTExportType = (
-    etNone,   // No export, normal displaying on the screen
-    etRTF,    // contentToRTF
-    etHTML,   // contentToHTML
-    etText,   // contentToText
-    etExcel,  // supported by external tools
-    etWord,   // supported by external tools
-    etPDF,    // supported by external tools
-    etPrinter,// supported by external tools
-    etCSV,    // supported by external tools
-    etCustom  // supported by external tools
-  );
 
   TVTNodeExportEvent   = procedure (Sender: TBaseVirtualTree; aExportType: TVTExportType; Node: PVirtualNode) of object;
   TVTColumnExportEvent = procedure (Sender: TBaseVirtualTree; aExportType: TVTExportType; Column: TVirtualTreeColumn) of object;
   TVTTreeExportEvent   = procedure(Sender: TBaseVirtualTree; aExportType: TVTExportType) of object;
-
-  // For painting a node and its columns/cells a lot of information must be passed frequently around.
-  TVTImageInfo = record
-    Index: TImageIndex;       // Index in the associated image list.
-    XPos,                     // Horizontal position in the current target canvas.
-    YPos: TDimension;         // Vertical position in the current target canvas.
-    Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
-    Images: TCustomImageList; // The image list to be used for painting.
-    function Equals(const pImageInfo2: TVTImageInfo): Boolean;
-  end;
-
-  TVTImageInfoIndex = (
-    iiNormal,
-    iiState,
-    iiCheck,
-    iiOverlay
-  );
-
-  // Options which are used when modifying the scroll offsets.
-  TScrollUpdateOptions = set of (
-    suoRepaintHeader,        // if suoUpdateNCArea is also set then invalidate the header
-    suoRepaintScrollBars,    // if suoUpdateNCArea is also set then repaint both scrollbars after updating them
-    suoScrollClientArea,     // scroll and invalidate the proper part of the client area
-    suoUpdateNCArea          // update non-client area (scrollbars, header)
-  );
-
-  // Determines the look of a tree's buttons.
-  TVTButtonStyle = (
-    bsRectangle,             // traditional Windows look (plus/minus buttons)
-    bsTriangle               // traditional Macintosh look
-  );
-
-  // TButtonFillMode is only used when the button style is bsRectangle and determines how to fill the interior.
-  TVTButtonFillMode = (
-    fmTreeColor,             // solid color, uses the tree's background color
-    fmWindowColor,           // solid color, uses clWindow
-    fmShaded,                // color gradient, Windows XP style (legacy code, use toThemeAware on Windows XP instead)
-    fmTransparent            // transparent color, use the item's background color
-  );
-
-  TVTPaintInfo = record
-    Canvas: TCanvas;              // the canvas to paint on
-    PaintOptions: TVTInternalPaintOptions;  // a copy of the paint options passed to PaintTree
-    Node: PVirtualNode;           // the node to paint
-    Column: TColumnIndex;         // the node's column index to paint
-    Position: TColumnPosition;    // the column position of the node
-    CellRect: TRect;              // the node cell
-    ContentRect: TRect;           // the area of the cell used for the node's content
-    NodeWidth: TDimension;        // the actual node width
-    Alignment: TAlignment;        // how to align within the node rectangle
-    CaptionAlignment: TAlignment; // how to align text within the caption rectangle
-    BidiMode: TBidiMode;          // directionality to be used for painting
-    BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
-    ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
-    Offsets: TVTOffsets;          // The offsets of the various elements of a tree node
-    VAlign: TDimension;
-    procedure AdjustImageCoordinates();
-  end;
-
-  // Method called by the Animate routine for each animation step.
-  TVTAnimationCallback = function(Step, StepSize: Integer; Data: Pointer): Boolean of object;
-
-  TVTIncrementalSearch = (
-    isAll,                   // search every node in tree, initialize if necessary
-    isNone,                  // disable incremental search
-    isInitializedOnly,       // search only initialized nodes, skip others
-    isVisibleOnly            // search only visible nodes, initialize if necessary
-  );
-
-  // Determines which direction to use when advancing nodes during an incremental search.
-  TVTSearchDirection = (
-    sdForward,
-    sdBackward
-  );
-
-  // Determines where to start incremental searching for each key press.
-  TVTSearchStart = (
-    ssAlwaysStartOver,       // always use the first/last node (depending on direction) to search from
-    ssLastHit,               // use the last found node
-    ssFocusedNode            // use the currently focused node
-  );
-
-  // Determines how to use the align member of a node.
-  TVTNodeAlignment = (
-    naFromBottom,            // the align member specifies amount of units (usually pixels) from top border of the node
-    naFromTop,               // align is to be measured from bottom
-    naProportional           // align is to be measure in percent of the entire node height and relative to top
-  );
-
-  // Determines how to draw the selection rectangle used for draw selection.
-  TVTDrawSelectionMode = (
-    smDottedRectangle,       // same as DrawFocusRect
-    smBlendedRectangle       // alpha blending, uses special colors (see TVTColors)
-  );
-
-  // Determines for which purpose the cell paint event is called.
-  TVTCellPaintMode = (
-    cpmPaint,                // painting the cell
-    cpmGetContentMargin      // getting cell content margin
-  );
-
-  // Determines which sides of the cell content margin should be considered.
-  TVTCellContentMarginType = (
-    ccmtAllSides,            // consider all sides
-    ccmtTopLeftOnly,         // consider top margin and left margin only
-    ccmtBottomRightOnly      // consider bottom margin and right margin only
-  );
 
   TClipboardFormats = class(TStringList)
   private
@@ -6091,7 +5559,7 @@ var
 begin
   // Check if there is initial user data and there is also enough user data space allocated.
   Assert(FNodeDataSize >= SizeOf(Pointer), Self.Classname + ': Cannot set initial user data because there is not enough user data space allocated.');
-  NodeData := PPointer(@pNode.Data);
+  NodeData := pNode.GetData();
   NodeData^ := pUserData;
   Include(pNode.States, vsOnFreeNodeCallRequired);
 end;
@@ -19733,7 +19201,7 @@ begin
     Result := nil
   else
   begin
-    Result := @Node.Data;
+    Result := Node.GetData();
     Include(Node.States, vsOnFreeNodeCallRequired); // We now need to call OnFreeNode, see bug #323
   end;
 end;
@@ -23890,121 +23358,6 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-{ PVirtualNodeHelper }
-
-function TVirtualNode.GetData(): Pointer;
-
-// Returns the associated data converted to the class given in the generic part of the function.
-
-begin
-  Result := @Self.Data;
-  Include(States, vsOnFreeNodeCallRequired);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVirtualNode.GetData<T>: T;
-
-// Returns the associated data converted to the class given in the generic part of the function.
-
-begin
-  Result := T(Pointer((PByte(@(Self.Data))))^);
-  Include(States, vsOnFreeNodeCallRequired);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVirtualNode.IsAssigned: Boolean;
-
-// Returns False if this node is nil, True otherwise
-
-begin
-  Exit(@Self <> nil);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualNode.SetData(pUserData: Pointer);
-
-
-  // Can be used to set user data of a PVirtualNode with the size of a pointer, useful for setting
-  // A pointer to a record or a reference to a class instance.
-var
-  NodeData: PPointer;
-begin
-  NodeData := PPointer(@Self.Data);
-  NodeData^ := pUserData;
-  Include(Self.States, vsOnFreeNodeCallRequired);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualNode.SetData(const pUserData: IInterface);
-
-
-  // Can be used to set user data of a PVirtualNode to a class instance,
-  // will take care about reference counting.
-
-begin
-  pUserData._AddRef();
-  SetData(Pointer(pUserData));
-  Include(Self.States, vsReleaseCallOnUserDataRequired);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVirtualNode.SetData<T>(pUserData: T);
-
-begin
-  T(Pointer((PByte(@(Self.Data))))^) := pUserData;
-  if PTypeInfo(TypeInfo(T)).Kind = tkInterface then
-    Include(Self.States, vsReleaseCallOnUserDataRequired);
-  Include(Self.States, vsOnFreeNodeCallRequired);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-{ TVTImageInfo }
-
-function TVTImageInfo.Equals(const pImageInfo2: TVTImageInfo): Boolean;
-
-  // Returns true if both images are the same, does not regard Ghosted and position.
-
-begin
-  Result := (Self.Index = pImageInfo2.Index) and (Self.Images = pImageInfo2.Images);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-{ TVTPaintInfo }
-
-procedure TVTPaintInfo.AdjustImageCoordinates();
-// During painting of the main column some coordinates must be adjusted due to the tree lines.
-begin
-  ContentRect := CellRect;
-  if BidiMode = bdLeftToRight then
-  begin
-    ContentRect.Left := CellRect.Left + Offsets[TVTElement.ofsLabel];
-    ImageInfo[iiNormal].XPos := CellRect.Left + Offsets[TVTElement.ofsImage];
-    ImageInfo[iiState].XPos := CellRect.Left + Offsets[TVTElement.ofsStateImage];
-    ImageInfo[iiCheck].XPos := CellRect.Left + Offsets[TVTElement.ofsCheckBox];
-  end
-  else
-  begin
-    /// Since images are still drawn from left to right, we need to substract the image sze as well.
-    ImageInfo[iiNormal].XPos := CellRect.Right - Offsets[TVTElement.ofsImage] - (Offsets[TVTElement.ofsLabel] - Offsets[TVTElement.ofsImage]);
-    ImageInfo[iiState].XPos := CellRect.Right - Offsets[TVTElement.ofsStateImage] - (Offsets[TVTElement.ofsImage] - Offsets[TVTElement.ofsStateImage]);
-    ImageInfo[iiCheck].XPos := CellRect.Right - Offsets[TVTElement.ofsCheckBox] - (Offsets[TVTElement.ofsStateImage] - Offsets[TVTElement.ofsCheckBox]);
-    ContentRect.Right := CellRect.Right - Offsets[TVTElement.ofsLabel];
-  end;
-  if ImageInfo[iiNormal].Index > -1 then
-    ImageInfo[iiNormal].YPos := CellRect.Top + VAlign - ImageInfo[iiNormal].Images.Height div 2;
-  if ImageInfo[iiState].Index > -1 then
-    ImageInfo[iiState].YPos := CellRect.Top + VAlign - ImageInfo[iiState].Images.Height div 2;
-  if ImageInfo[iiCheck].Index > -1 then
-    ImageInfo[iiCheck].YPos := CellRect.Top + VAlign - ImageInfo[iiCheck].Images.Height div 2;
-end;
 
 initialization
 
