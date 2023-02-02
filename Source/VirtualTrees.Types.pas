@@ -967,6 +967,50 @@ type
     ShiftState: TShiftState;
   end;
 
+  TVTHeaderStyle = (
+    hsThickButtons,                 //TButton look and feel
+    hsFlatButtons,                  //flatter look than hsThickButton, like an always raised flat TToolButton
+    hsPlates                        //flat TToolButton look and feel (raise on hover etc.)
+    );
+
+  TVTHeaderOption = (
+    hoAutoResize,                   //Adjust a column so that the header never exceeds the client width of the owner control.
+    hoColumnResize,                 //Resizing columns with the mouse is allowed.
+    hoDblClickResize,               //Allows a column to resize itself to its largest entry.
+    hoDrag,                         //Dragging columns is allowed.
+    hoHotTrack,                     //Header captions are highlighted when mouse is over a particular column.
+    hoOwnerDraw,                    //Header items with the owner draw style can be drawn by the application via event.
+    hoRestrictDrag,                 //Header can only be dragged horizontally.
+    hoShowHint,                     //Show application defined header hint.
+    hoShowImages,                   //Show header images.
+    hoShowSortGlyphs,               //Allow visible sort glyphs.
+    hoVisible,                      //Header is visible.
+    hoAutoSpring,                   //Distribute size changes of the header to all columns, which are sizable and have the coAutoSpring option enabled.
+    hoFullRepaintOnResize,          //Fully invalidate the header (instead of subsequent columns only) when a column is resized.
+    hoDisableAnimatedResize,        //Disable animated resize for all columns.
+    hoHeightResize,                 //Allow resizing header height via mouse.
+    hoHeightDblClickResize,         //Allow the header to resize itself to its default height.
+    hoHeaderClickAutoSort,          //Clicks on the header will make the clicked column the SortColumn or toggle sort direction if it already was the sort column
+    hoAutoColumnPopupMenu,          //Show a context menu for activating and deactivating columns on right click
+    hoAutoResizeInclCaption         //Includes the header caption for the auto resizing
+    );
+  TVTHeaderOptions = set of TVTHeaderOption;
+
+  THeaderState = (
+    hsAutoSizing,                   //auto size chain is in progess, do not trigger again on WM_SIZE
+    hsDragging,                     //header dragging is in progress (only if enabled)
+    hsDragPending,                  //left button is down, user might want to start dragging a column
+    hsLoading,                      //The header currently loads from stream, so updates are not necessary.
+    hsColumnWidthTracking,          //column resizing is in progress
+    hsColumnWidthTrackPending,      //left button is down, user might want to start resize a column
+    hsHeightTracking,               //height resizing is in progress
+    hsHeightTrackPending,           //left button is down, user might want to start changing height
+    hsResizing,                     //multi column resizing in progress
+    hsScaling,                      //the header is scaled after a change of FixedAreaConstraints or client size
+    hsNeedScaling                   //the header needs to be scaled
+    );
+  THeaderStates = set of THeaderState;
+
   // content elements of the control from left to right, used when calculatin left margins.
   TVTElement = (
     ofsMargin, // right of the margin
@@ -1033,6 +1077,7 @@ type
     procedure AdjustImageCoordinates();
   end;
 
+  TNodeArray = array of PVirtualNode;
 
 implementation
 

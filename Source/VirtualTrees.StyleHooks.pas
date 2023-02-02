@@ -141,8 +141,8 @@ uses
   System.Types,
   VirtualTrees,
   VirtualTrees.Header,
-  VirtualTrees.DrawTree,
-  VirtualTrees.BaseTree;
+  VirtualTrees.Types,
+  VirtualTrees.DrawTree;
 
 function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
 begin
