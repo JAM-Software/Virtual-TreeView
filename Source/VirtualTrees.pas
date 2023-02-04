@@ -1351,6 +1351,7 @@ type
     procedure SetSortDirection(const Value: TSortDirection);
     procedure SetStyle(Value: TVTHeaderStyle);
     function GetRestoreSelectionColumnIndex: Integer;
+    function AreColumnsStored: Boolean;
   protected
     FStates: THeaderStates;            // Used to keep track of internal states the header can enter.
     FDragStart: TPoint;                // initial mouse drag position
@@ -1419,7 +1420,7 @@ type
   published
     property AutoSizeIndex: TColumnIndex read FAutoSizeIndex write SetAutoSizeIndex;
     property Background: TColor read FBackgroundColor write SetBackground default clBtnFace;
-    property Columns: TVirtualTreeColumns read FColumns write SetColumns stored False; // Stored by the owner tree to support VFI.
+    property Columns: TVirtualTreeColumns read FColumns write SetColumns stored AreColumnsStored;
     property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default 19;
     property Font: TFont read FFont write SetFont stored IsFontStored;
     property FixedAreaConstraints: TVTFixedAreaConstraints read FFixedAreaConstraints write FFixedAreaConstraints;
@@ -11261,6 +11262,13 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+function TVTHeader.AreColumnsStored: Boolean;
+begin
+  // The columns are stored by the owner tree to support Visual Form Inheritance
+  // GnutGetText skips non-stored properties, so retur Stored True at runtime
+  Result := not (csDesigning in Self.Treeview.ComponentState);
+end;
 
 procedure TVTHeader.Assign(Source: TPersistent);
 
