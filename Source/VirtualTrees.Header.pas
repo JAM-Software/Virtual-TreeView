@@ -3807,12 +3807,7 @@ end;
 procedure TVirtualTreeColumn.ReadText(Reader : TReader);
 
 begin
-  case Reader.NextValue of
-    vaLString, vaString :
-      SetText(Reader.ReadString);
-  else
-    SetText(Reader.ReadString);
-  end;
+  SetText(Reader.ReadString);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3820,16 +3815,8 @@ end;
 procedure TVirtualTreeColumn.ReadHint(Reader : TReader);
 
 begin
-  case Reader.NextValue of
-    vaLString, vaString :
-      FHint := Reader.ReadString;
-  else
-    FHint := Reader.ReadString;
-  end;
+  FHint := Reader.ReadString;
 end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 
 //----------------------------------------------------------------------------------------------------------------------
 
