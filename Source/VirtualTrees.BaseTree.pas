@@ -9402,11 +9402,7 @@ var
 begin
   ImageHit := HitInfo.HitPositions * [hiOnNormalIcon, hiOnStateIcon] <> [];
   LabelHit := hiOnItemLabel in HitInfo.HitPositions;
-  //VSOFT ========================================
-  //VSOFT 5.0 chang broke our drag/drop line info.
-  //VSOFT CHANGE - changed back to 4.8.5 behaviour
-  ItemHit := (hiOnItem in HitInfo.HitPositions);{ and ((toFullRowDrag in FOptions.MiscOptions) or
-             (toFullRowSelect in FOptions.SelectionOptions));}
+  ItemHit := (hiOnItem in HitInfo.HitPositions);
 
   // In report mode only direct hits of the node captions/images in the main column are accepted as hits.
   if (toReportMode in FOptions.MiscOptions) and not (ItemHit or ((LabelHit or ImageHit) and
