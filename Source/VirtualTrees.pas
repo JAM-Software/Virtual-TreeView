@@ -201,6 +201,17 @@ type
   // New text can only be set for variable caption.
   TVSTNewTextEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
     NewText: string) of object;
+  /// <summary>String tree event for custom handling of string abbreviations.</summary>
+  /// <param name="Sender">The instance that fired the event.</param>
+  /// <param name="TargetCanvas">Teh canvas on that the sending control will paint.</param>
+  /// <param name="Node">The Node that is going to be painted.</param>
+  /// <param name="Column">The column index that is going to be painted.</param>
+  /// <param name="Result">Var parameter that contains the caption or string that should be used.</param>
+  /// <param name="Done">Boolean var paramter: Assign True if a string is passed in the Result parameter. Leave the default value False if no shorting is need or the control shuld do it. </param>
+  /// <remarks>
+  ///  If the text of a node does not fit into its cell (in grid mode) or is too wide for the width of the tree view it is being abbreviated with an ellipsis (...). By default the ellipsis is added to the end of the node text.
+  ///  Occasionally you may want to shorten the node text at a different position, for example if the node text is a path string and not the last folder or filename should be cut off but rather some mid level folders if possible.
+  /// </remarks>
   TVSTShortenStringEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     Column: TColumnIndex; const S: string; TextSpace: TDimension; var Result: string;
     var Done: Boolean) of object;
@@ -1998,3 +2009,5 @@ initialization
 finalization
 
 end.
+
+
