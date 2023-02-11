@@ -70,7 +70,17 @@ procedure DrawImage(ImageList: TCustomImageList; Index: Integer; Canvas: TCanvas
 /// the three points to be added to the shorted string. If this value is 0 then it will be determined implicitely.
 /// For higher speed (and multiple entries to be shorted) specify this value explicitely.
 /// </summary>
-function ShortenString(DC: HDC; const S: string; Width: TDimension; EllipsisWidth: TDimension = 0): string;
+function ShortenString(DC: HDC; const S: string; Width: TDimension; EllipsisWidth: TDimension = 0): string; overload;
+
+//--------------------------
+// ShortenString similar to VTV's version, except:
+// -- Does not assume using three dots or any particular character for ellipsis
+// -- Does not add ellipsis to string, so could be added anywhere
+// -- Requires EllipsisWidth, and zero does nothing special
+// Returns:
+//   ShortenedString as var param
+//   True if shortened (ie: add ellipsis somewhere), otherwise false
+function ShortenString(TargetCanvasDC: HDC; const StrIn: string; const AllowedWidth_px: Integer; const EllipsisWidth_px: Integer; var ShortenedString: string): boolean; overload;
 
 /// <summary>
 /// Wrap the given string S so that it fits into a space of given width.
@@ -319,7 +329,76 @@ begin
   end;
 end;
 
+
+//--------------------------
+function ShortenString(TargetCanvasDC: HDC; const StrIn: string; const AllowedWidth_px: Integer; const EllipsisWidth_px: Integer; var ShortenedString: string): boolean;
+//--------------------------
+var
+  Size_px_x_px: TSize;  // cx, cy
+  StrInLen: Integer;
+  LoLen, HiLen, TestLen, TestWidth_px: Integer;
+
+begin
+  Result := False;
+
+  StrInLen := Length(StrIn);
+  if (StrInLen = 0) then
+  Begin
+    ShortenedString := '';
+    Result := False;  // No ellipsis needed since original was empty
+  End else
+  if (AllowedWidth_px <= 0) then
+  Begin
+    ShortenedString := '';
+    Result := True;  // Ellipsis needed, since non-empty string replaced.
+                     // But likely will get clipped if AllowedWidth is really zero
+  End else
+  begin
+      // Do a binary search for the optimal string length which fits into the given width.
+      LoLen := 0;
+      TestLen := 0;
+      TestWidth_px := AllowedWidth_px;
+      HiLen := StrInLen;
+
+      while LoLen < HiLen do
+      begin
+        TestLen := (LoLen + HiLen + 1) shr 1;  // Test average of Lo and Hi
+
+        GetTextExtentPoint32W(TargetCanvasDC, PWideChar(StrIn), TestLen, Size_px_x_px);
+        TestWidth_px := Size_px_x_px.cx + EllipsisWidth_px;
+
+        if TestWidth_px <= AllowedWidth_px then
+        Begin
+          LoLen := TestLen      // Low bound must be at least as much as TestLen
+        End else
+        Begin
+          HiLen := TestLen - 1; // Continue until Hi bound string produces width below AllowedWidth_px
+        End;
+      end;
+
+      if TestWidth_px <= AllowedWidth_px then
+      Begin
+        LoLen := TestLen;
+      End;
+      if LoLen >= StrInLen then
+      Begin
+        ShortenedString := StrIn;
+        Result := False;
+      End else if AllowedWidth_px <= EllipsisWidth_px then
+      Begin
+        ShortenedString := '';
+        Result      := True; // Even though Ellipsis won't fit in AllowedWidth,
+                             // let clipping decide how much of ellipsis to show
+      End else
+      Begin
+        ShortenedString := Copy(StrIn, 1, LoLen);
+        Result := True;
+      End;
+    end;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
+
 
 function WrapString(DC: HDC; const S: string; const Bounds: TRect; RTL: Boolean; DrawFormat: Cardinal): string;
 
