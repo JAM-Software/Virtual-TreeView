@@ -339,8 +339,6 @@ var
   LoLen, HiLen, TestLen, TestWidth_px: Integer;
 
 begin
-  Result := False;
-
   StrInLen := Length(StrIn);
   if (StrInLen = 0) then
   Begin
