@@ -1346,6 +1346,7 @@ var
   P             : TPoint;
   NextColumn, I : TColumnIndex;
   NewWidth      : TDimension;
+  iOffsetX: Integer;
 
 begin
   Result := False;
@@ -1381,13 +1382,21 @@ begin
           NextColumn := FColumns.GetNextVisibleColumn(FColumns.TrackIndex);
         end;
 
-        //The autosized column cannot be resized using the mouse normally. Instead we resize the next
-        //visible column, so it look as we directly resize the autosized column.
-        if (hoAutoResize in FOptions) and (FColumns.TrackIndex = FAutoSizeIndex) and (NextColumn > NoColumn) and (coResizable in FColumns[NextColumn].Options) and
-          (FColumns[FColumns.TrackIndex].MinWidth < NewWidth) and (FColumns[FColumns.TrackIndex].MaxWidth > NewWidth) then
-          FColumns[NextColumn].Width := FColumns[NextColumn].Width - NewWidth + FColumns[FColumns.TrackIndex].Width
+        iOffsetX := Tree.EffectiveOffsetX;
+
+        // The autosized column cannot be resized using the mouse normally. Instead we resize the next
+        // visible column, so it look as we directly resize the autosized column.
+        if (hoAutoResize in FOptions) and (FColumns.TrackIndex = FAutoSizeIndex) and
+           (NextColumn > NoColumn) and (coResizable in FColumns[NextColumn].Options) and
+           (FColumns[FColumns.TrackIndex].MinWidth < NewWidth) and
+           (FColumns[FColumns.TrackIndex].MaxWidth > NewWidth) then
+          FColumns[NextColumn].Width := FColumns[NextColumn].Width - NewWidth
+                                        + FColumns[FColumns.TrackIndex].Width
         else
-          FColumns[FColumns.TrackIndex].Width := NewWidth; //1 EListError seen here (List index out of bounds (-1)) since 10/2013
+          FColumns[FColumns.TrackIndex].Width := NewWidth; // 1 EListError seen here (List index out of bounds (-1)) since 10/2013
+
+         if (iOffsetX > 0) and (iOffsetX <> Tree.EffectiveOffsetX) then
+           FTrackPoint.X := FTrackPoint.X + iOffsetX - Tree.EffectiveOffsetX;
       end;
       HandleHeaderMouseMove := True;
       Result := 0;
