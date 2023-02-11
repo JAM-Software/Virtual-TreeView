@@ -527,7 +527,6 @@ type
     FDragOperations: TDragOperations;            // determines which operations are allowed during drag'n drop
     FDragThreshold: Integer;                     // used to determine when to actually start a drag'n drop operation
     FDragManager: IVTDragManager;                // drag'n drop, cut'n paste
-    FDragImage: TVTDragImage;                    // drag image management																		 
     FDropTargetNode: PVirtualNode;               // node currently selected as drop target
     FLastDropMode: TDropMode;                    // set while dragging and used to track changes
     FDragSelection: TNodeArray;                  // temporary copy of FSelection used during drag'n drop
@@ -2654,14 +2653,6 @@ begin
   FColors := TVTColors.Create(Self);
   FEditDelay := 1000;
 
-  FDragImage := TVTDragImage.Create(Self);
-  with FDragImage do
-  begin
-    Fade := True;
-    PreBlendBias := 0;
-    Transparency := 200;
-  end;
-
   FAnimationDuration := 200;
   FSearchTimeout := 1000;
   FSearchStart := ssFocusedNode;
@@ -2705,7 +2696,6 @@ begin
   FClipboardFormats.Free;
   // Clear will also free the drag manager if it is still alive.
   Clear;
-  FDragImage.Free;
   FColors.Free;
   FBackground.Free;
 
@@ -10422,8 +10412,6 @@ begin
       P := ScreenToClient(P);
       DoEndDrag(Self, P.X, P.Y);
 
-      FDragImage.EndDrag;
-
       // Finish the operation.
       if (FLastDragEffect = DROPEFFECT_MOVE) and (toAutoDeleteMovedNodes in TreeOptions.AutoOptions) then
       begin
@@ -16030,11 +16018,10 @@ begin
 
    //Take proper drag image depending on whether the drag is being done in the tree
    //or in the header.
-   useDragImage := Tree.FDragImage;
-    if (not useDragImage.Visible)
-       and (Tree.FHeader.DragImage <> nil) and (Tree.FHeader.DragImage.Visible)
-    then
-      useDragImage := Tree.FHeader.DragImage;
+    if (Tree.FHeader.DragImage <> nil) and (Tree.FHeader.DragImage.Visible) then
+      useDragImage := Tree.FHeader.DragImage
+    else
+      useDragImage := nil;
 
     // The drag image will figure out itself what part of the rectangle can be recaptured.
     // Recapturing is not done by taking a snapshot of the screen, but by letting the tree draw itself
@@ -21500,60 +21487,73 @@ var
   LocalSpot,
   ImagePos,
   PaintTarget: TPoint;
+  lDragImage: TVTDragImage;                    // drag image management
   Image: TBitmap;
 
 begin
   if CanShowDragImage then
   begin
-    // Determine the drag rectangle which is a square around the hot spot. Operate in virtual tree space.
-    LocalSpot := HotSpot;
-    Dec(LocalSpot.X, -FEffectiveOffsetX);
-    Dec(LocalSpot.Y, FOffsetY);
-    TreeRect := Rect(LocalSpot.X - FDragWidth div 2, LocalSpot.Y - FDragHeight div 2, LocalSpot.X + FDragWidth div 2,
-      LocalSpot.Y + FDragHeight div 2);
-
-    // Check that we have a valid rectangle.
-    PaintRect := TreeRect;
-    if TreeRect.Left < 0 then
-    begin
-      PaintTarget.X := -TreeRect.Left;
-      PaintRect.Left := 0;
-    end
-    else
-      PaintTarget.X := 0;
-    if TreeRect.Top < 0 then
-    begin
-      PaintTarget.Y := -TreeRect.Top;
-      PaintRect.Top := 0;
-    end
-    else
-      PaintTarget.Y := 0;
-
-    Image := TBitmap.Create;
-    with Image do
+    lDragImage := TVTDragImage.Create(Self);
     try
-      PixelFormat := pf32Bit;
-      SetSize(TreeRect.Right - TreeRect.Left, TreeRect.Bottom - TreeRect.Top);
-      // Erase the entire image with the color key value, for the case not everything
-      // in the image is covered by the tree image.
-      Canvas.Brush.Color := FColors.BackGroundColor;
-      Canvas.FillRect(Rect(0, 0, Width, Height));
+      with lDragImage do
+      begin
+        Fade := True;
+        PreBlendBias := 0;
+        Transparency := 200;
+      end;
 
-      PaintOptions := [poDrawSelection, poSelectedOnly];
-      if FDragImageKind = diMainColumnOnly then
-        Include(PaintOptions, poMainOnly);
-      PaintTree(Image.Canvas, PaintRect, PaintTarget, PaintOptions);
+      // Determine the drag rectangle which is a square around the hot spot. Operate in virtual tree space.
+      LocalSpot := HotSpot;
+      Dec(LocalSpot.X, -FEffectiveOffsetX);
+      Dec(LocalSpot.Y, FOffsetY);
+      TreeRect := Rect(LocalSpot.X - FDragWidth div 2, LocalSpot.Y - FDragHeight div 2, LocalSpot.X + FDragWidth div 2,
+        LocalSpot.Y + FDragHeight div 2);
 
-      // Once we have got the drag image we can convert all necessary coordinates into screen space.
-      OffsetRect(TreeRect, -FEffectiveOffsetX, FOffsetY);
-      ImagePos := ClientToScreen(TreeRect.TopLeft);
-      HotSpot := ClientToScreen(HotSpot);
+      // Check that we have a valid rectangle.
+      PaintRect := TreeRect;
+      if TreeRect.Left < 0 then
+      begin
+        PaintTarget.X := -TreeRect.Left;
+        PaintRect.Left := 0;
+      end
+      else
+        PaintTarget.X := 0;
+      if TreeRect.Top < 0 then
+      begin
+        PaintTarget.Y := -TreeRect.Top;
+        PaintRect.Top := 0;
+      end
+      else
+        PaintTarget.Y := 0;
 
-      FDragImage.ColorKey := FColors.BackGroundColor;
-      FDragImage.PrepareDrag(Image, ImagePos, HotSpot, DataObject);
+      Image := TBitmap.Create;
+      with Image do
+      try
+        PixelFormat := pf32Bit;
+        SetSize(TreeRect.Right - TreeRect.Left, TreeRect.Bottom - TreeRect.Top);
+        // Erase the entire image with the color key value, for the case not everything
+        // in the image is covered by the tree image.
+        Canvas.Brush.Color := FColors.BackGroundColor;
+        Canvas.FillRect(Rect(0, 0, Width, Height));
+
+        PaintOptions := [poDrawSelection, poSelectedOnly];
+        if FDragImageKind = diMainColumnOnly then
+          Include(PaintOptions, poMainOnly);
+        PaintTree(Image.Canvas, PaintRect, PaintTarget, PaintOptions);
+
+        // Once we have got the drag image we can convert all necessary coordinates into screen space.
+        OffsetRect(TreeRect, -FEffectiveOffsetX, FOffsetY);
+        ImagePos := ClientToScreen(TreeRect.TopLeft);
+        HotSpot := ClientToScreen(HotSpot);
+
+        lDragImage.ColorKey := FColors.BackGroundColor;
+        lDragImage.PrepareDrag(Image, ImagePos, HotSpot, DataObject);
+      finally
+        Image.Free;
+      end;
     finally
-      Image.Free;
-    end;
+      lDragImage.Free;
+    end; // try..finally
   end;
 end;
 
