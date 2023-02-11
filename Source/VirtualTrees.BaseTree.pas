@@ -141,12 +141,10 @@ type
     procedure ForceDragLeave; stdcall;
     function GetDataObject: IDataObject; stdcall;
     function GetDragSource: TBaseVirtualTree; stdcall;
-    function GetDropTargetHelperSupported: Boolean; stdcall;
     function GetIsDropTarget: Boolean; stdcall;
 
     property DataObject: IDataObject read GetDataObject;
     property DragSource: TBaseVirtualTree read GetDragSource;
-    property DropTargetHelperSupported: Boolean read GetDropTargetHelperSupported;
     property IsDropTarget: Boolean read GetIsDropTarget;
   end;
 
@@ -1597,7 +1595,6 @@ type
     property ChildCount[Node: PVirtualNode]: Cardinal read GetChildCount write SetChildCount;
     property ChildrenInitialized[Node: PVirtualNode]: Boolean read GetChildrenInitialized;
     property CutCopyCount: Integer read GetCutCopyCount;
-    property DragImage: TVTDragImage read FDragImage;
     property DragManager: IVTDragManager read GetDragManager;
     property DropTargetNode: PVirtualNode read FDropTargetNode write FDropTargetNode;
     property EditLink: IVTEditLink read FEditLink;
@@ -10444,26 +10441,13 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoDragExpand;
-
-var
-  SourceTree: TBaseVirtualTree;
-
 begin
   StopTimer(ExpandTimer);
   if Assigned(FDropTargetNode) and (vsHasChildren in FDropTargetNode.States) and
     not (vsExpanded in FDropTargetNode.States) then
   begin
-    if Assigned(FDragManager) then
-      SourceTree := DragManager.DragSource
-    else
-      SourceTree := nil;
-
-    if not DragManager.DropTargetHelperSupported and Assigned(SourceTree) then
-      SourceTree.FDragImage.HideDragImage;
     ToggleNode(FDropTargetNode);
     UpdateWindow();
-    if not DragManager.DropTargetHelperSupported and Assigned(SourceTree) then
-      SourceTree.FDragImage.ShowDragImage;
   end;
 end;
 
@@ -11851,12 +11835,6 @@ begin
       else
         FLastDropMode := dmNowhere;
     end;
-
-    // If the drag source is a virtual tree then we know how to control the drag image
-    // and can show it even if the source is not the target tree.
-    // This is only necessary if we cannot use the drag image helper interfaces.
-    if not DragManager.DropTargetHelperSupported and Assigned(DragManager.DragSource) then
-      DragManager.DragSource.FDragImage.ShowDragImage;
     Result := NOERROR;
   except
     Result := E_UNEXPECTED;
@@ -11900,9 +11878,6 @@ var
 begin
   StopTimer(ExpandTimer);
 
-  if not DragManager.DropTargetHelperSupported and Assigned(DragManager.DragSource) then
-    DragManager.DragSource.FDragImage.HideDragImage;
-
   if Assigned(FDropTargetNode) then
   begin
     InvalidateNode(FDropTargetNode);
@@ -11925,29 +11900,18 @@ function TBaseVirtualTree.DragOver(Source: TObject; KeyState: Integer; DragState
 var
   Shift: TShiftState;
   Accept,
-  DragImageWillMove,
   WindowScrolled: Boolean;
   OldR, R: TRect;
   NewDropMode: TDropMode;
   HitInfo: THitInfo;
   DragPos: TPoint;
-  Tree: TBaseVirtualTree;
   LastNode: PVirtualNode;
   DeltaX,
   DeltaY: TDimension;
   ScrollOptions: TScrollUpdateOptions;
 
 begin
-  if not DragManager.DropTargetHelperSupported and (Source is TBaseVirtualTree) then
-  begin
-    Tree := Source as TBaseVirtualTree;
-    ScrollOptions := [suoUpdateNCArea];
-  end
-  else
-  begin
-    Tree := nil;
-    ScrollOptions := DefaultScrollUpdateFlags;
-  end;
+  ScrollOptions := DefaultScrollUpdateFlags;
 
   try
     DragPos := Pt;
@@ -12005,11 +11969,6 @@ begin
       R := Rect(0, 0, 0, 0);
     NewDropMode := DetermineDropMode(Pt, HitInfo, R);
 
-    if Assigned(Tree) then
-      DragImageWillMove := Tree.DragImage.WillMove(DragPos)
-    else
-      DragImageWillMove := False;
-
     if (HitInfo.HitNode <> FDropTargetNode) or (FLastDropMode <> NewDropMode) then
     begin
       // Something in the tree will change. This requires to update the screen and/or the drag image.
@@ -12030,15 +11989,7 @@ begin
           // Optimize the case that the selection moved between two nodes.
           OldR := GetDisplayRect(LastNode, NoColumn, False);
           UnionRect(R, R, OldR);
-          if Assigned(Tree) then
-          begin
-            if WindowScrolled then
-              UpdateWindowAndDragImage(Tree, ClientRect, True, not DragImageWillMove)
-            else
-              UpdateWindowAndDragImage(Tree, R, False, not DragImageWillMove);
-          end
-          else
-            InvalidateRect(@R, False);
+          InvalidateRect(@R, False);
         end
         else
         begin
@@ -12046,28 +11997,10 @@ begin
           begin
             // Repaint last target node.
             OldR := GetDisplayRect(LastNode, NoColumn, False);
-            if Assigned(Tree) then
-            begin
-              if WindowScrolled then
-                UpdateWindowAndDragImage(Tree, ClientRect, WindowScrolled, not DragImageWillMove)
-              else
-                UpdateWindowAndDragImage(Tree, OldR, False, not DragImageWillMove);
-            end
-            else
-              InvalidateRect(@OldR, False);
+            InvalidateRect(@OldR, False);
           end
           else
-          begin
-            if Assigned(Tree) then
-            begin
-              if WindowScrolled then
-                UpdateWindowAndDragImage(Tree, ClientRect, WindowScrolled, not DragImageWillMove)
-              else
-                UpdateWindowAndDragImage(Tree, R, False, not DragImageWillMove);
-            end
-            else
-              InvalidateRect(@R, False);
-          end;
+            InvalidateRect(@R, False);
         end;
 
         // Start auto expand timer if necessary.
@@ -12077,29 +12010,11 @@ begin
       end
       else
       begin
-        // Only the drop mark position changed so invalidate the current drop target node.
-        if Assigned(Tree) then
-        begin
-          if WindowScrolled then
-            UpdateWindowAndDragImage(Tree, ClientRect, WindowScrolled, not DragImageWillMove)
-          else
-            UpdateWindowAndDragImage(Tree, R, False, not DragImageWillMove);
-        end
-        else
-          InvalidateRect(@R, False);
+        InvalidateRect(@R, False);
       end;
-    end
-    else
-    begin
-      // No change in the current drop target or drop mode. This might still mean horizontal or vertical scrolling.
-      if Assigned(Tree) and ((DeltaX <> 0) or (DeltaY <> 0)) then
-        UpdateWindowAndDragImage(Tree, ClientRect, WindowScrolled, not DragImageWillMove);
     end;
 
     Update;
-
-    if Assigned(Tree) and DragImageWillMove then
-      Tree.FDragImage.DragTo(DragPos, False);
 
     Effect := SuggestDropEffect(Source, Shift, Pt, Effect);
     Accept := DoDragOver(Source, Shift, DragState, Pt, FLastDropMode, Effect);
