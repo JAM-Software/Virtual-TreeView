@@ -16019,50 +16019,50 @@ begin
    //Take proper drag image depending on whether the drag is being done in the tree
    //or in the header.
     if (Tree.FHeader.DragImage <> nil) and (Tree.FHeader.DragImage.Visible) then
-      useDragImage := Tree.FHeader.DragImage
-    else
-      useDragImage := nil;
-
-    // The drag image will figure out itself what part of the rectangle can be recaptured.
-    // Recapturing is not done by taking a snapshot of the screen, but by letting the tree draw itself
-    // into the back bitmap of the drag image. So the order here is unimportant.
-    useDragImage.RecaptureBackground(Self, TreeRect, VisibleTreeRegion, UpdateNCArea, ReshowDragImage);
-
-    // Calculate the screen area not covered by the drag image and which needs an update.
-    DragRect := useDragImage.GetDragImageRect;
-    MapWindowPoints(0, Handle, DragRect, 2);
-    DragRegion := CreateRectRgnIndirect(DragRect);
-
-    // Start with non-client area if requested.
-    if UpdateNCArea then
     begin
-      // Compute the part of the non-client area which must be updated.
+      useDragImage := Tree.FHeader.DragImage;
 
-      // Determine the outer rectangle of the entire tree window.
-      GetWindowRect(Handle, NCRect);
-      // Express the tree window rectangle in client coordinates (because RedrawWindow wants them so).
-      MapWindowPoints(0, Handle, NCRect, 2);
-      NCRegion := CreateRectRgnIndirect(NCRect);
-      // Determine client rect in screen coordinates and create another region for it.
-      UpdateRegion := CreateRectRgnIndirect(ClientRect);
-      // Create a region which only contains the NC part by subtracting out the client area.
-      CombineRgn(NCRegion, NCRegion, UpdateRegion, RGN_DIFF);
-      // Subtract also out what is hidden by the drag image.
-      CombineRgn(NCRegion, NCRegion, DragRegion, RGN_DIFF);
-      RedrawWindow(nil, NCRegion, RDW_FRAME or RDW_NOERASE or RDW_NOCHILDREN or RDW_INVALIDATE or RDW_VALIDATE or
-        RDW_UPDATENOW);
-      DeleteObject(NCRegion);
+      // The drag image will figure out itself what part of the rectangle can be recaptured.
+      // Recapturing is not done by taking a snapshot of the screen, but by letting the tree draw itself
+      // into the back bitmap of the drag image. So the order here is unimportant.
+      useDragImage.RecaptureBackground(Self, TreeRect, VisibleTreeRegion, UpdateNCArea, ReshowDragImage);
+
+      // Calculate the screen area not covered by the drag image and which needs an update.
+      DragRect := useDragImage.GetDragImageRect;
+      MapWindowPoints(0, Handle, DragRect, 2);
+      DragRegion := CreateRectRgnIndirect(DragRect);
+
+      // Start with non-client area if requested.
+      if UpdateNCArea then
+      begin
+        // Compute the part of the non-client area which must be updated.
+
+        // Determine the outer rectangle of the entire tree window.
+        GetWindowRect(Handle, NCRect);
+        // Express the tree window rectangle in client coordinates (because RedrawWindow wants them so).
+        MapWindowPoints(0, Handle, NCRect, 2);
+        NCRegion := CreateRectRgnIndirect(NCRect);
+        // Determine client rect in screen coordinates and create another region for it.
+        UpdateRegion := CreateRectRgnIndirect(ClientRect);
+        // Create a region which only contains the NC part by subtracting out the client area.
+        CombineRgn(NCRegion, NCRegion, UpdateRegion, RGN_DIFF);
+        // Subtract also out what is hidden by the drag image.
+        CombineRgn(NCRegion, NCRegion, DragRegion, RGN_DIFF);
+        RedrawWindow(nil, NCRegion, RDW_FRAME or RDW_NOERASE or RDW_NOCHILDREN or RDW_INVALIDATE or RDW_VALIDATE or
+          RDW_UPDATENOW);
+        DeleteObject(NCRegion);
+        DeleteObject(UpdateRegion);
+      end;
+
+      UpdateRegion := CreateRectRgnIndirect(TreeRect);
+      RedrawFlags := RDW_INVALIDATE or RDW_VALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_NOCHILDREN;
+      // Remove the part of the update region which is covered by the drag image.
+      CombineRgn(UpdateRegion, UpdateRegion, DragRegion, RGN_DIFF);
+      RedrawWindow(nil, UpdateRegion, RedrawFlags);
       DeleteObject(UpdateRegion);
+      DeleteObject(DragRegion);
+      DeleteObject(VisibleTreeRegion);
     end;
-
-    UpdateRegion := CreateRectRgnIndirect(TreeRect);
-    RedrawFlags := RDW_INVALIDATE or RDW_VALIDATE or RDW_UPDATENOW or RDW_NOERASE or RDW_NOCHILDREN;
-    // Remove the part of the update region which is covered by the drag image.
-    CombineRgn(UpdateRegion, UpdateRegion, DragRegion, RGN_DIFF);
-    RedrawWindow(nil, UpdateRegion, RedrawFlags);
-    DeleteObject(UpdateRegion);
-    DeleteObject(DragRegion);
-    DeleteObject(VisibleTreeRegion);
   end;
 end;
 

@@ -9,6 +9,8 @@ uses
   Vcl.Controls;
 
 type
+  IDataObject = WinApi.ActiveX.IDataObject;
+
   // IDataObject.SetData support
   TInternalStgMedium = packed record
     Format : TClipFormat;
