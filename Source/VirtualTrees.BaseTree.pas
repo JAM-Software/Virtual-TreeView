@@ -8992,6 +8992,9 @@ begin
   begin
     if (M <> D) then
     begin
+      {$if CompilerVersion >= 31}
+      ScaleForPPi(Self.CurrentPPI);
+      {$ifend}
       // It is important to evaluate the TScalingFlags before calling inherited, becuase they are differetn afterwards!
       if csLoading in ComponentState then
         Flags := ScalingFlags
