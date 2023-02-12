@@ -87,8 +87,8 @@ type
     procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
     procedure WMCaptureChanged(var Msg: TMessage); message WM_CAPTURECHANGED;
     procedure InitScrollBars;
-    {$endif}
     procedure WMNCMouseMove(var Msg: TWMMouse); message WM_NCMOUSEMOVE;
+    {$endif}
     procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
     function NCMousePosToClient(const P: TPoint): TPoint;    procedure CMUpdateVclStyleScrollbars(var Msg: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
 
@@ -888,6 +888,8 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+{$ifdef NOT_USE_VCL_STYLEHOOK}
+
 procedure TVclStyleScrollBarsHook.WMNCMouseMove(var Msg: TWMMouse);
 var
   P: TPoint;
@@ -986,8 +988,6 @@ begin
   if MustUpdateScroll then
     PaintScroll;
 end;
-
-{$ifdef NOT_USE_VCL_STYLEHOOK}
 
 //----------------------------------------------------------------------------------------------------------------------
 
