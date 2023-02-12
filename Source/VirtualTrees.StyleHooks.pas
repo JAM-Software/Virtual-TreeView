@@ -88,18 +88,19 @@ type
     procedure WMCaptureChanged(var Msg: TMessage); message WM_CAPTURECHANGED;
     procedure InitScrollBars;
     procedure WMNCMouseMove(var Msg: TWMMouse); message WM_NCMOUSEMOVE;
-    {$endif}
     procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
-    function NCMousePosToClient(const P: TPoint): TPoint;    procedure CMUpdateVclStyleScrollbars(var Msg: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
-
+    function NCMousePosToClient(const P: TPoint): TPoint;
     function PointInTreeHeader(const P: TPoint): Boolean;
+    {$endif}
+  private
+    procedure CMUpdateVclStyleScrollbars(var Msg: TMessage); message CM_UPDATE_VCLSTYLE_SCROLLBARS;
   protected
     procedure CalcScrollBarsRect; virtual;
-    procedure DrawHorzScrollBar(DC: HDC); virtual;
-    procedure DrawVertScrollBar(DC: HDC); virtual;
     procedure UpdateScroll;{$if CompilerVersion >= 34}override;{$ifend}
     {$ifdef NOT_USE_VCL_STYLEHOOK}
     procedure MouseLeave; override;
+    procedure DrawHorzScrollBar(DC: HDC); virtual;
+    procedure DrawVertScrollBar(DC: HDC); virtual;
     procedure PaintScroll; override;
     property HorzScrollWnd: TScrollWindow read FHorzScrollWnd;
     property VertScrollWnd: TScrollWindow read FVertScrollWnd;
@@ -239,6 +240,115 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TVclStyleScrollBarsHook.UpdateScroll;
+var
+  R: TRect;
+  HeaderHeight: Integer;
+  PaddingSize: Integer;
+  BorderSize: Integer;
+begin
+  HeaderHeight := 0;
+  if (hoVisible in TBaseVirtualTree(Control).Header.Options) then
+    Inc(HeaderHeight, TBaseVirtualTree(Control).Header.Height);
+
+  PaddingSize := TBaseVirtualTreeCracker(Control).BorderWidth;
+  if TBaseVirtualTreeCracker(Control).BevelKind <> bkNone then
+  begin
+    if TBaseVirtualTreeCracker(Control).BevelInner <> bvNone then
+      Inc(PaddingSize, TBaseVirtualTreeCracker(Control).BevelWidth);
+    if TBaseVirtualTreeCracker(Control).BevelOuter <> bvNone then
+      Inc(PaddingSize, TBaseVirtualTreeCracker(Control).BevelWidth);
+  end;
+
+  BorderSize := 0;
+  if HasBorder then
+    Inc(BorderSize, GetSystemMetrics(SM_CYEDGE));
+
+  if ((VertScrollWnd <> nil) and not VertScrollWnd.HandleAllocated) or
+     ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
+  begin  // Fixes issue #390
+    if VertScrollWnd <> nil then
+      FreeAndNil({$ifdef NOT_USE_VCL_STYLEHOOK}FVertScrollWnd{$else}VertScrollWnd{$ifend});
+    if HorzScrollWnd <> nil then
+      FreeAndNil({$ifdef NOT_USE_VCL_STYLEHOOK}FHorzScrollWnd{$else}HorzScrollWnd{$ifend});
+
+    InitScrollBars;
+  end;
+
+  // VertScrollBarWindow
+  if Control.HandleAllocated then
+  begin
+    if VertScrollWnd.Visible then
+    begin
+      R := VertScrollRect;
+      if Control.UseRightToLeftScrollBar then
+        OffsetRect(R, -R.Left + BorderSize, 0);
+
+      ShowWindow(VertScrollWnd.Handle, SW_SHOW);
+      SetWindowPos(VertScrollWnd.Handle, HWND_TOP,
+        Control.Left + R.Left + PaddingSize,
+        Control.Top + R.Top + HeaderHeight + PaddingSize,
+        R.Width,
+        Control.Height - HeaderHeight - ((PaddingSize + BorderSize) * 2), // <> R.Height
+        SWP_SHOWWINDOW);
+    end else
+      ShowWindow(VertScrollWnd.Handle, SW_HIDE);
+  end;// if FVertScrollWnd
+
+  // HorzScrollBarWindow
+  if Control.HandleAllocated then
+  begin
+    if HorzScrollWnd.Visible then
+    begin
+      R := HorzScrollRect;
+      if Control.UseRightToLeftScrollBar then
+        OffsetRect(R, VertScrollRect.Width, 0);
+
+      ShowWindow(HorzScrollWnd.Handle, SW_SHOW);
+      SetWindowPos(HorzScrollWnd.Handle, HWND_TOP,
+        Control.Left + R.Left + PaddingSize,
+        Control.Top + R.Top + HeaderHeight + PaddingSize,
+        R.Width, R.Height, SWP_SHOWWINDOW);
+    end else
+      ShowWindow(HorzScrollWnd.Handle, SW_HIDE);
+  end;// if FHorzScrollWnd
+  // ScrollBarWindow Visible/Enabled Control
+  CalcScrollBarsRect;
+
+end;
+
+procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollbars(var Msg: TMessage);
+begin
+  CalcScrollBarsRect;
+  PaintScroll;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+{$ifdef NOT_USE_VCL_STYLEHOOK}
+
+function TVclStyleScrollBarsHook.NCMousePosToClient(const P: TPoint): TPoint;
+begin
+  Result := P;
+  ScreenToClient(Handle, Result);
+  if HasBorder then
+  begin
+    if HasClientEdge then
+      Result.Offset(2, 2)
+    else
+      Result.Offset(1, 1);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVclStyleScrollBarsHook.PointInTreeHeader(const P: TPoint): Boolean;
+begin
+  Result := TBaseVirtualTree(Control).Header.InHeader(P);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVclStyleScrollBarsHook.DrawHorzScrollBar(DC: HDC);
 var
   B: TBitmap;
@@ -341,108 +451,6 @@ begin
   end;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVclStyleScrollBarsHook.NCMousePosToClient(const P: TPoint): TPoint;
-begin
-  Result := P;
-  ScreenToClient(Handle, Result);
-  if HasBorder then
-  begin
-    if HasClientEdge then
-      Result.Offset(2, 2)
-    else
-      Result.Offset(1, 1);
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVclStyleScrollBarsHook.PointInTreeHeader(const P: TPoint): Boolean;
-begin
-  Result := TBaseVirtualTree(Control).Header.InHeader(P);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVclStyleScrollBarsHook.UpdateScroll;
-var
-  R: TRect;
-  HeaderHeight: Integer;
-  PaddingSize: Integer;
-  BorderSize: Integer;
-begin
-  HeaderHeight := 0;
-  if (hoVisible in TBaseVirtualTree(Control).Header.Options) then
-    Inc(HeaderHeight, TBaseVirtualTree(Control).Header.Height);
-
-  PaddingSize := TBaseVirtualTreeCracker(Control).BorderWidth;
-  if TBaseVirtualTreeCracker(Control).BevelKind <> bkNone then
-  begin
-    if TBaseVirtualTreeCracker(Control).BevelInner <> bvNone then
-      Inc(PaddingSize, TBaseVirtualTreeCracker(Control).BevelWidth);
-    if TBaseVirtualTreeCracker(Control).BevelOuter <> bvNone then
-      Inc(PaddingSize, TBaseVirtualTreeCracker(Control).BevelWidth);
-  end;
-
-  BorderSize := 0;
-  if HasBorder then
-    Inc(BorderSize, GetSystemMetrics(SM_CYEDGE));
-
-  if ((VertScrollWnd <> nil) and not VertScrollWnd.HandleAllocated) or
-     ((HorzScrollWnd <> nil) and not HorzScrollWnd.HandleAllocated) then
-  begin  // Fixes issue #390
-    if VertScrollWnd <> nil then
-      FreeAndNil({$ifdef NOT_USE_VCL_STYLEHOOK}FVertScrollWnd{$else}VertScrollWnd{$ifend});
-    if HorzScrollWnd <> nil then
-      FreeAndNil({$ifdef NOT_USE_VCL_STYLEHOOK}FHorzScrollWnd{$else}HorzScrollWnd{$ifend});
-
-    InitScrollBars;
-  end;
-
-  // VertScrollBarWindow
-  if Control.HandleAllocated then
-  begin
-    if VertScrollWnd.Visible then
-    begin
-      R := VertScrollRect;
-      if Control.UseRightToLeftScrollBar then
-        OffsetRect(R, -R.Left + BorderSize, 0);
-
-      ShowWindow(VertScrollWnd.Handle, SW_SHOW);
-      SetWindowPos(VertScrollWnd.Handle, HWND_TOP,
-        Control.Left + R.Left + PaddingSize,
-        Control.Top + R.Top + HeaderHeight + PaddingSize,
-        R.Width,
-        Control.Height - HeaderHeight - ((PaddingSize + BorderSize) * 2), // <> R.Height
-        SWP_SHOWWINDOW);
-    end else
-      ShowWindow(VertScrollWnd.Handle, SW_HIDE);
-  end;// if FVertScrollWnd
-
-  // HorzScrollBarWindow
-  if Control.HandleAllocated then
-  begin
-    if HorzScrollWnd.Visible then
-    begin
-      R := HorzScrollRect;
-      if Control.UseRightToLeftScrollBar then
-        OffsetRect(R, VertScrollRect.Width, 0);
-
-      ShowWindow(HorzScrollWnd.Handle, SW_SHOW);
-      SetWindowPos(HorzScrollWnd.Handle, HWND_TOP,
-        Control.Left + R.Left + PaddingSize,
-        Control.Top + R.Top + HeaderHeight + PaddingSize,
-        R.Width, R.Height, SWP_SHOWWINDOW);
-    end else
-      ShowWindow(HorzScrollWnd.Handle, SW_HIDE);
-  end;// if FHorzScrollWnd
-  // ScrollBarWindow Visible/Enabled Control
-  CalcScrollBarsRect;
-
-end;
-
-{$ifdef NOT_USE_VCL_STYLEHOOK}
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVclStyleScrollBarsHook.MouseLeave;
@@ -789,16 +797,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-{$ifend}
-
-procedure TVclStyleScrollBarsHook.CMUpdateVclStyleScrollbars(var Msg: TMessage);
-begin
-  CalcScrollBarsRect;
-  PaintScroll;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TVclStyleScrollBarsHook.WMMouseMove(var Msg: TWMMouse);
 var
   SF: TScrollInfo;
@@ -887,8 +885,6 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-{$ifdef NOT_USE_VCL_STYLEHOOK}
 
 procedure TVclStyleScrollBarsHook.WMNCMouseMove(var Msg: TWMMouse);
 var
