@@ -5561,7 +5561,7 @@ var
           TreeViewControl.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground])
         else
         begin
-          if TreeViewControl.VclStyleEnabled and (seClient in TreeViewControl.StyleElements) then
+          if (tsUseThemes in TreeViewControl.TreeStates) or (TreeViewControl.VclStyleEnabled and (seClient in TreeViewControl.StyleElements)) then
           begin
             if IsDownIndex then
               Details := StyleServices.GetElementDetails(thHeaderItemPressed)
@@ -5571,27 +5571,20 @@ var
             else
               Details := StyleServices.GetElementDetails(thHeaderItemNormal);
             StyleServices.DrawElement(TargetCanvas.Handle, Details, PaintRectangle, @PaintRectangle{$IF CompilerVersion >= 34}, TreeViewControl.CurrentPPI{$IFEND});
+            {$IF CompilerVersion >= 34}
+            if TreeViewControl.CurrentPPI >= 144 then // Fixes issue #1172
+            begin
+              PaintRectangle.Right := PaintRectangle.Right - 1; // For screens with scaled at 150% or more use a splitter with two pixels width
+              StyleServices.DrawElement(TargetCanvas.Handle, Details, PaintRectangle, @PaintRectangle, TreeViewControl.CurrentPPI);
+            end;
+            {$IFEND}
           end
           else
-          begin
-            if tsUseThemes in TreeViewControl.TreeStates then
-            begin
-              Theme := OpenThemeData(TreeViewControl.Handle, 'HEADER');
-              if IsDownIndex then
-                IdState := HIS_PRESSED
-              else
-                if IsHoverIndex then
-                IdState := HIS_HOT
-              else
-                IdState := HIS_NORMAL;
-              DrawThemeBackground(Theme, TargetCanvas.Handle, HP_HEADERITEM, IdState, PaintRectangle, nil);
-              CloseThemeData(Theme);
-            end
-            else
-              if IsDownIndex then
+          begin // Windows classic mode
+            if IsDownIndex then
               DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
             else
-                  // Plates have the special case of raising on mouse over.
+              // Plates have the special case of raising on mouse over.
               if (Header.Style = hsPlates) and IsHoverIndex and
                 (coAllowClick in FOptions) and (coEnabled in FOptions) then
                 DrawEdge(TargetCanvas.Handle, PaintRectangle, RaisedButtonStyle,
