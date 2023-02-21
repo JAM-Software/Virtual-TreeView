@@ -5501,8 +5501,6 @@ var
     Pos            : TRect;
     DrawHot        : Boolean;
     ImageWidth     : Integer;
-    Theme          : HTHEME;
-    IdState        : Integer;
   begin
     ColImageInfo.Ghosted := False;
     PaintInfo.Column := Items[AColumn];
