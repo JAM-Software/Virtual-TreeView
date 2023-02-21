@@ -997,7 +997,7 @@ type
         TColumnIndex);
     procedure DoEdit; virtual;
     procedure DoEndDrag(Target: TObject; X, Y: TDimension); override;
-    function DoEndEdit: Boolean; virtual;
+    function DoEndEdit(pCancel: Boolean = False): Boolean; virtual;
     procedure DoEndOperation(OperationKind: TVTOperationKind); virtual;
     procedure DoEnter(); override;
     procedure DoExpanded(Node: PVirtualNode); virtual;
@@ -10068,18 +10068,35 @@ function TBaseVirtualTree.DoCancelEdit(): Boolean;
 // Called when the current edit action or a pending edit must be cancelled.
 
 begin
+  Result := DoEndEdit(True);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.DoEndEdit(pCancel: Boolean = False): Boolean;
+
+// Called to finish a current edit action or stop the edit timer if an edit operation is pending.
+// Pass True if the edit should be cancelled, pass False if the new text should be used and saved.
+// Returns True if editing was successfully ended/canceled or the control was not in edit mode.
+// Returns False if the control could not leave the edit mode e.g. due to an invalid value that was entered.
+
+begin
   StopTimer(EditTimer);
   DoStateChange([], [tsEditPending]);
-  Result := (tsEditing in FStates) and FEditLink.CancelEdit;
+  if not (tsEditing in FStates) then
+    Exit(True);
+  if pCancel then
+    Result := FEditLink.CancelEdit
+  else
+    Result := FEditLink.EndEdit;
   if Result then
   begin
     DoStateChange([], [tsEditing]);
-    if Assigned(FOnEditCancelled) then
-      FOnEditCancelled(Self, FEditColumn);
-    if not (csDestroying in ComponentState) then
-      FEditLink := nil;
-    TrySetFocus();
+    FEditLink := nil;
+    if Assigned(FOnEdited) then
+      FOnEdited(Self, FFocusedNode, FEditColumn);
   end;
+  TrySetFocus();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10516,28 +10533,6 @@ begin
   inherited;
 
   DragFinished;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.DoEndEdit: Boolean;
-
-// Called to finish a current edit action or stop the edit timer if an edit operation is pending.
-// Returns True if editing was successfully ended or the control was not in edit mode
-// Returns False if the control could not leave the edit mode e.g. due to an invalid value that was entered.
-
-begin
-  StopTimer(EditTimer);
-  Result := (tsEditing in FStates) and FEditLink.EndEdit;
-  if Result then
-  begin
-    DoStateChange([], [tsEditing]);
-    FEditLink := nil;
-    if Assigned(FOnEdited) then
-      FOnEdited(Self, FFocusedNode, FEditColumn);
-  end;
-  DoStateChange([], [tsEditPending]);
-  TrySetFocus();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
