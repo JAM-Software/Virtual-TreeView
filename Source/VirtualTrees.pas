@@ -19684,7 +19684,7 @@ procedure TBaseVirtualTree.DoChecked(Node: PVirtualNode);
 begin
   if Assigned(FOnChecked) then
     FOnChecked(Self, Node);
-  if Assigned(FAccessibleItem) then
+  if Assigned(FAccessibleItem) and (Self.UpdateCount = 0) then // See issue #1174
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
@@ -19715,7 +19715,7 @@ begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
 
-  if Assigned(FAccessibleItem) then
+  if Assigned(FAccessibleItem) and (Self.UpdateCount = 0) then // See issue #1174
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
@@ -20105,7 +20105,7 @@ begin
   if Assigned(FOnExpanded) then
     FOnExpanded(Self, Node);
 
-  if Assigned(FAccessibleItem) then
+  if Assigned(FAccessibleItem) and (Self.UpdateCount = 0) then // See issue #1174
     NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
 end;
 
@@ -26950,6 +26950,8 @@ begin
           Invalidate;
         UpdateDesigner;
       end;
+      if Assigned(FAccessibleItem) then // See issue #1174
+        NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
     end;
 
     if FUpdateCount = 0 then begin
