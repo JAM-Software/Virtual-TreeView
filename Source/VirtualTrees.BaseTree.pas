@@ -10188,7 +10188,8 @@ begin
   if Assigned(FOnCollapsed) then
     FOnCollapsed(Self, Node);
 
-  NotifyAccessibilityCollapsed();
+  if (Self.UpdateCount = 0) then // See issue #1174
+    NotifyAccessibilityCollapsed();
 
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
@@ -17208,6 +17209,7 @@ begin
           Invalidate;
         UpdateDesigner;
       end;
+      NotifyAccessibilityCollapsed(); // See issue #1174
     end;
 
     if FUpdateCount = 0 then begin
