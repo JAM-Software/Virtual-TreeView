@@ -1410,6 +1410,7 @@ type
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
     procedure StyleChanged(); virtual;
+    procedure ToggleSortDirection;
 
     property DragImage: TVTDragImage read FDragImage;
     property RestoreSelectionColumnIndex: Integer read GetRestoreSelectionColumnIndex write fRestoreSelectionColumnIndex default NoColumn;
@@ -11769,6 +11770,19 @@ begin
     for I := Count - 1 downto 0 do
       if [coResizable, coVisible] * Items[FPositionToIndex[I]].Options = [coResizable, coVisible] then
         Items[I].RestoreLastWidth;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTHeader.ToggleSortDirection;
+
+// Toggles the current sorting direction
+
+begin
+  if SortDirection = sdDescending then
+    SortDirection := sdAscending
+  else
+    SortDirection := sdDescending;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
