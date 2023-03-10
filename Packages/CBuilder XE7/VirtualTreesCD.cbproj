@@ -148,39 +148,9 @@
         <CppCompile Include="VirtualTreesCD.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
-            <BuildOrder>5</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
-            <BuildOrder>6</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
-            <BuildOrder>7</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
-            <BuildOrder>8</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
-            <BuildOrder>10</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
-            <BuildOrder>11</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
-            <BuildOrder>12</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
-            <BuildOrder>13</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VTAccessibility.pas">
-            <BuildOrder>14</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VTAccessibilityFactory.pas">
-            <BuildOrder>15</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VTHeaderPopup.pas">
-            <BuildOrder>16</BuildOrder>
-        </DelphiCompile>
+        <PackageImport Include="VirtualTreesCR.bpi">
+            <BuildOrder>9</BuildOrder>
+        </PackageImport>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
