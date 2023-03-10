@@ -147,6 +147,12 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>6</BuildOrder>
         </PackageImport>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Accessibility.pas">
+            <BuildOrder>8</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.AccessibilityFactory.pas">
+            <BuildOrder>9</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
             <BuildOrder>15</BuildOrder>
         </DelphiCompile>
@@ -159,26 +165,23 @@
         <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
             <BuildOrder>16</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.HeaderPopup.pas">
+            <BuildOrder>17</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
             <BuildOrder>9</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
             <BuildOrder>12</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
+            <BuildOrder>13</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
             <BuildOrder>13</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
             <BuildOrder>14</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VTAccessibility.pas">
-            <BuildOrder>8</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VTAccessibilityFactory.pas">
-            <BuildOrder>9</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VTHeaderPopup.pas">
-            <BuildOrder>17</BuildOrder>
         </DelphiCompile>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

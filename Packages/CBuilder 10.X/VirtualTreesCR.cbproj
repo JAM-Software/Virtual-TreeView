@@ -148,9 +148,6 @@
         <CppCompile Include="VirtualTreesCR.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
-            <BuildOrder>13</BuildOrder>
-        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Accessibility.pas">
             <BuildOrder>14</BuildOrder>
         </DelphiCompile>
@@ -177,6 +174,9 @@
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
             <BuildOrder>17</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
+            <BuildOrder>13</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
             <BuildOrder>17</BuildOrder>
