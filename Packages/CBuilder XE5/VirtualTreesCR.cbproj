@@ -283,8 +283,6 @@
                 </ProjectProperties>
             </CPlusPlusBuilder.Personality>
             <Platforms>
-                <Platform value="iOSDevice">False</Platform>
-                <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
