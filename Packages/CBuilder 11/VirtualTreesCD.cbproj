@@ -4,7 +4,7 @@
         <MainSource>VirtualTreesCD.cpp</MainSource>
         <ProjectVersion>19.5</ProjectVersion>
         <Config Condition="'$(Config)'==''">Release</Config>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
