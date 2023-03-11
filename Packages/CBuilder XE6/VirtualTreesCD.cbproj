@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{DE1FB54C-6852-4F59-B4A5-7718E6069FE8}</ProjectGuid>
         <MainSource>VirtualTreesCD.cpp</MainSource>
-        <ProjectVersion>19.2</ProjectVersion>
+        <ProjectVersion>15.4</ProjectVersion>
         <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
@@ -46,14 +46,14 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DllSuffix>270</DllSuffix>
+        <DllSuffix>200</DllSuffix>
         <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)\</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_UnitSearchPath>..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>4108</VerInfo_Locale>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <BCC_InstructionSet>6</BCC_InstructionSet>
@@ -71,14 +71,9 @@
         <BCC_wpar>false</BCC_wpar>
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
         <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
-        <TLIB_PageSize>128</TLIB_PageSize>
-        <BCC_PCHUsage>None</BCC_PCHUsage>
-        <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
-        <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
-        <BPILibOutputDir>.\$(Platform)\$(Config)</BPILibOutputDir>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -104,7 +99,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <Defines>_DEBUG;$(Defines)</Defines>
-        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <TASM_Debugging>None</TASM_Debugging>
@@ -115,7 +109,7 @@
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
-            <BuildOrder>3</BuildOrder>
+            <BuildOrder>9</BuildOrder>
         </DelphiCompile>
         <PackageImport Include="dclstd.bpi">
             <BuildOrder>10</BuildOrder>

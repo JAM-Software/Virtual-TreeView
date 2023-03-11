@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{DE1FB54C-6852-4F59-B4A5-7718E6069FE8}</ProjectGuid>
         <MainSource>VirtualTreesCD.cpp</MainSource>
-        <ProjectVersion>19.2</ProjectVersion>
+        <ProjectVersion>18.5</ProjectVersion>
         <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
@@ -46,7 +46,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DllSuffix>270</DllSuffix>
+        <DllSuffix>260</DllSuffix>
         <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)\</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
