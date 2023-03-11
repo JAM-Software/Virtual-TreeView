@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{DE1FB54C-6852-4F59-B4A5-7718E6069FE8}</ProjectGuid>
         <MainSource>VirtualTreesCD.cpp</MainSource>
-        <ProjectVersion>18.0</ProjectVersion>
+        <ProjectVersion>15.4</ProjectVersion>
         <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
@@ -46,7 +46,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DllSuffix>210</DllSuffix>
+        <DllSuffix>200</DllSuffix>
         <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)\</DCC_HppOutput>
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
@@ -73,7 +73,6 @@
         <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -84,11 +83,6 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
-        <DCC_RangeChecking>true</DCC_RangeChecking>
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-        <DCC_DebugDCUs>true</DCC_DebugDCUs>
-        <DCC_Inlining>off</DCC_Inlining>
         <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
         <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
         <DCC_Optimize>false</DCC_Optimize>
@@ -104,13 +98,6 @@
         <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <Debugger_HostApplication>$(BDS)\Bin\BDS.EXE</Debugger_HostApplication>
-        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-        <DCC_RangeChecking>true</DCC_RangeChecking>
-        <DCC_Inlining>off</DCC_Inlining>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_DebugDCUs>true</DCC_DebugDCUs>
         <Defines>_DEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -121,13 +108,12 @@
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <ItemGroup>
-        <LibFiles Include="shell32.lib" Condition="'$(Platform)'=='Win32'">
-            <BuildOrder>16</BuildOrder>
-            <IgnorePath>true</IgnorePath>
-        </LibFiles>
         <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
-            <BuildOrder>3</BuildOrder>
+            <BuildOrder>9</BuildOrder>
         </DelphiCompile>
+        <PackageImport Include="dclstd.bpi">
+            <BuildOrder>10</BuildOrder>
+        </PackageImport>
         <PackageImport Include="designide.bpi">
             <BuildOrder>5</BuildOrder>
         </PackageImport>
