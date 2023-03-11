@@ -2706,9 +2706,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.ToggleSortDirection;
-
 // Toggles the current sorting direction
-
 begin
   if SortDirection = sdDescending then
     SortDirection := sdAscending
@@ -4407,6 +4405,17 @@ var
   I : Integer;
 
 begin
+  // Fix positions that too large, see #1179
+  for I := 0 to Count - 1 do
+  begin
+    if Integer(Items[I].Position) >= Count then
+    begin
+      UpdatePositions(True);
+      break;
+    end;
+  end; // for
+
+  // Update position array
   for I := 0 to Count - 1 do
     FPositionToIndex[Items[I].Position] := I;
 
