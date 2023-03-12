@@ -499,7 +499,6 @@ type
     tsThumbTracking,          // Stop updating the horizontal scroll bar while dragging the vertical thumb and vice versa.
     tsToggling,               // A toggle operation (for some node) is in progress.
     tsUpdateHiddenChildrenNeeded, // Pending update for the hidden children flag after massive visibility changes.
-    tsUpdating,               // The tree does currently not update its window because a BeginUpdate has not yet ended.
     tsUseCache,               // The tree's node caches are validated and non-empty.
     tsUserDragObject,         // Signals that the application created an own drag object in OnStartDrag.
     tsUseThemes,              // The tree runs under WinXP+, is theme aware and themes are enabled.

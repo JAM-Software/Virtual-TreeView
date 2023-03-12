@@ -16548,12 +16548,6 @@ begin
       DoUpdating(usUpdate);
   end;
   System.Inc(FUpdateCount);
-  try
-    DoStateChange([tsUpdating]);
-  except
-    EndUpdate();
-    raise;
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -17168,20 +17162,19 @@ var
   NewSize: Integer;
 
 begin
-  if FUpdateCount > 0 then
-    System.Dec(FUpdateCount);
+  if FUpdateCount = 0 then
+    exit;
+  System.Dec(FUpdateCount);
 
   if not (csDestroying in ComponentState) then
   begin
-    if (FUpdateCount = 0) and (tsUpdating in FStates) then
+    if (FUpdateCount = 0) then
     begin
       if tsUpdateHiddenChildrenNeeded in FStates then
       begin
         DetermineHiddenChildrenFlagAllNodes;
         Exclude(FStates, tsUpdateHiddenChildrenNeeded);
       end;
-
-      DoStateChange([], [tsUpdating]);
 
       NewSize := PackArray(FSelection, FSelectionCount);
       if NewSize > -1 then
@@ -17210,9 +17203,7 @@ begin
         UpdateDesigner;
       end;
       NotifyAccessibilityCollapsed(); // See issue #1174
-    end;
 
-    if FUpdateCount = 0 then begin
       DoUpdating(usEnd);
       EnsureNodeSelected();
     end

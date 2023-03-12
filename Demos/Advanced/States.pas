@@ -123,7 +123,6 @@ begin
       SetActiveState(CheckBox32, tsStructureChangePending in NewStates);
       SetActiveState(CheckBox33, tsSynchMode in NewStates);
       SetActiveState(CheckBox34, tsThumbTracking in NewStates);
-      SetActiveState(CheckBox35, tsUpdating in NewStates);
       SetActiveState(CheckBox36, tsUseCache in NewStates);
       SetActiveState(CheckBox37, tsUserDragObject in NewStates);
       SetActiveState(CheckBox38, tsUseThemes in NewStates);
