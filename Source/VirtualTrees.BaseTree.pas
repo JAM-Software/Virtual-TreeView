@@ -1423,7 +1423,7 @@ type
     function EndEditNode: Boolean;
     procedure EndSynch;
     procedure EndUpdate; virtual;
-    procedure EnsureNodeSelected(); virtual;
+    procedure EnsureNodeSelected(pAfterDeletion: Boolean); virtual;
     function ExecuteAction(Action: TBasicAction): Boolean; override;
     procedure FinishCutOrCopy;
     procedure FlushClipboard;
@@ -10205,7 +10205,7 @@ begin
     end;//if
     //if there is (still) no selected node, then use FNextNodeToSelect to select one
     if SelectedCount = 0 then
-      EnsureNodeSelected();
+      EnsureNodeSelected(False);
   end;//if
 end;
 
@@ -10550,7 +10550,7 @@ end;
 procedure TBaseVirtualTree.DoEnter();
 begin
   inherited;
-  EnsureNodeSelected();
+  EnsureNodeSelected(False);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10672,7 +10672,7 @@ begin
 
   FreeMem(Node);
   if Self.UpdateCount = 0 then
-    EnsureNodeSelected();
+    EnsureNodeSelected(True);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12083,9 +12083,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.EnsureNodeSelected();
+procedure TBaseVirtualTree.EnsureNodeSelected(pAfterDeletion: Boolean);
 begin
-  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) and not IsEmpty then
+  if IsEmpty then
+    exit; // Nothing to do
+  if (toAlwaysSelectNode in TreeOptions.SelectionOptions) or (pAfterDeletion and (toSelectNextNodeOnRemoval in TreeOptions.SelectionOptions)) then
   begin
     if (SelectedCount = 0) and not SelectionLocked then
     begin
@@ -15259,7 +15261,7 @@ procedure TBaseVirtualTree.UpdateNextNodeToSelect(Node: PVirtualNode);
 // selected one gets deleted.
 
 begin
-  if not (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
+  if ([toAlwaysSelectNode, toSelectNextNodeOnRemoval] * TreeOptions.SelectionOptions) = [] then
     Exit;
   if GetNextSibling(Node) <> nil then
     FNextNodeToSelect := GetNextSibling(Node)
@@ -16938,7 +16940,7 @@ begin
         InvalidateToBottom(Node);
       if tsChangePending in FStates then begin
         DoChange(FLastChangedNode);
-        EnsureNodeSelected();
+        EnsureNodeSelected(True);
       end;
     end;
     StructureChange(Node, crChildDeleted);
@@ -17205,7 +17207,7 @@ begin
       NotifyAccessibilityCollapsed(); // See issue #1174
 
       DoUpdating(usEnd);
-      EnsureNodeSelected();
+      EnsureNodeSelected(False);
     end
     else
       DoUpdating(usUpdate);

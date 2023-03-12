@@ -359,9 +359,10 @@ type
     toRestoreSelection,              // Set to true if upon refill the previously selected nodes should be selected again.
                                      // The nodes will be identified by its caption (text in MainColumn)
                                      // You may use TVTHeader.RestoreSelectiuonColumnIndex to define an other column that should be used for indentification.
-    toSyncCheckboxesWithSelection    // If checkboxes are shown, they follow the change in selections. When checkboxes are
+    toSyncCheckboxesWithSelection,   // If checkboxes are shown, they follow the change in selections. When checkboxes are
                                      // changed, the selections follow them and vice-versa.
                                      // **Only supported for ctCheckBox type checkboxes.
+    toSelectNextNodeOnRemoval        // If the selected node gets deleted, automatically select the next node.
     );
   TVTSelectionOptions = set of TVTSelectionOption;
 
@@ -768,7 +769,7 @@ const
   DefaultPaintOptions     = [toShowButtons, toShowDropmark, toShowTreeLines, toShowRoot, toThemeAware, toUseBlendedImages];
   DefaultAnimationOptions = [];
   DefaultAutoOptions      = [toAutoDropExpand, toAutoTristateTracking, toAutoScrollOnExpand, toAutoDeleteMovedNodes, toAutoChangeScale, toAutoSort, toAutoHideButtons];
-  DefaultSelectionOptions = [];
+  DefaultSelectionOptions = [toSelectNextNodeOnRemoval];
   DefaultMiscOptions      = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick];
 
   DefaultStringOptions    = [toSaveCaptions, toAutoAcceptEditChange];
