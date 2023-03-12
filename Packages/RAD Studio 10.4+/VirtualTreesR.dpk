@@ -49,9 +49,13 @@ contains
   VirtualTrees.Header in '..\..\Source\VirtualTrees.Header.pas',
   VirtualTrees.HeaderPopup in '..\..\Source\VirtualTrees.HeaderPopup.pas',
   VirtualTrees in '..\..\source\VirtualTrees.pas',
+  VirtualTrees.BaseTree in '..\..\source\VirtualTrees.BaseTree.pas',
+  VirtualTrees.AncestorVCL in '..\..\source\VirtualTrees.AncestorVCL.pas',
+  VirtualTrees.BaseAncestorVCL in '..\..\source\VirtualTrees.BaseAncestorVCL.pas',
   VirtualTrees.StyleHooks in '..\..\Source\VirtualTrees.StyleHooks.pas',
   VirtualTrees.Types in '..\..\Source\VirtualTrees.Types.pas',
   VirtualTrees.Utils in '..\..\Source\VirtualTrees.Utils.pas',
   VirtualTrees.WorkerThread in '..\..\Source\VirtualTrees.WorkerThread.pas';
 
 end.
+

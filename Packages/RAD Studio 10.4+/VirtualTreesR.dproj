@@ -8,7 +8,7 @@
         <MainSource>VirtualTreesR.dpk</MainSource>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectGuid>{B62F3689-96E1-47D5-9FB2-2A2718281FDB}</ProjectGuid>
-        <ProjectVersion>19.2</ProjectVersion>
+        <ProjectVersion>19.5</ProjectVersion>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -80,6 +80,9 @@
         <DCCReference Include="..\..\Source\VirtualTrees.Header.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.HeaderPopup.pas"/>
         <DCCReference Include="..\..\source\VirtualTrees.pas"/>
+        <DCCReference Include="..\..\source\VirtualTrees.BaseTree.pas"/>
+        <DCCReference Include="..\..\source\VirtualTrees.AncestorVCL.pas"/>
+        <DCCReference Include="..\..\source\VirtualTrees.BaseAncestorVCL.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.StyleHooks.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Types.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Utils.pas"/>
