@@ -76,6 +76,7 @@
         <DCCReference Include="..\..\Source\VirtualTrees.Actions.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Export.pas"/>
         <DCCReference Include="..\..\Source\VirtualTrees.Utils.pas"/>
+        <DCCReference Include="..\..\Source\VirtualTrees.Types.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
