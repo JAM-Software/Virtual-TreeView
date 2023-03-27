@@ -12079,9 +12079,10 @@ begin
         cBorderColor:
           RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_NOERASE or RDW_NOCHILDREN)
       else
-        FOwner.Invalidate;
-      end;
-    end;
+        if not (tsPainting in FOwner.TreeStates) then
+          FOwner.Invalidate;
+      end;//case
+    end;// if
   end;
 end;
 
