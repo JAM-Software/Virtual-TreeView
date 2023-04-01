@@ -893,11 +893,15 @@ type
     // Note: Some copy routines require that all pointers (as well as the data area) in a node are
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
     //       data) then put them before field Parent.
-    Parent,                  // reference to the node's parent (for the root this contains the treeview)
+  private
+    fParent:  PVirtualNode; // link to the node's last child...
+  public                  // reference to the node's parent (for the root this contains the treeview)
     PrevSibling,             // link to the node's previous sibling or nil if it is the first node
     NextSibling,             // link to the node's next sibling or nil if it is the last node
     FirstChild,              // link to the node's first child...
     LastChild: PVirtualNode; // link to the node's last child...
+    procedure SetParent(const pParent: PVirtualNode); inline; //internal method, do not call directly but use Parent[Node] := x on tree control.
+    property Parent: PVirtualNode read fParent;
   private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
   public
@@ -1163,6 +1167,11 @@ begin
   if PTypeInfo(TypeInfo(T)).Kind = tkInterface then
     Include(Self.States, vsReleaseCallOnUserDataRequired);
   Include(Self.States, vsOnFreeNodeCallRequired);
+end;
+
+procedure TVirtualNode.SetParent(const pParent: PVirtualNode);
+begin
+  fParent := pParent;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

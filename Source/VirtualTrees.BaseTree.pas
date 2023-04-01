@@ -4328,7 +4328,7 @@ begin
     // Indication that this node is the root node.
     PrevSibling := FRoot;
     NextSibling := FRoot;
-    Parent := Pointer(Self);
+    SetParent(Pointer(Self));
     States := [vsInitialized, vsExpanded, vsHasChildren, vsVisible];
     TotalHeight := FDefaultNodeHeight;
     TotalCount := 1;
@@ -5049,7 +5049,7 @@ begin
             Child.PrevSibling := Node.LastChild;
             if Assigned(Node.LastChild) then
               Node.LastChild.NextSibling := Child;
-            Child.Parent := Node;
+            Child.SetParent(Node);
             Node.LastChild := Child;
             if Node.FirstChild = nil then
               Node.FirstChild := Child;
@@ -13775,7 +13775,7 @@ begin
           Node.PrevSibling := Destination.PrevSibling;
           Destination.PrevSibling := Node;
           Node.NextSibling := Destination;
-          Node.Parent := Destination.Parent;
+          Node.SetParent(Destination.Parent);
           Node.Index := Destination.Index;
           if Node.PrevSibling = nil then
             Node.Parent.FirstChild := Node
@@ -13795,7 +13795,7 @@ begin
           Node.NextSibling := Destination.NextSibling;
           Destination.NextSibling := Node;
           Node.PrevSibling := Destination;
-          Node.Parent := Destination.Parent;
+          Node.SetParent(Destination.Parent);
           if Node.NextSibling = nil then
             Node.Parent.LastChild := Node
           else
@@ -13827,7 +13827,7 @@ begin
             Node.NextSibling := nil;
           end;
           Node.PrevSibling := nil;
-          Node.Parent := Destination;
+          Node.SetParent(Destination);
           Node.Index := 0;
           // reindex all following nodes
           Run := Node.NextSibling;
@@ -13854,7 +13854,7 @@ begin
             Node.PrevSibling := nil;
           end;
           Node.NextSibling := nil;
-          Node.Parent := Destination;
+          Node.SetParent(Destination);
           if Assigned(Node.PrevSibling) then
             Node.Index := Node.PrevSibling.Index + 1
           else
@@ -15137,7 +15137,7 @@ begin
             else
               Node.FirstChild := Run;
             Node.LastChild := Run;
-            Run.Parent := Node;
+            Run.SetParent(Node);
 
             ReadNode(Stream, Version, Run);
             System.Dec(ChunkBody.ChildCount);
