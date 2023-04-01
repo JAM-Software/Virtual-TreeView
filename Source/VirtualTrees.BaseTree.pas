@@ -5045,7 +5045,7 @@ begin
           while Remaining > 0 do
           begin
             Child := MakeNewNode;
-            Child.Index := Index;
+            Child.SetIndex(Index);
             Child.PrevSibling := Node.LastChild;
             if Assigned(Node.LastChild) then
               Node.LastChild.NextSibling := Child;
@@ -13776,7 +13776,7 @@ begin
           Destination.PrevSibling := Node;
           Node.NextSibling := Destination;
           Node.SetParent(Destination.Parent);
-          Node.Index := Destination.Index;
+          Node.SetIndex(Destination.Index);
           if Node.PrevSibling = nil then
             Node.Parent.FirstChild := Node
           else
@@ -13786,7 +13786,7 @@ begin
           Run := Destination;
           while Assigned(Run) do
           begin
-            System.Inc(Run.Index);
+            Run.SetIndex(Run.Index + 1);
             Run := Run.NextSibling;
           end;
         end;
@@ -13800,13 +13800,13 @@ begin
             Node.Parent.LastChild := Node
           else
             Node.NextSibling.PrevSibling := Node;
-          Node.Index := Destination.Index;
+          Node.SetIndex(Destination.Index);
 
           // reindex all following nodes
           Run := Node;
           while Assigned(Run) do
           begin
-            System.Inc(Run.Index);
+            Run.SetIndex(Run.Index + 1);
             Run := Run.NextSibling;
           end;
         end;
@@ -13828,12 +13828,12 @@ begin
           end;
           Node.PrevSibling := nil;
           Node.SetParent(Destination);
-          Node.Index := 0;
+          Node.SetIndex(0);
           // reindex all following nodes
           Run := Node.NextSibling;
           while Assigned(Run) do
           begin
-            System.Inc(Run.Index);
+            Run.SetIndex(Run.Index + 1);
             Run := Run.NextSibling;
           end;
         end;
@@ -13856,9 +13856,9 @@ begin
           Node.NextSibling := nil;
           Node.SetParent(Destination);
           if Assigned(Node.PrevSibling) then
-            Node.Index := Node.PrevSibling.Index + 1
+            Node.SetIndex(Node.PrevSibling.Index + 1)
           else
-            Node.Index := 0;
+            Node.SetIndex(0);
         end;
     else
       // amNoWhere: do nothing
@@ -13972,7 +13972,7 @@ begin
         Index := Node.Index;
         while Assigned(Run) do
         begin
-          Run.Index := Index;
+          Run.SetIndex(Index);
           System.Inc(Index);
           Run := Run.NextSibling;
         end;
@@ -15131,7 +15131,7 @@ begin
 
             Run.PrevSibling := Node.LastChild;
             if Assigned(Run.PrevSibling) then
-              Run.Index := Run.PrevSibling.Index + 1;
+              Run.SetIndex(Run.PrevSibling.Index + 1);
             if Assigned(Node.LastChild) then
               Node.LastChild.NextSibling := Run
             else
@@ -22479,7 +22479,7 @@ begin
         Run.PrevSibling := nil;
         Index := 0;
         repeat
-          Run.Index := Index;
+          Run.SetIndex(Index);
           System.Inc(Index);
           if Run.NextSibling = nil then
             Break;

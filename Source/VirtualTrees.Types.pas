@@ -878,7 +878,9 @@ type
   PVirtualNode = ^TVirtualNode;
 
   TVirtualNode = packed record
-    Index,                   // index of node with regard to its parent
+  private
+    fIndex: Cardinal;         // index of node with regard to its parent
+  public
     ChildCount: Cardinal;    // number of child nodes
     NodeHeight: TDimension;  // height in pixels
     States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
@@ -901,6 +903,8 @@ type
     FirstChild,              // link to the node's first child...
     LastChild: PVirtualNode; // link to the node's last child...
     procedure SetParent(const pParent: PVirtualNode); inline; //internal method, do not call directly but use Parent[Node] := x on tree control.
+    procedure SetIndex(const pIndex: Cardinal); inline;       //internal method, do not call directly.
+    property Index: Cardinal read fIndex;
     property Parent: PVirtualNode read fParent;
   private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
@@ -1167,6 +1171,11 @@ begin
   if PTypeInfo(TypeInfo(T)).Kind = tkInterface then
     Include(Self.States, vsReleaseCallOnUserDataRequired);
   Include(Self.States, vsOnFreeNodeCallRequired);
+end;
+
+procedure TVirtualNode.SetIndex(const pIndex: Cardinal);
+begin
+  fIndex := pIndex;
 end;
 
 procedure TVirtualNode.SetParent(const pParent: PVirtualNode);
