@@ -195,8 +195,6 @@ end;
 constructor TVclStyleScrollBarsHook.Create(AControl: TWinControl);
 begin
   inherited;
-  InitScrollBars;
-
   {$ifdef NOT_USE_VCL_STYLEHOOK}
   VertSliderState := tsThumbBtnVertNormal;
   VertUpState := tsArrowBtnUpNormal;
@@ -244,6 +242,9 @@ var
   PaddingSize: Integer;
   BorderSize: Integer;
 begin
+  if VertScrollWnd = nil then
+     InitScrollBars();
+
   HeaderHeight := 0;
   if (hoVisible in TBaseVirtualTree(Control).Header.Options) then
     Inc(HeaderHeight, TBaseVirtualTree(Control).Header.Height);
