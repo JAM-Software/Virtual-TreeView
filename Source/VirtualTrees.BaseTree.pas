@@ -21191,9 +21191,11 @@ begin
                                   end;
 
                                   Dec(CellRect.Right);
-                                  Dec(ContentRect.Right);
                                 end;
                               end;
+                              // Reduce the content rect size nonetheless to retain correct alignment
+                              // relative to header content (especially if "PaintInfo.Alignment = alRightJustify").
+                              Dec(ContentRect.Right);
                             end;
                           end;
 
