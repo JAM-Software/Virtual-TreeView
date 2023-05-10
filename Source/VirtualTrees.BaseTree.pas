@@ -3893,6 +3893,7 @@ procedure TBaseVirtualTree.GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffs
 // Calculates the offset up to the given element and supplies them in an array.
 var
   lNodeLevel: Integer;
+  lNodeIndent: Integer;
 begin
   // If no specific column was given, assume the main column
   if pColumn = -1 then
@@ -3902,10 +3903,13 @@ begin
   pOffsets[TVTElement.ofsMargin] := FMargin;
   if pElement = ofsMargin then
     exit;
-  pOffsets[TVTElement.ofsCheckBox] := FMargin + fImagesMargin;
+
+  pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsMargin];
+  pOffsets[TVTElement.ofsCheckBox]     := pOffsets[TVTElement.ofsMargin];
   if (pColumn = Header.MainColumn) then
   begin
-    if not (toFixedIndent in TreeOptions.PaintOptions) then begin
+    if not (toFixedIndent in TreeOptions.PaintOptions) then
+    begin
       // plus Indent
       lNodeLevel := GetNodeLevel(pNode);
       if toShowRoot in FOptions.PaintOptions then
@@ -3913,26 +3917,34 @@ begin
     end
     else
       lNodeLevel := 1;
-    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeLevel * FIndent);
+    lNodeIndent := lNodeLevel * Integer(FIndent);
     // toggle buttons
-    pOffsets[TVTElement.ofsToggleButton] := pOffsets[TVTElement.ofsCheckBox] - fImagesMargin - Divide(FIndent - FPlusBM.Width, 2) + 1 - FPlusBM.Width; //Compare PaintTree() relative line 107
+    Inc(pOffsets[TVTElement.ofsToggleButton], lNodeIndent);
+    Dec(pOffsets[TVTElement.ofsToggleButton], ((Integer(FIndent) - FPlusBM.Width) div 2) - 1 + FPlusBM.Width); //Compare PaintTree() relative line 107
+    // checkbox
+    Inc(pOffsets[TVTElement.ofsCheckBox], lNodeIndent);
   end;//if MainColumn
 
   // The area in which the toggle buttons are painted must have exactly the size of one indent level
-  if pElement <= TVTElement.ofsCheckBox then
+  if pElement <= TVTElement.ofsToggleButton then
     exit;
 
-  // right of checkbox, left of state image
-  if (toCheckSupport in FOptions.MiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
-    pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width + fImagesMargin
-  else
+  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
+  begin
+    Inc(pOffsets[TVTElement.ofsCheckBox], fImagesMargin);
+
+    // right of checkbox, left of state image
+    pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox] + FCheckImages.Width + fImagesMargin;
+  end else
     pOffsets[TVTElement.ofsStateImage] := pOffsets[TVTElement.ofsCheckBox];
-  if pElement = TVTElement.ofsStateImage then
+  if pElement <= TVTElement.ofsStateImage then
     exit;
+
   // right of left image, left of normal image
   pOffsets[TVTElement.ofsImage] := pOffsets[TVTElement.ofsStateImage] + GetImageSize(pNode, TVTImageKind.ikState, pColumn).cx;
   if pElement = TVTElement.ofsImage then
     exit;
+
   // label
   pOffsets[TVTElement.ofsLabel] := pOffsets[TVTElement.ofsImage] + GetImageSize(pNode, TVTImageKind.ikNormal, pColumn).cx;
   pOffsets[TVTElement.ofsText] := pOffsets[TVTElement.ofsLabel] + FTextMargin;
