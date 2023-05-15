@@ -3929,7 +3929,7 @@ begin
   if pElement <= TVTElement.ofsToggleButton then
     exit;
 
-  if (toCheckSupport in FOptions.FMiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
+  if (toCheckSupport in TreeOptions.MiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
   begin
     Inc(pOffsets[TVTElement.ofsCheckBox], fImagesMargin);
 
