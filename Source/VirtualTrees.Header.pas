@@ -616,7 +616,7 @@ procedure TVTHeader.FontChanged(Sender : TObject);
 begin
   inherited;
   {$IF CompilerVersion < 31}
-  AutoScale(false);
+  AutoScale();
   {$IFEND}
 end;
 
