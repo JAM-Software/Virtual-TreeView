@@ -9004,30 +9004,35 @@ begin
   begin
     if (M <> D) then
     begin
-      {$if CompilerVersion >= 31}
-      ScaleForPPi(Self.CurrentPPI);
-      {$ifend}
-      // It is important to evaluate the TScalingFlags before calling inherited, becuase they are differetn afterwards!
-      if csLoading in ComponentState then
-        Flags := ScalingFlags
-      else
-        Flags := DefaultScalingFlags; // Important for #677
-      if (sfHeight in Flags) then begin
-        TVTHeaderCracker(FHeader).ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
-        SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
-        Indent := MulDiv(Indent, M, D);
-        FTextMargin := MulDiv(FTextMargin, M, D);
-        FMargin := MulDiv(FMargin, M, D);
-        FImagesMargin := MulDiv(FImagesMargin, M, D);
-        // Scale utility images, #796
-        if FCheckImageKind = ckSystemDefault then begin
-          FreeAndNil(FCheckImages);
-          if HandleAllocated then
-            FCheckImages := CreateSystemImageSet(Self);
-        end;
-        UpdateHeaderRect();
-        ScaleNodeHeights(M, D);
-      end;//if sfHeight
+      BeginUpdate();
+      try
+        {$if CompilerVersion >= 31}
+        ScaleForPPi(Self.CurrentPPI);
+        {$ifend}
+        // It is important to evaluate the TScalingFlags before calling inherited, becuase they are differetn afterwards!
+        if csLoading in ComponentState then
+          Flags := ScalingFlags
+        else
+          Flags := DefaultScalingFlags; // Important for #677
+        if (sfHeight in Flags) then begin
+          TVTHeaderCracker(FHeader).ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
+          SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+          Indent := MulDiv(Indent, M, D);
+          FTextMargin := MulDiv(FTextMargin, M, D);
+          FMargin := MulDiv(FMargin, M, D);
+          FImagesMargin := MulDiv(FImagesMargin, M, D);
+          // Scale utility images, #796
+          if FCheckImageKind = ckSystemDefault then begin
+            FreeAndNil(FCheckImages);
+            if HandleAllocated then
+              FCheckImages := CreateSystemImageSet(Self);
+          end;
+          UpdateHeaderRect();
+          ScaleNodeHeights(M, D);
+        end;//if sfHeight
+      finally
+        EndUpdate();
+      end;//try..finally
     end;// if M<>D
   end;//if toAutoChangeScale
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
@@ -23156,7 +23161,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.UpdateVerticalScrollBar(DoRepaint: Boolean);
+  procedure TBaseVirtualTree.UpdateVerticalScrollBar(DoRepaint: Boolean);
 
 var
   ScrollInfo: TScrollInfo;
