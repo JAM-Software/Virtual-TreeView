@@ -915,7 +915,7 @@ type
     function IsStored_TextMargin: Boolean;
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
-    procedure AutoScale(isDpiChange: Boolean); virtual;
+    procedure AutoScale(); virtual;
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: TDimension); virtual;
@@ -6435,7 +6435,7 @@ begin
   if not (csLoading in ComponentState) then
   begin
     if HandleAllocated then begin
-      AutoScale(False);
+      AutoScale();
       Invalidate;
     end
   end;
@@ -9037,9 +9037,9 @@ begin
   end;//if toAutoChangeScale
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
   if (M <> D) then
-    PrepareBitmaps(True, False); // See issue #991
-  // It is important to do this call after calling inherited, so that the Font has been updated.
-  AutoScale(M <> D);
+    PrepareBitmaps(True, False) // See issue #991
+  else
+    AutoScale(); // It is important to do this call after calling inherited, so that the Font has been updated.
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -16466,15 +16466,14 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AutoScale(isDpiChange: Boolean);
+procedure TBaseVirtualTree.AutoScale();
 
-// If toAutoChangeScale is set, this method ensures that the defaulz node height is set correctly.
-// isDPIChnage is True, if the DPI of the form has changed. In this case the font may not yet be adapted to this, so do not adjust DefualtNodeHeight.
+// If toAutoChangeScale is set, this method ensures that the default node height is set correctly.
 
 var
   lTextHeight: TDimension;
 begin
-  if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) and not isDpiChange then
+  if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) then
   begin
     Canvas.Font.Assign(Self.Font);
     lTextHeight := Canvas.TextHeight('Tg') + 2;
