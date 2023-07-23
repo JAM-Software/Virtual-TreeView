@@ -9014,22 +9014,20 @@ begin
           Flags := ScalingFlags
         else
           Flags := DefaultScalingFlags; // Important for #677
-        if (sfHeight in Flags) then begin
-          TVTHeaderCracker(FHeader).ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
-          SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
-          Indent := MulDiv(Indent, M, D);
-          FTextMargin := MulDiv(FTextMargin, M, D);
-          FMargin := MulDiv(FMargin, M, D);
-          FImagesMargin := MulDiv(FImagesMargin, M, D);
-          // Scale utility images, #796
-          if FCheckImageKind = ckSystemDefault then begin
-            FreeAndNil(FCheckImages);
-            if HandleAllocated then
-              FCheckImages := CreateSystemImageSet(Self);
-          end;
-          UpdateHeaderRect();
-          ScaleNodeHeights(M, D);
-        end;//if sfHeight
+        TVTHeaderCracker(FHeader).ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
+        SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+        Indent := MulDiv(Indent, M, D);
+        FTextMargin := MulDiv(FTextMargin, M, D);
+        FMargin := MulDiv(FMargin, M, D);
+        FImagesMargin := MulDiv(FImagesMargin, M, D);
+        // Scale utility images, #796
+        if FCheckImageKind = ckSystemDefault then begin
+          FreeAndNil(FCheckImages);
+          if HandleAllocated then
+            FCheckImages := CreateSystemImageSet(Self);
+        end;
+        UpdateHeaderRect();
+        ScaleNodeHeights(M, D);
       finally
         EndUpdate();
       end;//try..finally
