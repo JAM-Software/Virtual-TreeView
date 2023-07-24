@@ -32,8 +32,6 @@ uses
   Winapi.Windows,
   Winapi.ActiveX,
   System.Classes,
-  VirtualTrees,
-  VirtualTrees.Types,
   VirtualTrees.BaseTree;
 
 type
