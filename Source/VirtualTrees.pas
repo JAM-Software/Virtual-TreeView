@@ -2003,11 +2003,10 @@ begin
   Self.ExportType := pExportType;
 end;
 
-
 initialization
+  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
 
 finalization
+  TCustomStyleEngine.UnRegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
 
 end.
-
-

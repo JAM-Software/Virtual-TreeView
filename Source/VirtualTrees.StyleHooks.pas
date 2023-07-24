@@ -140,10 +140,9 @@ uses
   System.SysUtils,
   System.Math,
   System.Types,
-  VirtualTrees,
   VirtualTrees.Header,
   VirtualTrees.Types,
-  VirtualTrees.DrawTree;
+  VirtualTrees.BaseTree;
 
 function VTStyleServices(AControl: TControl = nil): TCustomStyleServices;
 begin
@@ -1085,13 +1084,5 @@ begin
   end;
 end;
 {$ifend}
-
-initialization
-  TCustomStyleEngine.RegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
-  TCustomStyleEngine.RegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
-
-finalization
-  TCustomStyleEngine.UnRegisterStyleHook(TVirtualStringTree, TVclStyleScrollBarsHook);
-  TCustomStyleEngine.UnRegisterStyleHook(TVirtualDrawTree, TVclStyleScrollBarsHook);
 
 end.
