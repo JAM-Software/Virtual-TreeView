@@ -74,7 +74,6 @@ uses
   WinApi.Messages,
   System.SysUtils,
   System.Math,
-  VirtualTrees,
   VirtualTrees.DragnDrop,
   VirtualTrees.Types,
   VirtualTrees.Utils,

@@ -37,7 +37,7 @@
 interface
 
 uses
-  System.Classes, Winapi.oleacc, VirtualTrees, VirtualTrees.BaseTree;
+  System.Classes, Winapi.oleacc, VirtualTrees.BaseTree;
 
 type
   IVTAccessibleProvider = interface
