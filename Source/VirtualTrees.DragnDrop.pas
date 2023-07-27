@@ -9,7 +9,6 @@ uses
   System.Types,
   Vcl.Graphics,
   Vcl.Controls,
-  VirtualTrees,
   VirtualTrees.Types,
   VirtualTrees.BaseTree;
 

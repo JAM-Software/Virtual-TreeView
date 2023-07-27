@@ -1669,10 +1669,8 @@ uses
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
   VirtualTrees.Utils,
-  VirtualTrees.Export,
   VirtualTrees.HeaderPopup,
-  VirtualTrees.DragnDrop,
-  VirtualTrees.EditLink;
+  VirtualTrees.DragnDrop;
 
 resourcestring
   // Localizable strings.

@@ -58,7 +58,6 @@ type
 implementation
 
 uses
-  VirtualTrees,
   VirtualTrees.ClipBoard,
   VirtualTrees.DragnDrop,
   VirtualTrees.BaseTree;

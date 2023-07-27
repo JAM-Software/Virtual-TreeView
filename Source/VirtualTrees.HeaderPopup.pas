@@ -68,7 +68,6 @@ interface
 uses
   System.Classes,
   Vcl.Menus,
-  VirtualTrees,
   VirtualTrees.Types,
   VirtualTrees.BaseTree;
 

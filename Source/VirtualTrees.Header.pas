@@ -452,7 +452,6 @@ uses
   System.Math,
   System.SysUtils,
   Vcl.Forms,
-  VirtualTrees,
   VirtualTrees.HeaderPopup,
   VirtualTrees.BaseTree,
   VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}

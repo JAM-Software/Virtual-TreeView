@@ -1091,7 +1091,6 @@ implementation
 
 uses
   System.TypInfo,
-  VirtualTrees,
   VirtualTrees.StyleHooks,
   VirtualTrees.BaseTree,
   VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}

@@ -7,7 +7,6 @@ uses
   System.Actions,
   Vcl.Controls,
   Vcl.ActnList,
-  VirtualTrees,
   VirtualTrees.Types,
   VirtualTrees.BaseTree;
 
