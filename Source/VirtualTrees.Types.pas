@@ -1373,7 +1373,7 @@ begin
 
       if HandleAllocated then
       begin
-        if IsWinVistaOrAbove and ((tsUseThemes in TreeStates) or ((toThemeAware in ToBeSet) and StyleServices.Enabled)) and (toUseExplorerTheme in (ToBeSet + ToBeCleared)) and
+        if ((tsUseThemes in TreeStates) or ((toThemeAware in ToBeSet) and StyleServices.Enabled)) and (toUseExplorerTheme in (ToBeSet + ToBeCleared)) and
           not VclStyleEnabled then
         begin
           if (toUseExplorerTheme in ToBeSet) then

@@ -621,6 +621,25 @@ const
   cDefaultText = 'Node';
   RTLFlag: array[Boolean] of Integer = (0, ETO_RTLREADING);
   AlignmentToDrawFlag: array[TAlignment] of Cardinal = (DT_LEFT, DT_RIGHT, DT_CENTER);
+  gInitialized: Integer = 0;           // >0 if global structures have been initialized; otherwise 0
+
+//// initialization of stuff global to the unit
+procedure InitializeGlobalStructures();
+begin
+  if (gInitialized > 0) or (AtomicIncrement(gInitialized) <> 1) then // Ensure threadsafe that this code is executed only once
+    exit;
+
+  // Clipboard format registration.
+  // Specialized string tree formats.
+  CF_HTML := RegisterVTClipboardFormat(CFSTR_HTML, TCustomVirtualStringTree, 80);
+  CF_VRTFNOOBJS := RegisterVTClipboardFormat(CFSTR_RTFNOOBJS, TCustomVirtualStringTree, 84);
+  CF_VRTF := RegisterVTClipboardFormat(CFSTR_RTF, TCustomVirtualStringTree, 85);
+  CF_CSV := RegisterVTClipboardFormat(CFSTR_CSV, TCustomVirtualStringTree, 90);
+  // Predefined clipboard formats. Just add them to the internal list.
+  RegisterVTClipboardFormat(CF_TEXT, TCustomVirtualStringTree, 100);
+  RegisterVTClipboardFormat(CF_UNICODETEXT, TCustomVirtualStringTree, 95);
+end;
+
 
 //----------------- TCustomVirtualString -------------------------------------------------------------------------------
 
