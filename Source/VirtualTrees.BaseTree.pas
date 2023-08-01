@@ -8983,9 +8983,6 @@ begin
     begin
       BeginUpdate();
       try
-        {$if CompilerVersion >= 31}
-        ScaleForPPi(Self.CurrentPPI);
-        {$ifend}
         TVTHeaderCracker(FHeader).ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
         SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
         Indent := MulDiv(Indent, M, D);
