@@ -406,6 +406,12 @@ type
     emSelected                       // export selected nodes only
     );
 
+  // Describes the type of text to return in the text and draw info retrival events.
+  TVSTTextType = (
+    ttNormal,      // normal label of the node, this is also the text which can be edited
+    ttStatic       // static (non-editable) text after the normal text
+  );
+
   // Options regarding strings (useful only for the string tree and descendants):
   TVTStringOption = (
     toSaveCaptions,                  // If set then the caption is automatically saved with the tree node, regardless of what is

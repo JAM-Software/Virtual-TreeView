@@ -176,12 +176,6 @@ type
   TVTAncestor = TVTAncestorVcl;
 {$ENDIF}
 
-  // Describes the type of text to return in the text and draw info retrival events.
-  TVSTTextType = (
-    ttNormal,      // normal label of the node, this is also the text which can be edited
-    ttStatic       // static (non-editable) text after the normal text
-  );
-
   // Describes the source to use when converting a string tree into a string for clipboard etc.
   TVSTTextSourceType = (
     tstAll,             // All nodes are rendered. Initialization is done on the fly.
@@ -290,7 +284,7 @@ type
     procedure DoNewText(Node: PVirtualNode; Column: TColumnIndex; const Text: string); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); override;
     procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex;
-      TextType: TVSTTextType); virtual;
+      TextType: TVSTTextType); override;
     function DoShortenString(Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const S: string; Width: TDimension;
       EllipsisWidth: TDimension = 0): string; virtual;
     procedure DoTextDrawing(var PaintInfo: TVTPaintInfo; const Text: string; CellRect: TRect; DrawFormat: Cardinal); virtual;

@@ -1057,6 +1057,7 @@ type
     function DoPaintBackground(Canvas: TCanvas; R: TRect): Boolean; virtual;
     procedure DoPaintDropMark(Canvas: TCanvas; Node: PVirtualNode; R: TRect); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); virtual;
+    procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex; TextType: TVSTTextType); virtual; abstract;
     procedure DoPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint); virtual;
     procedure DoRemoveFromSelection(Node: PVirtualNode); virtual;
     procedure DoReset(Node: PVirtualNode); virtual;
@@ -1696,7 +1697,6 @@ const
 
 
 type
-  TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree);
   TBaseVirtualTreeCracker = class(TBaseVirtualTree);
 
   // streaming support
@@ -2202,9 +2202,8 @@ begin
           else
           begin
             Canvas.Font := Tree.Font;
-            if Tree is TCustomVirtualStringTree then
-              with TCustomVirtualStringTreeCracker(Tree) do
-                DoPaintText(Node, Self.Canvas, Column, ttNormal);
+            with TBaseVirtualTreeCracker(Tree) do
+              DoPaintText(Node, Self.Canvas, Column, ttNormal);
           end;
 
           GetTextMetrics(Canvas.Handle, TM);
