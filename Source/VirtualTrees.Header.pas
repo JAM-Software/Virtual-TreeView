@@ -113,7 +113,7 @@ type
 
   protected
     FLeft : TDimension;
-    procedure ChangeScale(M, D : TDimension; isDpiChange : Boolean); virtual;
+    procedure ChangeScale(M, D : TDimension); virtual;
     procedure ComputeHeaderLayout(var PaintInfo : THeaderPaintInfo; DrawFormat : Cardinal; CalculateTextRect : Boolean = False);
     procedure DefineProperties(Filer : TFiler); override;
     procedure GetAbsoluteBounds(var Left, Right : TDimension);
@@ -363,7 +363,7 @@ type
     procedure AutoScale(); virtual;
     function CanSplitterResize(P : TPoint) : Boolean;
     function CanWriteColumns : Boolean; virtual;
-    procedure ChangeScale(M, D : TDimension; isDpiChange : Boolean); virtual;
+    procedure ChangeScale(M, D : TDimension); virtual;
     function DetermineSplitterIndex(P : TPoint) : Boolean; virtual;
     procedure DoAfterAutoFitColumn(Column : TColumnIndex); virtual;
     procedure DoAfterColumnWidthTracking(Column : TColumnIndex); virtual;
@@ -948,7 +948,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTHeader.ChangeScale(M, D : TDimension; isDpiChange : Boolean);
+procedure TVTHeader.ChangeScale(M, D : TDimension);
 var
   I : Integer;
 begin
@@ -960,9 +960,7 @@ begin
     Font.Height := MulDiv(Font.Height, M, D);
   //Scale the columns widths too
   for I := 0 to FColumns.Count - 1 do
-    TVirtualTreeColumnCracker(Self.FColumns[I]).ChangeScale(M, D, isDpiChange);
-  if not isDpiChange then
-    AutoScale();
+    TVirtualTreeColumnCracker(Self.FColumns[I]).ChangeScale(M, D);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3441,7 +3439,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVirtualTreeColumn.ChangeScale(M, D : TDimension; isDpiChange : Boolean);
+procedure TVirtualTreeColumn.ChangeScale(M, D : TDimension);
 begin
   FMinWidth := MulDiv(FMinWidth, M, D);
   FMaxWidth := MulDiv(FMaxWidth, M, D);
