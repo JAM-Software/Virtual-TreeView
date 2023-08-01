@@ -4322,7 +4322,7 @@ begin
   with FRoot^ do
   begin
     // Indication that this node is the root node.
-    PrevSibling := FRoot;
+    SetPrevSibling(FRoot);
     NextSibling := FRoot;
     SetParent(Pointer(Self));
     States := [vsInitialized, vsExpanded, vsHasChildren, vsVisible];
@@ -5042,7 +5042,7 @@ begin
           begin
             Child := MakeNewNode;
             Child.SetIndex(Index);
-            Child.PrevSibling := Node.LastChild;
+            Child.SetPrevSibling(Node.LastChild);
             if Assigned(Node.LastChild) then
               Node.LastChild.NextSibling := Child;
             Child.SetParent(Node);
@@ -13753,8 +13753,8 @@ begin
     case Mode of
       amInsertBefore:
         begin
-          Node.PrevSibling := Destination.PrevSibling;
-          Destination.PrevSibling := Node;
+          Node.SetPrevSibling(Destination.PrevSibling);
+          Destination.SetPrevSibling(Node);
           Node.NextSibling := Destination;
           Node.SetParent(Destination.Parent);
           Node.SetIndex(Destination.Index);
@@ -13775,12 +13775,12 @@ begin
         begin
           Node.NextSibling := Destination.NextSibling;
           Destination.NextSibling := Node;
-          Node.PrevSibling := Destination;
+          Node.SetPrevSibling(Destination);
           Node.SetParent(Destination.Parent);
           if Node.NextSibling = nil then
             Node.Parent.LastChild := Node
           else
-            Node.NextSibling.PrevSibling := Node;
+            Node.NextSibling.SetPrevSibling(Node);
           Node.SetIndex(Destination.Index);
 
           // reindex all following nodes
@@ -13796,7 +13796,7 @@ begin
           if Assigned(Destination.FirstChild) then
           begin
             // If there's a first child then there must also be a last child.
-            Destination.FirstChild.PrevSibling := Node;
+            Destination.FirstChild.SetPrevSibling(Node);
             Node.NextSibling := Destination.FirstChild;
             Destination.FirstChild := Node;
           end
@@ -13807,7 +13807,7 @@ begin
             Destination.LastChild := Node;
             Node.NextSibling := nil;
           end;
-          Node.PrevSibling := nil;
+          Node.SetPrevSibling(nil);
           Node.SetParent(Destination);
           Node.SetIndex(0);
           // reindex all following nodes
@@ -13824,7 +13824,7 @@ begin
           begin
             // If there's a last child then there must also be a first child.
             Destination.LastChild.NextSibling := Node;
-            Node.PrevSibling := Destination.LastChild;
+            Node.SetPrevSibling(Destination.LastChild);
             Destination.LastChild := Node;
           end
           else
@@ -13832,7 +13832,7 @@ begin
             // first child node at this location
             Destination.FirstChild := Node;
             Destination.LastChild := Node;
-            Node.PrevSibling := nil;
+            Node.SetPrevSibling(nil);
           end;
           Node.NextSibling := nil;
           Node.SetParent(Destination);
@@ -13945,7 +13945,7 @@ begin
 
     if Assigned(Node.NextSibling) then
     begin
-      Node.NextSibling.PrevSibling := Node.PrevSibling;
+      Node.NextSibling.SetPrevSibling(Node.PrevSibling);
       // Reindex all following nodes.
       if Reindex then
       begin
@@ -15110,7 +15110,7 @@ begin
           begin
             Run := MakeNewNode;
 
-            Run.PrevSibling := Node.LastChild;
+            Run.SetPrevSibling(Node.LastChild);
             if Assigned(Run.PrevSibling) then
               Run.SetIndex(Run.PrevSibling.Index + 1);
             if Assigned(Node.LastChild) then
@@ -22461,14 +22461,14 @@ begin
         end;
         // Consolidate the child list finally.
         Run := Node.FirstChild;
-        Run.PrevSibling := nil;
+        Run.SetPrevSibling(nil);
         Index := 0;
         repeat
           Run.SetIndex(Index);
           System.Inc(Index);
           if Run.NextSibling = nil then
             Break;
-          Run.NextSibling.PrevSibling := Run;
+          Run.NextSibling.SetPrevSibling(Run);
           Run := Run.NextSibling;
         until False;
         Node.LastChild := Run;

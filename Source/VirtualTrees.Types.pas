@@ -902,16 +902,18 @@ type
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
     //       data) then put them before field Parent.
   private
-    fParent:  PVirtualNode; // link to the node's last child...
+    fParent:  PVirtualNode;     // link to the node's last child...
+    fPrevSibling: PVirtualNode; // link to the node's previous sibling or nil if it is the first node
   public                  // reference to the node's parent (for the root this contains the treeview)
-    PrevSibling,             // link to the node's previous sibling or nil if it is the first node
     NextSibling,             // link to the node's next sibling or nil if it is the last node
     FirstChild,              // link to the node's first child...
     LastChild: PVirtualNode; // link to the node's last child...
     procedure SetParent(const pParent: PVirtualNode); inline; //internal method, do not call directly but use Parent[Node] := x on tree control.
+    procedure SetPrevSibling(const pPrevSibling: PVirtualNode); inline; //internal method, do not call directly
     procedure SetIndex(const pIndex: Cardinal); inline;       //internal method, do not call directly.
     property Index: Cardinal read fIndex;
     property Parent: PVirtualNode read fParent;
+    property PrevSibling: PVirtualNode read fPrevSibling;
   private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
   public
@@ -1186,6 +1188,11 @@ end;
 procedure TVirtualNode.SetParent(const pParent: PVirtualNode);
 begin
   fParent := pParent;
+end;
+
+procedure TVirtualNode.SetPrevSibling(const pPrevSibling: PVirtualNode);
+begin
+  fPrevSibling := pPrevSibling;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
