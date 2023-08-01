@@ -18567,22 +18567,11 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
-{$if CompilerVersion < 27}
-const
-  DefaultScalingFlags = [sfLeft, sfTop, sfWidth, sfHeight, sfFont]; // Was introduced with XE6: http://docwiki.embarcadero.com/Libraries/XE6/en/Vcl.Controls.TControl.DefaultScalingFlags
-{$ifend}
-var
-  Flags: TScalingFlags;
 begin
   if (toAutoChangeScale in FOptions.AutoOptions) then
   begin
     if (M <> D) then
     begin
-      // It is important to evaluate the TScalingFlags before calling inherited, becuase they are differetn afterwards!
-      if csLoading in ComponentState then
-        Flags := ScalingFlags
-      else
-        Flags := DefaultScalingFlags; // Important for #677
       FHeader.ChangeScale(M, D, {$if CompilerVersion >= 31}isDpiChange{$ELSE} M <> D{$ifend});
       SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
       Indent := MulDiv(Indent, M, D);
