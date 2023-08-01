@@ -9001,9 +9001,7 @@ begin
   end;// if M<>D
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
   if (M <> D) then
-    PrepareBitmaps(True, False) // See issue #991
-  else
-    AutoScale(); // It is important to do this call after calling inherited, so that the Font has been updated.
+    PrepareBitmaps(True, False); // See issue #991
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
