@@ -8977,31 +8977,28 @@ end;
 
 procedure TBaseVirtualTree.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
 begin
-  if (toAutoChangeScale in FOptions.AutoOptions) then
+  if (M <> D) then
   begin
-    if (M <> D) then
-    begin
-      BeginUpdate();
-      try
-        TVTHeaderCracker(FHeader).ChangeScale(M, D);
-        SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
-        Indent := MulDiv(Indent, M, D);
-        FTextMargin := MulDiv(FTextMargin, M, D);
-        FMargin := MulDiv(FMargin, M, D);
-        FImagesMargin := MulDiv(FImagesMargin, M, D);
-        // Scale utility images, #796
-        if FCheckImageKind = ckSystemDefault then begin
-          FreeAndNil(FCheckImages);
-          if HandleAllocated then
-            FCheckImages := CreateSystemImageSet(Self);
-        end;
-        UpdateHeaderRect();
-        ScaleNodeHeights(M, D);
-      finally
-        EndUpdate();
-      end;//try..finally
-    end;// if M<>D
-  end;//if toAutoChangeScale
+    BeginUpdate();
+    try
+      TVTHeaderCracker(FHeader).ChangeScale(M, D);
+      SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
+      Indent := MulDiv(Indent, M, D);
+      FTextMargin := MulDiv(FTextMargin, M, D);
+      FMargin := MulDiv(FMargin, M, D);
+      FImagesMargin := MulDiv(FImagesMargin, M, D);
+      // Scale utility images, #796
+      if FCheckImageKind = ckSystemDefault then begin
+        FreeAndNil(FCheckImages);
+        if HandleAllocated then
+          FCheckImages := CreateSystemImageSet(Self);
+      end;
+      UpdateHeaderRect();
+      ScaleNodeHeights(M, D);
+    finally
+      EndUpdate();
+    end;//try..finally
+  end;// if M<>D
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
   if (M <> D) then
     PrepareBitmaps(True, False) // See issue #991
