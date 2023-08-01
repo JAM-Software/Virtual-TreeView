@@ -42,10 +42,7 @@ uses
 {$ENDIF}
   ;
 
-var
-  IsWinVistaOrAbove: Boolean;
-
-  {$MinEnumSize 1, make enumerations as small as possible}
+{$MinEnumSize 1, make enumerations as small as possible}
 
 type
   {$IFDEF VT_FMX}
@@ -2105,7 +2102,7 @@ begin
           Font.Color := clInfoText;
           Pen.Color := clBlack;
           Brush.Color := clInfoBk;
-          if IsWinVistaOrAbove and StyleServices(Tree).Enabled and ((toThemeAware in Tree.TreeOptions.PaintOptions) or
+          if StyleServices(Tree).Enabled and ((toThemeAware in Tree.TreeOptions.PaintOptions) or
              (toUseExplorerTheme in Tree.TreeOptions.PaintOptions)) then
           begin
             if toUseExplorerTheme in Tree.TreeOptions.PaintOptions then // ToolTip style
@@ -2477,8 +2474,6 @@ begin
 
   // This watcher is used whenever a global structure could be modified by more than one thread.
   gWatcher := TCriticalSection.Create();
-
-  IsWinVistaOrAbove := (Win32MajorVersion >= 6);
 
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
   NeedToUnitialize := not IsLibrary and Succeeded(OleInitialize(nil));
@@ -4539,7 +4534,7 @@ var
     begin
       SetSize(Size.cx, Size.cy);
 
-      if IsWinVistaOrAbove and (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.PaintOptions) or VclStyleEnabled then
+      if (tsUseThemes in FStates) and (toUseExplorerTheme in FOptions.PaintOptions) or VclStyleEnabled then
       begin
         if (FHeader.MainColumn > NoColumn) then
           Brush.Color := FHeader.Columns[FHeader.MainColumn].GetEffectiveColor
@@ -9300,7 +9295,7 @@ begin
   if ((StyleServices.Enabled ) and (toThemeAware in TreeOptions.PaintOptions)  ) then
   begin
     DoStateChange([tsUseThemes]);
-    if (toUseExplorerTheme in FOptions.PaintOptions) and IsWinVistaOrAbove then
+    if (toUseExplorerTheme in FOptions.PaintOptions) then
     begin
       DoStateChange([tsUseExplorerTheme]);
       SetWindowTheme('explorer');
@@ -11688,14 +11683,9 @@ procedure TBaseVirtualTree.DragAndDrop(AllowedEffects: Dword; const DataObject: 
 var
   lDragEffect: DWord; // required for type compatibility with SHDoDragDrop
 begin
-  if IsWinVistaOrAbove then
-  begin
-    lDragEffect := DWord(DragEffect);
-    SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
-    DragEffect := Integer(lDragEffect);
-  end
-  else
-  Winapi.ActiveX.DoDragDrop(DataObject, DragManager as IDropSource, AllowedEffects, DragEffect);
+  lDragEffect := DWord(DragEffect);
+  SHDoDragDrop(Self.Handle, DataObject, nil, AllowedEffects, lDragEffect); // supports drag hints on Windows Vista and later
+  DragEffect := Integer(lDragEffect);
  end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14986,7 +14976,7 @@ begin
       if (poDrawFocusRect in PaintOptions) and
          (Focused or (toPopupMode in FOptions.PaintOptions)) and (FFocusedNode = Node) and
          ( (Column = FFocusedColumn) or
-             ((not (toExtendedFocus in FOptions.SelectionOptions) or IsWinVistaOrAbove) and
+             (not (toExtendedFocus in FOptions.SelectionOptions) and
              (toFullRowSelect in FOptions.SelectionOptions) and
              (tsUseExplorerTheme in FStates) ) ) then
       begin
@@ -15007,7 +14997,7 @@ begin
         if tsUseExplorerTheme in FStates then
           InflateRect(FocusRect, -1, -1);
 
-        if (tsUseExplorerTheme in FStates) and IsWinVistaOrAbove then
+        if (tsUseExplorerTheme in FStates) then
         begin
           //Draw focused unselected style like Windows 7 Explorer
           if not (vsSelected in Node.States) then
