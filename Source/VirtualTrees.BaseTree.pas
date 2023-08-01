@@ -16436,9 +16436,12 @@ begin
     lTextHeight := Canvas.TextHeight('Tg') + 2;
     // By default, we only ensure that DefaultNodeHeight is large enough.
     // If the form's dpi has changed, we scale up and down the DefaultNodeHeight, See issue #677.
-    if (lTextHeight > Self.DefaultNodeHeight) then
+    if (lTextHeight > Self.DefaultNodeHeight) then begin
+      ScaleNodeHeights(lTextHeight, DefaultNodeHeight);
       Self.DefaultNodeHeight := lTextHeight;
-  end;
+      TVTHeaderCracker(FHeader).ChangeScale(lTextHeight, DefaultNodeHeight);
+    end;// if
+  end;// if HandelAllocated
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
