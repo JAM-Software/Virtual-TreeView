@@ -910,6 +910,7 @@ type
     function IsStored_Indent: Boolean;
     function IsStored_Margin: Boolean;
     function IsStored_TextMargin: Boolean;
+    procedure SetOnCompareNodes(const Value: TVTCompareEvent);
   protected
     FFontChanged: Boolean;                       // flag for keeping informed about font changes in the off screen buffer   // [IPK] - private to protected
     procedure AutoScale(); virtual;
@@ -1304,7 +1305,7 @@ type
     property OnColumnWidthDblClickResize: TVTColumnWidthDblClickResizeEvent read FOnColumnWidthDblClickResize
       write FOnColumnWidthDblClickResize;
     property OnColumnWidthTracking: TVTColumnWidthTrackingEvent read FOnColumnWidthTracking write FOnColumnWidthTracking;
-    property OnCompareNodes: TVTCompareEvent read FOnCompareNodes write FOnCompareNodes;
+    property OnCompareNodes: TVTCompareEvent read FOnCompareNodes write SetOnCompareNodes;
     property OnCreateDataObject: TVTCreateDataObjectEvent read FOnCreateDataObject write FOnCreateDataObject;
     property OnCreateDragManager: TVTCreateDragManagerEvent read FOnCreateDragManager write FOnCreateDragManager;
     property OnCreateEditor: TVTCreateEditorEvent read FOnCreateEditor write FOnCreateEditor;
@@ -5655,6 +5656,12 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.SetOnCompareNodes(const Value: TVTCompareEvent);
+begin
+  FOnCompareNodes := Value;
+  Self.TreeOptions.AutoOptions := TreeOptions.AutoOptions + [TVTAutoOption.toAutoSort]; // See issue #1146
+end;
 
 procedure TBaseVirtualTree.SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
 begin
@@ -22509,8 +22516,6 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
 begin
   if RootNode.TotalCount <= 2 then
     Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
-  if not Assigned(OnCompareNodes) then
-    exit;// no sorting will take place without an event handler. Issue #1146
 
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
