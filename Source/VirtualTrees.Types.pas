@@ -641,14 +641,14 @@ type
     dtVCL
   );
 
-  // Determines the look of a tree's lines.
+  // Determines the look of a tree's lines that show the hierarchy
   TVTLineStyle = (
     lsCustomStyle,           // application provides a line pattern
     lsDotted,                // usual dotted lines (default)
     lsSolid                  // simple solid lines
   );
 
-  // TVTLineType is used during painting a tree
+  // TVTLineType is used during painting a tree for its tree lines that show the hierarchy
   TVTLineType = (
     ltNone,          // no line at all
     ltBottomRight,   // a line from bottom to the center and from there to the right
