@@ -5659,8 +5659,9 @@ end;
 
 procedure TBaseVirtualTree.SetOnCompareNodes(const Value: TVTCompareEvent);
 begin
+  if Assigned(Value) and not Assigned(FOnCompareNodes) then
+    Self.TreeOptions.AutoOptions := TreeOptions.AutoOptions + [TVTAutoOption.toAutoSort]; // Turn on toAutoSort as soon as there is a compare function. See issue #1146
   FOnCompareNodes := Value;
-  Self.TreeOptions.AutoOptions := TreeOptions.AutoOptions + [TVTAutoOption.toAutoSort]; // See issue #1146
 end;
 
 procedure TBaseVirtualTree.SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
