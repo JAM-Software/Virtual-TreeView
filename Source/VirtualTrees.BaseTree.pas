@@ -748,6 +748,7 @@ type
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
+    function CreateSystemImageSet(): TImageList;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
     function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
@@ -1870,7 +1871,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function CreateSystemImageSet(pControl: TWinControl): TImageList;
+function TBaseVirtualTree.CreateSystemImageSet(): TImageList;
 
 // Creates a system check image set.
 // Note: the DarkCheckImages and FlatImages image lists must already be filled, as some images from them are copied here.
@@ -1889,7 +1890,7 @@ var
   // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
   function StyleServices: TCustomStyleServices;
   begin
-    Result := VTStyleServices(pControl);
+    Result := VTStyleServices(Self);
   end;
 
   procedure AddSystemImage(IL: TImageList; Index: Integer);
@@ -1959,15 +1960,17 @@ begin
     if StyleServices.Enabled then
       if StyleServices.IsSystemStyle then
       begin
-        if Assigned(pControl) then
-          Theme := OpenThemeData(pControl.Handle, 'BUTTON')
+        {$if CompilerVersion >= 33}
+        if TOSVersion.Check(10) and (TOSVersion.Build >= 15063)  then
+          Theme := OpenThemeDataForDPI(Handle, 'BUTTON', CurrentPPI)
         else
-          Theme := OpenThemeData(Application.Handle, 'BUTTON');
+        {$ifend}
+          Theme := OpenThemeData(Self.Handle, 'BUTTON');
         Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal);
         Res := GetThemePartSize(Theme, BM.Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize) = S_OK;
       end
       else
-        Res := StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize {$IF CompilerVersion >= 34}, pControl.CurrentPPI{$IFEND});
+        Res := StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize {$IF CompilerVersion >= 34}, Self.CurrentPPI{$IFEND});
     if not Res then begin
       lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
       if lSize.cx = 0 then begin // error? (Should happen rarely only)
@@ -5134,7 +5137,7 @@ begin
     if Value = ckCustom then
       FCheckImages := FCustomCheckImages
     else if HandleAllocated then
-      FCheckImages := CreateSystemImageSet(Self);
+      FCheckImages := CreateSystemImageSet();
     if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
       InvalidateRect(nil, False);
   end;
@@ -8997,13 +9000,6 @@ begin
       FTextMargin := MulDiv(FTextMargin, M, D);
       FMargin := MulDiv(FMargin, M, D);
       FImagesMargin := MulDiv(FImagesMargin, M, D);
-      // Scale utility images, #796
-      if FCheckImageKind = ckSystemDefault then begin
-        FreeAndNil(FCheckImages);
-        if HandleAllocated then
-          FCheckImages := CreateSystemImageSet(Self);
-      end;
-      UpdateHeaderRect();
       ScaleNodeHeights(M, D);
     finally
       EndUpdate();
@@ -9011,7 +9007,16 @@ begin
   end;// if M<>D
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
   if (M <> D) then
+  begin
+    // Scale utility images, #796
+    if FCheckImageKind = ckSystemDefault then begin
+      FreeAndNil(FCheckImages);
+      if HandleAllocated then
+        FCheckImages := CreateSystemImageSet();
+    end;
+    UpdateHeaderRect();
     PrepareBitmaps(True, False); // See issue #991
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -9281,7 +9286,7 @@ begin
   DoStateChange([], [tsWindowCreating]);
 
   if not Assigned(FCheckImages) then
-    FCheckImages := CreateSystemImageSet(Self);
+    FCheckImages := CreateSystemImageSet();
 
   if ((StyleServices.Enabled ) and (toThemeAware in TreeOptions.PaintOptions)  ) then
   begin
