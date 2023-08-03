@@ -8994,7 +8994,6 @@ begin
   begin
     BeginUpdate();
     try
-      TVTHeaderCracker(FHeader).ChangeScale(M, D);
       SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
       Indent := MulDiv(Indent, M, D);
       FTextMargin := MulDiv(FTextMargin, M, D);
@@ -9008,6 +9007,8 @@ begin
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
   if (M <> D) then
   begin
+    // Scale header
+    TVTHeaderCracker(FHeader).ChangeScale(M, D);
     // Scale utility images, #796
     if FCheckImageKind = ckSystemDefault then begin
       FreeAndNil(FCheckImages);
