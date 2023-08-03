@@ -16466,13 +16466,12 @@ begin
   if HandleAllocated and (toAutoChangeScale in TreeOptions.AutoOptions) then
   begin
     Canvas.Font.Assign(Self.Font);
-    lTextHeight := Canvas.TextHeight('Tg') + 2;
+    lTextHeight := Canvas.TextHeight('Tg') + ScaledPixels(2);
     // By default, we only ensure that DefaultNodeHeight is large enough.
     // If the form's dpi has changed, we scale up and down the DefaultNodeHeight, See issue #677.
     if (lTextHeight > Self.DefaultNodeHeight) then begin
       ScaleNodeHeights(lTextHeight, DefaultNodeHeight);
       Self.DefaultNodeHeight := lTextHeight;
-      TVTHeaderCracker(FHeader).ChangeScale(lTextHeight, DefaultNodeHeight);
     end;// if
   end;// if HandelAllocated
 end;
