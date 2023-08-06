@@ -8994,12 +8994,12 @@ begin
   begin
     BeginUpdate();
     try
+      ScaleNodeHeights(M, D);
       SetDefaultNodeHeight(MulDiv(FDefaultNodeHeight, M, D));
       Indent := MulDiv(Indent, M, D);
       FTextMargin := MulDiv(FTextMargin, M, D);
       FMargin := MulDiv(FMargin, M, D);
       FImagesMargin := MulDiv(FImagesMargin, M, D);
-      ScaleNodeHeights(M, D);
     finally
       EndUpdate();
     end;//try..finally
@@ -9030,7 +9030,7 @@ begin
   // Scale also node heights
   BeginUpdate();
   try
-    Run := GetFirst();
+    Run := GetFirstNoInit();
     while Assigned(Run) do
     begin
       if vsInitialized in Run.States then
