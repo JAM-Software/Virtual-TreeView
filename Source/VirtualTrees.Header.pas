@@ -952,11 +952,11 @@ begin
   FMinHeight := MulDiv(FMinHeight, M, D);
   FMaxHeight := MulDiv(FMaxHeight, M, D);
   Self.Height := MulDiv(FHeight, M, D);
-  if not ParentFont then
-    Font.Height := MulDiv(Font.Height, M, D);
   //Scale the columns widths too
   for I := 0 to FColumns.Count - 1 do
     TVirtualTreeColumnCracker(Self.FColumns[I]).ChangeScale(M, D);
+  if not ParentFont then
+    Font.Height := MulDiv(Font.Height, M, D);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
