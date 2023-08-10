@@ -3,18 +3,18 @@
 interface
 
 uses
+  WinApi.Windows,
+  WinApi.Messages,
   System.Classes,
   System.Types,
   System.Generics.Collections,
-  WinApi.Windows,
-  WinApi.Messages,
   Vcl.Graphics,
   Vcl.Menus,
   Vcl.ImgList,
   Vcl.Controls,
   Vcl.Themes,
   Vcl.GraphUtil,
-  System.UITypes,
+  System.UITypes, // some types moved from Vcl.* to System.UITypes
   VirtualTrees.StyleHooks,
   VirtualTrees.Utils,
   VirtualTrees.Types,

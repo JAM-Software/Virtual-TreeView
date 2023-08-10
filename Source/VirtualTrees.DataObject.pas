@@ -5,8 +5,8 @@ interface
 uses
   WinApi.ActiveX,
   WinApi.Windows,
-  VirtualTrees.Types,
-  Vcl.Controls;
+  Vcl.Controls,
+  VirtualTrees.Types;
 
 type
   IDataObject = WinApi.ActiveX.IDataObject;

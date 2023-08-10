@@ -108,7 +108,8 @@ type
 implementation
 
 uses
-  Winapi.Windows, System.Types,
+  Winapi.Windows,
+  System.Types,
   VirtualTrees.Header;
 
 resourcestring

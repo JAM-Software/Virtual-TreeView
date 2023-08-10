@@ -6,15 +6,15 @@ uses
   WinApi.ActiveX,
   Winapi.Windows,
   Winapi.Messages,
+  System.Types,
+  System.Classes,
+  System.SysUtils,
   Vcl.Controls,
   Vcl.GraphUtil,
   Vcl.Themes,
   Vcl.Graphics,
   Vcl.ImgList,
-  System.Types,
-  System.Classes,
-  System.SysUtils,
-  System.UITypes;
+  System.UITypes; // some types moved from Vcl.* to System.UITypes
 
 {$MINENUMSIZE 1, make enumerations as small as possible}
 
