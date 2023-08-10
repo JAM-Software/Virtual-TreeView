@@ -75,13 +75,10 @@ interface
 {$HPPEMIT '#pragma link "VirtualTrees.Accessibility"'}
 
 uses
-  Winapi.Windows, Winapi.oleacc, Winapi.Messages, System.SysUtils, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
-  Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
-  Winapi.ShlObj, System.UITypes, System.Generics.Collections,
+  Winapi.Windows, Winapi.Messages, Winapi.ActiveX,
+  System.Classes, System.SysUtils,
+  Vcl.Graphics, Vcl.Controls, Vcl.ImgList, Vcl.Menus, Vcl.Themes,
   VirtualTrees.Types,
-  VirtualTrees.Colors,
-  VirtualTrees.DragImage,
   VirtualTrees.Header,
   VirtualTrees.BaseTree,
 {$IFDEF VT_FMX}
@@ -593,26 +590,12 @@ type
 
 implementation
 uses
-  Vcl.Consts,
-  System.Math,
-  Vcl.AxCtrls,                 // TOLEStream
-  Winapi.MMSystem,             // for animation timer (does not include further resources)
   System.TypInfo,              // for migration stuff
-  System.SyncObjs,
-  Vcl.ActnList,
-  Vcl.StdActns,                // for standard action support
   System.StrUtils,
-  Vcl.GraphUtil,               // accessibility helper class
-  VirtualTrees.AccessibilityFactory,
   VirtualTrees.StyleHooks,
-  VirtualTrees.Classes,
-  VirtualTrees.DataObject,
-  VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
   VirtualTrees.Utils,
   VirtualTrees.Export,
-  VirtualTrees.HeaderPopup,
-  VirtualTrees.DragnDrop,
   VirtualTrees.EditLink,
   VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}
   ;
