@@ -27,10 +27,12 @@ interface
 {$HPPEMIT '#pragma link "VirtualTrees.Accessibility"'}
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
-  Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
-  Winapi.ShlObj, System.UITypes, System.Generics.Collections,
+  Winapi.Windows, Winapi.Messages, Winapi.ActiveX, Winapi.CommCtrl,
+  Winapi.UxTheme, Winapi.ShlObj,
+  System.SysUtils, System.Classes, System.Types,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.ImgList, Vcl.StdCtrls,
+  Vcl.Menus, Vcl.Printers, Vcl.Themes,
+  System.UITypes, // some types moved from Vcl.* to System.UITypes
   VirtualTrees.Types,
   VirtualTrees.Colors,
   VirtualTrees.DragImage,
@@ -1654,23 +1656,18 @@ implementation
 {$R VirtualTrees.res}
 
 uses
-  Vcl.Consts,
-  System.Math,
-  Vcl.AxCtrls,                 // TOLEStream
   Winapi.MMSystem,             // for animation timer (does not include further resources)
-  System.TypInfo,              // for migration stuff
+  System.Math,
   System.SyncObjs,
-  Vcl.ActnList,
-  Vcl.StdActns,                // for standard action support
   System.StrUtils,
+  Vcl.Consts,
+  Vcl.AxCtrls,                 // TOLEStream
+  Vcl.StdActns,                // for standard action support
   Vcl.GraphUtil,               // accessibility helper class
   VirtualTrees.StyleHooks,
-  VirtualTrees.Classes,
-  VirtualTrees.DataObject,
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
   VirtualTrees.Utils,
-  VirtualTrees.HeaderPopup,
   VirtualTrees.DragnDrop;
 
 resourcestring
