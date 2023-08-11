@@ -170,6 +170,9 @@ procedure TVclStyleScrollBarsHook.CalcScrollBarsRect();
     BarInfo: TScrollBarInfo;
     Ret: BOOL;
   begin
+    if not Assigned(VertScrollWnd) then // Might happen, when FInitingScrollBars is set, so InitScrollBars did not yet initialize the members
+      Exit;
+
     BarInfo.cbSize := SizeOf(BarInfo);
     Ret := GetScrollBarInfo(Handle, Integer(OBJID_VSCROLL), BarInfo);
     VertScrollWnd.Visible := (seBorder in Control.StyleElements) and Ret and (not (STATE_SYSTEM_INVISIBLE and BarInfo.rgstate[0] <> 0));
@@ -181,6 +184,9 @@ procedure TVclStyleScrollBarsHook.CalcScrollBarsRect();
     BarInfo: TScrollBarInfo;
     Ret: BOOL;
   begin
+    if not Assigned(HorzScrollWnd) then // Might happen, when FInitingScrollBars is set, so InitScrollBars did not yet initialize the members
+      Exit;
+
     BarInfo.cbSize := SizeOf(BarInfo);
     Ret := GetScrollBarInfo(Handle, Integer(OBJID_HSCROLL), BarInfo);
     HorzScrollWnd.Visible := (seBorder in Control.StyleElements) and Ret and (not (STATE_SYSTEM_INVISIBLE and BarInfo.rgstate[0] <> 0));
