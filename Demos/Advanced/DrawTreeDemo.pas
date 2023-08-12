@@ -53,6 +53,7 @@ type
       var InitialStates: TVirtualNodeInitStates);
     procedure TrackBar1Change(Sender: TObject);
     procedure VDT1StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure FormDestroy(Sender: TObject);
   private
     FThumbSize: Integer;
     FExtensionsInitialized: Boolean;
@@ -187,6 +188,11 @@ begin
   SystemImages.ShareImages := True;
 
   FThumbSize := 200;
+end;
+
+procedure TDrawTreeForm.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FExtensionList);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -334,58 +340,60 @@ begin
   end
   else
   begin
-    Picture := TPicture.Create;
     Data.Display := ExtractFileName(ExcludeTrailingBackslash(Data.FullPath));
     if (Data.Attributes and SFGAO_FOLDER) = 0 then
-    try
+    begin
+      Picture := TPicture.Create;
       try
-        Data.Image := TBitmap.Create;
-        Picture.LoadFromFile(Data.FullPath);
-        if not (Picture.Graphic is TBitmap) then
-        begin
-          // Some extra steps needed to keep non TBitmap descentants alive when
-          // scaling. This is needed because when accessing Picture.Bitmap all
-          // non-TBitmap content will simply be erased (definitly the wrong
-          // action, but we can't do anything to prevent this). Hence we
-          // must explicitly draw the graphic to a bitmap.
-          with Data.Image do
+        try
+          Data.Image := TBitmap.Create;
+          Picture.LoadFromFile(Data.FullPath);
+          if not (Picture.Graphic is TBitmap) then
           begin
-            Width := Picture.Width;
-            Height := Picture.Height;
-            Canvas.Draw(0, 0, Picture.Graphic);
+            // Some extra steps needed to keep non TBitmap descentants alive when
+            // scaling. This is needed because when accessing Picture.Bitmap all
+            // non-TBitmap content will simply be erased (definitly the wrong
+            // action, but we can't do anything to prevent this). Hence we
+            // must explicitly draw the graphic to a bitmap.
+            with Data.Image do
+            begin
+              Width := Picture.Width;
+              Height := Picture.Height;
+              Canvas.Draw(0, 0, Picture.Graphic);
+            end;
+            Picture.Bitmap.Assign(Data.Image);
           end;
-          Picture.Bitmap.Assign(Data.Image);
-        end;
-        RescaleImage(Picture.Bitmap, Data.Image);
+          RescaleImage(Picture.Bitmap, Data.Image);
 
-        // Collect some additional image properties.
-        Data.Properties := Data.Properties + Format('%d x %d pixels', [Picture.Width, Picture.Height]);
-        case Picture.Bitmap.PixelFormat of
-          pf1bit:
-            Data.Properties := Data.Properties + ', 2 colors';
-          pf4bit:
-            Data.Properties := Data.Properties + ', 16 colors';
-          pf8bit:
-            Data.Properties := Data.Properties + ', 256 colors';
-          pf15bit:
-            Data.Properties := Data.Properties + ', 32K colors';
-          pf16bit:
-            Data.Properties := Data.Properties + ', 64K colors';
-          pf24bit:
-            Data.Properties := Data.Properties + ', 16M colors';
-          pf32bit:
-            Data.Properties := Data.Properties + ', 16M+ colors';
+          // Collect some additional image properties.
+          Data.Properties := Data.Properties + Format('%d x %d pixels', [Picture.Width, Picture.Height]);
+          case Picture.Bitmap.PixelFormat of
+            pf1bit:
+              Data.Properties := Data.Properties + ', 2 colors';
+            pf4bit:
+              Data.Properties := Data.Properties + ', 16 colors';
+            pf8bit:
+              Data.Properties := Data.Properties + ', 256 colors';
+            pf15bit:
+              Data.Properties := Data.Properties + ', 32K colors';
+            pf16bit:
+              Data.Properties := Data.Properties + ', 64K colors';
+            pf24bit:
+              Data.Properties := Data.Properties + ', 16M colors';
+            pf32bit:
+              Data.Properties := Data.Properties + ', 16M+ colors';
+          end;
+          if Cardinal(Data.Image.Height) + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
+              Sender.NodeHeight[Node] := Data.Image.Height + 4;
+        except
+          Data.Image.Free;
+          Data.Image := nil;
         end;
-        if Data.Image.Height + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
-            Sender.NodeHeight[Node] := Data.Image.Height + 4;
-      except
-        Data.Image.Free;
-        Data.Image := nil;
-      end;
-    finally
-      Picture.Free;
-    end;
-  end;
+      finally
+        Picture.Free;
+      end;// try..finally
+    end;// if
+  end;// else
   Data.Attributes := ReadAttributes(Data.FullPath);
   if ((Data.Attributes and SFGAO_HASSUBFOLDER) <> 0) or
     (((Data.Attributes and SFGAO_FOLDER) <> 0) and HasChildren(Data.FullPath)) then
