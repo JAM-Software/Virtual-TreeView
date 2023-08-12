@@ -543,10 +543,10 @@ begin
             GetOpenAndClosedIcons(ChildData.FullPath, ChildData.OpenIndex, ChildData.CloseIndex);
 
             Sender.ValidateNode(Node, False);
+            Inc(ChildCount);
           end;
         end;
       until FindNext(SR) <> 0;
-      ChildCount := Sender.ChildCount[Node];
 
       // finally sort node
       Sender.Sort(Node, 0, TVirtualStringTree(Sender).Header.SortDirection, False);
