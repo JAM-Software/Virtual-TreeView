@@ -26,7 +26,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VirtualTrees, StdCtrls, {$ifdef GraphicEx} GraphicEx, {$else} JPEG, {$endif}
-  ImgList, ComCtrls, UITypes;
+  ImgList, ComCtrls, UITypes, System.ImageList;
 
 type
   TDrawTreeForm = class(TForm)
@@ -543,10 +543,10 @@ begin
             GetOpenAndClosedIcons(ChildData.FullPath, ChildData.OpenIndex, ChildData.CloseIndex);
 
             Sender.ValidateNode(Node, False);
+            Inc(ChildCount);
           end;
         end;
       until FindNext(SR) <> 0;
-      ChildCount := Sender.ChildCount[Node];
 
       // finally sort node
       if ChildCount > 0 then
