@@ -19,14 +19,14 @@ procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSource
 implementation
 
 uses
-  Vcl.Graphics,
-  Vcl.Controls,
-  Vcl.Forms,
   System.Classes,
   System.SysUtils,
   System.StrUtils,
   System.Generics.Collections,
   System.UITypes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
   VirtualTrees.Types,
   VirtualTrees.ClipBoard,
   VirtualTrees.Header,
