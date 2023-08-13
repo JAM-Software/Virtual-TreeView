@@ -639,8 +639,6 @@ begin
       finally
         Free;
       end;
-    //Get the maximum of the scaled original value and the minimum needed header height.
-    lMaxHeight := Max(lMaxHeight, FHeight);
     //Set the calculated size
     Self.SetHeight(lMaxHeight);
   end;
