@@ -22526,8 +22526,6 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
 begin
   if RootNode.TotalCount <= 2 then
     Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
-  if not Assigned(OnCompareNodes) then
-    exit;// no sorting will take place without an event handler. Issue #1146
 
   if not Assigned(FRoot.FirstChild) then
     Exit; // Sorting should not initialize the root nodes
