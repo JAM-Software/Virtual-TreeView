@@ -904,18 +904,23 @@ type
   private
     fParent:  PVirtualNode;     // reference to the node's parent (for the root this contains the treeview)
     fPrevSibling: PVirtualNode; // link to the node's previous sibling or nil if it is the first node
-    fNextSibling: PVirtualNode;  // link to the node's next sibling or nil if it is the last node
+    fNextSibling: PVirtualNode; // link to the node's next sibling or nil if it is the last node
+  public // still public as it is used as var parameter in MergeSortAscending()
+    FirstChild: PVirtualNode;  // link to the node's first child...
+  private
+    fLastChild: PVirtualNode;   // link to the node's last child...
   public
-    FirstChild,              // link to the node's first child...
-    LastChild: PVirtualNode; // link to the node's last child...
     procedure SetParent(const pParent: PVirtualNode); inline; //internal method, do not call directly but use Parent[Node] := x on tree control.
     procedure SetPrevSibling(const pPrevSibling: PVirtualNode); inline; //internal method, do not call directly
     procedure SetNextSibling(const pNextSibling: PVirtualNode); inline; //internal method, do not call directly
+    procedure SetFirstChild(const pFirstChild: PVirtualNode); inline; //internal method, do not call directly
+    procedure SetLastChild(const pLastChild: PVirtualNode); inline; //internal method, do not call directly
     procedure SetIndex(const pIndex: Cardinal); inline;       //internal method, do not call directly.
     property Index: Cardinal read fIndex;
     property Parent: PVirtualNode read fParent;
     property PrevSibling: PVirtualNode read fPrevSibling;
     property NextSibling: PVirtualNode read fNextSibling;
+    property LastChild: PVirtualNode read fLastChild;
   private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
   public
@@ -1180,6 +1185,16 @@ begin
   if PTypeInfo(TypeInfo(T)).Kind = tkInterface then
     Include(Self.States, vsReleaseCallOnUserDataRequired);
   Include(Self.States, vsOnFreeNodeCallRequired);
+end;
+
+procedure TVirtualNode.SetFirstChild(const pFirstChild: PVirtualNode);
+begin
+  FirstChild := pFirstChild;
+end;
+
+procedure TVirtualNode.SetLastChild(const pLastChild: PVirtualNode);
+begin
+  fLastChild := pLastChild;
 end;
 
 procedure TVirtualNode.SetIndex(const pIndex: Cardinal);

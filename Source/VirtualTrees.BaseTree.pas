@@ -5047,9 +5047,9 @@ begin
             if Assigned(Node.LastChild) then
               Node.LastChild.SetNextSibling(Child);
             Child.SetParent(Node);
-            Node.LastChild := Child;
+            Node.SetLastChild(Child);
             if Node.FirstChild = nil then
-              Node.FirstChild := Child;
+              Node.SetFirstChild(Child);
             System.Dec(Remaining);
             System.Inc(Index);
 
@@ -13775,7 +13775,7 @@ begin
           Node.SetParent(Destination.Parent);
           Node.SetIndex(Destination.Index);
           if Node.PrevSibling = nil then
-            Node.Parent.FirstChild := Node
+            Node.Parent.SetFirstChild(Node)
           else
             Node.PrevSibling.SetNextSibling(Node);
 
@@ -13794,7 +13794,7 @@ begin
           Node.SetPrevSibling(Destination);
           Node.SetParent(Destination.Parent);
           if Node.NextSibling = nil then
-            Node.Parent.LastChild := Node
+            Node.Parent.SetLastChild(Node)
           else
             Node.NextSibling.SetPrevSibling(Node);
           Node.SetIndex(Destination.Index);
@@ -13814,13 +13814,13 @@ begin
             // If there's a first child then there must also be a last child.
             Destination.FirstChild.SetPrevSibling(Node);
             Node.SetNextSibling(Destination.FirstChild);
-            Destination.FirstChild := Node;
+            Destination.SetFirstChild(Node);
           end
           else
           begin
             // First child node at this location.
-            Destination.FirstChild := Node;
-            Destination.LastChild := Node;
+            Destination.SetFirstChild(Node);
+            Destination.SetLastChild(Node);
             Node.SetNextSibling(nil);
           end;
           Node.SetPrevSibling(nil);
@@ -13841,13 +13841,13 @@ begin
             // If there's a last child then there must also be a first child.
             Destination.LastChild.SetNextSibling(Node);
             Node.SetPrevSibling(Destination.LastChild);
-            Destination.LastChild := Node;
+            Destination.SetLastChild(Node);
           end
           else
           begin
             // first child node at this location
-            Destination.FirstChild := Node;
-            Destination.LastChild := Node;
+            Destination.SetFirstChild(Node);
+            Destination.SetLastChild(Node);
             Node.SetPrevSibling(nil);
           end;
           Node.SetNextSibling(nil);
@@ -13957,7 +13957,7 @@ begin
     if Assigned(Node.PrevSibling) then
       Node.PrevSibling.SetNextSibling(Node.NextSibling)
     else
-      Parent.FirstChild := Node.NextSibling;
+      Parent.SetFirstChild(Node.NextSibling);
 
     if Assigned(Node.NextSibling) then
     begin
@@ -13976,7 +13976,7 @@ begin
       end;
     end
     else
-      Parent.LastChild := Node.PrevSibling;
+      Parent.SetLastChild(Node.PrevSibling);
   end;
 end;
 
@@ -15132,8 +15132,8 @@ begin
             if Assigned(Node.LastChild) then
               Node.LastChild.SetNextSibling(Run)
             else
-              Node.FirstChild := Run;
-            Node.LastChild := Run;
+              Node.SetFirstChild(Run);
+            Node.SetLastChild(Run);
             Run.SetParent(Node);
 
             ReadNode(Stream, Version, Run);
@@ -16912,8 +16912,8 @@ begin
         AdjustTotalHeight(Node, NodeHeight[Node]);
         AdjustTotalCount(Node, 1);
       end;
-      Node.FirstChild := nil;
-      Node.LastChild := nil;
+      Node.SetFirstChild(nil);
+      Node.SetLastChild(nil);
     finally
       System.Dec(FUpdateCount);
     end;
@@ -22463,9 +22463,9 @@ begin
         try
           // Sort the linked list, check direction flag only once.
           if Direction = sdAscending then
-            Node.FirstChild := MergeSortAscending(Node.FirstChild, Node.ChildCount)
+            Node.SetFirstChild(MergeSortAscending(Node.FirstChild, Node.ChildCount))
           else
-            Node.FirstChild := MergeSortDescending(Node.FirstChild, Node.ChildCount);
+            Node.SetFirstChild(MergeSortDescending(Node.FirstChild, Node.ChildCount));
         finally
           EndOperation(okSortNode);
         end;
@@ -22481,7 +22481,7 @@ begin
           Run.NextSibling.SetPrevSibling(Run);
           Run := Run.NextSibling;
         until False;
-        Node.LastChild := Run;
+        Node.SetLastChild(Run);
 
         InvalidateCache;
       end;
