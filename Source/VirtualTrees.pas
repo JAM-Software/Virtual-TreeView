@@ -592,6 +592,8 @@ implementation
 uses
   System.TypInfo,              // for migration stuff
   System.StrUtils,
+  System.Types,                // prevent inline compiler warining
+  System.UITypes,              // prevent inline compiler warining
   VirtualTrees.StyleHooks,
   VirtualTrees.ClipBoard,
   VirtualTrees.Utils,
