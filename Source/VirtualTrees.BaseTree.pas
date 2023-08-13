@@ -4325,7 +4325,7 @@ begin
   begin
     // Indication that this node is the root node.
     SetPrevSibling(FRoot);
-    NextSibling := FRoot;
+    SetNextSibling(FRoot);
     SetParent(Pointer(Self));
     States := [vsInitialized, vsExpanded, vsHasChildren, vsVisible];
     TotalHeight := FDefaultNodeHeight;
@@ -5046,7 +5046,7 @@ begin
             Child.SetIndex(Index);
             Child.SetPrevSibling(Node.LastChild);
             if Assigned(Node.LastChild) then
-              Node.LastChild.NextSibling := Child;
+              Node.LastChild.SetNextSibling(Child);
             Child.SetParent(Node);
             Node.LastChild := Child;
             if Node.FirstChild = nil then
@@ -13779,13 +13779,13 @@ begin
         begin
           Node.SetPrevSibling(Destination.PrevSibling);
           Destination.SetPrevSibling(Node);
-          Node.NextSibling := Destination;
+          Node.SetNextSibling(Destination);
           Node.SetParent(Destination.Parent);
           Node.SetIndex(Destination.Index);
           if Node.PrevSibling = nil then
             Node.Parent.FirstChild := Node
           else
-            Node.PrevSibling.NextSibling := Node;
+            Node.PrevSibling.SetNextSibling(Node);
 
           // reindex all following nodes
           Run := Destination;
@@ -13797,8 +13797,8 @@ begin
         end;
       amInsertAfter:
         begin
-          Node.NextSibling := Destination.NextSibling;
-          Destination.NextSibling := Node;
+          Node.SetNextSibling(Destination.NextSibling);
+          Destination.SetNextSibling(Node);
           Node.SetPrevSibling(Destination);
           Node.SetParent(Destination.Parent);
           if Node.NextSibling = nil then
@@ -13821,7 +13821,7 @@ begin
           begin
             // If there's a first child then there must also be a last child.
             Destination.FirstChild.SetPrevSibling(Node);
-            Node.NextSibling := Destination.FirstChild;
+            Node.SetNextSibling(Destination.FirstChild);
             Destination.FirstChild := Node;
           end
           else
@@ -13829,7 +13829,7 @@ begin
             // First child node at this location.
             Destination.FirstChild := Node;
             Destination.LastChild := Node;
-            Node.NextSibling := nil;
+            Node.SetNextSibling(nil);
           end;
           Node.SetPrevSibling(nil);
           Node.SetParent(Destination);
@@ -13847,7 +13847,7 @@ begin
           if Assigned(Destination.LastChild) then
           begin
             // If there's a last child then there must also be a first child.
-            Destination.LastChild.NextSibling := Node;
+            Destination.LastChild.SetNextSibling(Node);
             Node.SetPrevSibling(Destination.LastChild);
             Destination.LastChild := Node;
           end
@@ -13858,7 +13858,7 @@ begin
             Destination.LastChild := Node;
             Node.SetPrevSibling(nil);
           end;
-          Node.NextSibling := nil;
+          Node.SetNextSibling(nil);
           Node.SetParent(Destination);
           if Assigned(Node.PrevSibling) then
             Node.SetIndex(Node.PrevSibling.Index + 1)
@@ -13963,7 +13963,7 @@ begin
       System.Dec(FVisibleCount, CountVisibleChildren(Node) + Cardinal(IfThen(IsEffectivelyVisible[Node], 1)));
 
     if Assigned(Node.PrevSibling) then
-      Node.PrevSibling.NextSibling := Node.NextSibling
+      Node.PrevSibling.SetNextSibling(Node.NextSibling)
     else
       Parent.FirstChild := Node.NextSibling;
 
@@ -15138,7 +15138,7 @@ begin
             if Assigned(Run.PrevSibling) then
               Run.SetIndex(Run.PrevSibling.Index + 1);
             if Assigned(Node.LastChild) then
-              Node.LastChild.NextSibling := Run
+              Node.LastChild.SetNextSibling(Run)
             else
               Node.FirstChild := Run;
             Node.LastChild := Run;
@@ -16902,7 +16902,7 @@ begin
         Run := Run.PrevSibling;
         // Important, to avoid exchange of invalid pointers while disconnecting the node.
         if Assigned(Run) then
-          Run.NextSibling := nil;
+          Run.SetNextSibling(nil);
         DeleteNode(Mark, False, True);
       end;
       if ResetHasChildren then
@@ -22327,13 +22327,13 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
 
       if CompareResult <= 0 then
       begin
-        Result.NextSibling := A;
+        Result.SetNextSibling(A);
         Result := A;
         A := A.NextSibling;
       end
       else
       begin
-        Result.NextSibling := B;
+        Result.SetNextSibling(B);
         Result := B;
         B := B.NextSibling;
       end;
@@ -22341,9 +22341,9 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
 
     // Just append the list which is not nil (or set end of result list to nil if both lists are nil).
     if Assigned(A) then
-      Result.NextSibling := A
+      Result.SetNextSibling(A)
     else
-      Result.NextSibling := B;
+      Result.SetNextSibling(B);
     // return start of the new merged list
     Result := Dummy.NextSibling;
   end;
@@ -22370,13 +22370,13 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
 
       if CompareResult >= 0 then
       begin
-        Result.NextSibling := A;
+        Result.SetNextSibling(A);
         Result := A;
         A := A.NextSibling;
       end
       else
       begin
-        Result.NextSibling := B;
+        Result.SetNextSibling(B);
         Result := B;
         B := B.NextSibling;
       end;
@@ -22384,9 +22384,9 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
 
     // Just append the list which is not nil (or set end of result list to nil if both lists are nil).
     if Assigned(A) then
-      Result.NextSibling := A
+      Result.SetNextSibling(A)
     else
-      Result.NextSibling := B;
+      Result.SetNextSibling(B);
     // Return start of the newly merged list.
     Result := Dummy.NextSibling;
   end;
@@ -22411,7 +22411,7 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
     begin
       Result := Node;
       Node := Node.NextSibling;
-      Result.NextSibling := nil;
+      Result.SetNextSibling(nil);
     end;
   end;
 
@@ -22435,7 +22435,7 @@ procedure TBaseVirtualTree.Sort(Node: PVirtualNode; Column: TColumnIndex; Direct
     begin
       Result := Node;
       Node := Node.NextSibling;
-      Result.NextSibling := nil;
+      Result.SetNextSibling(nil);
     end;
   end;
 

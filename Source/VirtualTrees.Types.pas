@@ -902,18 +902,20 @@ type
     //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
     //       data) then put them before field Parent.
   private
-    fParent:  PVirtualNode;     // link to the node's last child...
+    fParent:  PVirtualNode;     // reference to the node's parent (for the root this contains the treeview)
     fPrevSibling: PVirtualNode; // link to the node's previous sibling or nil if it is the first node
-  public                  // reference to the node's parent (for the root this contains the treeview)
-    NextSibling,             // link to the node's next sibling or nil if it is the last node
+    fNextSibling: PVirtualNode;  // link to the node's next sibling or nil if it is the last node
+  public
     FirstChild,              // link to the node's first child...
     LastChild: PVirtualNode; // link to the node's last child...
     procedure SetParent(const pParent: PVirtualNode); inline; //internal method, do not call directly but use Parent[Node] := x on tree control.
     procedure SetPrevSibling(const pPrevSibling: PVirtualNode); inline; //internal method, do not call directly
+    procedure SetNextSibling(const pNextSibling: PVirtualNode); inline; //internal method, do not call directly
     procedure SetIndex(const pIndex: Cardinal); inline;       //internal method, do not call directly.
     property Index: Cardinal read fIndex;
     property Parent: PVirtualNode read fParent;
     property PrevSibling: PVirtualNode read fPrevSibling;
+    property NextSibling: PVirtualNode read fNextSibling;
   private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
   public
@@ -1193,6 +1195,11 @@ end;
 procedure TVirtualNode.SetPrevSibling(const pPrevSibling: PVirtualNode);
 begin
   fPrevSibling := pPrevSibling;
+end;
+
+procedure TVirtualNode.SetNextSibling(const pNextSibling: PVirtualNode);
+begin
+  fNextSibling := pNextSibling;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
