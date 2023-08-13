@@ -12,9 +12,8 @@ object DrawTreeForm: TDrawTreeForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    710
-    474)
-  PixelsPerInch = 96
+    714
+    475)
   TextHeight = 18
   object Label7: TLabel
     Left = 0
@@ -49,7 +48,7 @@ object DrawTreeForm: TDrawTreeForm
   object VDT1: TVirtualDrawTree
     Left = 10
     Top = 84
-    Width = 690
+    Width = 684
     Height = 287
     Anchors = [akLeft, akTop, akRight, akBottom]
     AutoExpandDelay = 200
@@ -74,7 +73,6 @@ object DrawTreeForm: TDrawTreeForm
     Indent = 20
     LineMode = lmBands
     ParentShowHint = False
-    RootNodeCount = 10
     ScrollBarOptions.VerticalIncrement = 32
     ShowHint = True
     TabOrder = 0
