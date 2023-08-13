@@ -161,7 +161,8 @@ procedure TDrawTreeForm.FormCreate(Sender: TObject);
 var
   SFI: TSHFileInfo;
   I,
-  Count: Integer;
+  DriveCount: Integer;
+  Len: Integer;
   DriveMap,
   Mask: Cardinal;
 
@@ -169,21 +170,21 @@ begin
   VDT1.NodeDataSize := SizeOf(TShellObjectData);
 
   // Fill root level of image tree. Determine which drives are mapped.
-  Count := 0;
+  DriveCount := 0;
   DriveMap := GetLogicalDrives;
   Mask := 1;
   for I := 0 to 25 do
   begin
     if (DriveMap and Mask) <> 0 then
-      Inc(Count);
+      Inc(DriveCount);
     Mask := Mask shl 1;
   end;
-  VDT1.RootNodeCount := Count;
   // Determine drive strings which are used in the initialization process.
-  Count := GetLogicalDriveStrings(0, nil);
-  SetLength(FDriveStrings, Count);
-  GetLogicalDriveStrings(Count, PChar(FDriveStrings));
-  
+  Len := GetLogicalDriveStrings(0, nil);
+  SetLength(FDriveStrings, Len);
+  GetLogicalDriveStrings(Len, PChar(FDriveStrings));
+  VDT1.RootNodeCount := DriveCount;
+
   SystemImages.Handle := SHGetFileInfo('', 0, SFI, SizeOf(SFI), SHGFI_SYSICONINDEX or SHGFI_SMALLICON);
   SystemImages.ShareImages := True;
 
@@ -383,7 +384,7 @@ begin
             pf32bit:
               Data.Properties := Data.Properties + ', 16M+ colors';
           end;
-          if Cardinal(Data.Image.Height) + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
+          if Data.Image.Height + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
               Sender.NodeHeight[Node] := Data.Image.Height + 4;
         except
           Data.Image.Free;
@@ -535,6 +536,7 @@ begin
   if FindFirst(IncludeTrailingBackslash(Data.FullPath) + '*.*', faAnyFile, SR) = 0 then
   begin
     Screen.Cursor := crHourGlass;
+    Sender.BeginUpdate;
     try
       repeat
         if (SR.Name <> '.') and (SR.Name <> '..') then
@@ -559,6 +561,7 @@ begin
       // finally sort node
       Sender.Sort(Node, 0, TVirtualStringTree(Sender).Header.SortDirection, False);
     finally
+      Sender.EndUpdate;
       FindClose(SR);
       Screen.Cursor := crDefault;
     end;
