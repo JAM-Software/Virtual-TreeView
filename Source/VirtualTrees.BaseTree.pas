@@ -17202,7 +17202,7 @@ begin
         if tsChangePending in FStates then
           DoChange(FLastChangedNode);
       finally
-        if toAutoSort in FOptions.AutoOptions then
+        if (toAutoSort in FOptions.AutoOptions) then
           SortTree(FHeader.SortColumn, FHeader.SortDirection, True);
 
         SetUpdateState(False);
@@ -22534,6 +22534,9 @@ procedure TBaseVirtualTree.SortTree(Column: TColumnIndex; Direction: TSortDirect
 begin
   if RootNode.TotalCount <= 2 then
     Exit;//Nothing to do if there are one or zero nodes. RootNode.TotalCount is 1 if there are no nodes in the treee as the root node counts too here.
+
+  if not Assigned(FRoot.FirstChild) then
+    Exit; // Sorting should not initialize the root nodes
 
   // Instead of wrapping the sort using BeginUpdate/EndUpdate simply the update counter
   // is modified. Otherwise the EndUpdate call will recurse here.
