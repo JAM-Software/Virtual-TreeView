@@ -886,8 +886,8 @@ type
   TVirtualNode = packed record
   private
     fIndex: Cardinal;         // index of node with regard to its parent
+    fChildCount: Cardinal;    // number of child nodes
   public
-    ChildCount: Cardinal;    // number of child nodes
     NodeHeight: TDimension;  // height in pixels
     States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
     Align: Byte;             // line/button alignment
@@ -916,7 +916,9 @@ type
     procedure SetFirstChild(const pFirstChild: PVirtualNode); inline; //internal method, do not call directly
     procedure SetLastChild(const pLastChild: PVirtualNode); inline; //internal method, do not call directly
     procedure SetIndex(const pIndex: Cardinal); inline;       //internal method, do not call directly.
+    procedure SetChildCount(const pCount: Cardinal); inline; //internal method, do not call directly.
     property Index: Cardinal read fIndex;
+    property ChildCount: Cardinal read fChildCount;
     property Parent: PVirtualNode read fParent;
     property PrevSibling: PVirtualNode read fPrevSibling;
     property NextSibling: PVirtualNode read fNextSibling;
@@ -1163,6 +1165,11 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TVirtualNode.SetChildCount(const pCount: Cardinal);
+begin
+  fChildCount := pCount;
+end;
 
 procedure TVirtualNode.SetData(const pUserData: IInterface);
 

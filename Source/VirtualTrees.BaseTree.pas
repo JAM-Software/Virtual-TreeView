@@ -5062,7 +5062,7 @@ begin
             AdjustTotalHeight(Node, NewHeight, False);
 
           AdjustTotalCount(Node, Count, True);
-          Node.ChildCount := NewChildCount;
+          Node.SetChildCount(NewChildCount);
           if (FUpdateCount = 0) and (toAutoSort in FOptions.AutoOptions) and (FHeader.SortColumn > InvalidColumn) then
             Sort(Node, FHeader.SortColumn, FHeader.SortDirection, True);
 
@@ -5687,7 +5687,7 @@ begin
   // Don't set the root node count until all other properties (in particular the OnInitNode event) have been set.
   if csLoading in ComponentState then
   begin
-    FRoot.ChildCount := Value;
+    FRoot.SetChildCount(Value);
     DoStateChange([tsNeedRootCountUpdate]);
   end
   else
@@ -13864,7 +13864,7 @@ begin
     Node.States := Node.States - [vsChecking, vsCutOrCopy, vsDeleting];
 
     if (Mode <> amNoWhere) then begin
-      System.Inc(Node.Parent.ChildCount);
+      Node.Parent.SetChildCount(Node.Parent.ChildCount + 1);
       Include(Node.Parent.States, vsHasChildren);
       AdjustTotalCount(Node.Parent, Node.TotalCount, True);
 
@@ -13940,7 +13940,7 @@ begin
     // Some states are only temporary so take them out.
     Node.States := Node.States - [vsChecking];
     Parent := Node.Parent;
-    System.Dec(Parent.ChildCount);
+    Parent.SetChildCount(Parent.ChildCount - 1);
     AdjustHeight := (vsExpanded in Parent.States) and (vsVisible in Node.States);
     if Parent.ChildCount = 0 then
     begin
@@ -14073,7 +14073,7 @@ begin
     IsReadOnly := toReadOnly in FOptions.MiscOptions;
     FOptions.InternalSetMiscOptions(FOptions.MiscOptions - [toReadOnly]);
     LastRootCount := FRoot.ChildCount;
-    FRoot.ChildCount := 0;
+    FRoot.SetChildCount(0);
     BeginUpdate;
     SetChildCount(FRoot, LastRootCount);
     EndUpdate;
@@ -15119,7 +15119,7 @@ begin
           Align := ChunkBody.Align;
           CheckState := ChunkBody.CheckState;
           CheckType := ChunkBody.CheckType;
-          ChildCount := ChunkBody.ChildCount;
+          SetChildCount(ChunkBody.ChildCount);
 
           // Create and read child nodes.
           while ChunkBody.ChildCount > 0 do
@@ -16901,7 +16901,7 @@ begin
         Exclude(Node.States, vsHasChildren);
       if Node <> FRoot then
         Exclude(Node.States, vsExpanded);
-      Node.ChildCount := 0;
+      Node.SetChildCount(0);
       if (Node = FRoot) or (vsDeleting in Node.States) then
       begin
         Node.TotalHeight := FDefaultNodeHeight + NodeHeight[Node];
