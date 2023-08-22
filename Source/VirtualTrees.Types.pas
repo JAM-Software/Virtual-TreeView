@@ -332,7 +332,7 @@ type
     toAutoHideButtons,               // Node buttons are hidden when there are child nodes, but all are invisible.
     toAutoDeleteMovedNodes,          // Delete nodes which where moved in a drag operation (if not directed otherwise).
     toDisableAutoscrollOnFocus,      // Disable scrolling a node or column into view if it gets focused.
-    toAutoChangeScale,               // Change default node height automatically if the system's font scale is set to big fonts.
+    toAutoChangeScale,               // Change default node height and header height automatically according to the used font.
     toAutoFreeOnCollapse,            // Frees any child node after a node has been collapsed (HasChildren flag stays there).
     toDisableAutoscrollOnEdit,       // Do not center a node horizontally when it is edited.
     toAutoBidiColumnOrdering         // When set then columns (if any exist) will be reordered from lowest index to highest index
