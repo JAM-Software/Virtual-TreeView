@@ -10609,7 +10609,9 @@ begin
     if Assigned(FFocusedNode) then
     begin
       // Make sure a valid column is set if columns are used and no column has currently the focus.
-      if FHeader.UseColumns and (not FHeader.Columns.IsValidColumn(FFocusedColumn)) then
+      // We should also check if the maincolumn is allowfocus
+      if FHeader.UseColumns and (not FHeader.Columns.IsValidColumn(FFocusedColumn))
+      and FHeader.AllowFocus(FHeader.MainColumn) then
         FFocusedColumn := FHeader.MainColumn;
       // Do automatic expansion of the newly focused node if enabled.
       if (toAutoExpand in FOptions.AutoOptions) and not (vsExpanded in FFocusedNode.States) then
