@@ -570,6 +570,7 @@ type
     FOperationCanceled: Boolean;                 // Used to indicate that a long-running operation should be canceled.
     FChangingTheme: Boolean;                     // Used to indicate that a theme change is goi ng on
     FNextNodeToSelect: PVirtualNode;             // Next tree node that we would like to select if the current one gets deleted or looses selection for other reasons.
+    FPendingSyncProcs:Integer;                   // Counter that indicates whether we have queued anonymous calls to the min thread, see issue #1199
 
     // export
     FOnBeforeNodeExport: TVTNodeExportEvent;     // called before exporting a node
@@ -2667,7 +2668,7 @@ begin
   if WasValidating then
   begin
     // Make sure we dequeue the two synchronized calls from ChangeTreeStatesAsync(), fixes mem leak and AV reported in issue #1001, but is more a workaround.
-    while CheckSynchronize() do
+    while CheckSynchronize() and (FPendingSyncProcs>0) do
       Sleep(1);
   end;// if
   FOptions.InternalSetMiscOptions(FOptions.MiscOptions - [toReadOnly]); //SetMiscOptions has side effects
@@ -9044,14 +9045,19 @@ procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirt
 begin
   //TODO: If this works reliable, move to TWorkerThread
   if not (csDestroying in ComponentState) then
+  begin
+    AtomicIncrement(FPendingSyncProcs);
     TThread.Synchronize(nil, procedure
       begin
+        //Decrement invoke refs
+        AtomicDecrement(FPendingSyncProcs);
         // Prevent invalid combination tsUseCache + tsValidationNeeded (#915)
         if not ((tsUseCache in EnterStates) and (tsValidationNeeded in FStates + LeaveStates)) then
           DoStateChange(EnterStates, LeaveStates);
         if (tsValidating in FStates) and (tsValidating in LeaveStates) then
           UpdateEditBounds();
       end);
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20625,13 +20631,18 @@ begin
       NewNodeHeight := Node.NodeHeight;
       // Anonymous methods help to make this thread safe easily.
       if (MainThreadId <> GetCurrentThreadId) then
+        begin
+        AtomicIncrement(FPendingSyncProcs);
         TThread.Synchronize(nil,
           procedure
           begin
+            //swish:Decrement invoke refs
+            AtomicDecrement(FPendingSyncProcs);
             DoMeasureItem(Canvas, Node, NewNodeHeight);
             SetNodeHeight(Node, NewNodeHeight);
           end
         )
+        end
       else
       begin
         DoMeasureItem(Canvas, Node, NewNodeHeight);
