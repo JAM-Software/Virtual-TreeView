@@ -4330,7 +4330,7 @@ begin
     States := [vsInitialized, vsExpanded, vsHasChildren, vsVisible];
     TotalHeight := FDefaultNodeHeight;
     TotalCount := 1;
-    NodeHeight := FDefaultNodeHeight;
+    SetNodeHeight(FDefaultNodeHeight);
     Align := 50;
   end;
 end;
@@ -4414,7 +4414,7 @@ begin
   begin
     TotalCount := 1;
     TotalHeight := FDefaultNodeHeight;
-    NodeHeight := FDefaultNodeHeight;
+    SetNodeHeight(FDefaultNodeHeight);
     States := [vsVisible];
     Align := 50;
   end;
@@ -5180,7 +5180,7 @@ begin
   if FDefaultNodeHeight <> Value then
   begin
     Inc(FRoot.TotalHeight, Value - FDefaultNodeHeight);
-    Inc(FRoot.NodeHeight, Value - FDefaultNodeHeight);
+    FRoot.SetNodeHeight(FRoot.NodeHeight + Value - FDefaultNodeHeight);
     FDefaultNodeHeight := Value;
     InvalidateCache;
     if (FUpdateCount = 0) and HandleAllocated and not (csLoading in ComponentState) then
@@ -5599,7 +5599,7 @@ begin
   if (Node.NodeHeight <> Value) then
   begin
     Difference := Value - Node.NodeHeight;
-    Node.NodeHeight := Value;
+    Node.SetNodeHeight(Value);
 
     // If the node is effectively filtered out, nothing else has to be done, as it is not visible anyway.
     if not IsEffectivelyFiltered[Node] then
@@ -9027,7 +9027,7 @@ begin
         SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D))
       else // prevent initialization of non-initialzed nodes
       begin
-        Run.NodeHeight := MulDiv(Run.NodeHeight, M, D);
+        Run.SetNodeHeight(MulDiv(Run.NodeHeight, M, D));
         // The next three lines fix issue #1000
         lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
         FRoot.TotalHeight := Cardinal(Int64(FRoot.TotalHeight) + Int64(lNewNodeTotalHeight) - Int64(Run.TotalHeight)); // Avoiding EIntOverflow exception.
@@ -15122,7 +15122,7 @@ begin
         begin
           // Set states first, in case the node is invisible.
           States := ChunkBody.States;
-          NodeHeight := ChunkBody.NodeHeight;
+          SetNodeHeight(ChunkBody.NodeHeight);
           TotalHeight := NodeHeight;
           Align := ChunkBody.Align;
           CheckState := ChunkBody.CheckState;

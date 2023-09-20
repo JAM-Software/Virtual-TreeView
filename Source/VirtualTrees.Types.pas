@@ -887,8 +887,8 @@ type
   private
     fIndex: Cardinal;         // index of node with regard to its parent
     fChildCount: Cardinal;    // number of child nodes
+    fNodeHeight: TDimension;  // height in pixels
   public
-    NodeHeight: TDimension;  // height in pixels
     States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
@@ -917,12 +917,14 @@ type
     procedure SetLastChild(const pLastChild: PVirtualNode); inline; //internal method, do not call directly
     procedure SetIndex(const pIndex: Cardinal); inline;       //internal method, do not call directly.
     procedure SetChildCount(const pCount: Cardinal); inline; //internal method, do not call directly.
+    procedure SetNodeHeight(const pNodeHeight: TDimension); inline; //internal method, do not call directly.
     property Index: Cardinal read fIndex;
     property ChildCount: Cardinal read fChildCount;
     property Parent: PVirtualNode read fParent;
     property PrevSibling: PVirtualNode read fPrevSibling;
     property NextSibling: PVirtualNode read fNextSibling;
     property LastChild: PVirtualNode read fLastChild;
+    property NodeHeight: TDimension read fNodeHeight;
   private
     Data: record end;        // this is a placeholder, each node gets extra data determined by NodeDataSize
   public
@@ -1147,6 +1149,11 @@ function TVirtualNode.IsAssigned: Boolean;
 
 begin
   Exit(@Self <> nil);
+end;
+
+procedure TVirtualNode.SetNodeHeight(const pNodeHeight: TDimension);
+begin
+  fNodeHeight := pNodeHeight;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
