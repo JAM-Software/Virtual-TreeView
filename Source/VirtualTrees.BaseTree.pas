@@ -21171,6 +21171,7 @@ begin
 
                           if UseColumns then
                           begin
+                            ColumnIsFixed := coFixed in FHeader.Columns[Column].Options;
                             // Paint vertical grid line.
                             if (poGridLines in PaintOptions) and (toShowVertGridLines in FOptions.PaintOptions) then
                             begin
@@ -21178,7 +21179,6 @@ begin
                               // easier to understand.
                               CellIsTouchingClientRight := PaintInfo.CellRect.Right = ClientRect.Right;
                               CellIsInLastColumn := Position = TColumnPosition(Count - 1);
-                              ColumnIsFixed := coFixed in FHeader.Columns[Column].Options;
 
                               // Don't draw if this is the last column and the header is in autosize mode.
                               if not ((hoAutoResize in FHeader.Options) and CellIsInLastColumn) then
@@ -21202,7 +21202,18 @@ begin
                               // Reduce the content rect size nonetheless to retain correct alignment
                               // relative to header content (especially if "PaintInfo.Alignment = alRightJustify").
                               Dec(ContentRect.Right);
-                            end;
+                            end// if poGridLines
+                            else
+                            begin
+                                if ColumnIsFixed then
+                                begin
+                                  if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
+                                  begin
+                                    DrawGridVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, ColumnIsFixed and (NextColumn >= 0));
+                                  end;
+                                  Dec(CellRect.Right);
+                                end;
+                            end//else
                           end;
 
                           // Prepare background and focus rect for the current cell.
