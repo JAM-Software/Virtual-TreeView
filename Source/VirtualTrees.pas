@@ -129,6 +129,7 @@ type
   THitPosition             = VirtualTrees.Types.THitPosition;
   TVTPaintOption           = VirtualTrees.Types.TVTPaintOption;
   TVTSelectionOption       = VirtualTrees.Types.TVTSelectionOption;
+  TVstTextType             = VirtualTrees.Types.TVstTextType;
   TBaseVirtualTree         = VirtualTrees.BaseTree.TBaseVirtualTree;
   IVTEditLink              = VirtualTrees.BaseTree.IVTEditLink;
   TVTHeaderNotifyEvent     = VirtualTrees.BaseTree.TVTHeaderNotifyEvent;
