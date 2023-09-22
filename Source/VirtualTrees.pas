@@ -130,9 +130,11 @@ type
   TVTPaintOption           = VirtualTrees.Types.TVTPaintOption;
   TVTSelectionOption       = VirtualTrees.Types.TVTSelectionOption;
   TVstTextType             = VirtualTrees.Types.TVstTextType;
+  TVTHintMode              = VirtualTrees.Types.TVTHintMode;
   TBaseVirtualTree         = VirtualTrees.BaseTree.TBaseVirtualTree;
   IVTEditLink              = VirtualTrees.BaseTree.IVTEditLink;
   TVTHeaderNotifyEvent     = VirtualTrees.BaseTree.TVTHeaderNotifyEvent;
+  TVTCompareEvent          = VirtualTrees.BaseTree.TVTCompareEvent;
   TVirtualTreeColumn       = VirtualTrees.Header.TVirtualTreeColumn;
   TVirtualTreeColumns      = VirtualTrees.Header.TVirtualTreeColumns;
   TVTHeader                = VirtualTrees.Header.TVTHeader;
@@ -164,6 +166,8 @@ const
   csUncheckedDisabled      = VirtualTrees.Types.TCheckState.csUncheckedDisabled;
   csCheckedDisabled        = VirtualTrees.Types.TCheckState.csCheckedDisabled;
   csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
+
+  coVisible                = VirtualTrees.Types.TVTColumnOption.coVisible;
 
 type
   TCustomVirtualStringTree = class;
