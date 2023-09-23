@@ -1,0 +1,13 @@
+TCustomControl                     TRectangle                         Base class of framework
+       |                                  |
+TVTBaseAncestorVcl                 TVTBaseAncestorFMX
+       |                                  |
+TVTBaseAncestor                    TVTBaseAncestor
+       |                                  |
+TBaseVirtualTree                   TBaseVirtualTree
+       |                                  |
+TVTAncestorVcl                     TVTAncestorFMX
+       |                                  |
+TVTAncestor                        TVTAncestor                       alias dependant on platform
+       |                                  |
+TCustomVirtualStringTree           TCustomVirtualStringTree          final control that is used
