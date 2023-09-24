@@ -1184,7 +1184,7 @@ type
     procedure ValidateNodeDataSize(var Size: Integer); virtual;
     procedure WndProc(var Message: TMessage); override;
     procedure WriteChunks(Stream: TStream; Node: PVirtualNode); virtual;
-    procedure WriteNode(Stream: TStream; Node: PVirtualNode); virtual;
+    procedure WriteNode(Stream: TStream; Node: PVirtualNode); override;
     class procedure RaiseVTError(const Msg: string; HelpContext: Integer); static;
 
     procedure VclStyleChanged; virtual;
@@ -1514,8 +1514,8 @@ type
     function GetPreviousVisibleNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = True): PVirtualNode;
     function GetPreviousVisibleSibling(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
     function GetPreviousVisibleSiblingNoInit(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
-    function GetSortedCutCopySet(Resolve: Boolean): TNodeArray;
-    function GetSortedSelection(Resolve: Boolean): TNodeArray;
+    function GetSortedCutCopySet(Resolve: Boolean): TNodeArray; override;
+    function GetSortedSelection(Resolve: Boolean): TNodeArray; override;
     procedure GetTextInfo(Node: PVirtualNode; Column: TColumnIndex; const AFont: TFont; var R: TRect;
       var Text: string); virtual;
     function GetTreeRect: TRect;

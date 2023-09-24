@@ -65,7 +65,9 @@ type
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual; abstract;
     function GetSelectedCount(): Integer; virtual; abstract;
     procedure MarkCutCopyNodes; virtual; abstract;
-  protected //properties
+    function GetSortedCutCopySet(Resolve: Boolean): TNodeArray; virtual; abstract;
+    function GetSortedSelection(Resolve: Boolean): TNodeArray; virtual; abstract;
+    procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;  protected //properties
     property DottedBrushTreeLines: TStrokeBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
     property DottedBrushGridLines: TStrokeBrush read FDottedBrushGridLines write FDottedBrushGridLines;
   public //methods
