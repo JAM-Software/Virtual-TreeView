@@ -146,14 +146,17 @@ type
   TVTFixedAreaConstraints  = VirtualTrees.Header.TVTFixedAreaConstraints;
   TColumnsArray            = VirtualTrees.Header.TColumnsArray;
   TCanvas                  = Vcl.Graphics.TCanvas;
+
 const
-  //Aliases
+  // Aliases for increased compatibility with V7, feel free to extend by pull requests
   NoColumn                 = VirtualTrees.Types.NoColumn;
   InvalidColumn            = VirtualTrees.Types.InvalidColumn;
   sdAscending              = VirtualTrees.Types.TSortDirection.sdAscending;
   sdDescending             = VirtualTrees.Types.TSortDirection.sdDescending;
   toAutoSort               = VirtualTrees.Types.TVTAutoOption.toAutoSort;
   toCheckSupport           = VirtualTrees.Types.TVTMiscOption.toCheckSupport;
+  toEditable               = VirtualTrees.Types.TVTMiscOption.toEditable;
+  toShowRoot               = VirtualTrees.Types.TVTPaintOption.toShowRoot;
   ctNone                   = VirtualTrees.Types.TCheckType.ctNone;
   ctTriStateCheckBox       = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
   ctCheckBox               = VirtualTrees.Types.TCheckType.ctCheckBox;
@@ -171,7 +174,13 @@ const
   csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
 
   coVisible                = VirtualTrees.Types.TVTColumnOption.coVisible;
-
+  vsDisabled               = VirtualTrees.Types.TVirtualNodeState.vsDisabled;
+  etHTML                   = VirtualTrees.Types.TVTExportType.etHTML;
+  hiOnItemButton           = VirtualTrees.Types.THitPosition.hiOnItemButton;
+  dmOnNode                 = VirtualTrees.Types.TDropMode.dmOnNode;
+  hlbForceMultiLine        = VirtualTrees.Types.TVTTooltipLineBreakStyle.hlbForceMultiLine;
+  hmHintAndDefault         = VirtualTrees.Types.TVTHintMode.hmHintAndDefault;
+  hmTooltip                = VirtualTrees.Types.TVTHintMode.hmTooltip;
 
 type
   TCustomVirtualStringTree = class;
