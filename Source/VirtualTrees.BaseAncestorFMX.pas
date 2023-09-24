@@ -63,6 +63,8 @@ type
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
     function GetControlsAlignment: TAlignment; virtual; abstract;
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual; abstract;
+    function GetSelectedCount(): Integer; virtual; abstract;
+    procedure MarkCutCopyNodes; virtual; abstract;
   protected //properties
     property DottedBrushTreeLines: TStrokeBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
     property DottedBrushGridLines: TStrokeBrush read FDottedBrushGridLines write FDottedBrushGridLines;

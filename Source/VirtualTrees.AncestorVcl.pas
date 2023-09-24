@@ -34,9 +34,7 @@ type
     property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
   public //methods
     function PasteFromClipboard(): Boolean; override;
-    procedure CopyToClipboard(); override;
-    procedure CutToClipboard(); override;
-  end;
+ end;
 
 implementation
 uses
@@ -186,44 +184,6 @@ begin
         else
           DoStateChange([], [tsCutPending]);
       end;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.CopyToClipboard();
-
-var
-  lDataObject: IDataObject;
-
-begin
-  if SelectedCount > 0 then
-  begin
-    lDataObject := TVTDataObject.Create(Self, True);
-    if OleSetClipboard(lDataObject) = S_OK then
-    begin
-      MarkCutCopyNodes;
-      DoStateChange([tsCopyPending]);
-      Invalidate;
-    end;
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.CutToClipboard();
-var
-  lDataObject: IDataObject;
-begin
-  if (SelectedCount > 0) and not (toReadOnly in TreeOptions.MiscOptions) then
-  begin
-    lDataObject := TVTDataObject.Create(Self, True);
-    if OleSetClipboard(lDataObject) = S_OK then
-    begin
-      MarkCutCopyNodes;
-      DoStateChange([tsCutPending], [tsCopyPending]);
-      Invalidate;
     end;
   end;
 end;

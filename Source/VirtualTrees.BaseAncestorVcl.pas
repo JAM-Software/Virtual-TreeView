@@ -37,13 +37,16 @@ type
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual; abstract;
     procedure NotifyAccessibleEvent(pEvent: DWord = EVENT_OBJECT_STATECHANGE);
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual;
+    function GetSelectedCount(): Integer; virtual; abstract;
+    procedure MarkCutCopyNodes; virtual; abstract;
+    procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); virtual; abstract;
   protected //properties
     property DottedBrushTreeLines: TBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
     property DottedBrushGridLines: TBrush read GetDottedBrushGridLines;
   public // methods
     destructor Destroy; override;
-    procedure CopyToClipboard; virtual; abstract;
-    procedure CutToClipboard; virtual; abstract;
+    procedure CopyToClipboard; virtual;
+    procedure CutToClipboard(); virtual;
     function PasteFromClipboard: Boolean; virtual; abstract;
 
     /// <summary>
@@ -97,9 +100,44 @@ type
 implementation
 
 uses
+  VirtualTrees.DataObject,
   VirtualTrees.AccessibilityFactory;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorVcl.CopyToClipboard;
+
+var
+  lDataObject: IDataObject;
+
+begin
+  if GetSelectedCount > 0 then
+  begin
+    lDataObject := TVTDataObject.Create(Self, True);
+    if OleSetClipboard(lDataObject) = S_OK then
+    begin
+      MarkCutCopyNodes;
+      DoStateChange([tsCopyPending]);
+      Invalidate;
+    end;
+  end;
+end;
+
+procedure TVTBaseAncestorVcl.CutToClipboard;
+var
+  lDataObject: IDataObject;
+begin
+  if (GetSelectedCount > 0) then
+  begin
+    lDataObject := TVTDataObject.Create(Self, True);
+    if OleSetClipboard(lDataObject) = S_OK then
+    begin
+      MarkCutCopyNodes;
+      DoStateChange([tsCutPending], [tsCopyPending]);
+      Invalidate;
+    end;
+  end;
+end;
 
 destructor TVTBaseAncestorVcl.Destroy;
 begin

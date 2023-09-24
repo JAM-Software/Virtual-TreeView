@@ -463,7 +463,6 @@ type
     FVisibleCount: Cardinal;                     // number of currently visible nodes
     FStartIndex: Cardinal;                       // index to start validating cache from
     FSelection: TNodeArray;                      // list of currently selected nodes
-    FSelectionCount: Integer;                    // number of currently selected nodes (size of FSelection might differ)
     FSelectionLocked: Boolean;                   // prevents the tree from changing the selection
     FRangeAnchor: PVirtualNode;                  // anchor node for selection with the keyboard, determines start of a
                                                  // selection range
@@ -737,6 +736,7 @@ type
     FOnEndOperation: TVTOperationEvent;          // Called when an operation ends
 
     FVclStyleEnabled: Boolean;
+    FSelectionCount: Integer;
 
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
@@ -1068,7 +1068,7 @@ type
     procedure DoShowScrollBar(Bar: Integer; Show: Boolean); virtual;
     procedure DoStartDrag(var DragObject: TDragObject); override;
     procedure DoStartOperation(OperationKind: TVTOperationKind); virtual;
-    procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); virtual;
+    procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); override;
     procedure DoStructureChange(Node: PVirtualNode; Reason: TChangeReason); virtual;
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
@@ -1106,6 +1106,7 @@ type
     procedure GetNativeClipboardFormats(var Formats: TFormatEtcArray); virtual;
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
+    function GetSelectedCount(): Integer; override;
     function GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree; virtual;
     procedure HandleHotTrack(X, Y: TDimension); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
@@ -1133,7 +1134,7 @@ type
     procedure InvalidateCache;
     procedure Loaded; override;
     procedure MainColumnChanged; virtual;
-    procedure MarkCutCopyNodes; virtual;
+    procedure MarkCutCopyNodes; override;
     procedure MouseMove(Shift: TShiftState; X, Y: TDimension); override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure OriginalWMNCPaint(DC: HDC); virtual;
@@ -1418,6 +1419,7 @@ type
       ChildrenOnly: Boolean): PVirtualNode; overload;
     function CopyTo(Source, Target: PVirtualNode; Mode: TVTNodeAttachMode;
       ChildrenOnly: Boolean): PVirtualNode; overload;
+    procedure CutToClipboard(); override;
     procedure DeleteChildren(Node: PVirtualNode; ResetHasChildren: Boolean = False);
     procedure DeleteNode(Node: PVirtualNode; pReIndex: Boolean = True); overload; inline;
     procedure DeleteNodes(const pNodes: TNodeArray);
@@ -3970,6 +3972,11 @@ function TBaseVirtualTree.GetSelected(Node: PVirtualNode): Boolean;
 
 begin
   Result := Assigned(Node) and (vsSelected in Node.States);
+end;
+
+function TBaseVirtualTree.GetSelectedCount: Integer;
+begin
+  Exit(FSelectionCount);
 end;
 
 function TBaseVirtualTree.GetSelectedData<T>: TArray<T>;
@@ -19810,6 +19817,13 @@ begin
   Result.FMode := vneCutCopy;
   Result.FTree := Self;
   Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
+end;
+
+procedure TBaseVirtualTree.CutToClipboard;
+begin
+  if (toReadOnly in TreeOptions.MiscOptions)  then
+    exit;
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
