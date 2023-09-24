@@ -128,6 +128,8 @@ type
   THitInfo                 = VirtualTrees.Types.THitInfo;
   THitPosition             = VirtualTrees.Types.THitPosition;
   TVTPaintOption           = VirtualTrees.Types.TVTPaintOption;
+  TVTAutoOption            = VirtualTrees.Types.TVTAutoOption;
+  TVTAutoOptions           = VirtualTrees.Types.TVTAutoOptions;
   TVTSelectionOption       = VirtualTrees.Types.TVTSelectionOption;
   TVstTextType             = VirtualTrees.Types.TVstTextType;
   TVTHintMode              = VirtualTrees.Types.TVTHintMode;
@@ -150,7 +152,8 @@ const
   InvalidColumn            = VirtualTrees.Types.InvalidColumn;
   sdAscending              = VirtualTrees.Types.TSortDirection.sdAscending;
   sdDescending             = VirtualTrees.Types.TSortDirection.sdDescending;
-
+  toAutoSort               = VirtualTrees.Types.TVTAutoOption.toAutoSort;
+  toCheckSupport           = VirtualTrees.Types.TVTMiscOption.toCheckSupport;
   ctNone                   = VirtualTrees.Types.TCheckType.ctNone;
   ctTriStateCheckBox       = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
   ctCheckBox               = VirtualTrees.Types.TCheckType.ctCheckBox;
@@ -168,6 +171,7 @@ const
   csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
 
   coVisible                = VirtualTrees.Types.TVTColumnOption.coVisible;
+
 
 type
   TCustomVirtualStringTree = class;
