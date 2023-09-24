@@ -10149,6 +10149,8 @@ procedure TBaseVirtualTree.DoChecked(Node: PVirtualNode);
 begin
   if Assigned(FOnChecked) then
     FOnChecked(Self, Node);
+  if (Self.UpdateCount = 0) then // See issue #1174
+    NotifyAccessibleEvent();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10179,7 +10181,7 @@ begin
     FOnCollapsed(Self, Node);
 
   if (Self.UpdateCount = 0) then // See issue #1174
-    NotifyAccessibilityCollapsed();
+    NotifyAccessibleEvent();
 
   if (toAlwaysSelectNode in TreeOptions.SelectionOptions) then
   begin
@@ -10550,6 +10552,8 @@ procedure TBaseVirtualTree.DoExpanded(Node: PVirtualNode);
 begin
   if Assigned(FOnExpanded) then
     FOnExpanded(Self, Node);
+  if (Self.UpdateCount = 0) then // See issue #1174
+    NotifyAccessibleEvent();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -10569,6 +10573,12 @@ procedure TBaseVirtualTree.DoFocusChange(Node: PVirtualNode; Column: TColumnInde
 begin
   if Assigned(FOnFocusChanged) then
     FOnFocusChanged(Self, Node, Column);
+  NotifyAccessibleEvent(EVENT_OBJECT_LOCATIONCHANGE);
+  NotifyAccessibleEvent(EVENT_OBJECT_NAMECHANGE);
+  NotifyAccessibleEvent(EVENT_OBJECT_VALUECHANGE);
+  NotifyAccessibleEvent(EVENT_OBJECT_STATECHANGE);
+  NotifyAccessibleEvent(EVENT_OBJECT_SELECTION);
+  NotifyAccessibleEvent(EVENT_OBJECT_FOCUS);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14116,6 +14126,7 @@ procedure TBaseVirtualTree.MainColumnChanged;
 
 begin
   DoCancelEdit;
+  NotifyAccessibleEvent();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -17210,7 +17221,7 @@ begin
           Invalidate;
         UpdateDesigner;
       end;
-      NotifyAccessibilityCollapsed(); // See issue #1174
+      NotifyAccessibleEvent(); // See issue #1174
 
       DoUpdating(usEnd);
       EnsureNodeSelected(False);

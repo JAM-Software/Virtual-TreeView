@@ -39,6 +39,7 @@ interface
 uses
   Winapi.oleacc,
   System.Classes,
+  Vcl.Controls,
   VirtualTrees.BaseTree;
 
 type
@@ -57,13 +58,13 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function CreateIAccessible(ATree: TBaseVirtualTree): IAccessible;
+    function CreateIAccessible(ATree: TCustomControl): IAccessible;
     class function GetAccessibilityFactory: TVTAccessibilityFactory; static;
     procedure RegisterAccessibleProvider(const AProvider: IVTAccessibleProvider);
     procedure UnRegisterAccessibleProvider(const AProvider: IVTAccessibleProvider);
   end;
 
-  
+
 implementation
 
 { TVTAccessibilityFactory }
@@ -75,11 +76,11 @@ begin
   FAccessibleProviders.Clear;
 end;
 
-function TVTAccessibilityFactory.CreateIAccessible(
-  ATree: TBaseVirtualTree): IAccessible;
+function TVTAccessibilityFactory.CreateIAccessible(ATree: TCustomControl): IAccessible;
 var
   I: Integer;
   TmpIAccessible: IAccessible;
+  lTree: TBaseVirtualTree;
 // returns an IAccessible.
 // 1. If the Accessible property of the passed-in tree is nil,
 // the first registered element will be returned.
@@ -91,23 +92,24 @@ var
 // The index for these should all be greater than 0, e g the IAccessible for the tree itself should always be registered first, then any IAccessible items.
 begin
   Result := nil;
-  if ATree <> nil then
+  lTree := (ATree as TBaseVirtualTree);
+  if lTree <> nil then
   begin
-    if ATree.Accessible = nil then
+    if lTree.Accessible = nil then
     begin
       if FAccessibleProviders.Count > 0 then
       begin
-        Result := IVTAccessibleProvider(FAccessibleProviders.Items[0]).CreateIAccessible(ATree);
+        Result := IVTAccessibleProvider(FAccessibleProviders.Items[0]).CreateIAccessible(lTree);
         Exit;
       end;
     end;
-    if ATree.AccessibleItem = nil then
+    if lTree.AccessibleItem = nil then
     begin
       if FAccessibleProviders.Count > 0 then
       begin
         for I := FAccessibleProviders.Count - 1 downto 1 do
         begin
-          TmpIAccessible := IVTAccessibleProvider(FAccessibleProviders.Items[I]).CreateIAccessible(ATree);
+          TmpIAccessible := IVTAccessibleProvider(FAccessibleProviders.Items[I]).CreateIAccessible(lTree);
           if TmpIAccessible <> nil then
           begin
             Result := TmpIAccessible;
@@ -116,12 +118,12 @@ begin
         end;
         if TmpIAccessible = nil then
         begin
-          Result := IVTAccessibleProvider(FAccessibleProviders.Items[0]).CreateIAccessible(ATree);
+          Result := IVTAccessibleProvider(FAccessibleProviders.Items[0]).CreateIAccessible(lTree);
         end;
       end;
     end
     else
-      Result := ATree.AccessibleItem;
+      Result := lTree.AccessibleItem;
   end;
 end;
 

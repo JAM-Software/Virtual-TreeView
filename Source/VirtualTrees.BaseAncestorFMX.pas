@@ -369,7 +369,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTBaseAncestorVcl.InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL;
+function TVTBaseAncestorFMX.InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL;
 begin
   Repaint;
   Result:= true;
@@ -377,7 +377,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTBaseAncestorVcl.UpdateWindow(): BOOL;
+function TVTBaseAncestorFMX.UpdateWindow(): BOOL;
 begin
   Repaint;
   Result:= true;

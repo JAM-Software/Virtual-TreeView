@@ -16,7 +16,6 @@ uses
   Winapi.Windows,
   Winapi.oleacc,
   Winapi.ActiveX,
-  Winapi.Messages,
   VirtualTrees.Types,
   VirtualTrees.BaseTree;
 
@@ -28,19 +27,12 @@ type
   private
     FOnRenderOLEData: TVTRenderOLEDataEvent;     // application/descendant defined clipboard formats
 
-    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
   protected
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT; override;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; override;
-    procedure DoChecked(Node: PVirtualNode); override;
-    procedure DoExpanded(Node: PVirtualNode); override;
-    procedure DoFocusChange(Node: PVirtualNode; Column: TColumnIndex); override;
-    procedure MainColumnChanged; override;
-    procedure NotifyAccessibilityCollapsed(); override;
 
     property OnRenderOLEData: TVTRenderOLEDataEvent read FOnRenderOLEData write FOnRenderOLEData;
   public //methods
-    destructor Destroy; override;
     function PasteFromClipboard(): Boolean; override;
     procedure CopyToClipboard(); override;
     procedure CutToClipboard(); override;
@@ -51,7 +43,6 @@ uses
   System.Classes,
   Vcl.AxCtrls,
   VirtualTrees.ClipBoard,
-  VirtualTrees.AccessibilityFactory,
   VirtualTrees.DataObject;
 
 resourcestring
@@ -156,106 +147,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-destructor TVTAncestorVcl.Destroy;
-begin
-  // Disconnect all remote MSAA connections
-  if Assigned(AccessibleItem) then begin
-    CoDisconnectObject(AccessibleItem, 0);
-    AccessibleItem := nil;
-  end;
-  if Assigned(Accessible) then begin
-    CoDisconnectObject(Accessible, 0);
-    Accessible := nil;
-  end;
-
-  inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.DoChecked(Node: PVirtualNode);
-begin
-  inherited;
-
-  if Assigned(AccessibleItem) and (Self.UpdateCount = 0) then // See issue #1174
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.DoExpanded(Node: PVirtualNode);
-begin
-  inherited;
-
-  if Assigned(AccessibleItem) and (Self.UpdateCount = 0) then // See issue #1174
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.DoFocusChange(Node: PVirtualNode; Column: TColumnIndex);
-begin
-  inherited;
-
-  if Assigned(AccessibleItem) then
-  begin
-    NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_VALUECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_SELECTION, Handle, OBJID_CLIENT, CHILDID_SELF);
-    NotifyWinEvent(EVENT_OBJECT_FOCUS, Handle, OBJID_CLIENT, CHILDID_SELF);
-  end;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function TVTAncestorVcl.DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT;
 
 begin
   Result := E_FAIL;
   if Assigned(FOnRenderOLEData) then
     FOnRenderOLEData(Self, FormatEtcIn, Medium, ForClipboard, Result);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.MainColumnChanged;
-begin
-  inherited;
-
-  if Assigned(AccessibleItem) then
-    NotifyWinEvent(EVENT_OBJECT_NAMECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.NotifyAccessibilityCollapsed;
-begin
-  inherited;
-
-  if Assigned(AccessibleItem) then // See issue #1174 then
-    NotifyWinEvent(EVENT_OBJECT_STATECHANGE, Handle, OBJID_CLIENT, CHILDID_SELF);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TVTAncestorVcl.WMGetObject(var Message: TMessage);
-
-begin
-  if TVTAccessibilityFactory.GetAccessibilityFactory <> nil then
-  begin
-    // Create the IAccessibles for the tree view and tree view items, if necessary.
-    if Accessible = nil then
-      Accessible := TVTAccessibilityFactory.GetAccessibilityFactory.CreateIAccessible(Self);
-    if AccessibleItem = nil then
-      AccessibleItem := TVTAccessibilityFactory.GetAccessibilityFactory.CreateIAccessible(Self);
-    if Cardinal(Message.LParam) = OBJID_CLIENT then
-      if Assigned(Accessible) then
-        Message.Result := LresultFromObject(IID_IAccessible, Message.WParam, Accessible)
-      else
-        Message.Result := 0;
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

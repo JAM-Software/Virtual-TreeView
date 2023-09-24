@@ -11,7 +11,12 @@ unit VirtualTrees.BaseAncestorFMX;
 {****************************************************************************************************************}
 
 interface
-uses VirtualTrees.BaseTree;
+
+uses
+  VirtualTrees.BaseTree;
+
+const
+  EVENT_OBJECT_STATECHANGE         = $800A;
 
 type
   TVTAncestorFMX = class abstract(TBaseVirtualTree)
@@ -24,8 +29,9 @@ type
 
     function GetClientHeight: Single; override;
     function GetClientWidth: Single; override;
-    function GetClientRect: TRect; override;												   
+    function GetClientRect: TRect; override;
 
+    procedure NotifyAccessibleEvent(pEvent: Uint32 = EVENT_OBJECT_STATECHANGE); virtual;
     //TODO: CopyCutPaste - need to be implemented
     {
     function PasteFromClipboard(): Boolean; override;
@@ -118,6 +124,11 @@ begin
   M.Result:= 0;
   CMMouseWheel(M);
   Handled:= M.Result<>0;
+end;
+
+procedure TVTAncestorFMX.NotifyAccessibleEvent(pEvent: Uint32);
+begin
+  // Currently empty by intention as highly platfrom depedant
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

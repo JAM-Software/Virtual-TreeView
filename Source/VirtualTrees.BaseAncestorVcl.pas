@@ -15,6 +15,7 @@ uses
   Winapi.Windows,
   Winapi.oleacc,
   Winapi.ActiveX,
+  Winapi.Messages,
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.StdCtrls,
@@ -30,15 +31,17 @@ type
     FDottedBrushTreeLines: TBrush;               // used to paint dotted lines without special pens
 
     function GetDottedBrushGridLines: TBrush;
+    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
   protected // methods
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT; virtual; abstract;
     function RenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HResult; virtual; abstract;
-    procedure NotifyAccessibilityCollapsed(); virtual; abstract;
+    procedure NotifyAccessibleEvent(pEvent: DWord = EVENT_OBJECT_STATECHANGE);
     function PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush; virtual;
   protected //properties
     property DottedBrushTreeLines: TBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
     property DottedBrushGridLines: TBrush read GetDottedBrushGridLines;
   public // methods
+    destructor Destroy; override;
     procedure CopyToClipboard; virtual; abstract;
     procedure CutToClipboard; virtual; abstract;
     function PasteFromClipboard: Boolean; virtual; abstract;
@@ -92,9 +95,29 @@ type
   end;
 
 implementation
-uses Winapi.Messages;
+
+uses
+  VirtualTrees.AccessibilityFactory;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+destructor TVTBaseAncestorVcl.Destroy;
+begin
+  // Disconnect all remote MSAA connections
+  if Assigned(AccessibleItem) then begin
+    CoDisconnectObject(AccessibleItem, 0);
+    AccessibleItem := nil;
+  end;
+  if Assigned(Accessible) then begin
+    CoDisconnectObject(Accessible, 0);
+    Accessible := nil;
+  end;
+
+  inherited;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TVTBaseAncestorVcl.PrepareDottedBrush(CurrentDottedBrush: TBrush; Bits: Pointer; const BitsLinesCount: Word): TBrush;
 begin
   if Assigned(CurrentDottedBrush) then
@@ -130,12 +153,39 @@ begin
   Result:= WinApi.Windows.InvalidateRect(Handle, lpRect, bErase);
 end;
 
+procedure TVTBaseAncestorVcl.NotifyAccessibleEvent(pEvent: DWord = EVENT_OBJECT_STATECHANGE);
+begin
+  if Assigned(AccessibleItem) then
+    NotifyWinEvent(pEvent, Handle, OBJID_CLIENT, CHILDID_SELF);
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTBaseAncestorVcl.UpdateWindow(): BOOL;
 begin
   Result:= WinApi.Windows.UpdateWindow(Handle);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorVcl.WMGetObject(var Message: TMessage);
+
+begin
+  if TVTAccessibilityFactory.GetAccessibilityFactory <> nil then
+  begin
+    // Create the IAccessibles for the tree view and tree view items, if necessary.
+    if Accessible = nil then
+      Accessible := TVTAccessibilityFactory.GetAccessibilityFactory.CreateIAccessible(Self);
+    if AccessibleItem = nil then
+      AccessibleItem := TVTAccessibilityFactory.GetAccessibilityFactory.CreateIAccessible(Self);
+    if Cardinal(Message.LParam) = OBJID_CLIENT then
+      if Assigned(Accessible) then
+        Message.Result := LresultFromObject(IID_IAccessible, Message.WParam, Accessible)
+      else
+        Message.Result := 0;
+  end;
+end;
+
 
 //----------------------------------------------------------------------------------------------------------------------
 
