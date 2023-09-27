@@ -280,6 +280,7 @@ type
     property Header: TVTHeader read FHeader;
     property TrackIndex : TColumnIndex read FTrackIndex write FTrackIndex;
     property TreeView : TCustomControl read GetTreeView;
+    property UpdateCount;
   end;
 
   TVirtualTreeColumnsClass = class of TVirtualTreeColumns;

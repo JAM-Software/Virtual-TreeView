@@ -10275,8 +10275,8 @@ begin
         Exclude(Run.States, vsHeightMeasured);
       Run := GetNextInitialized(Run);
     end;
-
-    UpdateHorizontalScrollBar(True);
+    if Header.Columns.UpdateCount = 0 then
+      UpdateHorizontalScrollBar(True);
     if Column > NoColumn then
     begin
       // Invalidate client area from the current column all to the right (or left in RTL mode).
