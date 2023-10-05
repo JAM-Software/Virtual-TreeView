@@ -12031,7 +12031,7 @@ var
 begin
   with PaintInfo do
   begin
-    Brush.Color := FColors.BackGroundColor;
+    DottedBrushTreeLines.Color := FColors.BackGroundColor;
     R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
     Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);
   end;
@@ -12057,10 +12057,17 @@ var
   R: TRect;
 begin
   R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
-  if pFixedColumn then
-    StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(ttBranch), R, @R, CurrentPPI)
-  else
-    StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI);
+  if pFixedColumn and (TVtPaintOption.toShowVertGridLines in TreeOptions.PaintOptions) then // In case we showe grid lines, we must use a color for the fixed column that differentiates from the normal gridlines
+    StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenHot), R, @R, CurrentPPI)
+  else begin
+    if StyleServices.IsSystemStyle then // This approach does not work well for many VCL styles, so we added an else case
+      StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI)
+    else begin
+      //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tbGroupBoxNormal), R, @R, CurrentPPI);
+      Brush.Color := FColors.TreeLineColor;
+      Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, Brush.Handle);
+    end;
+  end;// else
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
