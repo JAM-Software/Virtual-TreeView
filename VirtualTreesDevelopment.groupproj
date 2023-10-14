@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{C5F52E84-EC68-4F73-B3AD-3A9611000DFB}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Demos\Advanced\Advanced.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesR.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesD.dproj">
+            <Dependencies>Packages\RAD Studio 10.4+\VirtualTreesR.dproj</Dependencies>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Advanced">
+        <MSBuild Projects="Demos\Advanced\Advanced.dproj"/>
+    </Target>
+    <Target Name="Advanced:Clean">
+        <MSBuild Projects="Demos\Advanced\Advanced.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Advanced:Make">
+        <MSBuild Projects="Demos\Advanced\Advanced.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="VirtualTreesR">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesR.dproj"/>
+    </Target>
+    <Target Name="VirtualTreesR:Clean">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesR.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VirtualTreesR:Make">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesR.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="VirtualTreesD" DependsOnTargets="VirtualTreesR">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj"/>
+    </Target>
+    <Target Name="VirtualTreesD:Clean" DependsOnTargets="VirtualTreesR:Clean">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VirtualTreesD:Make" DependsOnTargets="VirtualTreesR:Make">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Advanced;VirtualTreesR;VirtualTreesD"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Advanced:Clean;VirtualTreesR:Clean;VirtualTreesD:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Advanced:Make;VirtualTreesR:Make;VirtualTreesD:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
