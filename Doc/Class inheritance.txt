@@ -1,13 +1,13 @@
-TCustomControl                     TRectangle                         Base class of framework
+TCustomControl                     TRectangle                        Base class of framework.
        |                                  |
-TVTBaseAncestorVcl                 TVTBaseAncestorFMX
+TVTBaseAncestorVcl                 TVTBaseAncestorFMX                Base class for VCL/FMX that adds some basic platform-specific stuff.
        |                                  |
-TVTBaseAncestor                    TVTBaseAncestor
+TVTBaseAncestor                    TVTBaseAncestor                   Alias dependant on platform.
        |                                  |
-TBaseVirtualTree                   TBaseVirtualTree
+TBaseVirtualTree                   TBaseVirtualTree                  Base class of Virtual TreeView that that does not include concrete drawing.
        |                                  |
-TVTAncestorVcl                     TVTAncestorFMX
+TVTAncestorVcl                     TVTAncestorFMX                    Intermediate class that add platform specififc code which consumes methods of TBaseVirtualTree.
        |                                  |
-TVTAncestor                        TVTAncestor                       alias dependant on platform
+TVTAncestor                        TVTAncestor                       Alias dependant on platform.
        |                                  |
-TCustomVirtualStringTree           TCustomVirtualStringTree          final control that is used
+TCustomVirtualStringTree           TCustomVirtualStringTree          Final control that is used.

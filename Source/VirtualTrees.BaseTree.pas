@@ -12029,12 +12029,23 @@ var
   R: TRect;
 
 begin
-  with PaintInfo do
-  begin
-    DottedBrushTreeLines.Color := FColors.BackGroundColor;
-    R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-    Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);
-  end;
+  R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
+  Brush.Color := FColors.BackGroundColor;
+  Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension);
+
+// Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
+
+var
+  R: TRect;
+
+begin
+  R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
+  Brush.Color := FColors.BackGroundColor;
+  Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12068,24 +12079,6 @@ begin
       Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, Brush.Handle);
     end;
   end;// else
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension);
-
-// Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
-
-var
-  R: TRect;
-
-begin
-  R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
-  with PaintInfo, Canvas do
-  begin
-    Brush.Color := FColors.BackGroundColor;
-    Winapi.Windows.FillRect(Handle, R, DottedBrushTreeLines.Handle);
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

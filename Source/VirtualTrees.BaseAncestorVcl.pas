@@ -47,7 +47,6 @@ type
     procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;
   protected //properties
     property DottedBrushTreeLines: TBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
-    property DottedBrushGridLines: TBrush read GetDottedBrushGridLines;
   public // methods
     destructor Destroy; override;
     procedure CopyToClipboard; virtual;
