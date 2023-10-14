@@ -1743,11 +1743,12 @@ begin
                 TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, KeysToShiftState(Keys), XPos, YPos);
             end;
           WM_NCLBUTTONUP :
-            with TWMNCLButtonUp(Message) do
             begin
-              P := FOwner.ScreenToClient(Point(XCursor, YCursor));
+              with TWMNCLButtonUp(Message) do
+                P := FOwner.ScreenToClient(Point(XCursor, YCursor));
               TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbLeft, True, False);
               TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, GetShiftState, P.X, P.Y + FHeight);
+              Result := True;
             end;
         end;
 
