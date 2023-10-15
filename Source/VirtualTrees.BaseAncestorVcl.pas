@@ -31,7 +31,6 @@ type
     FAccessibleName: string;                     // The name the window is given for screen readers.
     FDottedBrushTreeLines: TBrush;               // used to paint dotted lines without special pens
 
-    function GetDottedBrushGridLines: TBrush;
     procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
   protected // methods
     function DoRenderOLEData(const FormatEtcIn: TFormatEtc; out Medium: TStgMedium; ForClipboard: Boolean): HRESULT; virtual; abstract;
@@ -346,13 +345,6 @@ end;
 function TVTBaseAncestorVcl.SetScrollInfo(Bar: Integer; const ScrollInfo: TScrollInfo; Redraw: Boolean): TDimension;
 begin
   Result:= WinApi.Windows.SetScrollInfo(Handle, Bar, ScrollInfo, Redraw);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVTBaseAncestorVcl.GetDottedBrushGridLines: TBrush;
-begin
-  Result:= FDottedBrushTreeLines;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -12022,26 +12022,21 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DrawDottedHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension);
-
-// Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
-
+// Draws a horizontal line with alternating pixels
 var
   R: TRect;
-
 begin
   R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
   Brush.Color := FColors.BackGroundColor;
-  Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);end;
+  Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DrawDottedVLine(const PaintInfo: TVTPaintInfo; Top, Bottom, Left: TDimension);
-
-// Draws a horizontal line with alternating pixels (this style is not supported for pens under Win9x).
-
+// Draws a vertical line with alternating pixels
 var
   R: TRect;
-
 begin
   R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
   Brush.Color := FColors.BackGroundColor;
