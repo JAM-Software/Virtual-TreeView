@@ -18,9 +18,14 @@ type
   TVTBias = - 128 .. 127;
 
   // Simple move limitation for the drag image.
-  TVTDragMoveRestriction = (dmrNone, dmrHorizontalOnly, dmrVerticalOnly);
+  TVTDragMoveRestriction = (
+    dmrNone,
+    dmrHorizontalOnly,
+    dmrVerticalOnly
+  );
 
-  TVTDragImageStates = set of (disHidden, // Internal drag image is currently hidden (always hidden if drag image helper interfaces are used).
+  TVTDragImageStates = set of (
+    disHidden,                            // Internal drag image is currently hidden (always hidden if drag image helper interfaces are used).																															
     disInDrag,                            // Drag image class is currently being used.
     disPrepared,                          // Drag image class is prepared.
     disSystemSupport                      // Running on Windows 2000 or higher. System supports drag images natively.

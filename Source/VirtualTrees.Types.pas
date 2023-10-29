@@ -1632,49 +1632,65 @@ begin
     inherited;
 end;
 
-
+//----------------------------------------------------------------------------------------------------------------------
 
 { TCheckStateHelper }
 
-function TCheckStateHelper.IsDisabled : Boolean;
+function TCheckStateHelper.IsDisabled: Boolean;
 begin
   Result := Self >= TCheckState.csUncheckedDisabled;
 end;
 
-function TCheckStateHelper.IsChecked : Boolean;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.IsChecked: Boolean;
 begin
   Result := Self in [csCheckedNormal, csCheckedPressed, csCheckedDisabled];
 end;
 
-function TCheckStateHelper.IsUnChecked : Boolean;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.IsUnChecked: Boolean;
 begin
   Result := Self in [csUncheckedNormal, csUncheckedPressed, csUncheckedDisabled];
 end;
 
-function TCheckStateHelper.IsMixed : Boolean;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.IsMixed: Boolean;
 begin
   Result := Self in [csMixedNormal, csMixedPressed, csMixedDisabled];
 end;
 
-function TCheckStateHelper.GetEnabled : TCheckState;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.GetEnabled: TCheckState;
 begin
   Result := cEnabledState[Self];
 end;
 
-function TCheckStateHelper.GetPressed() : TCheckState;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.GetPressed(): TCheckState;
 begin
   Result := cPressedState[Self];
 end;
 
-function TCheckStateHelper.GetUnpressed() : TCheckState;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.GetUnpressed(): TCheckState;
 begin
   Result := cUnpressedState[Self];
 end;
 
-function TCheckStateHelper.GetToggled() : TCheckState;
+//----------------------------------------------------------------------------------------------------------------------
+
+function TCheckStateHelper.GetToggled(): TCheckState;
 begin
   Result := cToggledState[Self];
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 { TSortDirectionHelper }
 

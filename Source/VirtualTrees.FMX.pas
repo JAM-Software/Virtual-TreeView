@@ -16,6 +16,7 @@ uses
   , System.UITypes
   , System.Types
   , System.ImageList
+  , System.Math.Vectors
   , FMX.ImgList
   , FMX.Graphics
   , FMX.Controls
@@ -186,6 +187,9 @@ const
   RDW_FRAME = $400;
   RDW_NOFRAME = $800;
 
+  { GetSystemMetrics() codes }
+  SM_CXVSCROLL = 2;
+  SM_CYHSCROLL = 3;							  
 var
   // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
   CF_VIRTUALTREE,
@@ -519,6 +523,8 @@ type
     procedure FrameRect(const AFocusRect: TRect);
     procedure RoundRect(X1, Y1, X2, Y2: Single; const XRadius, YRadius: Single); overload;
     procedure RoundRect(const Rect: TRect; const XRadius, YRadius: Single); overload;
+    procedure Polygon(const Points: TPolygon);
+    procedure Draw(const X, Y: Single; const Bitmap: TBitmap);											  
   end;
 
   TFontHelper = class helper for TFont
@@ -539,6 +545,10 @@ procedure DrawArrow(ACanvas: TCanvas; Direction: TScrollDirection; Location: TPo
 
 procedure ChangeBiDiModeAlignment(var Alignment: TAlignment);
 
+procedure OleUninitialize();
+
+function timeGetTime: Int64;
+
 implementation
 uses
     System.SysUtils
@@ -549,52 +559,91 @@ uses
   , VirtualTrees.Utils
   ;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure DrawArrow(ACanvas: TCanvas; Direction: TScrollDirection; Location: TPoint; Size: Single);
 begin
   //TODO: DrawArrow implementation
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 { TCanvasHelper }
+
+procedure TCanvasHelper.Draw(const X, Y: Single; const Bitmap: TBitmap);
+begin
+  DrawBitmap(Bitmap
+          , Rect(0, 0, Bitmap.Width, Bitmap.Height)
+          , Rect(X, Y, X+Bitmap.Width, Y+ Bitmap.Height)
+          , 1.0
+          );
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TCanvasHelper.DrawFocusRect(const AFocusRect: TRect);
 begin
   DrawDashRect(AFocusRect, 0, 0, AllCorners, 1.0{?}, $A0909090);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCanvasHelper.DrawRect(const ARect: TRectF);
 begin
   DrawRect(ARect, 0, 0, [], 1.0);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TCanvasHelper.FillRect(const ARect: TRectF);
 begin
   FillRect(ARect, 0, 0, [], 1.0);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCanvasHelper.FrameRect(const AFocusRect: TRect);
 begin
   DrawRect(AFocusRect);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TCanvasHelper.GetBrush: TBrush;
 begin
   Result:= Fill;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TCanvasHelper.GetPen: TStrokeBrush;
 begin
   Result:= Stroke;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TCanvasHelper.Polygon(const Points: TPolygon);
+begin
+  DrawPolygon(Points, 1.0);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TCanvasHelper.RoundRect(const Rect: TRect; const XRadius, YRadius: Single);
 begin
   DrawRect(Rect, XRadius, YRadius, allCorners, 1.0);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TCanvasHelper.RoundRect(X1, Y1, X2, Y2: Single; const XRadius, YRadius: Single);
 begin
   RoundRect(Rect(X1, Y1, X2, Y2), XRadius, YRadius);
 end;
+
+
+//----------------------------------------------------------------------------------------------------------------------
 
 type
   TImageListHelper = class helper for TImageList
@@ -1666,6 +1715,20 @@ begin
     taLeftJustify:  Alignment := taRightJustify;
     taRightJustify: Alignment := taLeftJustify;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure OleUninitialize();
+begin
+ //nothing
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function timeGetTime: Int64;
+begin
+  Result:= TThread.GetTickCount;
 end;
 
 { TChangeLink }

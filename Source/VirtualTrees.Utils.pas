@@ -1463,6 +1463,8 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function IsHighContrastEnabled(): Boolean;
 var
   l: HIGHCONTRAST;
@@ -1471,10 +1473,13 @@ begin
   Result := SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, @l, 0) and ((l.dwFlags and HCF_HIGHCONTRASTON) <> 0);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
 function Divide(const Dimension: Single; const DivideBy: Integer): Single;
 begin
   Result:= Dimension / DivideBy;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function Divide(const Dimension: Integer; const DivideBy: Integer): Integer;
 begin

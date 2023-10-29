@@ -802,7 +802,7 @@ begin
   with PaintInfo do
   begin
     // Set default font values first.
-    Canvas.Font := Font;
+    Canvas.Font.Assign(Font);
     if Enabled then // Otherwise only those colors are used, which are passed from Font to Canvas.Font.
       Canvas.Font.Color := Colors.NodeFontColor
     else
@@ -881,7 +881,7 @@ begin
 
       // Center the text vertically if it fits entirely into the content rect.
       if R.Bottom - R.Top > Height then
-        InflateRect(R, 0, (Height - R.Bottom - R.Top) div 2);
+        InflateRect(R, 0, Divide(Height - R.Bottom - R.Top, 2));
     end
     else
     begin
@@ -939,7 +939,7 @@ var
 begin
   with PaintInfo do
   begin
-    Canvas.Font := Font;
+    Canvas.Font.Assign(Font);
     if toFullRowSelect in TreeOptions.SelectionOptions then
     begin
       if Node = DropTargetNode then
@@ -1116,6 +1116,7 @@ begin
   end;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TCustomVirtualStringTree.AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex);
 
@@ -1170,7 +1171,7 @@ begin
   Result := 2 * TextMargin;
   if Length(Text) > 0 then
   begin
-    Canvas.Font := Font;
+    Canvas.Font.Assign(Font);
     DoPaintText(Node, Canvas, Column, ttNormal);
 
     Inc(Result, DoTextMeasuring(Canvas, Node, Column, Text).cx);
@@ -1868,7 +1869,7 @@ begin
   // Get default font and initialize the other parameters.
   inherited GetTextInfo(Node, Column, AFont, R, Text);
 
-  Canvas.Font := AFont;
+  Canvas.Font.Assign(AFont);
 
   FFontChanged := False;
   RedirectFontChangeEvent(Canvas);
@@ -1888,7 +1889,7 @@ begin
   R := GetDisplayRect(Node, Column, True, not (vsMultiline in Node.States));
   if toShowHorzGridLines in TreeOptions.PaintOptions then
     Dec(R.Bottom);
-  InflateRect(R, 0, -(R.Bottom - R.Top - NewHeight) div 2);
+  InflateRect(R, 0, -Divide(R.Bottom - R.Top - NewHeight, 2));
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
