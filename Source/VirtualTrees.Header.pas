@@ -636,7 +636,7 @@ begin
     with TBitmap.Create do
       try
         Canvas.Font.Assign(FFont);
-        lMaxHeight := lMaxHeight { top spacing } + (lMaxHeight div 2) { minimum bottom spacing } + Canvas.TextHeight('Q');
+        lMaxHeight := lMaxHeight { top spacing } + Divide(lMaxHeight, 2) { minimum bottom spacing } + Canvas.TextHeight('Q');
       finally
         Free;
       end;
@@ -738,8 +738,8 @@ begin
   begin
     with FFixedAreaConstraints do
     begin
-      RelativeMaxHeight := ((Tree.ClientHeight + FHeight) * FMaxHeightPercent) div 100;
-      RelativeMinHeight := ((Tree.ClientHeight + FHeight) * FMinHeightPercent) div 100;
+      RelativeMaxHeight := Divide((Tree.ClientHeight + FHeight) * FMaxHeightPercent, 100);
+      RelativeMinHeight := Divide((Tree.ClientHeight + FHeight) * FMinHeightPercent, 100);
 
       EffectiveMinHeight := IfThen(FMaxHeightPercent > 0, Min(RelativeMaxHeight, FMinHeight), FMinHeight);
       EffectiveMaxHeight := IfThen(FMinHeightPercent > 0, Max(RelativeMinHeight, FMaxHeight), FMaxHeight);
@@ -1227,7 +1227,7 @@ begin
   if NewTarget >= 0 then
   begin
     FColumns.GetColumnBounds(NewTarget, Left, Right);
-    if (ClientP.X < ((Left + Right) div 2)) <> FColumns.DropBefore then
+    if (ClientP.X < Divide((Left + Right), 2)) <> FColumns.DropBefore then
     begin
       NeedRepaint := True;
       FColumns.DropBefore := not FColumns.DropBefore;
@@ -1339,7 +1339,7 @@ var
   P             : TPoint;
   NextColumn, I : TColumnIndex;
   NewWidth      : TDimension;
-  iOffsetX: Integer;
+  iOffsetX      : TDimension;
 
 begin
   Result := False;
@@ -1548,14 +1548,14 @@ begin
         begin
           case Message.Msg of
             WM_NCMBUTTONDBLCLK :
-              Button := mbMiddle;
+              Button := TMouseButton.mbMiddle;
             WM_NCRBUTTONDBLCLK :
-              Button := mbRight;
+              Button := TMouseButton.mbRight;
           else
               //WM_NCLBUTTONDBLCLK
-            Button := mbLeft;
+            Button := TMouseButton.mbLeft;
           end;
-          if Button = mbLeft then
+          if Button = TMouseButton.mbLeft then
             TVirtualTreeColumnsCracker(FColumns).AdjustDownColumn(P);
           TVirtualTreeColumnsCracker(FColumns).HandleClick(P, Button, True, True);
         end;
@@ -1643,14 +1643,14 @@ begin
 
         //This is a good opportunity to notify the application.
         if not (csDesigning in Tree.ComponentState) and IsInHeader then
-          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbLeft, GetShiftState, P.X, P.Y + FHeight);
+          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(TMouseButton.mbLeft, GetShiftState, P.X, P.Y + FHeight);
       end;
     WM_NCRBUTTONDOWN :
       begin
         with TWMNCRButtonDown(Message) do
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
         if InHeader(P) then
-          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(mbRight, GetShiftState, P.X, P.Y + FHeight);
+          TBaseVirtualTreeCracker(FOwner).DoHeaderMouseDown(TMouseButton.mbRight, GetShiftState, P.X, P.Y + FHeight);
       end;
     WM_NCRBUTTONUP :
       if not (csDesigning in FOwner.ComponentState) then
@@ -1660,8 +1660,8 @@ begin
           P := FOwner.ScreenToClient(Point(XCursor, YCursor));
           if InHeader(P) then
           begin
-            HandleMessage := TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbRight, True, False);
-            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbRight, GetShiftState, P.X, P.Y + FHeight);
+            HandleMessage := TVirtualTreeColumnsCracker(FColumns).HandleClick(P, TMouseButton.mbRight, True, False);
+            TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(TMouseButton.mbRight, GetShiftState, P.X, P.Y + FHeight);
           end;
         end;
     //When the tree window has an active mouse capture then we only get "client-area" messages.
@@ -1737,17 +1737,17 @@ begin
               with TVirtualTreeColumnsCracker(FColumns) do
               begin
                 if DownIndex > NoColumn then
-                  HandleClick(Point(XPos, YPos), mbLeft, False, False);
+                  HandleClick(Point(XPos, YPos), TMouseButton.mbLeft, False, False);
               end;
               if FStates <> [] then
-                TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, KeysToShiftState(Keys), XPos, YPos);
+                TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(TMouseButton.mbLeft, KeysToShiftState(Keys), XPos, YPos);
             end;
           WM_NCLBUTTONUP :
             begin
               with TWMNCLButtonUp(Message) do
                 P := FOwner.ScreenToClient(Point(XCursor, YCursor));
-              TVirtualTreeColumnsCracker(FColumns).HandleClick(P, mbLeft, True, False);
-              TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(mbLeft, GetShiftState, P.X, P.Y + FHeight);
+              TVirtualTreeColumnsCracker(FColumns).HandleClick(P, TMouseButton.mbLeft, True, False);
+              TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(TMouseButton.mbLeft, GetShiftState, P.X, P.Y + FHeight);
               Result := True;
             end;
         end;
@@ -1987,7 +1987,7 @@ procedure TVTHeader.RescaleHeader;
 //Rescale the fixed elements (fixed columns, header itself) to FixedAreaConstraints.
 
 var
-  FixedWidth, MaxFixedWidth, MinFixedWidth : Integer;
+  FixedWidth, MaxFixedWidth, MinFixedWidth : TDimension;
 
   //--------------- local function --------------------------------------------
 
@@ -2011,8 +2011,8 @@ var
 
     with FFixedAreaConstraints do
     begin
-      MinFixedWidth := (Tree.ClientWidth * FMinWidthPercent) div 100;
-      MaxFixedWidth := (Tree.ClientWidth * FMaxWidthPercent) div 100;
+      MinFixedWidth := Divide(Tree.ClientWidth * FMinWidthPercent, 100);
+      MaxFixedWidth := Divide(Tree.ClientWidth * FMaxWidthPercent, 100);
     end;
   end;
 
@@ -2179,6 +2179,8 @@ begin
   // GnutGetText skips non-stored properties, so retur Stored True at runtime
   Result := not (csDesigning in Self.Treeview.ComponentState);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTHeader.Assign(Source : TPersistent);
 
@@ -2598,7 +2600,7 @@ var
     if (MaxReserveCol <= NoColumn) or (Constraints[MaxReserveCol - RangeStartCol] <= 10) then
       Result := False
     else
-      Dec(Constraints[MaxReserveCol - RangeStartCol], Constraints[MaxReserveCol - RangeStartCol] div 10);
+      Dec(Constraints[MaxReserveCol - RangeStartCol], Divide(Constraints[MaxReserveCol - RangeStartCol], 10));
   end;
 
 //----------- end local functions -------------------------------------------
@@ -2715,6 +2717,7 @@ procedure TVTHeader.SaveToStream(const Stream : TStream);
 
 var
   Dummy : Integer;
+  DummyDimension: TDimension;			   
   Tmp   : AnsiString;
 
 begin
@@ -2737,8 +2740,8 @@ begin
     WriteBuffer(Dummy, SizeOf(Dummy));
     Dummy := FBackgroundColor;
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := FHeight;
-    WriteBuffer(Dummy, SizeOf(Dummy));
+    DummyDimension:= FHeight;
+    WriteBuffer(DummyDimension, SizeOf(DummyDimension));
     Dummy := Integer(FOptions);
     WriteBuffer(Dummy, SizeOf(Dummy));
     //PopupMenu is neither saved nor restored
@@ -2751,8 +2754,8 @@ begin
       WriteBuffer(Dummy, SizeOf(Dummy));
 
       //Need only to write one: size or height, I decided to write height.
-      Dummy := Height;
-      WriteBuffer(Dummy, SizeOf(Dummy));
+      DummyDimension := Height;
+      WriteBuffer(DummyDimension, SizeOf(DummyDimension));
       Tmp := UTF8Encode(Name);
       Dummy := Length(Tmp);
       WriteBuffer(Dummy, SizeOf(Dummy));
@@ -2774,12 +2777,13 @@ begin
     //Data introduced by stream version 5.
     Dummy := Integer(ParentFont);
     WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := Integer(FMaxHeight);
-    WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := Integer(FMinHeight);
-    WriteBuffer(Dummy, SizeOf(Dummy));
-    Dummy := Integer(FDefaultHeight);
-    WriteBuffer(Dummy, SizeOf(Dummy));
+    DummyDimension := FMaxHeight;
+    WriteBuffer(DummyDimension, SizeOf(DummyDimension));
+    DummyDimension := FMinHeight;
+    WriteBuffer(DummyDimension, SizeOf(DummyDimension));
+    DummyDimension := FDefaultHeight;
+    WriteBuffer(DummyDimension, SizeOf(DummyDimension));
+
     with FFixedAreaConstraints do
     begin
       Dummy := Integer(FMaxHeightPercent);
@@ -2836,6 +2840,8 @@ begin
     FPosition := Owner.Count - 1;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumn.SetCollection(Value : TCollection);
 begin
@@ -3396,18 +3402,18 @@ begin
         begin
           // The percentage values have precedence over the pixel values.
           If MaxWidthPercent > 0 then
-            TotalFixedMinWidth := Min((ClientWidth * MaxWidthPercent) div 100, TotalFixedMinWidth);
+            TotalFixedMinWidth := Min(Divide(ClientWidth * MaxWidthPercent, 100), TotalFixedMinWidth);
           If MinWidthPercent > 0 then
-            TotalFixedMaxWidth := Max((ClientWidth * MinWidthPercent) div 100, TotalFixedMaxWidth);
+            TotalFixedMaxWidth := Max(Divide(ClientWidth * MinWidthPercent, 100), TotalFixedMaxWidth);
 
           EffectiveMaxWidth := Min(TotalFixedMaxWidth - (Columns.GetVisibleFixedWidth - Self.FWidth), FMaxWidth);
           EffectiveMinWidth := Max(TotalFixedMinWidth - (Columns.GetVisibleFixedWidth - Self.FWidth), FMinWidth);
           Value := Min(Max(Value, EffectiveMinWidth), EffectiveMaxWidth);
 
           if MinWidthPercent > 0 then
-            Value := Max((ClientWidth * MinWidthPercent) div 100 - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
+            Value := Max(Divide(ClientWidth * MinWidthPercent, 100) - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
           if MaxWidthPercent > 0 then
-            Value := Min((ClientWidth * MaxWidthPercent) div 100 - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
+            Value := Min(Divide(ClientWidth * MaxWidthPercent, 100) - Columns.GetVisibleFixedWidth + Self.FWidth, Value);
         end;// if HandleAllocated
       end;
     end
@@ -3507,7 +3513,7 @@ begin
       end;
 
       // In any case, the sort glyph is vertically centered.
-      PaintInfo.SortGlyphPos.Y := (ClientSize.Y - PaintInfo.SortGlyphSize.cy) div 2;
+      PaintInfo.SortGlyphPos.Y := Divide(ClientSize.Y - PaintInfo.SortGlyphSize.cy, 2);
     end
     else
     begin
@@ -3549,29 +3555,29 @@ begin
   if PaintInfo.ShowSortGlyph and not (UseText or PaintInfo.ShowHeaderGlyph) then
   begin
     // Center the sort glyph in the available area if nothing else is there.
-    PaintInfo.SortGlyphPos := Point((ClientSize.X - PaintInfo.SortGlyphSize.cx) div 2, (ClientSize.Y - PaintInfo.SortGlyphSize.cy) div 2);
+    PaintInfo.SortGlyphPos := Point(Divide(ClientSize.X - PaintInfo.SortGlyphSize.cx, 2), Divide(ClientSize.Y - PaintInfo.SortGlyphSize.cy, 2));
   end
   else
   begin
     // Determine extents of text and glyph and calculate positions which are clear from the layout.
     if (Layout in [blGlyphLeft, blGlyphRight]) or not PaintInfo.ShowHeaderGlyph then
     begin
-      PaintInfo.GlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y) div 2;
+      PaintInfo.GlyphPos.Y := Divide(ClientSize.Y - HeaderGlyphSize.Y, 2);
       // If the text is taller than the given height, perform no vertical centration as this
       // would make the text even less readable.
       //Using Max() fixes badly positioned text if Extra Large fonts have been activated in the Windows display options
-      TextPos.Y := Max( - 5, (ClientSize.Y - TextSize.cy) div 2);
+      TextPos.Y := Max( - 5, Divide(ClientSize.Y - TextSize.cy, 2));
     end
     else
     begin
       if Layout = blGlyphTop then
       begin
-        PaintInfo.GlyphPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
+        PaintInfo.GlyphPos.Y := Divide(ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing, 2);
         TextPos.Y := PaintInfo.GlyphPos.Y + HeaderGlyphSize.Y + TextSpacing;
       end
       else
       begin
-        TextPos.Y := (ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing) div 2;
+        TextPos.Y := Divide(ClientSize.Y - HeaderGlyphSize.Y - TextSize.cy - TextSpacing, 2);
         PaintInfo.GlyphPos.Y := TextPos.Y + TextSize.cy + TextSpacing;
       end;
     end;
@@ -3594,7 +3600,7 @@ begin
             TextPos.X := MinLeft;
             if PaintInfo.ShowHeaderGlyph then
             begin
-              PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+              PaintInfo.GlyphPos.X := Divide(ClientSize.X - HeaderGlyphSize.X, 2);
               if PaintInfo.GlyphPos.X < MinLeft then
                 PaintInfo.GlyphPos.X := MinLeft;
               MinLeft := Max(TextPos.X + TextSize.cx + TextSpacing, PaintInfo.GlyphPos.X + HeaderGlyphSize.X + FSpacing);
@@ -3626,14 +3632,14 @@ begin
         begin
           if Layout in [blGlyphTop, blGlyphBottom] then
           begin
-            PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
-            TextPos.X := (ClientSize.X - TextSize.cx) div 2;
+            PaintInfo.GlyphPos.X := Divide(ClientSize.X - HeaderGlyphSize.X, 2);
+            TextPos.X := Divide(ClientSize.X - TextSize.cx, 2);
             if PaintInfo.ShowSortGlyph then
-              Dec(TextPos.X, PaintInfo.SortGlyphSize.cx div 2);
+              Dec(TextPos.X, Divide(PaintInfo.SortGlyphSize.cx, 2));
           end
           else
           begin
-            MinLeft := (ClientSize.X - HeaderGlyphSize.X - TextSpacing - TextSize.cx) div 2;
+            MinLeft := Divide(ClientSize.X - HeaderGlyphSize.X - TextSpacing - TextSize.cx, 2);
             if PaintInfo.ShowHeaderGlyph and (Layout = blGlyphLeft) then
             begin
               PaintInfo.GlyphPos.X := MinLeft;
@@ -3682,7 +3688,7 @@ begin
         TextPos.X := MaxRight - TextSize.cx;
         if PaintInfo.ShowHeaderGlyph then
         begin
-          PaintInfo.GlyphPos.X := (ClientSize.X - HeaderGlyphSize.X) div 2;
+          PaintInfo.GlyphPos.X := Divide(ClientSize.X - HeaderGlyphSize.X, 2);
           if PaintInfo.GlyphPos.X + HeaderGlyphSize.X + FSpacing > MaxRight then
             PaintInfo.GlyphPos.X := MaxRight - HeaderGlyphSize.X - FSpacing;
           MaxRight := Min(TextPos.X - TextSpacing, PaintInfo.GlyphPos.X - FSpacing);
@@ -4861,7 +4867,7 @@ begin
       with TreeViewControl do
         try
           Steps := 32;
-          DX := (NewWidth - OldWidth) div Steps;
+          DX := Divide(NewWidth - OldWidth, Steps);
 
         // Determination of the scroll rectangle is a bit complicated since we neither want
         // to scroll the scrollbars nor the border of the treeview window.
@@ -5783,7 +5789,7 @@ begin
     TargetRect.Left := Target.X - R.Left + Items[Run].FLeft + RTLOffset;
     // TargetRect.Right will be set in the loop
 
-    ShowRightBorder := (Header.Style = hsThickButtons) or not (hoAutoResize in Header.Options) or (TreeViewControl.BevelKind = bkNone);
+    ShowRightBorder := (Header.Style = hsThickButtons) or not (hoAutoResize in Header.Options) or (TreeViewControl.BevelKind = TBevelKind.bkNone);
 
     // Now go for each button.
     while (Run > NoColumn) and (TargetRect.Left < MaxX) do
@@ -5854,11 +5860,11 @@ var
   lArrowWidth : TDimension;
 begin
   lArrowWidth := TBaseVirtualTreeCracker(Self.Column.TreeViewControl).ScaledPixels(5);
-  Y := (PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth) div 2;
+  Y := Divide(PaintRectangle.Top + PaintRectangle.Bottom - 3 * lArrowWidth, 2);
   if DropMark = dmmLeft then
     DrawArrow(TargetCanvas, TScrollDirection.sdLeft, Point(PaintRectangle.Left, Y), lArrowWidth)
   else
-    DrawArrow(TargetCanvas, TScrollDirection.sdRight, Point(PaintRectangle.Right - lArrowWidth - (lArrowWidth div 2) {spacing}, Y), lArrowWidth);
+    DrawArrow(TargetCanvas, TScrollDirection.sdRight, Point(PaintRectangle.Right - lArrowWidth - Divide(lArrowWidth, 2) {spacing}, Y), lArrowWidth);
 end;
 
 procedure THeaderPaintInfo.DrawSortArrow(pDirection : TSortDirection);

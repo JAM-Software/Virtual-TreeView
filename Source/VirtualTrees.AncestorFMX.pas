@@ -103,19 +103,12 @@ end;
 
 procedure TVTAncestorFMX.MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); //wymaga BaseTree
 Var M: TCMMouseWheel;
-  hInfo: THitInfo;
   P: TPoint;
-  isNC: Boolean;
 begin
   P:= Screen.MousePos;
-  if ClientRect.Contains(P) then
-    begin
-      isNc:= false;
-    end else
-    begin
-      isNC:= true;
-      P:= ClientToScreen(P);
-    end;
+  if not ClientRect.Contains(P) then
+	P:= ClientToScreen(P);
+
   M.Msg:= CM_MOUSEWHEEL;
   M.ShiftState:= Shift;
   M.WheelDelta:= WheelDelta;
@@ -125,6 +118,8 @@ begin
   CMMouseWheel(M);
   Handled:= M.Result<>0;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TVTAncestorFMX.NotifyAccessibleEvent(pEvent: Uint32);
 begin
@@ -210,7 +205,7 @@ begin
   Result:= ClipRect;
   if Assigned(Header) then
     begin
-      if hoVisible in Header.Options then
+      if TVTHeaderOption.hoVisible in Header.Options then
         Inc(Result.Top, Header.Height);
     end;
   if FVScrollBar.Visible then

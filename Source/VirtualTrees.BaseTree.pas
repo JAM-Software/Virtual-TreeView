@@ -1696,6 +1696,10 @@ const
 
 
 type
+  //These allow us access to protected members in the classes
+  TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
+  TVTHeaderCracker = class(TVTHeader);
+  TVirtualTreeColumnCracker = class(TVirtualTreeColumn);												 
   TBaseVirtualTreeCracker = class(TBaseVirtualTree);
 
   // streaming support
@@ -1738,11 +1742,6 @@ type
   end;
 
   TCanvasEx = class(TCanvas);
-
-  //These allow us access to protected members in the classes
-  TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
-  TVTHeaderCracker = class(TVTHeader);
-  TVirtualTreeColumnCracker = class(TVirtualTreeColumn);
 
 
 const
@@ -3227,9 +3226,9 @@ begin
   begin
     // The initial minimal left border is determined by the identation level of the node and is dynamically adjusted.
     if toShowRoot in FOptions.PaintOptions then
-      Dec(NodeRight, (Integer((GetNodeLevel(Run) + 1)) * FIndent) + FMargin)
+      Dec(NodeRight, (TDimension((GetNodeLevel(Run) + 1)) * FIndent) + FMargin)
     else
-      Dec(NodeRight, (Integer(GetNodeLevel(Run)) * FIndent) + FMargin);
+      Dec(NodeRight, (TDimension(GetNodeLevel(Run)) * FIndent) + FMargin);
 
     // ----- main loop
     // Change selection depending on the node's rectangle being in the selection rectangle or not, but
@@ -3881,7 +3880,7 @@ procedure TBaseVirtualTree.GetOffsets(pNode: PVirtualNode; out pOffsets: TVTOffs
 // Calculates the offset up to the given element and supplies them in an array.
 var
   lNodeLevel: Integer;
-  lNodeIndent: Integer;
+  lNodeIndent: TDimension;
 begin
   // If no specific column was given, assume the main column
   if pColumn = -1 then
@@ -3905,10 +3904,10 @@ begin
     end
     else
       lNodeLevel := 1;
-    lNodeIndent := lNodeLevel * Integer(FIndent);
+    lNodeIndent := lNodeLevel * TDimension(FIndent);
     // toggle buttons
     Inc(pOffsets[TVTElement.ofsToggleButton], lNodeIndent);
-    Dec(pOffsets[TVTElement.ofsToggleButton], ((Integer(FIndent) - FPlusBM.Width) div 2) - 1 + FPlusBM.Width); //Compare PaintTree() relative line 107
+    Dec(pOffsets[TVTElement.ofsToggleButton], Divide((TDimension(FIndent) - FPlusBM.Width), 2) - 1 + FPlusBM.Width); //Compare PaintTree() relative line 107
     // checkbox
     Inc(pOffsets[TVTElement.ofsCheckBox], lNodeIndent);
   end;//if MainColumn
@@ -3974,10 +3973,14 @@ begin
   Result := Assigned(Node) and (vsSelected in Node.States);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetSelectedCount: Integer;
 begin
   Exit(FSelectionCount);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.GetSelectedData<T>: TArray<T>;
 var
@@ -3991,7 +3994,7 @@ begin
   begin
     Result[i] := Self.GetNodeData<T>(lItem);
     lItem := Self.GetNextSelected(lItem);
-    Inc(i);
+    System.Inc(i);
   end;
   SetLength(Result, i); // See issue #927, SelectedCount may not yet be updated.
 end;
@@ -4647,9 +4650,9 @@ begin
                     begin
                       if FButtonStyle = bsTriangle then
                       begin
-                        Brush.Color := clBlack;
-                        Pen.Color := clBlack;
-                        Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
+                        FMinusBM.Canvas.Brush.Color := clBlack;
+                        FMinusBM.Canvas.Pen.Color := clBlack;
+                        FMinusBM.Canvas.Polygon([Point(0, 2), Point(8, 2), Point(4, 6)]);
                       end
                         else
                           begin
@@ -4658,9 +4661,9 @@ begin
                             begin
                               case FButtonFillMode of
                                 fmTreeColor:
-                                  Brush.Color := FColors.BackGroundColor;
+                                  FMinusBM.Canvas.Brush.Color := FColors.BackGroundColor;
                                 fmWindowColor:
-                                  Brush.Color := clWindow;
+                                  FMinusBM.Canvas.Brush.Color := clWindow;
                               end;
                               Pen.Color := FColors.TreeLineColor;
                               Rectangle(0, 0, Width, Height);
@@ -4687,9 +4690,9 @@ begin
                     begin
                       if FButtonStyle = bsTriangle then
                       begin
-                        Brush.Color := clBlack;
-                        Pen.Color := clBlack;
-                        Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
+                        FPlusBM.Canvas.Brush.Color := clBlack;
+                        FPlusBM.Canvas.Pen.Color := clBlack;
+                        FPlusBM.Canvas.Polygon([Point(2, 0), Point(6, 4), Point(2, 8)]);
                       end
                         else
                           begin
@@ -4698,9 +4701,9 @@ begin
                             begin
                               case FButtonFillMode of
                                 fmTreeColor:
-                                  Brush.Color := FColors.BackGroundColor;
+                                  FPlusBM.Canvas.Brush.Color := FColors.BackGroundColor;
                                 fmWindowColor:
-                                  Brush.Color := clWindow;
+                                  FPlusBM.Canvas.Brush.Color := clWindow;
                               end;
                               Pen.Color := FColors.TreeLineColor;
                               Rectangle(0, 0, Width, Height);
@@ -9019,7 +9022,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.ScaleNodeHeights(M, D: Integer);
+procedure TBaseVirtualTree.ScaleNodeHeights(M, D: TDimension);
 var
   Run: PVirtualNode;
   lNewNodeTotalHeight: Cardinal;
@@ -9046,6 +9049,7 @@ begin
     EndUpdate();
   end;
 end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
@@ -9874,26 +9878,26 @@ begin
     if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
     begin
       if (X - FLastClickPos.X) < -8 then
-        Include(Result, sdLeft);
+        Include(Result, TScrollDirection.sdLeft);
       if (X - FLastClickPos.X) > 8 then
-        Include(Result, sdRight);
+        Include(Result, TScrollDirection.sdRight);
 
       if (Y - FLastClickPos.Y) < -8 then
-        Include(Result, sdUp);
+        Include(Result, TScrollDirection.sdUp);
       if (Y - FLastClickPos.Y) > 8 then
-        Include(Result, sdDown);
+        Include(Result, TScrollDirection.sdDown);
     end
     else
     begin
       if (X < FDefaultNodeHeight) and (FEffectiveOffsetX <> 0) then
-        Include(Result, sdLeft);
+        Include(Result, TScrollDirection.sdLeft);
       if (ClientWidth + FEffectiveOffsetX < FRangeX) and (X > ClientWidth - FDefaultNodeHeight) then
-        Include(Result, sdRight);
+        Include(Result, TScrollDirection.sdRight);
 
       if (Y < FDefaultNodeHeight) and (FOffsetY <> 0) then
-        Include(Result, sdUp);
+        Include(Result, TScrollDirection.sdUp);
       if (ClientHeight - FOffsetY < FRangeY) and (Y > ClientHeight - FDefaultNodeHeight) then
-        Include(Result, sdDown);
+        Include(Result, TScrollDirection.sdDown);
 
       // Since scrolling during dragging is not handled via the timer we do a check here whether the auto
       // scroll timeout already has elapsed or not.
@@ -9919,6 +9923,8 @@ begin
   if Assigned(FOnAddToSelection) then
     FOnAddToSelection(Self, Node);
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.DoAdvancedHeaderDraw(var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements);
 
@@ -10020,7 +10026,7 @@ begin
       SetUpdateState(True);
     end;
 
-    Canvas.Font := Self.Font; // Fixes issue #298
+    Canvas.Font.Assign(Self.Font);  // Fixes issue #298
     FOnBeforeCellPaint(Self, Canvas, Node, Column, CellPaintMode, CellRect, ContentRect);
 
     if CellPaintMode = cpmGetContentMargin then
@@ -12027,7 +12033,7 @@ var
   R: TRect;
 begin
   R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-  Brush.Color := FColors.BackGroundColor;
+  PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
   Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);
 end;
 
@@ -12039,7 +12045,7 @@ var
   R: TRect;
 begin
   R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
-  Brush.Color := FColors.BackGroundColor;
+  PaintInfo.Canvas.Brush.Color := FColors.BackGroundColor;
   Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, DottedBrushTreeLines.Handle);
 end;
 
@@ -12070,7 +12076,7 @@ begin
       StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI)
     else begin
       //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tbGroupBoxNormal), R, @R, CurrentPPI);
-      Brush.Color := FColors.TreeLineColor;
+      PaintInfo.Canvas.Brush.Color := FColors.TreeLineColor;
       Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, Brush.Handle);
     end;
   end;// else
@@ -19814,6 +19820,8 @@ begin
   Result.FConsiderChildrenAbove := ConsiderChildrenAbove;
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.CutToClipboard;
 begin
   if (toReadOnly in TreeOptions.MiscOptions)  then
@@ -20911,7 +20919,7 @@ var
   SavedTargetDC: Integer;
   PaintWidth: TDimension;
   CurrentNodeHeight: TDimension;
-  lEmptyListTextMargin: Integer;
+  lEmptyListTextMargin: TDimension;
 
   CellIsTouchingClientRight: Boolean;
   CellIsInLastColumn: Boolean;

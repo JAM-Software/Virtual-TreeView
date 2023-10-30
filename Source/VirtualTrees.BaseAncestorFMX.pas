@@ -25,6 +25,7 @@ type
   private
     FDottedBrushTreeLines: TStrokeBrush;                  // used to paint dotted lines without special pens
     FDottedBrushGridLines: TStrokeBrush;                  // used to paint dotted lines without special pens
+    FInCreate: Boolean;					   
 
     function GetFillColor: TAlphaColor;
     procedure SetFillColor(const Value: TAlphaColor);
@@ -67,7 +68,8 @@ type
     procedure MarkCutCopyNodes; virtual; abstract;
     function GetSortedCutCopySet(Resolve: Boolean): TNodeArray; virtual; abstract;
     function GetSortedSelection(Resolve: Boolean): TNodeArray; virtual; abstract;
-    procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;  protected //properties
+    procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;  
+  protected //properties
     property DottedBrushTreeLines: TStrokeBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
     property DottedBrushGridLines: TStrokeBrush read FDottedBrushGridLines write FDottedBrushGridLines;
   public //methods
@@ -245,6 +247,7 @@ end;
 
 constructor TVTBaseAncestorFMX.Create(AOwner: TComponent);
 begin
+  FInCreate:= true;				   
   inherited;
 
   FHandleAllocated:= true;
@@ -283,6 +286,7 @@ begin
   //FVScrollBar.Margins.Bottom:= FVScrollBar.Width;
 
   SetAcceptsControls(false);
+  FInCreate:= false;					
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -373,7 +377,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTBaseAncestorFMX.InvalidateRect(lpRect: PRect; bErase: BOOL): BOOL;
+function TVTBaseAncestorFMX.InvalidateRect(lpRect: PRect; bErase: Boolean): Boolean;
 begin
   Repaint;
   Result:= true;
@@ -381,7 +385,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTBaseAncestorFMX.UpdateWindow(): BOOL;
+function TVTBaseAncestorFMX.UpdateWindow(): Boolean;
 begin
   Repaint;
   Result:= true;
@@ -389,7 +393,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL;
+function TVTBaseAncestorFMX.RedrawWindow(lprcUpdate: PRect; hrgnUpdate: NativeUInt; flags: UINT): Boolean;
 begin
   Repaint;
   Result:= true;
@@ -397,7 +401,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): BOOL;
+function TVTBaseAncestorFMX.RedrawWindow(const lprcUpdate: TRect; hrgnUpdate: NativeUInt; flags: UINT): Boolean;
 begin
   Repaint;
   Result:= true;
@@ -566,7 +570,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTBaseAncestorFMX.Focused(): Boolean
+function TVTBaseAncestorFMX.Focused(): Boolean;
 begin
   Result:= IsFocused;
 end;
@@ -580,7 +584,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTBaseAncestorFMX.SendWM_SETREDRAW(Updating: Boolean): NativeUInt; inline;
+function TVTBaseAncestorFMX.SendWM_SETREDRAW(Updating: Boolean): NativeUInt;
 begin
   Repaint;
   Result:= 0;
@@ -590,7 +594,7 @@ end;
 
 function TVTBaseAncestorFMX.GetSystemMetrics(nIndex: Integer): Integer;
 begin
-  {$IFNDEF MSWINDOWS}
+  {$IFDEF MSWINDOWS}
   Result:= GetSystemMetrics(nIndex);
   {$ELSE}
   case nIndex of

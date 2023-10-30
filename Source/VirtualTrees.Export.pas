@@ -729,7 +729,7 @@ begin
           end;
 
           // Call back the application to know about font customization.
-          CrackTree.Canvas.Font := CrackTree.Font;
+          CrackTree.Canvas.Font.Assign(CrackTree.Font);
           CrackTree.FFontChanged := False;
           CrackTree.DoPaintText(Run, CrackTree.Canvas, Index, ttNormal);
 

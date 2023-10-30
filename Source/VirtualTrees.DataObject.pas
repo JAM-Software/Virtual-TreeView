@@ -30,7 +30,7 @@ type
   protected
     function CanonicalIUnknown(const TestUnknown : IUnknown) : IUnknown;
     function EqualFormatEtc(FormatEtc1, FormatEtc2 : TFormatEtc) : Boolean;
-    function FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : integer;
+    function FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : Integer;
     function FindInternalStgMedium(Format : TClipFormat) : PStgMedium;
     function HGlobalClone(HGlobal : THandle) : THandle;
     function RenderInternalOLEData(const FormatEtcIn : TFormatEtc; var Medium : TStgMedium; var OLEResult : HResult) : Boolean;
@@ -44,10 +44,10 @@ type
     constructor Create(AOwner : TCustomControl; ForClipboard : Boolean); virtual;
     destructor Destroy; override;
 
-    function DAdvise(const FormatEtc : TFormatEtc; advf : integer; const advSink : IAdviseSink; out dwConnection : integer) : HResult; virtual; stdcall;
-    function DUnadvise(dwConnection : integer) : HResult; virtual; stdcall;
+    function DAdvise(const FormatEtc : TFormatEtc; advf : Integer; const advSink : IAdviseSink; out dwConnection : Integer) : HResult; virtual; stdcall;
+    function DUnadvise(dwConnection : Integer) : HResult; virtual; stdcall;
     function EnumDAdvise(out enumAdvise : IEnumStatData) : HResult; virtual; stdcall;
-    function EnumFormatEtc(Direction : integer; out EnumFormatEtc : IEnumFormatEtc) : HResult; virtual; stdcall;
+    function EnumFormatEtc(Direction : Integer; out EnumFormatEtc : IEnumFormatEtc) : HResult; virtual; stdcall;
     function GetCanonicalFormatEtc(const FormatEtc : TFormatEtc; out FormatEtcOut : TFormatEtc) : HResult; virtual; stdcall;
     function GetData(const FormatEtcIn : TFormatEtc; out Medium : TStgMedium) : HResult; virtual; stdcall;
     function GetDataHere(const FormatEtc : TFormatEtc; out Medium : TStgMedium) : HResult; virtual; stdcall;
@@ -80,7 +80,7 @@ end;
 
 destructor TVTDataObject.Destroy;
 var
-  I         : integer;
+  I         : Integer;
   StgMedium : PStgMedium;
 begin
   // Cancel a pending clipboard operation if this data object was created for the clipboard and
@@ -127,9 +127,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDataObject.FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : integer;
+function TVTDataObject.FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : Integer;
 var
-  I : integer;
+  I : Integer;
 begin
   Result := - 1;
   for I := 0 to High(FormatEtcArray) do
@@ -146,7 +146,7 @@ end;
 
 function TVTDataObject.FindInternalStgMedium(Format : TClipFormat) : PStgMedium;
 var
-  I : integer;
+  I : Integer;
 begin
   Result := nil;
   for I := 0 to High(InternalStgMediumArray) do
@@ -211,7 +211,7 @@ function TVTDataObject.StgMediumIncRef(const InStgMedium : TStgMedium; var OutSt
 // This way when the caller frees the structure it sees the unkForRelease is not nil and calls Release on the object
 // instead of destroying the actual data.
 var
-  Len : integer;
+  Len : Integer;
 begin
   Result := S_OK;
 
@@ -272,7 +272,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDataObject.DAdvise(const FormatEtc : TFormatEtc; advf : integer; const advSink : IAdviseSink; out dwConnection : integer) : HResult;
+function TVTDataObject.DAdvise(const FormatEtc : TFormatEtc; advf : Integer; const advSink : IAdviseSink; out dwConnection : Integer) : HResult;
 // Advise sink management is greatly simplified by the IDataAdviseHolder interface.
 // We use this interface and forward all concerning calls to it.
 begin
@@ -285,7 +285,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDataObject.DUnadvise(dwConnection : integer) : HResult;
+function TVTDataObject.DUnadvise(dwConnection : Integer) : HResult;
 begin
   if FAdviseHolder = nil then
     Result := E_NOTIMPL
@@ -305,7 +305,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDataObject.EnumFormatEtc(Direction : integer; out EnumFormatEtc : IEnumFormatEtc) : HResult;
+function TVTDataObject.EnumFormatEtc(Direction : Integer; out EnumFormatEtc : IEnumFormatEtc) : HResult;
 var
   NewList : TEnumFormatEtc;
 begin
@@ -335,7 +335,7 @@ function TVTDataObject.GetData(const FormatEtcIn : TFormatEtc; out Medium : TStg
 // Data is requested by clipboard or drop target. This method dispatchs the call
 // depending on the data being requested.
 var
-  I    : integer;
+  I    : Integer;
   Data : PVTReference;
 begin
   // The tree reference format is always supported and returned from here.
@@ -392,7 +392,7 @@ end;
 
 function TVTDataObject.QueryGetData(const FormatEtc : TFormatEtc) : HResult;
 var
-  I : integer;
+  I : Integer;
 begin
   Result := DV_E_CLIPFORMAT;
   for I := 0 to High(FFormatEtcArray) do
@@ -426,7 +426,7 @@ function TVTDataObject.SetData(const FormatEtc : TFormatEtc; var Medium : TStgMe
 // Allows dynamic adding to the IDataObject during its existance. Most noteably it is used to implement
 // IDropSourceHelper and allows to set a special format for optimized moves during a shell transfer.
 var
-  Index          : integer;
+  Index          : Integer;
   LocalStgMedium : PStgMedium;
 begin
   // See if we already have a format of that type available.

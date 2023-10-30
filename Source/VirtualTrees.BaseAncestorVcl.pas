@@ -48,7 +48,7 @@ type
     property DottedBrushTreeLines: TBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
   public // methods
     destructor Destroy; override;
-    procedure CopyToClipboard; virtual;
+    procedure CopyToClipboard(); virtual;
     procedure CutToClipboard(); virtual;
     function PasteFromClipboard: Boolean; virtual; abstract;
 
@@ -292,6 +292,8 @@ begin
   Result:= WinApi.Windows.InvalidateRect(Handle, lpRect, bErase);
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TVTBaseAncestorVcl.NotifyAccessibleEvent(pEvent: DWord = EVENT_OBJECT_STATECHANGE);
 begin
   if Assigned(AccessibleItem) then
@@ -324,7 +326,6 @@ begin
         Message.Result := 0;
   end;
 end;
-
 
 //----------------------------------------------------------------------------------------------------------------------
 
