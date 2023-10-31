@@ -103,10 +103,69 @@ type
 implementation
 
 uses
+  System.SyncObjs,
   Vcl.AxCtrls,
   VirtualTrees.DataObject,
   VirtualTrees.Clipboard,
   VirtualTrees.AccessibilityFactory;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+const
+  Grays: array[0..3] of TColor = (clWhite, clSilver, clGray, clBlack);
+  SysGrays: array[0..3] of TColor = (clWindow, clBtnFace, clBtnShadow, clBtnText);
+
+//not used curently anywhere, moved to VCL, to remove ifdef (gWatcher is declared in VirtualTrees.BaseTree)
+procedure ConvertImageList(gWatcher: TCriticalSection; BaseVirtualTreeClass: TClass; IL: TImageList; const ImageName: string; ColorRemapping: Boolean = True);
+
+// Loads a bunch of images given by ImageName into IL. If ColorRemapping = True then a mapping of gray values to
+// system colors is performed.
+
+var
+  lImages,
+  lOneImage: TBitmap;
+  I: Integer;
+  MaskColor: TColor;
+  Source,
+  Dest: TRect;
+
+begin
+  gWatcher.Enter();
+  try
+    // Since we want the image list appearing in the correct system colors, we have to remap its colors.
+    lImages := TBitmap.Create;
+    lOneImage := TBitmap.Create;
+    if ColorRemapping then
+      lImages.Handle := CreateMappedRes(FindClassHInstance(BaseVirtualTreeClass), PChar(ImageName), Grays, SysGrays)
+    else
+      lImages.Handle := LoadBitmap(FindClassHInstance(BaseVirtualTreeClass), PChar(ImageName));
+
+    try
+      Assert(lImages.Height > 0, 'Internal image "' + ImageName + '" is missing or corrupt.');
+      if lImages.Height = 0 then
+        Exit;// This should never happen, it prevents a division by zero exception below in the for loop, which we have seen in a few cases
+      // It is assumed that the image height determines also the width of one entry in the image list.
+      IL.Clear;
+      IL.Height := lImages.Height;
+      IL.Width := lImages.Height;
+      lOneImage.Width := IL.Width;
+      lOneImage.Height := IL.Height;
+      MaskColor := lImages.Canvas.Pixels[0, 0]; // this is usually clFuchsia
+      Dest := Rect(0, 0, IL.Width, IL.Height);
+      for I := 0 to (lImages.Width div lImages.Height) - 1 do
+      begin
+        Source := Rect(I * IL.Width, 0, (I + 1) * IL.Width, IL.Height);
+        lOneImage.Canvas.CopyRect(Dest, lImages.Canvas, Source);
+        IL.AddMasked(lOneImage, MaskColor);
+      end;
+    finally
+      lImages.Free;
+      lOneImage.Free;
+    end;
+  finally
+    gWatcher.Leave();
+  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
