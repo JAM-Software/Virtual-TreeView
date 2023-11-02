@@ -60,6 +60,8 @@ type
     procedure DragCanceled; virtual; abstract;
 
     procedure Resize; override;
+	function CreateSystemImageSet(): TImageList;
+	procedure SetWindowTheme(const Theme: string); virtual;
 
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); virtual; abstract;
     function GetControlsAlignment: TAlignment; virtual; abstract;
@@ -68,7 +70,7 @@ type
     procedure MarkCutCopyNodes; virtual; abstract;
     function GetSortedCutCopySet(Resolve: Boolean): TNodeArray; virtual; abstract;
     function GetSortedSelection(Resolve: Boolean): TNodeArray; virtual; abstract;
-    procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;  
+    procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;
   protected //properties
     property DottedBrushTreeLines: TStrokeBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
     property DottedBrushGridLines: TStrokeBrush read FDottedBrushGridLines write FDottedBrushGridLines;
@@ -604,6 +606,21 @@ begin
       raise Exception.Create('Unknown code for GetSystemMetrics: ' + IntToStr(nIndex));
   end;
   {$ENDIF}
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVTBaseAncestorFMX.CreateSystemImageSet(): TImageList;
+begin
+  Result:= TImageList.Create(Self);
+  FillSystemCheckImages(Self, Result);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTBaseAncestorFMX.SetWindowTheme(const Theme: string);
+begin
+  //nothing
 end;
 
 end.

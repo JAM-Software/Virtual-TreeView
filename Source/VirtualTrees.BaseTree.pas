@@ -734,7 +734,6 @@ type
       NewRect: TRect): Boolean;
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
-    function CreateSystemImageSet(): TImageList;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean);
     function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
     function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
@@ -1144,7 +1143,7 @@ type
     procedure SetChildCount(Node: PVirtualNode; NewChildCount: Cardinal); virtual;
     procedure SetFocusedNodeAndColumn(Node: PVirtualNode; Column: TColumnIndex); virtual;
     procedure SetRangeX(value: TDimension);
-    procedure SetWindowTheme(const Theme: string);
+    procedure SetWindowTheme(const Theme: string); override;
     procedure SetVisibleCount(value : Cardinal);
     procedure SkipNode(Stream: TStream); virtual;
     procedure StartOperation(OperationKind: TVTOperationKind);
@@ -1724,14 +1723,9 @@ type
     MissedSteps: Double;
   end;
 
-  TCanvasEx = class(TCanvas);
-
 
 const
   MagicID: TMagicID = (#$2045, 'V', 'T', WideChar(VTTreeStreamVersion), ' ', #$2046);
-
-  WideCR = Char(#13);
-  WideLF = Char(#10);
 
 var
   gWatcher: TCriticalSection = nil;
@@ -1788,140 +1782,6 @@ begin
     L := I;
   until I >= R;
 end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-function TBaseVirtualTree.CreateSystemImageSet(): TImageList;
-
-// Creates a system check image set.
-// Note: the DarkCheckImages and FlatImages image lists must already be filled, as some images from them are copied here.
-
-const
-  MaskColor: TColor = clRed;
-  cFlags = ILC_COLOR32 or ILC_MASK;
-
-var
-  BM: TBitmap;
-  Theme: HTHEME;
-  Details: TThemedElementDetails;
-
-  //---------------------------------------------------------------------------
-
-  // Mitigator function to use the correct style service for this context (either the style assigned to the control for Delphi > 10.4 or the application style)
-  function StyleServices: TCustomStyleServices;
-  begin
-    Result := VTStyleServices(Self);
-  end;
-
-  procedure AddSystemImage(IL: TImageList; Index: Integer);
-  const
-    States: array [0..19] of Integer = (
-      RBS_UNCHECKEDNORMAL, RBS_UNCHECKEDHOT, RBS_UNCHECKEDPRESSED, RBS_UNCHECKEDDISABLED,
-      RBS_CHECKEDNORMAL, RBS_CHECKEDHOT, RBS_CHECKEDPRESSED, RBS_CHECKEDDISABLED,
-      CBS_UNCHECKEDNORMAL, CBS_UNCHECKEDHOT, CBS_UNCHECKEDPRESSED, CBS_UNCHECKEDDISABLED,
-      CBS_CHECKEDNORMAL, CBS_CHECKEDHOT, CBS_CHECKEDPRESSED, CBS_CHECKEDDISABLED,
-      CBS_MIXEDNORMAL, CBS_MIXEDHOT, CBS_MIXEDPRESSED, CBS_MIXEDDISABLED);
-  var
-    ButtonState: Cardinal;
-    ButtonType: Cardinal;
-
-  begin
-    BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
-    if StyleServices.Enabled and StyleServices.IsSystemStyle then
-    begin
-      if Index < 8 then
-        Details.Part := BP_RADIOBUTTON
-      else
-        Details.Part := BP_CHECKBOX;
-      Details.State := States[Index];
-      DrawThemeBackground(Theme, BM.Canvas.Handle, Details.Part, Details.State, Rect(0, 0, BM.Width, BM.Height), nil);
-    end
-    else
-    begin
-      if Index < 8 then
-        ButtonType := DFCS_BUTTONRADIO
-      else
-        ButtonType := DFCS_BUTTONCHECK;
-      if Index >= 16 then
-        ButtonType := ButtonType or DFCS_BUTTON3STATE;
-
-      case Index mod 4 of
-        0:
-          ButtonState := 0;
-        1:
-          ButtonState := DFCS_HOT;
-        2:
-          ButtonState := DFCS_PUSHED;
-        else
-          ButtonState := DFCS_INACTIVE;
-      end;
-      if Index in [4..7, 12..19] then
-        ButtonState := ButtonState or DFCS_CHECKED;
-//      if Flat then
-//        ButtonState := ButtonState or DFCS_FLAT;
-      DrawFrameControl(BM.Canvas.Handle, Rect(0, 0, BM.Width, BM.Height), DFC_BUTTON, ButtonType or ButtonState);
-    end;
-    IL.AddMasked(BM, MaskColor);
-  end;
-
-  //--------------- end local functions ---------------------------------------
-
-const
-  cDefaultCheckboxSize = 13;// Used when no other value is available
-var
-  I: Integer;
-  lSize: TSize;
-  Res: Boolean;
-begin
-  BM := TBitmap.Create; // Create a temporary bitmap, which holds the intermediate images.
-  try
-    Res := False;
-    // Retrieve the checkbox image size, prefer theme if available, fall back to GetSystemMetrics() otherwise, but this returns odd results on Windows 8 and higher in high-dpi scenarios.
-    if StyleServices.Enabled then
-      if StyleServices.IsSystemStyle then
-      begin
-        {$if CompilerVersion >= 33}
-        if TOSVersion.Check(10) and (TOSVersion.Build >= 15063)  then
-          Theme := OpenThemeDataForDPI(Handle, 'BUTTON', CurrentPPI)
-        else
-        {$ifend}
-          Theme := OpenThemeData(Self.Handle, 'BUTTON');
-        Details := StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal);
-        Res := GetThemePartSize(Theme, BM.Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize) = S_OK;
-      end
-      else
-        Res := StyleServices.GetElementSize(BM.Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize {$IF CompilerVersion >= 34}, Self.CurrentPPI{$IFEND});
-    if not Res then begin
-      lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
-      if lSize.cx = 0 then begin // error? (Should happen rarely only)
-        lSize.cx := MulDiv(cDefaultCheckboxSize, Screen.PixelsPerInch, USER_DEFAULT_SCREEN_DPI);
-        lSize.cy := lSize.cx;
-      end;// if
-    end;//if
-
-    Result := TImageList.CreateSize(lSize.cx, lSize.cy);
-    Result.Handle := ImageList_Create(Result.Width, Result.Height, cFlags, 0, Result.AllocBy);
-    Result.Masked := True;
-    Result.BkColor := clWhite;
-
-    // Make the bitmap the same size as the image list is to avoid problems when adding.
-    BM.SetSize(Result.Width, Result.Height);
-    BM.Canvas.Brush.Color := MaskColor;
-    BM.Canvas.Brush.Style := bsSolid;
-    BM.Canvas.FillRect(Rect(0, 0, BM.Width, BM.Height));
-    Result.AddMasked(BM, MaskColor);
-
-    // Add the 20 system checkbox and radiobutton images.
-    for I := 0 to 19 do
-      AddSystemImage(Result, I);
-    if StyleServices.Enabled and StyleServices.IsSystemStyle then
-      CloseThemeData(Theme);
-
-  finally
-    BM.Free;
-  end;
-end;
-
 
 //----------------- TVTVirtualNodeEnumerator ---------------------------------------------------------------------------
 
@@ -5638,7 +5498,8 @@ procedure TBaseVirtualTree.SetWindowTheme(const Theme: string);
 
 begin
   FChangingTheme := True;
-  Winapi.UxTheme.SetWindowTheme(Handle, PWideChar(Theme), nil);
+
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12070,6 +11931,7 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree;
 begin
   Result:= nil;
