@@ -1,4 +1,4 @@
-unit VirtualTrees.BaseAncestorFMX;
+unit VirtualTrees.AncestorFMX;
 
 {$SCOPEDENUMS ON}
 
@@ -13,7 +13,9 @@ unit VirtualTrees.BaseAncestorFMX;
 interface
 
 uses
-  VirtualTrees.BaseTree;
+    System.Classes, System.UITypes,
+    FMX.Graphics,
+    VirtualTrees.FMX, VirtualTrees.BaseTree;
 
 const
   EVENT_OBJECT_STATECHANGE         = $800A;
@@ -32,15 +34,29 @@ type
     function GetClientRect: TRect; override;
 
     procedure NotifyAccessibleEvent(pEvent: Uint32 = EVENT_OBJECT_STATECHANGE); virtual;
+    procedure HScrollChangeProc(Sender: TObject); override;
+    procedure VScrollChangeProc(Sender: TObject); override;
+
+    procedure Resize; override;
     //TODO: CopyCutPaste - need to be implemented
     {
     function PasteFromClipboard(): Boolean; override;
     procedure CopyToClipboard(); override;
     procedure CutToClipboard(); override;
     }
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
 implementation
+uses
+  System.SysUtils,
+  FMX.Forms,
+  VirtualTrees.Header,
+  VirtualTrees.Types;
+
+type
+  TVTHeaderCracker = class(TVTHeader);
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -61,7 +77,7 @@ begin
       P:= ClientToScreen(P);
     end;
   FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC, false);
-  if FHeader.HandleMessage(TMessage(MM)) then
+  if TVTHeaderCracker(Header).HandleMessage(TMessage(MM)) then
     exit;//!!!
 
   FillTWMMouse(MM, Button, Shift, X, Y, isNC, false);
@@ -90,7 +106,7 @@ begin
       P:= ClientToScreen(P);
     end;
   FillTWMMouse(MM, Button, Shift, P.X, P.Y, isNC, true);
-  if FHeader.HandleMessage(TMessage(MM)) then
+  if TVTHeaderCracker(Header).HandleMessage(TMessage(MM)) then
     exit;//!!!
 
   FillTWMMouse(MM, Button, Shift, X, Y, isNC, true);
@@ -152,7 +168,7 @@ begin
         DestPitch := PixelFormatBytes[PatternBitmap.PixelFormat];
         System.Move(PAlphaColorArray(BitmapData.Data)[0], PAlphaColorArray(Bits)[0], 8 * 4);
         }
-        for line:= 0 to LineLen-1 do
+        for line:= 0 to BitsLinesCount-1 do
           begin
             for bit:= 0 to 7 do
               begin
@@ -182,6 +198,72 @@ begin
         end;
       FreeAndNil(PatternBitmap);
     end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTAncestorFMX.Resize;
+Var M: TWMSize;
+begin
+  inherited;
+
+  if FInCreate then
+    exit; //!!
+
+  M.Msg:= WM_SIZE;
+  M.SizeType:= SIZE_RESTORED;
+  M.Width:= Width;
+  M.Height:= Height;
+  M.Result:= 0;
+  WMSize(M);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTAncestorFMX.VScrollChangeProc(Sender: TObject);
+Var M: TWMHScroll;
+begin
+  M.Msg:= WM_VSCROLL;
+  M.ScrollCode:= SB_THUMBPOSITION;
+  M.Pos:= GetScrollPos(SB_VERT);
+  M.ScrollBar:= SB_VERT;
+  M.Result:= 0;
+
+  WMVScroll(M);
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TVTAncestorFMX.HScrollChangeProc(Sender: TObject);
+Var M: TWMHScroll;
+begin
+  M.Msg:= WM_HSCROLL;
+  M.ScrollCode:= SB_THUMBPOSITION;
+  M.Pos:= GetScrollPos(SB_HORZ);
+  M.ScrollBar:= SB_HORZ;
+  M.Result:= 0;
+
+  WMHScroll(M);
+  Repaint;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+constructor TVTAncestorFMX.Create(AOwner: TComponent);
+begin
+  FInCreate:= true;
+
+  inherited;
+
+  BackgroundOffsetX:= 0;
+  BackgroundOffsetY:= 0;
+  Margin:= 4;
+  TextMargin:= 4;
+  DefaultNodeHeight:= 18; //???
+  Indent:= 18; //???
+
+  FInCreate:= false;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

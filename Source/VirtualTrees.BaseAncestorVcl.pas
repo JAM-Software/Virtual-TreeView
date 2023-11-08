@@ -46,6 +46,9 @@ type
     function GetSortedCutCopySet(Resolve: Boolean): TNodeArray; virtual; abstract;
     function GetSortedSelection(Resolve: Boolean): TNodeArray; virtual; abstract;
     procedure WriteNode(Stream: TStream; Node: PVirtualNode);  virtual; abstract;
+    procedure Sort(Node: PVirtualNode; Column: TColumnIndex; Direction: TSortDirection; DoInit: Boolean = True); virtual; abstract;
+    procedure DoMouseEnter(); virtual; abstract;
+    procedure DoMouseLeave(); virtual; abstract;
   protected //properties
     property DottedBrushTreeLines: TBrush read FDottedBrushTreeLines write FDottedBrushTreeLines;
   public // methods
@@ -291,6 +294,8 @@ begin
     end;
   end;
 end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function TVTBaseAncestorVcl.CreateSystemImageSet: TImageList;
 
