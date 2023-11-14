@@ -649,6 +649,7 @@ end;
 constructor TCustomVirtualStringTree.Create(AOwner: TComponent);
 
 begin
+  InitializeGlobalStructures();
   inherited;
   FPreviouslySelected := nil;
   FDefaultText := cDefaultText;
