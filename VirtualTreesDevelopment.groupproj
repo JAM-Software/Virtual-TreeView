@@ -4,10 +4,10 @@
     </PropertyGroup>
     <ItemGroup>
         <Projects Include="Demos\Advanced\Advanced.dproj">
-            <Dependencies/>
+            <Dependencies>Packages\RAD Studio 10.4+\VirtualTreesD.dproj</Dependencies>
         </Projects>
         <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesD.dproj">
-            <Dependencies/>
+            <Dependencies>Packages\RAD Studio 10.4+\VirtualTreesR.dproj</Dependencies>
         </Projects>
         <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesR.dproj">
             <Dependencies/>
@@ -20,22 +20,22 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="Advanced">
+    <Target Name="Advanced" DependsOnTargets="VirtualTreesD">
         <MSBuild Projects="Demos\Advanced\Advanced.dproj"/>
     </Target>
-    <Target Name="Advanced:Clean">
+    <Target Name="Advanced:Clean" DependsOnTargets="VirtualTreesD:Clean">
         <MSBuild Projects="Demos\Advanced\Advanced.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="Advanced:Make">
+    <Target Name="Advanced:Make" DependsOnTargets="VirtualTreesD:Make">
         <MSBuild Projects="Demos\Advanced\Advanced.dproj" Targets="Make"/>
     </Target>
-    <Target Name="VirtualTreesD">
+    <Target Name="VirtualTreesD" DependsOnTargets="VirtualTreesR">
         <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj"/>
     </Target>
-    <Target Name="VirtualTreesD:Clean">
+    <Target Name="VirtualTreesD:Clean" DependsOnTargets="VirtualTreesR:Clean">
         <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="VirtualTreesD:Make">
+    <Target Name="VirtualTreesD:Make" DependsOnTargets="VirtualTreesR:Make">
         <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Make"/>
     </Target>
     <Target Name="VirtualTreesR">
