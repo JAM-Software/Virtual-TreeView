@@ -4404,6 +4404,7 @@ var
   I : Integer;
 
 begin
+  UpdatePositions(True);
   // Fix positions that too large, see #1179
   for I := 0 to Count - 1 do
   begin
@@ -5248,6 +5249,7 @@ begin
       Result := FPositionToIndex[Position - 1]
     else
       Result := InvalidColumn;
+    Assert(Position <> Result, 'The previous column must not have the same position as the given column.');
   end;
 end;
 
