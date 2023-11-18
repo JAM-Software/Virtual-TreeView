@@ -4402,18 +4402,26 @@ procedure TVirtualTreeColumns.FixPositions;
 
 var
   I : Integer;
-
+  LoopAgain: Boolean;
 begin
-  UpdatePositions(True);
   // Fix positions that too large, see #1179
-  for I := 0 to Count - 1 do
-  begin
-    if Integer(Items[I].Position) >= Count then
+  // Fix duplicate positions, see #1228
+  repeat
+    LoopAgain := False;
+    for I := 0 to Count - 1 do
     begin
-      UpdatePositions(True);
-      break;
-    end;
-  end; // for
+      if Integer(Items[I].FPosition) >= Count then
+      begin
+        Items[I].Position := Count -1;
+        LoopAgain := True;
+      end;
+      if (i < Count -1) and (Items[I].Position = Items[I+1].FPosition)  then
+      begin
+        Dec(Items[I].FPosition);
+        LoopAgain := True;
+      end;
+    end; // for
+  until not LoopAgain;
 
   // Update position array
   for I := 0 to Count - 1 do
