@@ -1407,6 +1407,7 @@ type
     procedure DeleteNodes(const pNodes: TNodeArray);
     procedure DeleteSelectedNodes; virtual;
     function Dragging: Boolean;
+    procedure DrawGridLine(Canvas: TCanvas; R: TRect); virtual;
     function EditNode(Node: PVirtualNode; Column: TColumnIndex): Boolean; virtual;
     function EndEditNode: Boolean;
     procedure EndSynch;
@@ -11501,13 +11502,23 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.DrawGridLine(Canvas: TCanvas; R: TRect);
+begin
+  Canvas.Brush.Color := FColors.GridLineColor;
+  Canvas.Brush.Style := bsSolid;
+  Canvas.FillRect(R);
+  //StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.DrawGridHLine(const PaintInfo: TVTPaintInfo; Left, Right, Top: TDimension);
 // Draws a horizontal grid line
 var
   R: TRect;
 begin
   R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
-  StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI);
+  DrawGridLine(PaintInfo.Canvas, R)
 end;
 
 
@@ -11523,11 +11534,13 @@ begin
     StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenHot), R, @R, CurrentPPI)
   else begin
     if StyleServices.IsSystemStyle then // This approach does not work well for many VCL styles, so we added an else case
-      StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI)
+    begin
+      DrawGridLine(PaintInfo.Canvas, R)
+      //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI)
+    end
     else begin
+      DrawGridLine(PaintInfo.Canvas, R)
       //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tbGroupBoxNormal), R, @R, CurrentPPI);
-      PaintInfo.Canvas.Brush.Color := FColors.TreeLineColor;
-      Winapi.Windows.FillRect(PaintInfo.Canvas.Handle, R, Brush.Handle);
     end;
   end;// else
 end;
