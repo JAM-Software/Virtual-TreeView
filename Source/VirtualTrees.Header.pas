@@ -4415,9 +4415,12 @@ begin
         Items[I].Position := Count -1;
         LoopAgain := True;
       end;
-      if (i < Count -1) and (Items[I].Position = Items[I+1].FPosition)  then
+      if (i < Count -1) and (Items[I].Position = Items[I+1].FPosition) then
       begin
-        Dec(Items[I].FPosition);
+        if Items[I].FPosition > 0 then
+          Dec(Items[I].FPosition)
+        else
+          Inc(Items[I].FPosition);
         LoopAgain := True;
       end;
     end; // for
