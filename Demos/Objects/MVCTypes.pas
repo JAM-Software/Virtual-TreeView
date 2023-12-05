@@ -55,7 +55,7 @@ unit MVCTypes;
 interface
 
 uses Windows,Messages,SysUtils,Graphics,VirtualTrees,Classes,StdCtrls,
-     Controls,Forms,ImgList,
+     Controls,Forms,ImgList, VirtualTrees.Types, VirtualTrees.BaseTree,
      System.Types, System.UITypes;
 
 type { TMVCNode is the encapsulation of a single Node in the structure.
