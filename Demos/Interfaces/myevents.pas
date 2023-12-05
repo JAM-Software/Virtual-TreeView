@@ -23,7 +23,7 @@ unit myevents;
 
 interface
 
-uses Vcl.ImgList, VirtualTrees, System.Classes, Vcl.Controls;
+uses Vcl.ImgList, VirtualTrees, System.Classes, Vcl.Controls, VirtualTrees.Types;
 
 type
   IEventPresenter = interface

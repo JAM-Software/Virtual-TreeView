@@ -24,7 +24,7 @@ unit MVCPanel;
 interface
 
 uses Windows,Controls,Graphics,SysUtils,Classes,ExtCtrls,StdCtrls,
-     MVCTypes,VirtualTrees;
+     MVCTypes,VirtualTrees, VirtualTrees.BaseTree;
 
 type TMVCPanel=class(TCustomPanel)
                  private

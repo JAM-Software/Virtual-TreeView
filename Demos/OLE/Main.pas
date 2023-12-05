@@ -1,15 +1,16 @@
 unit Main;
- 
+
 // Virtual Treeview sample application demonstrating clipboard and drag'n drop operations.
 // The treeview uses OLE for these operations but can also issue and accept VCL drag'n drop.
 // Written by Mike Lischke.
 
 interface
 
-uses 
-  Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics, 
+uses
+  Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics,
   VirtualTrees, ActnList, ComCtrls, ExtCtrls, StdCtrls, Controls, Classes,
-  ImgList, System.Actions, System.ImageList;
+  ImgList, System.Actions, System.ImageList, VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.BaseTree, VirtualTrees.AncestorVCL, VirtualTrees.Types;
 
 type
   TMainForm = class(TForm)
