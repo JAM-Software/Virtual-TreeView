@@ -4,12 +4,24 @@
     </PropertyGroup>
     <ItemGroup>
         <Projects Include="Demos\Advanced\Advanced.dproj">
-            <Dependencies>Packages\RAD Studio 10.4+\VirtualTreesD.dproj</Dependencies>
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesR.dproj">
+            <Dependencies/>
         </Projects>
         <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesD.dproj">
             <Dependencies>Packages\RAD Studio 10.4+\VirtualTreesR.dproj</Dependencies>
         </Projects>
-        <Projects Include="Packages\RAD Studio 10.4+\VirtualTreesR.dproj">
+        <Projects Include="Demos\Interfaces\charityevents.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demos\Minimal\Minimal.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demos\Objects\MVCDemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demos\OLE\OLE.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -20,23 +32,14 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="Advanced" DependsOnTargets="VirtualTreesD">
+    <Target Name="Advanced">
         <MSBuild Projects="Demos\Advanced\Advanced.dproj"/>
     </Target>
-    <Target Name="Advanced:Clean" DependsOnTargets="VirtualTreesD:Clean">
+    <Target Name="Advanced:Clean">
         <MSBuild Projects="Demos\Advanced\Advanced.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="Advanced:Make" DependsOnTargets="VirtualTreesD:Make">
+    <Target Name="Advanced:Make">
         <MSBuild Projects="Demos\Advanced\Advanced.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="VirtualTreesD" DependsOnTargets="VirtualTreesR">
-        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj"/>
-    </Target>
-    <Target Name="VirtualTreesD:Clean" DependsOnTargets="VirtualTreesR:Clean">
-        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="VirtualTreesD:Make" DependsOnTargets="VirtualTreesR:Make">
-        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Make"/>
     </Target>
     <Target Name="VirtualTreesR">
         <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesR.dproj"/>
@@ -47,14 +50,59 @@
     <Target Name="VirtualTreesR:Make">
         <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesR.dproj" Targets="Make"/>
     </Target>
+    <Target Name="VirtualTreesD" DependsOnTargets="VirtualTreesR">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj"/>
+    </Target>
+    <Target Name="VirtualTreesD:Clean" DependsOnTargets="VirtualTreesR:Clean">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VirtualTreesD:Make" DependsOnTargets="VirtualTreesR:Make">
+        <MSBuild Projects="Packages\RAD Studio 10.4+\VirtualTreesD.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="charityevents">
+        <MSBuild Projects="Demos\Interfaces\charityevents.dproj"/>
+    </Target>
+    <Target Name="charityevents:Clean">
+        <MSBuild Projects="Demos\Interfaces\charityevents.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="charityevents:Make">
+        <MSBuild Projects="Demos\Interfaces\charityevents.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Minimal">
+        <MSBuild Projects="Demos\Minimal\Minimal.dproj"/>
+    </Target>
+    <Target Name="Minimal:Clean">
+        <MSBuild Projects="Demos\Minimal\Minimal.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Minimal:Make">
+        <MSBuild Projects="Demos\Minimal\Minimal.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="MVCDemo">
+        <MSBuild Projects="Demos\Objects\MVCDemo.dproj"/>
+    </Target>
+    <Target Name="MVCDemo:Clean">
+        <MSBuild Projects="Demos\Objects\MVCDemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MVCDemo:Make">
+        <MSBuild Projects="Demos\Objects\MVCDemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="OLE">
+        <MSBuild Projects="Demos\OLE\OLE.dproj"/>
+    </Target>
+    <Target Name="OLE:Clean">
+        <MSBuild Projects="Demos\OLE\OLE.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="OLE:Make">
+        <MSBuild Projects="Demos\OLE\OLE.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Advanced;VirtualTreesD;VirtualTreesR"/>
+        <CallTarget Targets="Advanced;VirtualTreesR;VirtualTreesD;charityevents;Minimal;MVCDemo;OLE"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Advanced:Clean;VirtualTreesD:Clean;VirtualTreesR:Clean"/>
+        <CallTarget Targets="Advanced:Clean;VirtualTreesR:Clean;VirtualTreesD:Clean;charityevents:Clean;Minimal:Clean;MVCDemo:Clean;OLE:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Advanced:Make;VirtualTreesD:Make;VirtualTreesR:Make"/>
+        <CallTarget Targets="Advanced:Make;VirtualTreesR:Make;VirtualTreesD:Make;charityevents:Make;Minimal:Make;MVCDemo:Make;OLE:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

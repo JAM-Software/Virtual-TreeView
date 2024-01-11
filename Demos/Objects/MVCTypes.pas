@@ -191,7 +191,7 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
        the functionality that is moved to our code, should you be happy
        with any of the predeclared descendants use of them. }
      TMVCEditLink=class;
-     TMVCTreeView=class(TBaseVirtualTree)
+     TMVCTreeView=class(TVTAncestor)
        private
          { This is a pointer to the structure associated with
            this viewer. }

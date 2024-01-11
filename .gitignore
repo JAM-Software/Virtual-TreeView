@@ -33,6 +33,7 @@ __recovery
 *.rc
 *.res
 *.local
+*.dsv
 
 # Output Folders  #
 ###################
