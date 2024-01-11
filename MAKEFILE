@@ -10,12 +10,14 @@ PROGRAMFILESX64 = C:\Program Files
 BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\msbuild.exe"
 !ELSE IF EXIST("$(PROGRAMFILESX64)\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\msbuild.exe")
 BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\msbuild.exe"
-!ELSE IF EXIST("$(PROGRAMFILES)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe")
-BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe"
-!ELSE IF EXIST("$(PROGRAMFILES)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe")
-BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe"
-!ELSE
-BUILDEXE = "$(PROGRAMFILES)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe"
+!ELSE IF EXIST("$(PROGRAMFILESX64)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe")
+BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe"
+!ELSE IF EXIST("$(PROGRAMFILESX64)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe")
+BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe"
+!ELSE IF EXIST("$(PROGRAMFILESX64)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe")
+BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe"
+!ELSE 
+BUILDEXE = "msbuild.exe"
 !ENDIF
 
 PROJECT = VirtualTrees
