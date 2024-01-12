@@ -319,6 +319,8 @@ type
   TVTGetLineStyleEvent = procedure(Sender: TBaseVirtualTree; var Bits: Pointer) of object;
   TVTMeasureItemEvent = procedure(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
     var NodeHeight: TDimension) of object;
+  TVTPaintText = procedure(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+    TextType: TVSTTextType) of object;
 
   TVTPrepareButtonImagesEvent = procedure(Sender: TBaseVirtualTree; const APlusBM : TBitmap; const APlusHotBM :TBitmap;
                                           const APlusSelectedHotBM :TBitmap; const AMinusBM : TBitmap; const AMinusHotBM : TBitmap;
@@ -681,6 +683,8 @@ type
                                                  // determined by the application.
     FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
                                                  // add own clipboard formats on the fly
+    FOnPaintText: TVTPaintText;                  // triggered before either normal or fixed text is painted to allow
+                                                 // even finer customization (kind of sub cell painting)
     // drag'n drop events
     FOnCreateDragManager: TVTCreateDragManagerEvent; // called to allow for app./descendant defined drag managers
     FOnCreateDataObject: TVTCreateDataObjectEvent; // called to allow for app./descendant defined data objects
@@ -1039,7 +1043,7 @@ type
     function DoPaintBackground(Canvas: TCanvas; R: TRect): Boolean; virtual;
     procedure DoPaintDropMark(Canvas: TCanvas; Node: PVirtualNode; R: TRect); virtual;
     procedure DoPaintNode(var PaintInfo: TVTPaintInfo); virtual;
-    procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex; TextType: TVSTTextType); virtual; abstract;
+    procedure DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex; TextType: TVSTTextType); virtual;
     procedure DoPopupMenu(Node: PVirtualNode; Column: TColumnIndex; Position: TPoint); virtual;
     procedure DoRemoveFromSelection(Node: PVirtualNode); virtual;
     procedure DoReset(Node: PVirtualNode); virtual;
@@ -1363,6 +1367,7 @@ type
     property OnNodeMoved: TVTNodeMovedEvent read FOnNodeMoved write FOnNodeMoved;
     property OnNodeMoving: TVTNodeMovingEvent read FOnNodeMoving write FOnNodeMoving;
     property OnPaintBackground: TVTBackgroundPaintEvent read FOnPaintBackground write FOnPaintBackground;
+    property OnPaintText: TVTPaintText read FOnPaintText write FOnPaintText;
     property OnPrepareButtonBitmaps : TVTPrepareButtonImagesEvent read FOnPrepareButtonImages write SetOnPrepareButtonImages;
     property OnRemoveFromSelection: TVTRemoveFromSelectionEvent read FOnRemoveFromSelection write FOnRemoveFromSelection;
     property OnResetNode: TVTChangeEvent read FOnResetNode write FOnResetNode;
@@ -10656,6 +10661,12 @@ end;
 procedure TBaseVirtualTree.DoPaintNode(var PaintInfo: TVTPaintInfo);
 
 begin
+end;
+
+procedure TBaseVirtualTree.DoPaintText(Node: PVirtualNode; const Canvas: TCanvas; Column: TColumnIndex; TextType: TVSTTextType);
+begin
+  if Assigned(FOnPaintText) then
+    FOnPaintText(Self, Canvas, Node, Column, TextType);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
