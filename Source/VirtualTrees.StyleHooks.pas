@@ -523,10 +523,16 @@ end;
 
 destructor TVclStyleScrollBarsHook.Destroy;
 begin
-  FVertScrollWnd.StyleHook := nil;
-  FreeAndNil(FVertScrollWnd);
-  FHorzScrollWnd.StyleHook := nil;
-  FreeAndNil(FHorzScrollWnd);
+  if Assigned(FVertScrollWnd) then
+  begin
+    FVertScrollWnd.StyleHook := nil;
+    FreeAndNil(FVertScrollWnd);
+  end;
+  if Assigned(FHorzScrollWnd) then
+  begin
+    FHorzScrollWnd.StyleHook := nil;
+    FreeAndNil(FHorzScrollWnd);
+  end;
   inherited;
 end;
 
