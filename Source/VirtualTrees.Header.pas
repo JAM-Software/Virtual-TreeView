@@ -452,6 +452,7 @@ uses
   WinApi.UxTheme,
   System.Math,
   System.SysUtils,
+  System.Generics.Defaults,
   Vcl.Forms,
   VirtualTrees.HeaderPopup,
   VirtualTrees.BaseTree,
@@ -4397,38 +4398,36 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TVirtualTreeColumns.FixPositions;
-
 // Fixes column positions after loading from DFM or Bidi mode change.
-
 var
-  I : Integer;
-  LoopAgain: Boolean;
+  LColumnsByPos: TList<TVirtualTreeColumn>;
+  I: Integer;
 begin
-  // Fix positions that too large, see #1179
-  // Fix duplicate positions, see #1228
-  repeat
-    LoopAgain := False;
-    for I := 0 to Count - 1 do
-    begin
-      if Integer(Items[I].FPosition) >= Count then
-      begin
-        Items[I].Position := Count -1;
-        LoopAgain := True;
-      end;
-      if (i < Count -1) and (Items[I].Position = Items[I+1].FPosition) then
-      begin
-        if Items[I].FPosition > 0 then
-          Dec(Items[I].FPosition)
-        else
-          Inc(Items[I].FPosition);
-        LoopAgain := True;
-      end;
-    end; // for
-  until not LoopAgain;
+  LColumnsByPos := TList<TVirtualTreeColumn>.Create;
+  try
+    LColumnsByPos.Capacity := Self.Count;
+    for I := 0 to Self.Count-1 do
+      LColumnsByPos.Add(Items[I]);
 
-  // Update position array
-  for I := 0 to Count - 1 do
-    FPositionToIndex[Items[I].Position] := I;
+    LColumnsByPos.Sort(
+      TComparer<TVirtualTreeColumn>.Construct(
+        function(const A, B: TVirtualTreeColumn): Integer
+        begin
+          Result := CompareValue(A.Position, B.Position);
+          if Result = 0 then
+            Result := CompareValue(A.Index, B.Index);
+        end)
+    );
+
+    for I := 0 to LColumnsByPos.Count-1 do
+    begin
+      LColumnsByPos[I].FPosition := I;
+      Self.FPositionToIndex[I] := LColumnsByPos[I].Index;
+    end;
+
+  finally
+	  LColumnsByPos.Free;
+  end;
 
   FNeedPositionsFix := False;
   UpdatePositions(True);
