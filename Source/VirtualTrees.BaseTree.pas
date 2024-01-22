@@ -11518,7 +11518,7 @@ begin
   Canvas.Brush.Color := FColors.GridLineColor;
   Canvas.Brush.Style := bsSolid;
   Canvas.FillRect(R);
-  //StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI);
+  //StyleServices.DrawElement(Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R {$IF CompilerVersion  >= 34}, @R, CurrentPPI{$IFEND});
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -11542,16 +11542,16 @@ var
 begin
   R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
   if pFixedColumn and (TVtPaintOption.toShowVertGridLines in TreeOptions.PaintOptions) then // In case we showe grid lines, we must use a color for the fixed column that differentiates from the normal gridlines
-    StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenHot), R, @R, CurrentPPI)
+    StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenHot), R {$IF CompilerVersion  >= 34}, @R, CurrentPPI{$IFEND})
   else begin
     if StyleServices.IsSystemStyle then // This approach does not work well for many VCL styles, so we added an else case
     begin
       DrawGridLine(PaintInfo.Canvas, R)
-      //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R, @R, CurrentPPI)
+      //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenSelectedNotFocused), R {$IF CompilerVersion  >= 34}, @R, CurrentPPI{$IFEND})
     end
     else begin
       DrawGridLine(PaintInfo.Canvas, R)
-      //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tbGroupBoxNormal), R, @R, CurrentPPI);
+      //StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tbGroupBoxNormal), R {$IF CompilerVersion  >= 34}, @R, CurrentPPI{$IFEND});
     end;
   end;// else
 end;
