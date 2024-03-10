@@ -135,6 +135,7 @@ type
   TDimension = Integer; // For Firemonkey support, see #841
   PDimension = ^Integer;
   TVTCursor = HCURSOR;
+  IDataObject= WinApi.ActiveX.IDataObject;
   TVTDragDataObject = IDataObject;
   TVTBackground = TPicture;
   TVTPaintContext = HDC;
