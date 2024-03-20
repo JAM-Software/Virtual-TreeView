@@ -2129,7 +2129,7 @@ begin
   end;// if
   FOptions.InternalSetMiscOptions(FOptions.MiscOptions - [toReadOnly]); //SetMiscOptions has side effects
   // Make sure there is no reference remaining to the releasing tree.
-  TWorkerThread.ReleaseThreadReference();
+  TWorkerThread.ReleaseThreadReference(IsLibrary); // see issue #1245
   StopWheelPanning;
   CancelEditNode;
 
