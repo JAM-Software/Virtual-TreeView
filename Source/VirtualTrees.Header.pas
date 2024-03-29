@@ -5267,7 +5267,7 @@ begin
       Result := FPositionToIndex[Position - 1]
     else
       Result := InvalidColumn;
-    Assert(Position <> Result, 'The previous column must not have the same position as the given column.');
+    Assert(Column <> Result, 'The previous column must not have the same position as the given column.');
   end;
 end;
 
