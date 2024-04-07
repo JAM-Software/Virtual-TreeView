@@ -879,7 +879,6 @@ type
     procedure WMPaint(var Message: TWMPaint); message WM_PAINT;
     procedure WMPaste(var Message: TWMPaste); message WM_PASTE;
     procedure WMPrint(var Message: TWMPrint); message WM_PRINT;
-    procedure WMPrintClient(var Message: TWMPrintClient); message WM_PRINTCLIENT;
     procedure WMRButtonDblClk(var Message: TWMRButtonDblClk); message WM_RBUTTONDBLCLK;
     procedure WMRButtonDown(var Message: TWMRButtonDown); message WM_RBUTTONDOWN;
     procedure WMRButtonUp(var Message: TWMRButtonUp); message WM_RBUTTONUP;
@@ -7682,38 +7681,6 @@ begin
     Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
 
   inherited;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
-procedure TBaseVirtualTree.WMPrintClient(var Message: TWMPrintClient);
-
-var
-  Window: TRect;
-  Target: TPoint;
-  Canvas: TCanvas;
-
-begin
-  // Draw only if the window is visible or visibility is not required.
-  if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
-  begin
-    // Determine area of the entire tree to be displayed in the control.
-    Window := ClientRect;
-    Target := Window.TopLeft;
-
-    // The Window rectangle is given in client coordinates. We have to convert it into
-    // a sliding window of the tree image.
-    OffsetRect(Window, FEffectiveOffsetX, -FOffsetY);
-
-    Canvas := TCanvas.Create;
-    try
-      Canvas.Handle := Message.DC;
-      PaintTree(Canvas, Window, Target, [poBackground, poDrawFocusRect, poDrawDropMark, poDrawSelection, poGridLines]);
-    finally
-      Canvas.Handle := 0;
-      Canvas.Free;
-    end;
-  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
