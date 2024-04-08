@@ -2538,7 +2538,6 @@ type
     procedure WMThemeChanged(var Message: TMessage); message WM_THEMECHANGED;
     procedure WMVScroll(var Message: TWMVScroll); message WM_VSCROLL;
     function GetRangeX: Cardinal;
-    function GetDoubleBuffered: Boolean;
     procedure SetDoubleBuffered(const Value: Boolean);
     function GetVclStyleEnabled: Boolean; inline;
     procedure SetOnPrepareButtonImages(const Value: TVTPrepareButtonImagesEvent);
@@ -2721,6 +2720,7 @@ type
       ImgCheckState: TCheckState = csUncheckedNormal; ImgEnabled: Boolean = True): Integer; virtual;
     function GetColumnClass: TVirtualTreeColumnClass; virtual;
     function GetDefaultHintKind: TVTHintKind; virtual;
+    function GetDoubleBuffered: Boolean; {$if CompilerVersion >= 36} override; {$ifend}
     function GetHeaderClass: TVTHeaderClass; virtual;
     function GetHintWindowClass: THintWindowClass; virtual;
     procedure GetImageIndex(var Info: TVTPaintInfo; Kind: TVTImageKind; InfoIndex: TVTImageInfoIndex); virtual;
@@ -17823,6 +17823,12 @@ var
   Canvas: TCanvas;
 
 begin
+  if RTLVersion >= 36 then // see issue #1248, for newer Delphi versions use inherited version of WMPrintClient()
+  begin
+    inherited;
+    exit;
+  end;
+
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
   begin
