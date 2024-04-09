@@ -131,7 +131,7 @@ type
   TVTAutoOption            = VirtualTrees.Types.TVTAutoOption;
   TVTAutoOptions           = VirtualTrees.Types.TVTAutoOptions;
   TVTSelectionOption       = VirtualTrees.Types.TVTSelectionOption;
-  TVstTextType             = VirtualTrees.Types.TVstTextType;
+  TVSTTextType             = VirtualTrees.Types.TVSTTextType;
   TVTHintMode              = VirtualTrees.Types.TVTHintMode;
   TBaseVirtualTree         = VirtualTrees.BaseTree.TBaseVirtualTree;
   IVTEditLink              = VirtualTrees.BaseTree.IVTEditLink;
