@@ -757,7 +757,7 @@ type
     function GetFullyVisible(Node: PVirtualNode): Boolean;
     function GetHasChildren(Node: PVirtualNode): Boolean;
     function GetMultiline(Node: PVirtualNode): Boolean;
-    function GetNodeHeight(Node: PVirtualNode): TDimension;
+    function GetNodeHeight(Node: PVirtualNode): TNodeHeight;
     function GetNodeParent(Node: PVirtualNode): PVirtualNode;
     function GetOffsetXY: TPoint;
     function GetRootNodeCount: Cardinal;
@@ -814,7 +814,7 @@ type
     procedure SetMultiline(Node: PVirtualNode; const Value: Boolean);
     procedure SetNodeAlignment(const Value: TVTNodeAlignment);
     procedure SetNodeDataSize(Value: Integer);
-    procedure SetNodeHeight(Node: PVirtualNode; Value: TDimension);
+    procedure SetNodeHeight(Node: PVirtualNode; Value: TNodeHeight);
     procedure SetNodeParent(Node: PVirtualNode; const Value: PVirtualNode);
     procedure SetOffsetX(const Value: TDimension);
     procedure SetOffsetXY(const Value: TPoint);
@@ -1606,7 +1606,7 @@ type
     property IsFiltered[Node: PVirtualNode]: Boolean read GetFiltered write SetFiltered;
     property IsVisible[Node: PVirtualNode]: Boolean read GetVisible write SetVisible;
     property MultiLine[Node: PVirtualNode]: Boolean read GetMultiline write SetMultiline;
-    property NodeHeight[Node: PVirtualNode]: TDimension read GetNodeHeight write SetNodeHeight;
+    property NodeHeight[Node: PVirtualNode]: TNodeHeight read GetNodeHeight write SetNodeHeight;
     property NodeParent[Node: PVirtualNode]: PVirtualNode read GetNodeParent write SetNodeParent;
     property OffsetX: TDimension read FOffsetX write SetOffsetX;
     property OffsetXY: TPoint read GetOffsetXY write SetOffsetXY;
@@ -3289,7 +3289,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): TDimension;
+function TBaseVirtualTree.GetNodeHeight(Node: PVirtualNode): TNodeHeight;
 
 begin
   if Assigned(Node) and (Node <> FRoot) then
@@ -4468,7 +4468,7 @@ var
   Index: Cardinal;
   Child: PVirtualNode;
   Count: Integer;
-  NewHeight: TDimension;
+  NewHeight: TNodeHeight;
 begin
   if not (toReadOnly in FOptions.MiscOptions) then
   begin
@@ -5052,7 +5052,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.SetNodeHeight(Node: PVirtualNode; Value: TDimension);
+procedure TBaseVirtualTree.SetNodeHeight(Node: PVirtualNode; Value: TNodeHeight);
 
 var
   Difference: TDimension;
