@@ -120,7 +120,7 @@ type
   // to compile (conversion done by BCB is wrong).
   TCacheEntry = record
     Node: PVirtualNode;
-    AbsoluteTop: TDimension;
+    AbsoluteTop: TNodeHeight;
   end;
 
   TCache = array of TCacheEntry;
@@ -531,7 +531,7 @@ type
     FOffsetY: TDimension;                        // Determines left and top scroll offset.
     FEffectiveOffsetX: TDimension;               // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
-    FRangeY: TDimension;                         // current virtual width and height of the tree
+    FRangeY: TNodeHeight;                         // current virtual width and height of the tree
     FBottomSpace: TDimension;                    // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
@@ -739,8 +739,8 @@ type
     procedure ClearNodeBackground(const PaintInfo: TVTPaintInfo; UseBackground, Floating: Boolean; R: TRect);
     function CompareNodePositions(Node1, Node2: PVirtualNode; ConsiderChildrenAbove: Boolean = False): Integer;
     procedure DrawLineImage(const PaintInfo: TVTPaintInfo; X, Y, H, VAlign: TDimension; Style: TVTLineType; Reverse: Boolean);
-    function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode; overload;
-    function FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode; overload;
+    function FindInPositionCache(Node: PVirtualNode; var CurrentPos: TNodeHeight): PVirtualNode; overload;
+    function FindInPositionCache(Position: TDimension; var CurrentPos: TNodeHeight): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
     function GetBottomNode: PVirtualNode;
@@ -904,7 +904,7 @@ type
     procedure AddToSelection(const NewItems: TNodeArray; NewLength: Integer; ForceInsert: Boolean = False); overload; virtual;
     procedure AdjustPaintCellRect(var PaintInfo: TVTPaintInfo; var NextNonEmpty: TColumnIndex); virtual;
     procedure AdjustPanningCursor(X, Y: TDimension); virtual;
-    procedure AdjustTotalHeight(Node: PVirtualNode; Value: TDimension; relative: Boolean = False);
+    procedure AdjustTotalHeight(Node: PVirtualNode; Value: TNodeHeight; relative: Boolean = False);
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
     function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
@@ -1235,7 +1235,7 @@ type
     property MinusBM: TBitmap read FMinusBM;
     property PlusBM: TBitmap read FPlusBM;
     property RangeX: TDimension read GetRangeX;// Returns the width of the virtual tree in pixels, (not ClientWidth). If there are columns it returns the total width of all of them; otherwise it returns the maximum of the all the line's data widths.
-    property RangeY: TDimension read FRangeY;
+    property RangeY: TNodeHeight read FRangeY;
     property RootNodeCount: Cardinal read GetRootNodeCount write SetRootNodeCount default 0;
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
     property SelectionBlendFactor: Byte read FSelectionBlendFactor write FSelectionBlendFactor default 128;
@@ -2211,12 +2211,12 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: TDimension; Relative: Boolean = False);
+procedure TBaseVirtualTree.AdjustTotalHeight(Node: PVirtualNode; Value: TNodeHeight; Relative: Boolean = False);
 
 // Sets a node's total height to the given value and recursively adjusts the parent's total height.
 
 var
-  Difference: TDimension;
+  Difference: TNodeHeight;
   Run: PVirtualNode;
 
 begin
@@ -2997,7 +2997,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.FindInPositionCache(Node: PVirtualNode; var CurrentPos: TDimension): PVirtualNode;
+function TBaseVirtualTree.FindInPositionCache(Node: PVirtualNode; var CurrentPos: TNodeHeight): PVirtualNode;
 
 // Looks through the position cache and returns the node whose top position is the largest one which is smaller or equal
 // to the position of the given node.
@@ -3030,7 +3030,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.FindInPositionCache(Position: TDimension; var CurrentPos: TDimension): PVirtualNode;
+function TBaseVirtualTree.FindInPositionCache(Position: TDimension; var CurrentPos: TNodeHeight): PVirtualNode;
 
 // Looks through the position cache and returns the node whose top position is the largest one which is smaller or equal
 // to the given vertical position.
@@ -9328,7 +9328,9 @@ begin
         // yet elapsed.
         if ((Int64(timeGetTime) - FDragScrollStart) < FAutoScrollDelay) then
           Result := [];
-      end;
+      end
+      else
+        OutputDebugString('Ooops');
     end;
   end;
 end;
@@ -11029,7 +11031,7 @@ var
   Index: Cardinal;
   CurrentNode,
   Temp: PVirtualNode;
-  CurrentTop: TDimension;
+  CurrentTop: TNodeHeight;
 begin
   EntryCount := 0;
   if not (tsStopValidation in FStates) then
@@ -16851,7 +16853,7 @@ function TBaseVirtualTree.GetDisplayRect(Node: PVirtualNode; Column: TColumnInde
 var
   Temp: PVirtualNode;
   LeftOffset: TDimension;
-  TopOffset: TDimension;
+  TopOffset: TNodeHeight;
   CacheIsAvailable: Boolean;
   TextWidth: TDimension;
   CurrentBidiMode: TBidiMode;
@@ -18463,7 +18465,7 @@ function TBaseVirtualTree.GetNodeAt(X, Y: TDimension; Relative: Boolean; var Nod
 
 var
   AbsolutePos,
-  CurrentPos: TDimension;
+  CurrentPos: TNodeHeight;
 
 begin
   if Y < 0 then
@@ -22616,7 +22618,7 @@ begin
       DoShowScrollBar(SB_VERT, True);
 
       ScrollInfo.nMin := 0;
-      ScrollInfo.nMax := FRangeY;
+      ScrollInfo.nMax := IfThen(FRangeY < MaxInt, FRangeY, MaxInt); // TScrollInfo values are signed 32bit only
       ScrollInfo.nPos := -FOffsetY;
       ScrollInfo.nPage := Max(0, ClientHeight + 1);
 
