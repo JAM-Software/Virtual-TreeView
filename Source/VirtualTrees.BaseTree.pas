@@ -15889,6 +15889,8 @@ begin
   begin
     Canvas.Font.Assign(Self.Font);
     lTextHeight := Canvas.TextHeight('Tg') + TextMargin;
+    if Assigned(Images) then
+      lTextHeight := Max(lTextHeight, Images.Height + IfThen(fImagesMargin > 1, fImagesMargin div 2, fImagesMargin)); // ImagesMargin is the distance between two Images / checboxes. Don't count it twice vertically => div 2
     // By default, we only ensure that DefaultNodeHeight is large enough.
     // If the form's dpi has changed, we scale up and down the DefaultNodeHeight, See issue #677.
     if (lTextHeight <> Self.DefaultNodeHeight) then begin
