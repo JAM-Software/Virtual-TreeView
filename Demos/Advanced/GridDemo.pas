@@ -11,7 +11,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types;
+  StdCtrls, VirtualTrees, ImgList, Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
 
 type
   TGridForm = class(TForm)

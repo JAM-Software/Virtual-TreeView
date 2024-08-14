@@ -19924,9 +19924,15 @@ begin
       end;
     end;
 
-    // Use first node if we start with the root.
+    // if no node was passed, iterate the entire tree.
     if Node = nil then
-      Node := GetFirstNoInit;
+    begin
+      // ChildNodesOnly doesn't really matter in this case, but we need to choose the correct start node dependant ont its value. Issue #1262
+      if ChildNodesOnly then
+        Node := FRoot // Use root node
+      else
+        Node := GetFirstNoInit; // Use first node if we start with the root.
+    end;
 
     if Assigned(Node) then
     begin

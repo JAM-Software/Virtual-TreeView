@@ -9,11 +9,9 @@ object GridForm: TGridForm
   Font.Height = -13
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   DesignSize = (
     745
     474)
-  PixelsPerInch = 96
   TextHeight = 16
   object Label15: TLabel
     Left = 516
@@ -57,8 +55,8 @@ object GridForm: TGridForm
     WordWrap = True
   end
   object VST5: TVirtualStringTree
-    Left = 6
-    Top = 6
+    Left = 8
+    Top = 8
     Width = 491
     Height = 428
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -75,7 +73,7 @@ object GridForm: TGridForm
       'Virtual Tree Data')
     Colors.BorderColor = clWindowText
     Colors.HotColor = clBlack
-    DefaultNodeHeight = 19
+    DefaultNodeHeight = 17
     DragMode = dmAutomatic
     EditDelay = 300
     Font.Charset = ANSI_CHARSET
@@ -85,7 +83,7 @@ object GridForm: TGridForm
     Font.Style = []
     Header.AutoSizeIndex = 2
     Header.Background = clBtnShadow
-    Header.Height = 20
+    Header.Height = 17
     Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoVisible]
     Header.Style = hsFlatButtons
     HintMode = hmTooltip
@@ -99,7 +97,7 @@ object GridForm: TGridForm
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoChangeScale]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages]
-    TreeOptions.SelectionOptions = [toMiddleClickSelect, toMultiSelect, toExtendedFocus]
+    TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect]
     WantTabs = True
     OnAfterCellPaint = VST5AfterCellPaint
     OnBeforeCellPaint = VST5BeforeCellPaint
@@ -122,12 +120,14 @@ object GridForm: TGridForm
       end
       item
         Margin = 0
+        Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coFixed, coAllowFocus, coEditable, coStyleColor]
         Position = 1
         Text = 'Customer ID'
         Width = 100
       end
       item
         Margin = 0
+        Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coFixed, coAllowFocus, coEditable, coStyleColor]
         Position = 2
         Text = 'First Name'
         Width = 120

@@ -9,17 +9,15 @@ object VisibilityForm: TVisibilityForm
   Font.Height = -13
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnHide = FormHide
   OnShow = FormShow
   DesignSize = (
     736
     490)
-  PixelsPerInch = 96
   TextHeight = 16
   object Label17: TLabel
-    Left = 369
+    Left = 367
     Top = 4
     Width = 196
     Height = 77
@@ -33,7 +31,7 @@ object VisibilityForm: TVisibilityForm
     WordWrap = True
   end
   object Label1: TLabel
-    Left = 504
+    Left = 502
     Top = 212
     Width = 225
     Height = 97
@@ -48,7 +46,7 @@ object VisibilityForm: TVisibilityForm
     WordWrap = True
   end
   object Label2: TLabel
-    Left = 504
+    Left = 502
     Top = 318
     Width = 226
     Height = 93
@@ -63,7 +61,7 @@ object VisibilityForm: TVisibilityForm
     WordWrap = True
   end
   object Label3: TLabel
-    Left = 572
+    Left = 570
     Top = 4
     Width = 152
     Height = 77
@@ -76,7 +74,7 @@ object VisibilityForm: TVisibilityForm
     WordWrap = True
   end
   object Label4: TLabel
-    Left = 504
+    Left = 502
     Top = 425
     Width = 217
     Height = 35
@@ -89,7 +87,7 @@ object VisibilityForm: TVisibilityForm
     WordWrap = True
   end
   object RadioGroup1: TRadioGroup
-    Left = 369
+    Left = 367
     Top = 88
     Width = 360
     Height = 109
@@ -107,7 +105,7 @@ object VisibilityForm: TVisibilityForm
   object Panel2: TPanel
     Left = 4
     Top = 212
-    Width = 489
+    Width = 487
     Height = 266
     Anchors = [akLeft, akTop, akRight, akBottom]
     FullRepaint = False
@@ -4131,14 +4129,14 @@ object VisibilityForm: TVisibilityForm
       Colors.HotColor = clBlack
       Colors.UnfocusedSelectionColor = clHighlight
       Colors.UnfocusedSelectionBorderColor = clHighlight
-      DefaultNodeHeight = 24
+      DefaultNodeHeight = 17
       Font.Charset = ANSI_CHARSET
       Font.Color = clNavy
       Font.Height = -11
       Font.Name = 'Verdana'
       Font.Style = []
       Header.AutoSizeIndex = 0
-      Header.Height = 24
+      Header.Height = 17
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
       Header.Style = hsFlatButtons
       HintMode = hmTooltip
@@ -4162,6 +4160,8 @@ object VisibilityForm: TVisibilityForm
       OnInitChildren = VST2InitChildren
       OnInitNode = VST1InitNode
       OnScroll = VST2Scroll
+      Touch.InteractiveGestures = [igPan, igPressAndTap]
+      Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
       Columns = <
         item
           Position = 0
@@ -4173,7 +4173,7 @@ object VisibilityForm: TVisibilityForm
     object VST3: TVirtualStringTree
       Left = 207
       Top = 1
-      Width = 281
+      Width = 279
       Height = 264
       Align = alClient
       Background.Data = {
@@ -8180,14 +8180,15 @@ object VisibilityForm: TVisibilityForm
       Colors.HotColor = clBlack
       Colors.UnfocusedSelectionColor = clHighlight
       Colors.UnfocusedSelectionBorderColor = clHighlight
-      DefaultNodeHeight = 24
+      DefaultNodeHeight = 17
       Font.Charset = ANSI_CHARSET
       Font.Color = clNavy
       Font.Height = -11
       Font.Name = 'Verdana'
       Font.Style = []
       Header.AutoSizeIndex = 0
-      Header.Height = 24
+      Header.Height = 17
+      Header.MainColumn = 1
       Header.Options = [hoColumnResize, hoDrag, hoVisible]
       Header.Style = hsFlatButtons
       HintMode = hmTooltip
@@ -8210,6 +8211,8 @@ object VisibilityForm: TVisibilityForm
       OnInitChildren = VST2InitChildren
       OnInitNode = VST1InitNode
       OnScroll = VST3Scroll
+      Touch.InteractiveGestures = [igPan, igPressAndTap]
+      Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
       Columns = <
         item
           Color = clWindow
@@ -8244,13 +8247,14 @@ object VisibilityForm: TVisibilityForm
   object VST1: TVirtualStringTree
     Left = 4
     Top = 4
-    Width = 354
+    Width = 352
     Height = 193
     Anchors = [akLeft, akTop, akRight]
     Colors.BorderColor = clWindowText
     Colors.HotColor = clBlack
-    DefaultNodeHeight = 24
+    DefaultNodeHeight = 20
     Header.AutoSizeIndex = 0
+    Header.Height = 16
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     HintMode = hmTooltip
@@ -8264,6 +8268,8 @@ object VisibilityForm: TVisibilityForm
     OnGetText = VST1GetText
     OnInitChildren = VST1InitChildren
     OnInitNode = VST1InitNode
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
     DefaultText = ''
   end

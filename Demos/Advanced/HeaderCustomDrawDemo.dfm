@@ -1,26 +1,24 @@
 object HeaderOwnerDrawForm: THeaderOwnerDrawForm
   Left = 572
   Top = 407
-  ClientHeight = 438
-  ClientWidth = 776
+  ClientHeight = 429
+  ClientWidth = 772
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    776
-    438)
-  PixelsPerInch = 96
+    772
+    429)
   TextHeight = 13
   object Label8: TLabel
     Left = 12
-    Top = 318
-    Width = 745
+    Top = 309
+    Width = 739
     Height = 83
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = False
@@ -39,8 +37,8 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
   object HeaderCustomDrawTree: TVirtualStringTree
     Left = 8
     Top = 10
-    Width = 749
-    Height = 301
+    Width = 743
+    Height = 292
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     ClipboardFormats.Strings = (
@@ -62,7 +60,7 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
     Header.Background = clBtnShadow
     Header.Height = 110
     Header.Images = HeaderImages
-    Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoOwnerDraw, hoShowHint, hoShowImages, hoShowSortGlyphs, hoVisible]
+    Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoOwnerDraw, hoShowHint, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoResizeInclCaption]
     Header.SortColumn = 0
     Header.Style = hsFlatButtons
     HintMode = hmTooltip
@@ -82,46 +80,46 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
     OnAdvancedHeaderDraw = HeaderCustomDrawTreeAdvancedHeaderDraw
     OnGetText = HeaderCustomDrawTreeGetText
     OnHeaderDrawQueryElements = HeaderCustomDrawTreeHeaderDrawQueryElements
-    OnHeaderMouseDown = HeaderCustomDrawTreeHeaderMouseDown
-    OnHeaderMouseUp = HeaderCustomDrawTreeHeaderMouseUp
     OnStateChange = HeaderCustomDrawTreeStateChange
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <
       item
         BiDiMode = bdLeftToRight
         Color = clWindow
+        Hint = 'This column is drawn entirely by the tree.'
         ImageIndex = 1
         Options = [coDraggable, coEnabled, coResizable, coShowDropMark, coVisible]
         Position = 0
         Spacing = -1
+        Text = 'Default drawing'
         Width = 200
-        WideText = 'Default drawing'
-        WideHint = 'This column is drawn entirely by the tree.'
       end
       item
         Alignment = taCenter
         BiDiMode = bdLeftToRight
         Color = clWindow
+        Hint = 'Only the background is customized.'
         ImageIndex = 2
         Layout = blGlyphTop
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible]
         Position = 1
         Spacing = -10
         Style = vsOwnerDraw
+        Text = 'Custom background'
         Width = 230
-        WideText = 'Custom background'
-        WideHint = 'Only the background is customized.'
       end
       item
         Alignment = taCenter
         BiDiMode = bdLeftToRight
         Color = clInfoBk
+        Hint = 'Background and text in this column are customized.'
         ImageIndex = 0
         Options = [coAllowClick, coDraggable, coEnabled, coResizable, coShowDropMark, coVisible]
         Position = 2
         Spacing = -1
         Style = vsOwnerDraw
         Width = 350
-        WideHint = 'Background and text in this column are customized.'
       end>
   end
   object HeaderImages: TImageList
@@ -130,7 +128,7 @@ object HeaderOwnerDrawForm: THeaderOwnerDrawForm
     Left = 24
     Top = 52
     Bitmap = {
-      494C01010300040008005A005A00FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010300040004005A005A00FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000680100005A000000010020000000000040FA
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -1,8 +1,8 @@
 object GeneralForm: TGeneralForm
   Left = 611
   Top = 299
-  ClientHeight = 497
-  ClientWidth = 706
+  ClientHeight = 488
+  ClientWidth = 702
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -10,18 +10,17 @@ object GeneralForm: TGeneralForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = False
   ShowHint = True
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object VST2: TVirtualStringTree
     Left = 0
     Top = 0
-    Width = 486
-    Height = 497
+    Width = 482
+    Height = 488
     Align = alClient
     AutoExpandDelay = 300
+    AutoScrollDelay = 5000
     BiDiMode = bdLeftToRight
     ButtonFillMode = fmWindowColor
     ClipboardFormats.Strings = (
@@ -34,7 +33,7 @@ object GeneralForm: TGeneralForm
     Colors.HotColor = clBlack
     Colors.UnfocusedSelectionBorderColor = clBtnShadow
     Ctl3D = True
-    DefaultNodeHeight = 20
+    DefaultNodeHeight = 23
     DragCursor = crHelp
     DragMode = dmAutomatic
     DrawSelectionMode = smBlendedRectangle
@@ -46,7 +45,7 @@ object GeneralForm: TGeneralForm
     Font.Style = []
     Header.AutoSizeIndex = -1
     Header.Background = clBtnShadow
-    Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoShowHint, hoVisible]
+    Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoHotTrack, hoShowHint, hoVisible, hoHeaderClickAutoSort]
     Header.PopupMenu = VTHPopup
     Header.Style = hsFlatButtons
     HotCursor = crHandPoint
@@ -57,12 +56,14 @@ object GeneralForm: TGeneralForm
     RootNodeCount = 5
     ScrollBarOptions.VerticalIncrement = 19
     TabOrder = 0
+    TextMargin = 8
     TreeOptions.AnimationOptions = [toAnimatedToggle]
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoSpanColumns, toAutoTristateTracking, toAutoHideButtons, toAutoChangeScale]
+    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoSort, toAutoSpanColumns, toAutoTristateTracking, toAutoHideButtons, toAutoChangeScale]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
     TreeOptions.PaintOptions = [toHideSelection, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseBlendedSelection]
     TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect, toRightClickSelect, toSelectNextNodeOnRemoval]
     TreeOptions.StringOptions = [toSaveCaptions, toShowStaticText, toAutoAcceptEditChange]
+    OnCompareNodes = VST2CompareNodes
     OnDragOver = VST2DragOver
     OnFocusChanging = VST2FocusChanging
     OnFreeNode = VST2FreeNode
@@ -76,6 +77,8 @@ object GeneralForm: TGeneralForm
     OnKeyDown = VST2KeyDown
     OnNewText = VST2NewText
     OnStateChange = VST2StateChange
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <
       item
         Hint = 'Column which initially contains the tree.'
@@ -89,7 +92,7 @@ object GeneralForm: TGeneralForm
         Color = 14737632
         Hint = 'Image only column.'
         MaxWidth = 22
-        Options = [coEnabled, coParentBidiMode, coVisible]
+        Options = [coEnabled, coParentBidiMode, coVisible, coFixed]
         Position = 0
         Spacing = 0
         Width = 22
@@ -107,10 +110,10 @@ object GeneralForm: TGeneralForm
       end>
   end
   object ScrollBox1: TScrollBox
-    Left = 486
+    Left = 482
     Top = 0
     Width = 220
-    Height = 497
+    Height = 488
     Align = alRight
     BevelEdges = []
     BevelInner = bvNone
