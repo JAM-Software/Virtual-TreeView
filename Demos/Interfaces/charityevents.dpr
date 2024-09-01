@@ -1,4 +1,4 @@
-﻿program charityevents;
+program charityevents;
 
 uses
   Vcl.Forms,

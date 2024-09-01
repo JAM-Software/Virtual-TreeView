@@ -28,8 +28,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
   StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList, VirtualTrees.BaseTree,
-  VirtualTrees.Types, VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL,
-  VirtualTrees.AccessibilityFactory;
+  VirtualTrees.Types;
 
 type
   TGeneralForm = class(TForm)
@@ -85,11 +84,6 @@ type
       var Ghosted: Boolean; var ImageIndex: TImageIndex;
       var ImageList: TCustomImageList);
     procedure VST2FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
-    procedure VST2DragDrop(Sender: TBaseVirtualTree; Source: TObject;
-      DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
-      Pt: TPoint; var Effect: Integer; Mode: TDropMode);
-    procedure VST2CompareNodes(Sender: TBaseVirtualTree; Node1,
-      Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
   end;
 
 var
@@ -100,7 +94,7 @@ var
 implementation
 
 uses
-  ShellAPI, Main, States, Math;
+  ShellAPI, Main, States;
 
 {$R *.DFM}
 
@@ -550,19 +544,6 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-procedure TGeneralForm.VST2CompareNodes(Sender: TBaseVirtualTree; Node1,
-  Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
-begin
-  Result := Sign(Int64(Node1) - Int64(Node2));
-end;
-
-procedure TGeneralForm.VST2DragDrop(Sender: TBaseVirtualTree; Source: TObject;
-  DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
-  Pt: TPoint; var Effect: Integer; Mode: TDropMode);
-begin
-  ShowMessage('ff');
-end;
 
 procedure TGeneralForm.VST2DragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState;
   Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
