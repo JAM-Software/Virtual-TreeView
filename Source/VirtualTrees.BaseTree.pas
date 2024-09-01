@@ -1518,7 +1518,7 @@ type
     function IsMouseSelecting: Boolean;
     function IsEmpty: Boolean; inline;
     function IsUpdating(): Boolean;
-    function IterateSubtree(Node: PVirtualNode; Callback: TVTGetNodeProc; Data: Pointer; Filter: TVirtualNodeStates = [];
+    function IterateSubtree(StartNode: PVirtualNode; Callback: TVTGetNodeProc; Data: Pointer; Filter: TVirtualNodeStates = [];
       DoInit: Boolean = False; ChildNodesOnly: Boolean = False): PVirtualNode;
     procedure LoadFromFile(const FileName: TFileName); virtual;
     procedure LoadFromStream(Stream: TStream); virtual;
@@ -19872,7 +19872,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.IterateSubtree(Node: PVirtualNode; Callback: TVTGetNodeProc; Data: Pointer;
+function TBaseVirtualTree.IterateSubtree(StartNode: PVirtualNode; Callback: TVTGetNodeProc; Data: Pointer;
   Filter: TVirtualNodeStates = []; DoInit: Boolean = False; ChildNodesOnly: Boolean = False): PVirtualNode;
 
 // Iterates through the all children and grandchildren etc. of Node (or the entire tree if Node = nil)
@@ -19890,7 +19890,7 @@ var
   WasIterating: Boolean;
 
 begin
-  Assert(Node <> FRoot, 'Node must not be the hidden root node.');
+  Assert(StartNode <> FRoot, 'Node must not be the hidden root node.');
 
   WasIterating := tsIterating in FStates;
   DoStateChange([tsIterating]);
@@ -19902,18 +19902,19 @@ begin
       GetNextNode := GetNextNoInit;
 
     Abort := False;
-    if Node = nil then
+    Result := StartNode;
+    if Result = nil then
       Stop := nil
     else
     begin
-      if not (vsInitialized in Node.States) and DoInit then
-        InitNode(Node);
+      if not (vsInitialized in Result.States) and DoInit then
+        InitNode(Result);
 
       // The stopper does not need to be initialized since it is not taken into the enumeration.
-      Stop := Node.NextSibling;
+      Stop := Result.NextSibling;
       if Stop = nil then
       begin
-        Stop := Node;
+        Stop := Result;
         repeat
           Stop := Stop.Parent;
         until (Stop = FRoot) or Assigned(Stop.NextSibling);
@@ -19925,51 +19926,49 @@ begin
     end;
 
     // Use first node if we start with the root.
-    if Node = nil then
-      Node := GetFirstNoInit;
+    if Result = nil then
+      Result := GetFirstNoInit;
 
-    if Assigned(Node) then
+    if Assigned(Result) then
     begin
-      if not (vsInitialized in Node.States) and DoInit then
-        InitNode(Node);
+      if not (vsInitialized in Result.States) and DoInit then
+        InitNode(Result);
 
       // Skip given node if only the child nodes are requested.
       if ChildNodesOnly then
       begin
-        if Node.ChildCount = 0 then
-          Node := nil
-        else
-          Node := GetNextNode(Node);
+        if Result.ChildCount = 0 then
+          Result := nil
+        else if StartNode <> nil then
+          Result := GetNextNode(Result);
       end;
 
       if Filter = [] then
       begin
         // unfiltered loop
-        while Assigned(Node) and (Node <> Stop) do
+        while Assigned(Result) and (Result <> Stop) do
         begin
-          Callback(Self, Node, Data, Abort);
+          Callback(Self, Result, Data, Abort);
           if Abort then
             Break;
-          Node := GetNextNode(Node);
+          Result := GetNextNode(Result);
         end;
       end
       else
       begin
         // filtered loop
-        while Assigned(Node) and (Node <> Stop) do
+        while Assigned(Result) and (Result <> Stop) do
         begin
-          if Node.States * Filter = Filter then
-            Callback(Self, Node, Data, Abort);
+          if Result.States * Filter = Filter then
+            Callback(Self, Result, Data, Abort);
           if Abort then
             Break;
-          Node := GetNextNode(Node);
+          Result := GetNextNode(Result);
         end;
       end;
     end;
 
-    if Abort then
-      Result := Node
-    else
+    if not Abort then
       Result := nil;
   finally
     if not WasIterating then
