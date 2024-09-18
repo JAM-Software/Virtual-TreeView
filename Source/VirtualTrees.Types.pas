@@ -144,7 +144,7 @@ type
   TVTPaintContext = HDC;
   TVTBrush = HBRUSH;
 {$ENDIF}
-  TColumnIndex = type Integer;
+  TColumnIndex = Integer;
   TColumnPosition = type Cardinal;
   PCardinal = ^Cardinal;
 
