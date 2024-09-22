@@ -9,7 +9,7 @@ uses
   VirtualTrees;
 
 type
-  TTestBaseVirtualTree = class(TBaseVirtualTree)
+  TTestBaseVirtualTree = class(TVTAncestor)
   public
     property OnCompareNodes;
   end;

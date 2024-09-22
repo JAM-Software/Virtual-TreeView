@@ -24,6 +24,9 @@
         <Projects Include="Demos\OLE\OLE.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="Tests\Tests.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -95,14 +98,23 @@
     <Target Name="OLE:Make">
         <MSBuild Projects="Demos\OLE\OLE.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Tests">
+        <MSBuild Projects="Tests\Tests.dproj"/>
+    </Target>
+    <Target Name="Tests:Clean">
+        <MSBuild Projects="Tests\Tests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Tests:Make">
+        <MSBuild Projects="Tests\Tests.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Advanced;VirtualTreesR;VirtualTreesD;charityevents;Minimal;MVCDemo;OLE"/>
+        <CallTarget Targets="Advanced;VirtualTreesR;VirtualTreesD;charityevents;Minimal;MVCDemo;OLE;Tests"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Advanced:Clean;VirtualTreesR:Clean;VirtualTreesD:Clean;charityevents:Clean;Minimal:Clean;MVCDemo:Clean;OLE:Clean"/>
+        <CallTarget Targets="Advanced:Clean;VirtualTreesR:Clean;VirtualTreesD:Clean;charityevents:Clean;Minimal:Clean;MVCDemo:Clean;OLE:Clean;Tests:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Advanced:Make;VirtualTreesR:Make;VirtualTreesD:Make;charityevents:Make;Minimal:Make;MVCDemo:Make;OLE:Make"/>
+        <CallTarget Targets="Advanced:Make;VirtualTreesR:Make;VirtualTreesD:Make;charityevents:Make;Minimal:Make;MVCDemo:Make;OLE:Make;Tests:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
