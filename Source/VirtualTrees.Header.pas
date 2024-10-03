@@ -405,6 +405,7 @@ type
     procedure Assign(Source : TPersistent); override;
     procedure AutoFitColumns(); overload;
     procedure AutoFitColumns(Animated : Boolean; SmartAutoFitType : TSmartAutoFitType = smaUseColumnOption; RangeStartCol : Integer = NoColumn;  RangeEndCol : Integer = NoColumn); overload; virtual;
+    procedure ColumnDropped(const P: TPoint);
     procedure DragTo(P : TPoint);
     function InHeader(P : TPoint) : Boolean; virtual;
     function InHeaderSplitterArea(P : TPoint) : Boolean; virtual;
@@ -1454,7 +1455,6 @@ var
   P                                          : TPoint;
   R                                          : TRect;
   I                                          : TColumnIndex;
-  OldPosition                                : Integer;
   HitIndex                                   : TColumnIndex;
   NewCursor                                  : TVTCursor;
   Button                                     : TMouseButton;
@@ -1683,54 +1683,7 @@ begin
             //successfull dragging moves columns
             with TWMLButtonUp(Message) do
               P := Tree.ClientToScreen(Point(XPos, YPos));
-            GetWindowRect(Tree.Handle, R);
-            with FColumns do
-            begin
-              FDragImage.EndDrag;
-
-              //Problem fixed:
-              //Column Header does not paint correctly after a drop in certain conditions
-              // ** The conditions are, drag is across header, mouse is not moved after
-              //the drop and the graphics hardware is slow in certain operations (encountered
-              //on Windows 10).
-              //Fix for the problem on certain systems where the dropped column header
-              //does not appear in the new position if the mouse is not moved after
-              //the drop. The reason is that the restore backup image operation (BitBlt)
-              //in the above EndDrag is slower than the header repaint in the code below
-              //and overlaps the new changed header with the older image.
-              //This happens because BitBlt seems to operate in its own thread in the
-              //graphics hardware and finishes later than the following code.
-              //
-              //To solve this problem, we introduce a small delay here so that the
-              //changed header in the following code is correctly repainted after
-              //the delayed BitBlt above has finished operation to restore the old
-              //backup image.
-              sleep(50);
-
-              if (DropTarget > - 1) and (DropTarget <> DragIndex) and PtInRect(R, P) then
-              begin
-                OldPosition := FColumns[DragIndex].Position;
-                if FColumns.DropBefore then
-                begin
-                  if FColumns[DragIndex].Position < FColumns[DropTarget].Position then
-                    FColumns[DragIndex].Position := Max(0, FColumns[DropTarget].Position - 1)
-                  else
-                    FColumns[DragIndex].Position := FColumns[DropTarget].Position;
-                end
-                else
-                begin
-                  if FColumns[DragIndex].Position < FColumns[DropTarget].Position then
-                    FColumns[DragIndex].Position := FColumns[DropTarget].Position
-                  else
-                    FColumns[DragIndex].Position := FColumns[DropTarget].Position + 1;
-                end;
-                Tree.DoHeaderDragged(DragIndex, OldPosition);
-              end
-              else
-                Tree.DoHeaderDraggedOut(DragIndex, P);
-              DropTarget := NoColumn;
-            end;
-            Invalidate(nil);
+            ColumnDropped(P);
           end;
           Result := True;
           Message.Result := 0;
@@ -1897,6 +1850,61 @@ begin
         end;
       end;
   end;
+end;
+
+procedure TVTHeader.ColumnDropped(const P: TPoint);
+var
+  R: TRect;
+  OldPosition: Integer;
+begin
+  GetWindowRect(Tree.Handle, R);
+  with FColumns do
+  begin
+    FDragImage.EndDrag;
+
+    //Problem fixed:
+    //Column Header does not paint correctly after a drop in certain conditions
+    // ** The conditions are, drag is across header, mouse is not moved after
+    //the drop and the graphics hardware is slow in certain operations (encountered
+    //on Windows 10).
+    //Fix for the problem on certain systems where the dropped column header
+    //does not appear in the new position if the mouse is not moved after
+    //the drop. The reason is that the restore backup image operation (BitBlt)
+    //in the above EndDrag is slower than the header repaint in the code below
+    //and overlaps the new changed header with the older image.
+    //This happens because BitBlt seems to operate in its own thread in the
+    //graphics hardware and finishes later than the following code.
+    //
+    //To solve this problem, we introduce a small delay here so that the
+    //changed header in the following code is correctly repainted after
+    //the delayed BitBlt above has finished operation to restore the old
+    //backup image.
+    sleep(50);
+
+    if (DropTarget > - 1) and (DropTarget <> DragIndex) and PtInRect(R, P) then
+    begin
+      OldPosition := FColumns[DragIndex].Position;
+      if FColumns.DropBefore then
+      begin
+        if FColumns[DragIndex].Position < FColumns[DropTarget].Position then
+          FColumns[DragIndex].Position := Max(0, FColumns[DropTarget].Position - 1)
+        else
+          FColumns[DragIndex].Position := FColumns[DropTarget].Position;
+      end
+      else
+      begin
+        if FColumns[DragIndex].Position < FColumns[DropTarget].Position then
+          FColumns[DragIndex].Position := FColumns[DropTarget].Position
+        else
+          FColumns[DragIndex].Position := FColumns[DropTarget].Position + 1;
+      end;
+      Tree.DoHeaderDragged(DragIndex, OldPosition);
+    end
+    else
+      Tree.DoHeaderDraggedOut(DragIndex, P);
+    DropTarget := NoColumn;
+  end;
+  Invalidate(nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
