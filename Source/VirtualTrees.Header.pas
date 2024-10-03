@@ -380,7 +380,6 @@ type
     function DoHeightTracking(var P : TPoint; Shift : TShiftState) : Boolean; virtual;
     function DoHeightDblClickResize(var P : TPoint; Shift : TShiftState) : Boolean; virtual;
     procedure DoSetSortColumn(Value : TColumnIndex; pSortDirection : TSortDirection); virtual;
-    procedure DragTo(P : TPoint); virtual;
     procedure FixedAreaConstraintsChanged(Sender : TObject);
     function GetColumnsClass : TVirtualTreeColumnsClass; virtual;
     function GetOwner : TPersistent; override;
@@ -406,6 +405,7 @@ type
     procedure Assign(Source : TPersistent); override;
     procedure AutoFitColumns(); overload;
     procedure AutoFitColumns(Animated : Boolean; SmartAutoFitType : TSmartAutoFitType = smaUseColumnOption; RangeStartCol : Integer = NoColumn;  RangeEndCol : Integer = NoColumn); overload; virtual;
+    procedure DragTo(P : TPoint);
     function InHeader(P : TPoint) : Boolean; virtual;
     function InHeaderSplitterArea(P : TPoint) : Boolean; virtual;
     procedure Invalidate(Column : TVirtualTreeColumn; ExpandToBorder : Boolean = False; UpdateNowFlag : Boolean = False);
@@ -450,6 +450,7 @@ implementation
 
 uses
   WinApi.ShlObj,
+  WinApi.Ole2,
   WinApi.UxTheme,
   System.Math,
   System.SysUtils,
@@ -457,8 +458,8 @@ uses
   Vcl.Forms,
   VirtualTrees.HeaderPopup,
   VirtualTrees.BaseTree,
-  VirtualTrees.BaseAncestorVcl{to eliminate H2443 about inline expanding}
-  ;
+  VirtualTrees.BaseAncestorVcl, // to eliminate H2443 about inline expanding
+  VirtualTrees.DataObject;
 
 type
   TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
@@ -1958,6 +1959,12 @@ begin
         FDragImage.MoveRestriction := dmrNone;
       FDragImage.PrepareDrag(Image, ImagePos, P, nil);
       FDragImage.ShowDragImage;
+
+      // See issue #806
+//      var lDataObject := TVTDataObject.Create(nil, False);
+//      FDragImage.PrepareDrag(Image, ImagePos, P, lDataObject);
+//      var lDragEffect: DWord;                    // The last executed drag effect
+//      SHDoDragDrop(fOwner.Handle, lDataObject, nil, DROPEFFECT_MOVE, lDragEffect); // supports drag hints on Windows Vista and later
     finally
       Image.Free;
     end;
