@@ -73,7 +73,8 @@ begin
 
   FOwner := AOwner;
   FForClipboard := ForClipboard;
-  TVTCracker(FOwner).GetNativeClipboardFormats(FFormatEtcArray);
+  if Assigned(FOWner) then
+    TVTCracker(FOwner).GetNativeClipboardFormats(FFormatEtcArray);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -339,7 +340,7 @@ var
   Data : PVTReference;
 begin
   // The tree reference format is always supported and returned from here.
-  if FormatEtcIn.cfFormat = CF_VTREFERENCE then
+  if (FormatEtcIn.cfFormat = CF_VTREFERENCE) and Assigned(FOWner) then
   begin
     // Note: this format is not used while flushing the clipboard to avoid a dangling reference
     //       when the owner tree is destroyed before the clipboard data is replaced with something else.
