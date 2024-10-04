@@ -1453,7 +1453,6 @@ function TVTHeader.HandleMessage(var Message : TMessage) : Boolean;
 
 var
   P                                          : TPoint;
-  R                                          : TRect;
   I                                          : TColumnIndex;
   HitIndex                                   : TColumnIndex;
   NewCursor                                  : TVTCursor;
