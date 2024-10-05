@@ -395,8 +395,7 @@ begin
       // Supply the drag source helper with our drag image.
       DragInfo.sizeDragImage.cx := Width;
       DragInfo.sizeDragImage.cy := Height;
-      DragInfo.ptOffset.X := Width div 2;
-      DragInfo.ptOffset.Y := Height div 2;
+      DragInfo.ptOffset := HotSpot;
       DragInfo.hbmpDragImage := CopyImage(DragImage.Handle, IMAGE_BITMAP, Width, Height, LR_COPYRETURNORG);
       DragInfo.crColorKey := ColorToRGB(FColorKey);
       if not Succeeded(DragSourceHelper.InitializeFromBitmap(@DragInfo, DataObject)) then
