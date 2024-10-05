@@ -94,6 +94,7 @@ const
   //       to implement optimized moves and other back references.
   CFSTR_VIRTUALTREE        = 'Virtual Tree Data';
   CFSTR_VTREFERENCE        = 'Virtual Tree Reference';
+  CFSTR_VTHEADERREFERENCE  = 'Virtual Tree Header Reference';
   CFSTR_HTML               = 'HTML Format';
   CFSTR_RTF                = 'Rich Text Format';
   CFSTR_RTFNOOBJS          = 'Rich Text Format Without Objects';
