@@ -197,7 +197,6 @@ type
     FNeedPositionsFix : Boolean;      // True if FixPositions must still be called after DFM loading or Bidi mode change.
     FClearing         : Boolean;      // True if columns are being deleted entirely.
     FColumnPopupMenu  : TPopupMenu;   // Member for storing the TVTHeaderPopupMenu
-
     function GetCount : Integer;
     function GetItem(Index : TColumnIndex) : TVirtualTreeColumn;
     function GetNewIndex(P : TPoint; var OldIndex : TColumnIndex) : Boolean;
@@ -481,6 +480,9 @@ type
     function TreeViewControl : TBaseVirtualTreeCracker;
   end;
 
+const
+  cMargin = 2;                // the margin between text and the header rectangle
+  cDownOffset = 1;            // the offset of the column header text whit mouse button down
 
 
   //----------------- TVTFixedAreaConstraints ----------------------------------------------------------------------------
@@ -1256,25 +1258,7 @@ begin
 
   //Fix for various problems mentioned in issue 248.
   if NeedRepaint then
-  begin
     TBaseVirtualTreeCracker(FOwner).UpdateWindow();
-
-    //The new routine recaptures the backup image after the updatewindow
-    //Note: We could have called this unconditionally but when called
-    //over the tree, doesn't capture the background image. Since our
-    //problems are in painting of the header, we call it only when the
-    //drag image is over the header.
-    if
-    //determine the case when the drag image is or was on the header area
-      (InHeader(FOwner.ScreenToClient(FDragImage.LastPosition)) or InHeader(FOwner.ScreenToClient(FDragImage.ImagePosition))) then
-    begin
-      GDIFlush;
-      TBaseVirtualTreeCracker(FOwner).UpdateWindowAndDragImage(TBaseVirtualTree(FOwner), TBaseVirtualTreeCracker(FOwner).HeaderRect, True, True);
-    end;
-    //since we took care of UpdateWindow above, there is no need to do an
-    //update window again by sending NeedRepaint. So switch off the second parameter.
-    NeedRepaint := False;
-  end;
 
   FDragImage.DragTo(P, NeedRepaint);
 end;
@@ -1923,9 +1907,12 @@ procedure TVTHeader.PrepareDrag(P, Start : TPoint);
 
 var
   Image      : TBitmap;
-  ImagePos   : TPoint;
+  HotSpot    : TPoint;
+  ImagePos   : TPoint deprecated;
   DragColumn : TVirtualTreeColumn;
   RTLOffset  : TDimension;
+  lDataObject: IDataObject;
+  lDragEffect: DWord; // The last executed drag effect, not needed here
 
 begin
   //Determine initial position of drag image (screen coordinates).
@@ -1959,19 +1946,18 @@ begin
         ImagePos := Tree.ClientToScreen(Point(DragColumn.Left, 0));
       //Column rectangles are given in local window coordinates not client coordinates.
       Dec(ImagePos.Y, FHeight);
+      HotSpot := Tree.ScreenToClient(P);
+      HotSpot.X := HotSpot.X - DragColumn.Left - cMargin;
+      HotSpot.Y := HotSpot.Y + Height - cMargin; // header is in the non-client area and so the coordinates are negative
 
       if hoRestrictDrag in FOptions then
         FDragImage.MoveRestriction := dmrHorizontalOnly
       else
         FDragImage.MoveRestriction := dmrNone;
-      FDragImage.PrepareDrag(Image, ImagePos, P, nil);
-      FDragImage.ShowDragImage;
 
-      // See issue #806
-//      var lDataObject := TVTDataObject.Create(nil, False);
-//      FDragImage.PrepareDrag(Image, ImagePos, P, lDataObject);
-//      var lDragEffect: DWord;                    // The last executed drag effect
-//      SHDoDragDrop(fOwner.Handle, lDataObject, nil, DROPEFFECT_MOVE, lDragEffect); // supports drag hints on Windows Vista and later
+      lDataObject := TVTDataObject.Create(Self, TreeView);
+      FDragImage.PrepareDrag(Image, ImagePos, HotSpot, lDataObject);
+      SHDoDragDrop(fOwner.Handle, lDataObject, nil, DROPEFFECT_MOVE, lDragEffect); // SHDoDragDrop() supports drag hints and drag images on Windows Vista and later
     finally
       Image.Free;
     end;
@@ -5652,7 +5638,7 @@ var
         PaintRectangle := ATargetRect;
 
         // calculate text and glyph position
-        InflateRect(PaintRectangle, - 2, - 2);
+        InflateRect(PaintRectangle, - cMargin, - cMargin);
         DrawFormat := DT_TOP or DT_NOPREFIX;
         case CaptionAlignment of
           taLeftJustify :
@@ -5669,7 +5655,7 @@ var
         // Move glyph and text one pixel to the right and down to simulate a pressed button.
         if IsDownIndex then
         begin
-          OffsetRect(TextRectangle, 1, 1);
+          OffsetRect(TextRectangle, cDownOffset, cDownOffset);
           Inc(GlyphPos.X);
           Inc(GlyphPos.Y);
           Inc(SortGlyphPos.X);
