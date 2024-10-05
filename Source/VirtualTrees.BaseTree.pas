@@ -1092,7 +1092,6 @@ type
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
     function GetSelectedCount(): Integer; override;
-    function GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree; virtual;
     procedure HandleHotTrack(X, Y: TDimension); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
@@ -1936,8 +1935,9 @@ begin
   // Initialize OLE subsystem for drag'n drop and clipboard operations.
   NeedToUnitialize := not IsLibrary and Succeeded(OleInitialize(nil));
 
-  // Register the tree reference clipboard format. Others will be handled in InternalClipboarFormats.
+  // Register the tree reference clipboard format.
   CF_VTREFERENCE := RegisterClipboardFormat(CFSTR_VTREFERENCE);
+  CF_VTHEADERREFERENCE := RegisterClipboardFormat(CFSTR_VTHEADERREFERENCE);
 
   // Clipboard format registration.
   // Native clipboard format. Needs a new identifier and has an average priority to allow other formats to take over.
@@ -11919,13 +11919,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree;
-begin
-  Result:= nil;
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.HandleHotTrack(X, Y: TDimension);
 
 // Updates the current "hot" node.
@@ -21177,7 +21170,7 @@ begin
   begin
     BeginUpdate;
     // try to get the source tree of the operation
-    Source := GetTreeFromDataObject(DataObject);
+    Source := TVTDragManager.GetTreeFromDataObject(DataObject);
     if Assigned(Source) then
       Source.BeginUpdate;
     try

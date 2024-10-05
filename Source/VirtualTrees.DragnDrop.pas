@@ -10,7 +10,8 @@ uses
   Vcl.Graphics,
   Vcl.Controls,
   VirtualTrees.Types,
-  VirtualTrees.BaseTree;
+  VirtualTrees.BaseTree,
+  VirtualTrees.Header;
 
 type
   TEnumFormatEtc = class(TInterfacedObject, IEnumFormatEtc)
@@ -31,6 +32,7 @@ type
   private
     FOwner,                                // The tree which is responsible for drag management.
     FDragSource       : TBaseVirtualTree;  // Reference to the source tree if the source was a VT, might be different than the owner tree.
+    FHeader           : TVTHeader;
     FIsDropTarget     : Boolean;           // True if the owner is currently the drop target.
     FDataObject       : IDataObject;       // A reference to the data object passed in by DragEnter (only used when the owner tree is the current drop target).
     FDropTargetHelper : IDropTargetHelper; // Win2k > Drag image support
@@ -50,6 +52,7 @@ type
     procedure ForceDragLeave; stdcall;
     function GiveFeedback(Effect : Integer) : HResult; stdcall;
     function QueryContinueDrag(EscapePressed : BOOL; KeyState : Integer) : HResult; stdcall;
+    class function GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree;
   end;
 
 var
@@ -69,6 +72,7 @@ var
 implementation
 
 uses
+  VirtualTrees.Clipboard,
   VirtualTrees.DataObject;
 
 type
@@ -163,10 +167,6 @@ constructor TVTDragManager.Create(AOwner : TBaseVirtualTree);
 begin
   inherited Create;
   FOwner := AOwner;
-
-  // Create an instance  of the drop target helper interface. This will fail but not harm on systems which do
-  // not support this interface (everything below Windows 2000);
-  CoCreateInstance(CLSID_DragDropHelper, nil, CLSCTX_INPROC_SERVER, IID_IDropTargetHelper, FDropTargetHelper);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -212,10 +212,42 @@ begin
   Result := FIsDropTarget;
 end;
 
+class function TVTDragManager.GetTreeFromDataObject(const DataObject: TVTDragDataObject): TBaseVirtualTree;
+// Returns the owner/sender of the given data object by means of a special clipboard format
+// or nil if the sender is in another process or no virtual tree at all.
+
+var
+  Medium: TStgMedium;
+  Data: PVTReference;
+
+begin
+  Result := nil;
+  if Assigned(DataObject) then
+  begin
+    StandardOLEFormat.cfFormat := CF_VTREFERENCE;
+    if DataObject.GetData(StandardOLEFormat, Medium) = S_OK then
+    begin
+      Data := GlobalLock(Medium.hGlobal);
+      if Assigned(Data) then
+      begin
+        if Data.Process = GetCurrentProcessID then
+          Result := Data.Tree;
+        GlobalUnlock(Medium.hGlobal);
+      end;
+      ReleaseStgMedium(Medium);
+    end;
+  end;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVTDragManager.DragEnter(const DataObject : IDataObject; KeyState : Integer; Pt : TPoint; var Effect : Integer) : HResult;
+var
+  Medium: TStgMedium;
 begin
+  if not Assigned(FDropTargetHelper) then
+    CoCreateInstance(CLSID_DragDropHelper, nil, CLSCTX_INPROC_SERVER, IID_IDropTargetHelper, FDropTargetHelper);
+
   FDataObject := DataObject;
   FIsDropTarget := True;
 
@@ -231,8 +263,14 @@ begin
     else
       FDropTargetHelper.DragEnter(0, DataObject, Pt, Effect); // Do not pass handle, otherwise the IDropTargetHelper will perform autoscroll. Issue #486
   end;
-  FDragSource := TreeView.GetTreeFromDataObject(DataObject);
+  FDragSource := GetTreeFromDataObject(DataObject);
   Result := TreeView.DragEnter(KeyState, Pt, Effect);
+  StandardOLEFormat.cfFormat := CF_VTHEADERREFERENCE;
+  if (DataObject.GetData(StandardOLEFormat, Medium) = S_OK) and (FDragSource = FOWner) then
+  begin
+    FHeader := FDragSource.Header;
+    FDRagSource := nil;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -256,7 +294,13 @@ begin
   if Assigned(FDropTargetHelper) and FFullDragging then
     FDropTargetHelper.DragOver(Pt, Effect);
 
-  Result := TreeView.DragOver(FDragSource, KeyState, dsDragMove, Pt, Effect);
+  if Assigned(fHeader) then
+  begin
+    TreeView.Header.DragTo(Pt);
+    Result := NOERROR;
+  end
+  else
+    Result := TreeView.DragOver(FDragSource, KeyState, dsDragMove, Pt, Effect);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -266,7 +310,13 @@ begin
   if Assigned(FDropTargetHelper) and FFullDragging then
     FDropTargetHelper.Drop(DataObject, Pt, Effect);
 
-  Result := TreeView.DragDrop(DataObject, KeyState, Pt, Effect);
+  if Assigned(fHeader) then
+  begin
+   FHeader.ColumnDropped(Pt);
+   Result := NO_ERROR;
+  end
+  else
+    Result := TreeView.DragDrop(DataObject, KeyState, Pt, Effect);
   FIsDropTarget := False;
   FDataObject := nil;
 end;
