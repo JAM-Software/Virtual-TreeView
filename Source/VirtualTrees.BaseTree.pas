@@ -20838,7 +20838,6 @@ var
   TreeRect,
   PaintRect: TRect;
   LocalSpot,
-  ImagePos,
   PaintTarget: TPoint;
   lDragImage: TVTDragImage;                    // drag image management
   Image: TBitmap;
@@ -20896,12 +20895,11 @@ begin
 
         // Once we have got the drag image we can convert all necessary coordinates into screen space.
         OffsetRect(TreeRect, -FEffectiveOffsetX, FOffsetY);
-        ImagePos := ClientToScreen(TreeRect.TopLeft);
         HotSpot.X := Width div 2;
         HotSpot.Y := Height div 2;
 
         lDragImage.ColorKey := FColors.BackGroundColor;
-        lDragImage.PrepareDrag(Image, ImagePos, HotSpot, DataObject);
+        lDragImage.PrepareDrag(Image, HotSpot, DataObject);
       finally
         Image.Free;
       end;

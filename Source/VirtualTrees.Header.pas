@@ -1908,7 +1908,6 @@ procedure TVTHeader.PrepareDrag(P, Start : TPoint);
 var
   Image      : TBitmap;
   HotSpot    : TPoint;
-  ImagePos   : TPoint deprecated;
   DragColumn : TVirtualTreeColumn;
   RTLOffset  : TDimension;
   lDataObject: IDataObject;
@@ -1940,12 +1939,7 @@ begin
       with DragColumn do
         FColumns.PaintHeader(Canvas, Rect(Left, 0, Left + Width, Height), Point( - RTLOffset, 0), RTLOffset);
 
-      if Tree.UseRightToLeftAlignment then
-        ImagePos := Tree.ClientToScreen(Point(DragColumn.Left + Tree.ComputeRTLOffset(True), 0))
-      else
-        ImagePos := Tree.ClientToScreen(Point(DragColumn.Left, 0));
       //Column rectangles are given in local window coordinates not client coordinates.
-      Dec(ImagePos.Y, FHeight);
       HotSpot := Tree.ScreenToClient(P);
       HotSpot.X := HotSpot.X - DragColumn.Left - cMargin;
       HotSpot.Y := HotSpot.Y + Height - cMargin; // header is in the non-client area and so the coordinates are negative
@@ -1956,7 +1950,7 @@ begin
         FDragImage.MoveRestriction := dmrNone;
 
       lDataObject := TVTDataObject.Create(Self, TreeView);
-      FDragImage.PrepareDrag(Image, ImagePos, HotSpot, lDataObject);
+      FDragImage.PrepareDrag(Image, HotSpot, lDataObject);
       SHDoDragDrop(fOwner.Handle, lDataObject, nil, DROPEFFECT_MOVE, lDragEffect); // SHDoDragDrop() supports drag hints and drag images on Windows Vista and later
     finally
       Image.Free;

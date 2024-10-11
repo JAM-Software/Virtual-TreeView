@@ -50,22 +50,19 @@ type
     function GetVisible : Boolean;           // True if the drag image is currently hidden (used only when dragging)
     procedure InternalShowDragImage(ScreenDC : HDC);
     procedure MakeAlphaChannel(Source, Target : TBitmap);
+    function GetDragImageRect : TRect;
   public
     constructor Create(AOwner : TCustomControl);
     destructor Destroy; override;
 
     function DragTo(P : TPoint; ForceRepaint : Boolean) : Boolean;
     procedure EndDrag;
-    function GetDragImageRect : TRect;
     procedure HideDragImage;
-    procedure PrepareDrag(DragImage : TBitmap; ImagePosition, HotSpot : TPoint; const DataObject : IDataObject);
+    procedure PrepareDrag(DragImage : TBitmap; HotSpot : TPoint; const DataObject : IDataObject);
     procedure RecaptureBackground(Tree : TCustomControl; R : TRect; VisibleRegion : HRGN; CaptureNCArea, ReshowDragImage : Boolean);
     procedure ShowDragImage;
-    function WillMove(P : TPoint) : Boolean;
     property ColorKey : TColor read FColorKey write FColorKey default clWindow;
     property Fade : Boolean read FFade write FFade default False;
-    property ImagePosition : TPoint read FImagePosition;
-    property LastPosition : TPoint read FLastPosition;
     property MoveRestriction : TVTDragMoveRestriction read FRestriction write FRestriction default dmrNone;
     property PreBlendBias : TVTBias read FPreBlendBias write FPreBlendBias default 0;
     property Transparency : TVTTransparency read FTransparency write FTransparency default 128;
@@ -364,7 +361,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVTDragImage.PrepareDrag(DragImage : TBitmap; ImagePosition, HotSpot : TPoint; const DataObject : IDataObject);
+procedure TVTDragImage.PrepareDrag(DragImage : TBitmap; HotSpot : TPoint; const DataObject : IDataObject);
 // Creates all necessary structures to do alpha blended dragging using the given image.
 // ImagePostion and HotSpot are given in screen coordinates. The first determines where to place the drag image while
 // the second is the initial mouse position.
@@ -433,8 +430,6 @@ begin
 
     // Create a proper alpha channel also if no fading is required (transparent parts).
     MakeAlphaChannel(DragImage, FDragImage);
-
-    FImagePosition := ImagePosition;
 
     // Initially the drag image is hidden and will be shown during the immediately following DragEnter event.
     FStates := FStates + [disInDrag, disHidden, disPrepared];
@@ -544,26 +539,5 @@ begin
   end;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
-
-function TVTDragImage.WillMove(P : TPoint) : Boolean;
-// This method determines whether the drag image would "physically" move when DragTo would be called with the same
-// target point.
-// Always returns False if the system drag image support is available.
-begin
-  Result := Visible;
-  if Result then
-  begin
-    // Determine distances to move the drag image. Take care for restrictions.
-    case FRestriction of
-      dmrHorizontalOnly :
-        Result := FLastPosition.X <> P.X;
-      dmrVerticalOnly :
-        Result := FLastPosition.Y <> P.Y;
-    else // dmrNone
-      Result := (FLastPosition.X <> P.X) or (FLastPosition.Y <> P.Y);
-    end;
-  end;
-end;
 
 end.
