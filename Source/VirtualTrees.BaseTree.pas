@@ -4124,8 +4124,6 @@ begin
                               MoveTo(2, Width div 2);
                               LineTo(Width - 2, Width div 2);
                             end
-                              else
-                                FMinusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONMINUS');
                           end;
                       FHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
                       FSelectedHotMinusBM.Canvas.Draw(0, 0, FMinusBM);
@@ -4166,8 +4164,6 @@ begin
                               MoveTo(Width div 2, 2);
                               LineTo(Width div 2, Width - 2);
                             end
-                              else
-                                FPlusBM.Handle := LoadBitmap(HInstance, 'VT_XPBUTTONPLUS');
                           end;
                        FHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
                        FSelectedHotPlusBM.Canvas.Draw(0, 0, FPlusBM);
@@ -4355,7 +4351,10 @@ procedure TBaseVirtualTree.SetButtonFillMode(const Value: TVTButtonFillMode);
 begin
   if FButtonFillMode <> Value then
   begin
-    FButtonFillMode := Value;
+    if Value = TVTButtonFillMode.fmShaded then // no longer supported
+      FButtonFillMode := TVTButtonFillMode.fmTreeColor
+    else
+      FButtonFillMode := Value;
     if not (csLoading in ComponentState) then
     begin
       PrepareBitmaps(True, False);

@@ -725,7 +725,7 @@ type
   TVTButtonFillMode = (
     fmTreeColor,             // solid color, uses the tree's background color
     fmWindowColor,           // solid color, uses clWindow
-    fmShaded,                // color gradient, Windows XP style (legacy code, use toThemeAware on Windows XP instead)
+    fmShaded,                // no longer supported, use toThemeAware for Windows XP and later instead
     fmTransparent            // transparent color, use the item's background color
   );
 
