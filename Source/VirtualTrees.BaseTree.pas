@@ -14201,19 +14201,14 @@ procedure TBaseVirtualTree.PanningWindowProc(var Message: TMessage);
 
 var
   PS: TPaintStruct;
-  Canvas: TCanvas;
 
 begin
   if Message.Msg = WM_PAINT then
   begin
     BeginPaint(FPanningWindow, PS);
-    Canvas := TCanvas.Create;
-    Canvas.Handle := PS.hdc;
     try
-      Canvas.Draw(0, 0, FPanningImage);
+      DrawIconEx(PS.hdc, Left, Top, FPanningImage.Handle, ScaledPixels(32), ScaledPixels(32), 0, 0, DI_NORMAL);
     finally
-      Canvas.Handle := 0;
-      Canvas.Free;
       EndPaint(FPanningWindow, PS);
     end;
     Message.Result := 0;
@@ -14906,7 +14901,6 @@ var
   TempClass: TWndClass;
   ClassRegistered: Boolean;
   ImageName: TPanningCursor;
-  NewCursorHandle: HCURSOR;
   Pt: TPoint;
 
 begin
