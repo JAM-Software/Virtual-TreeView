@@ -14198,7 +14198,8 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.PanningWindowProc(var Message: TMessage);
-
+const
+ DI_NOMIRROR = $0010;
 var
   PS: TPaintStruct;
 
@@ -14207,7 +14208,7 @@ begin
   begin
     BeginPaint(FPanningWindow, PS);
     try
-      DrawIconEx(PS.hdc, Left, Top, FPanningImage.Handle, ScaledPixels(32), ScaledPixels(32), 0, 0, DI_NORMAL);
+      DrawIconEx(PS.hdc, Left, Top, FPanningImage.Handle, 0, 0, 0, 0, DI_NORMAL);
     finally
       EndPaint(FPanningWindow, PS);
     end;
@@ -14933,7 +14934,7 @@ begin
     ImageName := TPanningCursor.MOVENS;
 
   FPanningImage := TIcon.Create;
-  FPanningImage.Handle := LoadCursor(0, MAKEINTRESOURCE(ImageName));
+  FPanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, ScaledPixels(32), ScaledPixels(32), LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
 
   FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - (FPanningImage.Width div 2), Pt.Y - (FPanningImage.Height div 2), FPanningImage.Width, FPanningImage.Height, Handle, 0, HInstance, nil);
   SetWindowRgn(FPanningWindow, CreateClipRegion, False);
