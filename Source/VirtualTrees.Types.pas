@@ -161,6 +161,23 @@ type
   TFormatEtcArray = array of TFormatEtc;
   TFormatArray = array of Word;
 
+  // See issue #1270.
+  // Taken from: https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
+  // To be used with: LoadCursor(0, MAKEINTRESOURCE(TPanningCursor.MoveAll))
+  TPanningCursor = (
+    MoveAll = 32654,
+    MoveNS = 32652,
+    MoveEW = 32653,
+    MoveN = 32655,
+    MoveNE = 32660,
+    MoveE = 32658,
+    MoveSE = 32662,
+    MoveS = 32656,
+    MoveSW = 32661,
+    MoveW = 32657,
+    MoveNW = 32659
+  );
+
   TSmartAutoFitType = (
     smaAllColumns,       // consider nodes in view only for all columns
     smaNoColumn,         // consider nodes in view only for no column

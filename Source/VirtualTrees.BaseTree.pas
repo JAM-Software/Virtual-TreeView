@@ -548,7 +548,7 @@ type
     // miscellanous
     FPanningWindow: HWND;                        // Helper window for wheel panning
     FPanningCursor: TVTCursor;                   // Current wheel panning cursor.
-    FPanningImage: TBitmap;                      // A little 32x32 bitmap to indicate the panning reference point.
+    FPanningImage: TIcon;                      // A little 32x32 bitmap to indicate the panning reference point.
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
     FOperationCount: Cardinal;                   // Counts how many nested long-running operations are in progress.
     FOperationCanceled: Boolean;                 // Used to indicate that a long-running operation should be canceled.
@@ -1646,6 +1646,7 @@ uses
   System.Math,
   System.SyncObjs,
   System.StrUtils,
+  Clipbrd,
   Vcl.Consts,
   Vcl.AxCtrls,                 // TOLEStream
   Vcl.StdActns,                // for standard action support
@@ -8078,8 +8079,8 @@ procedure TBaseVirtualTree.AdjustPanningCursor(X, Y: TDimension);
 // Loads the proper cursor which indicates into which direction scrolling is done.
 
 var
-  Name: string;
-  NewCursor: HCURSOR;
+  NewCursor: TPanningCursor;
+  NewCursorHandle: HCURSOR;
   ScrollHorizontal,
   ScrollVertical: Boolean;
 
@@ -8093,12 +8094,12 @@ begin
     if ScrollHorizontal then
     begin
       if ScrollVertical then
-        Name := 'VT_MOVEALL'
+        NewCursor := TPanningCursor.MOVEALL
       else
-        Name := 'VT_MOVEEW';
+        NewCursor := TPanningCursor.MOVEEW;
     end
     else
-      Name := 'VT_MOVENS';
+      NewCursor := TPanningCursor.MOVENS;
   end
   else
   begin
@@ -8111,32 +8112,33 @@ begin
       begin
         // Left hand side.
         if Y - FLastClickPos.Y < -8 then
-          Name := 'VT_MOVENW'
+          NewCursor := TPanningCursor.MOVENW
         else
           if Y - FLastClickPos.Y > 8 then
-            Name := 'VT_MOVESW'
+            NewCursor := TPanningCursor.MOVESW
           else
-            Name := 'VT_MOVEW';
+            NewCursor := TPanningCursor.MOVEW;
       end
       else
         if X - FLastClickPos.X > 8 then
         begin
           // Right hand side.
           if Y - FLastClickPos.Y < -8 then
-            Name := 'VT_MOVENE'
+            NewCursor := TPanningCursor.MOVENE
+
           else
             if Y - FLastClickPos.Y > 8 then
-              Name := 'VT_MOVESE'
+              NewCursor := TPanningCursor.MOVESE
             else
-              Name := 'VT_MOVEE';
+              NewCursor := TPanningCursor.MOVEE;
         end
         else
         begin
           // Up or down.
           if Y < FLastClickPos.Y then
-            Name := 'VT_MOVEN'
+            NewCursor := TPanningCursor.MOVEN
           else
-            Name := 'VT_MOVES';
+            NewCursor := TPanningCursor.MOVES;
         end;
     end
     else
@@ -8144,30 +8146,30 @@ begin
       begin
         // Only horizontal movement allowed.
         if X < FLastClickPos.X then
-          Name := 'VT_MOVEW'
+          NewCursor := TPanningCursor.MOVEW
         else
-          Name := 'VT_MOVEE';
+          NewCursor := TPanningCursor.MOVEE;
       end
       else
       begin
         // Only vertical movement allowed.
         if Y < FLastClickPos.Y then
-          Name := 'VT_MOVEN'
+          NewCursor := TPanningCursor.MOVEN
         else
-          Name := 'VT_MOVES';
+          NewCursor := TPanningCursor.MOVES;
       end;
   end;
 
   // Now load the cursor and apply it.
-  NewCursor := LoadCursor(HInstance, PChar(Name));
-  if FPanningCursor <> NewCursor then
+  NewCursorHandle := LoadCursor(0, MAKEINTRESOURCE(NewCursor));
+  if FPanningCursor <> NewCursorHandle then
   begin
     DeleteObject(FPanningCursor);
-    FPanningCursor := NewCursor;
+    FPanningCursor := NewCursorHandle;
     Winapi.Windows.SetCursor(FPanningCursor);
   end
   else
-    DeleteObject(NewCursor);
+    DeleteObject(NewCursorHandle);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -14862,11 +14864,11 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
     Temp: HRGN;
 
   begin
-    Assert(not FPanningImage.Empty, 'Invalid wheel panning image.');
+    Assert(not FPanningImage.Empty, 'Invalid wheel panning image: Empty');
 
     // Create an initial region on which we operate.
     Result := CreateRectRgn(0, 0, 0, 0);
-    with FPanningImage, Canvas do
+    with FPanningImage do
     begin
       for Y := 0 to Height - 1 do
       begin
@@ -14874,10 +14876,10 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
         for X := 0 to Width - 1 do
         begin
           // Start a new span if we found a non-transparent pixel and no span is currently started.
-          if (Start = -1) and (Pixels[X, Y] <> clFuchsia) then
+          if (Start = -1) and (Canvas.Pixels[X, Y] <> clFuchsia) then
             Start := X
           else
-            if (Start > -1) and (Pixels[X, Y] = clFuchsia) then
+            if (Start > -1) and (Canvas.Pixels[X, Y] = clFuchsia) then
             begin
               // A non-transparent span is finished. Add it to the result region.
               Temp := CreateRectRgn(Start, Y, X, Y + 1);
@@ -14904,7 +14906,8 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
 var
   TempClass: TWndClass;
   ClassRegistered: Boolean;
-  ImageName: string;
+  ImageName: TPanningCursor;
+  NewCursorHandle: HCURSOR;
   Pt: TPoint;
 
 begin
@@ -14925,22 +14928,22 @@ begin
   end;
   // Create the helper window and show it at the given position without activating it.
   Pt := ClientToScreen(Position);
-  FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - 16, Pt.Y - 16,
-    32, 32, Handle, 0, HInstance, nil);
 
-  FPanningImage := TBitmap.Create;
   if FRangeX > ClientWidth then
   begin
     if FRangeY > ClientHeight then
-      ImageName := 'VT_MOVEALL'
+      ImageName := TPanningCursor.MOVEALL
     else
-      ImageName := 'VT_MOVEEW';
+      ImageName := TPanningCursor.MOVEEW;
   end
   else
-    ImageName := 'VT_MOVENS';
-  FPanningImage.LoadFromResourceName(HInstance, ImageName);
-  SetWindowRgn(FPanningWindow, CreateClipRegion, False);
+    ImageName := TPanningCursor.MOVENS;
 
+  FPanningImage := TIcon.Create;
+  FPanningImage.Handle := LoadCursor(0, MAKEINTRESOURCE(ImageName));
+
+  FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - (FPanningImage.Width div 2), Pt.Y - (FPanningImage.Height div 2), FPanningImage.Width, FPanningImage.Height, Handle, 0, HInstance, nil);
+  SetWindowRgn(FPanningWindow, CreateClipRegion, False);
   {$ifdef CPUX64}
   SetWindowLongPtr(FPanningWindow, GWLP_WNDPROC, LONG_PTR(System.Classes.MakeObjectInstance(PanningWindowProc)));
   {$else}
