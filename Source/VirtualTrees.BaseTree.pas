@@ -13837,6 +13837,7 @@ var
   Details, lSizeDetails: TThemedElementDetails;
   lSize: TSize;
   Theme: HTHEME;
+  lCheckImages: TCustomImageList;
 begin
   with ImageInfo do
   begin
@@ -13908,8 +13909,12 @@ begin
         DrawArrow(Canvas, TScrollDirection.sdDown, Point(R.Left + Round(lSize.cx * 0.22), R.Top + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
       end;//if
     end
-    else
-      with FCheckImages do
+    else begin
+      if Assigned(FCheckImages) then
+        lCheckImages := FCheckImages
+      else
+        lCheckImages := FCustomCheckImages;
+      with lCheckImages do
       begin
         if Selected and not Ghosted then
         begin
@@ -13924,6 +13929,7 @@ begin
           ImageList_DrawEx(Handle, Index, Canvas.Handle, XPos, YPos, 0, 0, GetRGBColor(BkColor), ForegroundColor,
             ILD_TRANSPARENT);
       end;
+    end; //else
   end;
 end;
 
