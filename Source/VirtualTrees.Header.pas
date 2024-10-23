@@ -450,7 +450,7 @@ implementation
 
 uses
   WinApi.ShlObj,
-  WinApi.Ole2,
+  WinApi.ActiveX,
   WinApi.UxTheme,
   System.Math,
   System.SysUtils,
