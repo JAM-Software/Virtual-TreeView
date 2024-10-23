@@ -1639,8 +1639,6 @@ function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 
 implementation
 
-{$R VirtualTrees.res}
-
 uses
   Winapi.MMSystem,             // for animation timer (does not include further resources)
   System.Math,
