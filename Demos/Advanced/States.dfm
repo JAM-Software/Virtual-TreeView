@@ -12,7 +12,6 @@ object StateForm: TStateForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Scaled = False
   PixelsPerInch = 96
   TextHeight = 13
   object EnableCheckBox: TCheckBox
@@ -77,7 +76,7 @@ object StateForm: TStateForm
     TabOrder = 2
     object CheckBox8: TCheckBox
       Left = 10
-      Top = 118
+      Top = 101
       Width = 190
       Height = 17
       Caption = 'Draw selection pending'
@@ -86,7 +85,7 @@ object StateForm: TStateForm
     end
     object CheckBox9: TCheckBox
       Left = 10
-      Top = 135
+      Top = 118
       Width = 190
       Height = 17
       Caption = 'Draw selecting'
@@ -102,50 +101,41 @@ object StateForm: TStateForm
       Enabled = False
       TabOrder = 2
     end
-    object CheckBox20: TCheckBox
+    object CheckBox21: TCheckBox
       Left = 10
       Top = 33
       Width = 190
       Height = 17
-      Caption = 'Mouse check pending'
+      Caption = 'Middle mouse button down'
       Enabled = False
       TabOrder = 3
     end
-    object CheckBox21: TCheckBox
+    object CheckBox27: TCheckBox
       Left = 10
       Top = 50
       Width = 190
       Height = 17
-      Caption = 'Middle mouse button down'
+      Caption = 'Right mouse button down'
       Enabled = False
       TabOrder = 4
     end
-    object CheckBox27: TCheckBox
+    object CheckBox43: TCheckBox
       Left = 10
       Top = 67
       Width = 190
       Height = 17
-      Caption = 'Right mouse button down'
+      Caption = 'Mouse wheel panning'
       Enabled = False
       TabOrder = 5
     end
-    object CheckBox43: TCheckBox
+    object CheckBox44: TCheckBox
       Left = 10
       Top = 84
       Width = 190
       Height = 17
-      Caption = 'Mouse wheel panning'
-      Enabled = False
-      TabOrder = 6
-    end
-    object CheckBox44: TCheckBox
-      Left = 10
-      Top = 101
-      Width = 190
-      Height = 17
       Caption = 'Mouse wheel scrolling'
       Enabled = False
-      TabOrder = 7
+      TabOrder = 6
     end
   end
   object GroupBox3: TGroupBox
@@ -175,7 +165,7 @@ object StateForm: TStateForm
     end
     object CheckBox15: TCheckBox
       Left = 10
-      Top = 84
+      Top = 16
       Width = 174
       Height = 17
       Caption = 'Incremental search in progress'
@@ -190,15 +180,6 @@ object StateForm: TStateForm
       Caption = 'Incremental search pending'
       Enabled = False
       TabOrder = 3
-    end
-    object CheckBox18: TCheckBox
-      Left = 10
-      Top = 16
-      Width = 174
-      Height = 17
-      Caption = 'Key check pending'
-      Enabled = False
-      TabOrder = 4
     end
   end
   object GroupBox4: TGroupBox
@@ -438,16 +419,6 @@ object StateForm: TStateForm
     Height = 143
     Caption = ' Window related actions: '
     TabOrder = 8
-    object CheckBox22: TCheckBox
-      Left = 10
-      Top = 118
-      Width = 190
-      Height = 17
-      Caption = 'Default node height scale'
-      Enabled = False
-      TabOrder = 0
-      Visible = False
-    end
     object CheckBox26: TCheckBox
       Left = 10
       Top = 67
@@ -455,7 +426,7 @@ object StateForm: TStateForm
       Height = 17
       Caption = 'Tree painting'
       Enabled = False
-      TabOrder = 1
+      TabOrder = 0
     end
     object CheckBox30: TCheckBox
       Left = 10
@@ -464,7 +435,7 @@ object StateForm: TStateForm
       Height = 17
       Caption = 'Window resizing'
       Enabled = False
-      TabOrder = 2
+      TabOrder = 1
     end
     object CheckBox34: TCheckBox
       Left = 10
@@ -473,7 +444,7 @@ object StateForm: TStateForm
       Height = 17
       Caption = 'Tumb tracking (scrollbar)'
       Enabled = False
-      TabOrder = 3
+      TabOrder = 2
     end
     object CheckBox35: TCheckBox
       Left = 10
@@ -482,7 +453,7 @@ object StateForm: TStateForm
       Height = 17
       Caption = 'Updates locked'
       Enabled = False
-      TabOrder = 4
+      TabOrder = 3
     end
     object CheckBox38: TCheckBox
       Left = 10
@@ -491,7 +462,7 @@ object StateForm: TStateForm
       Height = 17
       Caption = 'Windows XP Theme support in use'
       Enabled = False
-      TabOrder = 5
+      TabOrder = 4
     end
     object CheckBox45: TCheckBox
       Left = 10
@@ -500,7 +471,7 @@ object StateForm: TStateForm
       Height = 17
       Caption = 'Treewindow is under construction'
       Enabled = False
-      TabOrder = 6
+      TabOrder = 5
     end
   end
 end

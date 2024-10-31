@@ -103,9 +103,11 @@ begin
   //set up columns
   col := fVST.header.Columns.Add;
   col.Text := 'Star Event';
+  col.Hint := 'Number of Stars';
   col.Width := 120;
   col := fVST.header.Columns.Add;
   col.Text := 'Date';
+  col.Hint := 'The date of the event';
   col.Width := 100;
   col := fVST.header.Columns.Add;
   col.Text := 'Charity Event Name';

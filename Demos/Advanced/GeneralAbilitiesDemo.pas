@@ -51,13 +51,14 @@ type
     GroupBox1: TGroupBox;
     Label19: TLabel;
     MainColumnUpDown: TUpDown;
+    ScrollBox1: TScrollBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure VST2InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure VST2InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
-    procedure VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: string);
+    procedure VST2GetCellText(Sender: TCustomVirtualStringTree;
+      var E: TVSTGetCellTextEventArgs);
     procedure VST2PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure VST2GetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -182,8 +183,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TGeneralForm.VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: string);
+procedure TGeneralForm.VST2GetCellText(Sender: TCustomVirtualStringTree; var E: TVSTGetCellTextEventArgs);
 
 // Returns the text as it is stored in the nodes data record.
 
@@ -191,21 +191,19 @@ var
   Data: PNodeData2;
 
 begin
-  Data := Sender.GetNodeData(Node);
-  CellText := '';
-  case Column of
+  Data := Sender.GetNodeData(E.Node);
+  case E.Column of
     0: // main column (has two different captions)
-      case TextType of
-        ttNormal:
-          CellText := Data.Caption;
-        ttStatic:
-          CellText := Data.StaticText;
+      begin
+        E.CellText := Data.Caption;
+        E.StaticText := Data.StaticText;
+        if Sender.GetNodeLevel(E.Node) > 0 then
+          E.StaticTextAlignment := TAlignment.taRightJustify;
       end;
-    1: // no text in the image column
-      ;
-    2:
-      if TextType = ttNormal then
-        CellText := Data.ForeignText;
+    1,2:
+      E.CellText := Data.ForeignText;
+  else
+    E.CellText := '';
   end;
 end;
 
@@ -235,7 +233,7 @@ begin
     end;
 
     Caption := Format('Level %d, Index %d', [Level, Node.Index]);
-    if Level in [0, 3] then
+    if Level in [0, 2, 3] then
       StaticText := '(static text)';
 
     ForeignText := '';

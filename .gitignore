@@ -9,6 +9,8 @@
 *.rsm
 *.stat
 *.map
+*.d
+*.o
 
 # Generated source #
 ###################
@@ -42,3 +44,11 @@
 VirtualTreeView.zip
 *.#00
 *.pch
+*.skincfg
+*.a
+Packages/RAD Studio XE3/VirtualTreesR.lib
+*.lib
+
+# Folder with repro projects #
+##############################
+/#*

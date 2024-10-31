@@ -12,6 +12,7 @@ object FormModelView: TFormModelView
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  ShowHint = True
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -37,6 +38,7 @@ object FormModelView: TFormModelView
     Top = 480
     Width = 201
     Height = 25
+    Hint = 'Removes all items that do not have a star'
     Caption = 'Display Star Events Only'
     TabOrder = 0
     OnClick = btDisplayStarsClick
@@ -63,12 +65,10 @@ object FormModelView: TFormModelView
     Font.Name = 'Segoe UI'
     Font.Style = []
     Header.AutoSizeIndex = 0
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
+    Header.Height = 21
     Header.MainColumn = -1
+    Header.Options = [hoColumnResize, hoDrag, hoShowHint, hoShowSortGlyphs]
+    HintMode = hmTooltip
     Images = ImageList1
     ParentFont = False
     TabOrder = 2
