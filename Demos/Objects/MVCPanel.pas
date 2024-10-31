@@ -24,7 +24,7 @@ unit MVCPanel;
 interface
 
 uses Windows,Controls,Graphics,SysUtils,Classes,ExtCtrls,StdCtrls,
-     MVCTypes,VirtualTrees;
+     MVCTypes,VirtualTrees, VirtualTrees.BaseTree;
 
 type TMVCPanel=class(TCustomPanel)
                  private
@@ -85,24 +85,24 @@ begin
 
   with FtrvItems, TreeOptions do
     begin
-      PaintOptions:=PaintOptions+[toShowButtons,        // display collapse/expand
-                        toShowHorzGridLines,  // display horizontal lines
-                        toShowRoot,           // show lines also at root level
-                        toShowTreeLines,      // display tree lines to show
-                                              // hierarchy of nodes
-                                              // buttons left to a node
-                        toShowVertGridLines]; // display vertical lines
-                                              // (depending on columns) to
-                                              // simulate a grid
-      MiscOptions := MiscOptions+[toEditable];
-      SelectionOptions := SelectionOptions+[toExtendedFocus];
+      PaintOptions:=PaintOptions+[TVTPaintOption.toShowButtons,        // display collapse/expand
+                        TVTPaintOption.toShowHorzGridLines,  // display horizontal lines
+                        TVTPaintOption.toShowRoot,           // show lines also at root level
+                        TVTPaintOption.toShowTreeLines,      // display tree lines to show
+                                                             // hierarchy of nodes
+                                                             // buttons left to a node
+                        TVTPaintOption.toShowVertGridLines]; // display vertical lines
+                                                             // (depending on columns) to
+                                                             // simulate a grid
+      MiscOptions := MiscOptions + [TVTMiscOption.toEditable];
+      SelectionOptions := SelectionOptions + [TVTSelectionOption.toExtendedFocus];
                                               // to simulate a grid
       with Header do
         begin
-          Height:=18;
-          Options:=Options+[hoVisible];
-          Background:=clBtnFace;
-          AutoSize:=True;
+          Height := 18;
+          Options := Options + [TVTHeaderOption.hoVisible];
+          Background := clBtnFace;
+          AutoSize := True;
           with Columns.Add do
             begin
               Text:='Caption';

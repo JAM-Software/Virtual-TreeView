@@ -56,7 +56,7 @@ procedure SetStatusbarText(const S: string);
 implementation
 
 uses
-  CommCtrl,
+  CommCtrl, VirtualTrees.Accessibility,
   SpeedDemo, GeneralAbilitiesDemo, DrawTreeDemo, PropertiesDemo,
   GridDemo, VisibilityDemo, AlignDemo, WindowsXPStyleDemo, MultilineDemo, HeaderCustomDrawDemo,
   States;
@@ -138,6 +138,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   // Show hints 10 seconds.
   Application.HintHidePause := 10000;
+  System.ReportMemoryLeaksOnShutdown:= true;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -184,11 +185,13 @@ begin
     if Assigned(NewDemoClass) then
     begin
       NewDemo := NewDemoClass.Create(Self);
-      NewDemo.Hide;
       NewDemo.BorderStyle := bsNone;
-      NewDemo.Parent := ContainerPanel;
       NewDemo.Align := alClient;
+      NewDemo.Parent := ContainerPanel;
       NewDemo.Show;
+      {$if CompilerVersion >= 33}
+      NewDemo.ScaleForPPI(FCurrentPPI); // See issue #990
+      {$endif}
     end;
   end;
 end;

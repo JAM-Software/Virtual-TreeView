@@ -9,6 +9,8 @@
 *.rsm
 *.stat
 *.map
+*.d
+*.o
 
 # Generated source #
 ###################
@@ -17,6 +19,7 @@
 # Backup files    #
 ###################
 *.~*
+__recovery
 
 # IDE Files	  #
 ###################
@@ -30,6 +33,7 @@
 *.rc
 *.res
 *.local
+*.dsv
 
 # Output Folders  #
 ###################
@@ -42,3 +46,11 @@
 VirtualTreeView.zip
 *.#00
 *.pch
+*.skincfg
+*.a
+Packages/RAD Studio XE3/VirtualTreesR.lib
+*.lib
+
+# Folder with repro projects #
+##############################
+/#*

@@ -8,7 +8,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ImgList, VirtualTrees, StdCtrls, ExtCtrls;
+  Dialogs, ImgList, VirtualTrees, StdCtrls, ExtCtrls, VirtualTrees.BaseTree, System.ImageList,
+  VirtualTrees.Types, VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
 
 type
   THeaderOwnerDrawForm = class(TForm)
@@ -95,7 +96,7 @@ var
   Size: TSize;
   SourceRect,
   TargetRect: TRect;
-
+  OldFont: TFont;
 begin
   with PaintInfo do
   begin
@@ -141,15 +142,25 @@ begin
               end;
             if hpeText in Elements then
             begin
-              TargetCanvas.Font.Name := 'Webdings';
-              TargetCanvas.Font.Charset := SYMBOL_CHARSET;
-              TargetCanvas.Font.Size := 60;
-              if IsHoverIndex then
-                TargetCanvas.Font.Color := $80FF;
-              S := 'û';
-              Size := TargetCanvas.TextExtent(S);
-              SetBkMode(TargetCanvas.Handle, TRANSPARENT);
-              TargetCanvas.TextOut(PaintRectangle.Left + 10, Paintrectangle.Bottom - Size.cy, S);
+              // store current font
+              OldFont := TFont.Create();
+              try
+                OldFont.Assign(TargetCanvas.Font);
+                // draw world map
+                TargetCanvas.Font.Name := 'Webdings';
+                TargetCanvas.Font.Charset := SYMBOL_CHARSET;
+                TargetCanvas.Font.Size := 60;
+                if IsHoverIndex then
+                  TargetCanvas.Font.Color := $80FF;
+                S := 'û';
+                Size := TargetCanvas.TextExtent(S);
+                SetBkMode(TargetCanvas.Handle, TRANSPARENT);
+                TargetCanvas.TextOut(PaintRectangle.Left + 10, Paintrectangle.Bottom - Size.cy, S);
+                // restore previous font
+                TargetCanvas.Font.Assign(OldFont);
+              finally
+                OldFont.Free();
+              end;
             end;
             // Other elements go here.
           end;

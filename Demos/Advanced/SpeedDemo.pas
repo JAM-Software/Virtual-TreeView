@@ -9,7 +9,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ExtDlgs, ComCtrls, jpeg, Menus;
+  StdCtrls, VirtualTrees, VirtualTrees.Types, ExtDlgs, ComCtrls, jpeg, Menus;
 
 type
   TSpeedForm = class(TForm)
@@ -133,9 +133,9 @@ procedure TSpeedForm.SBCheckBoxClick(Sender: TObject);
 
 begin
   if SBCheckBox.Checked then
-    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions + [toShowBackground]
+    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions + [TVTPaintOption.toShowBackground]
   else
-    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions - [toShowBackground];
+    VST1.TreeOptions.PaintOptions := VST1.TreeOptions.PaintOptions - [TVTPaintOption.toShowBackground];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

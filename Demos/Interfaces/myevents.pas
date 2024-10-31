@@ -23,7 +23,7 @@ unit myevents;
 
 interface
 
-uses Vcl.ImgList, VirtualTrees, System.Classes, Vcl.Controls;
+uses Vcl.ImgList, VirtualTrees, System.Classes, System.UITypes, Vcl.Controls, VirtualTrees.Types;
 
 type
   IEventPresenter = interface
@@ -103,9 +103,11 @@ begin
   //set up columns
   col := fVST.header.Columns.Add;
   col.Text := 'Star Event';
+  col.Hint := 'Number of Stars';
   col.Width := 120;
   col := fVST.header.Columns.Add;
   col.Text := 'Date';
+  col.Hint := 'The date of the event';
   col.Width := 100;
   col := fVST.header.Columns.Add;
   col.Text := 'Charity Event Name';
@@ -119,12 +121,12 @@ begin
   fVST.Header.AutoSizeIndex := -1;
   //If the form uses a larger font, the header should use the same
   fVST.Header.Font.Assign(fVST.font);
-  fVST.Header.Options := fVST.Header.Options + [hoVisible, hoHeaderClickAutoSort];
+  fVST.Header.Options := fVST.Header.Options + [TVTHeaderOption.hoVisible, TVTHeaderOption.hoHeaderClickAutoSort];
   fVST.TreeOptions.PaintOptions := fVST.TreeOptions.PaintOptions
-            - [toShowRoot, toShowTreeLines];
+            - [TVTPaintOption.toShowRoot, TVTPaintOption.toShowTreeLines];
   fVST.TreeOptions.SelectionOptions := fVST.TreeOptions.SelectionOptions
-            + [toFullRowSelect];
-  fVST.TreeOptions.AutoOptions := fVST.TreeOptions.AutoOptions + [toAutoSort];
+            + [TVTSelectionOption.toFullRowSelect];
+  fVST.TreeOptions.AutoOptions := fVST.TreeOptions.AutoOptions + [TVTAutoOption.toAutoSort];
 
   //generate 20 events as part of setup
   fVST.RootNodeCount := 20;

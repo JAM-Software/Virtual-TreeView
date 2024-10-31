@@ -26,7 +26,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VirtualTrees, StdCtrls, {$ifdef GraphicEx} GraphicEx, {$else} JPEG, {$endif}
-  ImgList, ComCtrls, UITypes;
+  ImgList, ComCtrls, UITypes, VirtualTrees.DrawTree, System.ImageList, VirtualTrees.Types;
 
 type
   TDrawTreeForm = class(TForm)
@@ -53,6 +53,7 @@ type
       var InitialStates: TVirtualNodeInitStates);
     procedure TrackBar1Change(Sender: TObject);
     procedure VDT1StateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure FormDestroy(Sender: TObject);
   private
     FThumbSize: Integer;
     FExtensionsInitialized: Boolean;
@@ -160,7 +161,8 @@ procedure TDrawTreeForm.FormCreate(Sender: TObject);
 var
   SFI: TSHFileInfo;
   I,
-  Count: Integer;
+  DriveCount: Integer;
+  Len: Integer;
   DriveMap,
   Mask: Cardinal;
 
@@ -168,25 +170,30 @@ begin
   VDT1.NodeDataSize := SizeOf(TShellObjectData);
 
   // Fill root level of image tree. Determine which drives are mapped.
-  Count := 0;
+  DriveCount := 0;
   DriveMap := GetLogicalDrives;
   Mask := 1;
   for I := 0 to 25 do
   begin
     if (DriveMap and Mask) <> 0 then
-      Inc(Count);
+      Inc(DriveCount);
     Mask := Mask shl 1;
   end;
-  VDT1.RootNodeCount := Count;
   // Determine drive strings which are used in the initialization process.
-  Count := GetLogicalDriveStrings(0, nil);
-  SetLength(FDriveStrings, Count);
-  GetLogicalDriveStrings(Count, PChar(FDriveStrings));
-  
+  Len := GetLogicalDriveStrings(0, nil);
+  SetLength(FDriveStrings, Len);
+  GetLogicalDriveStrings(Len, PChar(FDriveStrings));
+  VDT1.RootNodeCount := DriveCount;
+
   SystemImages.Handle := SHGetFileInfo('', 0, SFI, SizeOf(SFI), SHGFI_SYSICONINDEX or SHGFI_SMALLICON);
   SystemImages.ShareImages := True;
 
   FThumbSize := 200;
+end;
+
+procedure TDrawTreeForm.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FExtensionList);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -334,58 +341,60 @@ begin
   end
   else
   begin
-    Picture := TPicture.Create;
     Data.Display := ExtractFileName(ExcludeTrailingBackslash(Data.FullPath));
     if (Data.Attributes and SFGAO_FOLDER) = 0 then
-    try
+    begin
+      Picture := TPicture.Create;
       try
-        Data.Image := TBitmap.Create;
-        Picture.LoadFromFile(Data.FullPath);
-        if not (Picture.Graphic is TBitmap) then
-        begin
-          // Some extra steps needed to keep non TBitmap descentants alive when
-          // scaling. This is needed because when accessing Picture.Bitmap all
-          // non-TBitmap content will simply be erased (definitly the wrong
-          // action, but we can't do anything to prevent this). Hence we
-          // must explicitly draw the graphic to a bitmap.
-          with Data.Image do
+        try
+          Data.Image := TBitmap.Create;
+          Picture.LoadFromFile(Data.FullPath);
+          if not (Picture.Graphic is TBitmap) then
           begin
-            Width := Picture.Width;
-            Height := Picture.Height;
-            Canvas.Draw(0, 0, Picture.Graphic);
+            // Some extra steps needed to keep non TBitmap descentants alive when
+            // scaling. This is needed because when accessing Picture.Bitmap all
+            // non-TBitmap content will simply be erased (definitly the wrong
+            // action, but we can't do anything to prevent this). Hence we
+            // must explicitly draw the graphic to a bitmap.
+            with Data.Image do
+            begin
+              Width := Picture.Width;
+              Height := Picture.Height;
+              Canvas.Draw(0, 0, Picture.Graphic);
+            end;
+            Picture.Bitmap.Assign(Data.Image);
           end;
-          Picture.Bitmap.Assign(Data.Image);
-        end;
-        RescaleImage(Picture.Bitmap, Data.Image);
+          RescaleImage(Picture.Bitmap, Data.Image);
 
-        // Collect some additional image properties.
-        Data.Properties := Data.Properties + Format('%d x %d pixels', [Picture.Width, Picture.Height]);
-        case Picture.Bitmap.PixelFormat of
-          pf1bit:
-            Data.Properties := Data.Properties + ', 2 colors';
-          pf4bit:
-            Data.Properties := Data.Properties + ', 16 colors';
-          pf8bit:
-            Data.Properties := Data.Properties + ', 256 colors';
-          pf15bit:
-            Data.Properties := Data.Properties + ', 32K colors';
-          pf16bit:
-            Data.Properties := Data.Properties + ', 64K colors';
-          pf24bit:
-            Data.Properties := Data.Properties + ', 16M colors';
-          pf32bit:
-            Data.Properties := Data.Properties + ', 16M+ colors';
+          // Collect some additional image properties.
+          Data.Properties := Data.Properties + Format('%d x %d pixels', [Picture.Width, Picture.Height]);
+          case Picture.Bitmap.PixelFormat of
+            pf1bit:
+              Data.Properties := Data.Properties + ', 2 colors';
+            pf4bit:
+              Data.Properties := Data.Properties + ', 16 colors';
+            pf8bit:
+              Data.Properties := Data.Properties + ', 256 colors';
+            pf15bit:
+              Data.Properties := Data.Properties + ', 32K colors';
+            pf16bit:
+              Data.Properties := Data.Properties + ', 64K colors';
+            pf24bit:
+              Data.Properties := Data.Properties + ', 16M colors';
+            pf32bit:
+              Data.Properties := Data.Properties + ', 16M+ colors';
+          end;
+          if Data.Image.Height + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
+              Sender.NodeHeight[Node] := Data.Image.Height + 4;
+        except
+          Data.Image.Free;
+          Data.Image := nil;
         end;
-        if Cardinal(Data.Image.Height) + 4 > TVirtualDrawTree(Sender).DefaultNodeHeight then
-            Sender.NodeHeight[Node] := Data.Image.Height + 4;
-      except
-        Data.Image.Free;
-        Data.Image := nil;
-      end;
-    finally
-      Picture.Free;
-    end;
-  end;
+      finally
+        Picture.Free;
+      end;// try..finally
+    end;// if
+  end;// else
   Data.Attributes := ReadAttributes(Data.FullPath);
   if ((Data.Attributes and SFGAO_HASSUBFOLDER) <> 0) or
     (((Data.Attributes and SFGAO_FOLDER) <> 0) and HasChildren(Data.FullPath)) then
@@ -527,6 +536,7 @@ begin
   if FindFirst(IncludeTrailingBackslash(Data.FullPath) + '*.*', faAnyFile, SR) = 0 then
   begin
     Screen.Cursor := crHourGlass;
+    Sender.BeginUpdate;
     try
       repeat
         if (SR.Name <> '.') and (SR.Name <> '..') then
@@ -543,15 +553,15 @@ begin
             GetOpenAndClosedIcons(ChildData.FullPath, ChildData.OpenIndex, ChildData.CloseIndex);
 
             Sender.ValidateNode(Node, False);
+            Inc(ChildCount);
           end;
         end;
       until FindNext(SR) <> 0;
-      ChildCount := Sender.ChildCount[Node];
 
       // finally sort node
-      if ChildCount > 0 then
-        Sender.Sort(Node, 0, TVirtualStringTree(Sender).Header.SortDirection, False);
+      Sender.Sort(Node, 0, TVirtualStringTree(Sender).Header.SortDirection, False);
     finally
+      Sender.EndUpdate;
       FindClose(SR);
       Screen.Cursor := crDefault;
     end;
@@ -604,7 +614,7 @@ var
   
 begin
   Data := Sender.GetNodeData(Node);
-  if Assigned(Data) and Assigned(Data.Image) and (Column = 1) then
+  if Assigned(Data) and Assigned(Data.Image) then
     R := Rect(0, 0, 2 * Data.Image.Width, 2 * Data.Image.Height)
   else
     R := Rect(0, 0, 0, 0);
@@ -622,7 +632,7 @@ var
 
 begin
   Data := Sender.GetNodeData(Node);
-  if Assigned(Data) and Assigned(Data.Image) and (Column = 1) then
+  if Assigned(Data) and Assigned(Data.Image) then
   begin
     SetStretchBltMode(Canvas.Handle, HALFTONE);
     StretchBlt(Canvas.Handle, 0, 0, 2 * Data.Image.Width, 2 * Data.Image.Height, Data.Image.Canvas.Handle, 0, 0,
@@ -689,7 +699,7 @@ begin
             SortDirection := sdDescending
           else
             SortDirection := sdAscending;
-        Treeview.SortTree(SortColumn, SortDirection, False);
+        TBaseVirtualTree(Treeview).SortTree(SortColumn, SortDirection, False);
       end;
     end;
   end;

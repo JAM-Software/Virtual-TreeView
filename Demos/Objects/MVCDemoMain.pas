@@ -15,7 +15,7 @@ interface
 
 uses Windows,Messages,SysUtils,Classes,Graphics,Controls,Forms,Dialogs,
      MVCTypes,MVCPanel,StdCtrls,ExtCtrls,ImgList,VirtualTrees,ComCtrls,
-  Buttons;
+  Buttons, System.ImageList;
 
 type TfmMVCDemo=class(TForm)
        pnlControls:TPanel;

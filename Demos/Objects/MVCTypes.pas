@@ -55,7 +55,7 @@ unit MVCTypes;
 interface
 
 uses Windows,Messages,SysUtils,Graphics,VirtualTrees,Classes,StdCtrls,
-     Controls,Forms,ImgList,
+     Controls,Forms,ImgList, VirtualTrees.Types, VirtualTrees.BaseTree,
      System.Types, System.UITypes;
 
 type { TMVCNode is the encapsulation of a single Node in the structure.
@@ -191,7 +191,7 @@ type { TMVCNode is the encapsulation of a single Node in the structure.
        the functionality that is moved to our code, should you be happy
        with any of the predeclared descendants use of them. }
      TMVCEditLink=class;
-     TMVCTreeView=class(TBaseVirtualTree)
+     TMVCTreeView=class(TVTAncestor)
        private
          { This is a pointer to the structure associated with
            this viewer. }
@@ -627,7 +627,7 @@ begin
 
         { Some shuffling of feet and rectangles. Try for yourself what
           happens here be adding offsets, changing colors etc.. }
-        if (toHotTrack in Self.TreeOptions.PaintOptions) and
+        if (TVTPaintOption.toHotTrack in Self.TreeOptions.PaintOptions) and
            (Node=HotNode)
           then Font.Style:=Font.Style+[fsUnderline]
           else Font.Style:=Font.Style-[fsUnderline];
@@ -669,7 +669,7 @@ begin
 
         if Focused
            and (FocusedNode=Node) and
-           not(toFullRowSelect in Self.TreeOptions.SelectionOptions)
+           not (TVTSelectionOption.toFullRowSelect in Self.TreeOptions.SelectionOptions)
           then
             begin
               if Self.Color=clGray

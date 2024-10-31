@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, VirtualTrees;
+  Dialogs, StdCtrls, VirtualTrees, VirtualTrees.BaseTree;
 
 type
   TStateForm = class(TForm)
@@ -18,7 +18,6 @@ type
     CheckBox8: TCheckBox;
     CheckBox9: TCheckBox;
     CheckBox19: TCheckBox;
-    CheckBox20: TCheckBox;
     CheckBox21: TCheckBox;
     CheckBox27: TCheckBox;
     CheckBox43: TCheckBox;
@@ -28,7 +27,6 @@ type
     CheckBox11: TCheckBox;
     CheckBox15: TCheckBox;
     CheckBox16: TCheckBox;
-    CheckBox18: TCheckBox;
     GroupBox4: TGroupBox;
     CheckBox5: TCheckBox;
     CheckBox6: TCheckBox;
@@ -55,7 +53,6 @@ type
     CheckBox23: TCheckBox;
     CheckBox33: TCheckBox;
     GroupBox8: TGroupBox;
-    CheckBox22: TCheckBox;
     CheckBox26: TCheckBox;
     CheckBox30: TCheckBox;
     CheckBox34: TCheckBox;
@@ -78,6 +75,9 @@ procedure UpdateStateDisplay(CurrentStates, Enter, Leave: TVirtualTreeStates);
 implementation
 
 {$R *.dfm}
+
+uses
+  VirtualTrees.Types;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -109,11 +109,8 @@ begin
       SetActiveState(CheckBox15, tsIncrementalSearching in NewStates);
       SetActiveState(CheckBox16, tsIncrementalSearchPending in NewStates);
       SetActiveState(CheckBox17, tsIterating in NewStates);
-      SetActiveState(CheckBox18, tsKeyCheckPending in NewStates);
       SetActiveState(CheckBox19, tsLeftButtonDown in NewStates);
-      SetActiveState(CheckBox20, tsMouseCheckPending in NewStates);
       SetActiveState(CheckBox21, tsMiddleButtonDown in NewStates);
-      //SetActiveState(CheckBox22, tsNeedScale in NewStates);
       SetActiveState(CheckBox23, tsNeedRootCountUpdate in NewStates);
       SetActiveState(CheckBox24, tsOLEDragging in NewStates);
       SetActiveState(CheckBox25, tsOLEDragPending in NewStates);
@@ -126,7 +123,6 @@ begin
       SetActiveState(CheckBox32, tsStructureChangePending in NewStates);
       SetActiveState(CheckBox33, tsSynchMode in NewStates);
       SetActiveState(CheckBox34, tsThumbTracking in NewStates);
-      SetActiveState(CheckBox35, tsUpdating in NewStates);
       SetActiveState(CheckBox36, tsUseCache in NewStates);
       SetActiveState(CheckBox37, tsUserDragObject in NewStates);
       SetActiveState(CheckBox38, tsUseThemes in NewStates);
@@ -165,11 +161,8 @@ begin
   CheckBox15.Enabled := EnableCheckBox.Checked;
   CheckBox16.Enabled := EnableCheckBox.Checked;
   CheckBox17.Enabled := EnableCheckBox.Checked;
-  CheckBox18.Enabled := EnableCheckBox.Checked;
   CheckBox19.Enabled := EnableCheckBox.Checked;
-  CheckBox20.Enabled := EnableCheckBox.Checked;
   CheckBox21.Enabled := EnableCheckBox.Checked;
-  CheckBox22.Enabled := EnableCheckBox.Checked;
   CheckBox23.Enabled := EnableCheckBox.Checked;
   CheckBox24.Enabled := EnableCheckBox.Checked;
   CheckBox25.Enabled := EnableCheckBox.Checked;

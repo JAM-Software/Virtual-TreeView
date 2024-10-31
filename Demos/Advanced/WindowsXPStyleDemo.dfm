@@ -9,100 +9,97 @@ object WindowsXPForm: TWindowsXPForm
   Font.Height = -13
   Font.Name = 'Microsoft Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  DesignSize = (
-    796
-    487)
-  PixelsPerInch = 96
   TextHeight = 16
-  object Label1: TLabel
-    Left = 512
-    Top = 68
-    Width = 244
-    Height = 105
-    Anchors = [akTop, akRight]
-    AutoSize = False
-    Caption = 
-      'This demo shows a tree with properties which make it look as in ' +
-      'the Windows Vista+ style. Under Windows Vista+ native theme APIs' +
-      ' are used to paint the tree. On other system legacy code is used' +
-      ' which simulates the look.'
-    Transparent = True
-    WordWrap = True
-  end
-  object XPTree: TVirtualStringTree
+  object Panel1: TPanel
     Left = 0
     Top = 40
-    Width = 493
+    Width = 796
     Height = 447
-    Align = alLeft
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    AutoScrollDelay = 500
-    BevelInner = bvNone
-    ButtonFillMode = fmShaded
-    ClipboardFormats.Strings = (
-      'CSV'
-      'HTML Format')
-    Colors.DropTargetColor = 7063465
-    Colors.DropTargetBorderColor = 4958089
-    Colors.FocusedSelectionColor = clActiveCaption
-    Colors.FocusedSelectionBorderColor = clActiveCaption
-    Colors.GridLineColor = clBtnShadow
-    Colors.UnfocusedSelectionBorderColor = clBtnShadow
-    DefaultNodeHeight = 34
-    DragMode = dmAutomatic
-    DrawSelectionMode = smBlendedRectangle
-    Header.AutoSizeIndex = -1
-    Header.Font.Charset = ANSI_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -12
-    Header.Font.Name = 'Microsoft Sans Serif'
-    Header.Font.Style = []
-    Header.Height = 24
-    Header.Options = [hoColumnResize, hoDrag, hoHotTrack, hoShowSortGlyphs, hoVisible]
-    HintAnimation = hatFade
-    HintMode = hmHint
-    Images = LargeImages
-    ParentShowHint = False
-    RootNodeCount = 18
-    ShowHint = True
-    StateImages = SmallImages
-    TabOrder = 0
-    TreeOptions.AnimationOptions = [toAnimatedToggle]
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking]
-    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
-    TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
-    TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toSimpleDrawSelection]
-    OnCompareNodes = XPTreeCompareNodes
-    OnFreeNode = XPTreeFreeNode
-    OnGetText = XPTreeGetText
-    OnGetImageIndex = XPTreeGetImageIndex
-    OnGetHint = XPTreeGetHint
-    OnHeaderClick = XPTreeHeaderClick
-    OnInitChildren = XPTreeInitChildren
-    OnInitNode = XPTreeInitNode
-    OnStateChange = XPTreeStateChange
-    ExplicitTop = 36
-    ExplicitHeight = 451
-    Columns = <
-      item
-        Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible]
-        Position = 0
-        Width = 200
-        WideText = 'Name'
-      end
-      item
-        Alignment = taRightJustify
-        Position = 1
-        Width = 100
-        WideText = 'Size'
-      end
-      item
-        Position = 2
-        Width = 100
-        WideText = 'Type'
-      end>
+    Align = alClient
+    Caption = 'Panel1'
+    TabOrder = 1
+    object Label1: TLabel
+      Left = 551
+      Top = 1
+      Width = 244
+      Height = 445
+      Align = alRight
+      AutoSize = False
+      Caption = 
+        'This demo shows a tree with properties which make it look as in ' +
+        'the Windows Vista+ style. Under Windows Vista+ native theme APIs' +
+        ' are used to paint the tree. On other system legacy code is used' +
+        ' which simulates the look.'
+      Transparent = True
+      WordWrap = True
+    end
+    object XPTree: TVirtualStringTree
+      Left = 1
+      Top = 1
+      Width = 550
+      Height = 445
+      Align = alClient
+      AutoScrollDelay = 500
+      BevelInner = bvNone
+      ButtonFillMode = fmShaded
+      ClipboardFormats.Strings = (
+        'CSV'
+        'HTML Format')
+      Colors.DropTargetColor = 7063465
+      Colors.DropTargetBorderColor = 4958089
+      Colors.FocusedSelectionColor = clActiveCaption
+      Colors.FocusedSelectionBorderColor = clActiveCaption
+      Colors.GridLineColor = clBtnShadow
+      Colors.UnfocusedSelectionBorderColor = clBtnShadow
+      DefaultNodeHeight = 34
+      DragMode = dmAutomatic
+      DrawSelectionMode = smBlendedRectangle
+      Header.AutoSizeIndex = -1
+      Header.Height = 24
+      Header.Options = [hoColumnResize, hoDrag, hoHotTrack, hoShowSortGlyphs, hoVisible, hoAutoColumnPopupMenu]
+      HintMode = hmTooltip
+      Images = LargeImages
+      ParentShowHint = False
+      RootNodeCount = 18
+      ShowHint = True
+      StateImages = SmallImages
+      TabOrder = 0
+      TreeOptions.AnimationOptions = [toAnimatedToggle]
+      TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking]
+      TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
+      TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseExplorerTheme]
+      TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toSimpleDrawSelection]
+      OnCompareNodes = XPTreeCompareNodes
+      OnFreeNode = XPTreeFreeNode
+      OnGetText = XPTreeGetText
+      OnGetImageIndex = XPTreeGetImageIndex
+      OnGetHint = XPTreeGetHint
+      OnHeaderClick = XPTreeHeaderClick
+      OnInitChildren = XPTreeInitChildren
+      OnInitNode = XPTreeInitNode
+      OnStateChange = XPTreeStateChange
+      Touch.InteractiveGestures = [igPan, igPressAndTap]
+      Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+      Columns = <
+        item
+          Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible]
+          Position = 0
+          Text = 'Name'
+          Width = 200
+        end
+        item
+          Alignment = taRightJustify
+          Position = 1
+          Text = 'Size'
+          Width = 100
+        end
+        item
+          Position = 2
+          Text = 'Type'
+          Width = 100
+        end>
+    end
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -142,39 +139,39 @@ object WindowsXPForm: TWindowsXPForm
         Style = tbsDropDown
       end
       object ToolButton2: TToolButton
-        Left = 63
+        Left = 67
         Top = 0
         AutoSize = True
         ImageIndex = 10
         Style = tbsDropDown
       end
       object ToolButton3: TToolButton
-        Left = 126
+        Left = 134
         Top = 0
         AutoSize = True
         ImageIndex = 18
       end
       object ToolButton4: TToolButton
-        Left = 168
+        Left = 176
         Top = 0
         AutoSize = True
         ImageIndex = 14
       end
       object ToolButton5: TToolButton
-        Left = 210
+        Left = 218
         Top = 0
         AutoSize = True
         ImageIndex = 21
       end
       object ToolButton6: TToolButton
-        Left = 252
+        Left = 260
         Top = 0
         AutoSize = True
         ImageIndex = 8
         Style = tbsDropDown
       end
       object ToolButton8: TToolButton
-        Left = 315
+        Left = 327
         Top = 0
         Width = 8
         Caption = 'ToolButton8'
@@ -182,7 +179,7 @@ object WindowsXPForm: TWindowsXPForm
         Style = tbsSeparator
       end
       object ToolButton9: TToolButton
-        Left = 323
+        Left = 335
         Top = 0
         AutoSize = True
         Caption = 'Click here to print the treeview.'
@@ -197,7 +194,7 @@ object WindowsXPForm: TWindowsXPForm
     Left = 368
     Top = 304
     Bitmap = {
-      494C0101120013000C0020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001300040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000080000000A000000001002000000000000040
       0100000000000000000000000000000000000000000000000000000000000000
       000000000000FBFFFF00000000000000000000000000FFFBFF00D3D6D600A7A7
@@ -2850,7 +2847,7 @@ object WindowsXPForm: TWindowsXPForm
     Left = 368
     Top = 336
     Bitmap = {
-      494C01011B001D000C0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B001D00040018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000060000000A8000000010020000000000000FC
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000C4C4C4009996970099969700D1D1

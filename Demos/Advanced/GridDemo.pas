@@ -11,7 +11,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, Menus;
+  StdCtrls, VirtualTrees, ImgList, Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types;
 
 type
   TGridForm = class(TForm)
@@ -150,7 +150,7 @@ begin
   end
   else
   begin
-    VST5.Header.Columns[0].Options := VST5.Header.Columns[1].Options - [coVisible]; //test:
+    VST5.Header.Columns[0].Options := VST5.Header.Columns[1].Options - [TVTColumnOption.coVisible]; //test:
     //No text is shown for column 3 in addition to column 0 as in original code
     if (Column > 0) and (Column <> 3) then
       CellText := Sender.GetNodeData<TGridData>(Node).Value[Column - 1]
@@ -203,9 +203,9 @@ procedure TGridForm.GridLineCheckBoxClick(Sender: TObject);
 
 begin
   if GridLineCheckBox.Checked then
-    VST5.TreeOptions.PaintOptions := VST5.TreeOptions.PaintOptions + [toShowHorzGridLines, toShowVertGridLines]
+    VST5.TreeOptions.PaintOptions := VST5.TreeOptions.PaintOptions + [TVTPaintOption.toShowHorzGridLines, TVTPaintOption.toShowVertGridLines]
   else
-    VST5.TreeOptions.PaintOptions := VST5.TreeOptions.PaintOptions - [toShowHorzGridLines, toShowVertGridLines];
+    VST5.TreeOptions.PaintOptions := VST5.TreeOptions.PaintOptions - [TVTPaintOption.toShowHorzGridLines, TVTPaintOption.toShowVertGridLines];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -218,9 +218,9 @@ begin
     with TargetCanvas do
     begin
       // Decorate the fixed indicator column by filling it with an edge similar to that of TCustomGrid.
-      if toShowVertGridLines in VST5.TreeOptions.PaintOptions then
+      if TVTPaintOption.toShowVertGridLines in VST5.TreeOptions.PaintOptions then
         Inc(CellRect.Right);
-      if toShowHorzGridLines in VST5.TreeOptions.PaintOptions then
+      if TVTPaintOption.toShowHorzGridLines in VST5.TreeOptions.PaintOptions then
         Inc(CellRect.Bottom);
       DrawEdge(Handle, CellRect, BDR_RAISEDINNER, BF_RECT or BF_MIDDLE);
       if Node = Sender.FocusedNode then
@@ -242,9 +242,9 @@ end;
 procedure TGridForm.AutoSpanCheckBoxClick(Sender: TObject);
 begin
   if AutoSpanCheckBox.Checked then
-    VST5.TreeOptions.AutoOptions := VST5.TreeOptions.AutoOptions + [toAutoSpanColumns]
+    VST5.TreeOptions.AutoOptions := VST5.TreeOptions.AutoOptions + [TVTAutoOption.toAutoSpanColumns]
   else
-    VST5.TreeOptions.AutoOptions := VST5.TreeOptions.AutoOptions - [toAutoSpanColumns];
+    VST5.TreeOptions.AutoOptions := VST5.TreeOptions.AutoOptions - [TVTAutoOption.toAutoSpanColumns];
 end;
 
 end.

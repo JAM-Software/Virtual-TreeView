@@ -27,7 +27,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
-  StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes;
+  StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList, VirtualTrees.BaseTree,
+  VirtualTrees.Types;
 
 type
   TGeneralForm = class(TForm)
@@ -51,13 +52,14 @@ type
     GroupBox1: TGroupBox;
     Label19: TLabel;
     MainColumnUpDown: TUpDown;
+    ScrollBox1: TScrollBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure VST2InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
       var InitialStates: TVirtualNodeInitStates);
     procedure VST2InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure VST2NewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
-    procedure VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: string);
+    procedure VST2GetCellText(Sender: TCustomVirtualStringTree;
+      var E: TVSTGetCellTextEventArgs);
     procedure VST2PaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure VST2GetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -182,8 +184,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TGeneralForm.VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: string);
+procedure TGeneralForm.VST2GetCellText(Sender: TCustomVirtualStringTree; var E: TVSTGetCellTextEventArgs);
 
 // Returns the text as it is stored in the nodes data record.
 
@@ -191,21 +192,19 @@ var
   Data: PNodeData2;
 
 begin
-  Data := Sender.GetNodeData(Node);
-  CellText := '';
-  case Column of
+  Data := Sender.GetNodeData(E.Node);
+  case E.Column of
     0: // main column (has two different captions)
-      case TextType of
-        ttNormal:
-          CellText := Data.Caption;
-        ttStatic:
-          CellText := Data.StaticText;
+      begin
+        E.CellText := Data.Caption;
+        E.StaticText := Data.StaticText;
+        if Sender.GetNodeLevel(E.Node) > 0 then
+          E.StaticTextAlignment := TAlignment.taRightJustify;
       end;
-    1: // no text in the image column
-      ;
-    2:
-      if TextType = ttNormal then
-        CellText := Data.ForeignText;
+    1,2:
+      E.CellText := Data.ForeignText;
+  else
+    E.CellText := '';
   end;
 end;
 
@@ -235,7 +234,7 @@ begin
     end;
 
     Caption := Format('Level %d, Index %d', [Level, Node.Index]);
-    if Level in [0, 3] then
+    if Level in [0, 2, 3] then
       StaticText := '(static text)';
 
     ForeignText := '';
@@ -408,12 +407,12 @@ begin
   with Sender as TRadioGroup do
     if ItemIndex = 0 then
     begin
-      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions + [toShowTreeLines];
+      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions + [TVTPaintOption.toShowTreeLines];
       VST2.ButtonStyle := bsRectangle;
     end
     else
     begin
-      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions - [toShowTreeLines];
+      VST2.TreeOptions.PaintOptions := VST2.TreeOptions.PaintOptions - [TVTPaintOption.toShowTreeLines];
       VST2.ButtonStyle := bsTriangle;
     end;
 end;
@@ -451,11 +450,11 @@ begin
   with VST2.TreeOptions do
     if ThemeRadioGroup.ItemIndex = 0 then
     begin
-      PaintOptions := PaintOptions + [toThemeAware];
+      PaintOptions := PaintOptions + [TVTPaintOption.toThemeAware];
       VST2.CheckImageKind := ckSystemDefault;
     end
     else
-      PaintOptions := PaintOptions - [toThemeAware];
+      PaintOptions := PaintOptions - [TVTPaintOption.toThemeAware];
 
   RadioGroup1.Enabled := ThemeRadioGroup.ItemIndex = 1;
   RadioGroup2.Enabled := ThemeRadioGroup.ItemIndex = 1;

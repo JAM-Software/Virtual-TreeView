@@ -8,7 +8,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Forms, Controls, Graphics, VirtualTrees,
-  ExtCtrls, StdCtrls, ImgList;
+  ExtCtrls, StdCtrls, ImgList, VirtualTrees.Types;
   
 type
   TNodeForm = class(TForm)
@@ -146,9 +146,9 @@ procedure TNodeForm.AutoAdjustCheckBoxClick(Sender: TObject);
 
 begin
   if AutoAdjustCheckBox.Checked then
-    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions + [toVariablenodeHeight]
+    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions + [TVTMiscOption.toVariablenodeHeight]
   else
-    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions - [toVariablenodeHeight];
+    MLTree.TreeOptions.MiscOptions := MLTree.TreeOptions.MiscOptions - [TVTMiscOption.toVariablenodeHeight];
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 object MainForm: TMainForm
   Left = 220
   Top = 206
-  Width = 856
-  Height = 605
   Caption = 'Virtual Treeview features demo'
+  ClientHeight = 566
+  ClientWidth = 840
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +11,6 @@ object MainForm: TMainForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Position = poScreenCenter
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
@@ -996,7 +995,7 @@ object MainForm: TMainForm
       object Label1: TLabel
         Left = 14
         Top = 28
-        Width = 72
+        Width = 71
         Height = 13
         Caption = 'Demo picker'
         Font.Charset = DEFAULT_CHARSET
@@ -1009,7 +1008,7 @@ object MainForm: TMainForm
       object Label2: TLabel
         Left = 22
         Top = 44
-        Width = 196
+        Width = 190
         Height = 16
         Caption = 'Which demo do you want to see?'
       end
@@ -1952,7 +1951,7 @@ object MainForm: TMainForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 547
+    Top = 546
     Width = 840
     Height = 20
     AutoHint = True
@@ -1963,7 +1962,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 79
     Width = 840
-    Height = 468
+    Height = 467
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2

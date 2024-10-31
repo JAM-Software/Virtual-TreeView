@@ -124,11 +124,6 @@ object MainForm: TMainForm
     Font.Name = 'Lucida Sans Unicode'
     Font.Style = []
     Header.AutoSizeIndex = 0
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     HintMode = hmTooltip
@@ -147,6 +142,8 @@ object MainForm: TMainForm
     OnGetText = Tree1GetText
     OnInitNode = TreeInitNode
     OnNewText = Tree1NewText
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
   end
   object Tree1: TVirtualStringTree
@@ -173,11 +170,6 @@ object MainForm: TMainForm
     Font.Name = 'Verdana'
     Font.Style = []
     Header.AutoSizeIndex = 0
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
     Header.MainColumn = -1
     Header.Options = [hoColumnResize, hoDrag]
     HintMode = hmTooltip
@@ -195,6 +187,8 @@ object MainForm: TMainForm
     OnGetText = Tree1GetText
     OnInitNode = TreeInitNode
     OnNewText = Tree1NewText
+    Touch.InteractiveGestures = [igPan, igPressAndTap]
+    Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <>
   end
   object PageControl1: TPageControl
@@ -208,10 +202,6 @@ object MainForm: TMainForm
     object RichTextTabSheet: TTabSheet
       Caption = 'Rich text'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         677
         215)
@@ -237,14 +227,11 @@ object MainForm: TMainForm
         ScrollBars = ssBoth
         TabOrder = 0
         WordWrap = False
+        Zoom = 100
       end
     end
     object LogTabSheet: TTabSheet
       Caption = 'Drag'#39'n drop operation log'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         677
         215)
@@ -287,10 +274,6 @@ object MainForm: TMainForm
     object TabSheet2: TTabSheet
       Caption = 'More info'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label4: TLabel
         Left = 12
         Top = 52
@@ -393,7 +376,7 @@ object MainForm: TMainForm
     Left = 706
     Top = 212
     Bitmap = {
-      494C0101120013000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
