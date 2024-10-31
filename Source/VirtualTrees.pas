@@ -28067,25 +28067,73 @@ function TBaseVirtualTree.GetLastVisibleNoInit(Node: PVirtualNode = nil;
   ConsiderChildrenAbove: Boolean = True; IncludeFiltered: Boolean = False): PVirtualNode;
 
 // Returns the very last visible node in the tree while optionally considering toChildrenAbove.
+// Note that the visibility of all ancestor nodes of the resulting node must not be considered.
 // No initialization is performed.
+
+  //--------------- local functions -------------------------------------------
+
+  function GetNodeIsVisible(ChildNode: PVirtualNode): Boolean;
+  begin
+    Result := (vsVisible in ChildNode.States) and
+              (IncludeFiltered or not IsEffectivelyFiltered[ChildNode]);
+  end;
+
+  function GetNodeHasVisibleChildren(ChildNode: PVirtualNode): Boolean;
+  begin
+    Result := (vsHasChildren in ChildNode.States) and
+              (vsExpanded in ChildNode.States) and
+              not (vsAllChildrenHidden in ChildNode.States);
+  end;
+
+  function IterateChildren(ParentNode: PVirtualNode): PVirtualNode;
+  var
+    Run: PVirtualNode;
+  begin
+    Result := nil;
+
+    Run := GetLastChildNoInit(ParentNode); // Do not use 'GetLastVisibleChildNoInit' here (see above).
+    while Assigned(Run) do
+    begin
+      if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+      begin
+        if GetNodeIsVisible(Run) then
+          Result := Run
+        else if GetNodeHasVisibleChildren(Run) then
+          Result := IterateChildren(Run);
+      end else
+      begin
+        if GetNodeHasVisibleChildren(Run) then
+          Result := IterateChildren(Run)
+        else if GetNodeIsVisible(Run) then
+          Result := Run;
+      end;
+
+      if Assigned(Result) then
+        break;
+
+      Run := GetPreviousSiblingNoInit(Run);
+    end;
+  end;
+
+  //--------------- end local functions ---------------------------------------
+
 var
-  Next: PVirtualNode;
+  Run: PVirtualNode;
 
 begin
-  Result := GetLastVisibleChildNoInit(Node, IncludeFiltered);
-  if not ConsiderChildrenAbove or not (toChildrenAbove in FOptions.PaintOptions) then
-    while Assigned(Result) and (vsExpanded in Result.States) do
-    begin
-      // Test if there is a next last child. If not keep the node from the last run.
-      // Otherwise use the next last child.
-      Next := GetLastChildNoInit(Result);
-      if Assigned(Next) and (not (vsVisible in Next.States) or
-         (not IncludeFiltered and IsEffectivelyFiltered[Next])) then
-        Next := GetPreviousVisibleSiblingNoInit(Next, IncludeFiltered);
-      if Next = nil then
-        Break;
-      Result := Next;
-    end;
+  Result := nil;
+
+  // First, check wether the given node and all its parents are expanded.
+  // If not, there can not be any visible child node.
+  Run := Node;
+  while Assigned(Run) and (Run <> RootNode) do
+  begin
+    if not (vsExpanded in Run.States) then
+      exit;
+    Run := Run.Parent;
+  end;
+
+  Result := IterateChildren(Node);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
