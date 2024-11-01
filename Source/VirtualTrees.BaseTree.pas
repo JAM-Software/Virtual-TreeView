@@ -546,9 +546,9 @@ type
     FSearchStart: TVTSearchStart;                // Where to start iteration on each key press.
 
     // miscellanous
-    FPanningWindow: HWND;                        // Helper window for wheel panning
+    FPanningWindow: TForm;                       // Helper window for wheel panning
     FPanningCursor: TVTCursor;                   // Current wheel panning cursor.
-    FPanningImage: TIcon;                      // A little 32x32 bitmap to indicate the panning reference point.
+    FPanningImage: TIcon;                        // A little 32x32 bitmap to indicate the panning reference point.
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
     FOperationCount: Cardinal;                   // Counts how many nested long-running operations are in progress.
     FOperationCanceled: Boolean;                 // Used to indicate that a long-running operation should be canceled.
@@ -1130,7 +1130,6 @@ type
     procedure PaintTreeLines(const PaintInfo: TVTPaintInfo; IndentSize: TDimension; const LineImage: TLineImage); virtual;
     procedure PaintSelectionRectangle(Target: TCanvas; WindowOrgX: TDimension; const SelectionRect: TRect;
       TargetRect: TRect); virtual;
-    procedure PanningWindowProc(var Message: TMessage); virtual;
     procedure PrepareBitmaps(NeedButtons, NeedLines: Boolean);
     procedure PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: TDimension); virtual;
     function ReadChunk(Stream: TStream; Version: Integer; Node: PVirtualNode; ChunkType,
@@ -1646,6 +1645,7 @@ uses
   System.StrUtils,
   Clipbrd,
   Vcl.Consts,
+  Vcl.ExtCtrls,
   Vcl.AxCtrls,                 // TOLEStream
   Vcl.StdActns,                // for standard action support
   Vcl.GraphUtil,               // accessibility helper class
@@ -14201,30 +14201,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.PanningWindowProc(var Message: TMessage);
-const
- DI_NOMIRROR = $0010;
-var
-  PS: TPaintStruct;
-
-begin
-  if Message.Msg = WM_PAINT then
-  begin
-    BeginPaint(FPanningWindow, PS);
-    try
-      DrawIconEx(PS.hdc, Left, Top, FPanningImage.Handle, 0, 0, 0, 0, DI_NORMAL);
-    finally
-      EndPaint(FPanningWindow, PS);
-    end;
-    Message.Result := 0;
-  end
-  else
-    with Message do
-      Result := DefWindowProc(FPanningWindow, Msg, wParam, lParam);
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 procedure TBaseVirtualTree.PrepareCell(var PaintInfo: TVTPaintInfo; WindowOrgX, MaxWidth: TDimension);
 
 // This method is called immediately before a cell's content is drawn und is responsible to paint selection colors etc.
@@ -14851,55 +14827,36 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
 // which determines in which direction and how far wheel panning/scrolling will happen.
 
   //--------------- local function --------------------------------------------
-
-  function CreateClipRegion: HRGN;
-
-  // In order to avoid doing all the transparent drawing ourselves we use a
-  // window region for the wheel window.
-  // Since we only work on a very small image (32x32 pixels) this is acceptable.
-
+  function CreatePanningWindow(const ImageName: TPanningCursor; const Pos: TPoint): TForm;
   var
-    Start, X, Y: Integer;
-    Temp: HRGN;
-
+    Form: TForm;
+    Image: TImage;
   begin
-    Assert(not FPanningImage.Empty, 'Invalid wheel panning image: Empty');
+    Form := TForm.Create(Self);
+    Form.PopupMode := pmExplicit;
+    Form.PopupParent := GetParentForm(Self);
+    Form.TransparentColor := True;
+    Form.TransparentColorValue := clBtnFace;
+    Form.Autosize := True;
+    Form.BorderStyle := bsNone;
+    Form.StyleElements := [];
+    Image := TImage.Create(Form);
+    Image.Left := 0;
+    Image.Top := 0;
+    Image.Parent := Form;
 
-    // Create an initial region on which we operate.
-    Result := CreateRectRgn(0, 0, 0, 0);
-    with FPanningImage do
-    begin
-      for Y := 0 to Height - 1 do
-      begin
-        Start := -1;
-        for X := 0 to Width - 1 do
-        begin
-          // Start a new span if we found a non-transparent pixel and no span is currently started.
-          if (Start = -1) and (Canvas.Pixels[X, Y] <> clFuchsia) then
-            Start := X
-          else
-            if (Start > -1) and (Canvas.Pixels[X, Y] = clFuchsia) then
-            begin
-              // A non-transparent span is finished. Add it to the result region.
-              Temp := CreateRectRgn(Start, Y, X, Y + 1);
-              CombineRgn(Result, Result, Temp, RGN_OR);
-              DeleteObject(Temp);
-              Start := -1;
-            end;
-        end;
-        // If there is an open span then add this also to the result region.
-        if Start > -1 then
-        begin
-          Temp := CreateRectRgn(Start, Y, Width, Y + 1);
-          CombineRgn(Result, Result, Temp, RGN_OR);
-          DeleteObject(Temp);
-        end;
-      end;
-    end;
-    // The resulting region is used as window region so we must not delete it.
-    // Windows will own it after the assignment below.
+    FPanningImage := TIcon.Create;
+    FPanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, ScaledPixels(32), ScaledPixels(32), LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
+    Image.Picture.Assign(FPanningImage);
+    Image.AutoSize := True;
+    Form.Left := Pos.X - (FPanningImage.Width div 2); //Left + Width div 2;
+    Form.Top := Pos.Y - (FPanningImage.Height div 2);//Top + Height div 2;
+    Form.Position := poDesigned;
+    // This prevents a focus chnage compare to using TForm.Show()
+    ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
+    Form.Visible := True;
+    Exit(Form);
   end;
-
   //--------------- end local function ----------------------------------------
 
 var
@@ -14937,17 +14894,15 @@ begin
   else
     ImageName := TPanningCursor.MOVENS;
 
-  FPanningImage := TIcon.Create;
-  FPanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, ScaledPixels(32), ScaledPixels(32), LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
-
-  FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - (FPanningImage.Width div 2), Pt.Y - (FPanningImage.Height div 2), FPanningImage.Width, FPanningImage.Height, Handle, 0, HInstance, nil);
-  SetWindowRgn(FPanningWindow, CreateClipRegion, False);
-  {$ifdef CPUX64}
-  SetWindowLongPtr(FPanningWindow, GWLP_WNDPROC, LONG_PTR(System.Classes.MakeObjectInstance(PanningWindowProc)));
-  {$else}
-  SetWindowLong(FPanningWindow, GWL_WNDPROC, NativeInt(System.Classes.MakeObjectInstance(PanningWindowProc)));
-  {$endif CPUX64}
-  ShowWindow(FPanningWindow, SW_SHOWNOACTIVATE);
+  FPanningWindow := CreatePanningWindow(ImageName, Pt);
+//  FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - (FPanningImage.Width div 2), Pt.Y - (FPanningImage.Height div 2), FPanningImage.Width, FPanningImage.Height, Handle, 0, HInstance, nil);
+//  SetWindowRgn(FPanningWindow, CreateClipRegion, False);
+//  {$ifdef CPUX64}
+//  SetWindowLongPtr(FPanningWindow, GWLP_WNDPROC, LONG_PTR(System.Classes.MakeObjectInstance(PanningWindowProc)));
+//  {$else}
+//  SetWindowLong(FPanningWindow, GWL_WNDPROC, NativeInt(System.Classes.MakeObjectInstance(PanningWindowProc)));
+//  {$endif CPUX64}
+//  ShowWindow(FPanningWindow, SW_SHOWNOACTIVATE);
 
   // Setup the panscroll timer and capture all mouse input.
   TrySetFocus();
@@ -14961,9 +14916,6 @@ procedure TBaseVirtualTree.StopWheelPanning;
 
 // Stops panning if currently active and destroys the helper window.
 
-var
-  Instance: Pointer;
-
 begin
   if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
   begin
@@ -14973,18 +14925,10 @@ begin
     DoStateChange([], [tsWheelPanning, tsWheelScrolling]);
 
     // Destroy the helper window.
-    {$ifdef CPUX64}
-    Instance := Pointer(GetWindowLongPtr(FPanningWindow, GWLP_WNDPROC));
-    {$else}
-    Instance := Pointer(GetWindowLong(FPanningWindow, GWL_WNDPROC));
-    {$endif CPUX64}
-    DestroyWindow(FPanningWindow);
-    if Instance <> @DefWindowProc then
-      System.Classes.FreeObjectInstance(Instance);
-    FPanningWindow := 0;
-    FPanningImage.Free;
-    FPanningImage := nil;
+    if Assigned(FPanningWindow) then
+      FPanningWindow.Release;
     DeleteObject(FPanningCursor);
+    FreeAndNil(FPanningImage);
     FPanningCursor := 0;
     Winapi.Windows.SetCursor(Screen.Cursors[Cursor]);
   end;
