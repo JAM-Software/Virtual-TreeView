@@ -14807,20 +14807,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-var
-  PanningWindowClass: TWndClass = (
-    style: 0;
-    lpfnWndProc: @DefWindowProc;
-    cbClsExtra: 0;
-    cbWndExtra: 0;
-    hInstance: 0;
-    hIcon: 0;
-    hCursor: 0;
-    hbrBackground: 0;
-    lpszMenuName: nil;
-    lpszClassName: 'VTPanningWindow'
-  );
-
 procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
 
 // Called when wheel panning should start. A little helper window is created to indicate the reference position,
@@ -14860,8 +14846,6 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
   //--------------- end local function ----------------------------------------
 
 var
-  TempClass: TWndClass;
-  ClassRegistered: Boolean;
   ImageName: TPanningCursor;
   Pt: TPoint;
 
@@ -14872,18 +14856,7 @@ begin
   StopTimer(ScrollTimer);
   DoStateChange([tsWheelPanning, tsWheelScrolling]);
 
-  // Register the helper window class.
-  PanningWindowClass.hInstance := HInstance;
-  ClassRegistered := GetClassInfo(HInstance, PanningWindowClass.lpszClassName, TempClass);
-  if not ClassRegistered or (TempClass.lpfnWndProc <> @DefWindowProc) then
-  begin
-    if ClassRegistered then
-      Winapi.Windows.UnregisterClass(PanningWindowClass.lpszClassName, HInstance);
-    Winapi.Windows.RegisterClass(PanningWindowClass);
-  end;
-  // Create the helper window and show it at the given position without activating it.
-  Pt := ClientToScreen(Position);
-
+  // Determine correct cursor
   if FRangeX > ClientWidth then
   begin
     if FRangeY > ClientHeight then
@@ -14894,15 +14867,9 @@ begin
   else
     ImageName := TPanningCursor.MOVENS;
 
+  // Create the helper window and show it at the given position without activating it.
+  Pt := ClientToScreen(Position);
   FPanningWindow := CreatePanningWindow(ImageName, Pt);
-//  FPanningWindow := CreateWindowEx(WS_EX_TOOLWINDOW, PanningWindowClass.lpszClassName, nil, WS_POPUP, Pt.X - (FPanningImage.Width div 2), Pt.Y - (FPanningImage.Height div 2), FPanningImage.Width, FPanningImage.Height, Handle, 0, HInstance, nil);
-//  SetWindowRgn(FPanningWindow, CreateClipRegion, False);
-//  {$ifdef CPUX64}
-//  SetWindowLongPtr(FPanningWindow, GWLP_WNDPROC, LONG_PTR(System.Classes.MakeObjectInstance(PanningWindowProc)));
-//  {$else}
-//  SetWindowLong(FPanningWindow, GWL_WNDPROC, NativeInt(System.Classes.MakeObjectInstance(PanningWindowProc)));
-//  {$endif CPUX64}
-//  ShowWindow(FPanningWindow, SW_SHOWNOACTIVATE);
 
   // Setup the panscroll timer and capture all mouse input.
   TrySetFocus();
