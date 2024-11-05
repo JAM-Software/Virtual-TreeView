@@ -14823,20 +14823,21 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
     Form.PopupParent := GetParentForm(Self);
     Form.TransparentColor := True;
     Form.TransparentColorValue := clBtnFace;
-    Form.Autosize := True;
+    Form.Width := ScaledPixels(32);
+    Form.Height := Form.Width;
     Form.BorderStyle := bsNone;
     Form.StyleElements := [];
     Image := TImage.Create(Form);
     Image.Left := 0;
     Image.Top := 0;
     Image.Parent := Form;
+    Image.Align := TAlign.alClient;
 
     FPanningImage := TIcon.Create;
-    FPanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, ScaledPixels(32), ScaledPixels(32), LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
+    FPanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, Form.Width, Form.Height, LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
     Image.Picture.Assign(FPanningImage);
-    Image.AutoSize := True;
-    Form.Left := Pos.X - (FPanningImage.Width div 2); //Left + Width div 2;
-    Form.Top := Pos.Y - (FPanningImage.Height div 2);//Top + Height div 2;
+    Form.Left := Pos.X - (FPanningImage.Width div 2);
+    Form.Top := Pos.Y - (FPanningImage.Height div 2);
     Form.Position := poDesigned;
     // This prevents a focus chnage compare to using TForm.Show()
     ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
