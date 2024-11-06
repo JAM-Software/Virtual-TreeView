@@ -145,7 +145,7 @@ type
   TVTPaintContext = HDC;
   TVTBrush = HBRUSH;
 {$ENDIF}
-  TColumnIndex = Integer;
+  TColumnIndex = {$if CompilerVersion < 36} type {$endif} Integer; // See issue #1276
   TColumnPosition = type Cardinal;
   PCardinal = ^Cardinal;
 
