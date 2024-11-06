@@ -20808,13 +20808,6 @@ begin
   begin
     lDragImage := TVTDragImage.Create(Self);
     try
-      with lDragImage do
-      begin
-        Fade := True;
-        PreBlendBias := 0;
-        Transparency := 200;
-      end;
-
       // Determine the drag rectangle which is a square around the hot spot. Operate in virtual tree space.
       LocalSpot := HotSpot;
       Dec(LocalSpot.X, -FEffectiveOffsetX);
@@ -20859,8 +20852,7 @@ begin
         HotSpot.X := Width div 2;
         HotSpot.Y := Height div 2;
 
-        lDragImage.ColorKey := FColors.BackGroundColor;
-        lDragImage.PrepareDrag(Image, HotSpot, DataObject);
+        lDragImage.PrepareDrag(Image, HotSpot, DataObject, FColors.BackGroundColor);
       finally
         Image.Free;
       end;

@@ -588,13 +588,6 @@ begin
   FMainColumn := NoColumn;
 
   FDragImage := TVTDragImage.Create(AOwner);
-  with FDragImage do
-  begin
-    Fade := False;
-    PreBlendBias := - 50;
-    Transparency := 140;
-  end;
-
   fSplitterHitTolerance := 8;
   FFixedAreaConstraints := TVTFixedAreaConstraints.Create(Self);
   FFixedAreaConstraints.OnChange := FixedAreaConstraintsChanged;
@@ -1259,8 +1252,6 @@ begin
   //Fix for various problems mentioned in issue 248.
   if NeedRepaint then
     TBaseVirtualTreeCracker(FOwner).UpdateWindow();
-
-  FDragImage.DragTo(P, NeedRepaint);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
