@@ -6,7 +6,7 @@
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>VirtualTreesR.dpk</MainSource>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectGuid>{B62F3689-96E1-47D5-9FB2-2A2718281FDB}</ProjectGuid>
         <ProjectVersion>20.2</ProjectVersion>
         <TargetedPlatforms>1048579</TargetedPlatforms>
