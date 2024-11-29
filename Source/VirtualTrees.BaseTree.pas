@@ -1504,6 +1504,7 @@ type
       var Text: string); virtual;
     function GetTreeRect: TRect;
     function GetVisibleParent(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
+    function GetTopInvisibleParent(Node: PVirtualNode): PVirtualNode;
     function HasAsParent(Node, PotentialParent: PVirtualNode): Boolean;
     function InsertNode(Node: PVirtualNode; Mode: TVTNodeAttachMode; UserData: Pointer = nil): PVirtualNode;
     procedure InvalidateChildren(Node: PVirtualNode; Recursive: Boolean);
@@ -19498,6 +19499,31 @@ begin
   Result := Node.Parent;
   while (Result <> FRoot) and (not FullyVisible[Result] or (not IncludeFiltered and IsEffectivelyFiltered[Result])) do
     Result := Result.Parent;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetTopInvisibleParent(Node: PVirtualNode): PVirtualNode;
+
+// Returns the last (furthest) parent node of Node which is invisible.
+
+var
+  Run: PVirtualNode;
+
+begin
+  Assert(Assigned(Node), 'Node must not be nil.');
+  Assert(Node <> FRoot, 'Node must not be the hidden root node.');
+
+  Result := nil;
+
+  Run := Node.Parent;
+  while (Run <> FRoot) do
+  begin
+    if not ( (vsVisible in Run.States) and (vsExpanded in Run.Parent.States) ) then
+      Result := Run;
+    Run := Run.Parent;
+  end;
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
