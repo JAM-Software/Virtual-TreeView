@@ -3138,6 +3138,7 @@ type
       var Text: string); virtual;
     function GetTreeRect: TRect;
     function GetVisibleParent(Node: PVirtualNode; IncludeFiltered: Boolean = False): PVirtualNode;
+    function GetTopInvisibleParent(Node: PVirtualNode): PVirtualNode;
     function HasAsParent(Node, PotentialParent: PVirtualNode): Boolean;
     function InsertNode(Node: PVirtualNode; Mode: TVTNodeAttachMode; UserData: Pointer = nil): PVirtualNode;
     procedure InvalidateChildren(Node: PVirtualNode; Recursive: Boolean);
@@ -28566,113 +28567,122 @@ function TBaseVirtualTree.GetNextVisible(Node: PVirtualNode; ConsiderChildrenAbo
 // toChildrenAbove is optionally considered which is the default here.
 
 var
+  TopInvisibleParent: PVirtualNode;
   ForceSearch: Boolean;
 
 begin
   Result := Node;
-  if Assigned(Result) then
-  begin
-    Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+  if not Assigned(Result) then Exit;
 
-    repeat
-      // If the given node is not visible then look for a parent node which is visible, otherwise we will
-      // likely go unnecessarily through a whole bunch of invisible nodes.
-      if not FullyVisible[Result] then
-        Result := GetVisibleParent(Result, True);
+  Assert(Result <> FRoot, 'Node must not be the hidden root node.');
 
-      if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+  repeat
+    // If any ancestor is invisible, then find the last (furthest) parent node
+    // which is invisible to skip invisible subtrees. Otherwise we will
+    // likely go unnecessarily through a whole bunch of invisible nodes.
+    TopInvisibleParent := GetTopInvisibleParent(Result);
+    if Assigned(TopInvisibleParent) then
+      Result := TopInvisibleParent;
+
+    if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+    begin
+      repeat
+        // If there a no siblings anymore, go up one level.
+        if not Assigned(Result.NextSibling) then
+        begin
+          Result := Result.Parent;
+          if Result = FRoot then
+          begin
+            Result := nil;
+            Break;
+          end;
+
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
+        end
+        else
+        begin
+          // There is at least one sibling so take it.
+          Result := Result.NextSibling;
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
+          if not (vsVisible in Result.States) then
+            Continue;
+
+          // Now take a look at the children. As the children are initialized
+          // while toggling, we don't need to call 'InitChildren' beforehand here.
+          while (vsExpanded in Result.States) and Assigned(Result.FirstChild) do
+          begin
+            Result := Result.FirstChild;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            if not (vsVisible in Result.States) then
+              Break;
+          end;
+        end;
+
+        // If we found a visible node we don't need to search any longer.
+        // As it has already been initialized above, we don't need to call 'InitNode' here.
+        if vsVisible in Result.States then
+          Break;
+      until False;
+    end
+    else
+    begin
+      ForceSearch := True;
+      // If we found an invisible ancestor, we must not check its children.
+      // Remember, that TopInvisibleParent can be effectively invisible merely due to
+      // its own parent's expansion state despite being visible itself.
+      if Result <> TopInvisibleParent then
+      begin
+        if not (vsInitialized in Result.States) then
+          InitNode(Result);
+
+        // Child nodes are the first choice if the current node is known to be visible.
+        if (vsVisible in Result.States) and (vsExpanded in Result.States) then
+        begin
+          // Initialize the node's children if necessary.
+          if (vsHasChildren in Result.States) and (Result.ChildCount = 0) then
+              InitChildren(Result);
+
+          if Assigned(Result.FirstChild) then
+          begin
+            Result := Result.FirstChild;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            ForceSearch := False;
+          end;
+        end;
+      end;
+
+      // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
+      if ForceSearch or not (vsVisible in Result.States) then
       begin
         repeat
-          // If there a no siblings anymore, go up one level.
-          if not Assigned(Result.NextSibling) then
+          // Is there a next sibling?
+          if Assigned(Result.NextSibling) then
           begin
-            Result := Result.Parent;
-            if Result = FRoot then
-            begin
-              Result := nil;
-              Break;
-            end;
-
+            Result := Result.NextSibling;
             if not (vsInitialized in Result.States) then
               InitNode(Result);
             if vsVisible in Result.States then
               Break;
           end
+          // No sibling anymore, so use the parent's next sibling.
+          else if Result.Parent <> FRoot then
+            Result := Result.Parent
           else
           begin
-            // There is at least one sibling so take it.
-            Result := Result.NextSibling;
-            if not (vsInitialized in Result.States) then
-              InitNode(Result);
-            if not (vsVisible in Result.States) then
-              Continue;
-
-            // Now take a look at the children.
-            // As the children are initialized while toggling, we don't need to do this here.
-            while (vsExpanded in Result.States) and Assigned(Result.FirstChild) do
-            begin
-              Result := Result.FirstChild;
-              if not (vsInitialized in Result.States) then
-                InitNode(Result);
-              if not (vsVisible in Result.States) then
-                Break;
-            end;
-
-            // If we found a visible node we don't need to search any longer.
-            if vsVisible in Result.States then
-              Break;
+            // There are no further nodes to examine, hence there is no further visible node.
+            Result := nil;
+            Break;
           end;
         until False;
-      end
-      else
-      begin
-        // Has this node got children?
-        if [vsHasChildren, vsExpanded] * Result.States = [vsHasChildren, vsExpanded] then
-        begin
-          // Yes, there are child nodes. Initialize them if necessary.
-          if Result.ChildCount = 0 then
-            InitChildren(Result);
-        end;
-
-        // Child nodes are the first choice if possible.
-        if (vsExpanded in Result.States) and Assigned(Result.FirstChild) then
-        begin
-          Result := GetFirstChild(Result);
-          ForceSearch := False;
-        end
-        else
-          ForceSearch := True;
-
-        // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
-        if Assigned(Result) and (ForceSearch or not (vsVisible in Result.States)) then
-        begin
-          repeat
-            // Is there a next sibling?
-            if Assigned(Result.NextSibling) then
-            begin
-              Result := Result.NextSibling;
-              if not (vsInitialized in Result.States) then
-                InitNode(Result);
-              if vsVisible in Result.States then
-                Break;
-            end
-            else
-            begin
-              // No sibling anymore, so use the parent's next sibling.
-              if Result.Parent <> FRoot then
-                Result := Result.Parent
-              else
-              begin
-                // There are no further nodes to examine, hence there is no further visible node.
-                Result := nil;
-                Break;
-              end;
-            end;
-          until False;
-        end;
       end;
-    until not Assigned(Result) or IsEffectivelyVisible[Result];
-  end;
+    end;
+  until not Assigned(Result) or IsEffectivelyVisible[Result];
+
+  Assert(Result <> Node, 'Node cannot be its own visible successor.');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28680,98 +28690,100 @@ end;
 function TBaseVirtualTree.GetNextVisibleNoInit(Node: PVirtualNode; ConsiderChildrenAbove: Boolean = True): PVirtualNode;
 
 // Returns the next node in tree, with regard to Node, which is visible.
-// toChildrenAbove is optionally considered (which is the default). No initialization is done.
+// No initialization is done.
+// toChildrenAbove is optionally considered which is the default here.
 
 var
+  TopInvisibleParent: PVirtualNode;
   ForceSearch: Boolean;
 
 begin
   Result := Node;
-  if Assigned(Result) then
-  begin
-    Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+  if not Assigned(Result) then Exit;
 
-    repeat
-      if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+  Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
+  repeat
+    // If any ancestor is invisible, then find the last (furthest) parent node
+    // which is invisible to skip invisible subtrees. Otherwise we will
+    // likely go unnecessarily through a whole bunch of invisible nodes.
+    TopInvisibleParent := GetTopInvisibleParent(Result);
+    if Assigned(TopInvisibleParent) then
+      Result := TopInvisibleParent;
+
+    if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+    begin
+      repeat
+        // If there are no siblings anymore, go up one level.
+        if not Assigned(Result.NextSibling) then
+        begin
+          Result := Result.Parent;
+          if Result = FRoot then
+          begin
+            Result := nil;
+            Break;
+          end;
+        end
+        else
+        begin
+          // There is at least one sibling so take it.
+          Result := Result.NextSibling;
+          if not (vsVisible in Result.States) then
+            Continue;
+
+          // Now take a look at the children.
+          while (vsExpanded in Result.States) and Assigned(Result.FirstChild) do
+          begin
+            Result := Result.FirstChild;
+            if not (vsVisible in Result.States) then
+              Break;
+          end;
+        end;
+
+        // If we found a visible node we don't need to search any longer.
+        if vsVisible in Result.States then
+          Break;
+      until False;
+    end
+    else
+    begin
+      // Child nodes are the first choice if the current node is known to be visible.
+      // Remember, that TopInvisibleParent can be effectively invisible merely due to
+      // its own parent's expansion state despite being visible itself.
+      if (vsVisible in Result.States) and (vsExpanded in Result.States) and
+         (Result <> TopInvisibleParent) and Assigned(Result.FirstChild) then
+      begin
+        Result := Result.FirstChild;
+        ForceSearch := False;
+      end else
+        ForceSearch := True;
+
+      // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
+      if ForceSearch or not (vsVisible in Result.States) then
       begin
         repeat
-          // If there a no siblings anymore, go up one level.
-          if not Assigned(Result.NextSibling) then
+          // Is there a next sibling?
+          if Assigned(Result.NextSibling) then
           begin
-            Result := Result.Parent;
-            if Result = FRoot then
-            begin
-              Result := nil;
-              Break;
-            end;
+            Result := Result.NextSibling;
             if vsVisible in Result.States then
               Break;
           end
+          // No sibling anymore, so use the parent's next sibling.
+          else if Result.Parent <> FRoot then
+            Result := Result.Parent
           else
           begin
-            // There is at least one sibling so take it.
-            Result := Result.NextSibling;
-            if not (vsVisible in Result.States) then
-              Continue;
-
-            // Now take a look at the children.
-            while (vsExpanded in Result.States) and Assigned(Result.FirstChild) do
-            begin
-              Result := Result.FirstChild;
-              if not (vsVisible in Result.States) then
-                Break;
-            end;
-
-            // If we found a visible node we don't need to search any longer.
-            if vsVisible in Result.States then
-              Break;
+            // There are no further nodes to examine, hence there is no further visible node.
+            Result := nil;
+            Break;
           end;
         until False;
-      end
-      else
-      begin
-        // If the given node is not visible then look for a parent node which is visible, otherwise we will
-        // likely go unnecessarily through a whole bunch of invisible nodes.
-        if not FullyVisible[Result] then
-          Result := GetVisibleParent(Result, True);
-
-        // Child nodes are the first choice if possible.
-        if (vsExpanded in Result.States) and Assigned(Result.FirstChild) then
-        begin
-          Result := Result.FirstChild;
-          ForceSearch := False;
-        end
-        else
-          ForceSearch := True;
-
-        // If there are no children or the first child is not visible then search the sibling nodes or traverse parents.
-        if ForceSearch or not (vsVisible in Result.States) then
-        begin
-          repeat
-            // Is there a next sibling?
-            if Assigned(Result.NextSibling) then
-            begin
-              Result := Result.NextSibling;
-              if vsVisible in Result.States then
-                Break;
-            end
-            else
-            begin
-              // No sibling anymore, so use the parent's next sibling.
-              if Result.Parent <> FRoot then
-                Result := Result.Parent
-              else
-              begin
-                // There are no further nodes to examine, hence there is no further visible node.
-                Result := nil;
-                Break;
-              end;
-            end;
-          until False;
-        end;
       end;
-    until not Assigned(Result) or IsEffectivelyVisible[Result];
-  end;
+    end;
+  until not Assigned(Result) or IsEffectivelyVisible[Result];
+
+  Assert(Result <> Node, 'Node cannot be its own visible successor.');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -29316,104 +29328,120 @@ function TBaseVirtualTree.GetPreviousVisible(Node: PVirtualNode; ConsiderChildre
 // toChildrenAbove is optionally considered which is the default here.
 
 var
-  Marker: PVirtualNode;
+  TopInvisibleParent: PVirtualNode;
+  ForceSearch: Boolean;
 
 begin
   Result := Node;
-  if Assigned(Result) then
-  begin
-    Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+  if not Assigned(Result) then Exit;
 
-    repeat
-      // If the given node is not visible then look for a parent node which is visible and use its last visible
-      // child or the parent node (if there is no visible child) as result.
-      if not FullyVisible[Result] then
+  Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
+  repeat
+    // If any ancestor is invisible, then find the last (furthest) parent node
+    // which is invisible to skip invisible subtrees. Otherwise we will
+    // likely go unnecessarily through a whole bunch of invisible nodes.
+    TopInvisibleParent := GetTopInvisibleParent(Result);
+    if Assigned(TopInvisibleParent) then
+      Result := TopInvisibleParent;
+
+    if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+    begin
+      ForceSearch := True;
+      // If we found an invisible ancestor, we must not check its children.
+      // Remember, that TopInvisibleParent can be effectively invisible merely due to
+      // its own parent's expansion state despite being visible itself.
+      if Result <> TopInvisibleParent then
       begin
-        Result := GetVisibleParent(Result, True);
-        if Result = FRoot then
-          Result := nil;
-        Marker := GetLastVisible(Result, True);
-        if Assigned(Marker) then
-          Result := Marker;
-      end
-      else
+        if not (vsInitialized in Result.States) then
+          InitNode(Result);
+
+        if (vsVisible in Result.States) and (vsExpanded in Result.States) then
+        begin
+          // Initialiue the node's children if necessary.
+          if (vsHasChildren in Result.States) and (Result.ChildCount = 0) then
+            InitChildren(Result);
+
+          // Child nodes are the first choice if the current node is known to be visible.
+          if Assigned(Result.LastChild) then
+          begin
+            Result := Result.LastChild;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            ForceSearch := False;
+          end;
+        end;
+      end;
+
+      if ForceSearch or not (vsVisible in Result.States) then
       begin
-        if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
-        begin
-          repeat
-            if Assigned(Result.LastChild) and (vsExpanded in Result.States) then
-            begin
-              Result := Result.LastChild;
-              if not (vsInitialized in Result.States) then
-                InitNode(Result);
-
-              if vsVisible in Result.States then
-                Break;
-            end
-            else
-              if Assigned(Result.PrevSibling) then
-              begin
-                if not (vsInitialized in Result.PrevSibling.States) then
-                  InitNode(Result.PrevSibling);
-
-                if vsVisible in Result.PrevSibling.States then
-                begin
-                  Result := Result.PrevSibling;
-                  Break;
-                end;
-              end
-              else
-              begin
-                Marker := nil;
-                repeat
-                  Result := Result.Parent;
-                  if Result <> FRoot then
-                    Marker := GetPreviousVisibleSibling(Result, True)
-                  else
-                    Result := nil;
-                until Assigned(Marker) or (Result = nil);
-                if Assigned(Marker) then
-                  Result := Marker;
-
-                Break;
-              end;
-          until False;
-        end
-        else
-        begin
-          repeat
-            // Is there a previous sibling node?
-            if Assigned(Result.PrevSibling) then
-            begin
-              Result := Result.PrevSibling;
-              // Initialize the new node and check its visibility.
-              if not (vsInitialized in Result.States) then
-                InitNode(Result);
-              if vsVisible in Result.States then
-              begin
-                // If there are visible child nodes then use the last one.
-                Marker := GetLastVisible(Result, True, True);
-                if Assigned(Marker) then
-                  Result := Marker;
-                Break;
-              end;
-            end
-            else
-            begin
-              // No previous sibling there so the parent node is the nearest previous node.
-              Result := Result.Parent;
-              if Result = FRoot then
-                Result := nil;
+        repeat
+          // Is there a previous sibling?
+          if Assigned(Result.PrevSibling) then
+          begin
+            Result := Result.PrevSibling;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            if vsVisible in Result.States then
               Break;
-            end;
-          until False;
+          end
+          // No sibling anymore, so use the parent's previous sibling.
+          else if Result.Parent <> FRoot then
+            Result := Result.Parent
+          // There are no further nodes to examine, hence there is no further visible node.
+          else
+          begin
+            Result := nil;
+            Break;
+          end;
+        until False;
+      end;
+    end
+    else
+    begin
+      repeat
+        // If there are no sibling anymore, go up one level.
+        if not Assigned(Result.PrevSibling) then
+        begin
+          Result := Result.Parent;
+          if Result = FRoot then
+          begin
+            Result := nil;
+            Break;
+          end;
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
+        end else
+        begin
+          Result := Result.PrevSibling;
+          if not (vsInitialized in Result.States) then
+            InitNode(Result);
+          if not (vsVisible in Result.States) then
+            Continue;
+
+          // Now take a look at the children. As the children are initialized
+          // while toggling, we don't need to call 'InitChildren' beforehand here.
+          while (vsExpanded in Result.States) and Assigned(Result.LastChild) do
+          begin
+            Result := Result.LastChild;
+            if not (vsInitialized in Result.States) then
+              InitNode(Result);
+            if not (vsVisible in Result.States) then
+              Break;
+          end;
         end;
 
-        if Assigned(Result) and not (vsInitialized in Result.States) then
-          InitNode(Result);
-      end;
-    until not Assigned(Result) or IsEffectivelyVisible[Result];
-  end;
+        // If we found a visible node we don't need to search any longer.
+        if vsVisible in Result.States then
+          Break;
+      until False;
+    end;
+
+    if Assigned(Result) and not (vsInitialized in Result.States) then
+      InitNode(Result);
+  until not Assigned(Result) or IsEffectivelyVisible[Result];
+
+  Assert(Result <> Node, 'Node cannot be its own visible predecessor.');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -29422,97 +29450,99 @@ function TBaseVirtualTree.GetPreviousVisibleNoInit(Node: PVirtualNode;
   ConsiderChildrenAbove: Boolean = True): PVirtualNode;
 
 // Returns the previous node in tree, with regard to Node, which is visible.
+// No initialization is done.
 // toChildrenAbove is optionally considered which is the default here.
 
 var
-  Marker: PVirtualNode;
+  TopInvisibleParent: PVirtualNode;
+  ForceSearch: Boolean;
 
 begin
   Result := Node;
-  if Assigned(Result) then
-  begin
-    Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+  if not Assigned(Result) then Exit;
 
-    repeat
-      // If the given node is not visible then look for a parent node which is visible and use its last visible
-      // child or the parent node (if there is no visible child) as result.
-      if not FullyVisible[Result] then
+  Assert(Result <> FRoot, 'Node must not be the hidden root node.');
+
+  repeat
+    // If any ancestor is invisible, then find the last (furthest) parent node
+    // which is invisible to skip invisible subtrees. Otherwise we will
+    // likely go unnecessarily through a whole bunch of invisible nodes.
+    TopInvisibleParent := GetTopInvisibleParent(Result);
+    if Assigned(TopInvisibleParent) then
+      Result := TopInvisibleParent;
+
+    if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+    begin
+      // Child nodes are the first choice if the current node is known to be visible.
+      // Remember, that TopInvisibleParent can be effectively invisible merely due to
+      // its own parent's expansion state despite being visible itself.
+      if (vsVisible in Result.States) and (vsExpanded in Result.States) and
+         (Result <> TopInvisibleParent) and Assigned(Result.LastChild) then
       begin
-        Result := GetVisibleParent(Result, True);
-        if Result = FRoot then
-          Result := nil;
-        Marker := GetLastVisibleNoInit(Result, True);
-        if Assigned(Marker) then
-          Result := Marker;
-      end
-      else
+        Result := Result.LastChild;
+        ForceSearch := False;
+      end else
+        ForceSearch := True;
+
+      if ForceSearch or not (vsVisible in Result.States) then
       begin
-        if ConsiderChildrenAbove and (toChildrenAbove in FOptions.PaintOptions) then
+        repeat
+          // Is there a previous sibling?
+          if Assigned(Result.PrevSibling) then
+          begin
+            Result := Result.PrevSibling;
+            if vsVisible in Result.States then
+              Break;
+          end
+          // No sibling anymore, so use the parent's previous sibling.
+          else if Result.Parent <> FRoot then
+            Result := Result.Parent
+          // There are no further nodes to examine, hence there is no further visible node.
+          else
+          begin
+            Result := nil;
+            Break;
+          end;
+        until False;
+      end;
+    end
+    else
+    begin
+      repeat
+        // If there are no siblings anymore, go up one level.
+        if not Assigned(Result.PrevSibling) then
         begin
-          repeat
-            // Is the current node expanded and has children?
-            if (vsExpanded in Result.States) and Assigned(Result.LastChild) then
-            begin
-              Result := Result.LastChild;
-              if vsVisible in Result.States then
-                Break;
-            end
-            else
-              if Assigned(Result.PrevSibling) then
-              begin
-                // No children anymore, so take the previous sibling.
-                Result := Result.PrevSibling;
-                if vsVisible in Result.States then
-                  Break;
-              end
-              else
-              begin
-                // No children and no previous siblings, so walk up the tree and look wether
-                // a parent has a previous visible sibling. If that is the case take it,
-                // otherwise there is no previous visible node.
-                Marker := nil;
-                repeat
-                  Result := Result.Parent;
-                  if Result <> FRoot then
-                    Marker := GetPreviousVisibleSiblingNoInit(Result, True)
-                  else
-                    Result := nil;
-                until Assigned(Marker) or (Result = nil);
-                if Assigned(Marker) then
-                  Result := Marker;
-                Break;
-              end;
-          until False;
+          Result := Result.Parent;
+          if Result = FRoot then
+          begin
+            Result := nil;
+            Break;
+          end;
         end
         else
         begin
-          repeat
-            // Is there a previous sibling node?
-            if Assigned(Result.PrevSibling) then
-            begin
-              Result := Result.PrevSibling;
-              if vsVisible in Result.States then
-              begin
-                // If there are visible child nodes then use the last one.
-                Marker := GetLastVisibleNoInit(Result, True, True);
-                if Assigned(Marker) then
-                  Result := Marker;
-                Break;
-              end;
-            end
-            else
-            begin
-              // No previous sibling there so the parent node is the nearest previous node.
-              Result := Result.Parent;
-              if Result = FRoot then
-                Result := nil;
+          // There is at least one sibling so take it.
+          Result := Result.PrevSibling;
+          if not (vsVisible in Result.States) then
+            Continue;
+
+          // Now take a look at the children.
+          while (vsExpanded in Result.States) and Assigned(Result.LastChild) do
+          begin
+            Result := Result.LastChild;
+            if not (vsVisible in Result.States) then
               Break;
-            end;
-          until False;
+          end;
         end;
-      end;
-    until not Assigned(Result) or IsEffectivelyVisible[Result];
-  end;
+
+        // If we found a visible node we don't need to search any longer.
+        if vsVisible in Result.States then
+          Break;
+      until False;
+    end;
+  until not Assigned(Result) or IsEffectivelyVisible[Result];
+
+  Assert(Result <> Node, 'Node cannot be its own visible predecessor.');
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -29904,6 +29934,31 @@ begin
   Result := Node.Parent;
   while (Result <> FRoot) and (not FullyVisible[Result] or (not IncludeFiltered and IsEffectivelyFiltered[Result])) do
     Result := Result.Parent;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetTopInvisibleParent(Node: PVirtualNode): PVirtualNode;
+
+// Returns the last (furthest) parent node of Node which is invisible.
+
+var
+  Run: PVirtualNode;
+
+begin
+  Assert(Assigned(Node), 'Node must not be nil.');
+  Assert(Node <> FRoot, 'Node must not be the hidden root node.');
+
+  Result := nil;
+
+  Run := Node.Parent;
+  while (Run <> FRoot) do
+  begin
+    if not ( (vsVisible in Run.States) and (vsExpanded in Run.Parent.States) ) then
+      Result := Run;
+    Run := Run.Parent;
+  end;
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
