@@ -326,6 +326,8 @@ type
                                           const APlusSelectedHotBM :TBitmap; const AMinusBM : TBitmap; const AMinusHotBM : TBitmap;
                                           const AMinusSelectedHotBM :TBitmap; var ASize : TSize) of object;
 
+  TVTColumnHeaderSpanningEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var Count: Cardinal) of object;
+
   // search, sort
   TVTCompareEvent = procedure(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
     var Result: Integer) of object;
@@ -681,6 +683,7 @@ type
                                                  // not covered by any node
     FOnMeasureItem: TVTMeasureItemEvent;         // Triggered when a node is about to be drawn and its height was not yet
                                                  // determined by the application.
+    FOnColumnHeaderSpanning: TVTColumnHeaderSpanningEvent; // triggered before the header column area been create for painting
     FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
                                                  // add own clipboard formats on the fly
     FOnPaintText: TVTPaintText;                  // triggered before either normal or fixed text is painted to allow
@@ -1056,6 +1059,7 @@ type
     procedure DoStructureChange(Node: PVirtualNode; Reason: TChangeReason); virtual;
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
+    procedure DoColumnHeaderSpanning(Column: TColumnIndex; var Count: Cardinal); virtual;
     function DoValidateCache: Boolean; virtual;
     procedure DragAndDrop(AllowedEffects: DWord; const DataObject: TVTDragDataObject; var DragEffect: Integer); virtual;
     procedure DragCanceled; override;
@@ -1375,6 +1379,7 @@ type
     property OnStateChange: TVTStateChangeEvent read FOnStateChange write FOnStateChange;
     property OnStructureChange: TVTStructureChangeEvent read FOnStructureChange write FOnStructureChange;
     property OnUpdating: TVTUpdatingEvent read FOnUpdating write FOnUpdating;
+    property OnColumnHeaderSpanning: TVTColumnHeaderSpanningEvent read FOnColumnHeaderSpanning write FOnColumnHeaderSpanning;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -9677,6 +9682,14 @@ procedure TBaseVirtualTree.DoColumnDblClick(Column: TColumnIndex; Shift: TShiftS
 begin
   if Assigned(FOnColumnDblClick) then
     FOnColumnDblClick(Self, Column, Shift);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoColumnHeaderSpanning(Column: TColumnIndex; var Count: Cardinal);
+begin
+  if Assigned(FOnColumnHeaderSpanning) then
+    FOnColumnHeaderSpanning(Self.Header, Column, Count);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

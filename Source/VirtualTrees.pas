@@ -595,6 +595,7 @@ type
     property OnCanResize;
     property OnGesture;
     property Touch;
+    property OnColumnHeaderSpanning;
   end;
 
 //----------------------------------------------------------------------------------------------------------------------
