@@ -548,7 +548,6 @@ type
     // miscellanous
     FPanningWindow: TForm;                       // Helper window for wheel panning
     FPanningCursor: TVTCursor;                   // Current wheel panning cursor.
-    FPanningImage: TIcon;                        // A little 32x32 bitmap to indicate the panning reference point.
     FLastClickPos: TPoint;                       // Used for retained drag start and wheel mouse scrolling.
     FOperationCount: Cardinal;                   // Counts how many nested long-running operations are in progress.
     FOperationCanceled: Boolean;                 // Used to indicate that a long-running operation should be canceled.
@@ -6182,7 +6181,7 @@ begin
     FHintData.Tree.FLastHintRect := Rect(0, 0, 0, 0);
 
   LeaveStates := [tsHint];
-  if [tsWheelPanning, tsWheelScrolling] * FStates = [] then
+  if not (tsPanning in FStates) then
   begin
     StopTimer(ScrollTimer);
     LeaveStates := LeaveStates + [tsScrollPending, tsScrolling];
@@ -7470,7 +7469,7 @@ begin
     inherited;
 
     // Start wheel panning or scrolling if not already active, allowed and scrolling is useful at all.
-    if (toWheelPanning in FOptions.MiscOptions) and ([tsWheelScrolling, tsWheelPanning] * FStates = []) and
+    if (toWheelPanning in FOptions.MiscOptions) and not (tsPanning in FStates) and
       ((FRangeX > ClientWidth) or (FRangeY > ClientHeight)) then
     begin
       FLastClickPos := SmallPointToPoint(Message.Pos);
@@ -7500,16 +7499,7 @@ var
 begin
   DoStateChange([], [tsMiddleButtonDown]);
 
-  // If wheel panning/scrolling is active and the mouse has not yet been moved then the user starts wheel auto scrolling.
-  // Indicate this by removing the panning flag. Otherwise (the mouse has moved meanwhile) stop panning.
-  if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
-  begin
-    if tsWheelScrolling in FStates then
-      DoStateChange([], [tsWheelPanning])
-    else
-      StopWheelPanning;
-  end
-  else
+  if not (tsPanning in FStates) then
     if FHeader.States = [] then
     begin
       inherited;
@@ -7782,8 +7772,7 @@ begin
   begin
     // Feature: design-time header #415
     // Allow header to handle cursor and return control's default if it did nothing
-    if (CursorWnd = Handle) and
-      ([tsWheelPanning, tsWheelScrolling] * FStates = []) then
+    if (CursorWnd = Handle) and not (tsPanning in FStates) then
     begin
       if not TVTHeaderCracker(FHeader).HandleMessage(TMessage(Message)) then
       begin
@@ -8359,7 +8348,7 @@ begin
   // wheel panning/scrolling is active.
   IsDropTarget := Assigned(FDragManager) and DragManager.IsDropTarget;
   IsDrawSelecting := [tsDrawSelPending, tsDrawSelecting] * FStates <> [];
-  IsWheelPanning := [tsWheelPanning, tsWheelScrolling] * FStates <> [];
+  IsWheelPanning := tsPanning in FStates;
   Result := ((toAutoScroll in FOptions.AutoOptions) or IsWheelPanning) and
     (FHeader.States = []) and (IsDrawSelecting or IsDropTarget or (tsVCLDragging in FStates) or IsWheelPanning);
 end;
@@ -9290,7 +9279,7 @@ begin
   if CanAutoScroll then
   begin
     // Calculation for wheel panning/scrolling is a bit different to normal auto scroll.
-    if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
+    if tsPanning in FStates then
     begin
       if (X - FLastClickPos.X) < -8 then
         Include(Result, TScrollDirection.sdLeft);
@@ -9393,7 +9382,7 @@ procedure TBaseVirtualTree.DoAutoScroll(X, Y: TDimension);
 begin
   FScrollDirections := DetermineScrollDirections(X, Y);
 
-  if FStates * [tsWheelPanning, tsWheelScrolling] = [] then
+  if  not (tsPanning in FStates) then
   begin
     if FScrollDirections = [] then
     begin
@@ -10899,7 +10888,7 @@ begin
   MapWindowPoints(Handle, 0, R, 2);
   InRect := PtInRect(R, P);
   ClientP := ScreenToClient(P);
-  Panning := [tsWheelPanning, tsWheelScrolling] * FStates <> [];
+  Panning := tsPanning in FStates;
 
   if IsMouseSelecting or InRect or Panning then
   begin
@@ -10996,7 +10985,7 @@ begin
     end;
     UpdateWindow();
 
-    if (FScrollDirections = []) and ([tsWheelPanning, tsWheelScrolling] * FStates = []) then
+    if (FScrollDirections = []) and not (tsPanning in FStates) then
     begin
       StopTimer(ScrollTimer);
       DoStateChange([], [tsScrollPending, tsScrolling]);
@@ -12402,7 +12391,7 @@ var
   //--------------- end local functions ---------------------------------------
 
 begin
-  if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
+  if tsPanning in FStates then
   begin
     StopWheelPanning;
     Exit;
@@ -13605,14 +13594,6 @@ begin
       end;
     end;
 
-    // If both wheel panning and auto scrolling are pending then the user moved the mouse while holding down the
-    // middle mouse button. This means panning is being used, hence remove the wheel scroll flag.
-    if [tsWheelPanning, tsWheelScrolling] * FStates = [tsWheelPanning, tsWheelScrolling] then
-    begin
-      if ((Abs(FLastClickPos.X - X) >= Mouse.DragThreshold) or (Abs(FLastClickPos.Y - Y) >= Mouse.DragThreshold)) then
-        DoStateChange([], [tsWheelScrolling]);
-    end;
-
     // Really start dragging if the mouse has been moved more than the threshold.
     if (tsOLEDragPending in FStates) and
       (
@@ -13625,7 +13606,7 @@ begin
     begin
       if CanAutoScroll then
         DoAutoScroll(X, Y);
-      if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
+      if tsPanning in FStates then
         AdjustPanningCursor(X, Y);
       if not IsMouseSelecting then
       begin
@@ -14818,6 +14799,7 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
   var
     Form: TForm;
     Image: TImage;
+    PanningImage: TIcon;
   begin
     Form := TForm.Create(Self);
     Form.PopupMode := pmExplicit;
@@ -14834,11 +14816,15 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
     Image.Parent := Form;
     Image.Align := TAlign.alClient;
 
-    FPanningImage := TIcon.Create;
-    FPanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, Form.Width, Form.Height, LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
-    Image.Picture.Assign(FPanningImage);
-    Form.Left := Pos.X - (FPanningImage.Width div 2);
-    Form.Top := Pos.Y - (FPanningImage.Height div 2);
+    PanningImage := TIcon.Create;
+    try
+      PanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, Form.Width, Form.Height, LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
+      Image.Picture.Assign(PanningImage);
+    finally
+      PanningImage.Free;
+    end;
+    Form.Left := Pos.X - (PanningImage.Width div 2);
+    Form.Top := Pos.Y - (PanningImage.Height div 2);
     Form.Position := poDesigned;
     // This prevents a focus chnage compare to using TForm.Show()
     ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
@@ -14852,11 +14838,8 @@ var
   Pt: TPoint;
 
 begin
-  // Set both panning and scrolling flag. One will be removed shortly depending on whether the middle mouse button is
-  // released before the mouse is moved or vice versa. The first case is referred to as wheel scrolling while the
-  // latter is called wheel panning.
   StopTimer(ScrollTimer);
-  DoStateChange([tsWheelPanning, tsWheelScrolling]);
+  DoStateChange([tsPanning]);
 
   // Determine correct cursor
   if FRangeX > ClientWidth then
@@ -14886,18 +14869,17 @@ procedure TBaseVirtualTree.StopWheelPanning;
 // Stops panning if currently active and destroys the helper window.
 
 begin
-  if [tsWheelPanning, tsWheelScrolling] * FStates <> [] then
+  if tsPanning in FStates then
   begin
     // Release the mouse capture and stop the panscroll timer.
     StopTimer(ScrollTimer);
     ReleaseCapture;
-    DoStateChange([], [tsWheelPanning, tsWheelScrolling]);
+    DoStateChange([], [tsPanning]);
 
     // Destroy the helper window.
     if Assigned(FPanningWindow) then
       FPanningWindow.Release;
     DeleteObject(FPanningCursor);
-    FreeAndNil(FPanningImage);
     FPanningCursor := 0;
     Winapi.Windows.SetCursor(Screen.Cursors[Cursor]);
   end;
