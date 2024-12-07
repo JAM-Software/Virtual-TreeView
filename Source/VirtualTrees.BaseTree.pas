@@ -1115,6 +1115,7 @@ type
     procedure InternalRemoveFromSelection(Node: PVirtualNode); virtual;
     procedure InterruptValidation(pWaitForValidationTermination: Boolean = True);
     procedure InvalidateCache;
+    function LineWidth(): TDimension;
     procedure Loaded; override;
     procedure MainColumnChanged; virtual;
     procedure MarkCutCopyNodes; override;
@@ -11478,7 +11479,7 @@ procedure TBaseVirtualTree.DrawGridHLine(const PaintInfo: TVTPaintInfo; Left, Ri
 var
   R: TRect;
 begin
-  R := Rect(Min(Left, Right), Top, Max(Left, Right) + 1, Top + 1);
+  R := Rect(Min(Left, Right), Top, Max(Left, Right) + LineWidth, Top + LineWidth);
   DrawGridLine(PaintInfo.Canvas, R)
 end;
 
@@ -11490,7 +11491,7 @@ procedure TBaseVirtualTree.DrawGridVLine(const PaintInfo: TVTPaintInfo; Top, Bot
 var
   R: TRect;
 begin
-  R := Rect(Left, Min(Top, Bottom), Left + 1, Max(Top, Bottom) + 1);
+  R := Rect(Left, Min(Top, Bottom), Left + LineWidth, Max(Top, Bottom) + LineWidth);
   if pFixedColumn and (TVtPaintOption.toShowVertGridLines in TreeOptions.PaintOptions) then // In case we showe grid lines, we must use a color for the fixed column that differentiates from the normal gridlines
     StyleServices.DrawElement(PaintInfo.Canvas.Handle, StyleServices.GetElementDetails(tlGroupHeaderLineOpenHot), R {$IF CompilerVersion  >= 34}, @R, CurrentPPI{$IFEND})
   else begin
@@ -19150,6 +19151,20 @@ begin
   Result.FNodeLevel := NodeLevel;
 end;
 
+function TBaseVirtualTree.LineWidth: TDimension;
+// Returns the width in pixels that should be used to draw grid lines, see issue #1203
+begin
+  // Always use line width of 1 for older Delphi versions.
+  {$if CompilerVersion < 31}
+  Exit(1);
+  {$else}
+  if FCurrentPPI < 200 then
+    Exit(1) // Always use 1 pixel is scaled <=200%
+  else
+    Exit(MulDiv(1, Self.FCurrentPPI, 132)); // Use 132 dpi instead of the typical 96 so that line width increase slightly slower than the actual scaling, so we have a 3px line at 400%
+  {$ifend}
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.NoInitNodes(ConsiderChildrenAbove: Boolean): TVTVirtualNodeEnumeration;
@@ -20493,15 +20508,15 @@ begin
                             begin
                               if BidiMode = bdLeftToRight then
                               begin
-                                DrawGridHLine(PaintInfo, CellRect.Left + PaintInfo.Offsets[ofsCheckBox] - fImagesMargin, CellRect.Right - 1, CellRect.Bottom - 1);
+                                DrawGridHLine(PaintInfo, CellRect.Left + PaintInfo.Offsets[ofsCheckBox] - fImagesMargin, CellRect.Right - LineWidth, CellRect.Bottom - LineWidth);
                               end
                               else
                               begin
-                                DrawGridHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, 1, IndentSize) * FIndent - 1, CellRect.Bottom - 1);
+                                DrawGridHLine(PaintInfo, CellRect.Left, CellRect.Right - IfThen(toFixedIndent in FOptions.PaintOptions, LineWidth, IndentSize) * FIndent - 1, CellRect.Bottom - LineWidth);
                               end;
                             end
                             else
-                              DrawGridHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - 1);
+                              DrawGridHLine(PaintInfo, CellRect.Left, CellRect.Right, CellRect.Bottom - LineWidth);
 
                             Dec(CellRect.Bottom);
                             Dec(ContentRect.Bottom);
@@ -20531,7 +20546,7 @@ begin
                                 begin
                                   if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
                                   begin
-                                    DrawGridVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, ColumnIsFixed and (NextColumn >= 0));
+                                    DrawGridVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - LineWidth, ColumnIsFixed and (NextColumn >= 0));
                                   end;
 
                                   Dec(CellRect.Right);
@@ -20547,7 +20562,7 @@ begin
                                 begin
                                   if (BidiMode = bdLeftToRight) or not ColumnIsEmpty(Node, Column) then
                                   begin
-                                    DrawGridVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - 1, ColumnIsFixed and (NextColumn >= 0));
+                                    DrawGridVLine(PaintInfo, CellRect.Top, CellRect.Bottom, CellRect.Right - LineWidth, ColumnIsFixed and (NextColumn >= 0));
                                   end;
                                   Dec(CellRect.Right);
                                 end;
