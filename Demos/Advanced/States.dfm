@@ -126,15 +126,6 @@ object StateForm: TStateForm
       Enabled = False
       TabOrder = 5
     end
-    object CheckBox44: TCheckBox
-      Left = 10
-      Top = 84
-      Width = 190
-      Height = 17
-      Caption = 'Mouse wheel scrolling'
-      Enabled = False
-      TabOrder = 6
-    end
   end
   object GroupBox3: TGroupBox
     Left = 223

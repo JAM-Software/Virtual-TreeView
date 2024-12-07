@@ -21,7 +21,6 @@ type
     CheckBox21: TCheckBox;
     CheckBox27: TCheckBox;
     CheckBox43: TCheckBox;
-    CheckBox44: TCheckBox;
     GroupBox3: TGroupBox;
     CheckBox10: TCheckBox;
     CheckBox11: TCheckBox;
@@ -130,8 +129,7 @@ begin
       SetActiveState(CheckBox40, tsValidationNeeded in NewStates);
       SetActiveState(CheckBox41, tsVCLDragging in NewStates);
       SetActiveState(CheckBox42, tsVCLDragPending in NewStates);
-      SetActiveState(CheckBox43, tsWheelPanning in NewStates);
-      SetActiveState(CheckBox44, tsWheelScrolling in NewStates);
+      SetActiveState(CheckBox43, tsPanning in NewStates);
       SetActiveState(CheckBox45, tsWindowCreating in NewStates);
       SetActiveState(CheckBox46, tsPopupMenuShown in NewStates);
 
@@ -184,7 +182,6 @@ begin
   CheckBox41.Enabled := EnableCheckBox.Checked;
   CheckBox42.Enabled := EnableCheckBox.Checked;
   CheckBox43.Enabled := EnableCheckBox.Checked;
-  CheckBox44.Enabled := EnableCheckBox.Checked;
   CheckBox45.Enabled := EnableCheckBox.Checked;
   CheckBox46.Enabled := EnableCheckBox.Checked;
 end;
