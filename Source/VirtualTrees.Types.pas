@@ -537,8 +537,7 @@ type
     tsVCLDragging,            // VCL drag'n drop in progress.
     tsVCLDragPending,         // One-shot flag to avoid clearing the current selection on implicit mouse up for VCL drag.
     tsVCLDragFinished,        // Flag to avoid triggering the OnColumnClick event twice
-    tsWheelPanning,           // Wheel mouse panning is active or soon will be.
-    tsWheelScrolling,         // Wheel mouse scrolling is active or soon will be.
+    tsPanning,                // Mouse panning is active.
     tsWindowCreating,         // Set during window handle creation to avoid frequent unnecessary updates.
     tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
   );
