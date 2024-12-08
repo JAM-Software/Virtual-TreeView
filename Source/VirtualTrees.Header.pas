@@ -5743,6 +5743,8 @@ var
 var
   TargetRect : TRect;
   MaxX       : TDimension;
+  Count: Cardinal;
+  EndCol: TColumnIndex;
 begin
   if IsRectEmpty(R) then
     Exit;
@@ -5799,7 +5801,21 @@ begin
     // Now go for each button.
     while (Run > NoColumn) and (TargetRect.Left < MaxX) do
     begin
-      TargetRect.Right := TargetRect.Left + Items[Run].Width;
+
+      //let application decide how many columns can be spanned
+      Count:= 1;
+      TreeViewControl.DoColumnHeaderSpanning(Run, Count);
+
+      if Count > FHeader.Columns.Count then Count := FHeader.Columns.Count;
+      if Count < 1 then Count := 1;
+
+      EndCol:= Run;
+      TargetRect.Right := TargetRect.Left;
+      repeat
+        Inc(TargetRect.Right, Items[EndCol].Width);
+        Dec(Count);
+        EndCol := GetNextVisibleColumn(EndCol);
+      until (Count = 0) or (EndCol <= NoColumn);
 
       // create a clipping rect to limit painting to button area
       ClipCanvas(TargetCanvas, Rect(Max(TargetRect.Left, Target.X), Target.Y + R.Top,
@@ -5810,7 +5826,8 @@ begin
       SelectClipRgn(Handle, 0);
 
       TargetRect.Left := TargetRect.Right;
-      Run := GetNextVisibleColumn(Run);
+
+      Run := EndCol;
     end;
   end;
 end;
