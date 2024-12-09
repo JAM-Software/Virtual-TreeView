@@ -11,7 +11,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types;
+  StdCtrls, VirtualTrees, ImgList, Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
 
 type
   TGridForm = class(TForm)
@@ -24,6 +25,7 @@ type
     Edit1: TMenuItem;
     Label2: TLabel;
     AutoSpanCheckBox: TCheckBox;
+    DisplayFullNameCheckBox: TCheckBox;
     procedure VST5BeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
       Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure VST5BeforeItemErase(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect;
@@ -44,6 +46,9 @@ type
     procedure VST5FreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure Edit1Click(Sender: TObject);
     procedure AutoSpanCheckBoxClick(Sender: TObject);
+    procedure DisplayFullNameCheckBoxClick(Sender: TObject);
+    procedure VST5ColumnHeaderSpanning(Sender: TVTHeader; Column: TColumnIndex;
+      var Count: Cardinal);
   end;
 
 var
@@ -181,6 +186,34 @@ begin
     TargetCanvas.Brush.Color := $E0E0E0;
     TargetCanvas.FillRect(CellRect);
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TGridForm.VST5ColumnHeaderSpanning(Sender: TVTHeader; Column: TColumnIndex; var Count: Cardinal);
+begin
+  case Column of
+    2:
+    begin
+      if DisplayFullNameCheckBox.Checked then
+      begin
+        //display header column 2 and 3 as ONE, we can also change the title here
+        Count:= 2;
+        Sender.Columns[Column].Text := 'Full Name';
+      end else
+      begin
+        Count:= 1;
+        Sender.Columns[Column].Text := 'First Name';
+      end;
+    end;
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TGridForm.DisplayFullNameCheckBoxClick(Sender: TObject);
+begin
+  VST5.Refresh;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
