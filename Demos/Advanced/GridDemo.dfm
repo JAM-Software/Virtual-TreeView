@@ -4,16 +4,15 @@ object GridForm: TGridForm
   ClientHeight = 474
   ClientWidth = 745
   Color = clBtnFace
+  CustomTitleBar.CaptionAlignment = taCenter
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   DesignSize = (
     745
     474)
-  PixelsPerInch = 96
   TextHeight = 16
   object Label15: TLabel
     Left = 516
@@ -75,7 +74,7 @@ object GridForm: TGridForm
       'Virtual Tree Data')
     Colors.BorderColor = clWindowText
     Colors.HotColor = clBlack
-    DefaultNodeHeight = 19
+    DefaultNodeHeight = 17
     DragMode = dmAutomatic
     EditDelay = 300
     Font.Charset = ANSI_CHARSET
@@ -85,7 +84,7 @@ object GridForm: TGridForm
     Font.Style = []
     Header.AutoSizeIndex = 2
     Header.Background = clBtnShadow
-    Header.Height = 20
+    Header.Height = 17
     Header.Options = [hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoVisible]
     Header.Style = hsFlatButtons
     HintMode = hmTooltip
@@ -99,7 +98,7 @@ object GridForm: TGridForm
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoChangeScale]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages]
-    TreeOptions.SelectionOptions = [toMiddleClickSelect, toMultiSelect, toExtendedFocus]
+    TreeOptions.SelectionOptions = [toExtendedFocus, toMiddleClickSelect, toMultiSelect]
     WantTabs = True
     OnAfterCellPaint = VST5AfterCellPaint
     OnBeforeCellPaint = VST5BeforeCellPaint
@@ -113,6 +112,7 @@ object GridForm: TGridForm
     OnStateChange = VST5StateChange
     Touch.InteractiveGestures = [igPan, igPressAndTap]
     Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
+    OnColumnHeaderSpanning = VST5ColumnHeaderSpanning
     Columns = <
       item
         Color = clWindow
@@ -166,6 +166,15 @@ object GridForm: TGridForm
     Caption = 'Switch ON Auto Span'
     TabOrder = 2
     OnClick = AutoSpanCheckBoxClick
+  end
+  object DisplayFullNameCheckBox: TCheckBox
+    Left = 518
+    Top = 360
+    Width = 153
+    Height = 17
+    Caption = 'Display Full Name'
+    TabOrder = 3
+    OnClick = DisplayFullNameCheckBoxClick
   end
   object TreeImages: TImageList
     Left = 22
