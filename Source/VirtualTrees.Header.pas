@@ -5743,7 +5743,7 @@ var
 var
   TargetRect : TRect;
   MaxX       : TDimension;
-  Count: Cardinal;
+  Count: Integer;
   EndCol: TColumnIndex;
 begin
   if IsRectEmpty(R) then

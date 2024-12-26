@@ -326,7 +326,7 @@ type
                                           const APlusSelectedHotBM :TBitmap; const AMinusBM : TBitmap; const AMinusHotBM : TBitmap;
                                           const AMinusSelectedHotBM :TBitmap; var ASize : TSize) of object;
 
-  TVTColumnHeaderSpanningEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var Count: Cardinal) of object;
+  TVTColumnHeaderSpanningEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var Count: Integer) of object;
 
   // search, sort
   TVTCompareEvent = procedure(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex;
@@ -1058,7 +1058,7 @@ type
     procedure DoStructureChange(Node: PVirtualNode; Reason: TChangeReason); virtual;
     procedure DoTimerScroll; virtual;
     procedure DoUpdating(State: TVTUpdateState); virtual;
-    procedure DoColumnHeaderSpanning(Column: TColumnIndex; var Count: Cardinal); virtual;
+    procedure DoColumnHeaderSpanning(Column: TColumnIndex; var Count: Integer); virtual;
     function DoValidateCache: Boolean; virtual;
     procedure DragAndDrop(AllowedEffects: DWord; const DataObject: TVTDragDataObject; var DragEffect: Integer); virtual;
     procedure DragCanceled; override;
@@ -9676,7 +9676,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TBaseVirtualTree.DoColumnHeaderSpanning(Column: TColumnIndex; var Count: Cardinal);
+procedure TBaseVirtualTree.DoColumnHeaderSpanning(Column: TColumnIndex; var Count: Integer);
 begin
   if Assigned(FOnColumnHeaderSpanning) then
     FOnColumnHeaderSpanning(Self.Header, Column, Count);
