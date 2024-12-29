@@ -16300,6 +16300,8 @@ var
   I: Integer;
   LevelChange: Boolean;
 begin
+  if Length(pNodes) = 0 then
+    exit; // Prevent range error below when empty array is passen. See issue #1288
   BeginUpdate;
   try
     for I := High(pNodes) downto 1 do
