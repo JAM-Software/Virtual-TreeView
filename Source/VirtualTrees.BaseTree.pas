@@ -14834,11 +14834,11 @@ procedure TBaseVirtualTree.StartWheelPanning(Position: TPoint);
     try
       PanningImage.Handle := LoadImage(0, MAKEINTRESOURCE(ImageName), IMAGE_CURSOR, Form.Width, Form.Height, LR_DEFAULTCOLOR or LR_LOADTRANSPARENT);
       Image.Picture.Assign(PanningImage);
+      Form.Left := Pos.X - (PanningImage.Width div 2);
+      Form.Top := Pos.Y - (PanningImage.Height div 2);
     finally
       PanningImage.Free;
     end;
-    Form.Left := Pos.X - (PanningImage.Width div 2);
-    Form.Top := Pos.Y - (PanningImage.Height div 2);
     Form.Position := poDesigned;
     // This prevents a focus chnage compare to using TForm.Show()
     ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
