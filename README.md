@@ -15,9 +15,7 @@ A port to **Lazarus / FPC** can be found here: [blikblum/VirtualTreeView-Lazarus
 
 For a **Delphi XE2** compatible fork see: [Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2](https://github.com/Fr0sT-Brutal/VirtualTreeView_mod/tree/fr0st_xe2)
 
-For a **Delphi XE** compatible fork see: [sglienke/Virtual-TreeView](https://github.com/sglienke/Virtual-TreeView)
-
-**V5.5.3** for **Delphi 7 to XE2**: [Download](https://downloads.jam-software.de/virtual-treeview/VirtualTreeViewV5.5.3.zip)
+**V5.5.3** for **Delphi 7 to XE2**: [Download](https://github.com/JAM-Software/Virtual-TreeView/releases/download/V5.5.3/VirtualTreeViewV5.5.3.zip)
 
 **V6 latest stable version** tested on Windows XP/2003 support: [GitHub](https://github.com/Virtual-TreeView/Virtual-TreeView/archive/V6_stable.zip)
 
