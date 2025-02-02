@@ -244,6 +244,7 @@ end;
 function TVTDragManager.DragEnter(const DataObject : IDataObject; KeyState : Integer; Pt : TPoint; var Effect : Integer) : HResult;
 var
   Medium: TStgMedium;
+  HeaderFormatEtc: TFormatEtc;
 begin
   if not Assigned(FDropTargetHelper) then
     CoCreateInstance(CLSID_DragDropHelper, nil, CLSCTX_INPROC_SERVER, IID_IDropTargetHelper, FDropTargetHelper);
@@ -265,11 +266,16 @@ begin
   end;
   FDragSource := GetTreeFromDataObject(DataObject);
   Result := TreeView.DragEnter(KeyState, Pt, Effect);
-  StandardOLEFormat.cfFormat := CF_VTHEADERREFERENCE;
-  if (DataObject.GetData(StandardOLEFormat, Medium) = S_OK) and (FDragSource = FOWner) then
+  HeaderFormatEtc := StandardOLEFormat;
+  HeaderFormatEtc.cfFormat := CF_VTHEADERREFERENCE;
+  if (DataObject.GetData(HeaderFormatEtc, Medium) = S_OK) and (FDragSource = FOWner) then
   begin
     FHeader := FDragSource.Header;
     FDRagSource := nil;
+  end
+  else
+  begin
+    fHeader := nil;
   end;
 end;
 
@@ -284,6 +290,7 @@ begin
   FIsDropTarget := False;
   FDragSource := nil;
   FDataObject := nil;
+  fHeader := nil;
   Result := NOERROR;
 end;
 
