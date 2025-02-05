@@ -12583,8 +12583,6 @@ begin
   if not FSelectionLocked and ((not (IsAnyHit or FullRowDrag) and MultiSelect and ShiftEmpty) or
     (IsAnyHit and (not NodeSelected or (NodeSelected and CanClear)) and (ShiftEmpty or not MultiSelect or (tsRightButtonDown in FStates)))) then
   begin
-    Assert(not (tsClearPending in FStates), 'Pending and direct clearance are mutual exclusive!');
-
     // If the currently hit node was already selected then we have to reselect it again after clearing the current
     // selection, but without a change event if it is the only selected node.
     // The same applies if the Alt key is pressed, which allows to start drawing the selection rectangle also
