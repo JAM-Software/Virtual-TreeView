@@ -1399,8 +1399,8 @@ begin
               if I > NoColumn then
                 Invalidate(FColumns[I]);
             end;
-            PrepareDrag(P, FDragStart);
             FStates := FStates - [hsDragPending] + [hsDragging];
+            PrepareDrag(P, FDragStart);
             HandleHeaderMouseMove := True;
             Result := 0;
           end;
@@ -1877,6 +1877,7 @@ begin
     else
       Tree.DoHeaderDraggedOut(DragIndex, P);
     DropTarget := NoColumn;
+    FStates := FStates - [hsDragging, hsDragPending];
   end;
   Invalidate(nil);
 end;
