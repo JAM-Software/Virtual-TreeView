@@ -334,7 +334,7 @@ type
     property Text[Node: PVirtualNode; Column: TColumnIndex]: string read GetText write SetText;
   end;
 
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  [ComponentPlatformsAttribute(pfidWindows)]
   TVirtualStringTree = class(TCustomVirtualStringTree)
   private
     function GetOptions: TStringTreeOptions;
