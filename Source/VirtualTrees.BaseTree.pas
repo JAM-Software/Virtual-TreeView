@@ -8729,7 +8729,7 @@ begin
   PrepareBitmaps(True, True);
 
   // Register tree as OLE drop target.
-  if not (csDesigning in ComponentState) and not (csLoading in ComponentState) then // will be done in Loaded after all inherited settings are loaded from the DFMs
+  if not (csDesigning in ComponentState) and not (csLoading in ComponentState) and ((hoDrag in Header.Options) or (toAcceptOLEDrop in TreeOptions.MiscOptions)) then // will be done in Loaded after all inherited settings are loaded from the DFMs
     RegisterDragDrop(Handle, DragManager as IDropTarget);
 
   UpdateScrollBars(True);
@@ -13489,7 +13489,7 @@ begin
   inherited;
 
   // Call RegisterDragDrop after all visual inheritance changes to MiscOptions have been applied.
-  if not (csDesigning in ComponentState) and HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated and ((hoDrag in Header.Options) or (toAcceptOLEDrop in TreeOptions.MiscOptions)) then
     RegisterDragDrop(Handle, DragManager as IDropTarget);
 
   // If a root node count has been set during load of the tree then update its child structure now
