@@ -12436,6 +12436,7 @@ begin
     Winapi.Windows.SetFocus(Handle);
     // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
+    FLastHitInfo := HitInfo; // See issue #1297
   end;
 
   if IsEmpty then
