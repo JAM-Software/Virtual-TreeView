@@ -9320,9 +9320,7 @@ begin
         // yet elapsed.
         if ((Int64(timeGetTime) - FDragScrollStart) < FAutoScrollDelay) then
           Result := [];
-      end
-      else
-        OutputDebugString('Ooops');
+      end;
     end;
   end;
 end;
