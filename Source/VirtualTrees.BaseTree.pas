@@ -6472,8 +6472,18 @@ procedure TBaseVirtualTree.WMContextMenu(var Message: TWMContextMenu);
 // This method is called when a popup menu is about to be displayed.
 // We have to cancel some pending states here to avoid interferences.
 
+var
+  HitInfo: THitInfo;
+  pt: TPoint;
 begin
-  DoStateChange([], [tsClearPending, tsEditPending, tsOLEDragPending, tsVCLDragPending]);
+  DoStateChange([], [tsClearPending, tsEditPending, tsOLEDragPending, tsVCLDragPending, tsPopupMenuShown]);
+
+  if not Assigned(PopupMenu) then begin
+    // convert screen coordinates to client
+    pt := ScreenToClient(Point(Message.XPos, Message.YPos));
+    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo); // ShiftState is not used anyway here
+    DoPopupMenu(HitInfo.HitNode, HitInfo.HitColumn, pt);
+  end;
 
   if not (tsPopupMenuShown in FStates) then
     inherited;
@@ -7735,7 +7745,7 @@ var
   HitInfo: THitInfo;
 
 begin
-  DoStateChange([], [tsPopupMenuShown, tsRightButtonDown]);
+  DoStateChange([], [tsRightButtonDown]);
 
   if FHeader.States = [] then
   begin
@@ -7756,8 +7766,6 @@ begin
     if toRightClickSelect in FOptions.SelectionOptions then
       HandleMouseUp(Message, HitInfo);
 
-    if not Assigned(PopupMenu) then
-      DoPopupMenu(HitInfo.HitNode, HitInfo.HitColumn, Point(Message.XPos, Message.YPos));
   end;
 end;
 
