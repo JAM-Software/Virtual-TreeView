@@ -11833,7 +11833,7 @@ begin
   Index := -1;
   Ghosted := False;
   lImageList := DoGetImageIndex(Node, Kind, Column, Ghosted, Index);
-  if Index >= 0 then begin
+  if (Index > NoImage) or (Index = EmptyImage) then begin
     if IncludePadding then
       Result.cx := lImageList.Width + ScaledPixels(2)
     else
