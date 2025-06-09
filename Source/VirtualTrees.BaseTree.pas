@@ -5786,9 +5786,9 @@ begin
       inherited
     else
     begin
-      // We need an extra check for the control drag object as there might be other objects not derived from
-      // this class (e.g. TActionDragObject).
-      if not (tsUserDragObject in FStates) and (S is TBaseDragControlObject) then
+      // We need an extra check for the control drag object as there might be other objects not derived from this class (e.g. TActionDragObject).
+      // Original line of code (see issue #1295): if not (tsUserDragObject in FStates) and (S is TBaseDragControlObject) then
+      if (S.ClassName = TDragControlObject.ClassName) or (S.ClassName = TDragControlObjectEx.ClassName) then  // see issue #1295
         S := (S as TBaseDragControlObject).Control;
       case DragMessage of
         dmDragEnter, dmDragLeave, dmDragMove:
