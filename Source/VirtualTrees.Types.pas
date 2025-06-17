@@ -143,8 +143,7 @@ type
   PDimension = ^Integer;
   TNodeHeight = NativeInt;
   TVTCursor = HCURSOR;
-  IDataObject= WinApi.ActiveX.IDataObject;
-  TVTDragDataObject = IDataObject;
+  TVTDragDataObject = WinApi.ActiveX.IDataObject;
   TVTBackground = TPicture;
   TVTPaintContext = HDC;
   TVTBrush = HBRUSH;
