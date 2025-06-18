@@ -20628,7 +20628,6 @@ begin
                             ((Column = FEditColumn) or not UseColumns)) then
                             DoPaintNode(PaintInfo);
 
-                          Canvas.Brush.Color := FColors.BackGroundColor; // Set useful background color, see issue #1264
                           DoAfterCellPaint(Canvas, Node, Column, CellRect);
                         end;
                       end;
