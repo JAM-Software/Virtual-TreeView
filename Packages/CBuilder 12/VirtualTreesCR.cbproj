@@ -1,0 +1,290 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{2381F390-47E4-4CAA-BAF9-857BF136C307}</ProjectGuid>
+        <ProjectVersion>20.3</ProjectVersion>
+        <FrameworkType>VCL</FrameworkType>
+        <MainSource>VirtualTreesCR.cpp</MainSource>
+        <Base>True</Base>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <ProjectName Condition="'$(ProjectName)'==''">VirtualTreesCR</ProjectName>
+        <TargetedPlatforms>1048579</TargetedPlatforms>
+        <AppType>Package</AppType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64x' and '$(Base)'=='true') or '$(Base_Win64x)'!=''">
+        <Base_Win64x>true</Base_Win64x>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+        <Cfg_2_Win64>true</Cfg_2_Win64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64x' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64x)'!=''">
+        <Cfg_2_Win64x>true</Cfg_2_Win64x>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+        <DynamicRTL>true</DynamicRTL>
+        <UsePackages>true</UsePackages>
+        <IntermediateOutputDir>.\Runtime\$(Platform)\$(Config)</IntermediateOutputDir>
+        <BCC_wpar>false</BCC_wpar>
+        <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
+        <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
+        <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\release\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
+        <ProjectType>CppPackage</ProjectType>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+        <OutputExt>bpl</OutputExt>
+        <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
+        <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
+        <_TCHARMapping>wchar_t</_TCHARMapping>
+        <Multithreaded>true</Multithreaded>
+        <SanitizedProjectName>VirtualTreesCR</SanitizedProjectName>
+        <DCC_UnitSearchPath>..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <BCC_InstructionSet>6</BCC_InstructionSet>
+        <DCC_HppOutputARM>true</DCC_HppOutputARM>
+        <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)</DCC_HppOutput>
+        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
+        <ILINK_Description>VirtualTrees Runtime</ILINK_Description>
+        <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64x)'!=''">
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <BCC_EnableBatchCompilation>true</BCC_EnableBatchCompilation>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
+        <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+        <DCC_Optimize>false</DCC_Optimize>
+        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+        <Defines>_DEBUG;$(Defines)</Defines>
+        <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
+        <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
+        <DCC_Define>DEBUG</DCC_Define>
+        <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
+        <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
+        <BCC_StackFrames>true</BCC_StackFrames>
+        <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
+        <TASM_Debugging>Full</TASM_Debugging>
+        <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
+        <BCC_EnableCPPExceptions>true</BCC_EnableCPPExceptions>
+        <BCC_DisableFramePtrElimOpt>true</BCC_DisableFramePtrElimOpt>
+        <BCC_DisableSpellChecking>true</BCC_DisableSpellChecking>
+        <CLANG_UnwindTables>true</CLANG_UnwindTables>
+        <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\debug\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <BCC_UseClassicCompiler>false</BCC_UseClassicCompiler>
+        <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)$(CC_SUFFIX)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <Defines>NDEBUG;$(Defines)</Defines>
+        <TASM_Debugging>None</TASM_Debugging>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <ILINK_Description>VirtualTrees Runtime</ILINK_Description>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win64x)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageImport Include="rtl.bpi">
+            <BuildOrder>1</BuildOrder>
+        </PackageImport>
+        <PackageImport Include="vcl.bpi">
+            <BuildOrder>32</BuildOrder>
+        </PackageImport>
+        <CppCompile Include="VirtualTreesCR.cpp">
+            <BuildOrder>0</BuildOrder>
+        </CppCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Accessibility.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>3</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.AccessibilityFactory.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>4</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>5</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.AncestorVcl.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>6</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.BaseAncestorVcl.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>7</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.BaseTree.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>8</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>9</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>10</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Colors.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>11</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.DataObject.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>12</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.DragImage.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>13</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.DragnDrop.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>14</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.DrawTree.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>15</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.EditLink.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>16</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>17</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Header.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>18</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.HeaderPopup.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>19</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>20</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>21</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>22</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>23</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
+            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+            <BuildOrder>24</BuildOrder>
+        </DelphiCompile>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>CPlusPlusBuilder.Personality.12</Borland.Personality>
+        <Borland.ProjectType>CppPackage</Borland.ProjectType>
+        <BorlandProject>
+            <CPlusPlusBuilder.Personality>
+                <ProjectProperties>
+                    <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
+                    <ProjectProperties Name="ManagePaths">False</ProjectProperties>
+                    <ProjectProperties Name="VerifyPackages">True</ProjectProperties>
+                    <ProjectProperties Name="IndexFiles">True</ProjectProperties>
+                </ProjectProperties>
+                <Source>
+                    <Source Name="MainSource">VirtualTreesCR.cpp</Source>
+                </Source>
+                <VFOLDERS>
+                    <VFOLDER ID="{FF0836F4-FE45-4852-8226-19028E202F2D}" name="Source Files"/>
+                </VFOLDERS>
+            </CPlusPlusBuilder.Personality>
+            <Platforms>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">True</Platform>
+                <Platform value="Win64x">True</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Project="$(BDS)\Bin\CodeGear.Cpp.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Cpp.Targets')"/>
+    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+    <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+</Project>
