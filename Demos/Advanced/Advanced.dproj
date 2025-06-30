@@ -155,7 +155,6 @@
         <DCCReference Include="States.pas">
             <Form>StateForm</Form>
         </DCCReference>
-        <DCCReference Include="..\..\Source\VirtualTrees.PanningWindow.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
