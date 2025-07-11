@@ -6481,7 +6481,7 @@ begin
   if not Assigned(PopupMenu) then begin
     // convert screen coordinates to client
     pt := ScreenToClient(Point(Message.XPos, Message.YPos));
-    GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo); // ShiftState is not used anyway here
+    GetHitTestInfoAt(pt.x, pt.y, True, HitInfo); // ShiftState is not used anyway here
     DoPopupMenu(HitInfo.HitNode, HitInfo.HitColumn, pt);
   end;
 
