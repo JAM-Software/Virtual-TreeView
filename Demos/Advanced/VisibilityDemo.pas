@@ -11,7 +11,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ComCtrls, ExtCtrls, ImgList, VirtualTrees.Types;
+  StdCtrls, VirtualTrees, ComCtrls, ExtCtrls, ImgList, VirtualTrees.Types,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL;
 
 type
   TVisibilityForm = class(TForm)
@@ -33,9 +34,9 @@ type
     procedure RadioGroup1Click(Sender: TObject);
     procedure VST2GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: string);
-    procedure VST3Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
+    procedure VST3Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: TDimension);
     procedure VST2InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
-    procedure VST2Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
+    procedure VST2Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: TDimension);
     procedure VSTCollapsedExpanded(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure VST2Change(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure Splitter2CanResize(Sender: TObject; var NewSize: Integer;
@@ -184,7 +185,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVisibilityForm.VST3Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
+procedure TVisibilityForm.VST3Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: TDimension);
 
 // Synchronizes scroll offsets of VST2 and VST3.
 
@@ -204,7 +205,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TVisibilityForm.VST2Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
+procedure TVisibilityForm.VST2Scroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: TDimension);
 
 // Synchronizes scroll offsets of VST2 and VST3.
 
