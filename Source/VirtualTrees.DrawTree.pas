@@ -40,7 +40,9 @@ type
     property OnGetNodeWidth: TVTGetNodeWidthEvent read FOnGetNodeWidth write FOnGetNodeWidth;
   end;
 
-  [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
+  {$if CompilerVersion >= 33}
+  [ComponentPlatformsAttribute(pfidWindows)]
+  {$ifend}
   TVirtualDrawTree = class(TCustomVirtualDrawTree)
   private
     function GetOptions: TVirtualTreeOptions;

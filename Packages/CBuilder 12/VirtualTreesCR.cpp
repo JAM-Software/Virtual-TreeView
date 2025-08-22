@@ -1,17 +1,21 @@
 //---------------------------------------------------------------------------
 
-#include <basepch.h>
+#include <System.hpp>
 #pragma hdrstop
 #pragma package(smart_init)
+
 //---------------------------------------------------------------------------
 
 //   Package source.
 //---------------------------------------------------------------------------
 
+#pragma comment(lib, "shcore")
+#pragma comment(lib, "uxtheme")
+#pragma comment(lib, "windowscodecs")
 
 #pragma argsused
-int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void*)
+extern "C" int _libmain(unsigned long reason)
 {
-    return 1;
+	return 1;
 }
 //---------------------------------------------------------------------------

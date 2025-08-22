@@ -1,13 +1,13 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{90943296-FDFA-4C80-A99D-237F570C4F54}</ProjectGuid>
+        <ProjectGuid>{BF155D09-6AED-4790-9020-744D12876B35}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
         <Projects Include="VirtualTreesCR.cbproj">
             <Dependencies/>
         </Projects>
         <Projects Include="VirtualTreesCD.cbproj">
-            <Dependencies>VirtualTreesCR.cbproj</Dependencies>
+            <Dependencies/>
         </Projects>
     </ItemGroup>
     <ProjectExtensions>
@@ -26,13 +26,13 @@
     <Target Name="VirtualTreesCR:Make">
         <MSBuild Projects="VirtualTreesCR.cbproj" Targets="Make"/>
     </Target>
-    <Target Name="VirtualTreesCD" DependsOnTargets="VirtualTreesCR">
+    <Target Name="VirtualTreesCD">
         <MSBuild Projects="VirtualTreesCD.cbproj"/>
     </Target>
-    <Target Name="VirtualTreesCD:Clean" DependsOnTargets="VirtualTreesCR:Clean">
+    <Target Name="VirtualTreesCD:Clean">
         <MSBuild Projects="VirtualTreesCD.cbproj" Targets="Clean"/>
     </Target>
-    <Target Name="VirtualTreesCD:Make" DependsOnTargets="VirtualTreesCR:Make">
+    <Target Name="VirtualTreesCD:Make">
         <MSBuild Projects="VirtualTreesCD.cbproj" Targets="Make"/>
     </Target>
     <Target Name="Build">

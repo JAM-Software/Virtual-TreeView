@@ -28,7 +28,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
   StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList, VirtualTrees.BaseTree,
-  VirtualTrees.Types;
+  VirtualTrees.Types, VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
 
 type
   TGeneralForm = class(TForm)
@@ -368,15 +368,11 @@ procedure TGeneralForm.VST2GetPopupMenu(Sender: TBaseVirtualTree; Node: PVirtual
   const P: TPoint; var AskParent: Boolean; var PopupMenu: TPopupMenu);
 
 begin
-  case Column of
-    0:
-      PopupMenu := PopupMenu1
-  else
-    PopupMenu := nil;
-  end;                       
+  if Column <= 0 then
+    PopupMenu := PopupMenu1;
 end;
 
-//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------;
 
 procedure TGeneralForm.VST2KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 

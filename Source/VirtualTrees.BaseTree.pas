@@ -5786,9 +5786,9 @@ begin
       inherited
     else
     begin
-      // We need an extra check for the control drag object as there might be other objects not derived from
-      // this class (e.g. TActionDragObject).
-      if not (tsUserDragObject in FStates) and (S is TBaseDragControlObject) then
+      // We need an extra check for the control drag object as there might be other objects not derived from this class (e.g. TActionDragObject).
+      // Original line of code (see issue #1295): if not (tsUserDragObject in FStates) and (S is TBaseDragControlObject) then
+      if (S.ClassName = TDragControlObject.ClassName) or (S.ClassName = TDragControlObjectEx.ClassName) then  // see issue #1295
         S := (S as TBaseDragControlObject).Control;
       case DragMessage of
         dmDragEnter, dmDragLeave, dmDragMove:
@@ -6472,8 +6472,18 @@ procedure TBaseVirtualTree.WMContextMenu(var Message: TWMContextMenu);
 // This method is called when a popup menu is about to be displayed.
 // We have to cancel some pending states here to avoid interferences.
 
+var
+  HitInfo: THitInfo;
+  pt: TPoint;
 begin
-  DoStateChange([], [tsClearPending, tsEditPending, tsOLEDragPending, tsVCLDragPending]);
+  DoStateChange([], [tsClearPending, tsEditPending, tsOLEDragPending, tsVCLDragPending, tsPopupMenuShown]);
+
+  if not Assigned(PopupMenu) then begin
+    // convert screen coordinates to client
+    pt := ScreenToClient(Point(Message.XPos, Message.YPos));
+    GetHitTestInfoAt(pt.x, pt.y, True, HitInfo); // ShiftState is not used anyway here
+    DoPopupMenu(HitInfo.HitNode, HitInfo.HitColumn, pt);
+  end;
 
   if not (tsPopupMenuShown in FStates) then
     inherited;
@@ -7735,7 +7745,7 @@ var
   HitInfo: THitInfo;
 
 begin
-  DoStateChange([], [tsPopupMenuShown, tsRightButtonDown]);
+  DoStateChange([], [tsRightButtonDown]);
 
   if FHeader.States = [] then
   begin
@@ -7756,8 +7766,6 @@ begin
     if toRightClickSelect in FOptions.SelectionOptions then
       HandleMouseUp(Message, HitInfo);
 
-    if not Assigned(PopupMenu) then
-      DoPopupMenu(HitInfo.HitNode, HitInfo.HitColumn, Point(Message.XPos, Message.YPos));
   end;
 end;
 
@@ -8729,7 +8737,7 @@ begin
   PrepareBitmaps(True, True);
 
   // Register tree as OLE drop target.
-  if not (csDesigning in ComponentState) and not (csLoading in ComponentState) then // will be done in Loaded after all inherited settings are loaded from the DFMs
+  if not (csDesigning in ComponentState) and not (csLoading in ComponentState) and ((hoDrag in Header.Options) or (toAcceptOLEDrop in TreeOptions.MiscOptions)) then // will be done in Loaded after all inherited settings are loaded from the DFMs
     RegisterDragDrop(Handle, DragManager as IDropTarget);
 
   UpdateScrollBars(True);
@@ -9320,9 +9328,7 @@ begin
         // yet elapsed.
         if ((Int64(timeGetTime) - FDragScrollStart) < FAutoScrollDelay) then
           Result := [];
-      end
-      else
-        OutputDebugString('Ooops');
+      end;
     end;
   end;
 end;
@@ -9926,6 +9932,7 @@ begin
   if Assigned(FFocusedNode) and not (vsDisabled in FFocusedNode.States) and
     not (toReadOnly in FOptions.MiscOptions) and (FEditLink = nil) then
   begin
+    InternalSetFocusedColumn(FEditColumn);
     ScrollIntoView(FFocusedNode, toCenterScrollIntoView in FOptions.SelectionOptions, not (toDisableAutoscrollOnEdit in FOptions.AutoOptions));
     FEditLink := DoCreateEditor(FFocusedNode, FEditColumn);
     if Assigned(FEditLink) then
@@ -11827,7 +11834,7 @@ begin
   Index := -1;
   Ghosted := False;
   lImageList := DoGetImageIndex(Node, Kind, Column, Ghosted, Index);
-  if Index >= 0 then begin
+  if (Index > NoImage) or (Index = EmptyImage) then begin
     if IncludePadding then
       Result.cx := lImageList.Width + ScaledPixels(2)
     else
@@ -12436,6 +12443,7 @@ begin
     Winapi.Windows.SetFocus(Handle);
     // Repeat the hit test as an OnExit event might got triggered that could modify the tree.
     GetHitTestInfoAt(Message.XPos, Message.YPos, True, HitInfo, KeysToShiftState(Message.Keys));
+    FLastHitInfo := HitInfo; // See issue #1297
   end;
 
   if IsEmpty then
@@ -13489,7 +13497,7 @@ begin
   inherited;
 
   // Call RegisterDragDrop after all visual inheritance changes to MiscOptions have been applied.
-  if not (csDesigning in ComponentState) and HandleAllocated then
+  if not (csDesigning in ComponentState) and HandleAllocated and ((hoDrag in Header.Options) or (toAcceptOLEDrop in TreeOptions.MiscOptions)) then
     RegisterDragDrop(Handle, DragManager as IDropTarget);
 
   // If a root node count has been set during load of the tree then update its child structure now
@@ -20621,7 +20629,6 @@ begin
                             ((Column = FEditColumn) or not UseColumns)) then
                             DoPaintNode(PaintInfo);
 
-                          Canvas.Brush.Color := FColors.BackGroundColor; // Set useful background color, see issue #1264
                           DoAfterCellPaint(Canvas, Node, Column, CellRect);
                         end;
                       end;
