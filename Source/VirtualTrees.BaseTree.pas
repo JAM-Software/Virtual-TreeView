@@ -12607,7 +12607,7 @@ begin
       if NeedChangeEvent then
       begin
         Invalidate;
-        Change(nil);
+        Change(HitInfo.HitNode);
       end;
     end
     else if (toAlwaysSelectNode in Self.TreeOptions.SelectionOptions) then
