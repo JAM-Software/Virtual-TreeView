@@ -29,7 +29,7 @@
 {$DESCRIPTION 'VirtualTreeView Controls'}
 {$LIBSUFFIX AUTO}
 {$DESIGNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   DesignIDE,
