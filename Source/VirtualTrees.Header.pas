@@ -334,6 +334,8 @@ type
     FRestoreSelectionColumnIndex : Integer;                 //The column that is used to implement the coRestoreSelection option
     FWasDoubleClick              : Boolean;                 // The previous mouse message was for a double click, that allows us to process mouse-up-messages differently
     function GetMainColumn : TColumnIndex;
+    function GetSortColumn: TColumnIndex;                   // Getter for the property SortColumn
+    function GetSortDirection: TSortDirection;              // Getter for the property SortDirection
     function GetUseColumns : Boolean;
     function IsFontStored : Boolean;
     procedure SetAutoSizeIndex(Value : TColumnIndex);
@@ -437,8 +439,8 @@ type
     property Options              : TVTHeaderOptions read FOptions write SetOptions default [hoColumnResize, hoDrag, hoShowSortGlyphs];
     property ParentFont           : Boolean read FParentFont write SetParentFont default True;
     property PopupMenu            : TPopupMenu read FPopupMenu write FPopupMenu;
-    property SortColumn           : TColumnIndex read FSortColumn write SetSortColumn default NoColumn;
-    property SortDirection        : TSortDirection read FSortDirection write SetSortDirection default sdAscending;
+    property SortColumn           : TColumnIndex read GetSortColumn write SetSortColumn default NoColumn;
+    property SortDirection        : TSortDirection read GetSortDirection write SetSortDirection default sdAscending;
     property SplitterHitTolerance : TDimension read fSplitterHitTolerance write fSplitterHitTolerance default 8;
     //The area in pixels around a spliter which is sensitive for resizing
     property Style                : TVTHeaderStyle read FStyle write SetStyle default hsThickButtons;
@@ -1308,6 +1310,16 @@ begin
     Include(Result, ssCtrl);
   if GetKeyState(VK_MENU) < 0 then
     Include(Result, ssAlt);
+end;
+
+function TVTHeader.GetSortColumn: TColumnIndex;
+begin
+  Exit(FSortColumn); // See issue #1319
+end;
+
+function TVTHeader.GetSortDirection: TSortDirection;
+begin
+  Exit(FSortdirection);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
