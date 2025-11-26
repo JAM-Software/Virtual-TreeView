@@ -14288,7 +14288,10 @@ begin
     begin
       Brush.Color := Items[Column].GetEffectiveColor;
       FillRect(CellRect);
-     end;
+     end
+     else
+       Brush.Color := FColors.BackGroundColor;
+
 
     // Let the application customize the cell background and the content rectangle.
     DoBeforeCellPaint(Canvas, Node, Column, cpmPaint, CellRect, ContentRect);
