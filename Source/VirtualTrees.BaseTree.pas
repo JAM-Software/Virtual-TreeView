@@ -1649,7 +1649,7 @@ uses
   System.Math,
   System.SyncObjs,
   System.StrUtils,
-  Clipbrd,
+  Vcl.Clipbrd,
   Vcl.Consts,
   Vcl.ExtCtrls,
   Vcl.AxCtrls,                 // TOLEStream
