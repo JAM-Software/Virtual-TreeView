@@ -19851,7 +19851,11 @@ begin
     Abort := False;
     Result := StartNode;
     if Result = nil then
-      Stop := nil
+    begin
+      Stop := nil;
+      // Use first node if we start with the root.
+      Result := GetFirstNoInit;
+    end
     else
     begin
       if not (vsInitialized in Result.States) and DoInit then
@@ -19872,21 +19876,17 @@ begin
       end;
     end;
 
-    // Use first node if we start with the root.
-    if Result = nil then
-      Result := GetFirstNoInit;
-
     if Assigned(Result) then
     begin
       if not (vsInitialized in Result.States) and DoInit then
         InitNode(Result);
 
       // Skip given node if only the child nodes are requested.
-      if ChildNodesOnly then
+      if ChildNodesOnly and (StartNode <> nil ) then
       begin
         if Result.ChildCount = 0 then
           Result := nil
-        else if StartNode <> nil then
+        else
           Result := GetNextNode(Result);
       end;
 
