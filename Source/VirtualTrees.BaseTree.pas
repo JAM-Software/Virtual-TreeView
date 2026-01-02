@@ -9488,7 +9488,18 @@ function TBaseVirtualTree.DoCancelEdit(): Boolean;
 // Called when the current edit action or a pending edit must be cancelled.
 
 begin
-  Result := DoEndEdit(True);
+  StopTimer(EditTimer);
+  DoStateChange([], [tsEditPending]);
+  Result := (tsEditing in FStates) and FEditLink.CancelEdit;
+  if Result then
+  begin
+    DoStateChange([], [tsEditing]);
+    if Assigned(FOnEditCancelled) then
+      FOnEditCancelled(Self, FEditColumn);
+    if not (csDestroying in ComponentState) then
+      FEditLink := nil;
+    TrySetFocus();
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
