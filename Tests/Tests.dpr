@@ -13,7 +13,8 @@ uses
   DUnitX.TestFramework,
   VirtualTreeTests in 'VirtualTreeTests.pas',
   VirtualStringTreeTests in 'VirtualStringTreeTests.pas',
-  VTWorkerThreadIssue1001Tests in 'VTWorkerThreadIssue1001Tests.pas';
+  VTWorkerThreadIssue1001Tests in 'VTWorkerThreadIssue1001Tests.pas',
+  VTOnEditCancelledTests in 'VTOnEditCancelledTests.pas';
 
 var
   runner : ITestRunner;
