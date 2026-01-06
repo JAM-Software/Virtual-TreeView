@@ -1,4 +1,4 @@
-unit HeaderCustomDrawDemo;
+﻿unit HeaderCustomDrawDemo;
 
 // Virtual Treeview sample form demonstrating following features:
 //   - Advanced header custom draw.
@@ -152,7 +152,7 @@ begin
                 TargetCanvas.Font.Size := 60;
                 if IsHoverIndex then
                   TargetCanvas.Font.Color := $80FF;
-                S := '�';
+                S := 'û';
                 Size := TargetCanvas.TextExtent(S);
                 SetBkMode(TargetCanvas.Handle, TRANSPARENT);
                 TargetCanvas.TextOut(PaintRectangle.Left + 10, Paintrectangle.Bottom - Size.cy, S);
