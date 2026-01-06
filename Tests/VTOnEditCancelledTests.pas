@@ -4,7 +4,6 @@ interface
 
 uses
   DUnitX.TestFramework,
-  Classes,
   Vcl.Forms,
   VirtualTrees;
 
@@ -30,7 +29,6 @@ type
 implementation
 
 uses
-  VirtualTrees.WorkerThread, VirtualTrees.EditLink,
   System.SysUtils;
 
 procedure TVTOnEditCancelledTests.Setup;

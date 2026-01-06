@@ -4,7 +4,7 @@ program Tests;
 {$APPTYPE CONSOLE}
 {$ENDIF}{$STRONGLINKTYPES ON}
 uses
-  SysUtils,
+  System.SysUtils,
   {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX,
   {$ENDIF }
