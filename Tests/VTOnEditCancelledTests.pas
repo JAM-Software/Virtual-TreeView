@@ -32,6 +32,9 @@ type
     procedure TestEditNode;
 
     [Test]
+    procedure TestEditNodeReadOnly;
+
+    [Test]
     procedure TestOnEditCancelled;
   end;
 
@@ -66,7 +69,6 @@ begin
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
   var LNode := fTree.AddChild(fTree.RootNode);
-  var LBeforeStates := fTree.TreeStates;
   var LEditNodeResult := fTree.EditNode(LNode, 0);
   var LAfterStates := fTree.TreeStates;
   Assert.AreEqual<TVirtualTreeStates>(LAfterStates * [tsEditing], [tsEditing]);
@@ -80,6 +82,17 @@ begin
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
   var LNode := fTree.AddChild(fTree.RootNode);
+  var LEditNodeResult := fTree.EditNode(LNode, 0);
+  Assert.IsFalse(LEditNodeResult);
+end;
+
+procedure TVTOnEditCancelledTests.TestEditNodeReadOnly;
+begin
+  fForm.Show;
+  fTree.Parent := fForm;
+  fTree.Header.Columns.Add;
+  var LNode := fTree.AddChild(fTree.RootNode);
+  fTree.TreeOptions.MiscOptions := fTree.TreeOptions.MiscOptions + [toReadOnly];
   var LEditNodeResult := fTree.EditNode(LNode, 0);
   Assert.IsFalse(LEditNodeResult);
 end;
