@@ -1,4 +1,4 @@
-unit HeaderCustomDrawDemo;
+﻿unit HeaderCustomDrawDemo;
 
 // Virtual Treeview sample form demonstrating following features:
 //   - Advanced header custom draw.
@@ -25,9 +25,9 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure AnimationTimerTimer(Sender: TObject);
     procedure HeaderCustomDrawTreeHeaderMouseUp(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X,
-      Y: Integer);
+      Y: TDimension);
     procedure HeaderCustomDrawTreeHeaderMouseDown(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X,
-      Y: Integer);
+      Y: TDimension);
     procedure HeaderCustomDrawTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure HeaderCustomDrawTreeGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
@@ -152,7 +152,7 @@ begin
                 TargetCanvas.Font.Size := 60;
                 if IsHoverIndex then
                   TargetCanvas.Font.Color := $80FF;
-                S := '�';
+                S := 'û';
                 Size := TargetCanvas.TextExtent(S);
                 SetBkMode(TargetCanvas.Handle, TRANSPARENT);
                 TargetCanvas.TextOut(PaintRectangle.Left + 10, Paintrectangle.Bottom - Size.cy, S);
@@ -277,7 +277,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure THeaderOwnerDrawForm.HeaderCustomDrawTreeHeaderMouseUp(Sender: TVTHeader; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+  Shift: TShiftState; X, Y: TDimension);
 
 begin
   // Reenable animation after a drag operation.
@@ -287,7 +287,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure THeaderOwnerDrawForm.HeaderCustomDrawTreeHeaderMouseDown(Sender: TVTHeader; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+  Shift: TShiftState; X, Y: TDimension);
 
 begin
   // Stop animation when mouse button is down.
