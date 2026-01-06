@@ -25,9 +25,9 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure AnimationTimerTimer(Sender: TObject);
     procedure HeaderCustomDrawTreeHeaderMouseUp(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X,
-      Y: Integer);
+      Y: TDimension);
     procedure HeaderCustomDrawTreeHeaderMouseDown(Sender: TVTHeader; Button: TMouseButton; Shift: TShiftState; X,
-      Y: Integer);
+      Y: TDimension);
     procedure HeaderCustomDrawTreeStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure HeaderCustomDrawTreeGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
@@ -277,7 +277,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure THeaderOwnerDrawForm.HeaderCustomDrawTreeHeaderMouseUp(Sender: TVTHeader; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+  Shift: TShiftState; X, Y: TDimension);
 
 begin
   // Reenable animation after a drag operation.
@@ -287,7 +287,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure THeaderOwnerDrawForm.HeaderCustomDrawTreeHeaderMouseDown(Sender: TVTHeader; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+  Shift: TShiftState; X, Y: TDimension);
 
 begin
   // Stop animation when mouse button is down.
