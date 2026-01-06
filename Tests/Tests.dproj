@@ -102,6 +102,7 @@
         <DCCReference Include="VirtualStringTreeTests.pas"/>
         <DCCReference Include="VTWorkerThreadIssue1001Tests.pas"/>
         <DCCReference Include="VTOnEditCancelledTests.pas"/>
+        <DCCReference Include="VTOnDrawTextTests.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
