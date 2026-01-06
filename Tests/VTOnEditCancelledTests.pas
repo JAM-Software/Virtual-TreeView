@@ -80,7 +80,6 @@ begin
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
   var LNode := fTree.AddChild(fTree.RootNode);
-  var LBeforeStates := fTree.TreeStates;
   var LEditNodeResult := fTree.EditNode(LNode, 0);
   Assert.IsFalse(LEditNodeResult);
 end;
