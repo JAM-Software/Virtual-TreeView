@@ -139,6 +139,7 @@ object MainForm: TMainForm
     OnDragAllowed = Tree2DragAllowed
     OnDragOver = TreeDragOver
     OnDragDrop = TreeDragDrop
+    OnFreeNode = TreeFreeNode
     OnGetText = Tree1GetText
     OnInitNode = TreeInitNode
     OnNewText = Tree1NewText
@@ -184,6 +185,7 @@ object MainForm: TMainForm
     TreeOptions.SelectionOptions = [toMultiSelect]
     OnDragOver = TreeDragOver
     OnDragDrop = TreeDragDrop
+    OnFreeNode = TreeFreeNode
     OnGetText = Tree1GetText
     OnInitNode = TreeInitNode
     OnNewText = Tree1NewText
