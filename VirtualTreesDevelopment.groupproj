@@ -27,6 +27,9 @@
         <Projects Include="Tests\Tests.dproj">
             <Dependencies>Packages\RAD Studio 10.4+\VirtualTreesR.dproj;Packages\RAD Studio 10.4+\VirtualTreesD.dproj</Dependencies>
         </Projects>
+        <Projects Include="Demos\Multiselect\Multiselect.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -107,14 +110,23 @@
     <Target Name="Tests:Make" DependsOnTargets="VirtualTreesR:Make;VirtualTreesD:Make">
         <MSBuild Projects="Tests\Tests.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Multiselect">
+        <MSBuild Projects="Demos\Multiselect\Multiselect.dproj"/>
+    </Target>
+    <Target Name="Multiselect:Clean">
+        <MSBuild Projects="Demos\Multiselect\Multiselect.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Multiselect:Make">
+        <MSBuild Projects="Demos\Multiselect\Multiselect.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Advanced;VirtualTreesR;VirtualTreesD;charityevents;Minimal;MVCDemo;OLE;Tests"/>
+        <CallTarget Targets="Advanced;VirtualTreesR;VirtualTreesD;charityevents;Minimal;MVCDemo;OLE;Tests;Multiselect"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Advanced:Clean;VirtualTreesR:Clean;VirtualTreesD:Clean;charityevents:Clean;Minimal:Clean;MVCDemo:Clean;OLE:Clean;Tests:Clean"/>
+        <CallTarget Targets="Advanced:Clean;VirtualTreesR:Clean;VirtualTreesD:Clean;charityevents:Clean;Minimal:Clean;MVCDemo:Clean;OLE:Clean;Tests:Clean;Multiselect:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Advanced:Make;VirtualTreesR:Make;VirtualTreesD:Make;charityevents:Make;Minimal:Make;MVCDemo:Make;OLE:Make;Tests:Make"/>
+        <CallTarget Targets="Advanced:Make;VirtualTreesR:Make;VirtualTreesD:Make;charityevents:Make;Minimal:Make;MVCDemo:Make;OLE:Make;Tests:Make;Multiselect:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -373,7 +373,7 @@ type
     toLevelSelectConstraint,         // Constrain selection to the same level as the selection anchor.
     toMiddleClickSelect,             // Allow selection, dragging etc. with the middle mouse button. This and toWheelPanning
                                      // are mutual exclusive.
-    toMultiSelect,                   // Allow more than one node to be selected.
+    toMultiSelect,                   // Allow more than one node/cell to be selected.
     toRightClickSelect,              // Allow selection, dragging etc. with the right mouse button.
     toSiblingSelectConstraint,       // Constrain selection to nodes with same parent.
     toCenterScrollIntoView,          // Center nodes vertically in the client area when scrolling into view.
@@ -1016,6 +1016,16 @@ type
     HitPoint: TPoint;
     ShiftState: TShiftState;
   end;
+
+  // A representation of a single cell (node + column)
+  PVTCell = ^TVTCell;
+  TVTCell = record
+    Node: PVirtualNode;
+    Column: TColumnIndex;
+    constructor Create(ANode: PVirtualNode; AColumn: TColumnIndex);
+  end;
+
+  TVTCellArray = array of TVTCell;
 
   TVTHeaderStyle = (
     hsThickButtons,                 //TButton look and feel
@@ -1718,5 +1728,14 @@ begin
   Result := cSortDirectionToInt[Self];
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+{ TVTCell }
+
+constructor TVTCell.Create(ANode: PVirtualNode; AColumn: TColumnIndex);
+begin
+  Node := ANode;
+  Column := AColumn;
+end;
 
 end.
