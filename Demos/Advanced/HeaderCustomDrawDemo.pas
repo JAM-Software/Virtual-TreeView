@@ -7,9 +7,11 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ImgList, VirtualTrees, StdCtrls, ExtCtrls, VirtualTrees.BaseTree, System.ImageList,
-  VirtualTrees.Types, VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.ImgList, VirtualTrees, Vcl.StdCtrls, Vcl.ExtCtrls, VirtualTrees.BaseTree,
+  System.ImageList, VirtualTrees.Types, VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.AncestorVCL;
 
 type
   THeaderOwnerDrawForm = class(TForm)
