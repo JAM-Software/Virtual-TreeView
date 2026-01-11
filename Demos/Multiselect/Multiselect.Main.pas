@@ -34,6 +34,7 @@ type
     procedure btnClickRow2Col1Click(Sender: TObject);
     procedure btnSelectRow3Col1Row4Col2Click(Sender: TObject);
     procedure btnSelectRow2_3_CopyClick(Sender: TObject);
+    procedure VirtualStringTree1KeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
 
@@ -318,6 +319,15 @@ begin
   finally
     SetKeyboardState(LOrigKBState);
   end;
+end;
+
+procedure TForm1.VirtualStringTree1KeyPress(Sender: TObject; var Key: Char);
+begin
+  // Press Ctrl+C to copy to clipboard
+  if Key = ^C then
+    begin
+      VirtualStringTree1.CopyToClipboard;
+    end;
 end;
 
 end.

@@ -42,6 +42,7 @@ object Form1: TForm1
     TreeOptions.SelectionOptions = [toExtendedFocus, toMultiSelect, toSelectNextNodeOnRemoval]
     OnFreeNode = VirtualStringTree1FreeNode
     OnGetText = VirtualStringTree1GetText
+    OnKeyPress = VirtualStringTree1KeyPress
     Touch.InteractiveGestures = [igPan, igPressAndTap]
     Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia, igoPanGutter, igoParentPassthrough]
     Columns = <

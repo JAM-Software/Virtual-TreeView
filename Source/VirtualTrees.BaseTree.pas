@@ -6805,7 +6805,6 @@ var
   Shift: TShiftState;
   Node, Temp,
   LastFocusedNode: PVirtualNode;
-  LastFocusedColumn: TColumnIndex;
   Offset: Integer;
   ClearPending,
   NeedInvalidate,
@@ -6954,7 +6953,6 @@ begin
 
         // Keep old focused node for range selection. Use a default node if none was focused until now.
         LastFocusedNode := FFocusedNode;
-        LastFocusedColumn := FFocusedColumn;
         if (LastFocusedNode = nil) and (Shift <> []) then
           LastFocusedNode := GetFirstVisible(nil, True);
 
@@ -7349,32 +7347,16 @@ begin
           FCellRangeAnchor.Node := FFocusedNode;
           FCellRangeAnchor.Column := FFocusedColumn;
         end else
-        if ssShift in Shift then
+        if (ssShift in Shift) and LCellSelectionEnabled then
         begin
-          // select multiple cells
-          var NewCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
+          // multicell support / select multiple cells
+          var SelectedCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
           var OldCell := FCellRangeAnchor;
-          SelectCells(OldCell.Node, OldCell.Column, NewCell.Node, NewCell.Column, True);
+          InternalSelectCells(OldCell, SelectedCell, True);
         end;
 
         if Assigned(FFocusedNode) then
         begin
-          if LCellSelectionEnabled then
-          begin
-            var NewCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
-            var OldCell := TVTCell.Create(LastFocusedNode, LastFocusedColumn);
-            if DoRangeSelect then
-              ToggleCellSelection(FCellRangeAnchor, NewCell)
-            else if (LastFocusedNode <> FFocusedNode) or (LastFocusedColumn <> FFocusedColumn) then
-            begin
-              if ForceSelection then
-                AddToCellSelection(NewCell, False)
-              else
-                ToggleCellSelection(OldCell, NewCell);
-            end;
-          end
-          else
-          begin
             // Finally change the selection for a specific range of nodes.
             if DoRangeSelect then
               ToggleSelection(LastFocusedNode, FFocusedNode)
@@ -7385,7 +7367,6 @@ begin
               else
                 ToggleSelection(LastFocusedNode, FFocusedNode); // See issue #926
             end;
-          end;
         end;
 
         // If a repaint is needed then paint the entire tree because of the ClearSelection call,
@@ -15449,6 +15430,7 @@ var
   i: Integer;
 begin
   Result := False;
+
   // prevent duplicates
   for i := 0 to FSelectedCellCount - 1 do
     if (FSelectedCells[i].Node = Cell.Node) and (FSelectedCells[i].Column = Cell.Column) then
@@ -15519,6 +15501,8 @@ end;
 
 procedure TBaseVirtualTree.AddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean);
 begin
+  if FSelectionLocked then
+    Exit;
   if InternalAddToCellSelection(Cell, ForceInsert) then
   begin
     if Assigned(Cell.Node) then
@@ -15532,6 +15516,8 @@ end;
 
 procedure TBaseVirtualTree.RemoveFromCellSelection(const Cell: TVTCell);
 begin
+  if FSelectionLocked then
+    Exit;
   InternalRemoveFromCellSelection(Cell);
   if Assigned(Cell.Node) then
     InvalidateNode(Cell.Node)
@@ -15560,10 +15546,7 @@ var
   ColNext: TColumnIndex;
   TempCell: TVTCell;
 begin
-  if FSelectionLocked then Exit;
-
-  if not (toMultiSelect in TreeOptions.SelectionOptions) or
-     not (toExtendedFocus in TreeOptions.SelectionOptions) then
+  if not IsCellSelectionEnabled then
     Exit;
 
   // Normalize start cell
@@ -15671,10 +15654,7 @@ var
   ColNext: TColumnIndex;
   TempCell: TVTCell;
 begin
-  if FSelectionLocked then Exit;
-
-  if not (toMultiSelect in TreeOptions.SelectionOptions) or
-     not (toExtendedFocus in TreeOptions.SelectionOptions) then
+  if not IsCellSelectionEnabled then
     Exit;
 
   if StartCell.Node = nil then
