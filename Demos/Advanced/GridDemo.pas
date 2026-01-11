@@ -10,8 +10,9 @@ unit GridDemo;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, VirtualTrees,
+  Vcl.ImgList, Vcl.Menus, System.ImageList, VirtualTrees.BaseTree, VirtualTrees.Types,
   VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
 
 type
@@ -48,7 +49,7 @@ type
     procedure AutoSpanCheckBoxClick(Sender: TObject);
     procedure DisplayFullNameCheckBoxClick(Sender: TObject);
     procedure VST5ColumnHeaderSpanning(Sender: TVTHeader; Column: TColumnIndex;
-      var Count: Cardinal);
+      var Count: Integer);
   end;
 
 var
@@ -190,7 +191,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TGridForm.VST5ColumnHeaderSpanning(Sender: TVTHeader; Column: TColumnIndex; var Count: Cardinal);
+procedure TGridForm.VST5ColumnHeaderSpanning(Sender: TVTHeader; Column: TColumnIndex; var Count: Integer);
 begin
   case Column of
     2:
