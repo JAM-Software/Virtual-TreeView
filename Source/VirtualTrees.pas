@@ -105,6 +105,8 @@ type
   TVTOperationKind         = VirtualTrees.Types.TVTOperationKind;
   TVTUpdateState           = VirtualTrees.Types.TVTUpdateState;
   TVTCellPaintMode         = VirtualTrees.Types.TVTCellPaintMode;
+  TVTCell                  = VirtualTrees.Types.TVTCell;
+  TVTCellArray             = VirtualTrees.Types.TVTCellArray;
   TVirtualNodeState        = VirtualTrees.Types.TVirtualNodeState;
   TVirtualNodeInitState    = VirtualTrees.Types.TVirtualNodeInitState;
   TVirtualNodeInitStates   = VirtualTrees.Types.TVirtualNodeInitStates;
@@ -813,11 +815,11 @@ begin
       begin
         if Node = DropTargetNode then
         begin
-          if ((LastDropMode = dmOnNode) or (vsSelected in Node.States)) then
+          if (LastDropMode = dmOnNode) or (vsSelected in Node.States) or InternalIsCellSelected(Node, Column) then
             Canvas.Font.Color := Colors.GetSelectedNodeFontColor(True); // See #1083, since drop highlight color is chosen independent of the focus state, we need to choose Font color also independent of it.
         end
         else
-          if vsSelected in Node.States then
+          if (vsSelected in Node.States) or InternalIsCellSelected(Node, Column) then
           begin
             Canvas.Font.Color := Colors.GetSelectedNodeFontColor(Focused or (toPopupMode in TreeOptions.PaintOptions));
           end;
@@ -933,13 +935,13 @@ begin
     begin
       if Node = DropTargetNode then
       begin
-        if (LastDropMode = dmOnNode) or (vsSelected in Node.States) then
+        if (LastDropMode = dmOnNode) or (vsSelected in Node.States) or InternalIsCellSelected(Node, Column) then
           Canvas.Font.Color := Colors.GetSelectedNodeFontColor(Focused or (toPopupMode in TreeOptions.PaintOptions))
         else
           Canvas.Font.Color := Colors.NodeFontColor;
       end
       else
-        if vsSelected in Node.States then
+        if (vsSelected in Node.States) or InternalIsCellSelected(Node, Column) then
         begin
           if Focused or (toPopupMode in TreeOptions.PaintOptions) then
             Canvas.Font.Color := Colors.GetSelectedNodeFontColor(Focused or (toPopupMode in TreeOptions.PaintOptions))

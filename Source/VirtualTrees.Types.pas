@@ -259,7 +259,8 @@ type
     coWrapCaption,           // Caption could be wrapped across several header lines to fit columns width.
     coUseCaptionAlignment,   // Column's caption has its own aligment.
     coEditable,              // Column can be edited
-    coStyleColor             // Prefer background color of VCL style over TVirtualTreeColumn.Color
+    coStyleColor,            // Prefer background color of VCL style over TVirtualTreeColumn.Color
+    coMulticellSelected      // Indicates this column is selected as part of multicell
     );
   TVTColumnOptions = set of TVTColumnOption;
 
@@ -373,7 +374,7 @@ type
     toLevelSelectConstraint,         // Constrain selection to the same level as the selection anchor.
     toMiddleClickSelect,             // Allow selection, dragging etc. with the middle mouse button. This and toWheelPanning
                                      // are mutual exclusive.
-    toMultiSelect,                   // Allow more than one node to be selected.
+    toMultiSelect,                   // Allow more than one node/cell to be selected.
     toRightClickSelect,              // Allow selection, dragging etc. with the right mouse button.
     toSiblingSelectConstraint,       // Constrain selection to nodes with same parent.
     toCenterScrollIntoView,          // Center nodes vertically in the client area when scrolling into view.
@@ -1017,6 +1018,16 @@ type
     ShiftState: TShiftState;
   end;
 
+  // A representation of a single cell (node + column)
+  PVTCell = ^TVTCell;
+  TVTCell = record
+    Node: PVirtualNode;
+    Column: TColumnIndex;
+    constructor Create(ANode: PVirtualNode; AColumn: TColumnIndex);
+  end;
+
+  TVTCellArray = array of TVTCell;
+
   TVTHeaderStyle = (
     hsThickButtons,                 //TButton look and feel
     hsFlatButtons,                  //flatter look than hsThickButton, like an always raised flat TToolButton
@@ -1497,10 +1508,16 @@ begin
       if (toMultiSelect in (ToBeCleared + ToBeSet)) or ([toLevelSelectConstraint, toSiblingSelectConstraint] * ToBeSet <> []) then
         ClearSelection;
 
+      // Clear multicell selection when toFullRowSelect is going to be set
+      if toFullRowSelect in ToBeSet then
+        ClearCellSelection;
+
       if (toExtendedFocus in ToBeCleared) and (FocusedColumn > 0) and HandleAllocated then
       begin
         FocusedColumn := Header.MainColumn;
         Invalidate;
+        // Also clear multicell selection when toExtendedFocus is removed
+        ClearCellSelection;
       end;
 
       if not (toExtendedFocus in FSelectionOptions) then
@@ -1718,5 +1735,14 @@ begin
   Result := cSortDirectionToInt[Self];
 end;
 
+//----------------------------------------------------------------------------------------------------------------------
+
+{ TVTCell }
+
+constructor TVTCell.Create(ANode: PVirtualNode; AColumn: TColumnIndex);
+begin
+  Node := ANode;
+  Column := AColumn;
+end;
 
 end.
