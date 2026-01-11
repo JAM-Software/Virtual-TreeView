@@ -3570,12 +3570,6 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function GetSelectedCellColumns: TColumnsArray;
-begin
-end;
-
-//----------------------------------------------------------------------------------------------------------------------
-
 function TBaseVirtualTree.GetSelectedData<T>: TArray<T>;
 var
   lItem: PVirtualNode;
