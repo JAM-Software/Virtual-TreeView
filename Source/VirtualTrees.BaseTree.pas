@@ -1123,6 +1123,7 @@ type
     function InternalAddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean): Boolean;
     procedure InternalRemoveFromCellSelection(const Cell: TVTCell); virtual;
     procedure InternalClearCellSelection; virtual;
+    function  IsCellSelectionEnabled: Boolean; virtual;
     procedure AddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean);
     procedure RemoveFromCellSelection(const Cell: TVTCell);
     function  InternalIsCellSelected(Node: PVirtualNode; Column: TColumnIndex): Boolean;
@@ -6829,7 +6830,7 @@ var
 
   KeyState: TKeyboardState;
   Buffer: array[0..1] of AnsiChar;
-  CellSelectionEnabled: Boolean;
+  LCellSelectionEnabled: Boolean;
 
   //--------------- local functions -------------------------------------------
   function getPreviousVisibleAutoSpanColumn(acolumn: TColumnIndex; anode: PVirtualNode): TColumnIndex;
@@ -6923,10 +6924,7 @@ begin
   // Make form key preview work and let application modify the key if it wants this.
   inherited;
 
-  CellSelectionEnabled :=
-    (toMultiSelect in FOptions.SelectionOptions) and
-    (toExtendedFocus in FOptions.SelectionOptions) and
-    not (toFullRowSelect in FOptions.SelectionOptions);
+  LCellSelectionEnabled := IsCellSelectionEnabled;
 
   with Message do
   begin
@@ -6939,7 +6937,7 @@ begin
         PerformMultiSelect := (ssShift in Shift) and (toMultiSelect in FOptions.SelectionOptions) and not IsEditing;
 
         // Clear range selection
-        if (Shift = []) and CellSelectionEnabled then
+        if (Shift = []) and LCellSelectionEnabled then
         begin
           ClearCellSelection;
         end;
@@ -7197,7 +7195,7 @@ begin
                 // other special cases
                 Context := NoColumn;
                 if ((toExtendedFocus in FOptions.SelectionOptions) and (toGridExtensions in FOptions.MiscOptions)) or
-                  CellSelectionEnabled then
+                  LCellSelectionEnabled then
                 begin
                   Context := getPreviousVisibleAutoSpanColumn(FFocusedColumn, FFocusedNode);
                   if Context > NoColumn then
@@ -7248,7 +7246,7 @@ begin
                 // other special cases
                 Context := NoColumn;
                 if ((toExtendedFocus in FOptions.SelectionOptions) and (toGridExtensions in FOptions.MiscOptions)) or
-                  CellSelectionEnabled then
+                  LCellSelectionEnabled then
                 begin
                   Context := getNextVisibleAutoSpanColumn(FFocusedColumn, FFocusedNode);
                   if Context > NoColumn then
@@ -7361,7 +7359,7 @@ begin
 
         if Assigned(FFocusedNode) then
         begin
-          if CellSelectionEnabled then
+          if LCellSelectionEnabled then
           begin
             var NewCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
             var OldCell := TVTCell.Create(LastFocusedNode, LastFocusedColumn);
@@ -12625,7 +12623,7 @@ var
   AltPressed: Boolean;   // Pressing the Alt key enables special processing for selection.
   FullRowDrag: Boolean;  // Start dragging anywhere within a node's bound.
   NodeRect: TRect;
-  CellSelectionEnabled: Boolean;
+  LCellSelectionEnabled: Boolean;
 
   //--------------- local functions -------------------------------------------
 
@@ -12734,10 +12732,7 @@ begin
   else
     AltPressed := False;
 
-  CellSelectionEnabled :=
-    (toMultiSelect in FOptions.SelectionOptions) and
-    (toExtendedFocus in FOptions.SelectionOptions) and
-    not (toFullRowSelect in FOptions.SelectionOptions);
+  LCellSelectionEnabled := IsCellSelectionEnabled;
 
   // Various combinations determine what states the tree enters now.
   // We initialize shorthand variables to avoid the following expressions getting too large
@@ -12749,7 +12744,7 @@ begin
     ([hiOnItemButton, hiOnItemCheckBox, hiNoWhere] * HitInfo.HitPositions = []) and
     ((toFullRowSelect in FOptions.SelectionOptions) or
     ((toGridExtensions in FOptions.MiscOptions) and (HitInfo.HitColumn > NoColumn))) or
-    (CellSelectionEnabled and (HitInfo.HitColumn > NoColumn));
+    (LCellSelectionEnabled and (HitInfo.HitColumn > NoColumn));
 
   IsAnyHit := IsLabelHit or IsCellHit;
   MultiSelect := toMultiSelect in FOptions.SelectionOptions;
@@ -15509,6 +15504,15 @@ begin
   end;
   SetLength(FSelectedCells, 0);
   FSelectedCellCount := 0;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.IsCellSelectionEnabled: Boolean;
+begin
+  Result := (toMultiSelect in FOptions.SelectionOptions) and
+            (toExtendedFocus in FOptions.SelectionOptions) and
+            not (toFullRowSelect in FOptions.SelectionOptions);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
