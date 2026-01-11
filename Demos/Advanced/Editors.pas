@@ -6,9 +6,10 @@ unit Editors;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtDlgs, ImgList, Buttons, ExtCtrls, ComCtrls, Mask,
-  VirtualTrees, VirtualTrees.EditLink, VirtualTrees.Types;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtDlgs, Vcl.ImgList,
+  Vcl.Buttons, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Mask, VirtualTrees,
+  VirtualTrees.EditLink, VirtualTrees.Types;
 
 type
   // Describes the type of value a property tree node stores in its data property.

@@ -24,9 +24,13 @@ unit DrawTreeDemo;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  VirtualTrees, StdCtrls, {$ifdef GraphicEx} GraphicEx, {$else} JPEG, {$endif}
-  ImgList, ComCtrls, UITypes, VirtualTrees.DrawTree, System.ImageList, VirtualTrees.Types;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  VirtualTrees, Vcl.StdCtrls,
+  {$ifdef GraphicEx} GraphicEx, {$else} Vcl.Imaging.JPEG, {$endif}
+  Vcl.ImgList, Vcl.ComCtrls, System.UITypes, VirtualTrees.DrawTree,
+  System.ImageList, VirtualTrees.Types, VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.BaseTree, VirtualTrees.AncestorVCL;
 
 type
   TDrawTreeForm = class(TForm)
@@ -46,7 +50,7 @@ type
     procedure VDT1GetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: TImageIndex);
     procedure VDT1GetNodeWidth(Sender: TBaseVirtualTree; Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-      var NodeWidth: Integer);
+      var NodeWidth: TDimension);
     procedure VDT1HeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
     procedure VDT1InitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode; var ChildCount: Cardinal);
     procedure VDT1InitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
@@ -484,7 +488,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TDrawTreeForm.VDT1GetNodeWidth(Sender: TBaseVirtualTree; Canvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
-  var NodeWidth: Integer);
+  var NodeWidth: TDimension);
 
 // Since the draw tree does not know what is in a cell, we have to return the width of the content (not the entire
 // cell width, this could be determined by the column width).

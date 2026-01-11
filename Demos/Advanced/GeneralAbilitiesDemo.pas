@@ -1,4 +1,4 @@
-unit GeneralAbilitiesDemo;
+﻿unit GeneralAbilitiesDemo;
 
 // Virtual Treeview sample form demonstrating following features:
 //   - General use and feel of TVirtualStringTree.
@@ -25,10 +25,12 @@ interface
 {$ifend}
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, VirtualTrees, ComCtrls, ExtCtrls, ImgList, Menus,
-  StdActns, ActnList, VirtualTrees.HeaderPopup, UITypes, System.ImageList, VirtualTrees.BaseTree,
-  VirtualTrees.Types, VirtualTrees.BaseAncestorVCL, VirtualTrees.AncestorVCL;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, VirtualTrees,
+  Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.ImgList, Vcl.Menus, Vcl.StdActns, Vcl.ActnList,
+  VirtualTrees.HeaderPopup, System.UITypes, System.ImageList,
+  VirtualTrees.BaseTree, VirtualTrees.Types, VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.AncestorVCL;
 
 type
   TGeneralForm = class(TForm)
@@ -259,7 +261,7 @@ begin
       4:
         begin
           ForeignText := WideChar($20AC);
-          ForeignText := 'nichts ist unm�glich ' + ForeignText;
+          ForeignText := 'nichts ist unmöglich ' + ForeignText;
         end;
       5:
         begin

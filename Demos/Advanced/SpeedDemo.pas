@@ -8,8 +8,10 @@ unit SpeedDemo;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, VirtualTrees.Types, ExtDlgs, ComCtrls, jpeg, Menus;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, VirtualTrees,
+  VirtualTrees.Types, Vcl.ExtDlgs, Vcl.ComCtrls, Vcl.Imaging.jpeg, Vcl.Menus,
+  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL;
 
 type
   TSpeedForm = class(TForm)

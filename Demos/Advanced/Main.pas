@@ -12,9 +12,10 @@ interface
 {$warn UNSAFE_CODE off}
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ComCtrls, ToolWin, Buttons, ExtCtrls, StdCtrls, ImgList, ActnList,
-  StdActns, VirtualTrees;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ToolWin, Vcl.Buttons,
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.ImgList, Vcl.ActnList,
+  Vcl.StdActns, VirtualTrees;
 
 type
   TMainForm = class(TForm)
