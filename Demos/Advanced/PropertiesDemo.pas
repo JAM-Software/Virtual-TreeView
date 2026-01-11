@@ -9,9 +9,11 @@ unit PropertiesDemo;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes, VirtualTrees.BaseTree, System.ImageList,
-  VirtualTrees.Types;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, VirtualTrees,
+  Vcl.ImgList, Vcl.ExtCtrls, System.UITypes, VirtualTrees.BaseTree,
+  System.ImageList, VirtualTrees.Types, VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.AncestorVCL;
 
 const
   // Helper message to decouple node change handling from edit handling.

@@ -7,9 +7,10 @@ unit Main;
 interface
 
 uses
-  Windows, Messages, ActiveX, SysUtils, Forms, Dialogs, Graphics,
-  VirtualTrees, ActnList, ComCtrls, ExtCtrls, StdCtrls, Controls, Classes,
-  ImgList, System.Actions, System.ImageList, VirtualTrees.BaseAncestorVCL,
+  Winapi.Windows, Winapi.Messages, Winapi.ActiveX, System.SysUtils, Vcl.Forms,
+  Vcl.Dialogs, Vcl.Graphics, VirtualTrees, Vcl.ActnList, Vcl.ComCtrls,
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Controls, System.Classes, Vcl.ImgList,
+  System.Actions, System.ImageList, VirtualTrees.BaseAncestorVCL,
   VirtualTrees.BaseTree, VirtualTrees.AncestorVCL, VirtualTrees.Types;
 
 type
@@ -50,7 +51,7 @@ type
     procedure Tree1GetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: string);
     procedure FormCreate(Sender: TObject);
-    procedure TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
+    procedure TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: TVTDragDataObject;
       Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
     procedure Button2Click(Sender: TObject);
     procedure TreeInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode;
@@ -377,7 +378,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TMainForm.TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
+procedure TMainForm.TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: TVTDragDataObject;
   Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 
   //--------------- local function --------------------------------------------

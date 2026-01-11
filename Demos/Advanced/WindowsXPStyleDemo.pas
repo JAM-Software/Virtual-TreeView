@@ -11,10 +11,11 @@ interface
 {$warn UNSAFE_CODE off}
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, VirtualTrees, ImgList, ComCtrls, ToolWin, Menus, StdCtrls, UITypes,
-  System.ImageList, VirtualTrees.Types, Vcl.ExtCtrls,
-  VirtualTrees.BaseAncestorVCL, VirtualTrees.BaseTree, VirtualTrees.AncestorVCL;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, VirtualTrees, Vcl.ImgList, Vcl.ComCtrls,
+  Vcl.ToolWin, Vcl.Menus, Vcl.StdCtrls, System.UITypes, System.ImageList,
+  VirtualTrees.Types, Vcl.ExtCtrls, VirtualTrees.BaseAncestorVCL,
+  VirtualTrees.BaseTree, VirtualTrees.AncestorVCL;
 
 type
   TWindowsXPForm = class(TForm)
