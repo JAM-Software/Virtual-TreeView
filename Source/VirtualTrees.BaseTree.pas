@@ -13440,6 +13440,8 @@ begin
     if SyncCheckstateWithSelection[Node] then
       Node.CheckState := csUncheckedNormal; // Avoid using SetCheckState() as it handles toSyncCheckboxesWithSelection as well.
     System.Inc(PAnsiChar(FSelection[Index]));
+    // update selection count
+    System.Dec(FSelectionCount); // Fixes #1197
     DoRemoveFromSelection(Node);
     Change(Node); // Calling Change() here fixes issue #1047
   end;
