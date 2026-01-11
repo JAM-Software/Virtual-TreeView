@@ -259,7 +259,8 @@ type
     coWrapCaption,           // Caption could be wrapped across several header lines to fit columns width.
     coUseCaptionAlignment,   // Column's caption has its own aligment.
     coEditable,              // Column can be edited
-    coStyleColor             // Prefer background color of VCL style over TVirtualTreeColumn.Color
+    coStyleColor,            // Prefer background color of VCL style over TVirtualTreeColumn.Color
+    coMulticellSelected      // Indicates this column is selected as part of multicell
     );
   TVTColumnOptions = set of TVTColumnOption;
 
@@ -1507,10 +1508,16 @@ begin
       if (toMultiSelect in (ToBeCleared + ToBeSet)) or ([toLevelSelectConstraint, toSiblingSelectConstraint] * ToBeSet <> []) then
         ClearSelection;
 
+      // Clear multicell selection when toFullRowSelect is going to be set
+      if toFullRowSelect in ToBeSet then
+        ClearCellSelection;
+
       if (toExtendedFocus in ToBeCleared) and (FocusedColumn > 0) and HandleAllocated then
       begin
         FocusedColumn := Header.MainColumn;
         Invalidate;
+        // Also clear multicell selection when toExtendedFocus is removed
+        ClearCellSelection;
       end;
 
       if not (toExtendedFocus in FSelectionOptions) then

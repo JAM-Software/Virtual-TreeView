@@ -21,6 +21,7 @@ type
     btnClickRow2Col1: TButton;
     btnClickRow1Col1: TButton;
     btnSelectRow3Col1Row4Col2: TButton;
+    btnSelectRow2_3_Copy: TButton;
     procedure FormCreate(Sender: TObject);
     procedure VirtualStringTree1FreeNode(Sender: TBaseVirtualTree;
       Node: PVirtualNode);
@@ -32,8 +33,12 @@ type
     procedure btnClickRow1Col1Click(Sender: TObject);
     procedure btnClickRow2Col1Click(Sender: TObject);
     procedure btnSelectRow3Col1Row4Col2Click(Sender: TObject);
+    procedure btnSelectRow2_3_CopyClick(Sender: TObject);
   private
     { Private declarations }
+
+    procedure EnableMulticellSelection;
+    procedure EnableFullRowSelection;
 
     // These functions mimic human interaction with the user interface
     procedure MouseClick(const ACursorPos: TPoint); overload;
@@ -48,6 +53,9 @@ var
   Form1: TForm1;
 
 implementation
+
+uses
+  VirtualTrees.Types, VirtualTrees.Clipboard;
 
 {$R *.dfm}
 
@@ -90,6 +98,7 @@ const
 
 procedure TForm1.btnClickRow1Col1Click(Sender: TObject);
 begin
+  EnableMulticellSelection;
   var LTree := VirtualStringTree1;
   var LNode := LTree.GetFirstChild(LTree.RootNode);
   MouseClick(LNode);
@@ -97,6 +106,7 @@ end;
 
 procedure TForm1.btnClickRow2Col1Click(Sender: TObject);
 begin
+  EnableMulticellSelection;
   var LTree := VirtualStringTree1;
   var LNode := LTree.GetFirstChild(LTree.RootNode);
   LNode := LTree.GetNext(LNode);
@@ -105,8 +115,8 @@ end;
 
 procedure TForm1.btnSelect4CellsLeftToRightClick(Sender: TObject);
 begin
+  EnableMulticellSelection;
   var LTree := VirtualStringTree1;
-
   LTree.ClearCellSelection;
 
   var LNode := LTree.GetFirstChild(LTree.RootNode);
@@ -125,6 +135,7 @@ end;
 
 procedure TForm1.btnSelect4CellsRightToLeftClick(Sender: TObject);
 begin
+  EnableMulticellSelection;
   var LTree := VirtualStringTree1;
 
   LTree.ClearCellSelection;
@@ -141,9 +152,26 @@ begin
     True);
 end;
 
+procedure TForm1.btnSelectRow2_3_CopyClick(Sender: TObject);
+begin
+  // RegisterVTClipboardFormat(CF_TEXT, TVirtualStringTree);
+  EnableFullRowSelection;
+  var LTree := VirtualStringTree1;
+
+  var LNode1 := LTree.GetFirstVisible();
+  var LNode2 := LTree.GetNextVisible(LNode1);
+  var LNode3 := LTree.GetNextVisible(LNode2);
+  LTree.Selected[LNode2] := True;
+  LTree.Selected[LNode3] := True;
+
+  LTree.CopyToClipboard;
+end;
+
 procedure TForm1.btnSelectRow3Col1Row4Col2Click(Sender: TObject);
 begin
+  EnableMulticellSelection;
   var LTree := VirtualStringTree1;
+
   var LNode := LTree.GetFirstChild(LTree.RootNode);
   for var I := 1 to 2 do
     LNode := LTree.GetNext(LNode);
@@ -156,6 +184,22 @@ begin
 
   // column 2 in code is column 3 in human eyes...
   ShiftMouseClick(TVTCell.Create(L4thRow, 2));
+
+  LTree.CopyToClipboard;
+end;
+
+procedure TForm1.EnableFullRowSelection;
+begin
+  var LTree := VirtualStringTree1;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toFullRowSelect];
+end;
+
+procedure TForm1.EnableMulticellSelection;
+begin
+  var LTree := VirtualStringTree1;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toMultiSelect, toExtendedFocus] - [toFullRowSelect];
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -175,12 +219,17 @@ begin
 
   LNode1.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_user_info',  'VIEW'));
   LNode2.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_stastic',    'BASE TABLE'));
-  LNode3.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_settings',   'VIEW'));
-  LNode4.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_type',       'VIEW'));
+  LNode3.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_settings',   'VIEW1'));
+  LNode4.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_type',       'VIEW2'));
   LNode5.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_attribute',  'BASE TABLE'));
   LNode6.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_class',      'BASE TABLE'));
   LNode7.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_tablespace', 'BASE TABLE'));
   LNode8.SetData<TRowData>(TRowData.Create('pg_catalog', 'pg_inherits',   'BASE TABLE'));
+
+  LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_TEXT));
+  LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_UNICODETEXT));
+  LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_VRTF));
+  LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_HTML));
 end;
 
 procedure TForm1.VirtualStringTree1FreeNode(Sender: TBaseVirtualTree;

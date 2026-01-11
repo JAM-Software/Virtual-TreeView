@@ -127,7 +127,7 @@ object Form1: TForm1
     end
     object btnClickRow2Col1: TButton
       Left = 14
-      Top = 285
+      Top = 293
       Width = 252
       Height = 56
       Margins.Left = 7
@@ -141,7 +141,7 @@ object Form1: TForm1
     end
     object btnClickRow1Col1: TButton
       Left = 14
-      Top = 214
+      Top = 222
       Width = 252
       Height = 57
       Margins.Left = 7
@@ -155,7 +155,22 @@ object Form1: TForm1
     end
     object btnSelectRow3Col1Row4Col2: TButton
       Left = 14
-      Top = 361
+      Top = 363
+      Width = 252
+      Height = 118
+      Margins.Left = 7
+      Margins.Top = 7
+      Margins.Right = 7
+      Margins.Bottom = 7
+      Anchors = [akRight]
+      Caption = 'Select row 3, col 2, row 4, col 3'#13#10'Copy'
+      TabOrder = 4
+      WordWrap = True
+      OnClick = btnSelectRow3Col1Row4Col2Click
+    end
+    object btnSelectRow2_3_Copy: TButton
+      Left = 14
+      Top = 495
       Width = 252
       Height = 72
       Margins.Left = 7
@@ -163,10 +178,10 @@ object Form1: TForm1
       Margins.Right = 7
       Margins.Bottom = 7
       Anchors = [akRight]
-      Caption = 'Select row 3, col 1, row 4, col 2'
-      TabOrder = 4
+      Caption = 'Select row 2-3, copy'
+      TabOrder = 5
       WordWrap = True
-      OnClick = btnSelectRow3Col1Row4Col2Click
+      OnClick = btnSelectRow2_3_CopyClick
     end
   end
 end

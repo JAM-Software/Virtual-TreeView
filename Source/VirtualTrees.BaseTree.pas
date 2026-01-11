@@ -451,9 +451,9 @@ type
     FStartIndex: Cardinal;                       // index to start validating cache from
     FSelection: TNodeArray;                      // list of currently selected nodes
     FSelectionLocked: Boolean;                   // prevents the tree from changing the selection
-    FSelectedCells: TVTCellArray;                // list of currently selected cells (node+column)
-    FSelectedCellCount: Integer;                 // number of selected cells in the array
-    FCellRangeAnchor: TVTCell;                   // anchor cell for cell range selection
+    FSelectedCells: TVTCellArray;                // list of currently selected cells (node+column) / multicell
+    FSelectedCellCount: Integer;                 // number of selected cells in the array / multicell
+    FCellRangeAnchor: TVTCell;                   // anchor cell for cell range selection / multicell
     FRangeAnchor: PVirtualNode;                  // anchor node for selection with the keyboard, determines start of a
                                                  // selection range
     FCheckPropagationCount: Cardinal;            // nesting level of check propagation (WL, 05.02.2004)
@@ -1098,6 +1098,10 @@ type
     function GetOperationCanceled: Boolean;
     function GetOptionsClass: TTreeOptionsClass; virtual;
     function GetSelectedCount(): Integer; override;
+
+    // multicell support
+    function GetSelectedCellCount(): Integer; override;
+
     procedure HandleHotTrack(X, Y: TDimension); virtual;
     procedure HandleIncrementalSearch(CharCode: Word); virtual;
     procedure HandleMouseDblClick(var Message: TWMMouse; const HitInfo: THitInfo); virtual;
@@ -1114,7 +1118,7 @@ type
     function InternalAddToSelection(const NewItems: TNodeArray; NewLength: Integer;
       ForceInsert: Boolean): Boolean; overload;
 
-    // Multiple cell select support
+    // Multiple cell select support / multicell
     // Multi-selection requires [toExtendedFocus, toMultiSelect] - [toFullRowSelect]
     function InternalAddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean): Boolean;
     procedure InternalRemoveFromCellSelection(const Cell: TVTCell); virtual;
@@ -1138,7 +1142,12 @@ type
     function LineWidth(): TDimension;
     procedure Loaded; override;
     procedure MainColumnChanged; virtual;
+
+    // multicell support
+    procedure MarkCutCopyCells; override;
+
     procedure MarkCutCopyNodes; override;
+
     procedure MouseMove(Shift: TShiftState; X, Y: TDimension); override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure OriginalWMNCPaint(DC: HDC); virtual;
@@ -1581,7 +1590,7 @@ type
     procedure ValidateChildren(Node: PVirtualNode; Recursive: Boolean);
     procedure ValidateNode(Node: PVirtualNode; Recursive: Boolean);
 
-    { Multiple cell selection }
+    { Multiple cell selection / multicell }
     /// <summary>
     /// Clears the currently selected cells.
     /// </summary>
@@ -1650,7 +1659,7 @@ type
     function LeafNodes: TVTVirtualNodeEnumeration;
     function LevelNodes(NodeLevel: Cardinal): TVTVirtualNodeEnumeration;
     function NoInitNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
-    function SelectedCells: TVTCellArray;
+    function SelectedCells: TVTCellArray; // multicell support
     function SelectedNodes(ConsiderChildrenAbove: Boolean = False): TVTVirtualNodeEnumeration;
     function VisibleNodes(Node: PVirtualNode = nil; ConsiderChildrenAbove: Boolean = True;
       IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
@@ -3550,6 +3559,19 @@ end;
 function TBaseVirtualTree.GetSelectedCount: Integer;
 begin
   Exit(FSelectionCount);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetSelectedCellCount: Integer;
+begin
+  Exit(FSelectedCellCount);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function GetSelectedCellColumns: TColumnsArray;
+begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -13720,6 +13742,18 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.MarkCutCopyCells;
+begin
+  // Mark that the node is included in cut/copy for multicell
+  for var I := 0 to FSelectedCellCount - 1 do
+    begin
+      var LCell := FSelectedCells[I];
+      Include(LCell.Node.States, vsCutOrCopy);
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.MarkCutCopyNodes;
 
 // Sets the vsCutOrCopy style in every currently selected but not disabled node to indicate it is
@@ -15433,6 +15467,10 @@ begin
 
   if FSelectedCellCount = Length(FSelectedCells) then
     SetLength(FSelectedCells, FSelectedCellCount + 16);
+
+  Header.Columns[Cell.Column].Options := Header.Columns[Cell.Column].Options +
+    [coMulticellSelected];
+
   FSelectedCells[FSelectedCellCount] := Cell;
   Inc(FSelectedCellCount);
   Result := True;
@@ -15447,6 +15485,8 @@ begin
   for i := 0 to FSelectedCellCount - 1 do
     if (FSelectedCells[i].Node = Cell.Node) and (FSelectedCells[i].Column = Cell.Column) then
     begin
+      Header.Columns[Cell.Column].Options :=
+        Header.Columns[Cell.Column].Options - [coMulticellSelected];
       // shift remaining
       for j := i to FSelectedCellCount - 2 do
         FSelectedCells[j] := FSelectedCells[j + 1];
@@ -15464,6 +15504,10 @@ begin
   // Invalidate all previously selected cells so their selection highlight is erased
   for i := 0 to FSelectedCellCount - 1 do
   begin
+    var LColumnIndex := FSelectedCells[i].Column;
+    FHeader.Columns[LColumnIndex].Options :=
+      FHeader.Columns[LColumnIndex].Options - [coMulticellSelected];
+
     if Assigned(FSelectedCells[i].Node) then
       InvalidateNode(FSelectedCells[i].Node)
     else

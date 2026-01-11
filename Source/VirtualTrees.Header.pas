@@ -259,6 +259,11 @@ type
     function GetPreviousVisibleColumn(Column : TColumnIndex; ConsiderAllowFocus : Boolean = False) : TColumnIndex;
     function GetScrollWidth : TDimension;
     function GetVisibleColumns : TColumnsArray;
+
+    // multicell support
+    function GetSelectedCellColumns: TColumnsArray;
+    function HasMulticellSelection: Boolean;
+
     function GetVisibleFixedWidth : TDimension;
     function IsValidColumn(Column : TColumnIndex) : Boolean;
     procedure LoadFromStream(const Stream : TStream; Version : Integer);
@@ -5289,6 +5294,38 @@ begin
     (coAllowFocus in Items[Result].Options)
     )
     );
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVirtualTreeColumns.GetSelectedCellColumns : TColumnsArray;
+begin
+  Result := [];
+  var LColumnIndex := GetFirstColumn;
+  if LColumnIndex = InvalidColumn then
+    Exit;
+  while LColumnIndex <> InvalidColumn do
+    begin
+      if coMulticellSelected in FHeader.Columns[LColumnIndex].Options then
+        Result := Result + [FHeader.Columns[LColumnIndex]];
+      LColumnIndex := GetNextColumn(LColumnIndex);
+    end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TVirtualTreeColumns.HasMulticellSelection: Boolean;
+begin
+  var LColumnIndex := GetFirstColumn;
+  if LColumnIndex = InvalidColumn then
+    Exit(False);
+  while LColumnIndex <> InvalidColumn do
+    begin
+      if coMulticellSelected in FHeader.Columns[LColumnIndex].Options then
+        Exit(True);
+      LColumnIndex := GetNextColumn(LColumnIndex);
+    end;
+  Result := False;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
