@@ -377,7 +377,7 @@ begin
         Exclude(S, FBit)
       else
         Include(S, FBit);
-      SetOrdProp(FPropList[I].Instance, FPropList[I].PropInfo, NativeInt(S));
+      SetOrdProp(FPropList[I].Instance, FPropList[I].PropInfo, NativeInt(Integer(S)));
     end;
   Modified;
 end;
