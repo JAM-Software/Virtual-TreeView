@@ -41,6 +41,13 @@ type
     procedure SetWindowTheme(const Theme: string); virtual;
     //// Abtract method that are implemented in TBaseVirtualTree, keep in sync with TVTBaseAncestorFMX
     function GetSelectedCount(): Integer; virtual; abstract;
+
+    /// <summary>
+    /// multicell support. How many cells are selected?
+    /// </summary>
+    function GetSelectedCellCount(): Integer; virtual; abstract;
+    procedure MarkCutCopyCells; virtual; abstract;
+
     procedure MarkCutCopyNodes; virtual; abstract;
     procedure DoStateChange(Enter: TVirtualTreeStates; Leave: TVirtualTreeStates = []); virtual; abstract;
     function GetSortedCutCopySet(Resolve: Boolean): TNodeArray; virtual; abstract;
@@ -283,6 +290,20 @@ var
   lDataObject: IDataObject;
 
 begin
+  // multicell support copy
+  if GetSelectedCellCount > 0 then
+  begin
+    lDataObject := TVTDataObject.Create(Self, True);
+    if OleSetClipboard(lDataObject) = S_OK then
+    begin
+      MarkCutCopyCells;
+      DoStateChange([tsCopyPending]);
+      Invalidate;
+    end;
+    Exit;
+  end;
+
+  // regular fullrow copy
   if GetSelectedCount > 0 then
   begin
     lDataObject := TVTDataObject.Create(Self, True);

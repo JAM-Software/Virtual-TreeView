@@ -68,6 +68,27 @@ type
     procedure PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
   end;
 
+  TColumnOptionsProperty = class(VCLEditors.TSetProperty)
+  public
+    procedure GetProperties(Proc: TGetPropProc); override;
+    function GetValue: string; override;
+  end;
+
+  TVTColumnOptionsElementsProperty = class(VCLEditors.TSetElementProperty,
+    ICustomPropertyMessage
+  )
+  private
+    FBit: TBit;
+    FPropList: TArray<TInstProp>;
+  protected
+    constructor Create(Parent: TPropertyEditor; AElement: Integer); reintroduce;
+    procedure UpdateOrdValue;
+  public
+    // ICustomPropertyMessage
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer;
+      InNameRect: Boolean; const ItemRect: TRect; var Handled: Boolean);
+   end;
+
   resourcestring
     sVTHeaderCategoryName = 'Header';
     sVTPaintingCategoryName = 'Custom painting';
@@ -292,10 +313,108 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TColumnOptionsProperty.GetProperties(Proc: TGetPropProc);
+var
+  I: integer;
+  E: IProperty;
+begin
+  with GetTypeData(GetTypeData(GetPropType)^.CompType^)^ do
+  begin
+    for I := MinValue to MaxValue do
+    begin
+      E := TVTColumnOptionsElementsProperty.Create(Self, I);
+      Proc(E);
+      E := nil;
+    end;
+  end;
+end;
+
+function TColumnOptionsProperty.GetValue: string;
+var
+  I : integer;
+  S: TIntegerSet;
+begin
+  Integer(S) := GetOrdValue;
+  Result := '';
+  for I := 0 to SizeOf(Integer) * 8 - 1 do
+    if I in S then
+      Result := Result + GetEnumName(TypeInfo(TVTColumnOption), I) + ',';
+  if Result.EndsWith(',') then
+    Delete(Result, Length(Result), 1);
+  Result := '[' + Result + ']';
+end;
+
+type
+  TPropertyEditorHack = class(TBasePropertyEditor)
+  protected
+    FDesigner: IDesigner;
+    FPropList: PInstPropList;
+    FPropCount: Integer;
+  end;
+
+constructor TVTColumnOptionsElementsProperty.Create(Parent: TPropertyEditor; AElement: Integer);
+var
+  MinValue: integer;
+begin
+  inherited Create(Parent, AElement);
+  MinValue := GetTypeData(GetTypeData(GetPropType).CompType^).MinValue;
+  FBit := AElement - MinValue;
+  SetLength(FPropList, Parent.PropCount);
+  for var I := 0 to High(FPropList) do
+    FPropList[I] := TPropertyEditorHack(Parent).FPropList^[I];
+end;
+
+procedure TVTColumnOptionsElementsProperty.UpdateOrdValue;
+var
+  S: TIntegerSet;
+  I: Integer;
+begin
+  // Changes only the specific bit in the set
+  for I := 0 to TPropertyEditorHack(Self).FPropCount - 1 do
+    begin
+      Integer(S) := GetOrdProp(FPropList[I].Instance, FPropList[I].PropInfo);
+      if FBit in S then
+        Exclude(S, FBit)
+      else
+        Include(S, FBit);
+      SetOrdProp(FPropList[I].Instance, FPropList[I].PropInfo, NativeInt(Integer(S)));
+    end;
+  Modified;
+end;
+
+procedure TVTColumnOptionsElementsProperty.MouseUp(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer; InNameRect: Boolean; const ItemRect: TRect;
+  var Handled: Boolean);
+begin
+  Handled := False;
+  if paReadOnly in GetAttributes then
+    Exit;
+  if PtInRect(CBRect(ItemRect), Point(x,y)) then
+  begin
+    UpdateOrdValue;
+    Handled := True;
+  end;
+end;
+
+// for sets, the VCLDesigner code always makes the property editor back to the
+// standard set property editor: VclEditors.TSetProperty, so we need to make
+// OUR set property's map to our editor implementation and not the standard
+// set property editor.
+function SetColumnOptionsPropertyMapper(Obj: TPersistent; PropInfo: PPropInfo): TPropertyEditorClass;
+begin
+  Result := nil;
+  if Assigned(Obj) and (Obj.ClassType <> TVirtualTreeColumn) then
+    Exit;
+  if (PropInfo.PropType^.Kind = tkSet) and (PropInfo.PropType^ = TypeInfo(TVTColumnOptions)) then
+      Result := TColumnOptionsProperty;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 procedure Register;
 
 begin
   RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree, TVTHeaderPopupMenu]);
+  RegisterPropertyMapper(SetColumnOptionsPropertyMapper);
   RegisterComponentEditor(TVirtualStringTree, TVirtualTreeEditor);
   RegisterComponentEditor(TVirtualDrawTree, TVirtualTreeEditor);
   RegisterPropertyEditor(TypeInfo(TClipboardFormats), nil, '', TClipboardFormatsProperty);
