@@ -5276,7 +5276,10 @@ begin
   begin
     FTextMargin := Value;
     if not (csLoading in ComponentState) then
+    begin
+      AutoScale();
       Invalidate;
+    end;
   end;
 end;
 
