@@ -1,7 +1,7 @@
-unit MVCPanel;
+Ôªøunit MVCPanel;
 
-{ (c) 2000 Marian Aldenhˆvel
-           Hainstraﬂe 8
+{ (c) 2000 Marian Aldenh√∂vel
+           Hainstra√üe 8
            53121 Bonn
            +49 228 6203366
            Fax: +49 228 624031
@@ -23,8 +23,9 @@ unit MVCPanel;
 
 interface
 
-uses Windows,Controls,Graphics,SysUtils,Classes,ExtCtrls,StdCtrls,
-     MVCTypes,VirtualTrees, VirtualTrees.BaseTree;
+uses
+  Winapi.Windows, Vcl.Controls, Vcl.Graphics, System.SysUtils, System.Classes,
+  Vcl.ExtCtrls, Vcl.StdCtrls, MVCTypes, VirtualTrees, VirtualTrees.BaseTree;
 
 type TMVCPanel=class(TCustomPanel)
                  private

@@ -1,7 +1,7 @@
-unit MVCTypes;
+ï»¿unit MVCTypes;
 
-{ (c) 2000 Marian Aldenhövel
-           Hainstraße 8
+{ (c) 2000 Marian AldenhÃ¶vel
+           HainstraÃŸe 8
            53121 Bonn
            +49 228 6203366
            Fax: +49 228 624031
@@ -54,9 +54,10 @@ unit MVCTypes;
 
 interface
 
-uses Windows,Messages,SysUtils,Graphics,VirtualTrees,Classes,StdCtrls,
-     Controls,Forms,ImgList, VirtualTrees.Types, VirtualTrees.BaseTree,
-     System.Types, System.UITypes;
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, Vcl.Graphics, VirtualTrees,
+  System.Classes, Vcl.StdCtrls, Vcl.Controls, Vcl.Forms, Vcl.ImgList,
+  VirtualTrees.Types, VirtualTrees.BaseTree, System.Types, System.UITypes;
 
 type { TMVCNode is the encapsulation of a single Node in the structure.
        This implementation is a bit bloated because in my project
@@ -568,7 +569,7 @@ begin
                63:Result:='Max.';
              else Result:='What?';
          end; (* of case Incidence *)
-    else Result:='What *"§ added columns without giving data?';
+    else Result:='What *"Â§ added columns without giving data?';
   end; (* of case aColumn *)
 end;
 
