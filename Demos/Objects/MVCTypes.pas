@@ -678,7 +678,7 @@ begin
                 else Brush.Color:=clBlack;
               SaveFontColor:=Font.Color;
               Font.Color:=Self.Color;
-              Windows.DrawFocusRect(Handle,ContentRect);
+              Winapi.Windows.DrawFocusRect(Handle,ContentRect);
               Font.Color:=SaveFontColor;
             end;
 
