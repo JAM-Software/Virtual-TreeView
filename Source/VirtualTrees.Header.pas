@@ -468,6 +468,9 @@ uses
   VirtualTrees.BaseAncestorVcl, // to eliminate H2443 about inline expanding
   VirtualTrees.DataObject;
 
+resourcestring
+  SConstraintsNotAllowed = 'Cannot set mininum constraints when there are no columns!';
+
 type
   TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
   TVirtualTreeColumnCracker = class(TVirtualTreeColumn);
@@ -1267,11 +1270,28 @@ procedure TVTHeader.FixedAreaConstraintsChanged(Sender : TObject);
 
 //This method gets called when FFixedAreaConstraints is changed.
 
+  function HasFixedColumns: LongBool;
+  var
+    I: Integer;
+  begin
+    Result := False;
+    for I := 0 to Columns.Count-1 do
+      begin
+        if coFixed in Columns[I].Options then
+          Exit(True);
+      end;
+  end;
+
 begin
   if Tree.HandleAllocated then
     RescaleHeader
   else
     Include(FStates, hsNeedScaling);
+  if (FixedAreaConstraints.MinWidthPercent > 0) and not HasFixedColumns then
+    begin
+      FixedAreaConstraints.FMinWidthPercent := 0;
+      raise EVirtualTreeError.CreateRes(PResStringRec(@SConstraintsNotAllowed));
+    end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2647,6 +2667,8 @@ begin
         if MaxDelta < Abs(ChangeBy) then
           if not ReduceConstraints then
             Break;
+        if ColCount = 0 then // Fixes #1236: infinite loop
+          Break;
       until (MaxDelta >= Abs(ChangeBy)) or not (hsScaling in FStates);
 
       if ColCount = 0 then
