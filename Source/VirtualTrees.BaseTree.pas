@@ -4100,7 +4100,7 @@ function TBaseVirtualTree.PackArray({*}const TheArray: TNodeArray; Count: Intege
 // The returned value is the number of remaining entries in the array, so the caller can reallocate (shorten)
 // the selection array if needed or -1 if nothing needs to be changed.
 
-{$IF Defined(CPUX64) or Defined(VT_FMX)}
+{$IF Defined(CPUX64) or not Defined(ASSEMBLER)}
 var
   Source, Dest: ^PVirtualNode;
   ConstOne: NativeInt;
