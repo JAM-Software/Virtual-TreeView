@@ -5321,9 +5321,11 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumns.GetSelectedCellColumns : TColumnsArray;
+var
+  LColumnIndex: TColumnIndex;
 begin
   Result := [];
-  var LColumnIndex := GetFirstColumn;
+  LColumnIndex := GetFirstColumn;
   if LColumnIndex = InvalidColumn then
     Exit;
   while LColumnIndex <> InvalidColumn do
@@ -5337,8 +5339,10 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumns.HasMulticellSelection: Boolean;
+var
+  LColumnIndex: TColumnIndex;
 begin
-  var LColumnIndex := GetFirstColumn;
+  LColumnIndex := GetFirstColumn;
   if LColumnIndex = InvalidColumn then
     Exit(False);
   while LColumnIndex <> InvalidColumn do

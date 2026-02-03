@@ -142,13 +142,17 @@ const
   KEYDOWN = Byte(1 shl 7);
 var
   LKeyboardState: TKeyboardState;
+  LTree: TVirtualStringTree;
+  LSavedCursorPos: TPoint;
+  LWPARAM: WPARAM;
+  LPos: LPARAM;
 begin
   // Click a new cell on the tree...
-  var LTree := FTree;
-  var LSavedCursorPos := Mouse.CursorPos;
+  LTree := FTree;
+  LSavedCursorPos := Mouse.CursorPos;
   try
     Mouse.CursorPos := ACursorPos;
-    var LWPARAM: WPARAM := MK_LBUTTON;
+    LWPARAM := MK_LBUTTON;
     if GetKeyboardState(LKeyboardState) then
       begin
         if (LKeyboardState[VK_SHIFT] and KEYDOWN <> 0) or
@@ -160,7 +164,7 @@ begin
            (LKeyboardState[VK_RCONTROL] and KEYDOWN <> 0) then
           LWPARAM := LWPARAM or MK_CONTROL;
       end;
-    var LPos := MakeLParam(ACursorPos.X, ACursorPos.Y);
+    LPos := MakeLParam(ACursorPos.X, ACursorPos.Y);
     LTree.Perform(WM_LBUTTONDOWN, LWPARAM, LPos);
     LTree.Perform(WM_LBUTTONUP, LWPARAM, LPos);
   finally
@@ -218,8 +222,10 @@ end;
 
 procedure TCellSelectionTests.FreeNodeEvent(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
+var
+  LRowData: TRowData;
 begin
-  var LRowData := Node.GetData<TRowData>;
+  LRowData := Node.GetData<TRowData>;
   LRowData.Clear;
 end;
 
@@ -241,13 +247,19 @@ begin
 end;
 
 procedure TCellSelectionTests.MouseClick(ANode: PVirtualNode);
+var
+  LTree: TVirtualStringTree;
+  LClientRect: TRect;
 begin
-  var LTree := FTree;
-  var LClientRect := LTree.GetDisplayRect(ANode, 0, True);
+  LTree := FTree;
+  LClientRect := LTree.GetDisplayRect(ANode, 0, True);
   MouseClick(LClientRect.TopLeft);
 end;
 
 procedure TCellSelectionTests.Setup;
+var
+  LTree: TVirtualStringTree;
+  LCol1, LCol2, LCol3, LCol4, LCol5: TVirtualTreeColumn;
 begin
 
   OpenClipboard;
@@ -264,7 +276,7 @@ begin
   except
   end;
 
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_TEXT));
   LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_OEMTEXT));
@@ -273,11 +285,11 @@ begin
   LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_HTML));
 
   // Add three columns
-  var LCol1 := LTree.Header.Columns.Add;
-  var LCol2 := LTree.Header.Columns.Add;
-  var LCol3 := LTree.Header.Columns.Add;
-  var LCol4 := LTree.Header.Columns.Add;
-  var LCol5 := LTree.Header.Columns.Add;
+  LCol1 := LTree.Header.Columns.Add;
+  LCol2 := LTree.Header.Columns.Add;
+  LCol3 := LTree.Header.Columns.Add;
+  LCol4 := LTree.Header.Columns.Add;
+  LCol5 := LTree.Header.Columns.Add;
   LCol1.Text := 'col1';
   LCol2.Text := 'col2';
   LCol3.Text := 'col3';
@@ -316,14 +328,18 @@ begin
 end;
 
 procedure TCellSelectionTests.TestClearCellSelection;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LSelectedCells: TVTCellArray;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
   // Select rectangle from n3, col2 to n2, col3
   LTree.SelectCells(n3, 1, n4, 2, False);
@@ -337,7 +353,7 @@ begin
   Assert.IsTrue(LTree.IsCellSelected(n4, 1), 'n4, col1 should be selected');
   Assert.IsTrue(LTree.IsCellSelected(n4, 2), 'n4, col2 should be selected');
 
-  var LSelectedCells := LTree.SelectedCells;
+  LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 4, 'Length of selected cells is not 4!');
 
   LTree.ClearCellSelection;
@@ -346,14 +362,18 @@ begin
 end;
 
 procedure TCellSelectionTests.TestClickUnselectsSelectedCells;
+var
+  LTree: TVirtualStringTree;
+  n1, n3, n4: PVirtualNode;
+  LSelCel1, LSelCel2: TVTCellArray;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
   // Select rectangle from n3, col2 to n2, col3
   LTree.SelectCells(n3, 1, n4, 2, False);
@@ -367,10 +387,10 @@ begin
   Assert.IsTrue(LTree.IsCellSelected(n4, 1), 'n4, col1 should be selected');
   Assert.IsTrue(LTree.IsCellSelected(n4, 2), 'n4, col2 should be selected');
 
-  var LSelCel1 := LTree.SelectedCells;
-  var n1 := FNode1;
+  LSelCel1 := LTree.SelectedCells;
+  n1 := FNode1;
   MouseClick(n1);
-  var LSelCel2 := LTree.SelectedCells;
+  LSelCel2 := LTree.SelectedCells;
 
   // Ensures the above cells are no longer selected
   Assert.IsFalse(LTree.IsCellSelected(n3, 1), 'n3, col1 should not be selected');
@@ -382,21 +402,26 @@ begin
 end;
 
 procedure TCellSelectionTests.TestCopyHTML1;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LText: string;
+  LTries: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
 // Occasional failure caused by clipboard copy issues, but this
 // is due to interaction of complex interaction of Windows, console and
 // DUnit testing, the failure is not seen in actual interacting applications
 
   // Select rectangle from n3, col2 to n4, col4
-  var LText := ''; var LTries := 0;
+  LText := ''; LTries := 0;
   repeat
     LTree.SelectCells(n3, 1, n4, 3, False);
     LTree.CopyToClipboard;
@@ -414,7 +439,7 @@ begin
       else
         raise;
     end;
-  until (LText <> '') and (LTries <= MaxTries);
+  until (LText <> '') or (LTries > MaxTries);
   Assert.IsTrue(LText = 'Version:1.0' + sLineBreak +
 'StartHTML:00000097' + sLineBreak +
 'EndHTML:00001737' + sLineBreak +
@@ -437,21 +462,26 @@ begin
 end;
 
 procedure TCellSelectionTests.TestCopyHTML2;
+var
+  LTree: TVirtualStringTree;
+  n3, n5: PVirtualNode;
+  LText: string;
+  LTries: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n5 := FNode5;
+  n3 := FNode3;
+  n5 := FNode5;
 
 // Occasional failure caused by clipboard copy issues, but this
 // is due to interaction of complex interaction of Windows, console and
 // DUnit testing, the failure is not seen in actual interacting applications
 
   // Select rectangle from n3, col2 to n5, col4
-  var LText := ''; var LTries := 0;
+  LText := ''; LTries := 0;
   repeat
     LTree.SelectCells(n3, 1, n5, 3, False);
     LTree.CopyToClipboard;
@@ -468,7 +498,7 @@ begin
         raise;
     end;
     Inc(LTries);
-  until (LText <> '') and (LTries <= MaxTries);
+  until (LText <> '') or (LTries > MaxTries);
   Assert.IsTrue(LText =
 'Version:1.0' + sLineBreak +
 'StartHTML:00000097' + sLineBreak +
@@ -494,21 +524,26 @@ begin
 end;
 
 procedure TCellSelectionTests.TestCopyPlainText1;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LText: string;
+  LTries: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
 // Occasional failure caused by clipboard copy issues, but this
 // is due to interaction of complex interaction of Windows, console and
 // DUnit testing, the failure is not seen in actual interacting applications
 
   // Select rectangle from n3, col2 to n4, col4
-  var LText := ''; var LTries := 0;
+  LText := ''; LTries := 0;
   repeat
     LTree.SelectCells(n3, 1, n4, 3, False);
     LTree.CopyToClipboard;
@@ -526,7 +561,7 @@ begin
         raise;
     end;
     Inc(LTries);
-  until (LText <> '') and (LTries <= MaxTries);
+  until (LText <> '') or (LTries > MaxTries);
   Assert.IsTrue(LText = 'col2	col3	col4' + sLineBreak +
 '3b	3c	3d' + sLineBreak +
 '4b	4c	4d' + sLineBreak +
@@ -534,21 +569,26 @@ begin
 end;
 
 procedure TCellSelectionTests.TestCopyPlainText2;
+var
+  LTree: TVirtualStringTree;
+  n3, n5: PVirtualNode;
+  LText: string;
+  LTries: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n5 := FNode5;
+  n3 := FNode3;
+  n5 := FNode5;
 
 // Occasional failure caused by clipboard copy issues, but this
 // is due to interaction of complex interaction of Windows, console and
 // DUnit testing, the failure is not seen in actual interacting applications
 
   // Select rectangle from n3, col2 to n5, col4
-  var LText := ''; var LTries := 0;
+  LText := ''; LTries := 0;
   repeat
     LTree.SelectCells(n3, 1, n5, 3, False);
     LTree.CopyToClipboard;
@@ -575,21 +615,26 @@ begin
 end;
 
 procedure TCellSelectionTests.TestCopyRTF1;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LText: string;
+  LTries: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
 // Occasional failure caused by clipboard copy issues, but this
 // is due to interaction of complex interaction of Windows, console and
 // DUnit testing, the failure is not seen in actual interacting applications
 
   // Select rectangle from n3, col2 to n4, col4
-  var LText := ''; var LTries := 0;
+  LText := ''; LTries := 0;
   repeat
     LTree.SelectCells(n3, 1, n4, 3, False);
     LTree.CopyToClipboard;
@@ -607,7 +652,7 @@ begin
         raise;
     end;
     Inc(LTries);
-  until (LText <> '') and (LTries <= MaxTries);
+  until (LText <> '') or (LTries > MaxTries);
   Assert.IsTrue(LText = '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl{\f0 Tahoma;}}{\colortbl;\red0\green0\blue0;}\paperw16840\paperh11907\margl720\margr720\margt720\margb720\uc1\trowd\trgaph70\cellx750\cellx1500\cellx2250\pard\intbl\ql\f0\cf1\fs16 \u99\''3f\u111\''3f\u108\''3' +
 'f\u50\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u51\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u52\''3f\cell\row\pard\intbl \u51\''3f\u98\''3f\cell\pard\intbl \u51\''3f\u99\''3f\cell\pard\intbl \u51\''3f\u100\''3f\cell\row' + sLineBreak +
 '\pard\intbl \u52\''3f\u98\''3f\cell\pard\intbl \u52\''3f\u99\''3f\cell\pard\intbl \u52\''3f\u100\''3f\cell\row' + sLineBreak +
@@ -615,21 +660,26 @@ begin
 end;
 
 procedure TCellSelectionTests.TestCopyRTF2;
+var
+  LTree: TVirtualStringTree;
+  n3, n5: PVirtualNode;
+  LText: string;
+  LTries: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n5 := FNode5;
+  n3 := FNode3;
+  n5 := FNode5;
 
 // Occasional failure caused by clipboard copy issues, but this
 // is due to interaction of complex interaction of Windows, console and
 // DUnit testing, the failure is not seen in actual interacting applications
 
   // Select rectangle from n3, col2 to n5, col4
-  var LText := ''; var LTries := 0;
+  LText := ''; LTries := 0;
   repeat
     LTree.SelectCells(n3, 1, n5, 3, False);
     LTree.CopyToClipboard;
@@ -648,7 +698,7 @@ begin
     end;
     Inc(LTries);
     // End unnecessary stuff
-  until (LText <> '') and (LTries <= MaxTries);
+  until (LText <> '') or (LTries > MaxTries);
   Assert.IsTrue(LText = '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl{\f0 Tahoma;}}{\colortbl;\red0\green0\blue0;}\paperw16840\paperh11907\margl720\margr720\margt720\margb720\uc1\trowd\trgaph70\cellx750\cellx1500\cellx2250\pard\intbl\ql\f0\cf1\fs16 \u99\''3f\u111\''3f\u108\''3' +
 'f\u50\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u51\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u52\''3f\cell\row\pard\intbl \u51\''3f\u98\''3f\cell\pard\intbl \u51\''3f\u99\''3f\cell\pard\intbl \u51\''3f\u100\''3f\cell\row' + sLineBreak +
 '\pard\intbl \u52\''3f\u98\''3f\cell\pard\intbl \u52\''3f\u99\''3f\cell\pard\intbl \u52\''3f\u100\''3f\cell\row' + sLineBreak +
@@ -657,15 +707,21 @@ begin
 end;
 
 procedure TCellSelectionTests.TestSelectCellsRectangular;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LNodes: TArray<PVirtualNode>;
+  LNode: PVirtualNode;
+  LColumn: Integer;
 begin
 
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
   // Select rectangle from n3, col2 to n2, col3
   LTree.SelectCells(n3, 1, n4, 2, False);
@@ -685,21 +741,24 @@ begin
   Assert.IsFalse(LTree.IsCellSelected(n4, 0), 'n4, col0 should not be selected');
   Assert.IsFalse(LTree.IsCellSelected(n4, 3), 'n4, col3 should not be selected');
 
-  var LNodes := [FNode1, FNode2, FNode5, FNode6, FNode7, FNode8];
-  for var LNode in LNodes do
-    for var LColumn := 0 to 3 do
+  LNodes := [FNode1, FNode2, FNode5, FNode6, FNode7, FNode8];
+  for LNode in LNodes do
+    for LColumn := 0 to 3 do
       Assert.IsFalse(LTree.IsCellSelected(LNode, LColumn),
         Format('Row: $%p Column: %d should not be selected', [Pointer(LNode), LColumn]));
 end;
 
 procedure TCellSelectionTests.TestSelectMultipleCellsFailWithoutExtendedFocus;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
 begin
-  var LTree := FTree;
+  LTree := FTree;
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
     [toExtendedFocus];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
   // Select rectangle from n3, col2 to n2, col3
   LTree.SelectCells(n3, 1, n4, 2, False);
@@ -712,13 +771,16 @@ begin
 end;
 
 procedure TCellSelectionTests.TestSelectMultipleCellsFailWithoutMultiSelect;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
 begin
-  var LTree := FTree;
+  LTree := FTree;
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
     [toMultiSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
   // Select rectangle from n3, col2 to n2, col3
   LTree.SelectCells(n3, 1, n4, 2, False);
@@ -731,23 +793,30 @@ begin
 end;
 
 procedure TCellSelectionTests.TestSelectSingleCell;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LSelectedCells: TVTCellArray;
+  LNodes: TArray<PVirtualNode>;
+  LNode: PVirtualNode;
+  LColumn: Integer;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect];
 
-  var n3 := FNode3;
+  n3 := FNode3;
   LTree.SelectCells(n3, 1, n3, 1, False);
 
   Assert.IsTrue(LTree.IsCellSelected(n3, 1), 'n3, col1 should be selected');
-  var LSelectedCells := LTree.SelectedCells;
+  LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 1, 'Should only have 1 cell selected');
   Assert.IsTrue((LSelectedCells[0].Node = n3) and (LSelectedCells[0].Column = 1));
 
-  var LNodes := [FNode1, FNode2, n3, FNode4, FNode5, FNode6, FNode7, FNode8];
-  for var LNode in LNodes do
-    for var LColumn := 0 to 3 do
+  LNodes := [FNode1, FNode2, n3, FNode4, FNode5, FNode6, FNode7, FNode8];
+  for LNode in LNodes do
+    for LColumn := 0 to 3 do
     begin
       if (LNode = n3) and (LColumn = 1) then
         Continue;
@@ -757,19 +826,23 @@ begin
 end;
 
 procedure TCellSelectionTests.TestShiftClickMultipleCells;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LSelectedCells, LNewSelectedCells: TVTCellArray;
 begin
-  var LTree := FTree;
+  LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
-  var n3 := FNode3;
-  var n4 := FNode4;
+  n3 := FNode3;
+  n4 := FNode4;
 
   MouseClick(n3);
-  var LSelectedCells := LTree.SelectedCells;
+  LSelectedCells := LTree.SelectedCells;
   ShiftMouseClick(n4);
-  var LNewSelectedCells := LTree.SelectedCells;
+  LNewSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LNewSelectedCells) = 2);
   Assert.IsTrue((LNewSelectedCells[0].Node = n3) and (LNewSelectedCells[0].Column = 0));
   Assert.IsTrue((LNewSelectedCells[1].Node = n4) and (LNewSelectedCells[0].Column = 0));
@@ -778,10 +851,12 @@ end;
 procedure TCellSelectionTests.VirtualStringTree1GetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
   var CellText: string);
+var
+  LData: TRowData;
 begin
   if not Assigned(Node) then
     Exit;
-  var LData := Node.GetData<TRowData>;
+  LData := Node.GetData<TRowData>;
   case Column of
     col0: begin
       CellText := LData.col1;
