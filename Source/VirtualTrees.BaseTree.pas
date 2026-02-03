@@ -6922,6 +6922,8 @@ var
 
   //--------------- end local functions ---------------------------------------
 
+var
+  SelectedCell, OldCell: TVTCell;
 begin
   // Make form key preview work and let application modify the key if it wants this.
   inherited;
@@ -7353,8 +7355,8 @@ begin
         if (ssShift in Shift) and LCellSelectionEnabled then
         begin
           // multicell support / select multiple cells
-          var SelectedCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
-          var OldCell := FCellRangeAnchor;
+          SelectedCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
+          OldCell := FCellRangeAnchor;
           InternalSelectCells(OldCell, SelectedCell, True);
         end;
 
@@ -12644,6 +12646,9 @@ var
 
   //--------------- end local functions ---------------------------------------
 
+var
+  CellClickHandled: Boolean;
+  ClickedCell: TVTCell;
 begin
   if tsPanning in FStates then
   begin
@@ -12916,7 +12921,7 @@ begin
       HandleClickSelection(LastFocused, HitInfo.HitNode, ShiftState, AutoDrag)
     else
     begin
-      var CellClickHandled: Boolean := False;
+      CellClickHandled := False;
       if ShiftEmpty then
         FRangeAnchor := HitInfo.HitNode;
 
@@ -12924,7 +12929,6 @@ begin
       if ShiftEmpty and not (toFullRowSelect in FOptions.SelectionOptions) and Assigned(HitInfo.HitNode) and (Column > NoColumn) then
       begin
         InternalClearCellSelection;
-        var ClickedCell: TVTCell;
         ClickedCell.Node := HitInfo.HitNode;
         ClickedCell.Column := Column;
         AddToCellSelection(ClickedCell, True);
@@ -13718,11 +13722,14 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.MarkCutCopyCells;
+var
+  I: Integer;
+  LCell: TVTCell;
 begin
   // Mark that the node is included in cut/copy for multicell
-  for var I := 0 to FSelectedCellCount - 1 do
+  for I := 0 to FSelectedCellCount - 1 do
     begin
-      var LCell := FSelectedCells[I];
+      LCell := FSelectedCells[I];
       Include(LCell.Node.States, vsCutOrCopy);
     end;
 end;
@@ -15476,11 +15483,12 @@ end;
 procedure TBaseVirtualTree.InternalClearCellSelection;
 var
   i: Integer;
+  LColumnIndex: TColumnIndex;
 begin
   // Invalidate all previously selected cells so their selection highlight is erased
   for i := 0 to FSelectedCellCount - 1 do
   begin
-    var LColumnIndex := FSelectedCells[i].Column;
+    LColumnIndex := FSelectedCells[i].Column;
     FHeader.Columns[LColumnIndex].Options :=
       FHeader.Columns[LColumnIndex].Options - [coMulticellSelected];
 

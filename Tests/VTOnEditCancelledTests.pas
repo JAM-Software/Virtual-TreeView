@@ -55,55 +55,69 @@ begin
 end;
 
 procedure TVTOnEditCancelledTests.TestAddColumn;
+var
+  LBeforeColumnCount, LAfterColumnCount: Integer;
 begin
-  var LBeforeColumnCount := fTree.Header.Columns.Count;
+  LBeforeColumnCount := fTree.Header.Columns.Count;
   fTree.Header.Columns.Add;
-  var LAfterColumnCount := fTree.Header.Columns.Count;
+  LAfterColumnCount := fTree.Header.Columns.Count;
   Assert.AreEqual<Integer>(LAfterColumnCount - LBeforeColumnCount, 1);
 end;
 
 procedure TVTOnEditCancelledTests.TestEditNode;
+var
+  LNode: PVirtualNode;
+  LEditNodeResult: Boolean;
+  LAfterStates: TVirtualTreeStates;
 begin
   fForm.Show;
   fTree.TreeOptions.MiscOptions := fTree.TreeOptions.MiscOptions + [toEditable];
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
-  var LNode := fTree.AddChild(fTree.RootNode);
-  var LEditNodeResult := fTree.EditNode(LNode, 0);
-  var LAfterStates := fTree.TreeStates;
+  LNode := fTree.AddChild(fTree.RootNode);
+  LEditNodeResult := fTree.EditNode(LNode, 0);
+  LAfterStates := fTree.TreeStates;
   Assert.AreEqual<TVirtualTreeStates>(LAfterStates * [tsEditing], [tsEditing]);
   Assert.IsTrue(LEditNodeResult);
 end;
 
 procedure TVTOnEditCancelledTests.TestEditNodeFail;
+var
+  LNode: PVirtualNode;
+  LEditNodeResult: Boolean;
 begin
   fForm.Show;
   fTree.TreeOptions.MiscOptions := fTree.TreeOptions.MiscOptions - [toEditable];
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
-  var LNode := fTree.AddChild(fTree.RootNode);
-  var LEditNodeResult := fTree.EditNode(LNode, 0);
+  LNode := fTree.AddChild(fTree.RootNode);
+  LEditNodeResult := fTree.EditNode(LNode, 0);
   Assert.IsFalse(LEditNodeResult);
 end;
 
 procedure TVTOnEditCancelledTests.TestEditNodeReadOnly;
+var
+  LNode: PVirtualNode;
+  LEditNodeResult: Boolean;
 begin
   fForm.Show;
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
-  var LNode := fTree.AddChild(fTree.RootNode);
+  LNode := fTree.AddChild(fTree.RootNode);
   fTree.TreeOptions.MiscOptions := fTree.TreeOptions.MiscOptions + [toReadOnly];
-  var LEditNodeResult := fTree.EditNode(LNode, 0);
+  LEditNodeResult := fTree.EditNode(LNode, 0);
   Assert.IsFalse(LEditNodeResult);
 end;
 
 procedure TVTOnEditCancelledTests.TestOnEditCancelled;
+var
+  LNode: PVirtualNode;
 begin
   fForm.Show;
   FEditCancelled := False;
   fTree.OnEditCancelled := TreeEditCancelled;
   fTree.TreeOptions.MiscOptions := fTree.TreeOptions.MiscOptions + [toEditable];
-  var LNode := fTree.AddChild(fTree.RootNode);
+  LNode := fTree.AddChild(fTree.RootNode);
   fTree.Parent := fForm;
   fTree.Header.Columns.Add;
   fTree.EditNode(LNode, 0);
