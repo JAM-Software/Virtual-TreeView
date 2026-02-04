@@ -355,12 +355,13 @@ type
 constructor TVTColumnOptionsElementsProperty.Create(Parent: TPropertyEditor; AElement: Integer);
 var
   MinValue: integer;
+  I: Integer;
 begin
   inherited Create(Parent, AElement);
   MinValue := GetTypeData(GetTypeData(GetPropType).CompType^).MinValue;
   FBit := AElement - MinValue;
   SetLength(FPropList, Parent.PropCount);
-  for var I := 0 to High(FPropList) do
+  for I := 0 to High(FPropList) do
     FPropList[I] := TPropertyEditorHack(Parent).FPropList^[I];
 end;
 
