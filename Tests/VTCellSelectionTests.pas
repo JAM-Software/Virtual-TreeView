@@ -107,6 +107,12 @@ type
     [Test]
     procedure TestOnChange;
 
+    /// <summary>
+    /// This tests that OnChange is fired when an empty area is clicked
+    /// </summary>
+    [Test]
+    procedure TestEmptyAreaOnChange;
+
   end;
 
 implementation
@@ -786,6 +792,76 @@ begin
   LPlainText := FRichEdit.Text;
   LCompareSuccessful := LText = LExpected;
   Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
+end;
+
+procedure TCellSelectionTests.TestEmptyAreaOnChange;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LOnChangeFired: LongBool;
+  I, LColumnCount, LMaxWidth: Integer;
+  Rects: TArray<TRect>;
+  LargestRect: TRect;
+  LTextOnly, LUnclipped, LApplyCellContentMargin: Boolean;
+  LastNode, LHitNode: PVirtualNode;
+  LEmptyArea: TPoint;
+  LHitInfo: THitInfo;
+begin
+  LTree := FTree;
+  n3 := FNode3;
+
+
+  // Calculate the largest client area for the VirtualTree and set it
+  LColumnCount := LTree.Header.Columns.Count;
+  LMaxWidth := 0;
+  for I := 0 to LColumnCount-1 do
+    begin
+      if LTree.Header.Columns[I].Width > LMaxWidth then
+        LMaxWidth := LTree.Header.Columns[I].Width;
+    end;
+  I := 0;
+  for LTextOnly := False to True do
+    for LUnclipped := False to True do
+      for LApplyCellContentMargin := False to True do
+      begin
+        SetLength(Rects, I+1);
+        Rects[I] := LTree.GetDisplayRect(n3, LColumnCount-1, LTextOnly, LUnclipped, LApplyCellContentMargin);
+        Inc(I);
+      end;
+  LargestRect := Rects[0];
+  for I := 1 to High(Rects) do
+    begin
+      LargestRect := TRect.Union(LargestRect, Rects[I]);
+    end;
+
+  LastNode := LTree.GetLastVisible;
+
+  LTree.ClientHeight := LargestRect.BottomRight.Y + (LastNode.NodeHeight * 2);
+  LTree.ClientWidth :=  LargestRect.BottomRight.X + LMaxWidth;
+
+  // This should be an empty area, beyond any visible nodes
+  LEmptyArea := Point(LargestRect.BottomRight.X + LMaxWidth, LargestRect.BottomRight.Y + LastNode.NodeHeight);
+
+  // At this point, there should be no nodes selected
+  Assert.IsTrue(LTree.SelectedCount = 0);
+  LTree.MouseClick(n3);
+  // At this point, a node should be selected
+  Assert.IsTrue(LTree.SelectedCount = 1);
+
+  LOnChangeFired := False;
+  LHitNode := Pointer($FFFFFFFF);
+  AssignChange(procedure (Sender: TBaseVirtualTree; ANode: PVirtualNode)
+  begin
+    LOnChangeFired := True;
+    LHitNode := ANode;
+  end);
+
+  LTree.GetHitTestInfoAt(LEmptyArea.X, LEmptyArea.Y, True, LHitInfo);
+  LTree.MouseClick(LEmptyArea);
+
+  Assert.IsTrue(hiNowhere in LHitInfo.HitPositions, 'Mouse click is not in an unpopulated/empty area!');
+  Assert.IsTrue(LOnChangeFired, 'OnChange event not fired!');
+  Assert.IsTrue(LHitNode = nil, 'Node is not nil!');
 end;
 
 procedure TCellSelectionTests.TestOnChange;

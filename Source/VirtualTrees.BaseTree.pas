@@ -1905,10 +1905,9 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ClearCellSelection;
-
 begin
   InternalClearCellSelection;
-  DoChangeCell([]);
+  ChangeCell([]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12813,7 +12812,7 @@ begin
     (LCellSelectionEnabled and (HitInfo.HitColumn > NoColumn));
 
   IsAnyHit := IsLabelHit or IsCellHit;
-  MultiSelect := LCellSelectionEnabled;
+  MultiSelect := toMultiSelect in FOptions.SelectionOptions;
   ShiftEmpty := ShiftState = [];
 
   // Early anchor set for plain clicks helps avoid race where
