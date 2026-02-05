@@ -472,6 +472,7 @@ type
     property OnCanSplitterResizeHeader;
     property OnCanSplitterResizeNode;
     property OnChange;
+    property OnChangeCell;
     property OnChecked;
     property OnChecking;
     property OnClick;
