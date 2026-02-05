@@ -7,7 +7,7 @@ interface
 
 uses
   DUnitX.TestFramework, Vcl.Forms, VirtualTrees, System.Types,
-  Winapi.Messages, Winapi.Windows;
+  Winapi.Messages, Winapi.Windows, Vcl.ComCtrls;
 
 type
 
@@ -15,6 +15,9 @@ type
   TCellSelectionTests = class(TObject)
   strict private
   const MaxTries = 10;
+  type
+    TVTChangeEventProc = reference to procedure(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    TVTChangeCellEventProc = reference to procedure(Sender: TBaseVirtualTree; const Cells: TVTCellArray);
   var
     FTree: TVirtualStringTree;
     FForm: TForm;
@@ -26,13 +29,16 @@ type
     FNode6,
     FNode7,
     FNode8: PVirtualNode;
+    FRichEdit: TRichEdit;
 
-    procedure MouseClick(ACursorPos: TPoint); overload;
-    procedure MouseClick(ANode: PVirtualNode); overload;
-    procedure ShiftMouseClick(ANode: PVirtualNode); overload;
+    FChangeEventProc: TVTChangeEventProc;
+    FChangeCellEventProc: TVTChangeCellEventProc;
 
+    procedure AssignChange(const AChangeEventProc: TVTChangeEventProc); overload;
+    procedure AssignChange(const AChangeCellEventProc: TVTChangeCellEventProc); overload;
+    procedure DoChangeEvent(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure DoChangeCellEvent(Sender: TBaseVirtualTree; const Cells: TVTCellArray);
     procedure FreeNodeEvent(Sender: TBaseVirtualTree; Node: PVirtualNode);
-
   private
     FClipboardAllocated: LongBool;
     FClipboardWindow: HWND;
@@ -51,10 +57,16 @@ type
     procedure TearDown;
 
     [Test]
+    procedure TestChangeCellEvent;
+
+    [Test]
     procedure TestSelectSingleCell;
 
     [Test]
     procedure TestShiftClickMultipleCells;
+
+    [Test]
+    procedure TestClear;
 
     [Test]
     procedure TestClearCellSelection;
@@ -71,23 +83,29 @@ type
     [Test]
     procedure TestClickUnselectsSelectedCells;
 
-    [Test, RepeatTest(10)]
+    [Test]
     procedure TestCopyHTML1;
 
-    [Test, RepeatTest(10)]
+    [Test]
     procedure TestCopyHTML2;
 
-    [Test, RepeatTest(10)]
+    [Test]
     procedure TestCopyPlainText1;
 
-    [Test, RepeatTest(10)]
+    [Test]
     procedure TestCopyPlainText2;
 
-    [Test, RepeatTest(10)]
+    [Test]
     procedure TestCopyRTF1;
 
-    [Test, RepeatTest(10)]
+    [Test]
     procedure TestCopyRTF2;
+
+    /// <summary>
+    /// This tests that OnChange is fired when a node is selected
+    /// </summary>
+    [Test]
+    procedure TestOnChange;
 
   end;
 
@@ -96,7 +114,7 @@ implementation
 uses
   System.SysUtils, Vcl.Controls, VirtualTrees.Types,
   Vcl.Clipbrd, VirtualTrees.ClipBoard,
-  System.Classes, Winapi.ActiveX, Vcl.ClipboardHelper;
+  System.Classes, Winapi.ActiveX, Vcl.ClipboardHelper, VirtualTrees.MouseUtils;
 
 type
   TRowData = record
@@ -137,41 +155,6 @@ const
 
 { TCellSelectionTests }
 
-procedure TCellSelectionTests.MouseClick(ACursorPos: TPoint);
-const
-  KEYDOWN = Byte(1 shl 7);
-var
-  LKeyboardState: TKeyboardState;
-  LTree: TVirtualStringTree;
-  LSavedCursorPos: TPoint;
-  LWPARAM: WPARAM;
-  LPos: LPARAM;
-begin
-  // Click a new cell on the tree...
-  LTree := FTree;
-  LSavedCursorPos := Mouse.CursorPos;
-  try
-    Mouse.CursorPos := ACursorPos;
-    LWPARAM := MK_LBUTTON;
-    if GetKeyboardState(LKeyboardState) then
-      begin
-        if (LKeyboardState[VK_SHIFT] and KEYDOWN <> 0) or
-           (LKeyboardState[VK_LSHIFT] and KEYDOWN <> 0) or
-           (LKeyboardState[VK_RSHIFT] and KEYDOWN <> 0) then
-          LWPARAM := LWPARAM or MK_SHIFT;
-        if (LKeyboardState[VK_CONTROL] and KEYDOWN <> 0) or
-           (LKeyboardState[VK_LCONTROL] and KEYDOWN <> 0) or
-           (LKeyboardState[VK_RCONTROL] and KEYDOWN <> 0) then
-          LWPARAM := LWPARAM or MK_CONTROL;
-      end;
-    LPos := MakeLParam(ACursorPos.X, ACursorPos.Y);
-    LTree.Perform(WM_LBUTTONDOWN, LWPARAM, LPos);
-    LTree.Perform(WM_LBUTTONUP, LWPARAM, LPos);
-  finally
-    Mouse.CursorPos := LSavedCursorPos;
-  end;
-end;
-
 procedure TCellSelectionTests.CloseClipboard;
 begin
   if FClipboardAllocated then
@@ -186,9 +169,17 @@ end;
 // Hacks to make OLE clipboard and VCL clipboard compatible
 // within DUnit test framework
 procedure TCellSelectionTests.CompleteClipboardCopy;
+var
+  LResult: HRESULT;
+  LErrorMsg: string;
 begin
   Application.ProcessMessages;
   FTree.FlushClipboard;
+  LResult := Winapi.ActiveX.OleFlushClipboard;
+  if Failed(LResult) then
+    begin
+      LErrorMsg := SysErrorMessage(GetLastError);
+    end;
   Application.ProcessMessages;
 end;
 
@@ -220,6 +211,31 @@ begin
     Result := DefWindowProc(FClipboardWindow, Msg, wParam, lParam);
 end;
 
+procedure TCellSelectionTests.AssignChange(
+  const AChangeEventProc: TVTChangeEventProc);
+begin
+  FChangeEventProc := AChangeEventProc;
+  FTree.OnChange := DoChangeEvent;
+end;
+
+procedure TCellSelectionTests.AssignChange(const AChangeCellEventProc: TVTChangeCellEventProc);
+begin
+  FChangeCellEventProc := AChangeCellEventProc;
+  FTree.OnChangeCell := DoChangeCellEvent;
+end;
+
+procedure TCellSelectionTests.DoChangeEvent(Sender: TBaseVirtualTree; Node: PVirtualNode);
+begin
+  if Assigned(FChangeEventProc) then
+    FChangeEventProc(Sender, Node);
+end;
+
+procedure TCellSelectionTests.DoChangeCellEvent(Sender: TBaseVirtualTree; const Cells: TVTCellArray);
+begin
+  if Assigned(FChangeCellEventProc) then
+    FChangeCellEventProc(Sender, Cells);
+end;
+
 procedure TCellSelectionTests.FreeNodeEvent(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
@@ -231,31 +247,6 @@ end;
 
 // End hacks
 
-procedure TCellSelectionTests.ShiftMouseClick(ANode: PVirtualNode);
-var
-  LOrigKBState, LNewKBState: TKeyboardState;
-begin
-  GetKeyboardState(LOrigKBState);
-  LNewKBState := LOrigKBState;
-  LNewKBState[VK_SHIFT] := LOrigKBState[VK_SHIFT] or (1 shl 7);
-  SetKeyboardState(LNewKBState);
-  try
-    MouseClick(ANode);
-  finally
-    SetKeyboardState(LOrigKBState);
-  end;
-end;
-
-procedure TCellSelectionTests.MouseClick(ANode: PVirtualNode);
-var
-  LTree: TVirtualStringTree;
-  LClientRect: TRect;
-begin
-  LTree := FTree;
-  LClientRect := LTree.GetDisplayRect(ANode, 0, True);
-  MouseClick(LClientRect.TopLeft);
-end;
-
 procedure TCellSelectionTests.Setup;
 var
   LTree: TVirtualStringTree;
@@ -265,18 +256,21 @@ begin
   OpenClipboard;
 
   FForm := TForm.Create(nil);
+  FRichEdit := TRichEdit.Create(FForm);
+  FForm.InsertControl(FRichEdit);
   FTree := TVirtualStringTree.Create(FForm);
-  FTree.Parent := FForm;
-  FTree.Align := alClient;
-  FTree.OnFreeNode := FreeNodeEvent;
-  FTree.OnGetText := VirtualStringTree1GetText;
+  LTree := FTree;
+  LTree.Parent := FForm;
+  LTree.Align := alClient;
+  LTree.OnFreeNode := FreeNodeEvent;
+  LTree.OnGetText := VirtualStringTree1GetText;
+  LTree.TreeStates := LTree.TreeStates + [tsUseCache];
 
   try
+    OleSetClipboard(nil);
     Clipboard.AsText := '';
   except
   end;
-
-  LTree := FTree;
 
   LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_TEXT));
   LTree.ClipboardFormats.Add(GetVTClipboardFormatDescription(CF_OEMTEXT));
@@ -324,7 +318,68 @@ end;
 procedure TCellSelectionTests.TearDown;
 begin
   CloseClipboard;
+  OleSetClipboard(nil);
   FreeAndNil(FForm);
+end;
+
+procedure TCellSelectionTests.TestChangeCellEvent;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LChangeCellFiredWhenAdding, LChangeCellFiredWhenRemoving: LongBool;
+begin
+  LTree := FTree;
+
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toExtendedFocus, toMultiSelect];
+
+  LChangeCellFiredWhenAdding := False;
+  AssignChange(procedure (Sender: TBaseVirtualTree; const Cells: TVTCellArray)
+  begin
+    LChangeCellFiredWhenAdding := True;
+  end);
+
+  n3 := FNode3;
+  LTree.SelectCells(n3, 1, n3, 1, False);
+
+  Assert.IsTrue(LChangeCellFiredWhenAdding, 'OnChangeCell event not fired when adding!');
+
+  LChangeCellFiredWhenRemoving := False;
+  AssignChange(procedure (Sender: TBaseVirtualTree; const Cells: TVTCellArray)
+  begin
+    LChangeCellFiredWhenRemoving := True;
+  end);
+  LTree.ClearCellSelection;
+
+  Assert.IsTrue(LChangeCellFiredWhenRemoving, 'OnChangeCell event not fired when removing!');
+
+end;
+
+procedure TCellSelectionTests.TestClear;
+var
+  LTree: TVirtualStringTree;
+  n3, n4: PVirtualNode;
+  LSelectedCells: TVTCellArray;
+begin
+  LTree := FTree;
+
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+
+  n3 := FNode3;
+  n4 := FNode4;
+
+  // Select rectangle from n3, col2 to n2, col3
+  LTree.SelectCells(n3, 1, n4, 2, False);
+  LSelectedCells := LTree.SelectedCells;
+
+  // How long is not important here, other tests in this suite checks it.
+  Assert.IsTrue(Length(LSelectedCells) > 0);
+
+  LTree.Clear;
+
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 0, 'Selected cells are not cleared!');
 end;
 
 procedure TCellSelectionTests.TestClearCellSelection;
@@ -389,7 +444,7 @@ begin
 
   LSelCel1 := LTree.SelectedCells;
   n1 := FNode1;
-  MouseClick(n1);
+  LTree.MouseClick(n1);
   LSelCel2 := LTree.SelectedCells;
 
   // Ensures the above cells are no longer selected
@@ -405,10 +460,13 @@ procedure TCellSelectionTests.TestCopyHTML1;
 var
   LTree: TVirtualStringTree;
   n3, n4: PVirtualNode;
-  LText: string;
+  LText, LExpected: string;
   LTries: Integer;
+  LCompareSuccessful: LongBool;
 begin
   LTree := FTree;
+  LTree.Font.Name := 'Tahoma';
+  LTree.Font.Size := 8;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
@@ -436,39 +494,38 @@ begin
     except
       // Clipboard exception is ok, anything else is not
       on EClipboardException do
+      begin
+        Clipboard.Close;
+      end;
       else
         raise;
     end;
+    // End unnecessary stuff
   until (LText <> '') or (LTries > MaxTries);
-  Assert.IsTrue(LText = 'Version:1.0' + sLineBreak +
-'StartHTML:00000097' + sLineBreak +
-'EndHTML:00001737' + sLineBreak +
-'StartFragment:00000269' + sLineBreak +
-'EndFragment:00001705' + sLineBreak +
-'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head><META http-equiv=Content-Type content="text/html; charset=utf-8"></head><body><!--StartFragment--><META http-equiv="Content-Type" content="text/html; charset=utf-8"><style type="tex' +
-'t/css">' + sLineBreak +
-'.default{font-family: ''Tahoma''; font-size: 8pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}' + sLineBreak +
-'.header{font-family: ''Tahoma''; font-size: 8pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}' + sLineBreak +
-'.noborder{border-style: none;padding-left: 4px; padding-right: 4px;}' + sLineBreak +
-'.normalborder {vertical-align: top; border-right: none; border-left:none; border-top:none; border-bottom: none;border-width: thin; border-style: dotted;padding-left: 4px; padding-right: 4px;}</style>' + sLineBreak +
-'<table class="default" style="border-collapse: collapse;" bgcolor=#FFFFFF  border="1" frame=box cellspacing="0">' + sLineBreak +
-'<tr class="header" style="padding-left: 4px; padding-right: 4px;">' + sLineBreak +
-'<th height="19px" align=left bgcolor=#F0F0F0 width="50px">col2</th><th height="19px" align=left bgcolor=#F0F0F0 width="50px">col3</th><th height="19px" align=left bgcolor=#F0F0F0 width="50px">col4</th></tr>' + sLineBreak +
-' <tr class="default">' + sLineBreak +
-' <td class="normalborder"  height="18px" align=left>3b</td> <td class="normalborder"  height="18px" align=left>3c</td> <td class="normalborder"  height="18px" align=left>3d</td> </tr>' + sLineBreak +
-' <tr class="default">' + sLineBreak +
-' <td class="normalborder"  height="18px" align=left>4b</td> <td class="normalborder"  height="18px" align=left>4c</td> <td class="normalborder"  height="18px" align=left>4d</td> </tr>' + sLineBreak +
-'</table><!--EndFragment--></body></html>');
+  LExpected := 'Version:1.0'#$D#$A'StartHTML:00000097'#$D#$A'EndHTML:00001737'#$D#$A'StartFragment:00000269'#$D#$A'EndFragment:00001705'#$D#$A +
+  '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head><META http-equiv=Content-Type content="text/html; charset=utf-8"></head><body><!--StartFragment--><META http-equiv="Content-Type" content="text/html; charset=utf-8">'+
+  '<style type="text/css">'#$D#$A'.default{font-family: ''Tahoma''; font-size: 8pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}'#$D#$A +
+  '.header{font-family: ''Tahoma''; font-size: 8pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}'#$D#$A'.noborder{border-style: none;padding-left: 4px; padding-right: 4px;}'#$D#$A +
+  '.normalborder {vertical-align: top; border-right: none; border-left:none; border-top:none; border-bottom: none;border-width: thin; border-style: dotted;padding-left: 4px; padding-right: 4px;}</style>'#$D#$A +
+  '<table class="default" style="border-collapse: collapse;" bgcolor=#FFFFFF  border="1" frame=box cellspacing="0">'#$D#$A'<tr class="header" style="padding-left: 4px; padding-right: 4px;">'#$D#$A +
+  '<th height="17px" align=left bgcolor=#F0F0F0 width="50px">col2</th><th height="17px" align=left bgcolor=#F0F0F0 width="50px">col3</th><th height="17px" align=left bgcolor=#F0F0F0 width="50px">col4</th></tr>'#$D#$A+
+  ' <tr class="default">'#$D#$A' <td class="normalborder"  height="18px" align=left>3b</td> <td class="normalborder"  height="18px" align=left>3c</td> <td class="normalborder"  height="18px" align=left>3d</td> </tr>'#$D#$A+
+  ' <tr class="default">'#$D#$A' <td class="normalborder"  height="18px" align=left>4b</td> <td class="normalborder"  height="18px" align=left>4c</td> <td class="normalborder"  height="18px" align=left>4d</td> </tr>'#$D#$A'</table><!--EndFragment--></body></html>';
+  LCompareSuccessful := LText = LExpected;
+  Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
 end;
 
 procedure TCellSelectionTests.TestCopyHTML2;
 var
   LTree: TVirtualStringTree;
   n3, n5: PVirtualNode;
-  LText: string;
+  LText, LExpected: string;
   LTries: Integer;
+  LCompareSuccessful: LongBool;
 begin
   LTree := FTree;
+  LTree.Font.Name := 'Tahoma';
+  LTree.Font.Size := 10;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
@@ -488,39 +545,34 @@ begin
 
     // The following are not necessary in an actual application
     Sleep(0);
+
     CompleteClipboardCopy;
+    Inc(LTries);
     try
       LText := Clipboard.AsHTML;
     except
       // Clipboard exception is ok, anything else is not
       on EClipboardException do
+      begin
+        Clipboard.Close;
+      end;
       else
         raise;
     end;
-    Inc(LTries);
+    // End unnecessary stuff
   until (LText <> '') or (LTries > MaxTries);
-  Assert.IsTrue(LText =
-'Version:1.0' + sLineBreak +
-'StartHTML:00000097' + sLineBreak +
-'EndHTML:00001945' + sLineBreak +
-'StartFragment:00000269' + sLineBreak +
-'EndFragment:00001913' + sLineBreak +
-'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head><META http-equiv=Content-Type content="text/html; charset=utf-8"></head><body><!--StartFragment--><META http-equiv="Content-Type" content="text/html; charset=utf-8"><style type="tex' +
-'t/css">' + sLineBreak +
-'.default{font-family: ''Tahoma''; font-size: 8pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}' + sLineBreak +
-'.header{font-family: ''Tahoma''; font-size: 8pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}' + sLineBreak +
-'.noborder{border-style: none;padding-left: 4px; padding-right: 4px;}' + sLineBreak +
-'.normalborder {vertical-align: top; border-right: none; border-left:none; border-top:none; border-bottom: none;border-width: thin; border-style: dotted;padding-left: 4px; padding-right: 4px;}</style>' + sLineBreak +
-'<table class="default" style="border-collapse: collapse;" bgcolor=#FFFFFF  border="1" frame=box cellspacing="0">' + sLineBreak +
-'<tr class="header" style="padding-left: 4px; padding-right: 4px;">' + sLineBreak +
-'<th height="19px" align=left bgcolor=#F0F0F0 width="50px">col2</th><th height="19px" align=left bgcolor=#F0F0F0 width="50px">col3</th><th height="19px" align=left bgcolor=#F0F0F0 width="50px">col4</th></tr>' + sLineBreak +
-' <tr class="default">' + sLineBreak +
-' <td class="normalborder"  height="18px" align=left>3b</td> <td class="normalborder"  height="18px" align=left>3c</td> <td class="normalborder"  height="18px" align=left>3d</td> </tr>' + sLineBreak +
-' <tr class="default">' + sLineBreak +
-' <td class="normalborder"  height="18px" align=left>4b</td> <td class="normalborder"  height="18px" align=left>4c</td> <td class="normalborder"  height="18px" align=left>4d</td> </tr>' + sLineBreak +
-' <tr class="default">' + sLineBreak +
-' <td class="normalborder"  height="18px" align=left>5b</td> <td class="normalborder"  height="18px" align=left>5c</td> <td class="normalborder"  height="18px" align=left>5d</td> </tr>' + sLineBreak +
-'</table><!--EndFragment--></body></html>');
+  LExpected := 'Version:1.0'#$D#$A'StartHTML:00000097'#$D#$A'EndHTML:00001947'#$D#$A'StartFragment:00000269'#$D#$A'EndFragment:00001915'#$D#$A'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head>'+
+  '<META http-equiv=Content-Type content="text/html; charset=utf-8"></head><body><!--StartFragment--><META http-equiv="Content-Type" content="text/html; charset=utf-8"><style type="text/css">'#$D#$A+
+  '.default{font-family: ''Tahoma''; font-size: 10pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}'#$D#$A+
+  '.header{font-family: ''Tahoma''; font-size: 10pt; font-style: normal; font-weight: normal; text-decoration: none; color: #000000;}'#$D#$A'.noborder{border-style: none;padding-left: 4px; padding-right: 4px;}'#$D#$A+
+  '.normalborder {vertical-align: top; border-right: none; border-left:none; border-top:none; border-bottom: none;border-width: thin; border-style: dotted;padding-left: 4px; padding-right: 4px;}</style>'#$D#$A +
+  '<table class="default" style="border-collapse: collapse;" bgcolor=#FFFFFF  border="1" frame=box cellspacing="0">'#$D#$A'<tr class="header" style="padding-left: 4px; padding-right: 4px;">'#$D#$A+
+  '<th height="20px" align=left bgcolor=#F0F0F0 width="50px">col2</th><th height="20px" align=left bgcolor=#F0F0F0 width="50px">col3</th><th height="20px" align=left bgcolor=#F0F0F0 width="50px">col4</th></tr>'#$D#$A+
+  ' <tr class="default">'#$D#$A' <td class="normalborder"  height="18px" align=left>3b</td> <td class="normalborder"  height="18px" align=left>3c</td> <td class="normalborder"  height="18px" align=left>3d</td> </tr>'#$D#$A+
+  ' <tr class="default">'#$D#$A' <td class="normalborder"  height="18px" align=left>4b</td> <td class="normalborder"  height="18px" align=left>4c</td> <td class="normalborder"  height="18px" align=left>4d</td> </tr>'#$D#$A' <tr class="default">'#$D#$A +
+  ' <td class="normalborder"  height="18px" align=left>5b</td> <td class="normalborder"  height="18px" align=left>5c</td> <td class="normalborder"  height="18px" align=left>5d</td> </tr>'#$D#$A'</table><!--EndFragment--></body></html>';
+  LCompareSuccessful := LText = LExpected;
+  Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
 end;
 
 procedure TCellSelectionTests.TestCopyPlainText1;
@@ -529,8 +581,11 @@ var
   n3, n4: PVirtualNode;
   LText: string;
   LTries: Integer;
+  LCompareSuccessful: LongBool;
 begin
   LTree := FTree;
+  LTree.Font.Name := 'Tahoma';
+  LTree.Font.Size := 10;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
@@ -552,30 +607,35 @@ begin
     Sleep(0);
 
     CompleteClipboardCopy;
+    Inc(LTries);
     try
       LText := Clipboard.AsText;
     except
       // Clipboard exception is ok, anything else is not
       on EClipboardException do
+      begin
+        Clipboard.Close;
+      end;
       else
         raise;
     end;
-    Inc(LTries);
+    // End unnecessary stuff
   until (LText <> '') or (LTries > MaxTries);
-  Assert.IsTrue(LText = 'col2	col3	col4' + sLineBreak +
-'3b	3c	3d' + sLineBreak +
-'4b	4c	4d' + sLineBreak +
-'');
+  LCompareSuccessful := LText = 'col2'#9'col3'#9'col4'#$D#$A'3b'#9'3c'#9'3d'#$D#$A'4b'#9'4c'#9'4d'#$D#$A;
+  Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
 end;
 
 procedure TCellSelectionTests.TestCopyPlainText2;
 var
   LTree: TVirtualStringTree;
   n3, n5: PVirtualNode;
-  LText: string;
+  LText, LExpected: string;
   LTries: Integer;
+  LCompareSuccessful: LongBool;
 begin
   LTree := FTree;
+  LTree.Font.Name := 'Tahoma';
+  LTree.Font.Size := 10;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
@@ -597,31 +657,36 @@ begin
     Sleep(0);
 
     CompleteClipboardCopy;
+    Inc(LTries);
     try
       LText := Clipboard.AsText;
     except
       // Clipboard exception is ok, anything else is not
       on EClipboardException do
+      begin
+        Clipboard.Close;
+      end;
       else
         raise;
     end;
-    Inc(LTries);
-  until (LText <> '') and (LTries <= MaxTries);
-  Assert.IsTrue(LText = 'col2	col3	col4' + sLineBreak +
-'3b	3c	3d' + sLineBreak +
-'4b	4c	4d' + sLineBreak +
-'5b	5c	5d' + sLineBreak
-  );
+    // End unnecessary stuff
+  until (LText <> '') or (LTries > MaxTries);
+  LExpected := 'col2'#9'col3'#9'col4'#$D#$A'3b'#9'3c'#9'3d'#$D#$A'4b'#9'4c'#9'4d'#$D#$A'5b'#9'5c'#9'5d'#$D#$A;
+  LCompareSuccessful := LText = LExpected;
+  Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
 end;
 
 procedure TCellSelectionTests.TestCopyRTF1;
 var
   LTree: TVirtualStringTree;
   n3, n4: PVirtualNode;
-  LText: string;
+  LText, LPlainText, LExpected: string;
   LTries: Integer;
+  LCompareSuccessful: LongBool;
 begin
   LTree := FTree;
+  LTree.Font.Name := 'Tahoma';
+  LTree.Font.Size := 8;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
@@ -643,30 +708,40 @@ begin
     Sleep(0);
 
     CompleteClipboardCopy;
+    Inc(LTries);
     try
       LText := Clipboard.AsRTF;
     except
       // Clipboard exception is ok, anything else is not
       on EClipboardException do
+      begin
+        Clipboard.Close;
+      end;
       else
         raise;
     end;
-    Inc(LTries);
+    // End unnecessary stuff
   until (LText <> '') or (LTries > MaxTries);
-  Assert.IsTrue(LText = '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl{\f0 Tahoma;}}{\colortbl;\red0\green0\blue0;}\paperw16840\paperh11907\margl720\margr720\margt720\margb720\uc1\trowd\trgaph70\cellx750\cellx1500\cellx2250\pard\intbl\ql\f0\cf1\fs16 \u99\''3f\u111\''3f\u108\''3' +
-'f\u50\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u51\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u52\''3f\cell\row\pard\intbl \u51\''3f\u98\''3f\cell\pard\intbl \u51\''3f\u99\''3f\cell\pard\intbl \u51\''3f\u100\''3f\cell\row' + sLineBreak +
-'\pard\intbl \u52\''3f\u98\''3f\cell\pard\intbl \u52\''3f\u99\''3f\cell\pard\intbl \u52\''3f\u100\''3f\cell\row' + sLineBreak +
-'\pard\par}');
+  LExpected := '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl{\f0 Tahoma;}}{\colortbl;\red0\green0\blue0;}\paperw16840\paperh11907\margl720\margr720\margt720\margb720\uc1\trowd\trgaph70\cellx750\cellx1500\cellx2250\pard\intbl\ql\f0\cf1'+
+  '\fs16 \u99\''3f\u111\''3f\u108\''3f\u50\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u51\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u52\''3f\cell\row\pard\intbl \u51\''3f\u98\''3f\cell\pard\intbl \u51\''3f\u99\''3f\cell\pard\intbl \u51\''3f'+
+  '\u100\''3f\cell\row'#$D#$A'\pard\intbl \u52\''3f\u98\''3f\cell\pard\intbl \u52\''3f\u99\''3f\cell\pard\intbl \u52\''3f\u100\''3f\cell\row'#$D#$A'\pard\par}';
+  FRichEdit.SelText := LText;
+  LPlainText := FRichEdit.Text;
+  LCompareSuccessful := LText = LExpected;
+  Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
 end;
 
 procedure TCellSelectionTests.TestCopyRTF2;
 var
   LTree: TVirtualStringTree;
   n3, n5: PVirtualNode;
-  LText: string;
+  LText, LPlainText, LExpected: string;
   LTries: Integer;
+  LCompareSuccessful: LongBool;
 begin
   LTree := FTree;
+  LTree.Font.Name := 'Tahoma';
+  LTree.Font.Size := 8;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
@@ -688,22 +763,48 @@ begin
     Sleep(0);
 
     CompleteClipboardCopy;
+    Inc(LTries);
     try
       LText := Clipboard.AsRTF;
     except
       // Clipboard exception is ok, anything else is not
       on EClipboardException do
+      begin
+        Clipboard.Close;
+      end;
       else
         raise;
     end;
-    Inc(LTries);
     // End unnecessary stuff
   until (LText <> '') or (LTries > MaxTries);
-  Assert.IsTrue(LText = '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl{\f0 Tahoma;}}{\colortbl;\red0\green0\blue0;}\paperw16840\paperh11907\margl720\margr720\margt720\margb720\uc1\trowd\trgaph70\cellx750\cellx1500\cellx2250\pard\intbl\ql\f0\cf1\fs16 \u99\''3f\u111\''3f\u108\''3' +
-'f\u50\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u51\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u52\''3f\cell\row\pard\intbl \u51\''3f\u98\''3f\cell\pard\intbl \u51\''3f\u99\''3f\cell\pard\intbl \u51\''3f\u100\''3f\cell\row' + sLineBreak +
-'\pard\intbl \u52\''3f\u98\''3f\cell\pard\intbl \u52\''3f\u99\''3f\cell\pard\intbl \u52\''3f\u100\''3f\cell\row' + sLineBreak +
-'\pard\intbl \u53\''3f\u98\''3f\cell\pard\intbl \u53\''3f\u99\''3f\cell\pard\intbl \u53\''3f\u100\''3f\cell\row' + sLineBreak +
-'\pard\par}');
+  LExpected := '{\rtf1\ansi\ansicpg1252\deff0\deflang1043{\fonttbl{\f0 Tahoma;}}{\colortbl;\red0\green0\blue0;}\paperw16840\paperh11907\margl720\margr720\margt720\margb720\uc1\trowd\trgaph70\cellx750\cellx1500\cellx2250\pard\intbl\ql\f0\cf1\fs16 \u99\''3f\u111\''3f\u108\''3' +
+  'f\u50\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u51\''3f\cell\ql \u99\''3f\u111\''3f\u108\''3f\u52\''3f\cell\row\pard\intbl \u51\''3f\u98\''3f\cell\pard\intbl \u51\''3f\u99\''3f\cell\pard\intbl \u51\''3f\u100\''3f\cell\row' + sLineBreak +
+  '\pard\intbl \u52\''3f\u98\''3f\cell\pard\intbl \u52\''3f\u99\''3f\cell\pard\intbl \u52\''3f\u100\''3f\cell\row' + sLineBreak +
+  '\pard\intbl \u53\''3f\u98\''3f\cell\pard\intbl \u53\''3f\u99\''3f\cell\pard\intbl \u53\''3f\u100\''3f\cell\row' + sLineBreak +
+  '\pard\par}';
+  FRichEdit.SelText := LText;
+  LPlainText := FRichEdit.Text;
+  LCompareSuccessful := LText = LExpected;
+  Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
+end;
+
+procedure TCellSelectionTests.TestOnChange;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LOnChangeFired: LongBool;
+begin
+  LTree := FTree;
+  n3 := FNode3;
+
+  LOnChangeFired := False;
+  AssignChange(procedure (Sender: TBaseVirtualTree; ANode: PVirtualNode)
+  begin
+    LOnChangeFired := True;
+  end);
+
+  LTree.MouseClick(n3);
+  Assert.IsTrue(LOnChangeFired, 'OnChange event not fired!');
 end;
 
 procedure TCellSelectionTests.TestSelectCellsRectangular;
@@ -839,13 +940,19 @@ begin
   n3 := FNode3;
   n4 := FNode4;
 
-  MouseClick(n3);
+  LTree.MouseClick(n3, 1);
   LSelectedCells := LTree.SelectedCells;
-  ShiftMouseClick(n4);
+  LTree.ShiftMouseClick(n4, 2);
   LNewSelectedCells := LTree.SelectedCells;
-  Assert.IsTrue(Length(LNewSelectedCells) = 2);
-  Assert.IsTrue((LNewSelectedCells[0].Node = n3) and (LNewSelectedCells[0].Column = 0));
-  Assert.IsTrue((LNewSelectedCells[1].Node = n4) and (LNewSelectedCells[0].Column = 0));
+
+  Assert.IsTrue(Length(LSelectedCells) = 1, 'Length of selected cell is unexpected!');
+  Assert.IsTrue((LSelectedCells[0].Node = n3) and (LSelectedCells[0].Column = 1), 'Unexpected cell selection 1');
+
+  Assert.IsTrue(Length(LNewSelectedCells) = 4, 'Length of selected cells is unexpected!');
+  Assert.IsTrue((LNewSelectedCells[0].Node = n3) and (LNewSelectedCells[0].Column = 1), 'Unexpected cell selection 0!');
+  Assert.IsTrue((LNewSelectedCells[1].Node = n3) and (LNewSelectedCells[1].Column = 2), 'Unexpected cell selection 1!');
+  Assert.IsTrue((LNewSelectedCells[2].Node = n4) and (LNewSelectedCells[2].Column = 1), 'Unexpected cell selection 2!');
+  Assert.IsTrue((LNewSelectedCells[3].Node = n4) and (LNewSelectedCells[3].Column = 2), 'Unexpected cell selection 3!');
 end;
 
 procedure TCellSelectionTests.VirtualStringTree1GetText(Sender: TBaseVirtualTree;

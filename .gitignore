@@ -54,3 +54,5 @@ Packages/RAD Studio XE3/VirtualTreesR.lib
 # Folder with repro projects #
 ##############################
 /#*
+Tests/dunitx-results.xml
+Tests/TestInsightSettings.ini

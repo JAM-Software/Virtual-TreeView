@@ -78,6 +78,7 @@ const
   StructureChangeTimer     = 6;
   SearchTimer              = 7;
   ThemeChangedTimer        = 8;
+  ChangeCellTimer          = 9;
 
   ThemeChangedTimerDelay   = 500;
 
@@ -544,7 +545,8 @@ type
     tsVCLDragFinished,        // Flag to avoid triggering the OnColumnClick event twice
     tsPanning,                // Mouse panning is active.
     tsWindowCreating,         // Set during window handle creation to avoid frequent unnecessary updates.
-    tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
+    tsUseExplorerTheme,       // The tree runs under WinVista+ and is using the explorer theme
+    tsChangeCellPending       // A cell selection change is pending.
   );
 
 
