@@ -34,7 +34,7 @@ type
     FChangeEventProc: TVTChangeEventProc;
     FChangeCellEventProc: TVTChangeCellEventProc;
 
-    procedure AssignChange(const AChangeEventProc: TVTChangeEventProc); overload;
+    procedure AssignChange(const AChangeEventProc: TVTChangeEventProc; const ATree: TBaseVirtualTree = nil); overload;
     procedure AssignChange(const AChangeCellEventProc: TVTChangeCellEventProc); overload;
     procedure DoChangeEvent(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure DoChangeCellEvent(Sender: TBaseVirtualTree; const Cells: TVTCellArray);
@@ -107,6 +107,35 @@ type
     [Test]
     procedure TestOnChange;
 
+    /// <summary>
+    /// This tests that OnChange is fired when an empty area is clicked
+    /// </summary>
+    [Test]
+    procedure TestEmptyAreaOnChange1;
+
+    /// <summary>
+    /// This tests that OnChange is fired when an empty area is clicked
+    /// </summary>
+    [Test]
+    procedure TestEmptyAreaOnChange2;
+
+    /// <summary>
+    /// This tests that when left click is performed, node is selected
+    /// </summary>
+    [Test]
+    procedure TestLeftClickSelectsNode;
+
+    /// <summary>
+    /// This tests that when left click is performed without multiselect, cell doesn't get selected
+    /// </summary>
+    [Test]
+    procedure TestLeftClickWithoutMultiSelectDoesNotSelectCell;
+
+    /// <summary>
+    /// This tests that setting and removing various states clears cell selection
+    /// </summary>
+    [Test]
+    procedure TestRemovingSetsClearCellSelection;
   end;
 
 implementation
@@ -114,7 +143,8 @@ implementation
 uses
   System.SysUtils, Vcl.Controls, VirtualTrees.Types,
   Vcl.Clipbrd, VirtualTrees.ClipBoard,
-  System.Classes, Winapi.ActiveX, Vcl.ClipboardHelper, VirtualTrees.MouseUtils;
+  System.Classes, Winapi.ActiveX, Vcl.ClipboardHelper, VirtualTrees.MouseUtils,
+  VTCellSelectionTests.VisibilityForm;
 
 type
   TRowData = record
@@ -211,11 +241,42 @@ begin
     Result := DefWindowProc(FClipboardWindow, Msg, wParam, lParam);
 end;
 
+procedure TCellSelectionTests.VirtualStringTree1GetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: string);
+var
+  LData: TRowData;
+begin
+  if not Assigned(Node) then
+    Exit;
+  LData := Node.GetData<TRowData>;
+  case Column of
+    col0: begin
+      CellText := LData.col1;
+    end;
+    col1: begin
+      CellText := LData.col2;
+    end;
+    col2: begin
+      CellText := LData.col3;
+    end;
+    col3: begin
+      CellText := LData.col4;
+    end;
+    col4: begin
+      CellText := LData.col5;
+    end;
+  end;
+end;
+
 procedure TCellSelectionTests.AssignChange(
-  const AChangeEventProc: TVTChangeEventProc);
+  const AChangeEventProc: TVTChangeEventProc;
+  const ATree: TBaseVirtualTree = nil);
 begin
   FChangeEventProc := AChangeEventProc;
-  FTree.OnChange := DoChangeEvent;
+  if not Assigned(ATree) then
+    FTree.OnChange := DoChangeEvent else
+    TVirtualStringTree(ATree).OnChange := DoChangeEvent;
 end;
 
 procedure TCellSelectionTests.AssignChange(const AChangeCellEventProc: TVTChangeCellEventProc);
@@ -788,6 +849,153 @@ begin
   Assert.IsTrue(LCompareSuccessful, 'Clipboard text is unexpected!');
 end;
 
+procedure TCellSelectionTests.TestEmptyAreaOnChange1;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LOnChangeFired: LongBool;
+  I, LColumnCount, LMaxWidth: Integer;
+  Rects: TArray<TRect>;
+  LargestRect: TRect;
+  LTextOnly, LUnclipped, LApplyCellContentMargin: Boolean;
+  LastNode, LHitNode: PVirtualNode;
+  LEmptyArea: TPoint;
+  LHitInfo: THitInfo;
+begin
+  LTree := FTree;
+  n3 := FNode3;
+
+  // Calculate the largest client area for the VirtualTree and set it
+  LColumnCount := LTree.Header.Columns.Count;
+  LMaxWidth := 0;
+  for I := 0 to LColumnCount-1 do
+    begin
+      if LTree.Header.Columns[I].Width > LMaxWidth then
+        LMaxWidth := LTree.Header.Columns[I].Width;
+    end;
+  I := 0;
+  for LTextOnly := False to True do
+    for LUnclipped := False to True do
+      for LApplyCellContentMargin := False to True do
+      begin
+        SetLength(Rects, I+1);
+        Rects[I] := LTree.GetDisplayRect(n3, LColumnCount-1, LTextOnly, LUnclipped, LApplyCellContentMargin);
+        Inc(I);
+      end;
+  LargestRect := Rects[0];
+  for I := 1 to High(Rects) do
+    begin
+      LargestRect := TRect.Union(LargestRect, Rects[I]);
+    end;
+
+  LastNode := LTree.GetLastVisible;
+
+  LTree.ClientHeight := LargestRect.BottomRight.Y + (LastNode.NodeHeight * 2);
+  LTree.ClientWidth :=  LargestRect.BottomRight.X + LMaxWidth;
+
+  // This should be an empty area, beyond any visible nodes
+  LEmptyArea := Point(LargestRect.BottomRight.X + LMaxWidth, LargestRect.BottomRight.Y + LastNode.NodeHeight);
+
+  // At this point, there should be no nodes selected
+  Assert.IsTrue(LTree.SelectedCount = 0);
+  LTree.MouseClick(n3);
+  // At this point, a node should be selected
+  Assert.IsTrue(LTree.SelectedCount = 1);
+
+  LOnChangeFired := False;
+  LHitNode := Pointer($FFFFFFFF);
+  AssignChange(procedure (Sender: TBaseVirtualTree; ANode: PVirtualNode)
+  begin
+    LOnChangeFired := True;
+    LHitNode := ANode;
+  end);
+
+  LTree.GetHitTestInfoAt(LEmptyArea.X, LEmptyArea.Y, True, LHitInfo);
+  LTree.MouseClick(LEmptyArea);
+
+  Assert.IsTrue(hiNowhere in LHitInfo.HitPositions, 'Mouse click is not in an unpopulated/empty area!');
+  Assert.IsTrue(LOnChangeFired, 'OnChange event not fired!');
+  Assert.IsTrue(LHitNode = nil, 'Node is not nil!');
+end;
+
+procedure TCellSelectionTests.TestEmptyAreaOnChange2;
+var
+  LTree: TVirtualStringTree;
+  n1: PVirtualNode;
+  LOnChangeFired: LongBool;
+  I, LColumnCount, LMaxWidth: Integer;
+  Rects: TArray<TRect>;
+  LargestRect: TRect;
+  LTextOnly, LUnclipped, LApplyCellContentMargin: Boolean;
+  LastNode, LHitNode: PVirtualNode;
+  LEmptyArea: TPoint;
+  LHitInfo: THitInfo;
+  LTestForm: TVisibilityForm;
+begin
+  LTestForm := TVisibilityForm.Create(nil);
+  try
+    LTestForm.Show;
+    LTree := LTestForm.VST1;
+
+    n1 := LTree.GetLastVisible;
+
+    // Calculate the largest client area for the VirtualTree and set it
+    LColumnCount := LTree.Header.Columns.Count;
+    LMaxWidth := 0;
+    for I := 0 to LColumnCount-1 do
+      begin
+        if LTree.Header.Columns[I].Width > LMaxWidth then
+          LMaxWidth := LTree.Header.Columns[I].Width;
+      end;
+    if LMaxWidth = 0 then
+      LMaxWidth := 300;
+    I := 0;
+    LargestRect := TRect.Empty;
+    for LTextOnly := False to True do
+      for LUnclipped := False to True do
+        for LApplyCellContentMargin := False to True do
+        begin
+          SetLength(Rects, I+1);
+          Rects[I] := LTree.GetDisplayRect(n1, LColumnCount-1, LTextOnly, LUnclipped, LApplyCellContentMargin);
+          LargestRect := TRect.Union(LargestRect, Rects[I]);
+          Inc(I);
+        end;
+
+    LastNode := LTree.GetLastVisibleChild(LTree.RootNode);
+
+    LTree.ClientHeight := LargestRect.BottomRight.Y + (LastNode.NodeHeight * 2);
+    LTree.ClientWidth :=  LargestRect.BottomRight.X + LMaxWidth;
+
+    // This should be an empty area, beyond any visible nodes
+    LEmptyArea := Point(LargestRect.BottomRight.X + LMaxWidth, LargestRect.BottomRight.Y + LastNode.NodeHeight);
+
+    // At this point, there should be no nodes selected
+    Assert.IsTrue(LTree.SelectedCount = 0);
+    LTree.MouseClick(n1, NoColumn);
+    // At this point, a node should be selected
+    Assert.IsTrue(LTree.SelectedCount = 1);
+
+    LOnChangeFired := False;
+    LHitNode := Pointer($FFFFFFFF);
+    AssignChange(procedure (Sender: TBaseVirtualTree; ANode: PVirtualNode)
+    begin
+      LOnChangeFired := True;
+      LHitNode := ANode;
+    end, LTree);
+
+    LTree.GetHitTestInfoAt(LEmptyArea.X, LEmptyArea.Y, True, LHitInfo);
+    LTree.MouseClick(LEmptyArea);
+
+    // Clicking on an empty area clears the selection
+
+    Assert.IsTrue(hiNowhere in LHitInfo.HitPositions, 'Mouse click is not in an unpopulated/empty area!');
+    Assert.IsTrue(LOnChangeFired, 'OnChange event not fired!');
+    Assert.IsTrue(LHitNode = nil, 'Node is not nil!');
+  finally
+    LTestForm.Free;
+  end;
+end;
+
 procedure TCellSelectionTests.TestOnChange;
 var
   LTree: TVirtualStringTree;
@@ -955,32 +1163,122 @@ begin
   Assert.IsTrue((LNewSelectedCells[3].Node = n4) and (LNewSelectedCells[3].Column = 2), 'Unexpected cell selection 3!');
 end;
 
-procedure TCellSelectionTests.VirtualStringTree1GetText(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: string);
+procedure TCellSelectionTests.TestLeftClickSelectsNode;
 var
-  LData: TRowData;
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LSelectedCells: TVTCellArray;
+  n3Selected: LongBool;
 begin
-  if not Assigned(Node) then
-    Exit;
-  LData := Node.GetData<TRowData>;
-  case Column of
-    col0: begin
-      CellText := LData.col1;
-    end;
-    col1: begin
-      CellText := LData.col2;
-    end;
-    col2: begin
-      CellText := LData.col3;
-    end;
-    col3: begin
-      CellText := LData.col4;
-    end;
-    col4: begin
-      CellText := LData.col5;
-    end;
+  LTree := FTree;
+
+  n3 := FNode3;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
+  LTree.MouseClick(n3, 0);
+
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 1, 'Length of selected cell is unexpected!');
+
+  LTree.ClearCellSelection;
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
+
+  // Remove multiselect
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
+    [toMultiSelect];
+  LTree.MouseClick(n3);
+
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
+
+  n3Selected := LTree.Selected[n3];
+  Assert.IsTrue(n3Selected, 'n3 is not selected!');
+end;
+
+procedure TCellSelectionTests.TestLeftClickWithoutMultiSelectDoesNotSelectCell;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LSelectedCells: TVTCellArray;
+begin
+  LTree := FTree;
+
+  n3 := FNode3;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
+    [toMultiSelect];
+
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
+
+  LTree.MouseClick(n3, 1);
+
+  LSelectedCells := LTree.SelectedCells;
+  Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
+end;
+
+procedure TCellSelectionTests.TestRemovingSetsClearCellSelection;
+var
+  LTree: TVirtualStringTree;
+  n3: PVirtualNode;
+  LSelectedCells: TVTCellArray;
+
+  procedure SelectCell;
+  begin
+    LTree.MouseClick(n3, 0);
   end;
+
+  procedure EnsureCellNotSelected;
+  begin
+    LSelectedCells := LTree.SelectedCells;
+    Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
+  end;
+
+  procedure EnsureCellSelected;
+  begin
+    LSelectedCells := LTree.SelectedCells;
+    Assert.IsTrue(Length(LSelectedCells) = 1, 'Length of selected cell is unexpected!');
+  end;
+
+  procedure EnsureSelectCell;
+  begin
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+      [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+
+    EnsureCellNotSelected;
+    SelectCell;
+    EnsureCellSelected;
+  end;
+
+begin
+  LTree := FTree;
+  n3 := FNode3;
+
+  EnsureSelectCell;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions + [toFullRowSelect];
+  EnsureCellNotSelected;
+
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toFullRowSelect];
+  SelectCell;
+  EnsureCellSelected;
+
+  LTree.ClearCellSelection;
+  EnsureCellNotSelected;
+
+  EnsureSelectCell;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus];
+  EnsureCellNotSelected;
+
+  EnsureSelectCell;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toMultiSelect];
+  EnsureCellNotSelected;
+
+  EnsureSelectCell;
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus, toMultiSelect];
+  EnsureCellNotSelected;
 end;
 
 initialization
