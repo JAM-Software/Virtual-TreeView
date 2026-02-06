@@ -11,10 +11,17 @@ type
   /// Created to be used only for testing
   /// </summary>
   TCustomVirtualStringTreeMouseHelper = class helper for TCustomVirtualStringTree
+  protected
+  const
+    KEYDOWN = Byte(1 shl 7);
   public
     function GetDisplayRectEx(ANode: PVirtualNode; AColumn: TColumnIndex): TPoint;
+    procedure KeyedMouseClick(Key: Byte; ACursorPos: TPoint); overload;
+    procedure KeyedMouseClick(Key: Byte; ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
     procedure MouseClick(ACursorPos: TPoint); overload;
     procedure MouseClick(ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
+    procedure CtrlMouseClick(ACursorPos: TPoint); overload;
+    procedure CtrlMouseClick(ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
     procedure ShiftMouseClick(ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
   end;
 
@@ -25,7 +32,6 @@ uses
   System.SysUtils;
 
 { TCustomVirtualStringTreeMouseHelper }
-
 
 function TCustomVirtualStringTreeMouseHelper.GetDisplayRectEx(ANode: PVirtualNode; AColumn: TColumnIndex): TPoint;
 var
@@ -55,8 +61,6 @@ begin
 end;
 
 procedure TCustomVirtualStringTreeMouseHelper.MouseClick(ACursorPos: TPoint);
-const
-  KEYDOWN = Byte(1 shl 7);
 var
   LKeyboardState: TKeyboardState;
   LTree: TCustomVirtualStringTree;
@@ -86,6 +90,38 @@ begin
     LTree.Perform(WM_LBUTTONUP, LWPARAM, LPos);
   finally
     Mouse.CursorPos := LSavedCursorPos;
+  end;
+end;
+
+procedure TCustomVirtualStringTreeMouseHelper.KeyedMouseClick(
+  Key: Byte; ACursorPos: TPoint);
+var
+  LOrigKBState, LNewKBState: TKeyboardState;
+begin
+  GetKeyboardState(LOrigKBState);
+  LNewKBState := LOrigKBState;
+  LNewKBState[Key] := LOrigKBState[Key] or KEYDOWN;
+  SetKeyboardState(LNewKBState);
+  try
+    MouseClick(ACursorPos);
+  finally
+    SetKeyboardState(LOrigKBState);
+  end;
+end;
+
+procedure TCustomVirtualStringTreeMouseHelper.KeyedMouseClick(
+  Key: Byte; ANode: PVirtualNode; AColumn: TColumnIndex = 0);
+var
+  LOrigKBState, LNewKBState: TKeyboardState;
+begin
+  GetKeyboardState(LOrigKBState);
+  LNewKBState := LOrigKBState;
+  LNewKBState[Key] := LOrigKBState[Key] or KEYDOWN;
+  SetKeyboardState(LNewKBState);
+  try
+    MouseClick(ANode, AColumn);
+  finally
+    SetKeyboardState(LOrigKBState);
   end;
 end;
 
@@ -124,22 +160,22 @@ begin
   MouseClick(LTopLeft);
 end;
 
+procedure TCustomVirtualStringTreeMouseHelper.CtrlMouseClick(
+  ANode: PVirtualNode; AColumn: TColumnIndex);
+begin
+  KeyedMouseClick(VK_CONTROL, ANode, AColumn);
+end;
+
+procedure TCustomVirtualStringTreeMouseHelper.CtrlMouseClick(
+  ACursorPos: TPoint);
+begin
+  KeyedMouseClick(VK_CONTROL, ACursorPos);
+end;
+
 procedure TCustomVirtualStringTreeMouseHelper.ShiftMouseClick(
   ANode: PVirtualNode; AColumn: TColumnIndex = 0);
-const
-  KEYDOWN = Byte(1 shl 7);
-var
-  LOrigKBState, LNewKBState: TKeyboardState;
 begin
-  GetKeyboardState(LOrigKBState);
-  LNewKBState := LOrigKBState;
-  LNewKBState[VK_SHIFT] := LOrigKBState[VK_SHIFT] or KEYDOWN;
-  SetKeyboardState(LNewKBState);
-  try
-    MouseClick(ANode, AColumn);
-  finally
-    SetKeyboardState(LOrigKBState);
-  end;
+  KeyedMouseClick(VK_SHIFT, ANode, AColumn);
 end;
 
 end.

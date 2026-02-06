@@ -1511,8 +1511,9 @@ begin
       if (toMultiSelect in (ToBeCleared + ToBeSet)) or ([toLevelSelectConstraint, toSiblingSelectConstraint] * ToBeSet <> []) then
         ClearSelection;
 
-      // Clear multicell selection when toFullRowSelect is going to be set
-      if toFullRowSelect in ToBeSet then
+      // Clear multicell selection when toFullRowSelect is going to be set or
+      // when a combination of toExtendedFocus, toMultiSelect is cleared
+      if (toFullRowSelect in ToBeSet) or ([toExtendedFocus, toMultiSelect] * ToBeCleared <> []) then
         ClearCellSelection;
 
       if (toExtendedFocus in ToBeCleared) and (FocusedColumn > 0) and HandleAllocated then
