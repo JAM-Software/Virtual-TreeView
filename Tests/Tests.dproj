@@ -111,6 +111,10 @@
             <Form>VisibilityForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="VTCellSelectionTests.VTSelectionTestForm.pas">
+            <Form>SelectionTestForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

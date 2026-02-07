@@ -16,12 +16,16 @@ type
     KEYDOWN = Byte(1 shl 7);
   public
     function GetDisplayRectEx(ANode: PVirtualNode; AColumn: TColumnIndex): TPoint;
+
     procedure KeyedMouseClick(Key: Byte; ACursorPos: TPoint); overload;
     procedure KeyedMouseClick(Key: Byte; ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
+
     procedure MouseClick(ACursorPos: TPoint); overload;
     procedure MouseClick(ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
+
     procedure CtrlMouseClick(ACursorPos: TPoint); overload;
     procedure CtrlMouseClick(ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
+
     procedure ShiftMouseClick(ANode: PVirtualNode; AColumn: TColumnIndex = 0); overload;
   end;
 
@@ -33,7 +37,8 @@ uses
 
 { TCustomVirtualStringTreeMouseHelper }
 
-function TCustomVirtualStringTreeMouseHelper.GetDisplayRectEx(ANode: PVirtualNode; AColumn: TColumnIndex): TPoint;
+function TCustomVirtualStringTreeMouseHelper.GetDisplayRectEx(
+  ANode: PVirtualNode; AColumn: TColumnIndex): TPoint;
 var
   R: TRect;
   LRight: TDimension;
