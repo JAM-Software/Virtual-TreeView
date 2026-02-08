@@ -125,6 +125,11 @@
             <Form>VisibilityForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="VirtualTrees.MouseUtils.pas"/>
+        <DCCReference Include="VTCellSelectionTests.VTSelectionTestForm.pas">
+            <Form>SelectionTestForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

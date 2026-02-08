@@ -18,7 +18,8 @@ uses
   VTOnDrawTextTests in 'VTOnDrawTextTests.pas',
   VTCellSelectionTests in 'VTCellSelectionTests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',
-  VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm};
+  VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm},
+  VTCellSelectionTests.VTSelectionTestForm in 'VTCellSelectionTests.VTSelectionTestForm.pas' {SelectionTestForm};
 
 var
   runner : ITestRunner;

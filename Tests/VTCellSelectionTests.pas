@@ -7,7 +7,7 @@ interface
 
 uses
   DUnitX.TestFramework, Vcl.Forms, VirtualTrees, System.Types,
-  Winapi.Messages, Winapi.Windows, Vcl.ComCtrls;
+  Winapi.Messages, Winapi.Windows, Vcl.ComCtrls, VirtualTrees.Types;
 
 type
 
@@ -136,15 +136,16 @@ type
     /// </summary>
     [Test]
     procedure TestRemovingSetsClearCellSelection;
+
   end;
 
 implementation
 
 uses
-  System.SysUtils, Vcl.Controls, VirtualTrees.Types,
+  System.SysUtils, Vcl.Controls,
   Vcl.Clipbrd, VirtualTrees.ClipBoard,
   System.Classes, Winapi.ActiveX, Vcl.ClipboardHelper, VirtualTrees.MouseUtils,
-  VTCellSelectionTests.VisibilityForm;
+  VTCellSelectionTests.VisibilityForm, VTCellSelectionTests.VTSelectionTestForm;
 
 type
   TRowData = record
@@ -392,7 +393,7 @@ begin
   LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect];
+    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
   LChangeCellFiredWhenAdding := False;
   AssignChange(procedure (Sender: TBaseVirtualTree; const Cells: TVTCellArray)
@@ -1109,14 +1110,23 @@ var
   LNodes: TArray<PVirtualNode>;
   LNode: PVirtualNode;
   LColumn: Integer;
+  LCellChangeFired: LongBool;
 begin
   LTree := FTree;
 
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect];
 
+  LCellChangeFired := False;
+  AssignChange(procedure(Sender: TBaseVirtualTree; const Cells: TVTCellArray)
+  begin
+    LCellChangeFired := True;
+  end);
   n3 := FNode3;
+  Assert.IsFalse(LCellChangeFired, 'LCellChangedFired is True!');
   LTree.SelectCells(n3, 1, n3, 1, False);
+  Assert.IsTrue(LCellChangeFired, 'LCellChangedFired is False!');
+
 
   Assert.IsTrue(LTree.IsCellSelected(n3, 1), 'n3, col1 should be selected');
   LSelectedCells := LTree.SelectedCells;
@@ -1166,19 +1176,20 @@ end;
 procedure TCellSelectionTests.TestLeftClickSelectsNode;
 var
   LTree: TVirtualStringTree;
-  n3: PVirtualNode;
+  LNode: PVirtualNode;
   LSelectedCells: TVTCellArray;
-  n3Selected: LongBool;
+  LSelected: LongBool;
+  LForm: TSelectionTestForm;
 begin
   LTree := FTree;
 
-  n3 := FNode3;
+  LNode := FNode3;
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
     [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
 
   LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
-  LTree.MouseClick(n3, 0);
+  LTree.MouseClick(LNode, 0);
 
   LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 1, 'Length of selected cell is unexpected!');
@@ -1187,16 +1198,41 @@ begin
   LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
 
-  // Remove multiselect
+  // Remove multiselect, which is part of multicell select
   LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
     [toMultiSelect];
-  LTree.MouseClick(n3);
+  // SelectionOptions should now be [toExtendedFocus,toSelectNextNodeOnRemoval]
+  LTree.MouseClick(LNode);
 
   LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
 
-  n3Selected := LTree.Selected[n3];
-  Assert.IsTrue(n3Selected, 'n3 is not selected!');
+  LSelected := LTree.Selected[LNode];
+  Assert.IsTrue(LSelected, 'Node is not selected!');
+
+  // This test is the same as the one below with TSelectionTestForm
+  LTree.TreeOptions.SelectionOptions := [toMultiSelect,toSelectNextNodeOnRemoval];
+  LSelected := LTree.Selected[LNode];
+  Assert.IsFalse(LSelected, 'Node should not be selected!');
+  LTree.MouseClick(LNode);
+  LSelected := LTree.Selected[LNode];
+  Assert.IsTrue(LSelected, 'Node should be selected!');
+
+  // This test ensures that left click is working correctly
+  LForm := TSelectionTestForm.Create(nil);
+  try
+    LForm.Show; // Needed to initialize VST
+    LTree := LForm.VSTA;
+    LNode := LTree.GetFirstVisible;
+    Assert.IsTrue(LNode <> nil, 'Node is nil!');
+    LSelected := LTree.Selected[LNode];
+    Assert.IsFalse(LSelected, 'Node is selected');
+    LTree.MouseClick(LNode);
+    LSelected := LTree.Selected[LNode];
+    Assert.IsTrue(LSelected, 'Node is selected');
+  finally
+    LForm.Free;
+  end;
 end;
 
 procedure TCellSelectionTests.TestLeftClickWithoutMultiSelectDoesNotSelectCell;
@@ -1225,10 +1261,40 @@ var
   LTree: TVirtualStringTree;
   n3: PVirtualNode;
   LSelectedCells: TVTCellArray;
+  LNodeSelected: LongBool;
+
+  procedure DisableMulticellSelection;
+  begin
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
+      [toExtendedFocus, toMultiSelect];
+  end;
+
+  procedure EnableMulticellSelection;
+  begin
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+      [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  end;
 
   procedure SelectCell;
   begin
     LTree.MouseClick(n3, 0);
+  end;
+
+  procedure SelectNode;
+  begin
+    LTree.MouseClick(n3);
+  end;
+
+  procedure EnsureNodeSelected;
+  begin
+    LNodeSelected := LTree.Selected[n3];
+    Assert.IsTrue(LNodeSelected, 'Node is not selected!');
+  end;
+
+  procedure EnsureNodeNotSelected;
+  begin
+    LNodeSelected := LTree.Selected[n3];
+    Assert.IsFalse(LNodeSelected, 'Node is selected!');
   end;
 
   procedure EnsureCellNotSelected;
@@ -1245,40 +1311,65 @@ var
 
   procedure EnsureSelectCell;
   begin
-    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-      [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+    EnableMulticellSelection;
 
     EnsureCellNotSelected;
     SelectCell;
     EnsureCellSelected;
   end;
 
+  procedure CheckTree;
+  begin
+    EnsureSelectCell;
+    DisableMulticellSelection;
+    EnsureCellNotSelected;
+
+    EnableMulticellSelection;
+    SelectCell;
+    EnsureCellSelected;
+
+    LTree.ClearCellSelection;
+    EnsureCellNotSelected;
+
+    DisableMulticellSelection;
+    LTree.ClearSelection;
+    EnsureNodeNotSelected;
+    SelectNode;
+    EnsureNodeSelected;
+
+    EnsureSelectCell;
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus];
+    EnsureCellNotSelected;
+
+    EnsureSelectCell;
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toMultiSelect];
+    EnsureCellNotSelected;
+
+    EnsureSelectCell;
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus, toMultiSelect];
+    EnsureCellNotSelected;
+  end;
+
+var
+  LForm: TSelectionTestForm;
 begin
   LTree := FTree;
   n3 := FNode3;
 
-  EnsureSelectCell;
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions + [toFullRowSelect];
-  EnsureCellNotSelected;
+  // Run against the default tree
+  CheckTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toFullRowSelect];
-  SelectCell;
-  EnsureCellSelected;
+  LForm := TSelectionTestForm.Create(nil);
+  try
+    LForm.Show;
+    LTree := LForm.VSTA;
+    n3 := LTree.GetFirstVisibleChild(LTree.RootNode);
 
-  LTree.ClearCellSelection;
-  EnsureCellNotSelected;
-
-  EnsureSelectCell;
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus];
-  EnsureCellNotSelected;
-
-  EnsureSelectCell;
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toMultiSelect];
-  EnsureCellNotSelected;
-
-  EnsureSelectCell;
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus, toMultiSelect];
-  EnsureCellNotSelected;
+    // Run against the form's tree
+    CheckTree;
+  finally
+    LForm.Free;
+  end;
 end;
 
 initialization
