@@ -15633,6 +15633,7 @@ end;
 function TBaseVirtualTree.IsCellSelectionEnabled: Boolean;
 begin
   Result := (toMultiSelect in FOptions.SelectionOptions) and
+            (toMultiCellSelect in FOptions.SelectionOptions) and
             (toExtendedFocus in FOptions.SelectionOptions) and
             not (toFullRowSelect in FOptions.SelectionOptions);
 end;

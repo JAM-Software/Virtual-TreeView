@@ -390,7 +390,12 @@ type
     toSyncCheckboxesWithSelection,   // If checkboxes are shown, they follow the change in selections. When checkboxes are
                                      // changed, the selections follow them and vice-versa.
                                      // **Only supported for ctCheckBox type checkboxes.
-    toSelectNextNodeOnRemoval        // If the selected node gets deleted, automatically select the next node.
+    toSelectNextNodeOnRemoval,       // If the selected node gets deleted, automatically select the next node.
+
+    /// <summary>
+    /// Enable multi-cell selection feature
+    /// </summary>
+    toMultiCellSelect
     );
   TVTSelectionOptions = set of TVTSelectionOption;
 
@@ -1512,8 +1517,8 @@ begin
         ClearSelection;
 
       // Clear multicell selection when toFullRowSelect is going to be set or
-      // when a combination of toExtendedFocus, toMultiSelect is cleared
-      if (toFullRowSelect in ToBeSet) or ([toExtendedFocus, toMultiSelect] * ToBeCleared <> []) then
+      // when a combination of toExtendedFocus, toMultiSelect, toMultiCellSelect is cleared
+      if (toFullRowSelect in ToBeSet) or ([toExtendedFocus, toMultiSelect, toMultiCellSelect] * ToBeCleared <> []) then
         ClearCellSelection;
 
       if (toExtendedFocus in ToBeCleared) and (FocusedColumn > 0) and HandleAllocated then

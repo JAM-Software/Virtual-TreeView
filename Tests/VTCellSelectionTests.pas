@@ -50,6 +50,7 @@ type
     procedure VirtualStringTree1GetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: string);
+    procedure EnableMultiCellSelection(const ATree: TBaseVirtualTree = nil);
   public
     [Setup]
     procedure Setup;
@@ -292,6 +293,17 @@ begin
     FChangeEventProc(Sender, Node);
 end;
 
+procedure TCellSelectionTests.EnableMultiCellSelection(const ATree: TBaseVirtualTree);
+var
+  LTree: TVirtualStringTree;
+begin
+  if not Assigned(ATree) then
+    LTree := FTree else
+    LTree := TVirtualStringTree(ATree);
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toExtendedFocus, toMultiSelect, toMultiCellSelect] - [toFullRowSelect];
+end;
+
 procedure TCellSelectionTests.DoChangeCellEvent(Sender: TBaseVirtualTree; const Cells: TVTCellArray);
 begin
   if Assigned(FChangeCellEventProc) then
@@ -388,12 +400,12 @@ procedure TCellSelectionTests.TestChangeCellEvent;
 var
   LTree: TVirtualStringTree;
   n3: PVirtualNode;
+  LChangeFired,
   LChangeCellFiredWhenAdding, LChangeCellFiredWhenRemoving: LongBool;
 begin
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   LChangeCellFiredWhenAdding := False;
   AssignChange(procedure (Sender: TBaseVirtualTree; const Cells: TVTCellArray)
@@ -411,10 +423,22 @@ begin
   begin
     LChangeCellFiredWhenRemoving := True;
   end);
+  LChangeFired := False;
+  AssignChange(procedure (Sender: TBaseVirtualTree; Node: PVirtualNode)
+  begin
+    LChangeFired := True;
+  end);
   LTree.ClearCellSelection;
 
   Assert.IsTrue(LChangeCellFiredWhenRemoving, 'OnChangeCell event not fired when removing!');
 
+  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
+    [toExtendedFocus, toMultiSelect] - [toFullRowSelect, toMultiCellSelect];
+
+  LChangeFired := False;
+  LTree.MouseClick(n3);
+
+  Assert.IsTrue(LChangeFired, 'Change event not fired');
 end;
 
 procedure TCellSelectionTests.TestClear;
@@ -425,8 +449,7 @@ var
 begin
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n4 := FNode4;
@@ -452,8 +475,7 @@ var
 begin
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n4 := FNode4;
@@ -486,8 +508,7 @@ var
 begin
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n4 := FNode4;
@@ -530,8 +551,7 @@ begin
   LTree.Font.Name := 'Tahoma';
   LTree.Font.Size := 8;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n4 := FNode4;
@@ -589,8 +609,7 @@ begin
   LTree.Font.Name := 'Tahoma';
   LTree.Font.Size := 10;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n5 := FNode5;
@@ -649,8 +668,7 @@ begin
   LTree.Font.Name := 'Tahoma';
   LTree.Font.Size := 10;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n4 := FNode4;
@@ -699,8 +717,7 @@ begin
   LTree.Font.Name := 'Tahoma';
   LTree.Font.Size := 10;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n5 := FNode5;
@@ -750,8 +767,7 @@ begin
   LTree.Font.Name := 'Tahoma';
   LTree.Font.Size := 8;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n4 := FNode4;
@@ -805,8 +821,7 @@ begin
   LTree.Font.Name := 'Tahoma';
   LTree.Font.Size := 8;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection(LTree);
 
   n3 := FNode3;
   n5 := FNode5;
@@ -1027,8 +1042,7 @@ begin
 
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection;
 
   n3 := FNode3;
   n4 := FNode4;
@@ -1114,8 +1128,7 @@ var
 begin
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect];
+  EnableMultiCellSelection;
 
   LCellChangeFired := False;
   AssignChange(procedure(Sender: TBaseVirtualTree; const Cells: TVTCellArray)
@@ -1152,8 +1165,7 @@ var
 begin
   LTree := FTree;
 
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection;
 
   n3 := FNode3;
   n4 := FNode4;
@@ -1184,8 +1196,7 @@ begin
   LTree := FTree;
 
   LNode := FNode3;
-  LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-    [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+  EnableMultiCellSelection;
 
   LSelectedCells := LTree.SelectedCells;
   Assert.IsTrue(Length(LSelectedCells) = 0, 'Length of selected cell is unexpected!');
@@ -1266,17 +1277,12 @@ var
   procedure DisableMulticellSelection;
   begin
     LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions -
-      [toExtendedFocus, toMultiSelect];
-  end;
-
-  procedure EnableMulticellSelection;
-  begin
-    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions +
-      [toExtendedFocus, toMultiSelect] - [toFullRowSelect];
+      [toMultiCellSelect];
   end;
 
   procedure SelectCell;
   begin
+    EnableMultiCellSelection(LTree);
     LTree.MouseClick(n3, 0);
   end;
 
@@ -1311,8 +1317,6 @@ var
 
   procedure EnsureSelectCell;
   begin
-    EnableMulticellSelection;
-
     EnsureCellNotSelected;
     SelectCell;
     EnsureCellSelected;
@@ -1338,6 +1342,10 @@ var
     EnsureNodeSelected;
 
     EnsureSelectCell;
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toMultiCellSelect];
+    EnsureCellNotSelected;
+
+    EnsureSelectCell;
     LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus];
     EnsureCellNotSelected;
 
@@ -1347,6 +1355,10 @@ var
 
     EnsureSelectCell;
     LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions - [toExtendedFocus, toMultiSelect];
+    EnsureCellNotSelected;
+
+    EnsureSelectCell;
+    LTree.TreeOptions.SelectionOptions := LTree.TreeOptions.SelectionOptions + [toFullRowSelect];
     EnsureCellNotSelected;
   end;
 
