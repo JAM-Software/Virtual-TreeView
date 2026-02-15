@@ -3271,10 +3271,10 @@ end;
 procedure TVirtualTreeColumn.SetOptions(Value : TVTColumnOptions);
 
 var
-  ToBeSet,
-    ToBeCleared     : TVTColumnOptions;
-  VisibleChanged,
-    lParentColorSet : Boolean;
+  ToBeSet: TVTColumnOptions;
+  ToBeCleared: TVTColumnOptions;
+  lAppearanceChanged: Boolean;
+  lParentColorSet : Boolean;
 begin
   if FOptions <> Value then
   begin
@@ -3285,7 +3285,7 @@ begin
     if coFixed in ToBeSet then
       FOptions := FOptions - [coDraggable]; // issue #1314
 
-    VisibleChanged := coVisible in (ToBeSet + ToBeCleared);
+    lAppearanceChanged := ([coVisible, coFixed, coStyleColor, coParentBidiMode, coWrapCaption] * (ToBeSet + ToBeCleared)) <> [];
     lParentColorSet := coParentColor in ToBeSet;
 
     if coParentBidiMode in ToBeSet then
@@ -3307,10 +3307,10 @@ begin
 
     Changed(False);
     // Need to repaint and adjust the owner tree too.
-    if not (csLoading in TreeViewControl.ComponentState) and (VisibleChanged or lParentColorSet) and (Owner.UpdateCount = 0) and TreeViewControl.HandleAllocated then
+    if not (csLoading in TreeViewControl.ComponentState) and (lAppearanceChanged or lParentColorSet) and (Owner.UpdateCount = 0) and TreeViewControl.HandleAllocated then
     begin
       TreeViewControl.Invalidate();
-      if VisibleChanged then
+      if lAppearanceChanged then
       begin
         TreeViewControl.DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
         TreeViewControl.UpdateHorizontalScrollBar(False);
