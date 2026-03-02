@@ -111,6 +111,8 @@ begin
 end;
 
 procedure TVTOnDrawTextTests.Setup;
+var
+  LCol1, LCol2: TVirtualTreeColumn;
 begin
   FDrawText1Called := False;
   FDrawTextEx1Called := False;
@@ -127,8 +129,8 @@ begin
 
   fTree.OnGetText := GetTextEvent;
 
-  var LCol1 := fTree.Header.Columns.Add;
-  var LCol2 := fTree.Header.Columns.Add;
+  LCol1 := fTree.Header.Columns.Add;
+  LCol2 := fTree.Header.Columns.Add;
   LCol1.Text := 'Caption';
   LCol2.Text := 'Data';
 
