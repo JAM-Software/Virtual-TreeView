@@ -2751,7 +2751,7 @@ procedure TVTHeader.SaveToStream(const Stream : TStream);
 
 var
   Dummy : Integer;
-  DummyDimension: TDimension;			   
+  DummyDimension: TDimension;
   Tmp   : AnsiString;
 
 begin
@@ -4576,7 +4576,12 @@ begin
   end;
 
   if DblClick then
-    TreeViewControl.DoHeaderDblClick(HitInfo)
+  begin
+    TreeViewControl.DoHeaderDblClick(HitInfo);
+    // Fix for 1359: Fire DoHeaderClick so that checkbox state propagates to child nodes occurs.
+    if hhiOnCheckbox in HitInfo.HitPosition then
+      TreeViewControl.DoHeaderClick(HitInfo);
+  end
   else begin
     if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = TMouseButton.mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
     begin
