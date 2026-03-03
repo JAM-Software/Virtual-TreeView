@@ -78,6 +78,7 @@ const
   StructureChangeTimer     = 6;
   SearchTimer              = 7;
   ThemeChangedTimer        = 8;
+  ChangeCellTimer          = 9;
 
   ThemeChangedTimerDelay   = 500;
 
@@ -389,7 +390,12 @@ type
     toSyncCheckboxesWithSelection,   // If checkboxes are shown, they follow the change in selections. When checkboxes are
                                      // changed, the selections follow them and vice-versa.
                                      // **Only supported for ctCheckBox type checkboxes.
-    toSelectNextNodeOnRemoval        // If the selected node gets deleted, automatically select the next node.
+    toSelectNextNodeOnRemoval,       // If the selected node gets deleted, automatically select the next node.
+
+    /// <summary>
+    /// Enable multi-cell selection feature
+    /// </summary>
+    toMultiCellSelect
     );
   TVTSelectionOptions = set of TVTSelectionOption;
 
@@ -544,7 +550,8 @@ type
     tsVCLDragFinished,        // Flag to avoid triggering the OnColumnClick event twice
     tsPanning,                // Mouse panning is active.
     tsWindowCreating,         // Set during window handle creation to avoid frequent unnecessary updates.
-    tsUseExplorerTheme        // The tree runs under WinVista+ and is using the explorer theme
+    tsUseExplorerTheme,       // The tree runs under WinVista+ and is using the explorer theme
+    tsChangeCellPending       // A cell selection change is pending.
   );
 
 
@@ -1509,8 +1516,9 @@ begin
       if (toMultiSelect in (ToBeCleared + ToBeSet)) or ([toLevelSelectConstraint, toSiblingSelectConstraint] * ToBeSet <> []) then
         ClearSelection;
 
-      // Clear multicell selection when toFullRowSelect is going to be set
-      if toFullRowSelect in ToBeSet then
+      // Clear multicell selection when toFullRowSelect is going to be set or
+      // when a combination of toExtendedFocus, toMultiSelect, toMultiCellSelect is cleared
+      if (toFullRowSelect in ToBeSet) or ([toExtendedFocus, toMultiSelect, toMultiCellSelect] * ToBeCleared <> []) then
         ClearCellSelection;
 
       if (toExtendedFocus in ToBeCleared) and (FocusedColumn > 0) and HandleAllocated then

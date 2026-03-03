@@ -8202,7 +8202,7 @@ object VisibilityForm: TVisibilityForm
       TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toHideFocusRect, toShowBackground, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
       TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect]
-      OnChange = VST2Change
+      OnChange = VST3Change
       OnCollapsed = VSTCollapsedExpanded
       OnExpanded = VSTCollapsedExpanded
       OnFreeNode = VST3FreeNode
@@ -8260,6 +8260,7 @@ object VisibilityForm: TVisibilityForm
     TabOrder = 0
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons, toAutoChangeScale]
     TreeOptions.SelectionOptions = [toMultiSelect]
+    OnChange = VST1Change
     OnFreeNode = VST1FreeNode
     OnGetText = VST1GetText
     OnInitChildren = VST1InitChildren

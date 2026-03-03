@@ -201,6 +201,10 @@ type
   TVTCheckChangingEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; var NewState: TCheckState;
     var Allowed: Boolean) of object;
   TVTChangeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode) of object;
+  /// <summary>
+  /// Cells can be empty
+  /// </summary>
+  TVTChangeCellEvent = procedure(Sender: TBaseVirtualTree; const Cells: TVTCellArray) of object;
   TVTStructureChangeEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Reason: TChangeReason) of object;
   TVTEditCancelEvent = procedure(Sender: TBaseVirtualTree; Column: TColumnIndex) of object;
   TVTEditChangingEvent = procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
@@ -574,6 +578,11 @@ type
 
     // common events
     FOnChange: TVTChangeEvent;                   // selection change
+    /// <summary>
+    /// Used for notifying that cell selection have changed
+    /// </summary>
+    FOnChangeCell: TVTChangeCellEvent;
+                                                 // cells selection change
     FOnStructureChange: TVTStructureChangeEvent; // structural change like adding nodes etc.
     FOnInitChildren: TVTInitChildrenEvent;       // called when a node's children are needed (expanding etc.)
     FOnInitNode: TVTInitNodeEvent;               // called when a node needs to be initialized (child count etc.)
@@ -911,6 +920,7 @@ type
     procedure AdjustPanningCursor(X, Y: TDimension); virtual;
     procedure AdjustTotalHeight(Node: PVirtualNode; Value: TNodeHeight; relative: Boolean = False);
     procedure AdviseChangeEvent(StructureChange: Boolean; Node: PVirtualNode; Reason: TChangeReason); virtual;
+    procedure AdviseChangeCellEvent(const Cells: TVTCellArray); virtual;
     function AllocateInternalDataArea(Size: Cardinal): Cardinal; virtual;
     procedure Animate(Steps, Duration: Cardinal; Callback: TVTAnimationCallback; Data: Pointer); virtual;
     function CalculateSelectionRect(X, Y: TDimension): Boolean; virtual;
@@ -918,6 +928,14 @@ type
     function CanShowDragImage: Boolean; virtual;
     function CanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex): Boolean;
     procedure Change(Node: PVirtualNode); virtual;
+
+    /// <summary>
+    /// Called to notify that cell selection have changed
+    /// </summary>
+    /// <param name="Cells">
+    /// The updated cells
+    /// </param>
+    procedure ChangeCell(const Cells: TVTCellArray); virtual;
     procedure ChangeTreeStatesAsync(EnterStates, LeaveStates: TVirtualTreeStates);
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); override;
     function CheckParentCheckState(Node: PVirtualNode; NewCheckState: TCheckState): Boolean; virtual;
@@ -960,6 +978,18 @@ type
     procedure DoCanSplitterResizeNode(P: TPoint; Node: PVirtualNode; Column: TColumnIndex;
       var Allowed: Boolean); virtual;
     procedure DoChange(Node: PVirtualNode); virtual;
+
+    /// <summary>
+    /// Notifies that the selected cells have changed. Cells can be empty
+    /// </summary>
+    /// <remarks>
+    /// Multiple events might be fired for the same selection
+    /// Do not assume that only 1 cell change event will be fired for the same
+    /// cell change
+    /// </remarks>
+    /// <param name="Cells">
+    /// </param>
+    procedure DoChangeCell(const Cells: TVTCellArray); virtual;
     procedure DoCheckClick(Node: PVirtualNode; NewCheckState: TCheckState); virtual;
     procedure DoChecked(Node: PVirtualNode); virtual;
     function DoChecking(Node: PVirtualNode; var NewCheckState: TCheckState): Boolean; virtual;
@@ -1118,17 +1148,50 @@ type
     function InternalAddToSelection(const NewItems: TNodeArray; NewLength: Integer;
       ForceInsert: Boolean): Boolean; overload;
 
-    // Multiple cell select support / multicell
-    // Multi-selection requires [toExtendedFocus, toMultiSelect] - [toFullRowSelect]
+    /// <summary>
+    /// Adds a cell to the existing selection
+    /// </summary>
+    /// <param name="Cell">
+    /// Cell to add to existing selection
+    /// </param>
+    /// <param name="ForceInsert">
+    /// </param>
+    /// <returns>
+    /// True if added successfully, false if Cell already exists, or not added
+    /// </returns>
     function InternalAddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean): Boolean;
+
+    /// <summary>
+    /// Removes a cell from the existing selection
+    /// </summary>
+    /// <param name="Cell">
+    /// Cell to remove from existing selection
+    /// </param>
     procedure InternalRemoveFromCellSelection(const Cell: TVTCell); virtual;
     procedure InternalClearCellSelection; virtual;
+
+    /// <summary>
+    /// </summary>
+    /// <remarks>
+    /// With the current design, cell multi-selection hinges on the existing
+    /// toMultiSelect in addition to toExtendedFocus being present and
+    /// toFullRowSelect being absent. When overriding this function,
+    /// be sure to check that the logic is compatible with existing code
+    /// </remarks>
+    /// <returns>
+    /// True if cell selection has been enabled, false otherwise
+    /// </returns>
     function  IsCellSelectionEnabled: Boolean; virtual;
     procedure AddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean);
     procedure RemoveFromCellSelection(const Cell: TVTCell);
-    function  InternalIsCellSelected(Node: PVirtualNode; Column: TColumnIndex): Boolean;
+
+    // Internal functions do not check if cell selection is enabled, since they
+    // should already be performed by their wrapper functions
+    function  InternalIsCellSelected(Node: PVirtualNode; Column: TColumnIndex): Boolean; overload;
+    function  InternalIsCellSelected(const Cell: TVTCell): Boolean; overload;
     procedure InternalSelectCells(StartCell, EndCell: TVTCell; AddOnly: Boolean); virtual;
     procedure InternalUnselectCells(StartCell, EndCell: TVTCell); virtual;
+
     procedure ToggleCellSelection(StartCell, EndCell: TVTCell); virtual;
 
     procedure InternalCacheNode(Node: PVirtualNode); virtual;
@@ -1308,6 +1371,16 @@ type
     property OnCanSplitterResizeHeader: TVTCanSplitterResizeHeaderEvent read FOnCanSplitterResizeHeader write FOnCanSplitterResizeHeader;
     property OnCanSplitterResizeNode: TVTCanSplitterResizeNodeEvent read FOnCanSplitterResizeNode write FOnCanSplitterResizeNode;
     property OnChange: TVTChangeEvent read FOnChange write FOnChange;
+
+    /// <summary>
+    /// Notifies that the selected cells have changed. Cells can be empty
+    /// </summary>
+    /// <remarks>
+    /// Multiple events might be fired for the same selection
+    /// Do not assume that only 1 cell change event will be fired for the same
+    /// cell change
+    /// </remarks>
+    property OnChangeCell: TVTChangeCellEvent read FOnChangeCell write FOnChangeCell;
     property OnChecked: TVTChangeEvent read FOnChecked write FOnChecked;
     property OnChecking: TVTCheckChangingEvent read FOnChecking write FOnChecking;
     property OnCollapsed: TVTChangeEvent read FOnCollapsed write FOnCollapsed;
@@ -1630,7 +1703,9 @@ type
     /// If True, adds the range to the existing selection without clearing it.
     /// </param>
     procedure SelectCells(StartNode: PVirtualNode; StartColumn:
-      TColumnIndex; EndNode: PVirtualNode; EndColumn: TColumnIndex; AddOnly: Boolean);
+      TColumnIndex; EndNode: PVirtualNode; EndColumn: TColumnIndex; AddOnly: Boolean); overload;
+
+    procedure SelectCells(const StartCell, EndCell: TVTCell; AddOnly: Boolean); overload;
 
     /// <summary>
     /// Unselects the rectangular range of cells specified by the rest of the
@@ -1852,7 +1927,13 @@ var
 begin
   S := TVTCell.Create(StartNode, StartColumn);
   E := TVTCell.Create(EndNode, EndColumn);
-  InternalSelectCells(S, E, AddOnly);
+  SelectCells(S, E, AddOnly);
+end;
+
+procedure TBaseVirtualTree.SelectCells(const StartCell, EndCell: TVTCell; AddOnly: Boolean);
+begin
+  InternalSelectCells(StartCell, EndCell, AddOnly);
+  ChangeCell(FSelectedCells);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1864,20 +1945,20 @@ begin
   S := TVTCell.Create(StartNode, StartColumn);
   E := TVTCell.Create(EndNode, EndColumn);
   InternalUnselectCells(S, E);
+  ChangeCell(FSelectedCells);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.ClearCellSelection;
-
 begin
   InternalClearCellSelection;
+  ChangeCell([]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 function TBaseVirtualTree.IsCellSelected(Node: PVirtualNode; Column: TColumnIndex): Boolean;
-
 begin
   Result := InternalIsCellSelected(Node, Column);
 end;
@@ -3671,10 +3752,11 @@ var
   ClickedCell: TVTCell;
 
 // Handles multi-selection with mouse click.
-
+  LCellSelectionEnabled: LongBool;
 begin
+  LCellSelectionEnabled := IsCellSelectionEnabled;
   // Support cell selection when clicking a specific column (and full-row-select is off)
-  if (FLastHitInfo.HitColumn > NoColumn) and not (toFullRowSelect in FOptions.SelectionOptions) then
+  if (FLastHitInfo.HitColumn > NoColumn) and LCellSelectionEnabled then
   begin
     // build the clicked cell (use ClickIndex as it reflects the saved hit column)
     ClickedCell.Node := NewNode;
@@ -3695,20 +3777,21 @@ begin
             else
               FCellRangeAnchor := ClickedCell;
           end;
-          InternalSelectCells(FCellRangeAnchor, ClickedCell, True);
+          SelectCells(FCellRangeAnchor, ClickedCell, True);
+          Invalidate;
         end
-      else
-      begin
-        if not (toSiblingSelectConstraint in FOptions.SelectionOptions) then
-          FCellRangeAnchor := ClickedCell;
-        if DragPending then
-          DoStateChange([tsToggleFocusedSelection])
         else
-          if InternalIsCellSelected(ClickedCell.Node, ClickedCell.Column) then
-            RemoveFromCellSelection(ClickedCell)
+        begin
+          if not (toSiblingSelectConstraint in FOptions.SelectionOptions) then
+            FCellRangeAnchor := ClickedCell;
+          if DragPending then
+            DoStateChange([tsToggleFocusedSelection])
           else
-            AddToCellSelection(ClickedCell, True);
-      end;
+            if InternalIsCellSelected(ClickedCell.Node, ClickedCell.Column) then
+              RemoveFromCellSelection(ClickedCell)
+            else
+              AddToCellSelection(ClickedCell, True);
+        end;
     end
     else
       // Shift key down
@@ -3724,15 +3807,15 @@ begin
           else
             FCellRangeAnchor := ClickedCell;
         end;
-        InternalSelectCells(FCellRangeAnchor, ClickedCell, False);
+        SelectCells(FCellRangeAnchor, ClickedCell, True);
         Invalidate;
       end
       else
       begin
-          // Clear any existing cell selection and select the clicked cell.
-          InternalClearCellSelection;
-          AddToCellSelection(ClickedCell, True);
-          FCellRangeAnchor := ClickedCell;
+        // Clear any existing cell selection and select the clicked cell.
+        InternalClearCellSelection;
+        AddToCellSelection(ClickedCell, True);
+        FCellRangeAnchor := ClickedCell;
       end;
     Exit;
   end;
@@ -4100,7 +4183,7 @@ function TBaseVirtualTree.PackArray({*}const TheArray: TNodeArray; Count: Intege
 // The returned value is the number of remaining entries in the array, so the caller can reallocate (shorten)
 // the selection array if needed or -1 if nothing needs to be changed.
 
-{$IF Defined(CPUX64) or Defined(VT_FMX)}
+{$IF Defined(CPUX64) or not Defined(ASSEMBLER)}
 var
   Source, Dest: ^PVirtualNode;
   ConstOne: NativeInt;
@@ -6922,6 +7005,8 @@ var
 
   //--------------- end local functions ---------------------------------------
 
+var
+  SelectedCell, OldCell: TVTCell;
 begin
   // Make form key preview work and let application modify the key if it wants this.
   inherited;
@@ -7353,9 +7438,9 @@ begin
         if (ssShift in Shift) and LCellSelectionEnabled then
         begin
           // multicell support / select multiple cells
-          var SelectedCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
-          var OldCell := FCellRangeAnchor;
-          InternalSelectCells(OldCell, SelectedCell, True);
+          SelectedCell := TVTCell.Create(FFocusedNode, FFocusedColumn);
+          OldCell := FCellRangeAnchor;
+          SelectCells(OldCell, SelectedCell, True);
         end;
 
         if Assigned(FFocusedNode) then
@@ -8144,6 +8229,9 @@ begin
       ChangeTimer:
         if tsChangePending in FStates then // see issue #602
           DoChange(FLastChangedNode);
+      ChangeCellTimer:
+        if tsChangeCellPending in FStates then
+          DoChangeCell(FSelectedCells);
       StructureChangeTimer:
         DoStructureChange(FLastStructureChangeNode, FLastStructureChangeReason);
       SearchTimer:
@@ -8432,6 +8520,16 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+procedure TBaseVirtualTree.AdviseChangeCellEvent(const Cells: TVTCellArray);
+begin
+  if tsChangeCellPending in FStates then
+    StopTimer(ChangeCellTimer)
+  else
+    DoStateChange([tsChangeCellPending]);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.AllocateInternalDataArea(Size: Cardinal): Cardinal;
 
 // Simple registration method to be called by each descendant to claim their internal data area.
@@ -8624,6 +8722,21 @@ begin
       SetTimer(Handle, ChangeTimer, FChangeDelay, nil)
     else
       DoChange(Node);
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.ChangeCell(const Cells: TVTCellArray);
+begin
+  AdviseChangeCellEvent(Cells);
+
+  if FUpdateCount = 0 then
+  begin
+    if (FChangeDelay > 0) and HandleAllocated and not (tsSynchMode in FStates) then
+      SetTimer(Handle, ChangeCellTimer, FChangeDelay, nil)
+    else
+      DoChangeCell(Cells);
   end;
 end;
 
@@ -9778,6 +9891,18 @@ begin
   // This is necessary to allow descendants to override this method and get the node then.
   DoStateChange([], [tsChangePending]);
   FLastChangedNode := nil;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.DoChangeCell(const Cells: TVTCellArray);
+begin
+  StopTimer(ChangeCellTimer);
+  if Assigned(FOnChangeCell) then
+    begin
+      FOnChangeCell(Self, Cells);
+    end;
+  DoStateChange([], [tsChangeCellPending]);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -12644,6 +12769,9 @@ var
 
   //--------------- end local functions ---------------------------------------
 
+var
+  CellClickHandled: Boolean;
+  ClickedCell: TVTCell;
 begin
   if tsPanning in FStates then
   begin
@@ -12716,6 +12844,8 @@ begin
   else
     AltPressed := False;
 
+  // Cell multi-selection hinges on the existing toMultiSelect in addition
+  // to toExtendedFocus being present and toFullRowSelect being absent
   LCellSelectionEnabled := IsCellSelectionEnabled;
 
   // Various combinations determine what states the tree enters now.
@@ -12737,8 +12867,9 @@ begin
   // Early anchor set for plain clicks helps avoid race where
   // later handlers see the anchor as nil and fall back to the first cell.
   if ShiftEmpty and
-    not (toFullRowSelect in FOptions.SelectionOptions) and Assigned(HitInfo.HitNode) and (Column > NoColumn) then
+    (LCellSelectionEnabled and Assigned(HitInfo.HitNode) and (Column > NoColumn)) then
   begin
+    InternalClearCellSelection;
     FCellRangeAnchor.Node := HitInfo.HitNode;
     FCellRangeAnchor.Column := Column;
   end;
@@ -12860,7 +12991,7 @@ begin
     end
     else
       ClearSelection(False);
-    end;
+  end;
 
   // pending node edit
   if Focused and
@@ -12916,15 +13047,15 @@ begin
       HandleClickSelection(LastFocused, HitInfo.HitNode, ShiftState, AutoDrag)
     else
     begin
-      var CellClickHandled: Boolean := False;
+      CellClickHandled := False;
       if ShiftEmpty then
         FRangeAnchor := HitInfo.HitNode;
 
       // If a column was hit on a plain click, clear existing cell selection and select the clicked cell.
-      if ShiftEmpty and not (toFullRowSelect in FOptions.SelectionOptions) and Assigned(HitInfo.HitNode) and (Column > NoColumn) then
+      // !!! MultiSelect <> LCellSelectionEnabled, not interchangeable !!!
+      if ShiftEmpty and LCellSelectionEnabled and Assigned(HitInfo.HitNode) and (Column > NoColumn) then
       begin
         InternalClearCellSelection;
-        var ClickedCell: TVTCell;
         ClickedCell.Node := HitInfo.HitNode;
         ClickedCell.Column := Column;
         AddToCellSelection(ClickedCell, True);
@@ -13718,11 +13849,14 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.MarkCutCopyCells;
+var
+  I: Integer;
+  LCell: TVTCell;
 begin
   // Mark that the node is included in cut/copy for multicell
-  for var I := 0 to FSelectedCellCount - 1 do
+  for I := 0 to FSelectedCellCount - 1 do
     begin
-      var LCell := FSelectedCells[I];
+      LCell := FSelectedCells[I];
       Include(LCell.Node.States, vsCutOrCopy);
     end;
 end;
@@ -15476,11 +15610,12 @@ end;
 procedure TBaseVirtualTree.InternalClearCellSelection;
 var
   i: Integer;
+  LColumnIndex: TColumnIndex;
 begin
   // Invalidate all previously selected cells so their selection highlight is erased
   for i := 0 to FSelectedCellCount - 1 do
   begin
-    var LColumnIndex := FSelectedCells[i].Column;
+    LColumnIndex := FSelectedCells[i].Column;
     FHeader.Columns[LColumnIndex].Options :=
       FHeader.Columns[LColumnIndex].Options - [coMulticellSelected];
 
@@ -15498,6 +15633,7 @@ end;
 function TBaseVirtualTree.IsCellSelectionEnabled: Boolean;
 begin
   Result := (toMultiSelect in FOptions.SelectionOptions) and
+            (toMultiCellSelect in FOptions.SelectionOptions) and
             (toExtendedFocus in FOptions.SelectionOptions) and
             not (toFullRowSelect in FOptions.SelectionOptions);
 end;
@@ -15506,7 +15642,7 @@ end;
 
 procedure TBaseVirtualTree.AddToCellSelection(const Cell: TVTCell; ForceInsert: Boolean);
 begin
-  if FSelectionLocked then
+  if FSelectionLocked or not IsCellSelectionEnabled then
     Exit;
   if InternalAddToCellSelection(Cell, ForceInsert) then
   begin
@@ -15514,6 +15650,7 @@ begin
       InvalidateNode(Cell.Node)
     else
       InvalidateColumn(Cell.Column);
+    ChangeCell(FSelectedCells);
   end;
 end;
 
@@ -15521,13 +15658,14 @@ end;
 
 procedure TBaseVirtualTree.RemoveFromCellSelection(const Cell: TVTCell);
 begin
-  if FSelectionLocked then
+  if FSelectionLocked or not IsCellSelectionEnabled then
     Exit;
   InternalRemoveFromCellSelection(Cell);
   if Assigned(Cell.Node) then
     InvalidateNode(Cell.Node)
   else
     InvalidateColumn(Cell.Column);
+  ChangeCell(FSelectedCells);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -15544,16 +15682,23 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.InternalIsCellSelected(const Cell: TVTCell): Boolean;
+begin
+  Result := InternalIsCellSelected(Cell.Node, Cell.Column);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 procedure TBaseVirtualTree.InternalSelectCells(StartCell, EndCell: TVTCell; AddOnly: Boolean);
+type
+  TNextColFunc = function (Column: TColumnIndex; ConsiderAllowFocus: Boolean = False): TColumnIndex of object;
 var
   NodeFrom, NodeTo, NodeIter: PVirtualNode;
   ColFrom, ColTo, ColIter: TColumnIndex;
   ColNext: TColumnIndex;
   TempCell: TVTCell;
+  NextColFunc: TNextColFunc;
 begin
-  if not IsCellSelectionEnabled then
-    Exit;
-
   // Normalize start cell
   if StartCell.Node = nil then
     StartCell.Node := FRoot.FirstChild;
@@ -15582,71 +15727,37 @@ begin
   if not AddOnly then
     InternalClearCellSelection;
 
+  if ColFrom <= ColTo then
+    NextColFunc := FHeader.Columns.GetNextVisibleColumn else
+    NextColFunc := FHeader.Columns.GetPreviousVisibleColumn;
+
   NodeIter := NodeFrom;
   while NodeIter <> NodeTo do
   begin
     // iterate columns between ColFrom and ColTo (inclusive)
-    if ColFrom <= ColTo then
-    begin
-      ColIter := ColFrom;
-      repeat
-        begin
-          TempCell.Node := NodeIter; TempCell.Column := ColIter;
-          AddToCellSelection(TempCell, True);
-        end;
-        ColNext := FHeader.Columns.GetNextVisibleColumn(ColIter);
-        if ColIter = ColTo then
-          Break;
-        ColIter := ColNext;
-      until ColIter = InvalidColumn;
-    end
-    else
-    begin
-      ColIter := ColFrom;
-      repeat
-        begin
-          TempCell.Node := NodeIter; TempCell.Column := ColIter;
-          AddToCellSelection(TempCell, True);
-        end;
-        ColNext := FHeader.Columns.GetPreviousVisibleColumn(ColIter);
-        if ColIter = ColTo then
-          Break;
-        ColIter := ColNext;
-      until ColIter = InvalidColumn;
-    end;
+    ColIter := ColFrom;
+    repeat
+      TempCell.Node := NodeIter; TempCell.Column := ColIter;
+      AddToCellSelection(TempCell, True);
+      ColNext := NextColFunc(ColIter);
+      if ColIter = ColTo then
+        Break;
+      ColIter := ColNext;
+    until ColIter = InvalidColumn;
     NodeIter := GetNextVisible(NodeIter, True);
   end;
   // include last node
   if Assigned(NodeTo) then
   begin
-    if ColFrom <= ColTo then
-    begin
-      ColIter := ColFrom;
-      repeat
-        begin
-          TempCell.Node := NodeTo; TempCell.Column := ColIter;
-          AddToCellSelection(TempCell, True);
-        end;
-        ColNext := FHeader.Columns.GetNextVisibleColumn(ColIter);
-        if ColIter = ColTo then
-          Break;
-        ColIter := ColNext;
-      until ColIter = InvalidColumn;
-    end
-    else
-    begin
-      ColIter := ColFrom;
-      repeat
-        begin
-          TempCell.Node := NodeTo; TempCell.Column := ColIter;
-          AddToCellSelection(TempCell, True);
-        end;
-        ColNext := FHeader.Columns.GetPreviousVisibleColumn(ColIter);
-        if ColIter = ColTo then
-          Break;
-        ColIter := ColNext;
-      until ColIter = InvalidColumn;
-    end;
+    ColIter := ColFrom;
+    repeat
+      TempCell.Node := NodeTo; TempCell.Column := ColIter;
+      AddToCellSelection(TempCell, True);
+      ColNext := NextColFunc(ColIter);
+      if ColIter = ColTo then
+        Break;
+      ColIter := ColNext;
+    until ColIter = InvalidColumn;
   end;
 end;
 
@@ -15659,9 +15770,6 @@ var
   ColNext: TColumnIndex;
   TempCell: TVTCell;
 begin
-  if not IsCellSelectionEnabled then
-    Exit;
-
   if StartCell.Node = nil then
     StartCell.Node := FRoot.FirstChild;
 
@@ -15761,7 +15869,8 @@ var
   Found: Boolean;
   i: Integer;
 begin
-  if FSelectionLocked then Exit;
+  if FSelectionLocked or not IsCellSelectionEnabled then
+    Exit;
 
   if StartCell.Node = nil then
     StartCell.Node := FRoot.FirstChild;
@@ -15877,6 +15986,8 @@ begin
       until ColIter = InvalidColumn;
     end;
   end;
+
+  DoChangeCell(FSelectedCells);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -16632,6 +16743,7 @@ begin
         DoStateChange([], ClipboardStates);
       end;
       ClearSelection;
+      ClearCellSelection;
       FFocusedNode := nil;
       FLastSelected := nil;
       FCurrentHotNode := nil;

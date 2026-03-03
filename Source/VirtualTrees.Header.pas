@@ -468,6 +468,9 @@ uses
   VirtualTrees.BaseAncestorVcl, // to eliminate H2443 about inline expanding
   VirtualTrees.DataObject;
 
+resourcestring
+  SConstraintsNotAllowed = 'Cannot set mininum constraints when there are no columns!';
+
 type
   TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
   TVirtualTreeColumnCracker = class(TVirtualTreeColumn);
@@ -1267,11 +1270,28 @@ procedure TVTHeader.FixedAreaConstraintsChanged(Sender : TObject);
 
 //This method gets called when FFixedAreaConstraints is changed.
 
+  function HasFixedColumns: LongBool;
+  var
+    I: Integer;
+  begin
+    Result := False;
+    for I := 0 to Columns.Count-1 do
+      begin
+        if coFixed in Columns[I].Options then
+          Exit(True);
+      end;
+  end;
+
 begin
   if Tree.HandleAllocated then
     RescaleHeader
   else
     Include(FStates, hsNeedScaling);
+  if (FixedAreaConstraints.MinWidthPercent > 0) and not HasFixedColumns then
+    begin
+      FixedAreaConstraints.FMinWidthPercent := 0;
+      raise EVirtualTreeError.CreateRes(PResStringRec(@SConstraintsNotAllowed));
+    end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2647,6 +2667,8 @@ begin
         if MaxDelta < Abs(ChangeBy) then
           if not ReduceConstraints then
             Break;
+        if ColCount = 0 then // Fixes #1236: infinite loop
+          Break;
       until (MaxDelta >= Abs(ChangeBy)) or not (hsScaling in FStates);
 
       if ColCount = 0 then
@@ -3249,10 +3271,10 @@ end;
 procedure TVirtualTreeColumn.SetOptions(Value : TVTColumnOptions);
 
 var
-  ToBeSet,
-    ToBeCleared     : TVTColumnOptions;
-  VisibleChanged,
-    lParentColorSet : Boolean;
+  ToBeSet: TVTColumnOptions;
+  ToBeCleared: TVTColumnOptions;
+  lAppearanceChanged: Boolean;
+  lParentColorSet : Boolean;
 begin
   if FOptions <> Value then
   begin
@@ -3263,7 +3285,7 @@ begin
     if coFixed in ToBeSet then
       FOptions := FOptions - [coDraggable]; // issue #1314
 
-    VisibleChanged := coVisible in (ToBeSet + ToBeCleared);
+    lAppearanceChanged := ([coVisible, coFixed, coStyleColor, coParentBidiMode, coWrapCaption] * (ToBeSet + ToBeCleared)) <> [];
     lParentColorSet := coParentColor in ToBeSet;
 
     if coParentBidiMode in ToBeSet then
@@ -3285,10 +3307,10 @@ begin
 
     Changed(False);
     // Need to repaint and adjust the owner tree too.
-    if not (csLoading in TreeViewControl.ComponentState) and (VisibleChanged or lParentColorSet) and (Owner.UpdateCount = 0) and TreeViewControl.HandleAllocated then
+    if not (csLoading in TreeViewControl.ComponentState) and (lAppearanceChanged or lParentColorSet) and (Owner.UpdateCount = 0) and TreeViewControl.HandleAllocated then
     begin
       TreeViewControl.Invalidate();
-      if VisibleChanged then
+      if lAppearanceChanged then
       begin
         TreeViewControl.DoColumnVisibilityChanged(Self.Index, coVisible in ToBeSet);
         TreeViewControl.UpdateHorizontalScrollBar(False);
@@ -5299,9 +5321,11 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumns.GetSelectedCellColumns : TColumnsArray;
+var
+  LColumnIndex: TColumnIndex;
 begin
   Result := [];
-  var LColumnIndex := GetFirstColumn;
+  LColumnIndex := GetFirstColumn;
   if LColumnIndex = InvalidColumn then
     Exit;
   while LColumnIndex <> InvalidColumn do
@@ -5315,8 +5339,10 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 function TVirtualTreeColumns.HasMulticellSelection: Boolean;
+var
+  LColumnIndex: TColumnIndex;
 begin
-  var LColumnIndex := GetFirstColumn;
+  LColumnIndex := GetFirstColumn;
   if LColumnIndex = InvalidColumn then
     Exit(False);
   while LColumnIndex <> InvalidColumn do
