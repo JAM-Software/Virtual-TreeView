@@ -2083,16 +2083,38 @@ procedure TVTHeader.UpdateMainColumn();
 
 //Called once the load process of the owner tree is done.
 
+var
+  lOldMainColumn: TColumnIndex;
+  lNewMainColumn: TColumnIndex;
 begin
   if FMainColumn < 0 then
     MainColumn := 0;
   if FMainColumn > FColumns.Count - 1 then
     MainColumn := FColumns.Count - 1;
-  if (FMainColumn >= 0) and not (coVisible in Self.Columns[FMainColumn].Options) then
-  begin
+
+  lOldMainColumn := FMainColumn;
+
+  // Issue #1358: Prefer MainColumn to be on position 0 (where checkboxes/icons are) If position 0 is visible, use it; otherwise use first visible column
+  if (FColumns.Count > 0) and (coVisible in FColumns[0].Options) then
+    lNewMainColumn := 0
+  else if (FMainColumn >= 0) and not (coVisible in Self.Columns[FMainColumn].Options) then
     //Issue #946: Choose new MainColumn if current one ist not visible
-    MainColumn := Self.Columns.GetFirstVisibleColumn();
-  end
+    lNewMainColumn := Self.Columns.GetFirstVisibleColumn()
+  else
+    lNewMainColumn := FMainColumn;
+
+  if (lNewMainColumn <> lOldMainColumn) and (lOldMainColumn >= 0) and (lOldMainColumn < FColumns.Count) and
+     (lNewMainColumn >= 0) and (lNewMainColumn < FColumns.Count) then
+  begin
+    if FColumns[lOldMainColumn].CheckBox then
+    begin
+      FColumns[lNewMainColumn].CheckBox := True;
+      FColumns[lOldMainColumn].CheckBox := False;
+    end;
+  end;
+
+  if lNewMainColumn <> FMainColumn then
+    MainColumn := lNewMainColumn;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2751,7 +2773,7 @@ procedure TVTHeader.SaveToStream(const Stream : TStream);
 
 var
   Dummy : Integer;
-  DummyDimension: TDimension;			   
+  DummyDimension: TDimension;
   Tmp   : AnsiString;
 
 begin
@@ -3299,8 +3321,9 @@ begin
     if coAutoSpring in ToBeSet then
       FSpringRest := 0;
 
-    if coVisible in ToBeCleared then
-      Header.UpdateMainColumn(); // Fixes issue #946
+    // Update MainColumn when visibility changes
+    if (coVisible in ToBeCleared) or (coVisible in ToBeSet) then
+      Header.UpdateMainColumn(); // Fixes issue #946 and #1358
 
     if ((coFixed in ToBeSet) or (coFixed in ToBeCleared)) and (coVisible in FOptions) then
       Header.RescaleHeader;
@@ -4576,7 +4599,12 @@ begin
   end;
 
   if DblClick then
-    TreeViewControl.DoHeaderDblClick(HitInfo)
+  begin
+    TreeViewControl.DoHeaderDblClick(HitInfo);
+    // Fix for 1359: Fire DoHeaderClick so that checkbox state propagates to child nodes occurs.
+    if hhiOnCheckbox in HitInfo.HitPosition then
+      TreeViewControl.DoHeaderClick(HitInfo);
+  end
   else begin
     if (hoHeaderClickAutoSort in Header.Options) and (HitInfo.Button = TMouseButton.mbLeft) and not (hhiOnCheckbox in HitInfo.HitPosition) and (HitInfo.Column >= 0) then
     begin
