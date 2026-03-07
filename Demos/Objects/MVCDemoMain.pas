@@ -1,7 +1,7 @@
-unit MVCDemoMain;
+Ôªøunit MVCDemoMain;
 
-{ (c) 2000 Marian Aldenhˆvel
-           Hainstraﬂe 8
+{ (c) 2000 Marian Aldenh√∂vel
+           Hainstra√üe 8
            53121 Bonn
            +49 228 6203366
            Fax: +49 228 624031
@@ -13,9 +13,11 @@ unit MVCDemoMain;
 
 interface
 
-uses Windows,Messages,SysUtils,Classes,Graphics,Controls,Forms,Dialogs,
-     MVCTypes,MVCPanel,StdCtrls,ExtCtrls,ImgList,VirtualTrees,ComCtrls,
-  Buttons, System.ImageList;
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, MVCTypes, MVCPanel, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Vcl.ImgList, VirtualTrees, Vcl.ComCtrls, Vcl.Buttons,
+  System.ImageList;
 
 type TfmMVCDemo=class(TForm)
        pnlControls:TPanel;
