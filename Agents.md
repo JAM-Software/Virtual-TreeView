@@ -29,3 +29,18 @@ Important Directories
 ### Sample Projects
 
 - [`Demos/`](Demos/) - **sample porjects** showing how to use the compoents.
+
+## How to build
+
+### Unit Tests
+
+See <Readme.md#Running-Tests>
+
+### All relevant code
+
+Always build all relevant code after making chnages to see if everything compiles using:
+
+```cmd
+RsVars.bat
+MsBuild.exe VirtualTreesDevelopment.groupproj
+```
