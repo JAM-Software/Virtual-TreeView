@@ -28,7 +28,7 @@ const
   ShadowSize               = 5;    // Size in pixels of the hint shadow. This value has no influence on Win2K and XP systems
                                    // as those OSes have native shadow support.
   cDefaultTextMargin       = 4;    // The default margin of text
-  cInitialDefaultNodeHeight= 18;   // the default value of the DefualtNodeHeight property
+  cInitialDefaultNodeHeight= 19;   // the default value of the DefaultNodeHeight property, which results in the font Segoe UI 9pt
 
   // Special identifiers for columns.
   NoColumn                 = - 1;
@@ -359,8 +359,9 @@ type
     toAutoHideButtons,               // Node buttons are hidden when there are child nodes, but all are invisible.
     toAutoDeleteMovedNodes,          // Delete nodes which where moved in a drag operation (if not directed otherwise).
     toDisableAutoscrollOnFocus,      // Disable scrolling a node or column into view if it gets focused.
-    toAutoChangeScale,               // Change default node height and header height automatically according to the height of the used font.
-                                     // The property DefaultNodeHeight then has no effect. Use the property TextMargin to increase the row height.
+    toAutoChangeScale,               // Change default node height and header height automatically according to the height of the used font, which is dpi-scaled.
+                                     // The property DefaultNodeHeight then has no effect and should not be used. Use the property TextMargin to increase the row height.
+                                     // The height of existing nodes will be rescaled whenever a new font height is detected.
     toAutoFreeOnCollapse,            // Frees any child node after a node has been collapsed (HasChildren flag stays there).
     toDisableAutoscrollOnEdit,       // Do not center a node horizontally when it is edited.
     toAutoBidiColumnOrdering         // When set then columns (if any exist) will be reordered from lowest index to highest index
