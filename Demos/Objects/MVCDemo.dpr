@@ -1,7 +1,7 @@
-program MVCDemo;
+Ôªøprogram MVCDemo;
 
-{ (c) 2000 Marian Aldenhˆvel
-           Hainstraﬂe 8
+{ (c) 2000 Marian Aldenh√∂vel
+           Hainstra√üe 8
            53121 Bonn
            +49 228 6203366
            Fax: +49 228 624031
@@ -12,12 +12,13 @@ program MVCDemo;
 uses
   Forms,
   MVCDemoMain in 'MVCDemoMain.pas' {fmMVCDemo},
-  MVCPanel in 'MVCPanel.pas';
+  MVCPanel in 'MVCPanel.pas',
+  MVCTypes in 'MVCTypes.pas';
 
 {$R *.RES}
 
 begin
   Application.Initialize;
-  Application.CreateForm(TfmMVCDemo,fmMVCDemo);
+  Application.CreateForm(TfmMVCDemo, fmMVCDemo);
   Application.Run;
 end.
