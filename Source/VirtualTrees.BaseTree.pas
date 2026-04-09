@@ -12634,6 +12634,9 @@ begin
       if HitInfo.HitNode <> nil then
         DoNodeDblClick(HitInfo);
 
+    if (vsDeleting in HitInfo.HitNode.States) then
+      exit; // Double clicked node was deleted, so do not further process the node. See issue #1365
+
     Node := nil;
     if (hiOnItem in HitInfo.HitPositions) and (HitInfo.HitColumn > NoColumn) and
        (coFixed in FHeader.Columns[HitInfo.HitColumn].Options) then
