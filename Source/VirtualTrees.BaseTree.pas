@@ -12634,7 +12634,7 @@ begin
       if HitInfo.HitNode <> nil then
         DoNodeDblClick(HitInfo);
 
-    if (vsDeleting in HitInfo.HitNode.States) then
+    if not Assigned (fLastHitInfo.HitNode) then
       exit; // Double clicked node was deleted, so do not further process the node. See issue #1365
 
     Node := nil;
