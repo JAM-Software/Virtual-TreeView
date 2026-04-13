@@ -12619,6 +12619,7 @@ var
   MayEdit: Boolean;
 
 begin
+  fLastHitInfo := HitInfo;
   MayEdit := not (tsEditing in FStates) and (toEditOnDblClick in FOptions.MiscOptions);
   if tsEditPending in FStates then
   begin
