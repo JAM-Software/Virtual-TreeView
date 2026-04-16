@@ -8781,7 +8781,7 @@ end;
 procedure TBaseVirtualTree.ScaleNodeHeights(M, D: TDimension);
 var
   Run: PVirtualNode;
-  lNewNodeTotalHeight: Cardinal;
+  lNewNodeTotalHeight: TNodeHeight;
 begin
   // Scale also node heights
   BeginUpdate();
@@ -8796,7 +8796,7 @@ begin
         Run.SetNodeHeight(MulDiv(Run.NodeHeight, M, D));
         // The next three lines fix issue #1000
         lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
-        FRoot.TotalHeight := Cardinal(Int64(FRoot.TotalHeight) + Int64(lNewNodeTotalHeight) - Int64(Run.TotalHeight)); // Avoiding EIntOverflow exception.
+        FRoot.TotalHeight := TNodeHeight(Int64(FRoot.TotalHeight) + Int64(lNewNodeTotalHeight) - Int64(Run.TotalHeight)); // Avoiding EIntOverflow exception.
         Run.TotalHeight := lNewNodeTotalHeight;
       end;
       Run := GetNextNoInit(Run);
