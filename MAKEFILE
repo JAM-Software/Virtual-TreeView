@@ -16,7 +16,7 @@ BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2019\Enterprise\MSBuild\C
 BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\msbuild.exe"
 !ELSE IF EXIST("$(PROGRAMFILESX64)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe")
 BUILDEXE = "$(PROGRAMFILESX64)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe"
-!ELSE 
+!ELSE
 BUILDEXE = "msbuild.exe"
 !ENDIF
 
@@ -27,12 +27,20 @@ BDSCOMMONDIRMAIN = %PUBLIC%\Documents\Embarcadero\Studio
 
 BUILD = $(BUILDEXE) /t:Rebuild
 
-clean:  
+clean:
 	ECHO Project: $(PROJECT) $(EMBARCADERO)
 	DEL /S /Q .\*.HPP
 	DEL /S /Q .\*.DCU
 #TODO: Add demos and package folders
-	 
+
+13.0 13.1: Source\*.pas "Packages\RAD Studio 10.4+\$(PROJECT)R.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj" "Packages\RAD Studio 10.4+\$(PROJECT)D.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
+	SET BDS=$(STUDIO)\37.0
+	$(BUILD) /property:Platform=Win32 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
+	$(BUILD) /property:Platform=Win32 "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
+	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
+	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
+	$(MAKE) _samples
+
 12.3: Source\*.pas "Packages\RAD Studio 10.4+\$(PROJECT)R.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj" "Packages\RAD Studio 10.4+\$(PROJECT)D.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\23.0
 	$(BUILD) /property:Platform=Win32 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
@@ -40,14 +48,14 @@ clean:
 	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
 	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
 	$(MAKE) _samples
-	 
+
 12.0: Source\*.pas "Packages\RAD Studio 10.4+\$(PROJECT)R.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj" "Packages\RAD Studio 10.4+\$(PROJECT)D.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\23.0
 	$(BUILD) "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
 	$(BUILD) "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
 	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
 	$(MAKE) _samples
-	 
+
 # build all packages for Delphi 10.4.   Note: The variable $@ is expanded to the build target name
 10.1 10.2 10.3 10.4+: Source\*.pas "Packages\RAD Studio $@\$(PROJECT)R.dpk" "Packages\RAD Studio $@\$(PROJECT)R.dproj" "Packages\RAD Studio $@\$(PROJECT)D.dpk" "Packages\RAD Studio $@\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\21.0
@@ -69,15 +77,15 @@ clean:
 	$(BUILD) "Demos\OLE\OLE.dproj"
 
 _samples: "Demos\Advanced\Advanced.exe" "Demos\Minimal\Minimal.exe" "Demos\Objects\Objects.exe" "Demos\OLE\OLE.exe"
-	
-_continuousbuilds: clean 12.3
+
+_continuousbuilds: clean 13.1
 
 _release:
 #This small batch file is intended to create a source code release file of the VirtualTreeView as ZIP archive
 #It expects the ZIP.EXE from the InfoZip project V3.0 or higher to be in the system's search path
 #Download e.g. from: ftp://ftp.info-zip.org/pub/infozip/win32/
 	ZIP -9 -r .\VirtualTreeView.zip  INSTALL.txt Changes.txt Source Design Packages Demos Contributions Help\VirtualTreeview.chm -i *.pas -i *.dpk -i *.groupproj -i *.dproj -i *.cbproj -i *.hlp -i *.rc -i *.res -i *.cfg -i *.dpr -i *.dof -i *.bpr -i *.dfm -i *.cpp -i *.inc -i *.dcr -i *.chm -i *.png -i *.js -i *.txt -i *.bmp -i *.uni
-	ECHO Source code zip archive "VirtualTreeView.zip" created. 
+	ECHO Source code zip archive "VirtualTreeView.zip" created.
 	ECHO !!! Please add version number to ZIP file name!!!
 	ECHO !!! Please create release at: https://github.com/Virtual-TreeView/Virtual-TreeView/releases
 	ECHO !!! Let JAM web-team upload the file to our server at https://www.jam-software.com/virtual-treeview
