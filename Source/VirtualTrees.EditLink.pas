@@ -832,9 +832,9 @@ var
 begin
   if not FStopping then
   begin
-    //Check if the provided rect height is smaller than the edit control height.
+    //Check if the provided rect height is smaller than the minimal height needed for the caret to be visible.
     Height := R.Bottom - R.Top;
-    if Height < Edit.ClientHeight then
+    if Height < Edit.CalcMinHeight then
     begin
       //If the height is smaller than the minimal height we must correct it, otherwise the caret will be invisible.
       tOffset := Edit.CalcMinHeight - Height;
