@@ -14675,15 +14675,15 @@ const
   //--------------- end local functions ---------------------------------------
 
 begin
+  // Issue #765: the row rectangle is needed for the full row focus rect with and
+  // without the explorer theme, so compute it unconditionally.
+  RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
+  if (Header.Columns.Count = 0) and (toFullRowSelect in TreeOptions.SelectionOptions) then
+    RowRect.Right := Max(ClientWidth, RowRect.Right);
+  if toShowVertGridLines in FOptions.PaintOptions then
+    Dec(RowRect.Right);
   if tsUseExplorerTheme in FStates then
-  begin
     Theme := OpenThemeData(Application.ActiveFormHandle, 'Explorer::TreeView');
-    RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
-    if (Header.Columns.Count = 0) and (toFullRowSelect in TreeOptions.SelectionOptions) then
-      RowRect.Right := Max(ClientWidth, RowRect.Right);
-    if toShowVertGridLines in FOptions.PaintOptions then
-      Dec(RowRect.Right);
-  end;
 
   with PaintInfo, Canvas do
   begin
@@ -14801,16 +14801,17 @@ begin
          (Focused or (toPopupMode in FOptions.PaintOptions)) and (FFocusedNode = Node) and
          ( (Column = FFocusedColumn) or
              (not (toExtendedFocus in FOptions.SelectionOptions) and
-             (toFullRowSelect in FOptions.SelectionOptions) and
-             (tsUseExplorerTheme in FStates) ) ) then
+             (toFullRowSelect in FOptions.SelectionOptions) ) ) then
       begin
         TextColorBackup := GetTextColor(Handle);
         SetTextColor(Handle, $FFFFFF);
         BackColorBackup := GetBkColor(Handle);
         SetBkColor(Handle, 0);
 
-        if not (toExtendedFocus in FOptions.SelectionOptions) and (toFullRowSelect in FOptions.SelectionOptions) and
-          (tsUseExplorerTheme in FStates) then
+        // Issue #765: with toFullRowSelect the focus rect covers the whole row, with or
+        // without the explorer theme. Each cell draws it clipped to its own rectangle,
+        // so the XOR-based DrawFocusRect touches every pixel only once.
+        if not (toExtendedFocus in FOptions.SelectionOptions) and (toFullRowSelect in FOptions.SelectionOptions) then
           FocusRect := RowRect
         else
           if toGridExtensions in FOptions.MiscOptions then
