@@ -7949,6 +7949,8 @@ end;
 procedure TBaseVirtualTree.WMPaint(var Message: TWMPaint);
 var
   DC: HDC;
+  HeaderTarget: TRect;
+  BorderSize: TSize;
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
@@ -7964,12 +7966,31 @@ begin
 
   if hoVisible in FHeader.Options then
   begin
-    DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
-    if DC <> 0 then
-      try
-        FHeader.Columns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
-    finally
-      ReleaseDC(Handle, DC);
+    if Message.DC <> 0 then
+    begin
+      // The caller supplied a device context, so this is a copy being rendered somewhere else
+      // (TWinControl.PaintTo), not a paint of the real window. The header has to go into that DC - fetching a
+      // window DC here would draw it onto the screen and leave the copy without a header, which is issue #632.
+      HeaderTarget := FHeaderRect;
+      if csPaintCopy in ControlState then
+      begin
+        // PaintTo draws the border itself and then moves the origin inside it, while FHeaderRect is relative to
+        // the outer window corner. Without this the header ends up offset by the border width and is clipped on
+        // the opposite edge. GetBorderDimensions returns negative values, so adding them shifts back.
+        BorderSize := GetBorderDimensions;
+        OffsetRect(HeaderTarget, BorderSize.cx, BorderSize.cy);
+      end;
+      FHeader.Columns.PaintHeader(Message.DC, HeaderTarget, -FEffectiveOffsetX);
+    end
+    else
+    begin
+      DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
+      if DC <> 0 then
+        try
+          FHeader.Columns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
+      finally
+        ReleaseDC(Handle, DC);
+      end;
     end;
   end;//if header visible
 end;
@@ -7992,7 +8013,10 @@ procedure TBaseVirtualTree.WMPrint(var Message: TWMPrint);
 begin
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
-    Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
+    // The header lives in the non-client area, so it must only be drawn when the caller asked for that part.
+    // Painting it for a PRF_CLIENT only request put it over the client area and corrupted the border (#632).
+    if (Message.Flags and PRF_NONCLIENT) <> 0 then
+      Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
 
   inherited;
 end;
