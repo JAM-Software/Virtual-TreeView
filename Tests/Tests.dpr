@@ -16,6 +16,7 @@ uses
   VTWorkerThreadIssue1001Tests in 'VTWorkerThreadIssue1001Tests.pas',
   VTOnEditCancelledTests in 'VTOnEditCancelledTests.pas',
   VTOnDrawTextTests in 'VTOnDrawTextTests.pas',
+  VTBandsIssue1091Tests in 'VTBandsIssue1091Tests.pas',
   VTCellSelectionTests in 'VTCellSelectionTests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',
   VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm},
