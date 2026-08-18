@@ -5022,14 +5022,16 @@ end;
 
 procedure TBaseVirtualTree.SetFocusedNode(Value: PVirtualNode);
 
-var
-  WasDifferent: Boolean;
-
 begin
-  WasDifferent := Value <> FFocusedNode;
+  // Issue #1379: Setting the node that is already focused must not have side effects,
+  // in particular it must not end node editing. Keyboard navigation sets the focused
+  // node a second time through AddToSelection(); without this check that redundant
+  // assignment ended an edit which the application had just started in OnFocusChanged.
+  if Value = FFocusedNode then
+    Exit;
   DoFocusNode(Value, True);
   // Do change event only if there was actually a change.
-  if WasDifferent and (FFocusedNode = Value) then
+  if FFocusedNode = Value then
     DoFocusChange(FFocusedNode, FFocusedColumn);
 end;
 
