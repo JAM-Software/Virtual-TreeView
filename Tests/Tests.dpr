@@ -21,6 +21,7 @@ uses
   VTPaintTreeIssue1074Tests in 'VTPaintTreeIssue1074Tests.pas',
   VTBandsIssue1091Tests in 'VTBandsIssue1091Tests.pas',
   VTFixedColumnDragIssue1377Tests in 'VTFixedColumnDragIssue1377Tests.pas',
+  VTScrollRangeIssue983Tests in 'VTScrollRangeIssue983Tests.pas',
   VTCellSelectionTests in 'VTCellSelectionTests.pas',
   VTSelectedCountIssue1197Tests in 'VTSelectedCountIssue1197Tests.pas',
   VTPaintToIssue632Tests in 'VTPaintToIssue632Tests.pas',

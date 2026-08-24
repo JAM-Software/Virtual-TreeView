@@ -541,6 +541,8 @@ type
     FEffectiveOffsetX: TDimension;               // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
     FRangeY: TNodeHeight;                         // current virtual width and height of the tree
+    FHorzRangeGrowOnly: Boolean;                 // True while updating scroll bars in reaction to scrolling: the
+                                                 // horizontal range may then only grow, never shrink. See issue #983.
     FBottomSpace: TDimension;                    // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
@@ -8344,7 +8346,12 @@ begin
         DoStateChange([], [tsThumbTracking]);
         // Avoiding to adjust the horizontal scroll position while tracking makes scrolling much smoother
         // but we need to adjust the final position here then.
-        UpdateScrollBars(True);
+        FHorzRangeGrowOnly := True; // issue #983, see UpdateHorizontalRange
+        try
+          UpdateScrollBars(True);
+        finally
+          FHorzRangeGrowOnly := False;
+        end;
         // Really weird invalidation needed here (and I do it only because it happens so rarely), because
         // when showing the horizontal scrollbar while scrolling down using the down arrow button,
         // the button will be repainted on mouse up (at the wrong place in the far right lower corner)...
@@ -11216,7 +11223,14 @@ begin
           UpdateVerticalScrollBar(suoRepaintScrollBars in Options);
           if not (FHeader.UseColumns or IsMouseSelecting) and
             (FScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssHorizontal, System.UITypes.TScrollStyle.ssBoth]) then
-            UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
+          begin
+            FHorzRangeGrowOnly := True; // issue #983, see UpdateHorizontalRange
+            try
+              UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
+            finally
+              FHorzRangeGrowOnly := False;
+            end;
+          end;
         end;
       end;
 
@@ -23301,6 +23315,14 @@ procedure TBaseVirtualTree.UpdateHorizontalRange;
 begin
   if FHeader.UseColumns then
     SetRangeX(FHeader.Columns.TotalWidth)
+  else if FHorzRangeGrowOnly then
+    // Issue #983: while scrolling vertically the horizontal range may only grow. Shrinking it
+    // would hide the horizontal scroll bar as soon as the widest node scrolls out of view; the
+    // resulting taller client area then clamps the scroll position back up, which scrolls the
+    // widest node into view again, which brings the scroll bar back - the tree oscillates and
+    // the user can never reach the bottom. Any other trigger (resize, structure or content
+    // change) recomputes the range from scratch as before.
+    SetRangeX(Max(FRangeX, GetMaxRightExtend))
   else
     SetRangeX(GetMaxRightExtend);
 end;
