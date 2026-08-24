@@ -16,6 +16,7 @@ uses
   VTWorkerThreadIssue1001Tests in 'VTWorkerThreadIssue1001Tests.pas',
   VTOnEditCancelledTests in 'VTOnEditCancelledTests.pas',
   VTOnDrawTextTests in 'VTOnDrawTextTests.pas',
+  VTFocusChangedIssue1379Tests in 'VTFocusChangedIssue1379Tests.pas',
   VTFocusRectIssue765Tests in 'VTFocusRectIssue765Tests.pas',
   VTPaintTreeIssue1074Tests in 'VTPaintTreeIssue1074Tests.pas',
   VTBandsIssue1091Tests in 'VTBandsIssue1091Tests.pas',
