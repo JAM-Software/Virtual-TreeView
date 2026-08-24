@@ -17,7 +17,13 @@ uses
   VTOnEditCancelledTests in 'VTOnEditCancelledTests.pas',
   VTOnDrawTextTests in 'VTOnDrawTextTests.pas',
   VTFocusChangedIssue1379Tests in 'VTFocusChangedIssue1379Tests.pas',
+  VTFocusRectIssue765Tests in 'VTFocusRectIssue765Tests.pas',
+  VTPaintTreeIssue1074Tests in 'VTPaintTreeIssue1074Tests.pas',
+  VTBandsIssue1091Tests in 'VTBandsIssue1091Tests.pas',
+  VTFixedColumnDragIssue1377Tests in 'VTFixedColumnDragIssue1377Tests.pas',
   VTCellSelectionTests in 'VTCellSelectionTests.pas',
+  VTSelectedCountIssue1197Tests in 'VTSelectedCountIssue1197Tests.pas',
+  VTPaintToIssue632Tests in 'VTPaintToIssue632Tests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',
   VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm},
   VTCellSelectionTests.VTSelectionTestForm in 'VTCellSelectionTests.VTSelectionTestForm.pas' {SelectionTestForm};

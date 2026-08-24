@@ -738,6 +738,10 @@ type
 
     FVclStyleEnabled: Boolean;
     FSelectionCount: Integer;
+    FSelectionMarkedCount: Integer;              // Number of entries in FSelection that InternalRemoveFromSelection has
+                                                 // marked for removal but that PackSelection has not yet dropped. Only
+                                                 // SelectedCount subtracts it; FSelectionCount stays the physical count
+                                                 // because PackArray needs it to know how far to scan. See issue #1197.
 
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
@@ -792,6 +796,7 @@ type
     function IsLastVisibleChild(Parent, Node: PVirtualNode): Boolean;
     function MakeNewNode: PVirtualNode;
     function PackArray({*}const TheArray: TNodeArray; Count: Integer): Integer;
+    function PackSelection: Boolean;
     procedure FakeReadIdent(Reader: TReader);
     procedure SetAlignment(const Value: TAlignment);
     procedure SetAnimationDuration(const Value: Cardinal);
@@ -1782,7 +1787,7 @@ type
     property SelectionLocked: Boolean read FSelectionLocked write FSelectionLocked;
     property TotalCount: Cardinal read GetTotalCount;
     property TreeStates: TVirtualTreeStates read FStates write FStates;
-    property SelectedCount: Integer read FSelectionCount;
+    property SelectedCount: Integer read GetSelectedCount;
     property TopNode: PVirtualNode read GetTopNode write SetTopNode;
     property VerticalAlignment[Node: PVirtualNode]: Byte read GetVerticalAlignment write SetVerticalAlignment;
     property VisibleCount: Cardinal read FVisibleCount;
@@ -3640,7 +3645,9 @@ end;
 
 function TBaseVirtualTree.GetSelectedCount: Integer;
 begin
-  Exit(FSelectionCount);
+  // Entries already marked for removal must not be counted any more, otherwise this reports a stale value while
+  // OnRemoveFromSelection / OnChange run (issue #1197). FSelectionMarkedCount is 0 outside those windows.
+  Exit(FSelectionCount - FSelectionMarkedCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3876,7 +3883,6 @@ var
   OldRect,
   NewRect: TRect;
   MainColumn: TColumnIndex;
-  MaxValue: Integer;
 
   // limits of a node and its text
   NodeLeft,
@@ -3934,12 +3940,7 @@ begin
   if Result then
   begin
     // Do some housekeeping if there was a change.
-    MaxValue := PackArray(FSelection, FSelectionCount);
-    if MaxValue > -1 then
-    begin
-      FSelectionCount := MaxValue;
-      SetLength(FSelection, FSelectionCount);
-    end;
+    PackSelection();
     if FTempNodeCount > 0 then
     begin
       if tsClearOnNewSelection in fStates then
@@ -4258,6 +4259,30 @@ asm
         POP     EBX
 end;
 {$IFEND}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.PackSelection: Boolean;
+
+// Drops the entries that InternalRemoveFromSelection has marked for removal and updates the selection count
+// accordingly. Returns True if the array was actually shortened.
+// This used to be an open coded five liner repeated at every call site; having it in one place is what keeps
+// FSelectionMarkedCount from drifting, because resetting it is easy to forget (issue #1197).
+
+var
+  NewSize: Integer;
+
+begin
+  NewSize := PackArray(FSelection, FSelectionCount);
+  Result := NewSize > -1;
+  if Result then
+  begin
+    FSelectionCount := NewSize;
+    SetLength(FSelection, FSelectionCount);
+  end;
+  // No marked entries can be left over, regardless of whether anything was removed.
+  FSelectionMarkedCount := 0;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -7951,10 +7976,20 @@ end;
 procedure TBaseVirtualTree.WMPaint(var Message: TWMPaint);
 var
   DC: HDC;
+  HeaderTarget: TRect;
+  BorderSize: TSize;
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
-  if csPaintCopy in ControlState then
+  // A caller-supplied DC means we are not painting the real window but a buffer: PaintTo (csPaintCopy) or
+  // TWinControl.WMPaint's double-buffer path. Since Delphi 12 GetDoubleBuffered returns True, so on a system
+  // without DWM composition (Windows 7 Basic/Classic, VMs without WDDM driver) TWinControl.WMPaint calls
+  // BeginPaint itself, creates a memory DC and re-sends WM_PAINT with that DC. At this point the update
+  // region is already validated, GetUpdateRect() returns an empty rectangle, Paint() draws nothing and the
+  // untouched (black) memory bitmap is blitted to the screen - the tree shows up as a solid black box
+  // (issue #1269). With DWM enabled the buffered path goes through WM_PRINTCLIENT, which sets csPaintCopy,
+  // which is why the problem is invisible on Windows 8+ and on Windows 7 with Aero.
+  if (csPaintCopy in ControlState) or (Message.DC <> 0) then
     FUpdateRect := ClientRect
   else
     GetUpdateRect(Handle, FUpdateRect, True);
@@ -7966,12 +8001,31 @@ begin
 
   if hoVisible in FHeader.Options then
   begin
-    DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
-    if DC <> 0 then
-      try
-        FHeader.Columns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
-    finally
-      ReleaseDC(Handle, DC);
+    if Message.DC <> 0 then
+    begin
+      // The caller supplied a device context, so this is a copy being rendered somewhere else
+      // (TWinControl.PaintTo), not a paint of the real window. The header has to go into that DC - fetching a
+      // window DC here would draw it onto the screen and leave the copy without a header, which is issue #632.
+      HeaderTarget := FHeaderRect;
+      if csPaintCopy in ControlState then
+      begin
+        // PaintTo draws the border itself and then moves the origin inside it, while FHeaderRect is relative to
+        // the outer window corner. Without this the header ends up offset by the border width and is clipped on
+        // the opposite edge. GetBorderDimensions returns negative values, so adding them shifts back.
+        BorderSize := GetBorderDimensions;
+        OffsetRect(HeaderTarget, BorderSize.cx, BorderSize.cy);
+      end;
+      FHeader.Columns.PaintHeader(Message.DC, HeaderTarget, -FEffectiveOffsetX);
+    end
+    else
+    begin
+      DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
+      if DC <> 0 then
+        try
+          FHeader.Columns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
+      finally
+        ReleaseDC(Handle, DC);
+      end;
     end;
   end;//if header visible
 end;
@@ -7994,7 +8048,10 @@ procedure TBaseVirtualTree.WMPrint(var Message: TWMPrint);
 begin
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
-    Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
+    // The header lives in the non-client area, so it must only be drawn when the caller asked for that part.
+    // Painting it for a PRF_CLIENT only request put it over the client area and corrupted the border (#632).
+    if (Message.Flags and PRF_NONCLIENT) <> 0 then
+      Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
 
   inherited;
 end;
@@ -9595,7 +9652,10 @@ begin
     end;
   end;
 
-  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0)
+  // Do not suppress the line under the explorer-style button in band mode: bands are box edges,
+  // not lines pointing at the button, and the band conversion in PaintTreeLines relies on ltNone
+  // never being the last entry (issue #1091: bands disappeared, plus an out-of-bounds read).
+  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) and (FLineMode <> lmBands)
        and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.AutoOptions)) then
     LineImage[Indent] := ltNone;
 end;
@@ -13547,7 +13607,6 @@ end;
 procedure TBaseVirtualTree.InternalClearSelection();
 
 var
-  Count: Integer;
   lNode: PVirtualNode;
 begin
   // It is possible that there are invalid node references in the selection array
@@ -13555,12 +13614,7 @@ begin
   // Handle this potentially dangerous situation by packing the selection array explicitely.
   if IsUpdating then
   begin
-    Count := PackArray(FSelection, FSelectionCount);
-    if Count > -1 then
-    begin
-      FSelectionCount := Count;
-      SetLength(FSelection, FSelectionCount);
-    end;
+    PackSelection();
   end;
 
   while FSelectionCount > 0 do
@@ -13575,6 +13629,7 @@ begin
   end;
   ResetRangeAnchor;
   FSelection := nil;
+  FSelectionMarkedCount := 0; // the array is gone, so nothing can still be pending
   DoStateChange([], [tsClearPending]);
 end;
 
@@ -13829,6 +13884,10 @@ begin
     if SyncCheckstateWithSelection[Node] then
       Node.CheckState := csUncheckedNormal; // Avoid using SetCheckState() as it handles toSyncCheckboxesWithSelection as well.
     System.Inc(PAnsiChar(FSelection[Index]));
+    // The entry is only marked here, PackSelection() drops it later. Until then FSelectionCount still counts it,
+    // so remember how many are pending - otherwise SelectedCount reports a stale, too high value in the events
+    // fired below, which is issue #1197.
+    System.Inc(FSelectionMarkedCount);
     DoRemoveFromSelection(Node);
     Change(Node); // Calling Change() here fixes issue #1047
   end;
@@ -14677,15 +14736,15 @@ const
   //--------------- end local functions ---------------------------------------
 
 begin
+  // Issue #765: the row rectangle is needed for the full row focus rect with and
+  // without the explorer theme, so compute it unconditionally.
+  RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
+  if (Header.Columns.Count = 0) and (toFullRowSelect in TreeOptions.SelectionOptions) then
+    RowRect.Right := Max(ClientWidth, RowRect.Right);
+  if toShowVertGridLines in FOptions.PaintOptions then
+    Dec(RowRect.Right);
   if tsUseExplorerTheme in FStates then
-  begin
     Theme := OpenThemeData(Application.ActiveFormHandle, 'Explorer::TreeView');
-    RowRect := Rect(0, PaintInfo.CellRect.Top, FRangeX, PaintInfo.CellRect.Bottom);
-    if (Header.Columns.Count = 0) and (toFullRowSelect in TreeOptions.SelectionOptions) then
-      RowRect.Right := Max(ClientWidth, RowRect.Right);
-    if toShowVertGridLines in FOptions.PaintOptions then
-      Dec(RowRect.Right);
-  end;
 
   with PaintInfo, Canvas do
   begin
@@ -14803,16 +14862,17 @@ begin
          (Focused or (toPopupMode in FOptions.PaintOptions)) and (FFocusedNode = Node) and
          ( (Column = FFocusedColumn) or
              (not (toExtendedFocus in FOptions.SelectionOptions) and
-             (toFullRowSelect in FOptions.SelectionOptions) and
-             (tsUseExplorerTheme in FStates) ) ) then
+             (toFullRowSelect in FOptions.SelectionOptions) ) ) then
       begin
         TextColorBackup := GetTextColor(Handle);
         SetTextColor(Handle, $FFFFFF);
         BackColorBackup := GetBkColor(Handle);
         SetBkColor(Handle, 0);
 
-        if not (toExtendedFocus in FOptions.SelectionOptions) and (toFullRowSelect in FOptions.SelectionOptions) and
-          (tsUseExplorerTheme in FStates) then
+        // Issue #765: with toFullRowSelect the focus rect covers the whole row, with or
+        // without the explorer theme. Each cell draws it clipped to its own rectangle,
+        // so the XOR-based DrawFocusRect touches every pixel only once.
+        if not (toExtendedFocus in FOptions.SelectionOptions) and (toFullRowSelect in FOptions.SelectionOptions) then
           FocusRect := RowRect
         else
           if toGridExtensions in FOptions.MiscOptions then
@@ -15423,7 +15483,6 @@ procedure TBaseVirtualTree.ToggleSelection(StartNode, EndNode: PVirtualNode);
 var
   NodeFrom,
   NodeTo: PVirtualNode;
-  NewSize: Integer;
   Position: Integer;
 
 begin
@@ -15479,12 +15538,7 @@ begin
           InternalRemoveFromSelection(NodeFrom);
 
       // Do some housekeeping if there was a change.
-      NewSize := PackArray(FSelection, FSelectionCount);
-      if NewSize > -1 then
-      begin
-        FSelectionCount := NewSize;
-        SetLength(FSelection, FSelectionCount);
-      end;
+      PackSelection();
       // If the range went over the anchor then we need to reselect it.
       if not (vsSelected in FRangeAnchor.States) then
         InternalCacheNode(FRangeAnchor);
@@ -15522,7 +15576,6 @@ procedure TBaseVirtualTree.UnselectNodes(StartNode, EndNode: PVirtualNode);
 var
   NodeFrom,
   NodeTo: PVirtualNode;
-  NewSize: Integer;
 
 begin
   if not FSelectionLocked then
@@ -15559,12 +15612,7 @@ begin
     InternalRemoveFromSelection(NodeFrom);
 
     // Do some housekeeping.
-    NewSize := PackArray(FSelection, FSelectionCount);
-    if NewSize > -1 then
-    begin
-      FSelectionCount := NewSize;
-      SetLength(FSelection, FSelectionCount);
-    end;
+    PackSelection();
   end;
 end;
 
@@ -16965,7 +17013,6 @@ var
   Mark: PVirtualNode;
   LastTop,
   LastLeft: TDimension;
-  NewSize: Integer;
   ParentVisible: Boolean;
 
 begin
@@ -17026,12 +17073,7 @@ begin
     InvalidateCache;
     if FUpdateCount = 0 then
     begin
-      NewSize := PackArray(FSelection, FSelectionCount);
-      if NewSize > -1 then
-      begin
-        FSelectionCount := NewSize;
-        SetLength(FSelection, FSelectionCount);
-      end;
+      PackSelection();
 
       ValidateCache;
       UpdateScrollBars(True);
@@ -17265,9 +17307,6 @@ end;
 
 procedure TBaseVirtualTree.EndUpdate;
 
-var
-  NewSize: Integer;
-
 begin
   if FUpdateCount = 0 then
     exit;
@@ -17283,12 +17322,7 @@ begin
         Exclude(FStates, tsUpdateHiddenChildrenNeeded);
       end;
 
-      NewSize := PackArray(FSelection, FSelectionCount);
-      if NewSize > -1 then
-      begin
-        FSelectionCount := NewSize;
-        SetLength(FSelection, FSelectionCount);
-      end;
+      PackSelection();
 
       InvalidateCache;
       ValidateCache;
@@ -20552,7 +20586,6 @@ procedure TBaseVirtualTree.InvertSelection(VisibleOnly: Boolean);
 
 var
   Run: PVirtualNode;
-  NewSize: Integer;
   NextFunction: TGetNextNodeProc;
   TriggerChange: Boolean;
 
@@ -20576,14 +20609,7 @@ begin
 
     // do some housekeeping
     // Need to trigger the OnChange event from here if nodes were only deleted but not added.
-    TriggerChange := False;
-    NewSize := PackArray(FSelection, FSelectionCount);
-    if NewSize > -1 then
-    begin
-      FSelectionCount := NewSize;
-      SetLength(FSelection, FSelectionCount);
-      TriggerChange := True;
-    end;
+    TriggerChange := PackSelection();
     if FTempNodeCount > 0 then
     begin
       AddToSelection(FTempNodeCache, FTempNodeCount);
