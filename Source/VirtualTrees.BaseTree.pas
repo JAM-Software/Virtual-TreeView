@@ -7954,7 +7954,15 @@ var
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
-  if csPaintCopy in ControlState then
+  // A caller-supplied DC means we are not painting the real window but a buffer: PaintTo (csPaintCopy) or
+  // TWinControl.WMPaint's double-buffer path. Since Delphi 12 GetDoubleBuffered returns True, so on a system
+  // without DWM composition (Windows 7 Basic/Classic, VMs without WDDM driver) TWinControl.WMPaint calls
+  // BeginPaint itself, creates a memory DC and re-sends WM_PAINT with that DC. At this point the update
+  // region is already validated, GetUpdateRect() returns an empty rectangle, Paint() draws nothing and the
+  // untouched (black) memory bitmap is blitted to the screen - the tree shows up as a solid black box
+  // (issue #1269). With DWM enabled the buffered path goes through WM_PRINTCLIENT, which sets csPaintCopy,
+  // which is why the problem is invisible on Windows 8+ and on Windows 7 with Aero.
+  if (csPaintCopy in ControlState) or (Message.DC <> 0) then
     FUpdateRect := ClientRect
   else
     GetUpdateRect(Handle, FUpdateRect, True);
