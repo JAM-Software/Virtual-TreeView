@@ -7974,10 +7974,20 @@ end;
 procedure TBaseVirtualTree.WMPaint(var Message: TWMPaint);
 var
   DC: HDC;
+  HeaderTarget: TRect;
+  BorderSize: TSize;
 begin
   if tsVCLDragging in FStates then
     ImageList_DragShowNolock(False);
-  if csPaintCopy in ControlState then
+  // A caller-supplied DC means we are not painting the real window but a buffer: PaintTo (csPaintCopy) or
+  // TWinControl.WMPaint's double-buffer path. Since Delphi 12 GetDoubleBuffered returns True, so on a system
+  // without DWM composition (Windows 7 Basic/Classic, VMs without WDDM driver) TWinControl.WMPaint calls
+  // BeginPaint itself, creates a memory DC and re-sends WM_PAINT with that DC. At this point the update
+  // region is already validated, GetUpdateRect() returns an empty rectangle, Paint() draws nothing and the
+  // untouched (black) memory bitmap is blitted to the screen - the tree shows up as a solid black box
+  // (issue #1269). With DWM enabled the buffered path goes through WM_PRINTCLIENT, which sets csPaintCopy,
+  // which is why the problem is invisible on Windows 8+ and on Windows 7 with Aero.
+  if (csPaintCopy in ControlState) or (Message.DC <> 0) then
     FUpdateRect := ClientRect
   else
     GetUpdateRect(Handle, FUpdateRect, True);
@@ -7989,12 +7999,31 @@ begin
 
   if hoVisible in FHeader.Options then
   begin
-    DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
-    if DC <> 0 then
-      try
-        FHeader.Columns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
-    finally
-      ReleaseDC(Handle, DC);
+    if Message.DC <> 0 then
+    begin
+      // The caller supplied a device context, so this is a copy being rendered somewhere else
+      // (TWinControl.PaintTo), not a paint of the real window. The header has to go into that DC - fetching a
+      // window DC here would draw it onto the screen and leave the copy without a header, which is issue #632.
+      HeaderTarget := FHeaderRect;
+      if csPaintCopy in ControlState then
+      begin
+        // PaintTo draws the border itself and then moves the origin inside it, while FHeaderRect is relative to
+        // the outer window corner. Without this the header ends up offset by the border width and is clipped on
+        // the opposite edge. GetBorderDimensions returns negative values, so adding them shifts back.
+        BorderSize := GetBorderDimensions;
+        OffsetRect(HeaderTarget, BorderSize.cx, BorderSize.cy);
+      end;
+      FHeader.Columns.PaintHeader(Message.DC, HeaderTarget, -FEffectiveOffsetX);
+    end
+    else
+    begin
+      DC := GetDCEx(Handle, 0, DCX_CACHE or DCX_CLIPSIBLINGS or DCX_WINDOW or DCX_VALIDATE);
+      if DC <> 0 then
+        try
+          FHeader.Columns.PaintHeader(DC, FHeaderRect, -FEffectiveOffsetX);
+      finally
+        ReleaseDC(Handle, DC);
+      end;
     end;
   end;//if header visible
 end;
@@ -8017,7 +8046,10 @@ procedure TBaseVirtualTree.WMPrint(var Message: TWMPrint);
 begin
   // Draw only if the window is visible or visibility is not required.
   if ((Message.Flags and PRF_CHECKVISIBLE) = 0) or IsWindowVisible(Handle) then
-    Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
+    // The header lives in the non-client area, so it must only be drawn when the caller asked for that part.
+    // Painting it for a PRF_CLIENT only request put it over the client area and corrupted the border (#632).
+    if (Message.Flags and PRF_NONCLIENT) <> 0 then
+      Header.Columns.PaintHeader(Message.DC, FHeaderRect, -FEffectiveOffsetX);
 
   inherited;
 end;
@@ -9618,7 +9650,10 @@ begin
     end;
   end;
 
-  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0)
+  // Do not suppress the line under the explorer-style button in band mode: bands are box edges,
+  // not lines pointing at the button, and the band conversion in PaintTreeLines relies on ltNone
+  // never being the last entry (issue #1091: bands disappeared, plus an out-of-bounds read).
+  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) and (FLineMode <> lmBands)
        and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.AutoOptions)) then
     LineImage[Indent] := ltNone;
 end;

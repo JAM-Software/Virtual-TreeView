@@ -1232,6 +1232,21 @@ begin
   //Make coordinates relative to (0, 0) of the non-client area.
   Inc(ClientP.Y, FHeight);
   NewTarget := FColumns.ColumnFromPosition(ClientP);
+  // Issue #1377: A normal column must not be dropped inside the fixed area. It would become
+  // fixed there (see TVirtualTreeColumn.SetPosition) and thereby lose coDraggable (issue
+  // #1314), so it could never be dragged out again. Redirect such a target to the first
+  // non-fixed visible column: drop mark and drop then both land right after the fixed area.
+  if (NewTarget > NoColumn) and (coFixed in FColumns[NewTarget].Options) and
+     (FColumns.DragIndex > NoColumn) and not (coFixed in FColumns[FColumns.DragIndex].Options) then
+  begin
+    NewTarget := InvalidColumn;
+    for I := 0 to FColumns.Count - 1 do
+      if [coVisible, coFixed] * FColumns[FColumns.ColumnFromPosition(TColumnPosition(I))].Options = [coVisible] then
+      begin
+        NewTarget := FColumns.ColumnFromPosition(TColumnPosition(I));
+        Break;
+      end;
+  end;
   NeedRepaint := (NewTarget <> InvalidColumn) and (NewTarget <> FColumns.DropTarget);
   if NewTarget >= 0 then
   begin
