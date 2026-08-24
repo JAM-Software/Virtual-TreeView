@@ -9617,7 +9617,10 @@ begin
     end;
   end;
 
-  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0)
+  // Do not suppress the line under the explorer-style button in band mode: bands are box edges,
+  // not lines pointing at the button, and the band conversion in PaintTreeLines relies on ltNone
+  // never being the last entry (issue #1091: bands disappeared, plus an out-of-bounds read).
+  if (tsUseExplorerTheme in FStates) and HasChildren[Node] and (Indent >= 0) and (FLineMode <> lmBands)
        and not ((vsAllChildrenHidden in Node.States) and (toAutoHideButtons in TreeOptions.AutoOptions)) then
     LineImage[Indent] := ltNone;
 end;
