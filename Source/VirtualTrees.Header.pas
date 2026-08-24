@@ -5567,26 +5567,26 @@ var
       hsThickButtons :
         begin
           NormalButtonStyle := BDR_RAISEDINNER or BDR_RAISEDOUTER;
-          NormalButtonFlags := BF_LEFT or BF_TOP or BF_BOTTOM or BF_MIDDLE or BF_SOFT or BF_ADJUST;
+          NormalButtonFlags := BF_LEFT or BF_TOP or BF_BOTTOM or BF_SOFT or BF_ADJUST;
           PressedButtonStyle := BDR_RAISEDINNER or BDR_RAISEDOUTER;
           PressedButtonFlags := NormalButtonFlags or BF_RIGHT or BF_FLAT or BF_ADJUST;
         end;
       hsFlatButtons :
         begin
           NormalButtonStyle := BDR_RAISEDINNER;
-          NormalButtonFlags := BF_LEFT or BF_TOP or BF_BOTTOM or BF_MIDDLE or BF_ADJUST;
+          NormalButtonFlags := BF_LEFT or BF_TOP or BF_BOTTOM or BF_ADJUST;
           PressedButtonStyle := BDR_SUNKENOUTER;
-          PressedButtonFlags := BF_RECT or BF_MIDDLE or BF_ADJUST;
+          PressedButtonFlags := BF_RECT or BF_ADJUST;
         end;
     else
       // hsPlates or hsXPStyle, values are not used in the latter case
       begin
         NormalButtonStyle := BDR_RAISEDINNER;
-        NormalButtonFlags := BF_RECT or BF_MIDDLE or BF_SOFT or BF_ADJUST;
+        NormalButtonFlags := BF_RECT or BF_SOFT or BF_ADJUST;
         PressedButtonStyle := BDR_SUNKENOUTER;
-        PressedButtonFlags := BF_RECT or BF_MIDDLE or BF_ADJUST;
+        PressedButtonFlags := BF_RECT or BF_ADJUST;
         RaisedButtonStyle := BDR_RAISEDINNER;
-        RaisedButtonFlags := BF_LEFT or BF_TOP or BF_BOTTOM or BF_MIDDLE or BF_ADJUST;
+        RaisedButtonFlags := BF_LEFT or BF_TOP or BF_BOTTOM or BF_ADJUST;
       end;
     end;
   end;
@@ -5730,6 +5730,10 @@ var
           end
           else
           begin // Windows classic mode
+            // Fill the cell interior ourselves instead of via BF_MIDDLE: DrawEdge would always use
+            // clBtnFace and ignore Header.Background (identical result for the default clBtnFace).
+            TargetCanvas.Brush.Color := Header.Background;
+            TargetCanvas.FillRect(PaintRectangle);
             if IsDownIndex then
               DrawEdge(TargetCanvas.Handle, PaintRectangle, PressedButtonStyle, PressedButtonFlags)
             else
