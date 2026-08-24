@@ -20,6 +20,7 @@ uses
   VTBandsIssue1091Tests in 'VTBandsIssue1091Tests.pas',
   VTFixedColumnDragIssue1377Tests in 'VTFixedColumnDragIssue1377Tests.pas',
   VTCellSelectionTests in 'VTCellSelectionTests.pas',
+  VTSelectedCountIssue1197Tests in 'VTSelectedCountIssue1197Tests.pas',
   VTPaintToIssue632Tests in 'VTPaintToIssue632Tests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',
   VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm},
