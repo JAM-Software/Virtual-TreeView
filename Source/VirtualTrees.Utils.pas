@@ -232,19 +232,12 @@ procedure SetCanvasOrigin(Canvas: TCanvas; X, Y: Integer);
 
 // Set the coordinate space origin of a given canvas.
 
-var
-  P: TPoint;
-
 begin
-  // Reset origin as otherwise we would accumulate the origin shifts when calling LPtoDP.
-  SetWindowOrgEx(Canvas.Handle, 0, 0, nil);
-
-  // The shifting is expected in physical points, so we have to transform them accordingly.
-  P := Point(X, Y);
-  LPtoDP(Canvas.Handle, P, 1);
-
-  // Do the shift.
-  SetWindowOrgEx(Canvas.Handle, P.X, P.Y, nil);
+  // SetWindowOrgEx expects logical units, which is what the tree code calculates with.
+  // The former LPtoDP transformation here applied the mapping scale a second time, which
+  // shifted every node to twice its offset when the target canvas uses a mapping mode
+  // like MM_ANISOTROPIC (issue #1074). With the default MM_TEXT it was a no-op.
+  SetWindowOrgEx(Canvas.Handle, X, Y, nil);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
