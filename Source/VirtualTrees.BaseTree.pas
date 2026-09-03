@@ -53,7 +53,7 @@ type
   {$ELSE}
     TVTBaseAncestor        = TVTBaseAncestorVcl;
     TCanvas                = Vcl.Graphics.TCanvas;
-    TFormatEtcArray        = VirtualTrees.Types.TFormatEtcArray;											  
+    TFormatEtcArray        = VirtualTrees.Types.TFormatEtcArray;
   {$ENDIF}
 
   // Alias defintions for convenience
@@ -540,7 +540,8 @@ type
     FOffsetY: TDimension;                        // Determines left and top scroll offset.
     FEffectiveOffsetX: TDimension;               // Actual position of the horizontal scroll bar (varies depending on bidi mode).
     FRangeX,
-    FRangeY: TNodeHeight;                         // current virtual width and height of the tree
+    FRangeY: TNodeHeight;                        // current virtual width and height of the tree
+    FScrolling: Boolean;                         // True while updating scroll bars in reaction to scrolling. See issue #983.
     FBottomSpace: TDimension;                    // Extra space below the last node.
 
     FDefaultPasteMode: TVTNodeAttachMode;        // Used to determine where to add pasted nodes to.
@@ -1855,7 +1856,7 @@ type
   //These allow us access to protected members in the classes
   TVirtualTreeColumnsCracker = class(TVirtualTreeColumns);
   TVTHeaderCracker = class(TVTHeader);
-  TVirtualTreeColumnCracker = class(TVirtualTreeColumn);												 
+  TVirtualTreeColumnCracker = class(TVirtualTreeColumn);
   TBaseVirtualTreeCracker = class(TBaseVirtualTree);
 
   // streaming support
@@ -8344,7 +8345,12 @@ begin
         DoStateChange([], [tsThumbTracking]);
         // Avoiding to adjust the horizontal scroll position while tracking makes scrolling much smoother
         // but we need to adjust the final position here then.
-        UpdateScrollBars(True);
+        FScrolling := True; // issue #983, see UpdateHorizontalRange
+        try
+          UpdateScrollBars(True);
+        finally
+          FScrolling := False;
+        end;
         // Really weird invalidation needed here (and I do it only because it happens so rarely), because
         // when showing the horizontal scrollbar while scrolling down using the down arrow button,
         // the button will be repainted on mouse up (at the wrong place in the far right lower corner)...
@@ -11216,7 +11222,14 @@ begin
           UpdateVerticalScrollBar(suoRepaintScrollBars in Options);
           if not (FHeader.UseColumns or IsMouseSelecting) and
             (FScrollBarOptions.ScrollBars in [System.UITypes.TScrollStyle.ssHorizontal, System.UITypes.TScrollStyle.ssBoth]) then
-            UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
+          begin
+            FScrolling := True; // issue #983, see UpdateHorizontalRange
+            try
+              UpdateHorizontalScrollBar(suoRepaintScrollBars in Options);
+            finally
+              FScrolling := False;
+            end;
+          end;
         end;
       end;
 
@@ -12289,9 +12302,11 @@ function TBaseVirtualTree.GetMaxRightExtend(): TDimension;
 
 var
   Node,
-  NextNode: PVirtualNode;
+  NextNode,
+  PrevNode: PVirtualNode;
   TopPosition: TDimension;
   CurrentWidth: TDimension;
+  ScrollBarOffset: TDimension;
 
 begin
   Node := GetNodeAt(0, 0, True, TopPosition);
@@ -12299,12 +12314,26 @@ begin
   if not Assigned(Node) then
     exit;
 
+  if (FScrolling) and ((GetWindowLong(Handle, GWL_STYLE) and WS_HSCROLL) <> 0) then
+  begin
+    ScrollBarOffset := GetSystemMetricsForDpi(SM_CYHSCROLL, CurrentPPI);
+    PrevNode := GetPreviousSibling(Node);
+    while (ScrollBarOffset > 0) and Assigned(PrevNode) do
+    begin
+      CurrentWidth := GetOffset(TVTElement.ofsRightOfText, PrevNode);
+      if Result < CurrentWidth then
+        Result := CurrentWidth;
+      Dec(ScrollBarOffset, PrevNode.NodeHeight);
+      PrevNode := GetPreviousSibling(PrevNode);
+    end;
+  end;
+
   while Assigned(Node) do
   begin
     if not (vsInitialized in Node.States) then
       InitNode(Node);
     CurrentWidth := GetOffset(TVTElement.ofsRightOfText, Node);
-    if Result < (CurrentWidth) then
+    if Result < CurrentWidth then
       Result := CurrentWidth;
     Inc(TopPosition, NodeHeight[Node]);
     if TopPosition > Height then
