@@ -12317,14 +12317,14 @@ begin
   if (FScrolling) and ((GetWindowLong(Handle, GWL_STYLE) and WS_HSCROLL) <> 0) then
   begin
     ScrollBarOffset := GetSystemMetricsForDpi(SM_CYHSCROLL, CurrentPPI);
-    PrevNode := GetPreviousSibling(Node);
+    PrevNode := GetPreviousVisible(Node, True);
     while (ScrollBarOffset > 0) and Assigned(PrevNode) do
     begin
       CurrentWidth := GetOffset(TVTElement.ofsRightOfText, PrevNode);
       if Result < CurrentWidth then
         Result := CurrentWidth;
-      Dec(ScrollBarOffset, PrevNode.NodeHeight);
-      PrevNode := GetPreviousSibling(PrevNode);
+      Dec(ScrollBarOffset, NodeHeight[PrevNode]);
+      PrevNode := GetPreviousVisible(PrevNode, True);
     end;
   end;
 
