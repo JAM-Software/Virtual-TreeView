@@ -69,7 +69,8 @@
         <UsePackages>true</UsePackages>
         <DCC_AdditionalSwitches>-LUDesignIDE</DCC_AdditionalSwitches>
         <DesignOnlyPackage>true</DesignOnlyPackage>
-        <IntermediateOutputDir>.\Design\$(Platform)\$(Config)</IntermediateOutputDir>
+        <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
+        <BPILibOutputDir>.\$(Platform)\$(Config)</BPILibOutputDir>
         <BCC_wpar>false</BCC_wpar>
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
         <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
@@ -84,8 +85,10 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <ILINK_Description>VirtualTrees Designtime</ILINK_Description>
-        <DCC_UnitSearchPath>..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\Source;.\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <ILINK_LibraryPath>.\$(Platform)\$(Config);$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+        <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)</DCC_HppOutput>
         <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
