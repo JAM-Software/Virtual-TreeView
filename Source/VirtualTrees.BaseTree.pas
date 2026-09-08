@@ -4185,39 +4185,7 @@ function TBaseVirtualTree.PackArray({*}const TheArray: TNodeArray; Count: Intege
 // The returned value is the number of remaining entries in the array, so the caller can reallocate (shorten)
 // the selection array if needed or -1 if nothing needs to be changed.
 
-{$IF Defined(CPUX64) or not Defined(ASSEMBLER)}
-var
-  Source, Dest: ^PVirtualNode;
-  ConstOne: NativeInt;
-begin
-  Source := Pointer(TheArray);
-  ConstOne := 1;
-  Result := 0;
-  // Do the fastest scan possible to find the first entry
-  while (Count <> 0) and {not Odd(NativeInt(Source^))} (NativeInt(Source^) and ConstOne = 0) do
-  begin
-    System.Inc(Result);
-    System.Inc(Source);
-    System.Dec(Count);
-  end;
-
-  if Count <> 0 then
-  begin
-    Dest := Source;
-    repeat
-      // Skip odd entries
-      if {not Odd(NativeInt(Source^))} NativeInt(Source^) and ConstOne = 0 then
-      begin
-        Dest^ := Source^;
-        System.Inc(Result);
-        System.Inc(Dest);
-      end;
-      System.Inc(Source); // Point to the next entry
-      System.Dec(Count);
-    until Count = 0;
-  end;
-end;
-{$else}
+{$IF Defined(CPUX86) and Defined(ASSEMBLER)}
 asm
         PUSH    EBX
         PUSH    EDI
@@ -4258,6 +4226,38 @@ asm
         POP     ESI
         POP     EDI
         POP     EBX
+end;
+{$else}
+var
+  Source, Dest: ^PVirtualNode;
+  ConstOne: NativeInt;
+begin
+  Source := Pointer(TheArray);
+  ConstOne := 1;
+  Result := 0;
+  // Do the fastest scan possible to find the first entry
+  while (Count <> 0) and {not Odd(NativeInt(Source^))} (NativeInt(Source^) and ConstOne = 0) do
+  begin
+    System.Inc(Result);
+    System.Inc(Source);
+    System.Dec(Count);
+  end;
+
+  if Count <> 0 then
+  begin
+    Dest := Source;
+    repeat
+      // Skip odd entries
+      if {not Odd(NativeInt(Source^))} NativeInt(Source^) and ConstOne = 0 then
+      begin
+        Dest^ := Source^;
+        System.Inc(Result);
+        System.Inc(Dest);
+      end;
+      System.Inc(Source); // Point to the next entry
+      System.Dec(Count);
+    until Count = 0;
+  end;
 end;
 {$IFEND}
 
