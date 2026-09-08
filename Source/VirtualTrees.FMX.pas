@@ -244,12 +244,6 @@ type
   LPARAM = INT_PTR;
   LRESULT = INT_PTR;
 
-  TDWordFiller = record
-  {$IFDEF CPUX64}
-    Filler: array[1..4] of Byte; // Pad DWORD to make it 8 bytes (4+4) [x64 only]
-  {$ENDIF}
-  end;
-
 //--------- Windows messages simulations ---------------------------------------------------------------------------------------------------
 
 const
