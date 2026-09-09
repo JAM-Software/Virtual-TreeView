@@ -141,6 +141,47 @@ function Divide(const Dimension: Integer; const DivideBy: Integer): Integer; ove
 /// </summary>
 function Divide(const Dimension: Single; const DivideBy: Integer): Single; overload; inline;
 
+function ToUInt8(const AValue: Int16): UInt8; overload; inline;
+function ToUInt8(const AValue: Int32): UInt8; overload; inline;
+function ToUInt8(const AValue: Int64): UInt8; overload; inline;
+
+function ToInt16(const AValue: UInt16): Int16; overload; inline;
+function ToInt16(const AValue: Int32): Int16; overload; inline;
+function ToInt16(const AValue: Int64): Int16; overload; inline;
+
+function ToUInt16(const AValue: Int32): UInt16; overload; inline;
+function ToUInt16(const AValue: Int64): UInt16; overload; inline;
+
+function ToInt32(const AValue: Int32): Int32; overload; inline;
+function ToInt32(const AValue: Int64): Int32; overload; inline;
+function ToInt32(const AValue: UInt32): Int32; overload; inline;
+function ToInt32(const AValue: UInt64): Int32; overload; inline;
+
+function ToUInt32(const AValue: Int32): UInt32; overload; inline;
+function ToUInt32(const AValue: Int64): UInt32; overload; inline;
+function ToUInt32(const AValue: UInt32): UInt32; overload; inline;
+function ToUInt32(const AValue: UInt64): UInt32; overload; inline;
+
+function ToInt64(const AValue: Int32): Int64; overload; inline;
+function ToInt64(const AValue: UInt32): Int64; overload; inline;
+function ToInt64(const AValue: Int64): Int64; overload; inline;
+function ToInt64(const AValue: UInt64): Int64; overload; inline;
+
+function ToNativeInt(const AValue: Int64): NativeInt; overload; inline;
+function ToNativeInt(const AValue: UInt64): NativeInt; overload; inline;
+
+function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: UInt32): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
+
+function Round32(const X: Real): Int32; inline;
+function RoundU32(const X: Real): UInt32; inline;
+function Trunc32(const X: Real): Int32; inline;
+
+function MulDiv(const ANumber, ANumerator, ADenominator: Int32): Int32; overload; inline;
+function MulDiv(const ANumber, ANumerator, ADenominator: Int64): Int64; overload;
+
 implementation
 
 uses
@@ -798,7 +839,8 @@ var
   Src, Dst: PCardinal;
   i: Integer;
 
-  S, D: Cardinal;
+  S: UInt32;
+  D: Cardinal;
   sB, sG, sR, sA: Integer;
   dB, dG, dR: Integer;
   a: Integer;
@@ -814,15 +856,15 @@ begin
     D := Dst^;
 
     // Extract source BGRA
-    sB :=  S         and $FF;
-    sG := (S shr 8)  and $FF;
-    sR := (S shr 16) and $FF;
-    sA := (S shr 24) and $FF;
+    sB := ToInt32(S          and $FF);
+    sG := ToInt32((S shr 8)  and $FF);
+    sR := ToInt32((S shr 16) and $FF);
+    sA := ToInt32((S shr 24) and $FF);
 
     // Extract destination BGR (alpha preserved)
-    dB :=  D         and $FF;
-    dG := (D shr 8)  and $FF;
-    dR := (D shr 16) and $FF;
+    dB := ToInt32(D          and $FF);
+    dG := ToInt32((D shr 8)  and $FF);
+    dR := ToInt32((D shr 16) and $FF);
 
     // Use source alpha per pixel
     a := sA; // 0..255
@@ -1491,7 +1533,7 @@ function GetRGBColor(Value: TColor): DWORD;
 // Little helper to convert a Delphi color to an image list color.
 
 begin
-  Result := ColorToRGB(Value);
+  Result := ToUInt32(ColorToRGB(Value));
   case Result of
     clNone:
       Result := CLR_NONE;
@@ -1729,6 +1771,169 @@ end;
 function Divide(const Dimension: Integer; const DivideBy: Integer): Integer;
 begin
   Result:= Dimension div DivideBy;
+end;
+
+function ToUInt8(const AValue: Int16): UInt8;
+begin
+  Result := UInt8(AValue);
+end;
+
+function ToUInt8(const AValue: Int32): UInt8;
+begin
+  Result := UInt8(AValue);
+end;
+
+function ToUInt8(const AValue: Int64): UInt8;
+begin
+  Result := UInt8(AValue);
+end;
+
+function ToInt16(const AValue: UInt16): Int16;
+begin
+  Result := Int16(AValue);
+end;
+
+function ToInt16(const AValue: Int32): Int16;
+begin
+  Result := Int16(AValue);
+end;
+
+function ToInt16(const AValue: Int64): Int16;
+begin
+  Result := Int16(AValue);
+end;
+
+function ToUInt16(const AValue: Int32): UInt16;
+begin
+  Result := UInt16(AValue);
+end;
+
+function ToUInt16(const AValue: Int64): UInt16;
+begin
+  Result := UInt16(AValue);
+end;
+
+function ToInt32(const AValue: Int32): Int32;
+begin
+  Result := Int32(AValue);
+end;
+
+function ToInt32(const AValue: Int64): Int32;
+begin
+  Result := Int32(AValue);
+end;
+
+function ToInt32(const AValue: UInt32): Int32;
+begin
+  Result := Int32(AValue);
+end;
+
+function ToInt32(const AValue: UInt64): Int32;
+begin
+  Result := Int32(AValue);
+end;
+
+function ToUInt32(const AValue: Int32): UInt32;
+begin
+  Result := UInt32(AValue);
+end;
+
+function ToUInt32(const AValue: Int64): UInt32;
+begin
+  Result := UInt32(AValue);
+end;
+
+function ToUInt32(const AValue: UInt32): UInt32;
+begin
+  Result := UInt32(AValue);
+end;
+
+function ToUInt32(const AValue: UInt64): UInt32;
+begin
+  Result := UInt32(AValue);
+end;
+
+function ToInt64(const AValue: Int32): Int64; overload; inline;
+begin
+  Result := Int64(AValue);
+end;
+
+function ToInt64(const AValue: UInt32): Int64; overload; inline;
+begin
+  Result := Int64(AValue);
+end;
+
+function ToInt64(const AValue: Int64): Int64; overload; inline;
+begin
+  Result := Int64(AValue);
+end;
+
+function ToInt64(const AValue: UInt64): Int64; overload; inline;
+begin
+  Result := Int64(AValue);
+end;
+
+function ToNativeInt(const AValue: Int64): NativeInt; overload; inline;
+begin
+  Result := NativeInt(AValue);
+end;
+
+function ToNativeInt(const AValue: UInt64): NativeInt; overload; inline;
+begin
+  Result := NativeInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: UInt32): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function Round32(const X: Real): Int32;
+begin
+  Result := ToInt32(Round(X));
+end;
+
+function RoundU32(const X: Real): UInt32;
+begin
+  Result := ToUInt32(Round(X));
+end;
+
+function Trunc32(const X: Real): Int32;
+begin
+  Result := ToInt32(Trunc(X));
+end;
+
+function MulDiv(const ANumber, ANumerator, ADenominator: Int32): Int32;
+begin
+  Result := Winapi.Windows.MulDiv(ANumber, ANumerator, ADenominator);
+end;
+
+function MulDiv(const ANumber, ANumerator, ADenominator: Int64): Int64;
+var
+  lValue: Int64;
+begin
+  if ADenominator <> 0 then
+  begin
+    lValue := ANumber * ANumerator;
+    Result := Round(lValue / ADenominator);
+  end
+  else
+    Result := ANumber;
 end;
 
 end.

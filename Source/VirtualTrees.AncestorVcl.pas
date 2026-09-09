@@ -64,6 +64,7 @@ uses
   Vcl.AxCtrls,
   Vcl.Forms,
   Vcl.GraphUtil,
+  VirtualTrees.Utils,
   VirtualTrees.ClipBoard,
   VirtualTrees.DataObject,
   VirtualTrees.DragnDrop,
@@ -109,7 +110,7 @@ begin
   Result := nil;
   if Assigned(DataObject) then
   begin
-    StandardOLEFormat.cfFormat := CF_VTREFERENCE;
+    StandardOLEFormat.cfFormat := ToUInt16(CF_VTREFERENCE);
     if DataObject.GetData(StandardOLEFormat, Medium) = S_OK then
     begin
       Data := GlobalLock(Medium.hGlobal);

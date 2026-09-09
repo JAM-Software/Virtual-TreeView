@@ -1461,12 +1461,12 @@ begin
   GetTextExtentPoint32W(Canvas.Handle, PWideChar(Text), Length(Text), Result);
   if vsMultiLine in Node.States then
   begin
-    DrawFormat := DT_CALCRECT or DT_NOPREFIX or DT_WORDBREAK or DT_END_ELLIPSIS or DT_EDITCONTROL or AlignmentToDrawFlag[Alignment];
+    DrawFormat := ToInt32(DT_CALCRECT or DT_NOPREFIX or DT_WORDBREAK or DT_END_ELLIPSIS or DT_EDITCONTROL or AlignmentToDrawFlag[Alignment]);
     if BidiMode <> bdLeftToRight then
       DrawFormat := DrawFormat or DT_RTLREADING;
 
     R := Rect(0, 0, Result.cx, MaxInt);
-    Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, DrawFormat);
+    Winapi.Windows.DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text), R, ToUInt32(DrawFormat));
     Result.cx := R.Right - R.Left;
   end;
   if Assigned(FOnMeasureTextWidth) then
