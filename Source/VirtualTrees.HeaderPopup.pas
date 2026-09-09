@@ -110,6 +110,7 @@ implementation
 uses
   Winapi.Windows,
   System.Types,
+  VirtualTrees.Utils,
   VirtualTrees.Header;
 
 resourcestring
@@ -153,13 +154,13 @@ procedure TVTHeaderPopupMenu.OnMenuItemClick(Sender: TObject);
 
 begin
   if Assigned(PopupComponent) and (PopupComponent is TBaseVirtualTree) then begin
-    with TBaseVirtualTree(PopupComponent).Header.Columns.Items[TVTMenuItem(Sender).Tag] do
+    with TBaseVirtualTree(PopupComponent).Header.Columns.Items[ToInt32(TVTMenuItem(Sender).Tag)] do
     begin
       if TVTMenuItem(Sender).Checked then
         Options := Options - [coVisible]
       else
         Options := Options + [coVisible];
-      DoColumnChange(TVTMenuItem(Sender).Tag, coVisible in Options);
+      DoColumnChange(ToInt32(TVTMenuItem(Sender).Tag), coVisible in Options);
     end;
   end;
 end;
@@ -168,7 +169,7 @@ end;
 
 procedure TVTHeaderPopupMenu.Popup(x, y: TDimension);
 var
-  ColPos: TColumnPosition;
+  ColPos: Integer;
   ColIdx: TColumnIndex;
 
   NewMenuItem: TVTMenuItem;
@@ -210,7 +211,7 @@ begin
         if poOriginalOrder in FOptions then
           ColIdx := ColPos
         else
-          ColIdx := Columns.ColumnFromPosition(ColPos);
+          ColIdx := Columns.ColumnFromPosition(ToUInt32(ColPos));
 
         with Columns[ColIdx] do
         begin

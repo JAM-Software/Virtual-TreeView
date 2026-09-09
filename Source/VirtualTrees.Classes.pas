@@ -162,7 +162,7 @@ procedure TBufferedString.Add(const S: string);
 var
   NewLen,
   LastOffset,
-  Len: Integer;
+  Len: NativeInt;
 
 begin
   Len := Length(S);
@@ -189,7 +189,7 @@ procedure TBufferedString.AddNewLine;
 
 var
   NewLen,
-  LastOffset: Integer;
+  LastOffset: NativeInt;
 
 begin
   // Make room for the CR/LF characters.
