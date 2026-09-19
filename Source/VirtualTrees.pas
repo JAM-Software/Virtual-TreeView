@@ -139,61 +139,91 @@ type
 const
   // Aliases for increased compatibility with V7, feel free to extend by pull requests
   NoColumn                 = VirtualTrees.Types.NoColumn;
+  {$EXTERNALSYM NoColumn}
   InvalidColumn            = VirtualTrees.Types.InvalidColumn;
+  {$EXTERNALSYM InvalidColumn}
 
   // TSortDirection
   sdAscending              = VirtualTrees.Types.TSortDirection.sdAscending;
+  {$EXTERNALSYM sdAscending}
   sdDescending             = VirtualTrees.Types.TSortDirection.sdDescending;
+  {$EXTERNALSYM sdDescending}
 
   // TVTAutoOption
   toAutoSort               = VirtualTrees.Types.TVTAutoOption.toAutoSort;
+  {$EXTERNALSYM toAutoSort}
 
   // TVTMiscOption
   toCheckSupport           = VirtualTrees.Types.TVTMiscOption.toCheckSupport;
+  {$EXTERNALSYM toCheckSupport}
   toEditable               = VirtualTrees.Types.TVTMiscOption.toEditable;
+  {$EXTERNALSYM toEditable}
 
   // TVTPaintOption
   toShowRoot               = VirtualTrees.Types.TVTPaintOption.toShowRoot;
+  {$EXTERNALSYM toShowRoot}
 
   // TCheckType
   ctNone                   = VirtualTrees.Types.TCheckType.ctNone;
+  {$EXTERNALSYM ctNone}
   ctTriStateCheckBox       = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
+  {$EXTERNALSYM ctTriStateCheckBox}
   ctCheckBox               = VirtualTrees.Types.TCheckType.ctCheckBox;
+  {$EXTERNALSYM ctCheckBox}
   ctRadioButton            = VirtualTrees.Types.TCheckType.ctRadioButton;
+  {$EXTERNALSYM ctRadioButton}
   ctButton                 = VirtualTrees.Types.TCheckType.ctButton;
+  {$EXTERNALSYM ctButton}
 
   // TCheckState
   csUncheckedNormal        = VirtualTrees.Types.TCheckState.csUncheckedNormal;
+  {$EXTERNALSYM csUncheckedNormal}
   csUncheckedPressed       = VirtualTrees.Types.TCheckState.csUncheckedPressed;
+  {$EXTERNALSYM csUncheckedPressed}
   csCheckedNormal          = VirtualTrees.Types.TCheckState.csCheckedNormal;
+  {$EXTERNALSYM csCheckedNormal}
   csCheckedPressed         = VirtualTrees.Types.TCheckState.csCheckedPressed;
+  {$EXTERNALSYM csCheckedPressed}
   csMixedNormal            = VirtualTrees.Types.TCheckState.csMixedNormal;
+  {$EXTERNALSYM csMixedNormal}
   csMixedPressed           = VirtualTrees.Types.TCheckState.csMixedPressed;
+  {$EXTERNALSYM csMixedPressed}
   csUncheckedDisabled      = VirtualTrees.Types.TCheckState.csUncheckedDisabled;
+  {$EXTERNALSYM csUncheckedDisabled}
   csCheckedDisabled        = VirtualTrees.Types.TCheckState.csCheckedDisabled;
+  {$EXTERNALSYM csCheckedDisabled}
   csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
+  {$EXTERNALSYM csMixedDisabled}
 
   // TVTColumnOption
   coVisible                = VirtualTrees.Types.TVTColumnOption.coVisible;
+  {$EXTERNALSYM coVisible}
 
   // TVirtualNodeState
   vsDisabled               = VirtualTrees.Types.TVirtualNodeState.vsDisabled;
+  {$EXTERNALSYM vsDisabled}
 
   // TVTExportType
   etHTML                   = VirtualTrees.Types.TVTExportType.etHTML;
+  {$EXTERNALSYM etHTML}
 
   // THitPosition
   hiOnItemButton           = VirtualTrees.Types.THitPosition.hiOnItemButton;
+  {$EXTERNALSYM hiOnItemButton}
 
   // TDropMode
   dmOnNode                 = VirtualTrees.Types.TDropMode.dmOnNode;
+  {$EXTERNALSYM dmOnNode}
 
   // TVTTooltipLineBreakStyle
   hlbForceMultiLine        = VirtualTrees.Types.TVTTooltipLineBreakStyle.hlbForceMultiLine;
+  {$EXTERNALSYM hlbForceMultiLine}
 
   // TVTHintMode
   hmHintAndDefault         = VirtualTrees.Types.TVTHintMode.hmHintAndDefault;
+  {$EXTERNALSYM hmHintAndDefault}
   hmTooltip                = VirtualTrees.Types.TVTHintMode.hmTooltip;
+  {$EXTERNALSYM hmTooltip}
 
 type
   TCustomVirtualStringTree = class;
