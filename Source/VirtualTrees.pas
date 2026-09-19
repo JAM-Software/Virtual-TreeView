@@ -192,7 +192,7 @@ const
   {$EXTERNALSYM csUncheckedDisabled}
   csCheckedDisabled        = VirtualTrees.Types.TCheckState.csCheckedDisabled;
   {$EXTERNALSYM csCheckedDisabled}
-  csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
+  csMixedDisabled          = VirtualTrees.Types.TCheckState.csMixedDisabled;
   {$EXTERNALSYM csMixedDisabled}
 
   // TVTColumnOption
