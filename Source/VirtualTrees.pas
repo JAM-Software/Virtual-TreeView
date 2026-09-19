@@ -140,18 +140,29 @@ const
   // Aliases for increased compatibility with V7, feel free to extend by pull requests
   NoColumn                 = VirtualTrees.Types.NoColumn;
   InvalidColumn            = VirtualTrees.Types.InvalidColumn;
+
+  // TSortDirection
   sdAscending              = VirtualTrees.Types.TSortDirection.sdAscending;
   sdDescending             = VirtualTrees.Types.TSortDirection.sdDescending;
+
+  // TVTAutoOption
   toAutoSort               = VirtualTrees.Types.TVTAutoOption.toAutoSort;
+
+  // TVTMiscOption
   toCheckSupport           = VirtualTrees.Types.TVTMiscOption.toCheckSupport;
   toEditable               = VirtualTrees.Types.TVTMiscOption.toEditable;
+
+  // TVTPaintOption
   toShowRoot               = VirtualTrees.Types.TVTPaintOption.toShowRoot;
+
+  // TCheckType
   ctNone                   = VirtualTrees.Types.TCheckType.ctNone;
   ctTriStateCheckBox       = VirtualTrees.Types.TCheckType.ctTriStateCheckBox;
   ctCheckBox               = VirtualTrees.Types.TCheckType.ctCheckBox;
   ctRadioButton            = VirtualTrees.Types.TCheckType.ctRadioButton;
   ctButton                 = VirtualTrees.Types.TCheckType.ctButton;
 
+  // TCheckState
   csUncheckedNormal        = VirtualTrees.Types.TCheckState.csUncheckedNormal;
   csUncheckedPressed       = VirtualTrees.Types.TCheckState.csUncheckedPressed;
   csCheckedNormal          = VirtualTrees.Types.TCheckState.csCheckedNormal;
@@ -162,12 +173,25 @@ const
   csCheckedDisabled        = VirtualTrees.Types.TCheckState.csCheckedDisabled;
   csMixedDisable           = VirtualTrees.Types.TCheckState.csMixedDisabled;
 
+  // TVTColumnOption
   coVisible                = VirtualTrees.Types.TVTColumnOption.coVisible;
+
+  // TVirtualNodeState
   vsDisabled               = VirtualTrees.Types.TVirtualNodeState.vsDisabled;
+
+  // TVTExportType
   etHTML                   = VirtualTrees.Types.TVTExportType.etHTML;
+
+  // THitPosition
   hiOnItemButton           = VirtualTrees.Types.THitPosition.hiOnItemButton;
+
+  // TDropMode
   dmOnNode                 = VirtualTrees.Types.TDropMode.dmOnNode;
+
+  // TVTTooltipLineBreakStyle
   hlbForceMultiLine        = VirtualTrees.Types.TVTTooltipLineBreakStyle.hlbForceMultiLine;
+
+  // TVTHintMode
   hmHintAndDefault         = VirtualTrees.Types.TVTHintMode.hmHintAndDefault;
   hmTooltip                = VirtualTrees.Types.TVTHintMode.hmTooltip;
 
