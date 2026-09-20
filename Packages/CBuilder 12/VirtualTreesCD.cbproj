@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{B6350E5E-13A2-44EC-8515-C119E896CB47}</ProjectGuid>
+        <ProjectGuid>{DE1FB54C-6852-4F59-B4A5-7718E6069FE8}</ProjectGuid>
         <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>VirtualTreesCD.cpp</MainSource>
@@ -155,7 +155,7 @@
     <ItemGroup>
         <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
             <VirtualFolder>{4AB7ABC9-E87D-4D9D-99AF-39363FDE2732}</VirtualFolder>
-            <BuildOrder>2</BuildOrder>
+            <BuildOrder>0</BuildOrder>
         </DelphiCompile>
         <PackageImport Include="designide.bpi">
             <BuildOrder>4</BuildOrder>
@@ -167,13 +167,13 @@
             <BuildOrder>1</BuildOrder>
         </PackageImport>
         <PackageImport Include="vcl.bpi">
-            <BuildOrder>3</BuildOrder>
+            <BuildOrder>4</BuildOrder>
         </PackageImport>
         <CppCompile Include="VirtualTreesCD.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
         <PackageImport Include="VirtualTreesCR.bpi">
-            <BuildOrder>12</BuildOrder>
+            <BuildOrder>9</BuildOrder>
         </PackageImport>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{2381F390-47E4-4CAA-BAF9-857BF136C307}</ProjectGuid>
+        <ProjectGuid>{FE6B0D67-74B6-4E30-8AED-CB2B3E77A51F}</ProjectGuid>
         <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>VirtualTreesCR.cpp</MainSource>
@@ -153,101 +153,101 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageImport Include="rtl.bpi">
-            <BuildOrder>1</BuildOrder>
+            <BuildOrder>3</BuildOrder>
         </PackageImport>
         <PackageImport Include="vcl.bpi">
-            <BuildOrder>32</BuildOrder>
+            <BuildOrder>4</BuildOrder>
         </PackageImport>
         <CppCompile Include="VirtualTreesCR.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Accessibility.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>3</BuildOrder>
+            <BuildOrder>0</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.AccessibilityFactory.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>4</BuildOrder>
+            <BuildOrder>1</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>5</BuildOrder>
+            <BuildOrder>2</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.AncestorVcl.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>6</BuildOrder>
+            <BuildOrder>3</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.BaseAncestorVcl.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>7</BuildOrder>
+            <BuildOrder>4</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.BaseTree.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>8</BuildOrder>
+            <BuildOrder>5</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>9</BuildOrder>
+            <BuildOrder>6</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>10</BuildOrder>
+            <BuildOrder>7</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Colors.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>11</BuildOrder>
+            <BuildOrder>8</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.DataObject.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>12</BuildOrder>
+            <BuildOrder>9</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.DragImage.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>13</BuildOrder>
+            <BuildOrder>10</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.DragnDrop.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>14</BuildOrder>
+            <BuildOrder>11</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.DrawTree.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>15</BuildOrder>
+            <BuildOrder>12</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.EditLink.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>16</BuildOrder>
+            <BuildOrder>13</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>17</BuildOrder>
+            <BuildOrder>14</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Header.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>18</BuildOrder>
+            <BuildOrder>15</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.HeaderPopup.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>19</BuildOrder>
+            <BuildOrder>16</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>20</BuildOrder>
+            <BuildOrder>17</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>21</BuildOrder>
+            <BuildOrder>18</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>22</BuildOrder>
+            <BuildOrder>19</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>23</BuildOrder>
+            <BuildOrder>20</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
             <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>24</BuildOrder>
+            <BuildOrder>21</BuildOrder>
         </DelphiCompile>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
