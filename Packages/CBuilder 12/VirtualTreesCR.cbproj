@@ -75,6 +75,7 @@
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
         <ILINK_Description>VirtualTree CBuilder runtime package</ILINK_Description>
         <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
+        <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>

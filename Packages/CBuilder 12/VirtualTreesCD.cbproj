@@ -74,6 +74,7 @@
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)</DCC_HppOutput>
         <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
+        <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
