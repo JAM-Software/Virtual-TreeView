@@ -468,6 +468,7 @@ type
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
     FBackground: TVTBackground;                  // A background image loadable at design and runtime.
+    FBackgroundPrepared: TBitmap;                // Prepared background image.
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
@@ -762,6 +763,7 @@ type
     function FindInPositionCache(Position: TDimension; var CurrentPos: TNodeHeight): PVirtualNode; overload;
     procedure FixupTotalCount(Node: PVirtualNode);
     procedure FixupTotalHeight(Node: PVirtualNode);
+    function GetBackgroundBitmap(Source: TVTBackground; aBkgColor: TColor): TBitmap;
     function GetBottomNode: PVirtualNode;
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
@@ -2354,6 +2356,7 @@ begin
   Clear;
   FColors.Free;
   FBackground.Free;
+  FreeAndNil(FBackgroundPrepared);
 
   if CheckImageKind = ckSystemDefault then
     FCheckImages.Free;
@@ -3333,6 +3336,22 @@ begin
       Child := Child.NextSibling;
     end;
   end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function TBaseVirtualTree.GetBackgroundBitmap(Source: TVTBackground; aBkgColor: TColor): TBitmap;
+
+// Prepares and returns the background bitmap ready to be drawn.  Creates a new bitmap if it
+// hasn't been created yet.
+
+begin
+  if Assigned(FBackgroundPrepared) then
+    Exit(FBackgroundPrepared);
+
+  FBackgroundPrepared := TBitmap.Create;
+  PrepareBackGroundPicture(Source, FBackgroundPrepared, Source.Width, Source.Height, aBkgColor);
+  Result := FBackgroundPrepared;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5777,8 +5796,6 @@ var
   DrawRect: TRect;
   DrawingBitmap: TBitmap;
 begin
-  DrawingBitmap := TBitmap.Create;
-  try
     // clear background
     Target.Brush.Color := aBkgColor;
     Target.FillRect(R);
@@ -5792,14 +5809,12 @@ begin
   // If picture falls in AreaRect, return intersection (DrawRect).
   if IntersectRect(DrawRect, PicRect, AreaRect) then
   begin
-      PrepareBackGroundPicture(Source, DrawingBitmap, Source.Width, Source.Height, aBkgColor);
+    DrawingBitmap := GetBackgroundBitmap(Source, aBkgColor);
+
       // copy image to destination
       BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
       (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawingBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
         SRCCOPY);
-    end;
-  finally
-    DrawingBitmap.Free;
   end;
 end;
 
@@ -5845,9 +5860,8 @@ var
   DeltaY: TDimension;
   DrawingBitmap: TBitmap;
 begin
-  DrawingBitmap := TBitmap.Create;
-  try
-    PrepareBackGroundPicture(Source, DrawingBitmap, Source.Width, Source.Height, aBkgColor);
+  DrawingBitmap := GetBackgroundBitmap(Source, aBkgColor);
+
     with Target do
     begin
       SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
@@ -5878,9 +5892,6 @@ begin
         Inc(R.Top, Source.Height - SourceY);
         SourceY := 0;
       end;
-    end;
-  finally
-    DrawingBitmap.Free;
   end;
 end;
 
