@@ -5829,9 +5829,9 @@ var
   DrawRect: TRect;
   DrawingBitmap: TBitmap;
 begin
-    // clear background
-    Target.Brush.Color := aBkgColor;
-    Target.FillRect(R);
+  // clear background
+  Target.Brush.Color := aBkgColor;
+  Target.FillRect(R);
 
   // Picture rect in relation to client viewscreen.
   PicRect := Rect(FBackgroundOffsetX, FBackgroundOffsetY, FBackgroundOffsetX + Source.Width, FBackgroundOffsetY + Source.Height);
@@ -5844,10 +5844,10 @@ begin
   begin
     DrawingBitmap := GetBackgroundBitmap(Source, aBkgColor);
 
-      // copy image to destination
-      BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
+    // copy image to destination
+    BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
       (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawingBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
-        SRCCOPY);
+      SRCCOPY);
   end;
 end;
 
@@ -5895,36 +5895,36 @@ var
 begin
   DrawingBitmap := GetBackgroundBitmap(Source, aBkgColor);
 
-    with Target do
+  with Target do
+  begin
+    SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
+    // Always wrap the source coordinates into positive range.
+    if SourceY < 0 then
+      SourceY := Source.Height + SourceY;
+
+    // Tile image vertically until target rect is filled.
+    while R.Top < R.Bottom do
     begin
-      SourceY := (R.Top + Offset.Y + FBackgroundOffsetY) mod Source.Height;
-      // Always wrap the source coordinates into positive range.
-      if SourceY < 0 then
-        SourceY := Source.Height + SourceY;
+      SourceX := (R.Left + Offset.X + FBackgroundOffsetX) mod Source.Width;
+      // always wrap the source coordinates into positive range
+      if SourceX < 0 then
+        SourceX := Source.Width + SourceX;
 
-      // Tile image vertically until target rect is filled.
-      while R.Top < R.Bottom do
+      TargetX := R.Left;
+      // height of strip to draw
+      DeltaY := Min(R.Bottom - R.Top, Source.Height - SourceY);
+
+      // tile the image horizontally
+      while TargetX < R.Right do
       begin
-        SourceX := (R.Left + Offset.X + FBackgroundOffsetX) mod Source.Width;
-        // always wrap the source coordinates into positive range
-        if SourceX < 0 then
-          SourceX := Source.Width + SourceX;
-
-        TargetX := R.Left;
-        // height of strip to draw
-        DeltaY := Min(R.Bottom - R.Top, Source.Height - SourceY);
-
-        // tile the image horizontally
-        while TargetX < R.Right do
-        begin
-          BitBlt(Handle, TargetX, R.Top, Min(R.Right - TargetX, Source.Width - SourceX), DeltaY,
-            DrawingBitmap.Canvas.Handle, SourceX, SourceY, SRCCOPY);
-          Inc(TargetX, Source.Width - SourceX);
-          SourceX := 0;
-        end;
-        Inc(R.Top, Source.Height - SourceY);
-        SourceY := 0;
+        BitBlt(Handle, TargetX, R.Top, Min(R.Right - TargetX, Source.Width - SourceX), DeltaY,
+          DrawingBitmap.Canvas.Handle, SourceX, SourceY, SRCCOPY);
+        Inc(TargetX, Source.Width - SourceX);
+        SourceX := 0;
       end;
+      Inc(R.Top, Source.Height - SourceY);
+      SourceY := 0;
+    end;
   end;
 end;
 
