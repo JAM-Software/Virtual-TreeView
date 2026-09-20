@@ -408,6 +408,11 @@ type
     function GetNext(Node: PVirtualNode): PVirtualNode;
   end;
 
+  TVTPreparedBackground = record
+    Bitmap: TBitmap;
+    BackgroundColor: TColor;
+    Transparent: Boolean;
+  end;
 
   // ----- TBaseVirtualTree
   TBaseVirtualTree = class abstract(TVTBaseAncestor)
@@ -468,7 +473,7 @@ type
     FTempNodeCache: TNodeArray;                  // used at various places to hold temporarily a bunch of node refs.
     FTempNodeCount: Cardinal;                    // number of nodes in FTempNodeCache
     FBackground: TVTBackground;                  // A background image loadable at design and runtime.
-    FBackgroundPrepared: TBitmap;                // Prepared background image.
+    FBackgroundPrepared: TVTPreparedBackground;  // Prepared background image and settings used when it was created.
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
 
@@ -2359,7 +2364,7 @@ begin
   Clear;
   FColors.Free;
   FBackground.Free;
-  FreeAndNil(FBackgroundPrepared);
+  FreeAndNil(FBackgroundPrepared.Bitmap);
 
   if CheckImageKind = ckSystemDefault then
     FCheckImages.Free;
@@ -2476,7 +2481,7 @@ procedure TBaseVirtualTree.BackgroundPictureChanged(Sender: TObject);
 // force an OnChange so it can be re-prepared.
 
 begin
-  FreeAndNil(FBackgroundPrepared);
+  FreeAndNil(FBackgroundPrepared.Bitmap);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3361,15 +3366,25 @@ end;
 function TBaseVirtualTree.GetBackgroundBitmap(Source: TVTBackground; aBkgColor: TColor): TBitmap;
 
 // Prepares and returns the background bitmap ready to be drawn.  Creates a new bitmap if it
-// hasn't been created yet.
+// hasn't been created yet or if preparation settings have changed.
+
+var
+  bkgColor: TColor;
 
 begin
-  if Assigned(FBackgroundPrepared) then
-    Exit(FBackgroundPrepared);
+  bkgColor := ColorToRGB(aBkgColor);
+  if Assigned(FBackgroundPrepared.Bitmap) and
+     (FBackgroundPrepared.BackgroundColor = bkgColor) and
+     (FBackgroundPrepared.Transparent = FBackGroundImageTransparent) then
+    Exit(FBackgroundPrepared.Bitmap);
 
-  FBackgroundPrepared := TBitmap.Create;
-  PrepareBackGroundPicture(Source, FBackgroundPrepared, Source.Width, Source.Height, aBkgColor);
-  Result := FBackgroundPrepared;
+  FreeAndNil(FBackgroundPrepared.Bitmap);
+  FBackgroundPrepared.Bitmap := TBitmap.Create;
+
+  PrepareBackGroundPicture(Source, FBackgroundPrepared.Bitmap, Source.Width, Source.Height, bkgColor);
+  FBackgroundPrepared.BackgroundColor := bkgColor;
+  FBackgroundPrepared.Transparent := FBackGroundImageTransparent;
+  Result := FBackgroundPrepared.Bitmap;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
