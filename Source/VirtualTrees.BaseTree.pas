@@ -749,6 +749,7 @@ type
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
 
     procedure AdjustTotalCount(Node: PVirtualNode; Value: Integer; relative: Boolean = False);
+    procedure BackgroundPictureChanged(Sender: TObject);
     function CalculateCacheEntryCount: Integer;
     procedure CalculateVerticalAlignments(var PaintInfo: TVTPaintInfo; var VButtonAlign: TDimension);
     function ChangeCheckState(Node: PVirtualNode; Value: TCheckState): Boolean;
@@ -2295,6 +2296,8 @@ begin
   FAutoScrollInterval := 1;
 
   FBackground := TVTBackground.Create;
+  FBackground.OnChange := BackgroundPictureChanged;
+
   // Similar to the Transparent property of TImage,
   // this flag is Off by default.
   FBackGroundImageTransparent := False;
@@ -2459,6 +2462,21 @@ begin
   end;
 
   UpdateVerticalRange;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+procedure TBaseVirtualTree.BackgroundPictureChanged(Sender: TObject);
+
+// Invalidates the prepared background image whenever the background picture changes.
+
+// Note: If Background's bitmap pixels are modified directly (ScanLine, a raw HBITMAP/HDC, or any
+// GDI call that bypasses TCanvas), OnChange is not called.  The cached FBackgroundPrepared image
+// will keep showing the previously prepared image.  In such cases, reassign the Background to
+// force an OnChange so it can be re-prepared.
+
+begin
+  FreeAndNil(FBackgroundPrepared);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
