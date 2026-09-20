@@ -8,6 +8,9 @@
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
 #include "VirtualTrees.hpp"
+#include "VirtualTrees.AncestorVcl.hpp"
+#include "VirtualTrees.BaseAncestorVcl.hpp"
+#include "VirtualTrees.BaseTree.hpp"
 //---------------------------------------------------------------------------
 class TMainForm : public TForm
 {
