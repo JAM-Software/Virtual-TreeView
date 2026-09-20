@@ -85,7 +85,7 @@
         <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <ILINK_Description>VirtualTrees Designtime</ILINK_Description>
+        <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
         <DCC_UnitSearchPath>..\..\Source;.\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <ILINK_LibraryPath>.\$(Platform)\$(Config);$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
@@ -136,7 +136,6 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)$(CC_SUFFIX)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <ILINK_Description>VirtualTrees Designtime</ILINK_Description>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>

@@ -90,7 +90,7 @@
         <DCC_HppOutputARM>true</DCC_HppOutputARM>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)</DCC_HppOutput>
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-        <ILINK_Description>VirtualTrees Runtime</ILINK_Description>
+        <ILINK_Description>VirtualTree CBuilder runtime package</ILINK_Description>
         <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
@@ -144,7 +144,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <ILINK_Description>VirtualTrees Runtime</ILINK_Description>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
