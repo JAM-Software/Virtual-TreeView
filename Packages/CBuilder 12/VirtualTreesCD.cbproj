@@ -65,6 +65,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <DllSuffix>$(Auto)</DllSuffix>
         <DynamicRTL>true</DynamicRTL>
         <UsePackages>true</UsePackages>
         <DCC_AdditionalSwitches>-LUDesignIDE</DCC_AdditionalSwitches>
