@@ -1,14 +1,14 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{FE6B0D67-74B6-4E30-8AED-CB2B3E77A51F}</ProjectGuid>
-        <ProjectVersion>20.3</ProjectVersion>
+        <ProjectGuid>{DE1FB54C-6852-4F59-B4A5-7718E6069FE8}</ProjectGuid>
+        <ProjectVersion>20.4</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>VirtualTreesCR.cpp</MainSource>
+        <MainSource>VirtualTreesCD.cpp</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
-        <ProjectName Condition="'$(ProjectName)'==''">VirtualTreesCR</ProjectName>
-        <TargetedPlatforms>1048579</TargetedPlatforms>
+        <ProjectName Condition="'$(ProjectName)'==''">VirtualTreesCD</ProjectName>
+        <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Package</AppType>
         <CC_Suffix Condition="'$(CC_Suffix)'==''">c</CC_Suffix>
     </PropertyGroup>
@@ -48,9 +48,10 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DllSuffix>$(Auto)</DllSuffix>
-        <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DynamicRTL>true</DynamicRTL>
         <UsePackages>true</UsePackages>
+        <DCC_AdditionalSwitches>-LUDesignIDE</DCC_AdditionalSwitches>
+        <DesignOnlyPackage>true</DesignOnlyPackage>
         <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
         <BPILibOutputDir>.\$(Platform)\$(Config)</BPILibOutputDir>
         <BCC_wpar>false</BCC_wpar>
@@ -59,21 +60,19 @@
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\release\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
         <ProjectType>CppPackage</ProjectType>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
-        <OutputExt>bpl</OutputExt>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
         <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
         <_TCHARMapping>wchar_t</_TCHARMapping>
         <Multithreaded>true</Multithreaded>
-        <SanitizedProjectName>VirtualTreesCR</SanitizedProjectName>
-        <DCC_UnitSearchPath>..\..\Source;.\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <SanitizedProjectName>VirtualTreesCD</SanitizedProjectName>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <BCC_InstructionSet>6</BCC_InstructionSet>
-        <DCC_HppOutputARM>true</DCC_HppOutputARM>
+        <ILINK_Description>VirtualTree CBuilder designtime package</ILINK_Description>
+        <DCC_UnitSearchPath>..\..\Source;.\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <ILINK_LibraryPath>.\$(Platform)\$(Config);$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_HppOutput>$(BDSCOMMONDIR)\hpp\$(Platform)</DCC_HppOutput>
-        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
-        <ILINK_Description>VirtualTree CBuilder runtime package</ILINK_Description>
         <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
     </PropertyGroup>
@@ -81,7 +80,6 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
-        <TLIB_PageSize>64</TLIB_PageSize>
         <BCC_UseClassicCompiler>false</BCC_UseClassicCompiler>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
@@ -124,103 +122,28 @@
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
     <ItemGroup>
+        <DelphiCompile Include="..\..\Design\VirtualTreesReg.pas">
+            <VirtualFolder>{4AB7ABC9-E87D-4D9D-99AF-39363FDE2732}</VirtualFolder>
+            <BuildOrder>0</BuildOrder>
+        </DelphiCompile>
+        <PackageImport Include="designide.bpi">
+            <BuildOrder>4</BuildOrder>
+        </PackageImport>
+        <PackageImport Include="designideresources.bpi">
+            <BuildOrder>5</BuildOrder>
+        </PackageImport>
         <PackageImport Include="rtl.bpi">
-            <BuildOrder>3</BuildOrder>
+            <BuildOrder>1</BuildOrder>
         </PackageImport>
         <PackageImport Include="vcl.bpi">
             <BuildOrder>4</BuildOrder>
         </PackageImport>
-        <CppCompile Include="VirtualTreesCR.cpp">
+        <CppCompile Include="VirtualTreesCD.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Accessibility.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>0</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.AccessibilityFactory.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>1</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Actions.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>2</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.AncestorVcl.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>3</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.BaseAncestorVcl.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>4</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.BaseTree.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>5</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Classes.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>6</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.ClipBoard.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>7</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Colors.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>8</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.DataObject.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
+        <PackageImport Include="VirtualTreesCR.bpi">
             <BuildOrder>9</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.DragImage.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>10</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.DragnDrop.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>11</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.DrawTree.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>12</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.EditLink.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>13</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Export.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>14</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Header.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>15</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.HeaderPopup.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>16</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>17</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.StyleHooks.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>18</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Types.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>19</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.Utils.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>20</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\VirtualTrees.WorkerThread.pas">
-            <VirtualFolder>{FF0836F4-FE45-4852-8226-19028E202F2D}</VirtualFolder>
-            <BuildOrder>21</BuildOrder>
-        </DelphiCompile>
+        </PackageImport>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -245,16 +168,16 @@
                     <ProjectProperties Name="IndexFiles">True</ProjectProperties>
                 </ProjectProperties>
                 <Source>
-                    <Source Name="MainSource">VirtualTreesCR.cpp</Source>
+                    <Source Name="MainSource">VirtualTreesCD.cpp</Source>
                 </Source>
                 <VFOLDERS>
-                    <VFOLDER ID="{FF0836F4-FE45-4852-8226-19028E202F2D}" name="Source Files"/>
+                    <VFOLDER ID="{4AB7ABC9-E87D-4D9D-99AF-39363FDE2732}" name="Design Files"/>
                 </VFOLDERS>
             </CPlusPlusBuilder.Personality>
             <Platforms>
                 <Platform value="Win32">True</Platform>
-                <Platform value="Win64">True</Platform>
-                <Platform value="Win64x">True</Platform>
+                <Platform value="Win64">False</Platform>
+                <Platform value="Win64x">False</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

@@ -3,11 +3,14 @@
 #ifndef mainH
 #define mainH
 //---------------------------------------------------------------------------
-#include <Classes.hpp>
-#include <Controls.hpp>
-#include <StdCtrls.hpp>
-#include <Forms.hpp>
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
 #include "VirtualTrees.hpp"
+#include "VirtualTrees.AncestorVcl.hpp"
+#include "VirtualTrees.BaseAncestorVcl.hpp"
+#include "VirtualTrees.BaseTree.hpp"
 //---------------------------------------------------------------------------
 class TMainForm : public TForm
 {

@@ -1,7 +1,13 @@
 # Compiled source #
 ###################
 *.dcu
+*.ilc
+*.ild
+*.ilf
+*.ils
+*.lnk
 *.obj
+*.pdb
 *.exe
 *.bpl
 *.bpi
@@ -11,6 +17,7 @@
 *.map
 *.d
 *.o
+*.tds
 
 # Generated source #
 ###################
@@ -23,11 +30,13 @@ __recovery
 
 # IDE Files	  #
 ###################
+*.@@@
 *.dproj.local
 *.groupproj.local
 *.identcache
 *.dsk
 *.tvsconfig
+*.twopts
 *.otares
 *.drc
 *.rc
