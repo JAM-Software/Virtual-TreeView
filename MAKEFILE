@@ -33,12 +33,14 @@ clean:
 	DEL /S /Q .\*.DCU
 #TODO: Add demos and package folders
 
-13.0 13.1: Source\*.pas "Packages\RAD Studio 10.4+\$(PROJECT)R.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj" "Packages\RAD Studio 10.4+\$(PROJECT)D.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
+13.0 13.1 13.2: Source\*.pas "Packages\RAD Studio 10.4+\$(PROJECT)R.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj" "Packages\RAD Studio 10.4+\$(PROJECT)D.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
 	SET BDS=$(STUDIO)\37.0
 	$(BUILD) /property:Platform=Win32 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
 	$(BUILD) /property:Platform=Win32 "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
 	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
 	$(BUILD) /property:Platform=Win64 "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
+#   Windows on ARM (ARM64EC). Runtime package only, the design time package is loaded by the 32 bit IDE.
+#	$(BUILD) /property:Platform=WinARM64EC "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj"
 	$(MAKE) _samples
 
 12.3: Source\*.pas "Packages\RAD Studio 10.4+\$(PROJECT)R.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)R.dproj" "Packages\RAD Studio 10.4+\$(PROJECT)D.dpk" "Packages\RAD Studio 10.4+\$(PROJECT)D.dproj"
