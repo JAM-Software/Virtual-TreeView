@@ -369,33 +369,86 @@ type
     );
   TVTAutoOptions = set of TVTAutoOption;
 
-  // Options which determine the tree's behavior when selecting nodes:
+  /// <summary>
+  /// Options which determine the tree's behavior when selecting nodes.
+  /// </summary>
   TVTSelectionOption = (
-	toDisableDrawSelection,          // Prevent user from selecting with the selection rectangle in multiselect mode.
-    toExtendedFocus,                 // Entries other than in the main column can be selected, edited etc.
-    toFullRowSelect,                 // Hit test as well as selection highlight are not constrained to the text of a node.
-    toLevelSelectConstraint,         // Constrain selection to the same level as the selection anchor.
-    toMiddleClickSelect,             // Allow selection, dragging etc. with the middle mouse button. This and toWheelPanning
-                                     // are mutual exclusive.
-    toMultiSelect,                   // Allow more than one node/cell to be selected.
-    toRightClickSelect,              // Allow selection, dragging etc. with the right mouse button.
-    toSiblingSelectConstraint,       // Constrain selection to nodes with same parent.
-    toCenterScrollIntoView,          // Center nodes vertically in the client area when scrolling into view.
-    toSimpleDrawSelection,           // Simplifies draw selection, so a node's caption does not need to intersect with the
-                                     // selection rectangle.
-    toAlwaysSelectNode,              // If this flag is set to true, the tree view tries to always have a node selected.
-                                     // This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications.
-    toRestoreSelection,              // Set to true if upon refill the previously selected nodes should be selected again.
-                                     // The nodes will be identified by its caption (text in MainColumn)
-                                     // You may use TVTHeader.RestoreSelectiuonColumnIndex to define an other column that should be used for indentification.
-    toSyncCheckboxesWithSelection,   // If checkboxes are shown, they follow the change in selections. When checkboxes are
-                                     // changed, the selections follow them and vice-versa.
-                                     // **Only supported for ctCheckBox type checkboxes.
-    toSelectNextNodeOnRemoval,       // If the selected node gets deleted, automatically select the next node.
-
     /// <summary>
-    /// Enable multi-cell selection feature
+    /// Prevent user from selecting with the selection rectangle in multiselect mode.
     /// </summary>
+    toDisableDrawSelection,
+    /// <summary>
+    /// Entries other than in the main column can be selected, edited etc.
+    /// </summary>
+    toExtendedFocus,
+    /// <summary>
+    /// Hit test as well as selection highlight are not constrained to the text of a node.
+    /// </summary>
+    toFullRowSelect,
+    /// <summary>
+    /// Constrain selection to the same level as the selection anchor.
+    /// </summary>
+    toLevelSelectConstraint,
+    /// <summary>
+    /// Allow selection, dragging etc. with the middle mouse button.
+    /// </summary>
+    /// <remarks>
+    /// This and toWheelPanning are mutually exclusive.
+    /// </remarks>
+    toMiddleClickSelect,
+    /// <summary>
+    /// Allow more than one node/cell to be selected.
+    /// </summary>
+    toMultiSelect,
+    /// <summary>
+    /// Allow selection, dragging etc. with the right mouse button.
+    /// </summary>
+    toRightClickSelect,
+    /// <summary>
+    /// Constrain selection to nodes with same parent.
+    /// </summary>
+    toSiblingSelectConstraint,
+    /// <summary>
+    /// Center nodes vertically in the client area when scrolling into view.
+    /// </summary>
+    toCenterScrollIntoView,
+    /// <summary>
+    /// Simplifies draw selection, so a node's caption does not need to intersect with the selection rectangle.
+    /// </summary>
+    toSimpleDrawSelection,
+    /// <summary>
+    /// If this flag is set, the tree view tries to always have a node selected.
+    /// </summary>
+    /// <remarks>
+    /// This behavior is closer to the Windows TreeView and useful in Windows Explorer style applications.
+    /// </remarks>
+    toAlwaysSelectNode,
+    /// <summary>
+    /// If set, the previously selected nodes will be selected again upon refill.
+    /// </summary>
+    /// <remarks>
+    /// The nodes will be identified by their caption (text in MainColumn).
+    /// You may use TVTHeader.RestoreSelectionColumnIndex to define another column that should be used for identification.
+    /// </remarks>
+    toRestoreSelection,
+    /// <summary>
+    /// If checkboxes are shown, they follow the change in selections. When checkboxes are changed,
+    /// the selections follow them and vice-versa.
+    /// </summary>
+    /// <remarks>
+    /// Only supported for ctCheckBox type checkboxes.
+    /// </remarks>
+    toSyncCheckboxesWithSelection,
+    /// <summary>
+    /// If the selected node gets deleted, automatically select the next node.
+    /// </summary>
+    toSelectNextNodeOnRemoval,
+    /// <summary>
+    /// Enable multi-cell selection feature.
+    /// </summary>
+    /// <remarks>
+    /// A known limitation is that this does not work with reordered columns, see issue #1400.
+    /// </remarks>
     toMultiCellSelect
     );
   TVTSelectionOptions = set of TVTSelectionOption;
