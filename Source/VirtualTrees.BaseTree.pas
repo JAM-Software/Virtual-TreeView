@@ -2494,6 +2494,7 @@ procedure TBaseVirtualTree.BackgroundPictureChanged(Sender: TObject);
 
 begin
   FreeAndNil(FBackgroundPrepared.Bitmap);
+  Invalidate;
 
   // Forward to a consumer's own OnChange handler that got chained in GetBackgroundBitmap()
   // after they overwrote Background.OnChange themselves (see #1402).
