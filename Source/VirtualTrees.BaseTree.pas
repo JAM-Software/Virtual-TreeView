@@ -476,6 +476,8 @@ type
     FBackgroundPrepared: TVTPreparedBackground;  // Prepared background image and settings used when it was created.
     FBackgroundImageTransparent: Boolean;        // By default, this is off. When switched on, will try to draw the image
                                                  // transparent by using the color of the component as transparent color
+    FCustomBackgroundChange: TNotifyEvent;       // Chains a consumer's Background.OnChange handler if they overwrite
+                                                 // our internal hook (see #1402), so their handler still fires.
 
     FMargin: TDimension;                         // horizontal distance to border and columns
     FTextMargin: TDimension;                     // space between the node's text and its horizontal bounds
@@ -1917,6 +1919,16 @@ var
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function IsSameMethod(const Method1, Method2: TNotifyEvent): Boolean;
+
+// Compare two methods for equality.  This can be moved to a utility unit if needed in more areas.
+
+begin
+  Result := (TMethod(Method1).Code = TMethod(Method2).Code) and (TMethod(Method1).Data = TMethod(Method2).Data);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TreeFromNode(Node: PVirtualNode): TBaseVirtualTree;
 
 // Returns the tree the node currently belongs to or nil if the node is not attached to a tree.
@@ -2482,6 +2494,11 @@ procedure TBaseVirtualTree.BackgroundPictureChanged(Sender: TObject);
 
 begin
   FreeAndNil(FBackgroundPrepared.Bitmap);
+
+  // Forward to a consumer's own OnChange handler that got chained in GetBackgroundBitmap()
+  // after they overwrote Background.OnChange themselves (see #1402).
+  if Assigned(FCustomBackgroundChange) then
+    FCustomBackgroundChange(Sender);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3372,6 +3389,15 @@ var
   bkgColor: TColor;
 
 begin
+  // A consumer may have reassigned Background.OnChange, replacing our hook; re-chain it so their
+  // handler still fires (see #1402). Checks FBackground specifically, not Source, since that's
+  // whose hook we're guarding, regardless of what's passed in.
+  if not IsSameMethod(FBackground.OnChange, BackgroundPictureChanged) then
+  begin
+    FCustomBackgroundChange := FBackground.OnChange;
+    FBackground.OnChange := BackgroundPictureChanged;
+  end;
+
   bkgColor := ColorToRGB(aBkgColor);
   if Assigned(FBackgroundPrepared.Bitmap) and
      (FBackgroundPrepared.BackgroundColor = bkgColor) and
