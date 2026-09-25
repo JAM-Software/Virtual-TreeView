@@ -1004,7 +1004,7 @@ begin
   begin
     FColumns.TrackIndex := NoColumn;
     VisibleFixedWidth := FColumns.GetVisibleFixedWidth;
-    LeftTolerance := Round(SplitterHitTolerance * 0.6);
+    LeftTolerance := Round32(SplitterHitTolerance * 0.6);
     if Tree.UseRightToLeftAlignment then
     begin
       SplitPoint := - Tree.EffectiveOffsetX;
@@ -1571,7 +1571,7 @@ begin
         begin
           //If the click was on a splitter then resize column to smallest width.
           if DoColumnWidthDblClickResize(FColumns.TrackIndex, P, GetShiftState) then
-            AutoFitColumns(True, smaUseColumnOption, FColumns[FColumns.TrackIndex].Position, FColumns[FColumns.TrackIndex].Position);
+            AutoFitColumns(True, smaUseColumnOption, ToInt32(FColumns[FColumns.TrackIndex].Position), ToInt32(FColumns[FColumns.TrackIndex].Position));
           Message.Result := 0;
           Result := True;
         end
@@ -1726,7 +1726,7 @@ begin
                   HandleClick(Point(XPos, YPos), TMouseButton.mbLeft, False, False);
               end;
               if FStates <> [] then
-                TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(TMouseButton.mbLeft, KeysToShiftState(Keys), XPos, YPos);
+                TBaseVirtualTreeCracker(FOwner).DoHeaderMouseUp(TMouseButton.mbLeft, KeysToShiftState(ToUInt16(Keys)), XPos, YPos);
               fWasDoubleClick := False;
             end;
           WM_NCLBUTTONUP :
@@ -1793,8 +1793,8 @@ begin
           if (hoShowHint in FOptions) and not PtInRect(TBaseVirtualTreeCracker(FOwner).LastHintRect, P) then
           begin
             //client coordinates!
-            XCursor := P.X;
-            YCursor := P.Y + FHeight;
+            XCursor := ToInt16(P.X);
+            YCursor := ToInt16(P.Y + FHeight);
             Application.HintMouseMessage(FOwner, Message);
           end;
         end;
@@ -1904,7 +1904,7 @@ end;
 procedure TVTHeader.ColumnDropped(const P: TPoint);
 var
   R: TRect;
-  OldPosition: Integer;
+  OldPosition: TColumnPosition;
 begin
   GetWindowRect(Tree.Handle, R);
   with FColumns do
@@ -2196,7 +2196,7 @@ begin
           NewAccumulator := FColumns[I].SpringRest + Difference;
           //Set new width if at least one pixel size difference is reached.
           if NewAccumulator >= 1 then
-            TVirtualTreeColumnCracker(FColumns[I]).SetWidth(FColumns[I].Width + (Trunc(NewAccumulator) * Sign));
+            TVirtualTreeColumnCracker(FColumns[I]).SetWidth(FColumns[I].Width + (Trunc32(NewAccumulator) * Sign));
           FColumns[I].SpringRest := Frac(NewAccumulator);
 
           //Keep track of the size count.
@@ -2931,7 +2931,7 @@ begin
   begin
     FWidth := Owner.DefaultWidth;
     FLastWidth := Owner.DefaultWidth;
-    FPosition := Owner.Count - 1;
+    FPosition := ToUInt32(Owner.Count - 1);
   end;
 end;
 
@@ -3394,7 +3394,7 @@ begin
   else
   begin
     if Value >= TColumnPosition(Collection.Count) then
-      Value := Collection.Count - 1;
+      Value := ToUInt32(Collection.Count - 1);
     if FPosition <> Value then
     begin
       with Owner do
@@ -4185,7 +4185,7 @@ begin
 
     // parts introduced with stream version 1
     WriteBuffer(FTag, SizeOf(Dummy));
-    Dummy := Cardinal(FAlignment);
+    Dummy := Ord(FAlignment);
     WriteBuffer(Dummy, SizeOf(Dummy));
 
     // parts introduced with stream version 2
@@ -4195,7 +4195,7 @@ begin
     // parts introduced with stream version 6
     if coUseCaptionAlignment in FOptions then
     begin
-      Dummy := Cardinal(FCaptionAlignment);
+      Dummy := Ord(FCaptionAlignment);
       WriteBuffer(Dummy, SizeOf(Dummy));
     end;
   end;
@@ -4418,12 +4418,12 @@ begin
     if OldPosition < Position then
     begin
       // column will be moved up so move down other entries
-      Move(FPositionToIndex[OldPosition + 1], FPositionToIndex[OldPosition], (Position - OldPosition) * SizeOf(Cardinal));
+      Move(FPositionToIndex[OldPosition + 1], FPositionToIndex[OldPosition], ToNativeInt((Position - OldPosition) * SizeOf(Cardinal)));
     end
     else
     begin
       // column will be moved down so move up other entries
-      Move(FPositionToIndex[Position], FPositionToIndex[Position + 1], (OldPosition - Position) * SizeOf(Cardinal));
+      Move(FPositionToIndex[Position], FPositionToIndex[Position + 1], ToNativeInt((OldPosition - Position) * SizeOf(Cardinal)));
     end;
     FPositionToIndex[Position] := Column.Index;
   end;
@@ -4470,24 +4470,24 @@ begin
   if not Enabled then
     if TreeViewControl.VclStyleEnabled then
     begin
-      SetTextColor(DC, ColorToRGB(TreeViewControl.Colors.HeaderFontColor));
+      SetTextColor(DC, ToUInt32(ColorToRGB(TreeViewControl.Colors.HeaderFontColor)));
       WinApi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
     end
     else
     begin
       OffsetRect(Bounds, 1, 1);
-      SetTextColor(DC, ColorToRGB(clBtnHighlight));
+      SetTextColor(DC, ToUInt32(ColorToRGB(clBtnHighlight)));
       WinApi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
       OffsetRect(Bounds, - 1, - 1);
-      SetTextColor(DC, ColorToRGB(clBtnShadow));
+      SetTextColor(DC, ToUInt32(ColorToRGB(clBtnShadow)));
       WinApi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
     end
   else
   begin
     if Hot then
-      SetTextColor(DC, ColorToRGB(TreeViewControl.Colors.HeaderHotColor))
+      SetTextColor(DC, ToUInt32(ColorToRGB(TreeViewControl.Colors.HeaderHotColor)))
     else
-      SetTextColor(DC, ColorToRGB(TreeViewControl.Colors.HeaderFontColor));
+      SetTextColor(DC, ToUInt32(ColorToRGB(TreeViewControl.Colors.HeaderFontColor)));
     WinApi.Windows.DrawTextW(DC, PWideChar(Caption), Length(Caption), Bounds, DrawFormat);
   end;
 end;
@@ -4498,13 +4498,13 @@ procedure TVirtualTreeColumns.FixPositions;
 // Fixes column positions after loading from DFM or Bidi mode change.
 var
   LColumnsByPos: TList<TVirtualTreeColumn>;
-  I: Integer;
+  I: NativeInt;
 begin
   LColumnsByPos := TList<TVirtualTreeColumn>.Create;
   try
     LColumnsByPos.Capacity := Self.Count;
     for I := 0 to Self.Count-1 do
-      LColumnsByPos.Add(Items[I]);
+      LColumnsByPos.Add(Items[ToInt32(I)]);
 
     LColumnsByPos.Sort(
       TComparer<TVirtualTreeColumn>.Construct(
@@ -4518,7 +4518,7 @@ begin
 
     for I := 0 to LColumnsByPos.Count-1 do
     begin
-      LColumnsByPos[I].FPosition := I;
+      LColumnsByPos[I].FPosition := ToUInt32(I);
       Self.FPositionToIndex[I] := LColumnsByPos[I].Index;
     end;
 
@@ -4722,10 +4722,10 @@ procedure TVirtualTreeColumns.IndexChanged(OldIndex, NewIndex : Integer);
 // The method will then update the position array to reflect the change.
 
 var
-  I         : Integer;
+  I         : NativeInt;
   Increment : Integer;
   Lower,
-    Upper   : Integer;
+    Upper   : NativeInt;
 
 begin
   if NewIndex = - 1 then
@@ -4774,7 +4774,7 @@ procedure TVirtualTreeColumns.InitializePositionArray;
 // The array is resized and initialized with default values if needed.
 
 var
-  I, OldSize : Integer;
+  I, OldSize : NativeInt;
   Changed    : Boolean;
 
 begin
@@ -4786,7 +4786,7 @@ begin
     begin
       // New items have been added, just set their position to the same as their index.
       for I := OldSize to Count - 1 do
-        FPositionToIndex[I] := I;
+        FPositionToIndex[I] := ToInt32(I);
     end
     else
     begin
@@ -4916,7 +4916,7 @@ procedure TVirtualTreeColumns.UpdatePositions(Force : Boolean = False);
 // PostionToIndex array which primarily determines where each column is placed visually.
 
 var
-  I: Integer;
+  I: NativeInt;
   RunningPos: TDimension;
 begin
   if not (csDestroying in TreeViewControl.ComponentState) and not FNeedPositionsFix and (Force or (UpdateCount = 0)) then
@@ -4925,7 +4925,7 @@ begin
     for I := 0 to High(FPositionToIndex) do
       with Items[FPositionToIndex[I]] do
       begin
-        FPosition := I;
+        FPosition := ToUInt32(I);
         FLeft := RunningPos;
         if coVisible in FOptions then
           Inc(RunningPos, FWidth);
@@ -5223,7 +5223,7 @@ begin
   end;
 
   if ScrollColumnCount > 0 then // use average width
-    Result := Round(Result / ScrollColumnCount)
+    Result := Round32(Result / ScrollColumnCount)
   else                          // use indent
     Result := TreeViewControl.Indent;
 
@@ -5308,14 +5308,14 @@ function TVirtualTreeColumns.GetNextColumn(Column : TColumnIndex) : TColumnIndex
 // Returns the next column in display order. Column is the index of an item in the collection (a column).
 
 var
-  Position : Integer;
+  Position : Int32;
 
 begin
   if Column < 0 then
     Result := InvalidColumn
   else
   begin
-    Position := Items[Column].Position;
+    Position := ToInt32(Items[Column].Position);
     if Position < Count - 1 then
       Result := FPositionToIndex[Position + 1]
     else
@@ -5356,7 +5356,7 @@ begin
     Result := InvalidColumn
   else
   begin
-    Position := Items[Column].Position;
+    Position := ToInt32(Items[Column].Position);
     if Position > 0 then
       Result := FPositionToIndex[Position - 1]
     else

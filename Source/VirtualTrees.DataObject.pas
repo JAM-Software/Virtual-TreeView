@@ -32,7 +32,7 @@ type
   protected
     function CanonicalIUnknown(const TestUnknown : IUnknown) : IUnknown;
     function EqualFormatEtc(FormatEtc1, FormatEtc2 : TFormatEtc) : Boolean;
-    function FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : Integer;
+    function FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : NativeInt;
     function FindInternalStgMedium(Format : TClipFormat) : PStgMedium;
     function HGlobalClone(HGlobal : THandle) : THandle;
     function RenderInternalOLEData(const FormatEtcIn : TFormatEtc; var Medium : TStgMedium; var OLEResult : HResult) : Boolean;
@@ -61,6 +61,7 @@ type
 implementation
 
 uses
+  VirtualTrees.Utils,
   VirtualTrees.ClipBoard,
   VirtualTrees.DragnDrop,
   VirtualTrees.BaseTree;
@@ -92,7 +93,7 @@ end;
 
 destructor TVTDataObject.Destroy;
 var
-  I         : Integer;
+  I         : NativeInt;
   StgMedium : PStgMedium;
 begin
   // Cancel a pending clipboard operation if this data object was created for the clipboard and
@@ -139,9 +140,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TVTDataObject.FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : Integer;
+function TVTDataObject.FindFormatEtc(TestFormatEtc : TFormatEtc; const FormatEtcArray : TFormatEtcArray) : NativeInt;
 var
-  I : Integer;
+  I : NativeInt;
 begin
   Result := - 1;
   for I := 0 to High(FormatEtcArray) do
@@ -158,7 +159,7 @@ end;
 
 function TVTDataObject.FindInternalStgMedium(Format : TClipFormat) : PStgMedium;
 var
-  I : Integer;
+  I : NativeInt;
 begin
   Result := nil;
   for I := 0 to High(InternalStgMediumArray) do
@@ -176,7 +177,7 @@ end;
 function TVTDataObject.HGlobalClone(HGlobal : THandle) : THandle;
 // Returns a global memory block that is a copy of the passed memory block.
 var
-  Size          : Cardinal;
+  Size          : NativeUInt;
   Data, NewData : PByte;
 begin
   Size := GlobalSize(HGlobal);
@@ -185,7 +186,7 @@ begin
   try
     NewData := GlobalLock(Result);
     try
-      Move(Data^, NewData^, Size);
+      Move(Data^, NewData^, ToNativeInt(Size));
     finally
       GlobalUnLock(Result);
     end;
@@ -347,7 +348,7 @@ function TVTDataObject.GetData(const FormatEtcIn : TFormatEtc; out Medium : TStg
 // Data is requested by clipboard or drop target. This method dispatchs the call
 // depending on the data being requested.
 var
-  I    : Integer;
+  I    : NativeInt;
   Data : PVTReference;
 begin
   // See if this is a header column drag and drop
@@ -416,7 +417,7 @@ end;
 
 function TVTDataObject.QueryGetData(const FormatEtc : TFormatEtc) : HResult;
 var
-  I : Integer;
+  I : NativeInt;
 begin
   Result := DV_E_CLIPFORMAT;
   for I := 0 to High(FFormatEtcArray) do
@@ -450,7 +451,7 @@ function TVTDataObject.SetData(const FormatEtc : TFormatEtc; var Medium : TStgMe
 // Allows dynamic adding to the IDataObject during its existance. Most noteably it is used to implement
 // IDropSourceHelper and allows to set a special format for optimized moves during a shell transfer.
 var
-  Index          : Integer;
+  Index          : NativeInt;
   LocalStgMedium : PStgMedium;
 begin
   // See if we already have a format of that type available.

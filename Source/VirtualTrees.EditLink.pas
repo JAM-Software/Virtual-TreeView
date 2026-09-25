@@ -169,7 +169,8 @@ uses
   System.SysUtils,
   System.Math,
   Vcl.Graphics,
-  Vcl.Forms;
+  Vcl.Forms,
+  VirtualTrees.Utils;
 
 type
   TCustomVirtualStringTreeCracker = class(TCustomVirtualStringTree);
@@ -216,7 +217,7 @@ begin
   //The minimal height is the actual text height in pixels plus the the non client area.
   Result := textHeight + (Height - ClientHeight);
   //Also, proportionally to the text size, additional pixel(s) needs to be added for the caret.
-  Result := Result + Trunc(textHeight * 0.05);
+  Result := Result + Trunc32(textHeight * 0.05);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
