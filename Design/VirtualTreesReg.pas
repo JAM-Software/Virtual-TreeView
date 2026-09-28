@@ -359,7 +359,7 @@ var
 begin
   inherited Create(Parent, AElement);
   MinValue := GetTypeData(GetTypeData(GetPropType).CompType^).MinValue;
-  FBit := AElement - MinValue;
+  FBit := TBit(AElement - MinValue);
   SetLength(FPropList, Parent.PropCount);
   for I := 0 to High(FPropList) do
     FPropList[I] := TPropertyEditorHack(Parent).FPropList^[I];

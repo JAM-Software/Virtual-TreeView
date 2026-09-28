@@ -29,6 +29,7 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   VirtualTrees.Types,
+  VirtualTrees.Utils,
   VirtualTrees.ClipBoard,
   VirtualTrees.Header,
   VirtualTrees.BaseTree;
@@ -64,19 +65,19 @@ var
 
   begin
     Buffer.Add('#');
-    WinColor := ColorToRGB(Color);
+    WinColor := ToUInt32(ColorToRGB(Color));
     I := 1;
     while I <= 6 do
     begin
-      Component := WinColor and $FF;
+      Component := ToUInt8(WinColor and $FF);
 
-      Value := 48 + (Component shr 4);
+      Value := ToUInt8(48 + (Component shr 4));
       if Value > $39 then
         System.Inc(Value, 7);
       Buffer.Add(AnsiChar(Value));
       System.Inc(I);
 
-      Value := 48 + (Component and $F);
+      Value := ToUInt8(48 + (Component and $F));
       if Value > $39 then
         System.Inc(Value, 7);
       Buffer.Add(AnsiChar(Value));
@@ -125,7 +126,8 @@ var
   //--------------- end local functions ---------------------------------------
 
 var
-  I, J : Integer;
+  I: NativeInt;
+  J: UInt32;
   Level, MaxLevel: Cardinal;
   AddHeader: String;
   Save, Run: PVirtualNode;
@@ -475,7 +477,7 @@ var
   Fonts: TStringList;
   Colors: TList<TColor>;
   CurrentFontIndex,
-  CurrentFontColor,
+  CurrentFontColor: NativeInt;
   CurrentFontSize: Integer;
   Buffer: TBufferedRawByteString;
 
@@ -512,7 +514,7 @@ var
   procedure SelectColor(Color: TColor);
 
   var
-    I: Integer;
+    I: NativeInt;
 
   begin
     I := Colors.IndexOf(Color);
@@ -594,6 +596,7 @@ var
 
 var
   Level, LastLevel: Integer;
+  INative: NativeInt;
   I, J: Integer;
   Save, Run: PVirtualNode;
   GetNextNode: TGetNextNodeProc;
@@ -649,18 +652,18 @@ begin
     J := 0;
     if RenderColumns then
     begin
-      for I := 0 to High(Columns) do
+      for INative := 0 to High(Columns) do
       begin
-        System.Inc(J, Columns[I].Width);
+        System.Inc(J, Columns[INative].Width);
         // This value must be expressed in twips (1 inch = 1440 twips).
-        Twips := Round(1440 * J / Screen.PixelsPerInch);
+        Twips := Round32(1440 * J / Screen.PixelsPerInch);
         Buffer.Add('\cellx');
         Buffer.Add(IntToStr(Twips));
       end;
     end
     else
     begin
-      Twips := Round(1440 * CrackTree.ClientWidth / Screen.PixelsPerInch);
+      Twips := Round32(1440 * CrackTree.ClientWidth / Screen.PixelsPerInch);
       Buffer.Add('\cellx');
       Buffer.Add(IntToStr(Twips));
     end;
@@ -671,12 +674,12 @@ begin
       if Assigned(CrackTree.OnBeforeHeaderExport) then
         CrackTree.OnBeforeHeaderExport(CrackTree, etRTF);
       Buffer.Add('\pard\intbl');
-      for I := 0 to High(Columns) do
+      for INative := 0 to High(Columns) do
       begin
         if Assigned(CrackTree.OnBeforeColumnExport) then
-          CrackTree.OnBeforeColumnExport(CrackTree, etRTF, Columns[I]);
-        Alignment := Columns[I].CaptionAlignment;
-        BidiMode := Columns[I].BidiMode;
+          CrackTree.OnBeforeColumnExport(CrackTree, etRTF, Columns[INative]);
+        Alignment := Columns[INative].CaptionAlignment;
+        BidiMode := Columns[INative].BidiMode;
 
         // Alignment is not supported with older RTF formats, however it will be ignored.
         if BidiMode <> bdLeftToRight then
@@ -690,10 +693,10 @@ begin
             Buffer.Add('\qc');
         end;
 
-        TextPlusFont(Columns[I].Text, CrackTree.Header.Font);
+        TextPlusFont(Columns[INative].Text, CrackTree.Header.Font);
         Buffer.Add('\cell');
         if Assigned(CrackTree.OnAfterColumnExport) then
-          CrackTree.OnAfterColumnExport(CrackTree, etRTF, Columns[I]);
+          CrackTree.OnAfterColumnExport(CrackTree, etRTF, Columns[INative]);
       end;
       Buffer.Add('\row');
       if Assigned(CrackTree.OnAfterHeaderExport) then
@@ -752,7 +755,7 @@ begin
 
           if Index = CrackTree.Header.MainColumn then
           begin
-            Level := CrackTree.GetNodeLevel(Run);
+            Level := ToInt32(CrackTree.GetNodeLevel(Run));
             if Level <> LastLevel then
             begin
               LastLevel := Level;
@@ -803,9 +806,9 @@ begin
     S := S + '}';
 
     S := S + '{\colortbl;';
-    for I := 0 to Colors.Count - 1 do
+    for INative := 0 to Colors.Count - 1 do
     begin
-      J := ColorToRGB(TColor(Colors[I]));
+      J := ColorToRGB(TColor(Colors[INative]));
       S := S + Format('\red%d\green%d\blue%d;', [J and $FF, (J shr 8) and $FF, (J shr 16) and $FF]);
     end;
     S := S + '}';
@@ -853,7 +856,7 @@ var
   LastColumn: TVirtualTreeColumn;
   Level, MaxLevel: Cardinal;
   Index,
-  I: Integer;
+  I: NativeInt;
   CrackTree: TCustomVirtualStringTreeCracker;
   lGetCellTextEventArgs: TVSTGetCellTextEventArgs;
   MulticellSelected: Boolean;
@@ -895,7 +898,7 @@ begin
       Run := GetNextNode(Run);
     end;
 
-    Tabs := DupeString(Separator, MaxLevel);
+    Tabs := DupeString(Separator, ToInt32(MaxLevel));
 
     // First line is always the header if used.
     if RenderColumns then
@@ -931,7 +934,7 @@ begin
           begin
             Index := Columns[I].Index;
             lGetCellTextEventArgs.Node := Run;
-            lGetCellTextEventArgs.Column := Index;
+            lGetCellTextEventArgs.Column := ToInt32(Index);
             CrackTree.DoGetText(lGetCellTextEventArgs);
             if Index = CrackTree.Header.MainColumn then
               Buffer.Add(Copy(Tabs, 1, Integer(CrackTree.GetNodeLevel(Run)) * Length(Separator)));
@@ -1037,7 +1040,7 @@ function ContentToClipboard(Tree: TCustomVirtualStringTree; Format: Word; Source
 
 var
   Data: Pointer;
-  DataSize: Cardinal;
+  DataSize: Int32;
   S: AnsiString;
   WS: string;
   lUtf8String: Utf8string;
@@ -1088,7 +1091,7 @@ begin
 
   if DataSize > 0 then
   begin
-    Result := GlobalAlloc(GHND or GMEM_SHARE, DataSize);
+    Result := GlobalAlloc(GHND or GMEM_SHARE, ToNativeUInt(DataSize));
     P := GlobalLock(Result);
     Move(Data^, P^, DataSize);
     GlobalUnlock(Result);
@@ -1100,7 +1103,7 @@ procedure ContentToCustom(Tree: TCustomVirtualStringTree; Source: TVSTTextSource
 // Generic export procedure which polls the application at every stage of the export.
 
 var
-  I: Integer;
+  I: NativeInt;
   Save, Run: PVirtualNode;
   GetNextNode: TGetNextNodeProc;
   RenderColumns: Boolean;

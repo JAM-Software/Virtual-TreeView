@@ -69,7 +69,7 @@ function GetVTClipboardFormatDescription(AFormat: Word): string;
 procedure RegisterVTClipboardFormat(AFormat: Word; TreeClass: TVirtualTreeClass; Priority: Cardinal); overload;
 function RegisterVTClipboardFormat(const Description: string; TreeClass: TVirtualTreeClass; Priority: Cardinal;
                                    tymed: Integer = TYMED_HGLOBAL; ptd: PDVTargetDevice = nil;
-                                   dwAspect: Integer = DVASPECT_CONTENT; lindex: Integer = -1): Word; overload;
+                                   dwAspect: Integer = DVASPECT_CONTENT; lindex: Integer = -1): UInt32; overload;
 
 //----------------- TClipboardFormats ----------------------------------------------------------------------------------
 
@@ -107,13 +107,13 @@ var
   CF_VRTFNOOBJS,   // Unfortunately CF_RTF* is already defined as being
                    // registration strings so I have to use different identifiers.
   CF_HTML,
-  CF_CSV: Word;
+  CF_CSV: UInt32;
 
 
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils, VirtualTrees.Utils;
 
 var
   _List: TList = nil;  //Note - not using class constructors as they are not supported on C++ Builder. See also issue #
@@ -184,7 +184,7 @@ end;
 
 function RegisterVTClipboardFormat(const Description: string; TreeClass: TVirtualTreeClass; Priority: Cardinal;
   tymed: Integer = TYMED_HGLOBAL; ptd: PDVTargetDevice = nil; dwAspect: Integer = DVASPECT_CONTENT;
-  lindex: Integer = -1): Word;
+  lindex: Integer = -1): UInt32;
 
 // Alternative method to register a certain clipboard format for a given tree class. Registration with the
 // clipboard is done here too and the assigned ID returned by the function.
@@ -195,7 +195,7 @@ var
 
 begin
   Result := RegisterClipboardFormat(PChar(Description));
-  FormatEtc.cfFormat := Result;
+  FormatEtc.cfFormat := ToUInt16(Result);
   FormatEtc.ptd := ptd;
   FormatEtc.dwAspect := dwAspect;
   FormatEtc.lindex := lindex;
@@ -210,10 +210,10 @@ class procedure TClipboardFormatList.Sort;
 // Sorts all entry for priority (increasing priority value).
 
   //--------------- local function --------------------------------------------
-  procedure QuickSort(L, R: Integer);
+  procedure QuickSort(L, R: NativeInt);
 
   var
-    I, J: Integer;
+    I, J: NativeInt;
     P, T: TClipboardFormatListEntry;
 
   begin
@@ -273,7 +273,7 @@ end;
 class procedure TClipboardFormatList.Clear;
 
 var
-  I: Integer;
+  I: NativeInt;
 
 begin
   if Assigned(_List) then begin
@@ -291,7 +291,7 @@ class procedure TClipboardFormatList.EnumerateFormats(TreeClass: TVirtualTreeCla
 // enumerated formats to those described in the list.
 
 var
-  I, Count: Integer;
+  I, Count: NativeInt;
   Entry: TClipboardFormatListEntry;
 
 begin
@@ -323,7 +323,7 @@ class procedure TClipboardFormatList.EnumerateFormats(TreeClass: TVirtualTreeCla
 // Returns a list of format descriptions for the given class.
 
 var
-  I: Integer;
+  I: NativeInt;
   Entry: TClipboardFormatListEntry;
 
 begin
@@ -340,7 +340,7 @@ end;
 class function TClipboardFormatList.FindFormat(const FormatString: string): TClipboardFormatListEntry;
 
 var
-  I: Integer;
+  I: NativeInt;
   Entry: TClipboardFormatListEntry;
 
 begin
@@ -361,7 +361,7 @@ end;
 class function TClipboardFormatList.FindFormat(const FormatString: string; var Fmt: Word): TVirtualTreeClass;
 
 var
-  I: Integer;
+  I: NativeInt;
   Entry: TClipboardFormatListEntry;
 
 begin
@@ -383,7 +383,7 @@ end;
 class function TClipboardFormatList.FindFormat(Fmt: Word; var Description: string): TVirtualTreeClass;
 
 var
-  I: Integer;
+  I: NativeInt;
   Entry: TClipboardFormatListEntry;
 
 begin

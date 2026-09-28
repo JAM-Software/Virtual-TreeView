@@ -40,7 +40,7 @@ type
     function CreateSystemImageSet(): TImageList;
     procedure SetWindowTheme(const Theme: string); virtual;
     //// Abtract method that are implemented in TBaseVirtualTree, keep in sync with TVTBaseAncestorFMX
-    function GetSelectedCount(): Integer; virtual; abstract;
+    function GetSelectedCount(): NativeInt; virtual; abstract;
 
     /// <summary>
     /// multicell support. How many cells are selected?
@@ -123,6 +123,7 @@ uses
   Winapi.CommCtrl,
   Winapi.ShlObj,
   Winapi.UxTheme,
+  VirtualTrees.Utils,
   VirtualTrees.DataObject,
   VirtualTrees.Clipboard,
   VirtualTrees.AccessibilityFactory,
@@ -204,7 +205,7 @@ function TVTBaseAncestorVcl.RenderOLEData(const FormatEtcIn: TFormatEtc; out Med
 
   var
     Selection: TNodeArray;
-    I: Integer;
+    I: NativeInt;
 
   begin
     if ForClipboard then
@@ -220,7 +221,7 @@ function TVTBaseAncestorVcl.RenderOLEData(const FormatEtcIn: TFormatEtc; out Med
 var
   Data: PCardinal;
   ResPointer: Pointer;
-  ResSize: Integer;
+  ResSize: Int64;
   OLEStream: IStream;
   VCLStream: TStream;
 
@@ -258,12 +259,12 @@ begin
         // Allocate memory to hold the string.
         if ResSize > 0 then
         begin
-          Medium.hGlobal := GlobalAlloc(GHND or GMEM_SHARE, ResSize + SizeOf(Cardinal));
+          Medium.hGlobal := GlobalAlloc(GHND or GMEM_SHARE, ToNativeUInt(ResSize + SizeOf(Cardinal)));
           Data := GlobalLock(Medium.hGlobal);
           // Store the size of the data too, for easy retrival.
-          Data^ := ResSize;
+          Data^ := ToUInt32(ResSize);
           Inc(Data);
-          Move(ResPointer^, Data^, ResSize);
+          Move(ResPointer^, Data^, ToNativeInt(ResSize));
           GlobalUnlock(Medium.hGlobal);
           Medium.tymed := TYMED_HGLOBAL;
 
@@ -409,7 +410,7 @@ begin
       begin
         {$if CompilerVersion >= 33}
         if TOSVersion.Check(10) and (TOSVersion.Build >= 15063)  then
-          Theme := OpenThemeDataForDPI(Handle, 'BUTTON', CurrentPPI)
+          Theme := OpenThemeDataForDPI(Handle, 'BUTTON', ToUInt32(CurrentPPI))
         else
         {$ifend}
           Theme := OpenThemeData(Self.Handle, 'BUTTON');

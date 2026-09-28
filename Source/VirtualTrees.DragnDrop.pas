@@ -72,6 +72,7 @@ var
 implementation
 
 uses
+  VirtualTrees.Utils,
   VirtualTrees.Clipboard,
   VirtualTrees.DataObject;
 
@@ -87,7 +88,7 @@ type
 
 constructor TEnumFormatEtc.Create(const AFormatEtcArray : TFormatEtcArray);
 var
-  I : Integer;
+  I : NativeInt;
 begin
   inherited Create;
   // Make a local copy of the format data.
@@ -116,7 +117,7 @@ end;
 
 function TEnumFormatEtc.Next(celt : Integer; out elt; pceltFetched : PLongint) : HResult;
 var
-  CopyCount : Integer;
+  CopyCount : NativeInt;
 begin
   Result := S_FALSE;
   CopyCount := Length(FFormatEtcArray) - FCurrentIndex;
@@ -129,7 +130,7 @@ begin
     Result := S_OK;
   end;
   if Assigned(pceltFetched) then
-    pceltFetched^ := CopyCount;
+    pceltFetched^ := ToInt32(CopyCount);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -224,7 +225,7 @@ begin
   Result := nil;
   if Assigned(DataObject) then
   begin
-    StandardOLEFormat.cfFormat := CF_VTREFERENCE;
+    StandardOLEFormat.cfFormat := ToUInt16(CF_VTREFERENCE);
     if DataObject.GetData(StandardOLEFormat, Medium) = S_OK then
     begin
       Data := GlobalLock(Medium.hGlobal);
@@ -260,14 +261,14 @@ begin
   if Assigned(FDropTargetHelper) and FFullDragging then
   begin
     if (toAutoScroll in TreeView.TreeOptions.AutoOptions) and (toAcceptOLEDrop in TreeView.TreeOptions.MiscOptions) then
-      FDropTargetHelper.DragEnter(FOwner.Handle, DataObject, Pt, Effect)
+      FDropTargetHelper.DragEnter(FOwner.Handle, DataObject, Pt, ToUInt32(Effect))
     else
-      FDropTargetHelper.DragEnter(0, DataObject, Pt, Effect); // Do not pass handle, otherwise the IDropTargetHelper will perform autoscroll. Issue #486
+      FDropTargetHelper.DragEnter(0, DataObject, Pt, ToUInt32(Effect)); // Do not pass handle, otherwise the IDropTargetHelper will perform autoscroll. Issue #486
   end;
   FDragSource := GetTreeFromDataObject(DataObject);
   Result := TreeView.DragEnter(KeyState, Pt, Effect);
   HeaderFormatEtc := StandardOLEFormat;
-  HeaderFormatEtc.cfFormat := CF_VTHEADERREFERENCE;
+  HeaderFormatEtc.cfFormat := ToUInt16(CF_VTHEADERREFERENCE);
   if (DataObject.GetData(HeaderFormatEtc, Medium) = S_OK) and (FDragSource = FOWner) then
   begin
     FHeader := FDragSource.Header;
@@ -300,7 +301,7 @@ end;
 function TVTDragManager.DragOver(KeyState : Integer; Pt : TPoint; var Effect : Integer) : HResult;
 begin
   if Assigned(FDropTargetHelper) and FFullDragging then
-    FDropTargetHelper.DragOver(Pt, Effect);
+    FDropTargetHelper.DragOver(Pt, ToUInt32(Effect));
 
   Result := NOERROR;
   if Assigned(fHeader) then
@@ -316,7 +317,7 @@ end;
 function TVTDragManager.Drop(const DataObject : IDataObject; KeyState : Integer; Pt : TPoint; var Effect : Integer) : HResult;
 begin
   if Assigned(FDropTargetHelper) and FFullDragging then
-    FDropTargetHelper.Drop(DataObject, Pt, Effect);
+    FDropTargetHelper.Drop(DataObject, Pt, ToUInt32(Effect));
 
   if Assigned(fHeader) then
   begin
