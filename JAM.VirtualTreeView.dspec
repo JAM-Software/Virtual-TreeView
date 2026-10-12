@@ -2,15 +2,15 @@
 min dpm client version: 1.0.0
 metadata:
   id: JAM.VirtualTreeView
-  version: 8.4.1
+  version: 8.5.0
   description: Virtual TreeView VCL Component. Virtual Treeview is a Delphi treeview control built from ground up. Many years of development made it one of the most flexible and advanced tree controls available today. Virtual Treeview starts off with the claim to improve many aspects of existing solutions and introduces some new technologies and principles which were not available before.
   icon: Resources\VirtualTreeview-Catalog-Image.png
   authors:
     - JAM Software GmbH
   projectUrl: https://github.com/JAM-Software/Virtual-TreeView
   repositoryUrl: https://github.com/JAM-Software/Virtual-TreeView.git
-  license: "MPL-1.1, LGPL-2.0+"
-  copyright: "Various, See project page"
+  license: 'MPL-1.1, LGPL-2.0+'
+  copyright: 'Various, See project page'
   tags:
     - vcl
     - treeview
