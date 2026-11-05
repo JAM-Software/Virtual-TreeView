@@ -11288,7 +11288,7 @@ begin
             UpdateVerticalScrollBar(suoRepaintScrollBars in Options);
         end;
 
-        if (DeltaY <> 0) and ([tsThumbTracking, tsSizing] * FStates = []) then
+        if (DeltaY <> 0) and ([tsSizing] * FStates = []) then
         begin
           UpdateVerticalScrollBar(suoRepaintScrollBars in Options);
           if not (FHeader.UseColumns or IsMouseSelecting) and
