@@ -8917,7 +8917,7 @@ end;
 procedure TBaseVirtualTree.ScaleNodeHeights(M, D: TDimension);
 var
   Run: PVirtualNode;
-  lNewNodeTotalHeight: TNodeHeight;
+  lDifference: TNodeHeight;
 begin
   // Scale also node heights
   BeginUpdate();
@@ -8929,11 +8929,17 @@ begin
         SetNodeHeight(Run, MulDiv(Run.NodeHeight, M, D))
       else // prevent initialization of non-initialzed nodes
       begin
-        Run.SetNodeHeight(MulDiv(Run.NodeHeight, M, D));
-        // The next three lines fix issue #1000
-        lNewNodeTotalHeight := MulDiv(Run.TotalHeight, M, D);
-        FRoot.TotalHeight := TNodeHeight(Int64(FRoot.TotalHeight) + Int64(lNewNodeTotalHeight) - Int64(Run.TotalHeight)); // Avoiding EIntOverflow exception.
-        Run.TotalHeight := lNewNodeTotalHeight;
+        // Propagate only the node's own height change. AdjustTotalHeight() stops at collapsed or
+        // invisible parents, so children of collapsed nodes no longer corrupt FRoot.TotalHeight
+        // and the scroll range stays correct after a DPI change (issue #1408). Child nodes are
+        // visited separately by this loop and adjust the totals themselves, without getting
+        // initialized (issue #1000).
+        lDifference := MulDiv(Run.NodeHeight, M, D) - Run.NodeHeight;
+        if lDifference <> 0 then
+        begin
+          Run.SetNodeHeight(Run.NodeHeight + lDifference);
+          AdjustTotalHeight(Run, lDifference, True);
+        end;
       end;
       Run := GetNextNoInit(Run);
     end; // while
