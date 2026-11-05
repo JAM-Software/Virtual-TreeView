@@ -446,9 +446,6 @@ type
     /// <summary>
     /// Enable multi-cell selection feature.
     /// </summary>
-    /// <remarks>
-    /// A known limitation is that this does not work with reordered columns, see issue #1400.
-    /// </remarks>
     toMultiCellSelect
     );
   TVTSelectionOptions = set of TVTSelectionOption;

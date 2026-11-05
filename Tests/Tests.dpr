@@ -25,6 +25,7 @@ uses
   VTScrollRangeIssue983Tests in 'VTScrollRangeIssue983Tests.pas',
   VTHeaderBackgroundTests in 'VTHeaderBackgroundTests.pas',
   VTCellSelectionTests in 'VTCellSelectionTests.pas',
+  VTCellSelectionIssue1400Tests in 'VTCellSelectionIssue1400Tests.pas',
   VTSelectedCountIssue1197Tests in 'VTSelectedCountIssue1197Tests.pas',
   VTPaintToIssue632Tests in 'VTPaintToIssue632Tests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',

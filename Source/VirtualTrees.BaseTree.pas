@@ -15852,6 +15852,7 @@ var
   ColNext: TColumnIndex;
   TempCell: TVTCell;
   NextColFunc: TNextColFunc;
+  PositionsAscending: Boolean;
 begin
   // Normalize start cell
   if StartCell.Node = nil then
@@ -15881,7 +15882,11 @@ begin
   if not AddOnly then
     InternalClearCellSelection;
 
-  if ColFrom <= ColTo then
+  // Compare column positions, not indices: GetNext/GetPreviousVisibleColumn walk in visual
+  // order, so after reordering columns an index comparison picks the wrong direction and
+  // the iteration runs past the target column to the edge. See issue #1400.
+  PositionsAscending := FHeader.Columns[ColFrom].Position <= FHeader.Columns[ColTo].Position;
+  if PositionsAscending then
     NextColFunc := FHeader.Columns.GetNextVisibleColumn else
     NextColFunc := FHeader.Columns.GetPreviousVisibleColumn;
 
@@ -15923,6 +15928,7 @@ var
   ColFrom, ColTo, ColIter: TColumnIndex;
   ColNext: TColumnIndex;
   TempCell: TVTCell;
+  PositionsAscending: Boolean;
 begin
   if StartCell.Node = nil then
     StartCell.Node := FRoot.FirstChild;
@@ -15945,10 +15951,13 @@ begin
   if ColFrom = NoColumn then ColFrom := FHeader.MainColumn;
   if ColTo = NoColumn then ColTo := FHeader.MainColumn;
 
+  // Compare column positions, not indices - see InternalSelectCells and issue #1400.
+  PositionsAscending := FHeader.Columns[ColFrom].Position <= FHeader.Columns[ColTo].Position;
+
   NodeIter := NodeFrom;
   while NodeIter <> NodeTo do
   begin
-    if ColFrom <= ColTo then
+    if PositionsAscending then
     begin
       ColIter := ColFrom;
       repeat
@@ -15981,7 +15990,7 @@ begin
   // last node
   if Assigned(NodeTo) then
   begin
-    if ColFrom <= ColTo then
+    if PositionsAscending then
     begin
       ColIter := ColFrom;
       repeat
@@ -16022,6 +16031,7 @@ var
   TempCell: TVTCell;
   Found: Boolean;
   i: Integer;
+  PositionsAscending: Boolean;
 begin
   if FSelectionLocked or not IsCellSelectionEnabled then
     Exit;
@@ -16047,10 +16057,13 @@ begin
   if ColFrom = NoColumn then ColFrom := FHeader.MainColumn;
   if ColTo = NoColumn then ColTo := FHeader.MainColumn;
 
+  // Compare column positions, not indices - see InternalSelectCells and issue #1400.
+  PositionsAscending := FHeader.Columns[ColFrom].Position <= FHeader.Columns[ColTo].Position;
+
   NodeIter := NodeFrom;
   while NodeIter <> NodeTo do
   begin
-    if ColFrom <= ColTo then
+    if PositionsAscending then
     begin
       ColIter := ColFrom;
       repeat
@@ -16097,7 +16110,7 @@ begin
   // last node
   if Assigned(NodeTo) then
   begin
-    if ColFrom <= ColTo then
+    if PositionsAscending then
     begin
       ColIter := ColFrom;
       repeat
