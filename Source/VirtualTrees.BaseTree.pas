@@ -8405,6 +8405,25 @@ procedure TBaseVirtualTree.WMVScroll(var Message: TWMVScroll);
     Result := SI.nTrackPos;
   end;
 
+  procedure UpdateThumbPosition;
+
+  // DoSetOffsetXY() does not update the vertical scrollbar while tsThumbTracking is set, so the scroll position stored
+  // by Windows (nPos) keeps its value from the start of the drag until SB_ENDSCROLL. Without WS_EX_COMPOSITED this is
+  // not visible, since the system's tracking loop draws the thumb directly. If the parent form has WS_EX_COMPOSITED,
+  // every repaint of the scrolled client area repaints the whole window hierarchy including the non-client area, and
+  // the thumb is redrawn at the stale nPos. Hence only the position is updated here (range and page stay untouched).
+  // See issue #1413.
+
+  var
+    SI: TScrollInfo;
+
+  begin
+    SI.cbSize := SizeOf(TScrollInfo);
+    SI.fMask := SIF_POS;
+    SI.nPos := -FOffsetY;
+    SetScrollInfo(SB_VERT, SI, True);
+  end;
+
   //--------------- end local functions ---------------------------------------
 
 begin
@@ -8441,6 +8460,7 @@ begin
       begin
         DoStateChange([tsThumbTracking]);
         SetOffsetY(-GetRealScrollPosition);
+        UpdateThumbPosition;
       end;
     SB_TOP:
       SetOffsetY(0);
