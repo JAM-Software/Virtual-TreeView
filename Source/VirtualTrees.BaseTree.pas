@@ -23157,10 +23157,11 @@ begin
       else
         if DoExpanding(Node) then
         begin
-          // An initialized node that has no children and no vsHasChildren flag cannot be expanded and stays as it
-          // is, so there is nothing to update for it. NeedUpdate is therefore only set when the node is changed
-          // here. Otherwise callers that toggle many such nodes, like FullExpand or a loop that sets Expanded[]
-          // for every node, pay for a cache invalidation and a scroll bar update per node.
+          // Issue #1415: An initialized node that has no children and no vsHasChildren flag cannot be expanded and
+          // stays as it is, so there is nothing to update for it. NeedUpdate is therefore only set when the node is
+          // changed here. Otherwise callers that toggle many such nodes, like FullExpand or a loop that sets
+          // Expanded[] for every node, pay for a cache invalidation and a scroll bar update per node.
+
           // expand the node, need to adjust the height
           if not (vsInitialized in Node.States) then
           begin
@@ -23169,7 +23170,8 @@ begin
           end;
           if (vsHasChildren in Node.States) and (Node.ChildCount = 0) then
           begin
-            // If there turn out to be no children, the node loses the vsHasChildren flag and so its button.
+            // If there turn out to be no children, the node loses the vsHasChildren flag and so its button, which
+            // needs a repaint (issue #1415).
             InitChildren(Node);
             NeedUpdate := True;
           end;
@@ -23411,9 +23413,9 @@ begin
             InvalidateNode(Node);
         end
         else
-          // Between BeginUpdate and EndUpdate only the ranges are kept current, EndUpdate updates the scroll bars.
-          // UpdateScrollBars() does not touch them while the tree is updating, but it would still let the VCL style
-          // hook recalculate and repaint its scroll bars for every toggled node.
+          // Issue #1415: Between BeginUpdate and EndUpdate only the ranges are kept current, EndUpdate updates the
+          // scroll bars. UpdateScrollBars() does not touch them while the tree is updating, but it would still let
+          // the VCL style hook recalculate and repaint its scroll bars for every toggled node.
           UpdateRanges;
       end;
 
