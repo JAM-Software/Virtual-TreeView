@@ -8,6 +8,10 @@ This document provides essential information for AI coding assistants working wi
 - **Primary Language**: Object Pascal (Delphi)
 - **Main Documentation**: See [`README.md`](Readme.md) for technology stack, supported versions of RAD Studio / Delphi and project overview
 
+## Language
+
+Everything you write to this repository or its GitHub project must be in English: code, identifiers, comments, commit messages, pull requests, issue comments and documentation. This also applies when you talk to the user in another language.
+
 Important Directories
 
 ### Source Code
