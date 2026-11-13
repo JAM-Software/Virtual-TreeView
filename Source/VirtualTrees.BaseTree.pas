@@ -23157,16 +23157,27 @@ begin
       else
         if DoExpanding(Node) then
         begin
-          NeedUpdate := True;
+          // An initialized node that has no children and no vsHasChildren flag cannot be expanded and stays as it
+          // is, so there is nothing to update for it. NeedUpdate is therefore only set when the node is changed
+          // here. Otherwise callers that toggle many such nodes, like FullExpand or a loop that sets Expanded[]
+          // for every node, pay for a cache invalidation and a scroll bar update per node.
           // expand the node, need to adjust the height
           if not (vsInitialized in Node.States) then
+          begin
             InitNode(Node);
+            NeedUpdate := True;
+          end;
           if (vsHasChildren in Node.States) and (Node.ChildCount = 0) then
+          begin
+            // If there turn out to be no children, the node loses the vsHasChildren flag and so its button.
             InitChildren(Node);
+            NeedUpdate := True;
+          end;
 
           // Avoid setting the vsExpanded style if there are no child nodes.
           if Node.ChildCount > 0 then
           begin
+            NeedUpdate := True;
             // Iterate through the child nodes without initializing them. We have to determine the entire height.
             Child := Node.FirstChild;
             repeat
@@ -23400,10 +23411,10 @@ begin
             InvalidateNode(Node);
         end
         else
-        begin
+          // Between BeginUpdate and EndUpdate only the ranges are kept current, EndUpdate updates the scroll bars.
+          // UpdateScrollBars() does not touch them while the tree is updating, but it would still let the VCL style
+          // hook recalculate and repaint its scroll bars for every toggled node.
           UpdateRanges;
-          UpdateScrollBars(True);
-        end;
       end;
 
     finally
