@@ -28,7 +28,8 @@ Important Directories
 
 ### Testing
 
-- [`Test/`](Test/) - **Unit-test code** for the DUnitX framework.
+- [`Tests/`](Tests/) - **Unit-test code** for the DUnitX framework.
+  - Do not add code to the production code under [`Source/`](Source/) only to make it testable (e.g. test hooks, extra public or protected members, visibility changes) without asking the user first. Write tests against the existing public interface or use helper classes in the test project.
 
 ### Sample Projects
 
