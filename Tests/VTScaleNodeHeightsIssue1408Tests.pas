@@ -10,8 +10,9 @@ unit VTScaleNodeHeightsIssue1408Tests;
 // became too small after scaling down (the last rows could not be scrolled
 // into view) and too large after scaling up.
 //
-// The fix propagates only the node's own height change via AdjustTotalHeight(),
-// which stops at collapsed or invisible parents and does not initialize nodes.
+// The fix scales every node through SetNodeHeight(), which propagates only the
+// node's own height change via AdjustTotalHeight(). That stops at collapsed or
+// invisible parents and does not initialize nodes.
 
 interface
 
@@ -26,8 +27,6 @@ uses
   VirtualTrees.Types;
 
 type
-  TTreeCracker = class(TBaseVirtualTree); // for reading the protected RangeY
-
   [TestFixture]
   TVTScaleNodeHeightsIssue1408Tests = class
   strict private
@@ -69,6 +68,9 @@ uses
   Winapi.Windows,
   Winapi.Messages,
   System.SysUtils;
+
+type
+  TTreeCracker = class(TBaseVirtualTree); // for reading the protected RangeY
 
 procedure TVTScaleNodeHeightsIssue1408Tests.Setup;
 begin
