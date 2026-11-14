@@ -32,6 +32,7 @@ uses
   VTToggleNodeIssue1415Tests in 'VTToggleNodeIssue1415Tests.pas',
   VTClipboardInUseTests in 'VTClipboardInUseTests.pas',
   VTDefaultNodeHeightIssue1375Tests in 'VTDefaultNodeHeightIssue1375Tests.pas',
+  VTSortGlyphAboveCaptionIssue1242Tests in 'VTSortGlyphAboveCaptionIssue1242Tests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',
   VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm},
   VTCellSelectionTests.VTSelectionTestForm in 'VTCellSelectionTests.VTSelectionTestForm.pas' {SelectionTestForm};
