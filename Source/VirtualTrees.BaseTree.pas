@@ -12409,7 +12409,15 @@ begin
 
   if (FScrolling) and ((GetWindowLong(Handle, GWL_STYLE) and WS_HSCROLL) <> 0) then
   begin
-    ScrollBarOffset := GetSystemMetricsForDpi(SM_CYHSCROLL, CurrentPPI);
+    // Issue #1410: GetSystemMetricsForDpi() and CurrentPPI are only available since RAD Studio 10.3, and the API itself
+    // only exists since Windows 10 1607 (build 14393). It is a delayed import, so calling it on older Windows versions
+    // would raise an exception. Fall back to the system DPI value of GetSystemMetrics() in these cases.
+    {$if CompilerVersion >= 33}
+    if TOSVersion.Check(10) and (TOSVersion.Build >= 14393) then
+      ScrollBarOffset := GetSystemMetricsForDpi(SM_CYHSCROLL, CurrentPPI)
+    else
+    {$ifend}
+      ScrollBarOffset := GetSystemMetrics(SM_CYHSCROLL);
     PrevNode := GetPreviousVisible(Node, True);
     while (ScrollBarOffset > 0) and Assigned(PrevNode) do
     begin
