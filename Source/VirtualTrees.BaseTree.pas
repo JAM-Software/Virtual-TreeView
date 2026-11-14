@@ -3859,7 +3859,8 @@ begin
             if Assigned(FRoot.FirstChild) then
             begin
               FCellRangeAnchor.Node := FRoot.FirstChild;
-              FCellRangeAnchor.Column := 0;
+              // Use the visually first column, column 0 may be moved or hidden. See issue #1400.
+              FCellRangeAnchor.Column := FHeader.Columns.GetFirstVisibleColumn;
             end
             else
               FCellRangeAnchor := ClickedCell;
@@ -3889,7 +3890,8 @@ begin
           if Assigned(FRoot.FirstChild) then
           begin
             FCellRangeAnchor.Node := FRoot.FirstChild;
-            FCellRangeAnchor.Column := 0;
+            // Use the visually first column, column 0 may be moved or hidden. See issue #1400.
+            FCellRangeAnchor.Column := FHeader.Columns.GetFirstVisibleColumn;
           end
           else
             FCellRangeAnchor := ClickedCell;

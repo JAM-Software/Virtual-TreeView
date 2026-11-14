@@ -10,6 +10,11 @@ unit VTCellSelectionIssue1400Tests;
 // the header: cells of the selected range were missing and cells visually
 // outside the range got selected.
 //
+// A related defect: when the first click is a Shift or Ctrl+Shift click, there
+// is no cell range anchor yet and HandleClickSelection fell back to column 0,
+// which is neither the visually first column after reordering nor necessarily
+// visible.
+//
 // The fixture uses four columns A..D (indices 0..3) reordered visually to
 // C B A D and two flat nodes; expectations are per visually contiguous range.
 
@@ -37,6 +42,7 @@ type
     fNode0, fNode1: PVirtualNode;
     function SelectedCellSet: string;
     procedure AddColumn(const Caption: string);
+    procedure CtrlShiftMouseClick(Node: PVirtualNode; Column: TColumnIndex);
   public
     [Setup]
     procedure Setup;
@@ -55,12 +61,28 @@ type
     /// Toggling a visual range must invert exactly that range.
     [Test]
     procedure ToggleRangeHonorsColumnPositions;
+
+    /// A Shift click without a previous anchor must start the range at the
+    /// visually first column, not at column index 0.
+    [Test]
+    procedure ShiftClickWithoutAnchorStartsAtFirstVisibleColumn;
+
+    /// Same for a Ctrl+Shift click, which has its own anchor fallback.
+    [Test]
+    procedure CtrlShiftClickWithoutAnchorStartsAtFirstVisibleColumn;
+
+    /// If the visually first column is hidden, the range must start at the
+    /// first visible column and must not contain cells of hidden columns.
+    [Test]
+    procedure ShiftClickWithoutAnchorSkipsHiddenColumns;
   end;
 
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+  Winapi.Windows,
+  VirtualTrees.MouseUtils;
 
 procedure TVTCellSelectionIssue1400Tests.AddColumn(const Caption: string);
 begin
@@ -152,6 +174,51 @@ begin
   TTreeCracker(fTree).ToggleCellSelection(TVTCell.Create(fNode0, 2), TVTCell.Create(fNode1, 1)); // visually C..B
   Assert.AreEqual('n0:c1 n1:c1', SelectedCellSet,
     'Toggling the visual range C..B must deselect C and select B, nothing else (issue #1400).');
+end;
+
+procedure TVTCellSelectionIssue1400Tests.CtrlShiftMouseClick(Node: PVirtualNode; Column: TColumnIndex);
+const
+  cKeyDown = Byte(1 shl 7);
+var
+  OrigState, NewState: TKeyboardState;
+begin
+  GetKeyboardState(OrigState);
+  NewState := OrigState;
+  NewState[VK_CONTROL] := NewState[VK_CONTROL] or cKeyDown;
+  NewState[VK_SHIFT] := NewState[VK_SHIFT] or cKeyDown;
+  SetKeyboardState(NewState);
+  try
+    fTree.MouseClick(Node, Column);
+  finally
+    SetKeyboardState(OrigState);
+  end;
+end;
+
+procedure TVTCellSelectionIssue1400Tests.ShiftClickWithoutAnchorStartsAtFirstVisibleColumn;
+begin
+  // No previous click, so there is no anchor yet. Visual order is C B A D,
+  // so the range from the first node's first visible column to (n1, B) is C..B.
+  fTree.ShiftMouseClick(fNode1, 1);
+  Assert.AreEqual('n0:c1 n0:c2 n1:c1 n1:c2', SelectedCellSet,
+    'A Shift click without anchor must select from the visually first column (issue #1400).');
+end;
+
+procedure TVTCellSelectionIssue1400Tests.CtrlShiftClickWithoutAnchorStartsAtFirstVisibleColumn;
+begin
+  CtrlShiftMouseClick(fNode1, 1);
+  Assert.AreEqual('n0:c1 n0:c2 n1:c1 n1:c2', SelectedCellSet,
+    'A Ctrl+Shift click without anchor must select from the visually first column (issue #1400).');
+end;
+
+procedure TVTCellSelectionIssue1400Tests.ShiftClickWithoutAnchorSkipsHiddenColumns;
+begin
+  // Hide C, the visually first column: the visual order is now B A D.
+  fTree.Header.Columns[2].Options := fTree.Header.Columns[2].Options - [coVisible];
+  Application.ProcessMessages;
+
+  fTree.ShiftMouseClick(fNode1, 0);
+  Assert.AreEqual('n0:c0 n0:c1 n1:c0 n1:c1', SelectedCellSet,
+    'A Shift click without anchor must start at the first visible column and skip hidden ones (issue #1400).');
 end;
 
 initialization
