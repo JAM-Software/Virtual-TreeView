@@ -69,5 +69,5 @@ MsBuild.exe /property:Platform=Win64 /p:Config=Console Tests\Tests.dproj
 Tests\Tests.exe
 
 # Example how to run specific unit tests on console
-Tests\ShellBrowser.Tests.exe --run:
+Tests\Tests.exe --exitbehavior:Continue --run:VTCellSelectionTests.TCellSelectionTests.TestCopyHTML1
 ```
