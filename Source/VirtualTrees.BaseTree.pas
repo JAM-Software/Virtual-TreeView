@@ -5032,8 +5032,13 @@ begin
     Value := cInitialDefaultNodeHeight;
   if FDefaultNodeHeight <> Value then
   begin
-	if (Parent <> nil) and (toAutoChangeScale in TreeOptions.AutoOptions) then
-      HandleNeeded(); // Create window handle and font proactively to prevent any unintended rescaling in AutoChnageScale(). See issue #1341
+    // Create window handle and font proactively to prevent any unintended rescaling in AutoChnageScale(). See issue #1341
+    // Not while loading from a DFM: There are no nodes yet that could be rescaled, and TControl.ReadState() assigns the Parent
+    // before the properties are read, so this would create the window handles of all parents in the middle of loading.
+    // Only if the topmost parent is a form: Otherwise, e.g. for a frame without parent, no window handle can be created
+    // and HandleNeeded() raises EInvalidOperation "Control '...' has no parent window". See issue #1375
+    if not (csLoading in ComponentState) and (toAutoChangeScale in TreeOptions.AutoOptions) and (GetParentForm(Self) <> nil) then
+      HandleNeeded();
     Inc(FRoot.TotalHeight, Value - FDefaultNodeHeight);
     FRoot.SetNodeHeight(FRoot.NodeHeight + Value - FDefaultNodeHeight);
     FDefaultNodeHeight := Value;
