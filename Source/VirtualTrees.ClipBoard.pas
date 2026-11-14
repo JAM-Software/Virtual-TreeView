@@ -71,6 +71,12 @@ function RegisterVTClipboardFormat(const Description: string; TreeClass: TVirtua
                                    tymed: Integer = TYMED_HGLOBAL; ptd: PDVTargetDevice = nil;
                                    dwAspect: Integer = DVASPECT_CONTENT; lindex: Integer = -1): Word; overload;
 
+// The clipboard is shared by all processes. While another process has it open, nobody else can open it, and
+// OleSetClipboard() and OleFlushClipboard() fail with CLIPBRD_E_CANT_OPEN. The Windows clipboard user service, for
+// example, opens it shortly after every change. These functions retry the operation for a short time in this case.
+function OleSetClipboardWithRetry(const DataObject: IDataObject): HResult;
+function OleFlushClipboardWithRetry: HResult;
+
 //----------------- TClipboardFormats ----------------------------------------------------------------------------------
 
 type
@@ -117,6 +123,72 @@ uses
 
 var
   _List: TList = nil;  //Note - not using class constructors as they are not supported on C++ Builder. See also issue #
+
+const
+  ClipboardRetryTimeout = 250; // Milliseconds during which a clipboard operation is retried while the clipboard is in use.
+  ClipboardRetryDelay = 10;    // Milliseconds to wait between two attempts.
+
+procedure WaitForClipboard;
+
+// Waits a moment before a clipboard operation is retried. The process that has the clipboard open may be waiting for
+// this thread to render delayed clipboard data, so messages that other threads send to this thread are processed while
+// waiting. Posted messages and user input stay in the message queue.
+
+const
+  PM_QS_SENDMESSAGE = QS_SENDMESSAGE shl 16; // Not declared in Winapi.Windows.
+
+var
+  NoHandles: THandle;
+  Msg: TMsg;
+
+begin
+  PeekMessage(Msg, 0, 0, 0, PM_NOREMOVE or PM_QS_SENDMESSAGE);
+  if MsgWaitForMultipleObjects(0, NoHandles, False, ClipboardRetryDelay, QS_SENDMESSAGE) = WAIT_OBJECT_0 then
+    PeekMessage(Msg, 0, 0, 0, PM_NOREMOVE or PM_QS_SENDMESSAGE);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function RetryWhileClipboardIsInUse(const Operation: TFunc<HResult>): HResult;
+
+var
+  StartTime: UInt64;
+
+begin
+  Result := Operation();
+  StartTime := GetTickCount64;
+  while (Result = CLIPBRD_E_CANT_OPEN) and (GetTickCount64 - StartTime < ClipboardRetryTimeout) do
+  begin
+    WaitForClipboard;
+    Result := Operation();
+  end;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function OleSetClipboardWithRetry(const DataObject: IDataObject): HResult;
+
+begin
+  Result := RetryWhileClipboardIsInUse(
+    function: HResult
+    begin
+      Result := OleSetClipboard(DataObject);
+    end);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+function OleFlushClipboardWithRetry: HResult;
+
+begin
+  Result := RetryWhileClipboardIsInUse(
+    function: HResult
+    begin
+      Result := OleFlushClipboard;
+    end);
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 procedure EnumerateVTClipboardFormats(TreeClass: TVirtualTreeClass; const List: TStrings);
 

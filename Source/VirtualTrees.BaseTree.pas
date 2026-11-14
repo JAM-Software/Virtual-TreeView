@@ -16913,7 +16913,9 @@ begin
 
       if ClipboardStates * FStates <> [] then
       begin
-        OleSetClipboard(nil);
+        // Our data object must leave the clipboard before the nodes it renders are gone, so retry if another process
+        // has the clipboard open.
+        OleSetClipboardWithRetry(nil);
         DoStateChange([], ClipboardStates);
       end;
       ClearSelection;
@@ -17548,8 +17550,11 @@ begin
   if ClipboardStates * FStates <> [] then
   begin
     DoStateChange([tsClipboardFlushing]);
-    OleFlushClipboard;
-    CancelCutOrCopy;
+    // If the clipboard cannot be flushed, e.g. because another process has it open, our data object stays on the
+    // clipboard and renders its data when it is requested later. This needs the nodes that are marked for cut or copy,
+    // so the operation must not be cancelled in this case.
+    if Succeeded(OleFlushClipboardWithRetry) then
+      CancelCutOrCopy;
     DoStateChange([], [tsClipboardFlushing]);
   end;
 end;

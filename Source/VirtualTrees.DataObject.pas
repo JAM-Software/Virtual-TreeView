@@ -47,6 +47,13 @@ type
     constructor Create(AHeader : TPersistent; AOwner : TCustomControl); overload;
     destructor Destroy; override;
 
+    /// <summary>
+    /// Creates a data object with the clipboard data of the given tree and places it on the clipboard. If another
+    /// process has the clipboard open, this is retried for a short time.
+    /// </summary>
+    /// <returns>True if the data object is on the clipboard now, False otherwise.</returns>
+    class function PlaceOnClipboard(AOwner : TCustomControl) : Boolean;
+
     function DAdvise(const FormatEtc : TFormatEtc; advf : Integer; const advSink : IAdviseSink; out dwConnection : Integer) : HResult; virtual; stdcall;
     function DUnadvise(dwConnection : Integer) : HResult; virtual; stdcall;
     function EnumDAdvise(out enumAdvise : IEnumStatData) : HResult; virtual; stdcall;
@@ -96,7 +103,8 @@ var
   StgMedium : PStgMedium;
 begin
   // Cancel a pending clipboard operation if this data object was created for the clipboard and
-  // is freed because something else is placed there.
+  // is freed because something else is placed there. PlaceOnClipboard() resets FForClipboard if
+  // the data object never made it onto the clipboard.
   if FForClipboard and not (tsClipboardFlushing in TBaseVirtualTree(FOwner).TreeStates) then
     TBaseVirtualTree(FOwner).CancelCutOrCopy;
 
@@ -110,6 +118,22 @@ begin
 
   FormatEtcArray := nil;
   inherited;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class function TVTDataObject.PlaceOnClipboard(AOwner : TCustomControl) : Boolean;
+var
+  DataObject     : TVTDataObject;
+  DataObjectIntf : IDataObject; // Keeps the data object alive while it is placed on the clipboard.
+begin
+  DataObject := Create(AOwner, True);
+  DataObjectIntf := DataObject;
+  Result := OleSetClipboardWithRetry(DataObjectIntf) = S_OK;
+  if not Result then
+    // The data object is freed when it goes out of scope here. As it never made it onto the clipboard, it must not
+    // cancel the pending cut or copy operation then, which belongs to the data object that is still on the clipboard.
+    DataObject.FForClipboard := False;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
