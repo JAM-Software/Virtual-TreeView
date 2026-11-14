@@ -119,7 +119,8 @@ var
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+  VirtualTrees.Utils; // GetTickCount64() for RAD Studio versions older than 10.2, see issue #1410
 
 var
   _List: TList = nil;  //Note - not using class constructors as they are not supported on C++ Builder. See also issue #

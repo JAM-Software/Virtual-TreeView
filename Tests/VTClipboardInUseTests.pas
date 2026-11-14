@@ -84,6 +84,7 @@ uses
   System.SysUtils,
   Vcl.Controls,
   VirtualTrees.Types,
+  VirtualTrees.Utils, // GetTickCount64() for RAD Studio versions older than 10.2, see issue #1410
   VirtualTrees.ClipBoard;
 
 const

@@ -141,6 +141,14 @@ function Divide(const Dimension: Integer; const DivideBy: Integer): Integer; ove
 /// </summary>
 function Divide(const Dimension: Single; const DivideBy: Integer): Single; overload; inline;
 
+{$if CompilerVersion < 32}
+/// <summary>
+/// Winapi.Windows declares GetTickCount64() only since RAD Studio 10.2, see issue #1410.
+/// </summary>
+function GetTickCount64: UInt64; stdcall;
+{$EXTERNALSYM GetTickCount64}
+{$ifend}
+
 implementation
 
 uses
@@ -152,6 +160,13 @@ uses
 
 const
   WideLF = Char(#10);
+
+{$if CompilerVersion < 32}
+// Issue #1410: Same import as in Winapi.Windows of RAD Studio 10.2 and later.
+{$WARN SYMBOL_PLATFORM OFF} // W1002 for "delayed"
+function GetTickCount64; external kernel32 name 'GetTickCount64' delayed;
+{$WARN SYMBOL_PLATFORM DEFAULT}
+{$ifend}
 
 procedure ApplyDragImage(const pDataObject: IDataObject; pBitmap: TBitmap);
 var
