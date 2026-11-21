@@ -58,4 +58,3 @@ contains
   VirtualTrees.WorkerThread in '..\..\Source\VirtualTrees.WorkerThread.pas';
 
 end.
-
