@@ -3119,7 +3119,8 @@ begin
       Inc(Result, HeaderGlyphSize.X + FSpacing)
     else                                                    // if Layout in [ blGlyphTop, blGlyphBottom] then
       Result := Max(Result, HeaderGlyphSize.X);
-  if PaintInfo.ShowSortGlyph then
+  // A sort glyph above the caption (hoSortGlyphAboveCaption, issue #1242) takes no horizontal space.
+  if PaintInfo.ShowSortGlyph and not (hoSortGlyphAboveCaption in Header.Options) then
     Inc(Result, PaintInfo.SortGlyphSize.cx + FSpacing + 2); // without this +2, there is a slight movement of the sort glyph when expanding the column
 
 end;
@@ -3567,6 +3568,7 @@ var
     MaxRight,
     TextSpacing     : TDimension;
   UseText           : Boolean;
+  SortGlyphBesideCaption : Boolean;
   R                 : TRect;
   Theme             : HTHEME;
 
@@ -3575,6 +3577,11 @@ begin
   // If nothing is to show then don't waste time with useless preparation.
   if not (UseText or PaintInfo.ShowHeaderGlyph or PaintInfo.ShowSortGlyph) then
     Exit;
+
+  // Issue #1242: With hoSortGlyphAboveCaption the sort glyph is drawn horizontally centered at the top of the
+  // column, like Windows Explorer does. It then takes no part in the horizontal layout of caption and header glyph,
+  // so they can use the full column width. SortGlyphBesideCaption is True only for the classic placement.
+  SortGlyphBesideCaption := PaintInfo.ShowSortGlyph and not (hoSortGlyphAboveCaption in Header.Options);
 
   CurrentAlignment := CaptionAlignment;
   if FBiDiMode <> bdLeftToRight then
@@ -3608,10 +3615,24 @@ begin
       begin
         PaintInfo.SortGlyphSize.cx := Self.TreeViewControl.ScaledPixels(16);
         PaintInfo.SortGlyphSize.cy := Self.TreeViewControl.ScaledPixels(4);
+        // DrawSortArrow paints a triangle of only 2 * cy + 1 pixels width at the left of the 16 pixels reserved
+        // next to the caption. Above the caption (issue #1242) use the painted width, so that centering is exact.
+        if not SortGlyphBesideCaption then
+          PaintInfo.SortGlyphSize.cx := 2 * PaintInfo.SortGlyphSize.cy + 1;
       end;
 
-      // In any case, the sort glyph is vertically centered.
-      PaintInfo.SortGlyphPos.Y := Divide(ClientSize.Y - PaintInfo.SortGlyphSize.cy, 2);
+      if SortGlyphBesideCaption then
+        // Next to the caption the sort glyph is always vertically centered.
+        PaintInfo.SortGlyphPos.Y := Divide(ClientSize.Y - PaintInfo.SortGlyphSize.cy, 2)
+      else
+        // Above the caption (issue #1242) the sort glyph sits at the top edge, like in Windows Explorer, so that it
+        // does not collide with the caption at the default header height. PaintRectangle is inset by cMargin, see
+        // PaintHeader. Themed header items have no top border, so the glyph may use that margin and starts 1 pixel
+        // below the edge. Classic header items have a raised edge there, so the glyph stays inside it.
+        if tsUseThemes in TreeViewControl.TreeStates then
+          PaintInfo.SortGlyphPos.Y := 1 - cMargin
+        else
+          PaintInfo.SortGlyphPos.Y := 0;
     end
     else
     begin
@@ -3650,7 +3671,7 @@ begin
   end;
 
   // Check first for the special case where nothing is shown except the sort glyph.
-  if PaintInfo.ShowSortGlyph and not (UseText or PaintInfo.ShowHeaderGlyph) then
+  if SortGlyphBesideCaption and not (UseText or PaintInfo.ShowHeaderGlyph) then
   begin
     // Center the sort glyph in the available area if nothing else is there.
     PaintInfo.SortGlyphPos := Point(Divide(ClientSize.X - PaintInfo.SortGlyphSize.cx, 2), Divide(ClientSize.Y - PaintInfo.SortGlyphSize.cy, 2));
@@ -3685,7 +3706,7 @@ begin
       taLeftJustify :
         begin
           MinLeft := FMargin;
-          if PaintInfo.ShowSortGlyph and (FBiDiMode <> bdLeftToRight) then
+          if SortGlyphBesideCaption and (FBiDiMode <> bdLeftToRight) then
           begin
             // In RTL context is the sort glyph placed on the left hand side.
             PaintInfo.SortGlyphPos.X := MinLeft;
@@ -3723,7 +3744,7 @@ begin
               Inc(MinLeft, HeaderGlyphSize.X + FSpacing);
             end;
           end;
-          if PaintInfo.ShowSortGlyph and (FBiDiMode = bdLeftToRight) then
+          if SortGlyphBesideCaption and (FBiDiMode = bdLeftToRight) then
             PaintInfo.SortGlyphPos.X := MinLeft;
         end;
       taCenter :
@@ -3732,7 +3753,7 @@ begin
           begin
             PaintInfo.GlyphPos.X := Divide(ClientSize.X - HeaderGlyphSize.X, 2);
             TextPos.X := Divide(ClientSize.X - TextSize.cx, 2);
-            if PaintInfo.ShowSortGlyph then
+            if SortGlyphBesideCaption then
               Dec(TextPos.X, Divide(PaintInfo.SortGlyphSize.cx, 2));
           end
           else
@@ -3759,7 +3780,7 @@ begin
             MaxRight := TextPos.X + TextSize.cx;
           end;
           // Place the sort glyph directly to the left or right of the larger item.
-          if PaintInfo.ShowSortGlyph then
+          if SortGlyphBesideCaption then
             if FBiDiMode = bdLeftToRight then
             begin
               // Sort glyph on the right hand side.
@@ -3774,7 +3795,7 @@ begin
     else
       // taRightJustify
       MaxRight := ClientSize.X - FMargin;
-      if PaintInfo.ShowSortGlyph and (FBiDiMode = bdLeftToRight) then
+      if SortGlyphBesideCaption and (FBiDiMode = bdLeftToRight) then
       begin
         // In LTR context is the sort glyph placed on the right hand side.
         Dec(MaxRight, PaintInfo.SortGlyphSize.cx);
@@ -3811,7 +3832,7 @@ begin
           MaxRight := PaintInfo.GlyphPos.X - FSpacing;
         end;
       end;
-      if PaintInfo.ShowSortGlyph and (FBiDiMode <> bdLeftToRight) then
+      if SortGlyphBesideCaption and (FBiDiMode <> bdLeftToRight) then
         PaintInfo.SortGlyphPos.X := MaxRight - PaintInfo.SortGlyphSize.cx;
     end;
   end;
@@ -3825,20 +3846,29 @@ begin
   MaxRight := ClientSize.X - FMargin;
   if PaintInfo.ShowSortGlyph then
   begin
-    if FBiDiMode = bdLeftToRight then
+    if not SortGlyphBesideCaption then
     begin
-      // Sort glyph on the right hand side.
-      if PaintInfo.SortGlyphPos.X + PaintInfo.SortGlyphSize.cx > MaxRight then
-        PaintInfo.SortGlyphPos.X := MaxRight - PaintInfo.SortGlyphSize.cx;
-      MaxRight := PaintInfo.SortGlyphPos.X - FSpacing;
-    end;
+      // Issue #1242: Above the caption the sort glyph is centered on the column, regardless of the caption alignment
+      // and the bidi mode, and it does not narrow the space of the other elements.
+      PaintInfo.SortGlyphPos.X := Max(0, Divide(ClientSize.X - PaintInfo.SortGlyphSize.cx, 2));
+    end
+    else
+    begin
+      if FBiDiMode = bdLeftToRight then
+      begin
+        // Sort glyph on the right hand side.
+        if PaintInfo.SortGlyphPos.X + PaintInfo.SortGlyphSize.cx > MaxRight then
+          PaintInfo.SortGlyphPos.X := MaxRight - PaintInfo.SortGlyphSize.cx;
+        MaxRight := PaintInfo.SortGlyphPos.X - FSpacing;
+      end;
 
-    // Consider also the left side of the sort glyph regardless of the bidi mode.
-    if PaintInfo.SortGlyphPos.X < MinLeft then
-      PaintInfo.SortGlyphPos.X := MinLeft;
-    // Left border needs only adjustment if the sort glyph marks the left border.
-    if FBiDiMode <> bdLeftToRight then
-      MinLeft := PaintInfo.SortGlyphPos.X + PaintInfo.SortGlyphSize.cx + FSpacing;
+      // Consider also the left side of the sort glyph regardless of the bidi mode.
+      if PaintInfo.SortGlyphPos.X < MinLeft then
+        PaintInfo.SortGlyphPos.X := MinLeft;
+      // Left border needs only adjustment if the sort glyph marks the left border.
+      if FBiDiMode <> bdLeftToRight then
+        MinLeft := PaintInfo.SortGlyphPos.X + PaintInfo.SortGlyphSize.cx + FSpacing;
+    end;
 
     // Finally transform sort glyph to its actual position.
     Inc(PaintInfo.SortGlyphPos.X, PaintInfo.PaintRectangle.Left);
@@ -5808,7 +5838,8 @@ var
           ImageWidth := 0;
 
         if not (hpeHeaderGlyph in ActualElements) and ShowHeaderGlyph and
-          (not ShowSortGlyph or (FBiDiMode <> bdLeftToRight) or (GlyphPos.X + ImageWidth <= SortGlyphPos.X)) then
+          (not ShowSortGlyph or (FBiDiMode <> bdLeftToRight) or (hoSortGlyphAboveCaption in Header.Options) or // issue #1242: no horizontal overlap check for a sort glyph above the caption
+           (GlyphPos.X + ImageWidth <= SortGlyphPos.X)) then
         begin
           if not FCheckBox then
           begin
