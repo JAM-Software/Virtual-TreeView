@@ -774,6 +774,7 @@ type
     procedure FixupTotalHeight(Node: PVirtualNode);
     function GetBackgroundBitmap(Source: TVTBackground; aBkgColor: TColor): TBitmap;
     function GetBottomNode: PVirtualNode;
+    function GetCheckImages: TCustomImageList;
     function GetCheckState(Node: PVirtualNode): TCheckState;
     function GetCheckType(Node: PVirtualNode): TCheckType;
     function GetChildCount(Node: PVirtualNode): Cardinal;
@@ -1762,7 +1763,7 @@ type
       IncludeFiltered: Boolean = False): TVTVirtualNodeEnumeration;
     property BottomNode: PVirtualNode read GetBottomNode write SetBottomNode;
     property CheckedCount: Integer read GetCheckedCount;
-    property CheckImages: TCustomImageList read FCheckImages;
+    property CheckImages: TCustomImageList read GetCheckImages;
     property CheckState[Node: PVirtualNode]: TCheckState read GetCheckState write SetCheckState;
     property CheckType[Node: PVirtualNode]: TCheckType read GetCheckType write SetCheckType;
     property ChildCount[Node: PVirtualNode]: Cardinal read GetChildCount write SetChildCount;
@@ -2929,7 +2930,7 @@ begin
 
   // Initialize short hand variables to speed up tests below.
   DoSwitch := ssCtrl in FDrawSelShiftState;
-  WithCheck := (toCheckSupport in FOptions.MiscOptions) and Assigned(FCheckImages);
+  WithCheck := (toCheckSupport in FOptions.MiscOptions) and Assigned(CheckImages);
   // Don't check the events here as descendant trees might have overriden the DoGetImageIndex method.
   WithStateImages := Assigned(FStateImages) or Assigned(OnGetImageIndexEx);
   if WithCheck then
@@ -3447,6 +3448,20 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+function TBaseVirtualTree.GetCheckImages: TCustomImageList;
+
+// Returns the image list with the check images. The system check images are created on first use and not in CreateWnd
+// any more, because the image list costs several GDI handles per tree and many trees never show check boxes.
+// See issue #1082. Like before, they can only be created once the window handle exists.
+
+begin
+  if not Assigned(FCheckImages) and (FCheckImageKind = ckSystemDefault) and HandleAllocated then
+    FCheckImages := CreateSystemImageSet();
+  Result := FCheckImages;
+end;
+
+//----------------------------------------------------------------------------------------------------------------------
+
 function TBaseVirtualTree.GetCheckState(Node: PVirtualNode): TCheckState;
 
 begin
@@ -3515,7 +3530,7 @@ function TBaseVirtualTree.GetSyncCheckstateWithSelection(Node: PVirtualNode): Bo
 begin
   Result := (toSyncCheckboxesWithSelection in FOptions.SelectionOptions)
             and (toCheckSupport in FOptions.MiscOptions)
-            and Assigned(FCheckImages)
+            and Assigned(CheckImages)
             and (Node.CheckType = ctCheckBox);
 end;
 
@@ -3670,7 +3685,7 @@ begin
   if pElement <= TVTElement.ofsToggleButton then
     exit;
 
-  if (toCheckSupport in TreeOptions.MiscOptions) and Assigned(FCheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
+  if (toCheckSupport in TreeOptions.MiscOptions) and Assigned(CheckImages) and (pNode.CheckType <> ctNone) and (pColumn = Header.MainColumn) then
   begin
     Inc(pOffsets[TVTElement.ofsCheckBox], fImagesMargin);
 
@@ -5036,8 +5051,8 @@ begin
     FCheckImageKind := Value;
     if Value = ckCustom then
       FCheckImages := FCustomCheckImages
-    else if HandleAllocated then
-      FCheckImages := CreateSystemImageSet();
+    else
+      FCheckImages := nil; // The system check images are created on first use by GetCheckImages(), see issue #1082
     if HandleAllocated and (FUpdateCount = 0) and not (csLoading in ComponentState) then
       InvalidateRect(nil, False);
   end;
@@ -8979,11 +8994,9 @@ begin
     // Scale header
     TVTHeaderCracker(FHeader).ChangeScale(M, D);
     // Scale utility images, #796
-    if FCheckImageKind = ckSystemDefault then begin
+    // The system check images are recreated in the new size on their next use by GetCheckImages(), see issue #1082
+    if FCheckImageKind = ckSystemDefault then
       FreeAndNil(FCheckImages);
-      if HandleAllocated then
-        FCheckImages := CreateSystemImageSet();
-    end;
     UpdateHeaderRect();
     PrepareBitmaps(True, False); // See issue #991
   end;
@@ -9255,8 +9268,7 @@ begin
   inherited;
   DoStateChange([], [tsWindowCreating]);
 
-  if not Assigned(FCheckImages) then
-    FCheckImages := CreateSystemImageSet();
+  // The system check images are no longer created here but on first use by GetCheckImages(), see issue #1082
 
   if ((StyleServices.Enabled ) and (toThemeAware in TreeOptions.PaintOptions)  ) then
   begin
@@ -9603,7 +9615,7 @@ begin
       ImageOffset := Right - FMargin;
 
       // Check support is only available for the main column.
-      if MainColumnHit and (toCheckSupport in FOptions.MiscOptions) and Assigned(FCheckImages) and
+      if MainColumnHit and (toCheckSupport in FOptions.MiscOptions) and Assigned(CheckImages) and
         (HitInfo.HitNode.CheckType <> ctNone) then
         Dec(ImageOffset, FCheckImages.Width + FImagesMargin);
 
@@ -14559,7 +14571,7 @@ begin
       end;//if
     end
     else begin
-      if Assigned(FCheckImages) then
+      if Assigned(CheckImages) then
         lCheckImages := FCheckImages
       else
         lCheckImages := FCustomCheckImages;
@@ -21435,7 +21447,8 @@ begin
         // For quick checks some intermediate variables are used.
         UseBackground := (toShowBackground in FOptions.PaintOptions) and Assigned(FBackground.Graphic) and
           (poBackground in PaintOptions);
-        ShowCheckImages := Assigned(FCheckImages) and (toCheckSupport in FOptions.MiscOptions);
+        // Check toCheckSupport first, so that the check images are not created for trees without check boxes, see issue #1082
+        ShowCheckImages := (toCheckSupport in FOptions.MiscOptions) and Assigned(CheckImages);
         UseColumns := FHeader.UseColumns;
 
         // Adjust paint options to tree settings. Hide selection if told so or the tree is unfocused.
