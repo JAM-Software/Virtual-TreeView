@@ -498,6 +498,7 @@ type
     FHotMinusBM,
     FSelectedHotPlusBM,
     FSelectedHotMinusBM: TBitmap;                // small bitmaps used for hot tree buttons
+    FButtonImages: TBitmap;                      // The six button bitmaps side by side, used for painting. Needs only two GDI handles, see issue #1082
     FImages,                                     // normal images in the tree
     FStateImages,                                // state images in the tree
     FCustomCheckImages: TCustomImageList;        // application defined check images
@@ -1870,6 +1871,9 @@ type
   TVirtualTreeColumnCracker = class(TVirtualTreeColumn);
   TBaseVirtualTreeCracker = class(TBaseVirtualTree);
 
+  // The order of the button images in TBaseVirtualTree.FButtonImages, see issue #1082
+  TVTButtonImage = (biPlus, biHotPlus, biSelectedHotPlus, biMinus, biHotMinus, biSelectedHotMinus);
+
   // streaming support
   TMagicID = array[0..5] of WideChar;
 
@@ -2290,6 +2294,7 @@ begin
   FHotMinusBM := TBitmap.Create;
   FSelectedHotPlusBM := TBitmap.Create;
   FSelectedHotMinusBM := TBitmap.Create;
+  FButtonImages := TBitmap.Create;
 
   FBorderStyle := TFormBorderStyle.bsSingle;
   FButtonStyle := bsRectangle;
@@ -2407,6 +2412,7 @@ begin
   FHotMinusBM.Free;
   FSelectedHotPlusBM.Free;
   FSelectedHotMinusBM.Free;
+  FButtonImages.Free;
 
   // Fixes issue #1002
   Images := nil;
@@ -4423,6 +4429,47 @@ var
     end;
   end;
 
+  procedure UpdateButtonImages();
+
+  // Copies the six button bitmaps side by side into FButtonImages, which is used for painting, and releases the
+  // GDI handles of the six bitmaps. Each transparently painted TBitmap needs two GDI handles (bitmap and mask), so
+  // this reduces the GDI handles needed for the buttons from up to 12 to 2 per tree, see issue #1082.
+  // The six bitmaps are kept, so that OnPrepareButtonBitmaps and the PlusBM etc. properties keep working.
+
+  var
+    Bitmaps: array[TVTButtonImage] of TBitmap;
+    ButtonImage: TVTButtonImage;
+    CellWidth, CellHeight: Integer;
+  begin
+    Bitmaps[biPlus] := FPlusBM;
+    Bitmaps[biHotPlus] := FHotPlusBM;
+    Bitmaps[biSelectedHotPlus] := FSelectedHotPlusBM;
+    Bitmaps[biMinus] := FMinusBM;
+    Bitmaps[biHotMinus] := FHotMinusBM;
+    Bitmaps[biSelectedHotMinus] := FSelectedHotMinusBM;
+    // OnPrepareButtonBitmaps may change the size of single bitmaps, so use the largest one as cell size.
+    CellWidth := 0;
+    CellHeight := 0;
+    for ButtonImage := Low(TVTButtonImage) to High(TVTButtonImage) do
+    begin
+      CellWidth := Max(CellWidth, Bitmaps[ButtonImage].Width);
+      CellHeight := Max(CellHeight, Bitmaps[ButtonImage].Height);
+    end;
+    FButtonImages.SetSize(CellWidth * (Ord(High(TVTButtonImage)) + 1), CellHeight);
+    FButtonImages.TransparentColor := ColorToRGB(FPlusBM.TransparentColor) and $FFFFFF;
+    FButtonImages.Transparent := True;
+    FButtonImages.Canvas.Brush.Color := FButtonImages.TransparentColor and $FFFFFF;
+    FButtonImages.Canvas.FillRect(Rect(0, 0, FButtonImages.Width, FButtonImages.Height));
+    for ButtonImage := Low(TVTButtonImage) to High(TVTButtonImage) do
+    begin
+      // Draw() copies the opaque pixels unchanged (including the alpha byte, which the mask creation of TBitmap
+      // takes into account) and leaves the transparent pixels in the transparent color of FButtonImages.
+      FButtonImages.Canvas.Draw(Ord(ButtonImage) * CellWidth, 0, Bitmaps[ButtonImage]);
+      // Keeps the image data in memory, but releases the GDI handles of the bitmap and its mask.
+      Bitmaps[ButtonImage].Dormant();
+    end;
+  end;
+
   //--------------- end local function ----------------------------------------
 
 const
@@ -4604,6 +4651,9 @@ begin
           CloseThemeData(Theme);
       end;// if NeedButtons
   end;// else
+
+  if NeedButtons then
+    UpdateButtonImages(); // See issue #1082
 
   if NeedLines then
   begin
@@ -14631,7 +14681,11 @@ procedure TBaseVirtualTree.PaintNodeButton(Canvas: TCanvas; Node: PVirtualNode; 
   ButtonX, ButtonY: TDimension; BidiMode: TBiDiMode);
 
 var
-  Bitmap: TBitmap;
+  ButtonImage: TVTButtonImage;
+  CellWidth: Integer;
+  MaskHandle: HBITMAP;
+  MaskDC: HDC;
+  OldMask: HGDIOBJ;
   XPos: TDimension;
   IsHot: Boolean;
   IsSelected : boolean;
@@ -14666,27 +14720,41 @@ begin
       if IsHot then
       begin
         if IsSelected then
-          BitMap := FSelectedHotMinusBM
+          ButtonImage := biSelectedHotMinus
         else
-          Bitmap := FHotMinusBM;
+          ButtonImage := biHotMinus;
       end
       else
-        Bitmap := FMinusBM;
+        ButtonImage := biMinus;
     end
     else
     begin
       if IsHot then
       begin
         if IsSelected then
-          BitMap := FSelectedHotPlusBM
+          ButtonImage := biSelectedHotPlus
         else
-          Bitmap := FHotPlusBM;
+          ButtonImage := biHotPlus;
       end
       else
-        Bitmap := FPlusBM;
+        ButtonImage := biPlus;
     end;
-    // Need to draw this masked.
-    Canvas.Draw(XPos, R.Top + ButtonY, Bitmap);
+    if FButtonImages.Empty then
+      Exit;
+    // All button images are in one bitmap, see PrepareBitmaps() and issue #1082. Need to draw this masked,
+    // in the same way as TBitmap.Draw() does it.
+    CellWidth := FButtonImages.Width div (Ord(High(TVTButtonImage)) + 1);
+    MaskHandle := FButtonImages.MaskHandle; // Must be called before FButtonImages.Canvas.Handle, as it may free the canvas handle
+    MaskDC := CreateCompatibleDC(0);
+    try
+      OldMask := SelectObject(MaskDC, MaskHandle);
+      TransparentStretchBlt(Canvas.Handle, XPos, R.Top + ButtonY, CellWidth, FButtonImages.Height,
+        FButtonImages.Canvas.Handle, Ord(ButtonImage) * CellWidth, 0, CellWidth, FButtonImages.Height,
+        MaskDC, Ord(ButtonImage) * CellWidth, 0);
+      SelectObject(MaskDC, OldMask);
+    finally
+      DeleteDC(MaskDC);
+    end;
   end;
 end;
 
