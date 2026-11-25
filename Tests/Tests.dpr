@@ -33,6 +33,7 @@ uses
   VTClipboardInUseTests in 'VTClipboardInUseTests.pas',
   VTDefaultNodeHeightIssue1375Tests in 'VTDefaultNodeHeightIssue1375Tests.pas',
   VTCheckImagesIssue1082Tests in 'VTCheckImagesIssue1082Tests.pas',
+  VTSortGlyphAboveCaptionIssue1242Tests in 'VTSortGlyphAboveCaptionIssue1242Tests.pas',
   VirtualTrees.MouseUtils in 'VirtualTrees.MouseUtils.pas',
   VTCellSelectionTests.VisibilityForm in 'VTCellSelectionTests.VisibilityForm.pas' {VisibilityForm},
   VTCellSelectionTests.VTSelectionTestForm in 'VTCellSelectionTests.VTSelectionTestForm.pas' {SelectionTestForm};

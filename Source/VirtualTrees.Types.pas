@@ -1112,7 +1112,8 @@ type
     hoHeightDblClickResize,         //Allow the header to resize itself to its default height.
     hoHeaderClickAutoSort,          //Clicks on the header will make the clicked column the SortColumn or toggle sort direction if it already was the sort column
     hoAutoColumnPopupMenu,          //Show a context menu for activating and deactivating columns on right click
-    hoAutoResizeInclCaption         //Includes the header caption for the auto resizing
+    hoAutoResizeInclCaption,        //Includes the header caption for the auto resizing
+    hoSortGlyphAboveCaption         //Draw the sort glyph horizontally centered above the caption (like Windows Explorer) instead of next to it, leaving the full column width to the caption. Issue #1242
     );
   TVTHeaderOptions = set of TVTHeaderOption;
 
